@@ -1,4 +1,5 @@
 #pragma once
+#include "enginepch.h"
 
 #ifdef ENGINE_PLATFORM_WINDOWS
 	#ifdef ENGINE_BUILD_DLL

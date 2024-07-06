@@ -1,9 +1,5 @@
 #pragma once
-
-#include "../Core.h"
-
-#include <string>
-#include <functional>
+#include "Engine/Core.h"
 
 namespace Engine
 {

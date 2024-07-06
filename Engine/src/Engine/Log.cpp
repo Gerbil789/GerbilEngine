@@ -1,4 +1,5 @@
-#include "Log.h"
+#include "enginepch.h"
+#include "Engine/Log.h"
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace Engine
