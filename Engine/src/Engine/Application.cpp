@@ -1,5 +1,6 @@
 #include "Application.h"
-#include <iostream>
+#include "Engine/Events/ApplicationEvent.h"
+#include "Engine/Log.h"
 
 namespace Engine
 {
@@ -13,9 +14,10 @@ namespace Engine
 
 	void Application::Run()
 	{
-		while (true) {
-			//std::cout << "Running" << std::endl;
+		WindowResizeEvent e(1280, 720);
+		ENGINE_LOG_INFO("Window size {0}x{1}", e.GetWidth(), e.GetHeight());
 
+		while (true) {
 		}
 	}
 }

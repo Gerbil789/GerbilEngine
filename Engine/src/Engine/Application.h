@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.h"
+#include "Engine/Events/Event.h"
 
 namespace Engine
 {
