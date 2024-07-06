@@ -14,7 +14,7 @@ namespace Engine
 	void Application::Run()
 	{
 		while (true) {
-			std::cout << "Running" << std::endl;
+			//std::cout << "Running" << std::endl;
 
 		}
 	}
