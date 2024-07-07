@@ -1,10 +1,12 @@
 #pragma once
 
 #include "Core.h"
-#include "Engine/Events/Event.h"
+#include "Engine/Window.h"
+//#include "Engine/Events/Event.h"
 #include "Engine/Events/ApplicationEvent.h"
 #include "Engine/Events/KeyEvent.h"
-#include "Engine/Window.h"
+#include "Engine/LayerStack.h"
+
 
 namespace Engine
 {
@@ -16,15 +18,18 @@ namespace Engine
 		void Run();
 
 		void OnEvent(Event& e);
+
+		void PushLayer(Layer* layer);
+		void PushOverlay(Layer* overlay);
 		
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
+		bool OnKeyPressed(KeyPressedEvent& e);
+
 		std::unique_ptr<Window> m_Window;
 		bool m_Running = true;
 
-
-		bool OnKeyPressed(KeyPressedEvent& e);
-
+		LayerStack m_LayerStack;
 
 	};
 

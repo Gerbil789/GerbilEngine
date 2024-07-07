@@ -19,8 +19,26 @@ namespace Engine
 	{
 		while (m_Running) 
 		{
+			for (Layer* layer : m_LayerStack)
+			{
+				layer->OnUpdate();
+			}
+				
+
 			m_Window->OnUpdate();
 		}
+	}
+
+	void Application::PushLayer(Layer* layer)
+	{
+		m_LayerStack.PushLayer(layer);
+		layer->OnAttach();
+	}
+
+	void Application::PushOverlay(Layer* overlay)
+	{
+		m_LayerStack.PushOverlay(overlay);
+		overlay->OnAttach();
 	}
 
 	void Application::OnEvent(Event& e)
@@ -31,7 +49,12 @@ namespace Engine
 		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(Application::OnKeyPressed));
 
 
-		
+		for(auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
+		{
+			(*--it)->OnEvent(e);
+			if (e.Handled)
+				break;
+		}
 	}
 
 	bool Application::OnKeyPressed(KeyPressedEvent& e)
