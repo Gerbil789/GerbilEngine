@@ -26,6 +26,7 @@ public:
 	Game()
 	{
 		PushLayer(new exmapleLayer());
+		PushOverlay(new Engine::ImGuiLayer());
 	}
 
 	~Game()
