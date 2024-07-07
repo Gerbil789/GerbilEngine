@@ -28,8 +28,18 @@ namespace Engine
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 
-		ENGINE_LOG_INFO("{0}", e.ToString());
+		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(Application::OnKeyPressed));
+
+
+		
 	}
+
+	bool Application::OnKeyPressed(KeyPressedEvent& e)
+	{
+		ENGINE_LOG_INFO("{0}", e.ToString());
+		return true;
+	}
+
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{

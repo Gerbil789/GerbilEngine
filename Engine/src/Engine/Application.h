@@ -3,6 +3,7 @@
 #include "Core.h"
 #include "Engine/Events/Event.h"
 #include "Engine/Events/ApplicationEvent.h"
+#include "Engine/Events/KeyEvent.h"
 #include "Engine/Window.h"
 
 namespace Engine
@@ -20,6 +21,9 @@ namespace Engine
 		bool OnWindowClose(WindowCloseEvent& e);
 		std::unique_ptr<Window> m_Window;
 		bool m_Running = true;
+
+
+		bool OnKeyPressed(KeyPressedEvent& e);
 
 
 	};
