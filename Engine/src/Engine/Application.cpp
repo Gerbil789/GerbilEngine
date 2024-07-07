@@ -1,12 +1,14 @@
 #include "enginepch.h"
 #include "Application.h"
-#include "Engine/Events/ApplicationEvent.h"
-#include "Engine/Log.h"
 
 namespace Engine
 {
+#define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
+
 	Application::Application()
 	{
+		m_Window = std::unique_ptr<Window>(Window::Create());
+		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 	}
 
 	Application::~Application()
@@ -15,9 +17,24 @@ namespace Engine
 
 	void Application::Run()
 	{
-		WindowResizeEvent e(1280, 720);
-		ENGINE_LOG_INFO("Window size {0}x{1}", e.GetWidth(), e.GetHeight());
-		while (true) {
+		while (m_Running) 
+		{
+			m_Window->OnUpdate();
 		}
 	}
+
+	void Application::OnEvent(Event& e)
+	{
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
+
+		ENGINE_LOG_INFO("{0}", e.ToString());
+	}
+
+	bool Application::OnWindowClose(WindowCloseEvent& e)
+	{
+		m_Running = false;
+		return true;
+	}
+
 }

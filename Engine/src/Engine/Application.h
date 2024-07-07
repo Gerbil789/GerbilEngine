@@ -2,6 +2,8 @@
 
 #include "Core.h"
 #include "Engine/Events/Event.h"
+#include "Engine/Events/ApplicationEvent.h"
+#include "Engine/Window.h"
 
 namespace Engine
 {
@@ -11,6 +13,15 @@ namespace Engine
 		Application();
 		virtual ~Application();
 		void Run();
+
+		void OnEvent(Event& e);
+		
+	private:
+		bool OnWindowClose(WindowCloseEvent& e);
+		std::unique_ptr<Window> m_Window;
+		bool m_Running = true;
+
+
 	};
 
 	Application* CreateApplication();
