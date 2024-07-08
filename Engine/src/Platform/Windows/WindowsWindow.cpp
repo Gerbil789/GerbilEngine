@@ -15,20 +15,24 @@ namespace Engine
 		ENGINE_LOG_ERROR("GLFW Error ({0}): {1}", error, description);
 	}
 
+
 	Window* Window::Create(const WindowProps& props)
 	{
 		return new WindowsWindow(props);
 	}
+
 
 	WindowsWindow::WindowsWindow(const WindowProps& props)
 	{
 		Init(props);
 	}
 
+
 	WindowsWindow::~WindowsWindow()
 	{
 		Shutdown();
 	}
+
 
 	void WindowsWindow::Init(const WindowProps& props)
 	{
@@ -52,7 +56,6 @@ namespace Engine
 		ENGINE_CORE_ASSERT(status, "Failed to initialize Glad!");
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
-
 
 		// Set GLFW callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
@@ -99,6 +102,16 @@ namespace Engine
 			}
 		});
 
+
+		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int keycode)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			KeyTypedEvent event(keycode);
+			data.EventCallback(event);
+		});
+
+
 		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -120,6 +133,7 @@ namespace Engine
 			}
 		});
 
+
 		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -137,16 +151,19 @@ namespace Engine
 		});
 	}
 
+
 	void WindowsWindow::Shutdown()
 	{
 		glfwDestroyWindow(m_Window);
 	}
+
 
 	void WindowsWindow::OnUpdate()
 	{
 		glfwPollEvents();
 		glfwSwapBuffers(m_Window);
 	}
+
 
 	void WindowsWindow::SetVSync(bool enabled)
 	{
@@ -157,6 +174,7 @@ namespace Engine
 
 		m_Data.VSync = enabled;
 	}
+
 
 	bool WindowsWindow::IsVSync() const
 	{

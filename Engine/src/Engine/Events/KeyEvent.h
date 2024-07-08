@@ -15,6 +15,7 @@ namespace Engine
 		int m_KeyCode;
 	};
 
+
 	class ENGINE_API KeyPressedEvent : public KeyEvent
 	{
 	public:
@@ -33,6 +34,7 @@ namespace Engine
 		int m_RepeatCount;
 	};
 
+
 	class ENGINE_API KeyReleasedEvent : public KeyEvent
 	{
 	public:
@@ -48,26 +50,19 @@ namespace Engine
 		EVENT_CLASS_TYPE(KeyReleased)
 	};
 
-	/*class EventDispatcher 
+
+	class ENGINE_API KeyTypedEvent : public KeyEvent
 	{
-		template<typename T>
-		using EventFn = std::function<bool(T&)>;
-	public:
-		EventDispatcher(Event& event) : m_Event(event) {}
+		public:
+		KeyTypedEvent(int keycode) : KeyEvent(keycode) {}
 
-		template<typename T>
-		bool Dispatch(EventFn<T> func)
+		std::string ToString() const override
 		{
-			if (m_Event.GetEventType() == T::GetStaticType())
-			{
-				m_Event.Handled = func(*(T*)&m_Event);
-				return true;
-			}
-			return false;
+			std::stringstream ss;
+			ss << "KeyTypedEvent: " << m_KeyCode;
+			return ss.str();
 		}
-	private:
-		Event& m_Event;
 
-	};*/
-
+		EVENT_CLASS_TYPE(KeyTyped)
+	};
 }
