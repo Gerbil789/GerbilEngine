@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "Application.h"
-
 #include <glad/glad.h>
 
 namespace Engine
@@ -20,6 +19,7 @@ namespace Engine
 
 	Application::~Application()
 	{
+
 	}
 
 	void Application::Run()
@@ -31,7 +31,6 @@ namespace Engine
 				layer->OnUpdate();
 			}
 				
-
 			m_Window->OnUpdate();
 		}
 	}
@@ -53,21 +52,12 @@ namespace Engine
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 
-		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(Application::OnKeyPressed));
-
-
 		for(auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 		{
 			(*--it)->OnEvent(e);
 			if (e.Handled)
 				break;
 		}
-	}
-
-	bool Application::OnKeyPressed(KeyPressedEvent& e)
-	{
-		ENGINE_LOG_INFO("{0}", e.ToString());
-		return true;
 	}
 
 
