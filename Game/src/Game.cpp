@@ -1,6 +1,5 @@
 #include <Engine.h>
 
-
 class exmapleLayer : public Engine::Layer
 {
 public:
@@ -19,6 +18,7 @@ public:
 		if(event.GetEventType() == Engine::EventType::KeyPressed)
 		{
 			Engine::KeyPressedEvent& e = (Engine::KeyPressedEvent&)event;
+			
 			if (e.GetKeyCode() == KEY_TAB)
 				LOG_TRACE("Tab key is pressed (event)!");
 			LOG_TRACE("{0}", (char)e.GetKeyCode());
