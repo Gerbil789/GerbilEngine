@@ -1,5 +1,7 @@
 #include <Engine.h>
 
+#include "imgui/imgui.h"
+
 class exmapleLayer : public Engine::Layer
 {
 public:
@@ -9,8 +11,8 @@ public:
 	{
 		//LOG_INFO("ExampleLayer - Update");
 
-		if (Engine::Input::IsKeyPressed(KEY_TAB))
-			LOG_TRACE("Tab key is pressed (poll)!");
+		//if (Engine::Input::IsKeyPressed(KEY_TAB))
+		//	LOG_TRACE("Tab key is pressed (poll)!");
 	}
 
 	void OnEvent(Engine::Event& event) override
@@ -25,6 +27,13 @@ public:
 		}
 	}
 
+	virtual void OnImGuiRender() override
+	{
+		ImGui::Begin("BRUH");
+		ImGui::Text("BRUHMAN IS HERE");
+		ImGui::End();
+	}
+
 };
 
 
@@ -35,7 +44,6 @@ public:
 	Game()
 	{
 		PushLayer(new exmapleLayer());
-		PushOverlay(new Engine::ImGuiLayer());
 	}
 
 	~Game()
