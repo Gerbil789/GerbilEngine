@@ -1,12 +1,8 @@
 #pragma once
 
-
-
 #ifdef ENGINE_PLATFORM_WINDOWS
 #include <Windows.h>
 #endif 
-
-
 
 #include <iostream>
 #include <memory>
@@ -19,4 +15,4 @@
 #include <unordered_map>
 #include <unordered_set>
 
-
+#include "Engine/Log.h"

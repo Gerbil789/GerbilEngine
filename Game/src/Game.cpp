@@ -29,9 +29,9 @@ public:
 
 	virtual void OnImGuiRender() override
 	{
-		ImGui::Begin("BRUH");
+		/*ImGui::Begin("BRUH");
 		ImGui::Text("BRUHMAN IS HERE");
-		ImGui::End();
+		ImGui::End();*/
 	}
 
 };
