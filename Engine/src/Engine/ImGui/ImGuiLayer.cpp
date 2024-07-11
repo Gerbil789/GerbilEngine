@@ -1,9 +1,8 @@
 #include "enginepch.h"
-#include "ImGuiLayer.h"
+#include "Engine/Imgui/ImGuiLayer.h"
 #include "imgui.h"
 
 
-#define IMGUI_IMPL_API
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_glfw.h"
 

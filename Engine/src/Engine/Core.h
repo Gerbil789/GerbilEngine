@@ -1,12 +1,16 @@
 #pragma once
-#include "enginepch.h"
+
 
 #ifdef ENGINE_PLATFORM_WINDOWS
+#if ENGINE_DYNAMIC_LINK
 	#ifdef ENGINE_BUILD_DLL
 		#define ENGINE_API __declspec(dllexport)
 	#else
 		#define ENGINE_API __declspec(dllimport)
 	#endif
+#else
+#endif
+	#define ENGINE_API
 #else
 	#error Engine only supports Windows!
 #endif
@@ -22,3 +26,7 @@
 
 #define BIT(x) (1 << x)
 #define ENGINE_BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
+
+
+
+#include "Engine/Log.h"

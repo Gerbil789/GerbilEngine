@@ -4,7 +4,6 @@
 
 #include "Engine/Core.h"
 #include "Engine/Events/Event.h"
-#include "Engine/Log.h"
 
 namespace Engine
 {

@@ -25,9 +25,10 @@ include "Engine/vendor/imgui"
 
 project "Engine"
 	location "Engine"
-	kind "SharedLib"
+	kind "StaticLib"
 	language "C++"
-	staticruntime "off"
+	cppdialect "C++17"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -41,6 +42,11 @@ project "Engine"
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl"
+	}
+
+	defines
+	{
+		"_CRT_SECURE_NO_WARNINGS"
 	}
 
 	includedirs
@@ -58,12 +64,10 @@ project "Engine"
 		"GLFW",
 		"Glad",
 		"ImGui",
-		"opengl32.lib",
-		"dwmapi.lib"
+		"opengl32.lib"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
 
 		defines
@@ -73,32 +77,28 @@ project "Engine"
 			"GLFW_INCLUDE_NONE"
 		}
 
-		postbuildcommands
-		{
-			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Game")
-		}
-
 	filter "configurations:Debug"
 		defines "ENGINE_DEBUG"
 		runtime "Debug"
-		symbols "On"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "ENGINE_RELEASE"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "ENGINE_DIST"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
 
 
 project "Game"
 	location "Game"
 	kind "ConsoleApp"
 	language "C++"
-	staticruntime "off"
+	cppdialect "C++17"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -134,14 +134,14 @@ project "Game"
 	filter "configurations:Debug"
 		defines "ENGINE_DEBUG"
 		runtime "Debug"
-		symbols "On"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "ENGINE_RELEASE"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "ENGINE_DIST"
 		runtime "Release"
-		optimize "On"
+		optimize "on"

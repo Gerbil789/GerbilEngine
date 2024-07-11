@@ -2,6 +2,12 @@
 
 
 
+#ifdef ENGINE_PLATFORM_WINDOWS
+#include <Windows.h>
+#endif 
+
+
+
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -14,7 +20,3 @@
 #include <unordered_set>
 
 
-
-#ifdef ENGINE_PLATFORM_WINDOWS
-#include <Windows.h>
-#endif 
