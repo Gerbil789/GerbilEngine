@@ -70,18 +70,20 @@ public:
 
 	}
 
-	void OnUpdate() override
+	void OnUpdate(Engine::Timestep ts) override
 	{
+		//LOG_TRACE("Delta time: {0}s ({1}ms)", ts.GetSeconds(), ts.GetMilliseconds());
+
 		if(Engine::Input::IsKeyPressed(KEY_A))
-			m_CameraPosition.x -= m_cameraSpeed / 10;
+			m_CameraPosition.x += m_cameraSpeed * ts;
 		else if (Engine::Input::IsKeyPressed(KEY_D))
-			m_CameraPosition.x += m_cameraSpeed / 10;
+			m_CameraPosition.x -= m_cameraSpeed * ts;
 
 
 		if (Engine::Input::IsKeyPressed(KEY_W))
-			m_CameraPosition.y += m_cameraSpeed / 10;
+			m_CameraPosition.y -= m_cameraSpeed * ts;
 		else if (Engine::Input::IsKeyPressed(KEY_S))
-			m_CameraPosition.y -= m_cameraSpeed / 10;
+			m_CameraPosition.y += m_cameraSpeed * ts;
 
 
 		m_Camera.SetPosition(m_CameraPosition);
@@ -109,19 +111,19 @@ private:
 	{
 		if (event.GetKeyCode() == KEY_LEFT)
 		{
-			m_CameraPosition.x -= m_cameraSpeed;
+			m_CameraPosition.x += m_cameraSpeed;
 		}
 		else if (event.GetKeyCode() == KEY_RIGHT)
 		{
-			m_CameraPosition.x += m_cameraSpeed;
+			m_CameraPosition.x -= m_cameraSpeed;
 		}
 		else if (event.GetKeyCode() == KEY_UP)
 		{
-			m_CameraPosition.y += m_cameraSpeed;
+			m_CameraPosition.y -= m_cameraSpeed;
 		}
 		else if (event.GetKeyCode() == KEY_DOWN)
 		{
-			m_CameraPosition.y -= m_cameraSpeed;
+			m_CameraPosition.y += m_cameraSpeed;
 		}
 		return false;
 	}
@@ -133,7 +135,7 @@ private:
 	std::shared_ptr<Engine::VertexArray> m_VertexArrayObject;
 	Engine::OrthographicCamera m_Camera;
 
-	float m_cameraSpeed = 0.1f;
+	float m_cameraSpeed = 1.0f;
 	glm::vec3 m_CameraPosition = { 0.0f, 0.0f, 0.0f };
 };
 
