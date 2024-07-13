@@ -5,35 +5,136 @@
 class exmapleLayer : public Engine::Layer
 {
 public:
-	exmapleLayer() : Layer("Example") {}
+	exmapleLayer() : Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f)
+	{
+		m_VertexArrayObject.reset(Engine::VertexArray::Create());
+
+		float vertices[3 * 7] = {
+			-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+			 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+			 0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f
+		};
+
+		std::shared_ptr<Engine::VertexBuffer> vertexBuffer;
+		vertexBuffer.reset(Engine::VertexBuffer::Create(vertices, sizeof(vertices)));
+		Engine::BufferLayout layout = {
+			{ Engine::ShaderDataType::Float3, "a_Position" },
+			{ Engine::ShaderDataType::Float4, "a_Color"}
+		};
+
+		vertexBuffer->SetLayout(layout);
+		m_VertexArrayObject->AddVertexBuffer(vertexBuffer);
+
+		uint32_t indices[3] = { 0, 1, 2 };
+		std::shared_ptr<Engine::IndexBuffer> indexBuffer;
+		indexBuffer.reset(Engine::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
+
+		m_VertexArrayObject->SetIndexBuffer(indexBuffer);
+
+		std::string vertexSrc = R"(
+			#version 330 core
+
+			layout(location = 0) in vec3 a_Position;
+			layout(location = 1) in vec4 a_Color;
+
+			uniform mat4 u_ViewProjection;
+			
+			out vec3 v_Position;
+			out vec4 v_Color;
+
+			void main()
+			{
+				v_Position = a_Position;
+				v_Color = a_Color;
+				gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+			}
+		)";
+
+		std::string fragmentSrc = R"(
+			#version 330 core
+
+			layout(location = 0) out vec4 color;
+
+			in vec3 v_Position;
+			in vec4 v_Color;
+
+			void main()
+			{
+				color = v_Color;
+			}
+		)";
+
+
+		m_Shader.reset(new Engine::Shader(vertexSrc, fragmentSrc));
+
+
+	}
 
 	void OnUpdate() override
 	{
-		//LOG_INFO("ExampleLayer - Update");
+		if(Engine::Input::IsKeyPressed(KEY_A))
+			m_CameraPosition.x -= m_cameraSpeed / 10;
+		else if (Engine::Input::IsKeyPressed(KEY_D))
+			m_CameraPosition.x += m_cameraSpeed / 10;
 
-		//if (Engine::Input::IsKeyPressed(KEY_TAB))
-		//	LOG_TRACE("Tab key is pressed (poll)!");
+
+		if (Engine::Input::IsKeyPressed(KEY_W))
+			m_CameraPosition.y += m_cameraSpeed / 10;
+		else if (Engine::Input::IsKeyPressed(KEY_S))
+			m_CameraPosition.y -= m_cameraSpeed / 10;
+
+
+		m_Camera.SetPosition(m_CameraPosition);
+
+
+		Engine::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+		Engine::RenderCommand::Clear();
+
+		//m_Camera.SetPosition({ 0.0f, -0.5, 0.0f });
+		//m_Camera.SetRotation(m_Camera.GetRotation() + 0.5f);
+
+		Engine::Renderer::BeginScene(m_Camera);
+		Engine::Renderer::Submit(m_Shader, m_VertexArrayObject);
+		Engine::Renderer::EndScene();
 	}
 
 	void OnEvent(Engine::Event& event) override
 	{
-		if(event.GetEventType() == Engine::EventType::KeyPressed)
-		{
-			Engine::KeyPressedEvent& e = (Engine::KeyPressedEvent&)event;
-			
-			if (e.GetKeyCode() == KEY_TAB)
-				LOG_TRACE("Tab key is pressed (event)!");
-			LOG_TRACE("{0}", (char)e.GetKeyCode());
-		}
-	}
+		Engine::EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<Engine::KeyPressedEvent>(ENGINE_BIND_EVENT_FN(exmapleLayer::OnKeyPressedEvent));
 
-	virtual void OnImGuiRender() override
+	}
+private:
+	bool OnKeyPressedEvent(Engine::KeyPressedEvent& event)
 	{
-		/*ImGui::Begin("BRUH");
-		ImGui::Text("BRUHMAN IS HERE");
-		ImGui::End();*/
+		if (event.GetKeyCode() == KEY_LEFT)
+		{
+			m_CameraPosition.x -= m_cameraSpeed;
+		}
+		else if (event.GetKeyCode() == KEY_RIGHT)
+		{
+			m_CameraPosition.x += m_cameraSpeed;
+		}
+		else if (event.GetKeyCode() == KEY_UP)
+		{
+			m_CameraPosition.y += m_cameraSpeed;
+		}
+		else if (event.GetKeyCode() == KEY_DOWN)
+		{
+			m_CameraPosition.y -= m_cameraSpeed;
+		}
+		return false;
 	}
 
+
+	
+private:
+	std::shared_ptr<Engine::Shader> m_Shader;
+	std::shared_ptr<Engine::VertexArray> m_VertexArrayObject;
+	Engine::OrthographicCamera m_Camera;
+
+	float m_cameraSpeed = 0.1f;
+	glm::vec3 m_CameraPosition = { 0.0f, 0.0f, 0.0f };
 };
 
 
