@@ -1,6 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Application.h"
-#include <glad/glad.h>
+#include "Engine/Renderer/Renderer.h"
+
 
 
 namespace Engine
@@ -10,7 +11,7 @@ namespace Engine
 	Application* Application::s_Instance = nullptr;
 
 	
-	Application::Application()
+	Application::Application() : m_Camera(-1.6f, 1.6f, -0.9f, 0.9f)
 	{
 		ENGINE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
@@ -47,34 +48,13 @@ namespace Engine
 
 		m_VertexArrayObject->SetIndexBuffer(indexBuffer);
 
-		m_squareVA.reset(VertexArray::Create());
-
-		float squareVertices[3 * 4] = {
-			-0.5f, -0.5f, 0.0f, 
-			 0.5f, -0.5f, 0.0f, 
-			 0.5f,  0.5f, 0.0f,
-			-0.5f,  0.5f, 0.0f
-		};
-
-		std::shared_ptr<VertexBuffer> squareVB;
-		squareVB.reset(VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
-		
-		squareVB->SetLayout({
-			{ ShaderDataType::Float3, "a_Position" }
-			});
-
-		m_squareVA->AddVertexBuffer(squareVB);
-
-		uint32_t squareIndices[6] = { 0, 1, 2, 2, 3, 0 };
-		std::shared_ptr<IndexBuffer> squareIB;
-		squareIB.reset(IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t)));
-		m_squareVA->SetIndexBuffer(squareIB);
-
 		std::string vertexSrc = R"(
 			#version 330 core
 
 			layout(location = 0) in vec3 a_Position;
 			layout(location = 1) in vec4 a_Color;
+
+			uniform mat4 u_ViewProjection;
 			
 			out vec3 v_Position;
 			out vec4 v_Color;
@@ -83,7 +63,7 @@ namespace Engine
 			{
 				v_Position = a_Position;
 				v_Color = a_Color;
-				gl_Position = vec4(a_Position, 1.0);
+				gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 			}
 		)";
 
@@ -91,6 +71,7 @@ namespace Engine
 			#version 330 core
 
 			layout(location = 0) out vec4 color;
+
 			in vec3 v_Position;
 			in vec4 v_Color;
 
@@ -100,32 +81,7 @@ namespace Engine
 			}
 		)";
 
-		std::string vertexSrc2 = R"(
-			#version 330 core
 
-			layout(location = 0) in vec3 a_Position;
-			
-			out vec3 v_Position;
-
-			void main()
-			{
-				v_Position = a_Position;
-				gl_Position = vec4(a_Position, 1.0);
-			}
-		)";
-
-		std::string fragmentSrc2 = R"(
-			#version 330 core
-
-			layout(location = 0) out vec4 color;
-
-			void main()
-			{
-				color = vec4(0.8, 0.2, 0.3, 1.0);
-			}
-		)";
-
-		m_Shader2.reset(new Shader(vertexSrc2, fragmentSrc2));
 		m_Shader.reset(new Shader(vertexSrc, fragmentSrc));
 
 	}
@@ -136,17 +92,15 @@ namespace Engine
 	{
 		while (m_Running)
 		{
-			glClearColor(0.1f, 0.1f, 0.1f, 1);
-			glClear(GL_COLOR_BUFFER_BIT);
+			RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+			RenderCommand::Clear();
 
-			m_Shader2->Bind();
-			m_squareVA->Bind();
-			glDrawElements(GL_TRIANGLES, m_squareVA->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+			m_Camera.SetPosition({ 0.0f, -0.5, 0.0f });
+			m_Camera.SetRotation(m_Camera.GetRotation() + 0.5f);
 
-			m_Shader->Bind();
-			m_VertexArrayObject->Bind();
-			glDrawElements(GL_TRIANGLES, m_VertexArrayObject->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
-			
+			Renderer::BeginScene(m_Camera);
+			Renderer::Submit(m_Shader, m_VertexArrayObject);
+			Renderer::EndScene();
 
 			for (Layer* layer : m_LayerStack)
 			{
