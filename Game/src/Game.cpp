@@ -38,6 +38,7 @@ public:
 			layout(location = 1) in vec4 a_Color;
 
 			uniform mat4 u_ViewProjection;
+			uniform mat4 u_Transform;
 			
 			out vec3 v_Position;
 			out vec4 v_Color;
@@ -46,7 +47,7 @@ public:
 			{
 				v_Position = a_Position;
 				v_Color = a_Color;
-				gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
 			}
 		)";
 
@@ -88,15 +89,19 @@ public:
 
 		m_Camera.SetPosition(m_CameraPosition);
 
-
 		Engine::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		Engine::RenderCommand::Clear();
 
-		//m_Camera.SetPosition({ 0.0f, -0.5, 0.0f });
-		//m_Camera.SetRotation(m_Camera.GetRotation() + 0.5f);
-
 		Engine::Renderer::BeginScene(m_Camera);
-		Engine::Renderer::Submit(m_Shader, m_VertexArrayObject);
+
+		for(int i = 1; i <= 5; i++)
+		{
+			glm::vec3 pos(i * 0.5f, 0.0f, 0.0f);
+			glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f * i));
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;
+			Engine::Renderer::Submit(m_Shader, m_VertexArrayObject, transform);
+		}
+
 		Engine::Renderer::EndScene();
 	}
 
