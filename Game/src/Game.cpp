@@ -1,6 +1,8 @@
 #include <Engine.h>
-
+#include "Platform/OpenGL/OpenGLShader.h"
 #include "imgui/imgui.h"
+
+#include <glm/gtc/type_ptr.hpp>
 
 class exmapleLayer : public Engine::Layer
 {
@@ -55,18 +57,19 @@ public:
 			#version 330 core
 
 			layout(location = 0) out vec4 color;
+			uniform vec3 u_Color;
 
 			in vec3 v_Position;
 			in vec4 v_Color;
 
 			void main()
 			{
-				color = v_Color;
+				color = vec4(u_Color, 1.0f);
 			}
 		)";
 
 
-		m_Shader.reset(new Engine::Shader(vertexSrc, fragmentSrc));
+		m_Shader.reset(Engine::Shader::Create(vertexSrc, fragmentSrc));
 
 
 	}
@@ -94,6 +97,11 @@ public:
 
 		Engine::Renderer::BeginScene(m_Camera);
 
+
+
+		std::dynamic_pointer_cast<Engine::OpenGLShader>(m_Shader)->Bind();
+		std::dynamic_pointer_cast<Engine::OpenGLShader>(m_Shader)->SetUniformFloat3("u_Color", m_Color);
+
 		for(int i = 1; i <= 5; i++)
 		{
 			glm::vec3 pos(i * 0.5f, 0.0f, 0.0f);
@@ -103,6 +111,14 @@ public:
 		}
 
 		Engine::Renderer::EndScene();
+	}
+
+	virtual void OnImGuiRender() override
+	{
+		ImGui::Begin("Settings");
+		ImGui::ColorEdit3("Color", glm::value_ptr(m_Color));
+
+		ImGui::End();
 	}
 
 	void OnEvent(Engine::Event& event) override
@@ -142,6 +158,8 @@ private:
 
 	float m_cameraSpeed = 1.0f;
 	glm::vec3 m_CameraPosition = { 0.0f, 0.0f, 0.0f };
+
+	glm::vec3 m_Color = { .8f, .3f, .2f };
 };
 
 
