@@ -152,8 +152,8 @@ private:
 
 	
 private:
-	std::shared_ptr<Engine::Shader> m_Shader;
-	std::shared_ptr<Engine::VertexArray> m_VertexArrayObject;
+	Engine::Ref<Engine::Shader> m_Shader;
+	Engine::Ref<Engine::VertexArray> m_VertexArrayObject;
 	Engine::OrthographicCamera m_Camera;
 
 	float m_cameraSpeed = 1.0f;
