@@ -6,3 +6,4 @@ bin-int/
 # Files
 *.user
 *.log
+Game/imgui.ini

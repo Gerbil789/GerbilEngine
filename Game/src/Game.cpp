@@ -70,7 +70,7 @@ public:
 
 		m_Shader.reset(Engine::Shader::Create(vertexSrc, fragmentSrc));
 
-		m_Texture = Engine::Texture2D::Create("assets/textures/gerbil.jpg");
+		m_Texture = Engine::Texture2D::Create("assets/textures/Tile.png");
 
 		std::dynamic_pointer_cast<Engine::OpenGLShader>(m_Shader)->Bind();
 		std::dynamic_pointer_cast<Engine::OpenGLShader>(m_Shader)->SetUniformInt("u_Texture", 0);
@@ -174,7 +174,7 @@ private:
 	float m_cameraSpeed = 1.0f;
 	glm::vec3 m_CameraPosition = { 0.0f, 0.0f, 0.0f };
 
-	glm::vec3 m_Color = { .8f, .3f, .2f };
+	glm::vec3 m_Color = { 1.0f, 1.0f, 1.0f };
 };
 
 
