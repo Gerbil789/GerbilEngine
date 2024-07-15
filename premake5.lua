@@ -17,6 +17,7 @@ Includedir["GLFW"] = "Engine/vendor/GLFW/include"
 Includedir["Glad"] = "Engine/vendor/Glad/include"
 Includedir["ImGui"] = "Engine/vendor/imgui"
 Includedir["glm"] = "Engine/vendor/glm"
+Includedir["stb_image"] = "Engine/vendor/stb_image"
 
 include "Engine/vendor/GLFW"
 include "Engine/vendor/Glad"
@@ -40,6 +41,8 @@ project "Engine"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/stb_image/**.h",
+		"%{prj.name}/vendor/stb_image/**.cpp",
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl"
 	}
@@ -56,7 +59,8 @@ project "Engine"
 		"%{Includedir.GLFW}",
 		"%{Includedir.Glad}",
 		"%{Includedir.ImGui}",
-		"%{Includedir.glm}"
+		"%{Includedir.glm}",
+		"%{Includedir.stb_image}"
 	}
 
 	links
