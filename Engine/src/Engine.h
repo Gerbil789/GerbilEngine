@@ -21,8 +21,7 @@
 #include "Engine/Renderer/Buffer.h"
 #include "Engine/Renderer/VertexArray.h"
 
-#include "Engine/Renderer/OrtographicCamera.h"
-
+#include "Engine/OrthographicCameraController.h"
 
 // ---Entry Point---------------------
 #include "Engine/EntryPoint.h"

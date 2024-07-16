@@ -6,7 +6,7 @@
 class exmapleLayer : public Engine::Layer
 {
 public:
-	exmapleLayer() : Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f)
+	exmapleLayer() : Layer("Example"), m_CameraController(1280.f / 720.f, true)
 	{
 		m_VertexArrayObject.reset(Engine::VertexArray::Create());
 
@@ -45,24 +45,13 @@ public:
 	{
 		//LOG_TRACE("Delta time: {0}s ({1}ms)", ts.GetSeconds(), ts.GetMilliseconds());
 
-		if(Engine::Input::IsKeyPressed(KEY_A))
-			m_CameraPosition.x += m_cameraSpeed * ts;
-		else if (Engine::Input::IsKeyPressed(KEY_D))
-			m_CameraPosition.x -= m_cameraSpeed * ts;
+		m_CameraController.OnUpdate(ts);
 
-
-		if (Engine::Input::IsKeyPressed(KEY_W))
-			m_CameraPosition.y -= m_cameraSpeed * ts;
-		else if (Engine::Input::IsKeyPressed(KEY_S))
-			m_CameraPosition.y += m_cameraSpeed * ts;
-
-
-		m_Camera.SetPosition(m_CameraPosition);
 
 		Engine::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		Engine::RenderCommand::Clear();
 
-		Engine::Renderer::BeginScene(m_Camera);
+		Engine::Renderer::BeginScene(m_CameraController.GetCamera());
 
 		auto shader = m_ShaderLibrary.Get("Texture");
 		
@@ -86,48 +75,15 @@ public:
 		ImGui::End();
 	}
 
-	void OnEvent(Engine::Event& event) override
+	void OnEvent(Engine::Event& e) override
 	{
-		Engine::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Engine::KeyPressedEvent>(ENGINE_BIND_EVENT_FN(exmapleLayer::OnKeyPressedEvent));
-
+		m_CameraController.OnEvent(e);
 	}
-private:
-	bool OnKeyPressedEvent(Engine::KeyPressedEvent& event)
-	{
-		if (event.GetKeyCode() == KEY_LEFT)
-		{
-			m_CameraPosition.x += m_cameraSpeed;
-		}
-		else if (event.GetKeyCode() == KEY_RIGHT)
-		{
-			m_CameraPosition.x -= m_cameraSpeed;
-		}
-		else if (event.GetKeyCode() == KEY_UP)
-		{
-			m_CameraPosition.y -= m_cameraSpeed;
-		}
-		else if (event.GetKeyCode() == KEY_DOWN)
-		{
-			m_CameraPosition.y += m_cameraSpeed;
-		}
-		return false;
-	}
-
-	
 private:
 	Engine::ShaderLibrary m_ShaderLibrary;
-
-	//Engine::Ref<Engine::Shader> m_Shader;
 	Engine::Ref<Engine::VertexArray> m_VertexArrayObject;
-
 	Engine::Ref<Engine::Texture2D> m_Texture;
-
-
-	Engine::OrthographicCamera m_Camera;
-
-	float m_cameraSpeed = 1.0f;
-	glm::vec3 m_CameraPosition = { 0.0f, 0.0f, 0.0f };
+	Engine::OrthographicCameraController m_CameraController;
 
 	glm::vec3 m_Color = { 1.0f, 1.0f, 1.0f };
 };
