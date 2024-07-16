@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Core.h"
+#include "Engine/Core/Core.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/string_cast.hpp"

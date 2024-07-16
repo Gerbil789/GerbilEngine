@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Engine/Core.h"
-#include "Engine/Input.h"
+#include "Engine/Core/Core.h"
+#include "Engine/Core/Input.h"
 
 namespace Engine 
 {
