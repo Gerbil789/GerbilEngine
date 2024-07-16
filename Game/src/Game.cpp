@@ -1,7 +1,6 @@
 #include <Engine.h>
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "imgui/imgui.h"
-
 #include <glm/gtc/type_ptr.hpp>
 
 class exmapleLayer : public Engine::Layer
@@ -34,14 +33,12 @@ public:
 
 		m_VertexArrayObject->SetIndexBuffer(indexBuffer);
 
-
-		m_Shader.reset(Engine::Shader::Create("assets/shaders/Texture.glsl"));
-
+		auto shader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
 		m_Texture = Engine::Texture2D::Create("assets/textures/Tile.png");
 
-		std::dynamic_pointer_cast<Engine::OpenGLShader>(m_Shader)->Bind();
-		std::dynamic_pointer_cast<Engine::OpenGLShader>(m_Shader)->SetUniformInt("u_Texture", 0);
-		std::dynamic_pointer_cast<Engine::OpenGLShader>(m_Shader)->SetUniformFloat3("u_Color", m_Color);
+		std::dynamic_pointer_cast<Engine::OpenGLShader>(shader)->Bind();
+		std::dynamic_pointer_cast<Engine::OpenGLShader>(shader)->SetUniformInt("u_Texture", 0);
+		std::dynamic_pointer_cast<Engine::OpenGLShader>(shader)->SetUniformFloat3("u_Color", m_Color);
 	}
 
 	void OnUpdate(Engine::Timestep ts) override
@@ -67,23 +64,11 @@ public:
 
 		Engine::Renderer::BeginScene(m_Camera);
 
-
-	
-		//for(int i = 1; i <= 5; i++)
-		//{
-		//	glm::vec3 pos(i * 0.5f, 0.0f, 0.0f);
-		//	glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f * i));
-		//	glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;
-		//	m_Texture->Bind();
-		//	Engine::Renderer::Submit(m_Shader, m_VertexArrayObject, transform);
-		//}
-
+		auto shader = m_ShaderLibrary.Get("Texture");
 		
 		m_Texture->Bind();
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-		Engine::Renderer::Submit(m_Shader, m_VertexArrayObject, transform);
-
-
+		Engine::Renderer::Submit(shader, m_VertexArrayObject, transform);
 
 
 		Engine::Renderer::EndScene();
@@ -91,9 +76,11 @@ public:
 
 	virtual void OnImGuiRender() override
 	{
+		auto shader = m_ShaderLibrary.Get("Texture");
+
 		ImGui::Begin("Settings");
 		if (ImGui::ColorEdit3("Color", glm::value_ptr(m_Color))) {
-			std::dynamic_pointer_cast<Engine::OpenGLShader>(m_Shader)->SetUniformFloat3("u_Color", m_Color);
+			std::dynamic_pointer_cast<Engine::OpenGLShader>(shader)->SetUniformFloat3("u_Color", m_Color);
 		}
 
 		ImGui::End();
@@ -127,10 +114,11 @@ private:
 		return false;
 	}
 
-
 	
 private:
-	Engine::Ref<Engine::Shader> m_Shader;
+	Engine::ShaderLibrary m_ShaderLibrary;
+
+	//Engine::Ref<Engine::Shader> m_Shader;
 	Engine::Ref<Engine::VertexArray> m_VertexArrayObject;
 
 	Engine::Ref<Engine::Texture2D> m_Texture;
