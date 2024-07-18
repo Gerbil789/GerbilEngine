@@ -27,14 +27,14 @@ void Game2D::OnUpdate(Engine::Timestep ts)
 	Engine::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 	Engine::RenderCommand::Clear();
 
-
 	Engine::Renderer2D::BeginScene(m_CameraController.GetCamera());
+
+
 	Engine::Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 5.0f, 5.0f }, m_Texture);
 
-	Engine::Renderer2D::DrawQuad({ 0.0f, 0.0f }, { 1.0f, 1.0f }, m_Color);
+	Engine::Renderer2D::DrawQuad({ -0.75f, 0.0f }, { 1.0f, 1.0f }, glm::vec4(0.2f, 0.3f, 0.8f, 1.0f));
 
-	Engine::Renderer2D::DrawQuad({ 1.0f, 0.5f }, { 0.5f, 2.0f }, glm::vec4(0.8f, 0.3f, 0.2f, 1.0f));
-
+	Engine::Renderer2D::DrawQuad({ 0.75f, 0.0f }, { 1.0f, 1.0f }, glm::vec4(0.8f, 0.3f, 0.2f, 1.0f));
 
 
 	Engine::Renderer2D::EndScene();
@@ -58,12 +58,12 @@ void Game2D::OnEvent(Engine::Event& e)
 
 void Game2D::OnImGuiRender() 
 {
-	auto shader = m_ShaderLibrary.Get("FlatColor");
+	//auto shader = m_ShaderLibrary.Get("FlatColor");
 
-	ImGui::Begin("Settings");
-	if (ImGui::ColorEdit4("Color", glm::value_ptr(m_Color))) {
-		shader->SetFloat4("u_Color", m_Color);
-	}
+	//ImGui::Begin("Settings");
+	//if (ImGui::ColorEdit4("Color", glm::value_ptr(m_Color))) {
+	//	shader->SetFloat4("u_Color", m_Color);
+	//}
 
-	ImGui::End();
+	//ImGui::End();
 }
