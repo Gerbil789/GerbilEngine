@@ -143,6 +143,37 @@ namespace Engine
 		glDeleteProgram(m_RendererID);
 	}
 
+	void OpenGLShader::SetInt(const std::string& name, int value)
+	{
+		UploadUniformInt(name, value);
+	}
+
+	void OpenGLShader::SetIntArray(const std::string& name, int* values, uint32_t count)
+	{
+		ENGINE_LOG_CRITICAL("OpenGLShader::SetIntArray Not implemented yet");
+	}
+
+	void OpenGLShader::SetFloat(const std::string& name, float value)
+	{
+		UploadUniformFloat(name, value);
+	}
+
+	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value)
+	{
+		UploadUniformFloat3(name, value);
+	}
+
+	void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value)
+	{
+		UploadUniformFloat4(name, value);
+	}
+
+	
+	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value)
+	{
+		UploadUniformMat4f(name, value);
+	}
+
 
 	std::string OpenGLShader::ReadFile(const std::string& filepath)
 	{
@@ -180,36 +211,36 @@ namespace Engine
 
 
 
-	void OpenGLShader::SetUniformInt(const std::string& name, int value)
+	void OpenGLShader::UploadUniformInt(const std::string& name, int value)
 	{
 		glUniform1i(glGetUniformLocation(m_RendererID, name.c_str()), value);
 	}
 
-	void OpenGLShader::SetUniformFloat(const std::string& name, float value)
+	void OpenGLShader::UploadUniformFloat(const std::string& name, float value)
 	{
 		glUniform1f(glGetUniformLocation(m_RendererID, name.c_str()), value);
 	}
 
-	void OpenGLShader::SetUniformFloat2(const std::string& name, const glm::vec2& values)
+	void OpenGLShader::UploadUniformFloat2(const std::string& name, const glm::vec2& values)
 	{
 		glUniform2f(glGetUniformLocation(m_RendererID, name.c_str()), values.x, values.y);
 	}
 
-	void OpenGLShader::SetUniformFloat3(const std::string& name, const glm::vec3& values)
+	void OpenGLShader::UploadUniformFloat3(const std::string& name, const glm::vec3& values)
 	{
 		glUniform3f(glGetUniformLocation(m_RendererID, name.c_str()), values.x, values.y, values.z);
 	}
 
-	void OpenGLShader::SetUniformFloat4(const std::string& name, const glm::vec4& values)
+	void OpenGLShader::UploadUniformFloat4(const std::string& name, const glm::vec4& values)
 	{
 		glUniform4f(glGetUniformLocation(m_RendererID, name.c_str()), values.x, values.y, values.z, values.w);
 	}
 
-	void OpenGLShader::SetUniformMat3f(const std::string& name, const glm::mat3& matrix)
+	void OpenGLShader::UploadUniformMat3f(const std::string& name, const glm::mat3& matrix)
 	{
 		glUniformMatrix3fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
 	}
-	void OpenGLShader::SetUniformMat4f(const std::string& name, const glm::mat4& matrix)
+	void OpenGLShader::UploadUniformMat4f(const std::string& name, const glm::mat4& matrix)
 	{
 		glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
 	}

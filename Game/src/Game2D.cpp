@@ -5,46 +5,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-
-
-Game2D::Game2D() : Layer("Game2D"), m_CameraController(1280.f / 720.f, true)
-{
-	m_VertexArrayObject.reset(Engine::VertexArray::Create());
-
-	float vertices[4 * 5] = {
-		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-		 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-		 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
-		-0.5f,  0.5f, 0.0f ,0.0f, 1.0f
-	};
-
-	std::shared_ptr<Engine::VertexBuffer> vertexBuffer;
-	vertexBuffer.reset(Engine::VertexBuffer::Create(vertices, sizeof(vertices)));
-	Engine::BufferLayout layout = {
-		{ Engine::ShaderDataType::Float3, "a_Position" },
-		{ Engine::ShaderDataType::Float2, "a_TexCoord" }
-	};
-
-	vertexBuffer->SetLayout(layout);
-	m_VertexArrayObject->AddVertexBuffer(vertexBuffer);
-
-	uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
-	std::shared_ptr<Engine::IndexBuffer> indexBuffer;
-	indexBuffer.reset(Engine::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
-
-	m_VertexArrayObject->SetIndexBuffer(indexBuffer);
-
-	auto shader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
-	m_Texture = Engine::Texture2D::Create("assets/textures/Tile.png");
-
-	std::dynamic_pointer_cast<Engine::OpenGLShader>(shader)->Bind();
-	std::dynamic_pointer_cast<Engine::OpenGLShader>(shader)->SetUniformInt("u_Texture", 0);
-	std::dynamic_pointer_cast<Engine::OpenGLShader>(shader)->SetUniformFloat4("u_Color", m_Color);
-}
+Game2D::Game2D() : Layer("Game2D"), m_CameraController(1280.f / 720.f, true) {}
 
 void Game2D::OnAttach() 
 {
-
+	m_Texture = Engine::Texture2D::Create("assets/textures/background.png");
 }
 
 void Game2D::OnDetach() 
@@ -62,7 +27,19 @@ void Game2D::OnUpdate(Engine::Timestep ts)
 	Engine::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 	Engine::RenderCommand::Clear();
 
-	Engine::Renderer::BeginScene(m_CameraController.GetCamera());
+
+	Engine::Renderer2D::BeginScene(m_CameraController.GetCamera());
+	Engine::Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 5.0f, 5.0f }, m_Texture);
+
+	Engine::Renderer2D::DrawQuad({ 0.0f, 0.0f }, { 1.0f, 1.0f }, m_Color);
+
+	Engine::Renderer2D::DrawQuad({ 1.0f, 0.5f }, { 0.5f, 2.0f }, glm::vec4(0.8f, 0.3f, 0.2f, 1.0f));
+
+
+
+	Engine::Renderer2D::EndScene();
+
+	/*Engine::Renderer::BeginScene(m_CameraController.GetCamera());
 
 	auto shader = m_ShaderLibrary.Get("Texture");
 
@@ -71,7 +48,7 @@ void Game2D::OnUpdate(Engine::Timestep ts)
 	Engine::Renderer::Submit(shader, m_VertexArrayObject, transform);
 
 
-	Engine::Renderer::EndScene();
+	Engine::Renderer::EndScene();*/
 }
 
 void Game2D::OnEvent(Engine::Event& e) 
@@ -81,11 +58,11 @@ void Game2D::OnEvent(Engine::Event& e)
 
 void Game2D::OnImGuiRender() 
 {
-	auto shader = m_ShaderLibrary.Get("Texture");
+	auto shader = m_ShaderLibrary.Get("FlatColor");
 
 	ImGui::Begin("Settings");
 	if (ImGui::ColorEdit4("Color", glm::value_ptr(m_Color))) {
-		std::dynamic_pointer_cast<Engine::OpenGLShader>(shader)->SetUniformFloat4("u_Color", m_Color);
+		shader->SetFloat4("u_Color", m_Color);
 	}
 
 	ImGui::End();
