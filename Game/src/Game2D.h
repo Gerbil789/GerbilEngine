@@ -15,6 +15,8 @@ private:
 	Engine::ShaderLibrary m_ShaderLibrary;
 	Engine::Ref<Engine::VertexArray> m_VertexArrayObject;
 	Engine::Ref<Engine::Texture2D> m_Texture;
+	Engine::Ref<Engine::Texture2D> m_GerbilTexture;
+	Engine::Ref<Engine::Texture2D> m_TileTexture;
 	Engine::OrthographicCameraController m_CameraController;
 
 	glm::vec4 m_Color = { 1.0f, 1.0f, 1.0f, 1.0f };

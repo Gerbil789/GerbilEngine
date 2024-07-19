@@ -14,15 +14,19 @@ namespace Engine
 
 	void OrthographicCameraController::OnUpdate(Timestep ts)
 	{
+		float rotationRad = glm::radians(m_CameraRotation);
+		glm::vec2 forwardDirection = { glm::cos(rotationRad), glm::sin(rotationRad) };
+		glm::vec2 rightDirection = { -forwardDirection.y, forwardDirection.x };
+
 		if (Input::IsKeyPressed(KEY_A))
-			m_CameraPosition.x -= m_CameraTranslationSpeed * ts;
+			m_CameraPosition -= forwardDirection * m_CameraTranslationSpeed * ts.GetSeconds();
 		else if (Input::IsKeyPressed(KEY_D))
-			m_CameraPosition.x += m_CameraTranslationSpeed * ts;
+			m_CameraPosition += forwardDirection * m_CameraTranslationSpeed * ts.GetSeconds();
 
 		if (Input::IsKeyPressed(KEY_W))
-			m_CameraPosition.y += m_CameraTranslationSpeed * ts;
+			m_CameraPosition += rightDirection * m_CameraTranslationSpeed * ts.GetSeconds();
 		else if (Input::IsKeyPressed(KEY_S))
-			m_CameraPosition.y -= m_CameraTranslationSpeed * ts;
+			m_CameraPosition -= rightDirection * m_CameraTranslationSpeed * ts.GetSeconds();
 
 		if (m_Rotation)
 		{
@@ -34,7 +38,7 @@ namespace Engine
 			m_Camera.SetRotation(m_CameraRotation);
 		}
 
-		m_Camera.SetPosition(m_CameraPosition);
+		m_Camera.SetPosition(glm::vec3(m_CameraPosition.x, m_CameraPosition.y, 0.0f));
 
 		m_CameraTranslationSpeed = m_ZoomLevel;
 	}
@@ -66,9 +70,9 @@ namespace Engine
 	{
 		if (e.GetKeyCode() == KEY_SPACE)
 		{
-			m_CameraPosition = { 0.0f, 0.0f, 0.0f };
+			m_CameraPosition = { 0.0f, 0.0f };
 			m_CameraRotation = 0.0f;
-			m_Camera.SetPosition(m_CameraPosition);
+			m_Camera.SetPosition(glm::vec3(m_CameraPosition.x, m_CameraPosition.y, 0.0f));
 			m_Camera.SetRotation(m_CameraRotation);
 		}
 		return false;

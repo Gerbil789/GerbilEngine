@@ -12,6 +12,8 @@ void Game2D::OnAttach()
 {
 	ENGINE_PROFILE_FUNCTION();
 	m_Texture = Engine::Texture2D::Create("assets/textures/background.png");
+	m_GerbilTexture = Engine::Texture2D::Create("assets/textures/gerbil.jpg");
+	m_TileTexture = Engine::Texture2D::Create("assets/textures/Tile.png");
 }
 
 void Game2D::OnDetach() 
@@ -35,12 +37,15 @@ void Game2D::OnUpdate(Engine::Timestep ts)
 		ENGINE_PROFILE_SCOPE("Renderer2D::BeginScene");
 		Engine::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
-		Engine::Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 5.0f, 5.0f }, m_Texture);
+		Engine::Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 10.0f, 10.0f }, m_Texture, 5.0f);
 
-		Engine::Renderer2D::DrawQuad({ -0.75f, 0.0f }, { 1.0f, 1.0f }, glm::vec4(0.2f, 0.3f, 0.8f, 1.0f));
+		Engine::Renderer2D::DrawRotatedQuad({ -1.0f, 0.0f }, { 1.0f, 1.0f }, glm::radians(45.0f), glm::vec4(0.2f, 0.3f, 0.8f, 1.0f));
 
-		Engine::Renderer2D::DrawQuad({ 0.75f, 0.0f }, { 1.0f, 1.0f }, glm::vec4(0.8f, 0.3f, 0.2f, 1.0f));
+		Engine::Renderer2D::DrawQuad({ 1.0f, 0.0f }, { 1.0f, 1.0f }, glm::vec4(0.8f, 0.3f, 0.2f, 1.0f));
 
+		Engine::Renderer2D::DrawRotatedQuad({ 0.0f, 1.0f }, { 1.0f, 1.0f }, glm::radians(-45.0f), m_GerbilTexture, 1.0f, glm::vec4(0.0f, 1.3f, 1.0f, 1.0f));
+
+		Engine::Renderer2D::DrawQuad({ 0.5f, 0.5f, 0.1f }, { 1.0f, 1.0f }, m_TileTexture, 1.0f, glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
 
 		Engine::Renderer2D::EndScene();
 
