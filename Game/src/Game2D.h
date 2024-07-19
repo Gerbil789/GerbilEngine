@@ -18,13 +18,5 @@ private:
 	Engine::OrthographicCameraController m_CameraController;
 
 	glm::vec4 m_Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-	struct ProfileResult
-	{
-		const char* Name;
-		float Time;
-	};
-
-	std::vector<ProfileResult> m_ProfileResults;
 	
 };

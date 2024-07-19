@@ -3,7 +3,7 @@
 #include "Engine/Events/ApplicationEvent.h"
 #include "Engine/Events/MouseEvent.h"
 #include "Engine/Events/KeyEvent.h"
-
+#include "Engine/Core/Core.h"
 #include "Platform/OpenGL/OpenGLContext.h"
 
 
@@ -17,14 +17,15 @@ namespace Engine
 	}
 
 
-	Window* Window::Create(const WindowProps& props)
+	Scope<Window> Window::Create(const WindowProps& props)
 	{
-		return new WindowsWindow(props);
+		return CreateScope<WindowsWindow>(props);
 	}
 
 
 	WindowsWindow::WindowsWindow(const WindowProps& props)
 	{
+		ENGINE_PROFILE_FUNCTION();
 		Init(props);
 	}
 
@@ -37,6 +38,8 @@ namespace Engine
 
 	void WindowsWindow::Init(const WindowProps& props)
 	{
+		ENGINE_PROFILE_FUNCTION();
+
 		m_Data.Title = props.Title;
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
@@ -48,7 +51,7 @@ namespace Engine
 		if (!s_GLFWInitialized)
 		{
 			int success = glfwInit();
-			ENGINE_ASSERT(success, "Could not initialize GLFW!");
+			ASSERT(success, "Could not initialize GLFW!");
 			glfwSetErrorCallback(GLFWErrorCallback);
 			s_GLFWInitialized = true;
 		}
@@ -160,12 +163,14 @@ namespace Engine
 
 	void WindowsWindow::Shutdown()
 	{
+		ENGINE_PROFILE_FUNCTION();
 		glfwDestroyWindow(m_Window);
 	}
 
 
 	void WindowsWindow::OnUpdate()
 	{
+		ENGINE_PROFILE_FUNCTION();
 		glfwPollEvents();
 		m_Context->SwapBuffers();
 	}
@@ -173,6 +178,7 @@ namespace Engine
 
 	void WindowsWindow::SetVSync(bool enabled)
 	{
+		ENGINE_PROFILE_FUNCTION();
 		if (enabled)
 			glfwSwapInterval(1);
 		else

@@ -12,13 +12,14 @@ namespace Engine
 		if (type == "vertex")return GL_VERTEX_SHADER;
 		if (type == "fragment" || type == "pixel") return GL_FRAGMENT_SHADER;
 
-		ENGINE_ASSERT(false, "Unknown shader type!");
+		ASSERT(false, "Unknown shader type!");
 		return 0;
 	}
 
 
 	OpenGLShader::OpenGLShader(const std::string& filepath)
 	{
+		ENGINE_PROFILE_FUNCTION();
 		std::string source = ReadFile(filepath);
 		auto shaderSources = PreProcess(source);
 		Compile(shaderSources);
@@ -43,6 +44,7 @@ namespace Engine
 
 	std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source)
 	{
+		ENGINE_PROFILE_FUNCTION();
 		std::unordered_map<GLenum, std::string> shaderSources;
 
 		const char* typeToken = "#type";
@@ -52,13 +54,13 @@ namespace Engine
 		while (pos != std::string::npos)
 		{
 			size_t eol = source.find_first_of("\r\n", pos);
-			ENGINE_ASSERT(eol != std::string::npos, "Syntax error");
+			ASSERT(eol != std::string::npos, "Syntax error");
 			size_t begin = pos + typeTokenLength + 1; // Start of shader type name (after "#type " keyword)
 			std::string type = source.substr(begin, eol - begin);
-			ENGINE_ASSERT(ShaderTypeFromString(type), "Invalid shader type specified");
+			ASSERT(ShaderTypeFromString(type), "Invalid shader type specified");
 
 			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-			ENGINE_ASSERT(nextLinePos != std::string::npos, "Syntax error");
+			ASSERT(nextLinePos != std::string::npos, "Syntax error");
 			pos = source.find(typeToken, nextLinePos); // Start of next shader type declaration line
 
 			shaderSources[ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
@@ -69,8 +71,9 @@ namespace Engine
 
 	void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources)
 	{
+		ENGINE_PROFILE_FUNCTION();
 		GLuint program = glCreateProgram();
-		ENGINE_ASSERT(shaderSources.size() <= 2, "Only 2 shaders are currently supported");
+		ASSERT(shaderSources.size() <= 2, "Only 2 shaders are currently supported");
 		std::array<GLenum, 2> glShaderIDs; // [0] = vertex, [1] = fragment
 		int glShaderIDIndex = 0;
 
@@ -97,8 +100,8 @@ namespace Engine
 
 				glDeleteShader(shader);
 
-				ENGINE_LOG_ERROR("{0}", infoLog.data());
-				ENGINE_ASSERT(false, "Shader compilation failure!");
+				//ENGINE_LOG_ERROR("{0}", infoLog.data());
+				ASSERT(false, "Shader compilation failure!");
 				break;
 			}
 
@@ -123,8 +126,8 @@ namespace Engine
 			for (auto id : glShaderIDs)
 				glDeleteShader(id);
 
-			ENGINE_LOG_ERROR("{0}", infoLog.data());
-			ENGINE_ASSERT(false, "Shader link failure!");
+			//ENGINE_LOG_ERROR("{0}", infoLog.data());
+			ASSERT(false, "Shader link failure!");
 			return;
 		}
 
@@ -140,6 +143,7 @@ namespace Engine
 
 	OpenGLShader::~OpenGLShader()
 	{
+		ENGINE_PROFILE_FUNCTION();
 		glDeleteProgram(m_RendererID);
 	}
 
@@ -177,6 +181,7 @@ namespace Engine
 
 	std::string OpenGLShader::ReadFile(const std::string& filepath)
 	{
+		ENGINE_PROFILE_FUNCTION();
 		std::string result;
 
 		std::ifstream in(filepath, std::ios::in | std::ios::binary);
@@ -201,11 +206,13 @@ namespace Engine
 
 	void OpenGLShader::Bind() const
 	{
+		ENGINE_PROFILE_FUNCTION();
 		glUseProgram(m_RendererID);
 	}
 
 	void OpenGLShader::Unbind() const
 	{
+		ENGINE_PROFILE_FUNCTION();
 		glUseProgram(0);
 	}
 

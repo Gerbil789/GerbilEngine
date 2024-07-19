@@ -9,6 +9,7 @@ namespace Engine
 
 	LayerStack::~LayerStack()
 	{
+		ENGINE_PROFILE_FUNCTION();
 		for (Layer* layer : m_Layers)
 		{
 			delete layer;
@@ -35,6 +36,10 @@ namespace Engine
 			m_Layers.erase(it);
 			m_LayerInsertIndex--;
 		}
+		else
+		{
+			ENGINE_LOG_WARNING("Layer not found in LayerStack!");
+		}
 	}
 
 	void LayerStack::PopOverlay(Layer* overlay)
@@ -44,6 +49,10 @@ namespace Engine
 		{
 			overlay->OnDetach();
 			m_Layers.erase(it);
+		}
+		else
+		{
+			ENGINE_LOG_WARNING("Overlay not found in LayerStack!");
 		}
 	}
 }

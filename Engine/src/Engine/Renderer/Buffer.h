@@ -22,7 +22,7 @@ namespace Engine
 			case ShaderDataType::Int3:     return 12;	// 3 * 4 bytes
 			case ShaderDataType::Int4:     return 16;	// 4 * 4 bytes
 			case ShaderDataType::Bool:     return 1;	// 1 byte
-			default: ENGINE_ASSERT(false, "Unknown ShaderDataType!"); return 0;
+			default: ASSERT(false, "Unknown ShaderDataType!"); return 0;
 		}
 	}
 
@@ -53,7 +53,7 @@ namespace Engine
 				case ShaderDataType::Int3:     return 3;
 				case ShaderDataType::Int4:     return 4;
 				case ShaderDataType::Bool:     return 1;
-				default: ENGINE_ASSERT(false, "Unknown ShaderDataType!"); return 0;
+				default: ASSERT(false, "Unknown ShaderDataType!"); return 0;
 			}
 		}
 	};

@@ -20,33 +20,38 @@ namespace Engine
 			case ShaderDataType::Int3:     return GL_INT;
 			case ShaderDataType::Int4:     return GL_INT;
 			case ShaderDataType::Bool:     return GL_BOOL;
-			default: ENGINE_ASSERT(false, "Unknown ShaderDataType!"); return 0;
+			default: ASSERT(false, "Unknown ShaderDataType!"); return 0;
 		}
 	}
 
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
+		ENGINE_PROFILE_FUNCTION();
 		glCreateVertexArrays(1, &m_RendererID);
 	}
 
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
+		ENGINE_PROFILE_FUNCTION();
 		glDeleteVertexArrays(1, &m_RendererID);
 	}
 
 	void OpenGLVertexArray::Bind() const
 	{
+		ENGINE_PROFILE_FUNCTION();
 		glBindVertexArray(m_RendererID);
 	}
 
 	void OpenGLVertexArray::Unbind() const
 	{
+		ENGINE_PROFILE_FUNCTION();
 		glBindVertexArray(0);
 	}
 
 	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 	{
-		ENGINE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no layout!");
+		ENGINE_PROFILE_FUNCTION();
+		ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no layout!");
 
 		glBindVertexArray(m_RendererID);
 		vertexBuffer->Bind();
@@ -68,6 +73,7 @@ namespace Engine
 
 	void OpenGLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
+		ENGINE_PROFILE_FUNCTION();
 		glBindVertexArray(m_RendererID);
 		indexBuffer->Bind();
 
