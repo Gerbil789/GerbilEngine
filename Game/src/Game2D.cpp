@@ -34,18 +34,30 @@ void Game2D::OnUpdate(Engine::Timestep ts)
 	}
 
 	{
+		static float rotation = 0.0f;
+		rotation += ts * 50.0f;
+
+
 		ENGINE_PROFILE_SCOPE("Renderer2D::BeginScene");
 		Engine::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
-		Engine::Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 10.0f, 10.0f }, m_Texture, 5.0f);
+		//Background
+		Engine::Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 10.0f, 10.0f }, m_Texture, 5.0f, Engine::Color::LightGray());
 
-		Engine::Renderer2D::DrawRotatedQuad({ -1.0f, 0.0f }, { 1.0f, 1.0f }, glm::radians(45.0f), glm::vec4(0.2f, 0.3f, 0.8f, 1.0f));
+		Engine::Renderer2D::DrawRotatedQuad({ -2.0f, 0.0f }, { 1.0f, 1.0f }, glm::radians(45.0f), Engine::Color::Yellow());
+		Engine::Renderer2D::DrawQuad({ -1.0f, 0.0f }, { 0.5f, 0.5f }, Engine::Color::Red());
+		Engine::Renderer2D::DrawQuad({ 0.0f, 0.0f }, { 0.5f, 0.5f }, Engine::Color::Green());
+		Engine::Renderer2D::DrawQuad({ 1.0f, 0.0f }, { 0.5f, 0.5f }, Engine::Color::Blue());
 
-		Engine::Renderer2D::DrawQuad({ 1.0f, 0.0f }, { 1.0f, 1.0f }, glm::vec4(0.8f, 0.3f, 0.2f, 1.0f));
 
-		Engine::Renderer2D::DrawRotatedQuad({ 0.0f, 1.0f }, { 1.0f, 1.0f }, glm::radians(-45.0f), m_GerbilTexture, 1.0f, glm::vec4(0.0f, 1.3f, 1.0f, 1.0f));
 
-		Engine::Renderer2D::DrawQuad({ 0.5f, 0.5f, 0.1f }, { 1.0f, 1.0f }, m_TileTexture, 1.0f, glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
+		for (int i = -5; i <= 5; i++)
+			for (int j = -5; j <= 5; j++)
+				Engine::Renderer2D::DrawQuad({ (float)i / 2, (float)j / 2, 0.2f}, {0.5f, 0.5f}, m_TileTexture, 1.0f, glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
+
+		Engine::Renderer2D::DrawRotatedQuad({ 0.0f, 0.0f, 0.3f }, { 1.0f, 1.0f }, glm::radians(rotation), m_GerbilTexture, 1.0f, Engine::Color::Radnom());
+
+
 
 		Engine::Renderer2D::EndScene();
 

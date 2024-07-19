@@ -7,3 +7,4 @@ bin-int/
 *.user
 *.log
 Game/imgui.ini
+Game/*.json

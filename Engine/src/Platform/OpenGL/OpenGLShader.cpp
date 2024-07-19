@@ -154,7 +154,7 @@ namespace Engine
 
 	void OpenGLShader::SetIntArray(const std::string& name, int* values, uint32_t count)
 	{
-		ENGINE_LOG_CRITICAL("OpenGLShader::SetIntArray Not implemented yet");
+		UploadUniformIntArray(name, values, count);
 	}
 
 	void OpenGLShader::SetFloat(const std::string& name, float value)
@@ -221,6 +221,11 @@ namespace Engine
 	void OpenGLShader::UploadUniformInt(const std::string& name, int value)
 	{
 		glUniform1i(glGetUniformLocation(m_RendererID, name.c_str()), value);
+	}
+
+	void OpenGLShader::UploadUniformIntArray(const std::string& name, int* values, uint32_t count)
+	{
+		glUniform1iv(glGetUniformLocation(m_RendererID, name.c_str()), count, values);
 	}
 
 	void OpenGLShader::UploadUniformFloat(const std::string& name, float value)
