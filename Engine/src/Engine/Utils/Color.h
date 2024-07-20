@@ -19,6 +19,12 @@ namespace Engine
 		static glm::vec4 Gray() { return { 0.5f, 0.5f, 0.5f, 1.0f }; }
 		static glm::vec4 LightGray() { return { 0.75f, 0.75f, 0.75f, 1.0f }; }
 		static glm::vec4 DarkGray() { return { 0.25f, 0.25f, 0.25f, 1.0f }; }
+		static glm::vec4 Brown() { return { 0.6f, 0.4f, 0.2f, 1.0f }; }
+		static glm::vec4 Orange() { return { 1.0f, 0.5f, 0.0f, 1.0f }; }
+		static glm::vec4 Pink() { return { 1.0f, 0.6f, 0.6f, 1.0f }; }
+		static glm::vec4 Purple() { return { 0.6f, 0.2f, 0.6f, 1.0f }; }
+
+		static glm::vec4 SemiTransparent() { return { 0.0f, 0.0f, 0.0f, 0.5f }; }
 		static glm::vec4 Transparent() { return { 0.0f, 0.0f, 0.0f, 0.0f }; }
 	};
 }

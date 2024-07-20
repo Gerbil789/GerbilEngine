@@ -14,10 +14,17 @@ public:
 private:
 	Engine::ShaderLibrary m_ShaderLibrary;
 	Engine::Ref<Engine::VertexArray> m_VertexArrayObject;
-	Engine::Ref<Engine::Texture2D> m_Texture;
+	Engine::OrthographicCameraController m_CameraController;
+
+	Engine::Ref<Engine::Texture2D> m_BackroundTexture;
 	Engine::Ref<Engine::Texture2D> m_GerbilTexture;
 	Engine::Ref<Engine::Texture2D> m_TileTexture;
-	Engine::OrthographicCameraController m_CameraController;
+	Engine::Ref<Engine::Texture2D> m_Spritesheet;
+
+
+	std::vector<Engine::Ref<Engine::SubTexture2D>> m_TileTextures;
+
+
 
 	glm::vec4 m_Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	
