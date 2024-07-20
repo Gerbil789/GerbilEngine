@@ -41,7 +41,8 @@ namespace Engine
     {
         ENGINE_PROFILE_FUNCTION();
 
-        m_CameraController.OnUpdate(ts);
+        if(m_ViewportFocused)
+			m_CameraController.OnUpdate(ts);
 
         Renderer2D::ResetStats();
         {
@@ -64,6 +65,9 @@ namespace Engine
             //tiles
             Renderer2D::BeginScene(m_CameraController.GetCamera());
 
+            for (int i = 0; i < 9; i++) {
+                Renderer2D::DrawQuad({ (float)i , -1.0f }, { 1.0f, 1.0f }, m_TileTextures[12], 1.0f, Color::DarkGray);
+            }
 
             for (int i = 0; i < 9; i++) {
                 Renderer2D::DrawQuad({ (float)i , 0.0f }, { 1.0f, 1.0f }, m_TileTextures[0], 1.0f, Color::Orange);
@@ -167,8 +171,13 @@ namespace Engine
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
         ImGui::Begin("Viewport");
 
+        m_ViewportFocused =  ImGui::IsWindowFocused();
+        m_ViewportHovered =  ImGui::IsWindowHovered();
+
+        Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
+
         ImVec2 viewportSize = ImGui::GetContentRegionAvail();
-	    if(m_ViewportSize != *((glm::vec2*)&viewportSize))
+	    if(m_ViewportSize != *((glm::vec2*)&viewportSize) && viewportSize.x > 0 && viewportSize.y )
 		{
 			m_FrameBuffer->Resize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
 			m_ViewportSize = { viewportSize.x, viewportSize.y };

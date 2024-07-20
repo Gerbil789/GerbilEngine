@@ -14,6 +14,9 @@ namespace Engine
 		void OnEvent(Event& e) override;
 		void OnImGuiRender() override;
 	private:
+		bool m_ViewportFocused = false;
+		bool m_ViewportHovered = false;
+
 		ShaderLibrary m_ShaderLibrary;
 		Ref<VertexArray> m_VertexArrayObject;
 		OrthographicCameraController m_CameraController;

@@ -113,6 +113,7 @@ namespace Engine
 	void Application::Close()
 	{
 		m_Running = false;
+		ENGINE_LOG_INFO("Application Closed");
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
