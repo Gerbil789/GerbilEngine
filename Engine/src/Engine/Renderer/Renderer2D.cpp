@@ -1,8 +1,8 @@
 #include "enginepch.h"
-#include "Renderer2D.h"
-#include "RenderCommand.h"
-#include "VertexArray.h"
-#include "Shader.h"
+#include "Engine/Renderer/Renderer2D.h"
+#include "Engine/Renderer/RenderCommand.h"
+#include "Engine/Renderer/VertexArray.h"
+#include "Engine/Renderer/Shader.h"
 
 namespace Engine 
 {

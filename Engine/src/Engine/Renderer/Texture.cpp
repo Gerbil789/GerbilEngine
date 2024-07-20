@@ -1,5 +1,5 @@
 #include "enginepch.h"
-#include "Texture.h"
+#include "Engine/Renderer/Texture.h"
 #include "Engine/Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
 

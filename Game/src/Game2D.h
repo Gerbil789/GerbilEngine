@@ -21,12 +21,5 @@ private:
 	Engine::Ref<Engine::Texture2D> m_TileTexture;
 	Engine::Ref<Engine::Texture2D> m_Spritesheet;
 
-
 	std::vector<Engine::Ref<Engine::SubTexture2D>> m_TileTextures;
-
-	glm::vec4 m_Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-
-	Engine::Ref<Engine::FrameBuffer> m_FrameBuffer;
-	
 };

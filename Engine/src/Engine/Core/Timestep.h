@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 namespace Engine 
 {
 	class Timestep
@@ -17,5 +15,4 @@ namespace Engine
 	private:
 		float m_Time;
 	};
-
 }

@@ -7,7 +7,6 @@
 #include "Engine/Core/LayerStack.h"
 #include "Engine/Core/Input.h"
 #include "Engine/ImGui/ImGuiLayer.h"
-
 #include "Engine/Core/Timestep.h"
 
 namespace Engine
@@ -15,7 +14,7 @@ namespace Engine
 	class Application
 	{
 	public:
-		Application();
+		Application(const std::string& name = "Gerbil Engine");
 		virtual ~Application();
 		void Run();
 
