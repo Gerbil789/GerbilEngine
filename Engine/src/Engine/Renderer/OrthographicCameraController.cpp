@@ -17,21 +17,21 @@ namespace Engine
 		glm::vec2 forwardDirection = { glm::cos(rotationRad), glm::sin(rotationRad) };
 		glm::vec2 rightDirection = { -forwardDirection.y, forwardDirection.x };
 
-		if (Input::IsKeyPressed(KEY_A))
+		if (Input::IsKeyPressed(Key::A))
 			m_CameraPosition -= forwardDirection * m_CameraTranslationSpeed * ts.GetSeconds();
-		else if (Input::IsKeyPressed(KEY_D))
+		else if (Input::IsKeyPressed(Key::D))
 			m_CameraPosition += forwardDirection * m_CameraTranslationSpeed * ts.GetSeconds();
 
-		if (Input::IsKeyPressed(KEY_W))
+		if (Input::IsKeyPressed(Key::W))
 			m_CameraPosition += rightDirection * m_CameraTranslationSpeed * ts.GetSeconds();
-		else if (Input::IsKeyPressed(KEY_S))
+		else if (Input::IsKeyPressed(Key::S))
 			m_CameraPosition -= rightDirection * m_CameraTranslationSpeed * ts.GetSeconds();
 
 		if (m_Rotation)
 		{
-			if (Input::IsKeyPressed(KEY_Q))
+			if (Input::IsKeyPressed(Key::Q))
 				m_CameraRotation += m_CameraRotationSpeed * ts;
-			if (Input::IsKeyPressed(KEY_E))
+			if (Input::IsKeyPressed(Key::E))
 				m_CameraRotation -= m_CameraRotationSpeed * ts;
 
 			m_Camera.SetRotation(m_CameraRotation);
@@ -73,7 +73,7 @@ namespace Engine
 	}
 	bool OrthographicCameraController::OnKeyPressed(KeyPressedEvent& e)
 	{
-		if (e.GetKeyCode() == KEY_SPACE)
+		if (e.GetKeyCode() == Key::Space)
 		{
 			m_CameraPosition = { 0.0f, 0.0f };
 			m_CameraRotation = 0.0f;
