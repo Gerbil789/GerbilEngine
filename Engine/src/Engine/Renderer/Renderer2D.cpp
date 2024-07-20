@@ -106,7 +106,6 @@ namespace Engine
 
 		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
 			
-		glm::vec4 QuadVertexPositions[4];
 		s_Data.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
 		s_Data.QuadVertexPositions[1] = {  0.5f, -0.5f, 0.0f, 1.0f };
 		s_Data.QuadVertexPositions[2] = {  0.5f,  0.5f, 0.0f, 1.0f };

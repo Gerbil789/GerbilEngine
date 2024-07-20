@@ -66,6 +66,10 @@ namespace Engine
             Renderer2D::BeginScene(m_CameraController.GetCamera());
 
             for (int i = 0; i < 9; i++) {
+                Renderer2D::DrawQuad({ (float)i , -2.0f }, { 1.0f, 1.0f }, m_TileTextures[17], 1.0f, Color::Gray);
+            }
+
+            for (int i = 0; i < 9; i++) {
                 Renderer2D::DrawQuad({ (float)i , -1.0f }, { 1.0f, 1.0f }, m_TileTextures[12], 1.0f, Color::DarkGray);
             }
 
