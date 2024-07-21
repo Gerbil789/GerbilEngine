@@ -18,3 +18,6 @@
 #include "Engine/Renderer/VertexArray.h"
 #include "Engine/Renderer/OrthographicCameraController.h"
 #include "Engine/Utils/Color.h"
+#include "Engine/Scene/Scene.h"
+#include "Engine/Scene/Components.h"
+#include "Engine/Scene/Entity.h"

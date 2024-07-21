@@ -1,6 +1,5 @@
 #include <Engine.h>
 
-
 namespace Engine 
 {
 	class EditorLayer : public Layer
@@ -31,5 +30,9 @@ namespace Engine
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 
 		Ref<FrameBuffer> m_FrameBuffer;
+
+		Ref<Scene> m_ActiveScene;
+
+		Entity m_SquareEntity;
 	};
 }

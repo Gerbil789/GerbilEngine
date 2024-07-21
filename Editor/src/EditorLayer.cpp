@@ -30,6 +30,16 @@ namespace Engine
         fbSpec.Width = 1280;
         fbSpec.Height = 720;
         m_FrameBuffer = FrameBuffer::Create(fbSpec);
+
+        m_ActiveScene = CreateRef<Scene>();
+
+
+        m_SquareEntity = m_ActiveScene->CreateEntity("square");
+
+        glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
+        m_SquareEntity.GetComponent<TransformComponent>().Transform = transform;
+        m_SquareEntity.AddComponent<SpriteRendererComponent>(Color::Magenta);
+
     }
 
     void EditorLayer::OnDetach()
@@ -41,55 +51,58 @@ namespace Engine
     {
         ENGINE_PROFILE_FUNCTION();
 
+        //update camera controller if viewport is focused
         if(m_ViewportFocused)
 			m_CameraController.OnUpdate(ts);
 
+
+        //clear frame buffer
         Renderer2D::ResetStats();
-        {
-            ENGINE_PROFILE_SCOPE("Renderer::Clear");
-            m_FrameBuffer->Bind();
+        m_FrameBuffer->Bind();
+        RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+        RenderCommand::Clear();
 
 
-            RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
-            RenderCommand::Clear();
+
+
+
+        Renderer2D::BeginScene(m_CameraController.GetCamera());
+
+
+        glm::vec3 randomPosition = { (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX };
+        m_SquareEntity.GetComponent<TransformComponent>().Transform = glm::translate(glm::mat4(1.0f), randomPosition);
+
+        //update scene
+        m_ActiveScene->OnUpdate(ts);
+      
+        Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 64.0f, 64.0f }, m_BackroundTexture, 8.0f, Color::White);  //Background
+        Renderer2D::EndScene();
+
+        //tiles
+        /*Renderer2D::BeginScene(m_CameraController.GetCamera());
+        for (int i = 0; i < 9; i++) {
+            Renderer2D::DrawQuad({ (float)i , -2.0f }, { 1.0f, 1.0f }, m_TileTextures[17], 1.0f, Color::Gray);
         }
 
-        {
-            ENGINE_PROFILE_SCOPE("Renderer2D::BeginScene");
-
-            //Background
-            Renderer2D::BeginScene(m_CameraController.GetCamera());
-            Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 64.0f, 64.0f }, m_BackroundTexture, 8.0f, Color::White);
-            Renderer2D::EndScene();
-
-            //tiles
-            Renderer2D::BeginScene(m_CameraController.GetCamera());
-
-            for (int i = 0; i < 9; i++) {
-                Renderer2D::DrawQuad({ (float)i , -2.0f }, { 1.0f, 1.0f }, m_TileTextures[17], 1.0f, Color::Gray);
-            }
-
-            for (int i = 0; i < 9; i++) {
-                Renderer2D::DrawQuad({ (float)i , -1.0f }, { 1.0f, 1.0f }, m_TileTextures[12], 1.0f, Color::DarkGray);
-            }
-
-            for (int i = 0; i < 9; i++) {
-                Renderer2D::DrawQuad({ (float)i , 0.0f }, { 1.0f, 1.0f }, m_TileTextures[0], 1.0f, Color::Orange);
-            }
-
-            for (int i = 0; i < 9; i++) {
-                Renderer2D::DrawQuad({ (float)i , 1.0f }, { 1.0f, 1.0f }, m_TileTextures[7], 1.0f, Color::Brown);
-            }
-
-            for (int i = 0; i < 3; i++) {
-                Renderer2D::DrawQuad({ (float)i * 3 + 1 , 3.0f }, { 3.0f, 3.0f }, m_TileTextures[29], 1.0f, Color::White);
-            }
-
-            Renderer2D::EndScene();
-
-            m_FrameBuffer->Unbind();
-
+        for (int i = 0; i < 9; i++) {
+            Renderer2D::DrawQuad({ (float)i , -1.0f }, { 1.0f, 1.0f }, m_TileTextures[12], 1.0f, Color::DarkGray);
         }
+
+        for (int i = 0; i < 9; i++) {
+            Renderer2D::DrawQuad({ (float)i , 0.0f }, { 1.0f, 1.0f }, m_TileTextures[0], 1.0f, Color::Orange);
+        }
+
+        for (int i = 0; i < 9; i++) {
+            Renderer2D::DrawQuad({ (float)i , 1.0f }, { 1.0f, 1.0f }, m_TileTextures[7], 1.0f, Color::Brown);
+        }
+
+        for (int i = 0; i < 3; i++) {
+            Renderer2D::DrawQuad({ (float)i * 3 + 1 , 3.0f }, { 3.0f, 3.0f }, m_TileTextures[29], 1.0f, Color::White);
+        }
+        Renderer2D::EndScene();*/
+
+
+        m_FrameBuffer->Unbind();
     }
 
     void EditorLayer::OnEvent(Event& e)
