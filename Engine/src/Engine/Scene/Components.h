@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Engine/Renderer/OrthographicCamera.h"
+#include "Engine/Scene/SceneCamera.h"
 
 namespace Engine
 {
@@ -41,5 +43,16 @@ namespace Engine
 
 		operator glm::vec4& () { return Color; }
 		operator const glm::vec4& () const { return Color; }
+	};
+
+
+	struct CameraComponent
+	{
+		SceneCamera Camera;
+		bool Main = true; // TODO: Move to Scene
+		bool FixedAspectRatio = false;
+
+		CameraComponent() = default;
+		CameraComponent(const CameraComponent&) = default;
 	};
 }
