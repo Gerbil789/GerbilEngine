@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Engine/Renderer/OrthographicCamera.h"
 #include "Engine/Scene/SceneCamera.h"
+#include "Engine/Scene/ScriptableEntity.h"
 
 namespace Engine
 {
@@ -54,5 +55,29 @@ namespace Engine
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
+	};
+
+
+	struct NativeScriptComponent
+	{
+		ScriptableEntity* Instance = nullptr;
+
+		ScriptableEntity*(*InstantiateScript)() = nullptr;
+		void(*DestroyScript)(NativeScriptComponent*) = nullptr;
+
+		void(*OnCreateFunction)(ScriptableEntity*) = nullptr;
+		void(*OnDestroyFunction)(ScriptableEntity*) = nullptr;
+		void(*OnUpdateFunction)(ScriptableEntity*, Timestep) = nullptr;
+
+		template<typename T>
+		void Bind()
+		{
+			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
+			DestroyScript = [](NativeScriptComponent* nsc) {delete nsc->Instance; nsc->Instance = nullptr; };
+
+			OnCreateFunction = [](ScriptableEntity* entity) {static_cast<T*>(entity)->OnCreate(); };
+			OnDestroyFunction = [](ScriptableEntity* entity) {static_cast<T*>(entity)->OnDestroy(); };
+			OnUpdateFunction = [](ScriptableEntity* entity, Timestep ts) {static_cast<T*>(entity)->OnUpdate(ts); };
+		}
 	};
 }
