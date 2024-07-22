@@ -36,13 +36,25 @@ namespace Engine
         //create scene
         m_ActiveScene = CreateRef<Scene>();
 
-        m_SquareEntity = m_ActiveScene->CreateEntity("square");
+        m_SquareEntity = m_ActiveScene->CreateEntity("red square");
         m_SquareEntity.AddComponent<SpriteRendererComponent>(Color::Red);
-
         auto& transform = m_SquareEntity.GetComponent<TransformComponent>().Transform;
-
-        //scale
+        transform = glm::translate(transform, { -2.0f, 1.0f, 0.0f });
         transform = glm::scale(transform, { 1.0f, 3.0f, 1.0f });
+
+        auto greensqaure = m_ActiveScene->CreateEntity("green square");
+        greensqaure.AddComponent<SpriteRendererComponent>(Color::Green);
+        auto& g_transform = greensqaure.GetComponent<TransformComponent>().Transform;
+        g_transform = glm::translate(g_transform, { 0.0f, 0.0f, 0.0f });
+        g_transform = glm::scale(g_transform, { 1.0f, 3.0f, 1.0f });
+
+        auto bluesquare = m_ActiveScene->CreateEntity("blue square");
+        bluesquare.AddComponent<SpriteRendererComponent>(Color::Blue);
+        auto& b_transform = bluesquare.GetComponent<TransformComponent>().Transform;
+        b_transform = glm::translate(b_transform, { 2.0f, -1.0f, 0.0f });
+        b_transform = glm::scale(b_transform, { 1.0f, 3.0f, 1.0f });
+
+        
 
 
         m_CameraEntity = m_ActiveScene->CreateEntity("camera");
@@ -233,17 +245,16 @@ namespace Engine
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
         ImGui::Begin("Viewport");
 
-        m_ViewportFocused =  ImGui::IsWindowFocused();
-        m_ViewportHovered =  ImGui::IsWindowHovered();
+        m_ViewportFocused = ImGui::IsWindowFocused();
+        m_ViewportHovered = ImGui::IsWindowHovered();
 
         Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
 
         ImVec2 viewportSize = ImGui::GetContentRegionAvail();
         m_ViewportSize = { viewportSize.x, viewportSize.y };
 
-
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
-        ImGui::Image((void*)textureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2{0, 1}, ImVec2{1, 0});
+        ImGui::Image((void*)textureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
         ImGui::End();
         ImGui::PopStyleVar(); // Restore padding

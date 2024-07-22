@@ -19,7 +19,8 @@ namespace Engine
 	private:
 		Ref<Scene> m_Context;
 
-		void DrawEntityNode(Entity entity);
+		void DrawEntityNode(Entity entity); // draw entity in scene hierarchy
+		void DrawComponents(Entity entity); // draw components in inspector
 
 		Entity m_SelectionContext;
 	};

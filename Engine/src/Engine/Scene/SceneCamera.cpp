@@ -8,17 +8,21 @@ namespace Engine
 		RecalculateProjection();
 	}
 
+	void SceneCamera::SetPerspective(float verticalFOV, float nearClip, float farClip)
+	{
+		m_PerspectiveFOV = verticalFOV;
+		m_PerspectiveNear = nearClip;
+		m_PerspectiveFar = farClip;
+		m_ProjectionType = ProjectionType::Perspective;
+		RecalculateProjection();
+	}
+
 	void SceneCamera::SetOrthographic(float size, float nearClip, float farClip)
 	{
-		m_IsOrthographic = true;
 		m_OrthographicSize = size;
 		m_OrthographicNear = nearClip;
 		m_OrthographicFar = farClip;
-	/*	m_Camera.SetProjectionType(Camera::ProjectionType::Orthographic);
-		m_Camera.SetOrthographicSize(size);
-		m_Camera.SetOrthographicNearClip(nearClip);
-		m_Camera.SetOrthographicFarClip(farClip);*/
-
+		m_ProjectionType = ProjectionType::Orthographic;
 		RecalculateProjection();
 	}
 
@@ -30,11 +34,28 @@ namespace Engine
 
 	void SceneCamera::RecalculateProjection()
 	{
-		float orthoLeft = -m_OrthographicSize * m_AspectRatio * 0.5f;
-		float orthoRight = m_OrthographicSize * m_AspectRatio * 0.5f;
-		float orthoBottom = -m_OrthographicSize * 0.5f;
-		float orthoTop = m_OrthographicSize * 0.5f;
+		switch (m_ProjectionType)
+		{
+		case ProjectionType::Perspective:
+			m_Projection = glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
+			break;
 
-		m_Projection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, m_OrthographicNear, m_OrthographicFar);
+		case ProjectionType::Orthographic:
+			{
+				float orthoLeft = -m_OrthographicSize * m_AspectRatio * 0.5f;
+				float orthoRight = m_OrthographicSize * m_AspectRatio * 0.5f;
+				float orthoBottom = -m_OrthographicSize * 0.5f;
+				float orthoTop = m_OrthographicSize * 0.5f;
+
+				m_Projection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, m_OrthographicNear, m_OrthographicFar);
+			}
+			
+			break;
+
+		default:
+			ASSERT(false, "Unknown projection type!");
+		}
+
+		
 	}
 }
