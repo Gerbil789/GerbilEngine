@@ -9,7 +9,7 @@ namespace Engine
 {
 	Scene::Scene()
 	{
-		
+
 	}
 
 	Scene::~Scene()

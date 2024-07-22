@@ -12,7 +12,7 @@ namespace Engine
 	class OrthographicCameraController
 	{
 	public:
-		OrthographicCameraController(float aspectRatio, bool rotation = false);
+		OrthographicCameraController(float aspectRatio, bool rotation = false, bool zoom = false);
 
 		void OnUpdate(Timestep ts);
 		void OnEvent(Event& e);
@@ -35,6 +35,7 @@ namespace Engine
 		OrthographicCamera m_Camera;
 
 		bool m_Rotation;
+		bool m_Zoom;
 
 		glm::vec2 m_CameraPosition = { 0.0f, 0.0f };
 		float m_CameraRotation = 0.0f; //In degrees, in the anti-clockwise direction

@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-    EditorLayer::EditorLayer() : Layer("EditorLayer"), m_CameraController(1280.f / 720.f, true) {}
+    EditorLayer::EditorLayer() : Layer("EditorLayer"), m_CameraController(1280.f / 720.f, false, false) {}
 
     void EditorLayer::OnAttach()
     {
@@ -37,7 +37,12 @@ namespace Engine
         m_ActiveScene = CreateRef<Scene>();
 
         m_SquareEntity = m_ActiveScene->CreateEntity("square");
-        m_SquareEntity.AddComponent<SpriteRendererComponent>(Color::Magenta);
+        m_SquareEntity.AddComponent<SpriteRendererComponent>(Color::Red);
+
+        auto& transform = m_SquareEntity.GetComponent<TransformComponent>().Transform;
+
+        //scale
+        transform = glm::scale(transform, { 1.0f, 3.0f, 1.0f });
 
 
         m_CameraEntity = m_ActiveScene->CreateEntity("camera");
@@ -66,11 +71,19 @@ namespace Engine
 					transform[3][1] += speed * ts;
 				if (Input::IsKeyPressed(Key::S))
 					transform[3][1] -= speed * ts;
+
+                if(Input::IsKeyPressed(Key::Q))
+					transform = glm::rotate(transform, speed * ts, { 0.0f, 0.0f, 1.0f });
+                if (Input::IsKeyPressed(Key::E))
+                    transform = glm::rotate(transform, -speed * ts, { 0.0f, 0.0f, 1.0f });
+
             }
 
         };
 
         m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+
+        m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
     }
 
@@ -109,44 +122,12 @@ namespace Engine
         RenderCommand::Clear();
 
 
-
-
-
         //Renderer2D::BeginScene(m_CameraController.GetCamera());
-
-
-        //glm::vec3 randomPosition = { (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX };
-        //m_SquareEntity.GetComponent<TransformComponent>().Transform = glm::translate(glm::mat4(1.0f), randomPosition);
+        //Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 64.0f, 64.0f }, m_BackroundTexture, 8.0f, Color::White);  //Background
+        //Renderer2D::EndScene(); 
 
         //update scene
         m_ActiveScene->OnUpdate(ts);
-      
-        //Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 64.0f, 64.0f }, m_BackroundTexture, 8.0f, Color::White);  //Background
-        //Renderer2D::EndScene();
-
-        //tiles
-        /*Renderer2D::BeginScene(m_CameraController.GetCamera());
-        for (int i = 0; i < 9; i++) {
-            Renderer2D::DrawQuad({ (float)i , -2.0f }, { 1.0f, 1.0f }, m_TileTextures[17], 1.0f, Color::Gray);
-        }
-
-        for (int i = 0; i < 9; i++) {
-            Renderer2D::DrawQuad({ (float)i , -1.0f }, { 1.0f, 1.0f }, m_TileTextures[12], 1.0f, Color::DarkGray);
-        }
-
-        for (int i = 0; i < 9; i++) {
-            Renderer2D::DrawQuad({ (float)i , 0.0f }, { 1.0f, 1.0f }, m_TileTextures[0], 1.0f, Color::Orange);
-        }
-
-        for (int i = 0; i < 9; i++) {
-            Renderer2D::DrawQuad({ (float)i , 1.0f }, { 1.0f, 1.0f }, m_TileTextures[7], 1.0f, Color::Brown);
-        }
-
-        for (int i = 0; i < 3; i++) {
-            Renderer2D::DrawQuad({ (float)i * 3 + 1 , 3.0f }, { 3.0f, 3.0f }, m_TileTextures[29], 1.0f, Color::White);
-        }
-        Renderer2D::EndScene();*/
-
 
         m_FrameBuffer->Unbind();
     }
@@ -224,6 +205,8 @@ namespace Engine
             ImGui::EndMenuBar();
         }
 
+        m_SceneHierarchyPanel.OnImGuiRender();
+        ImGui::ShowDemoWindow();
 
         ImGui::Begin("Statistics");
         ImGui::Text("Draw Calls: %d", Renderer2D::GetStats().DrawCalls);

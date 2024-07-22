@@ -1,4 +1,7 @@
+#pragma once
+
 #include <Engine.h>
+#include "Panels/SceneHierarchyPanel.h"
 
 namespace Engine 
 {
@@ -35,5 +38,10 @@ namespace Engine
 
 		Entity m_SquareEntity;
 		Entity m_CameraEntity;
+
+
+		//panels
+
+		SceneHierarchyPanel m_SceneHierarchyPanel;
 	};
 }
