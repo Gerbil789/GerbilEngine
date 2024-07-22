@@ -1,6 +1,6 @@
 # GerbilEngine
 
-### Simple Game Engine With C# spripting API and node editor
+### Simple Game Engine with C# spripting API and node editor
 
 Goals for first release:
  - [x] 2D Renderer
@@ -9,16 +9,16 @@ Goals for first release:
    - [x] Batch Rendering
  - [x] ECS
    - [x] Transform component
-   - [ ] Camera component
-   - [ ] SpriteRenderer component
+   - [x] Camera component
+   - [x] SpriteRenderer component
    - [ ] Box collider component
    - [ ] Script component
  - [ ] C# API
  - [ ] Asset manager
  - [x] Editor app
    - [x] Viewport
-   - [ ] Scene hiearchy
-   - [ ] Inspector
+   - [x] Scene hiearchy
+   - [x] Inspector
    - [ ] Manipulation gizmos
    - [ ] Node Editor based on C# API
 

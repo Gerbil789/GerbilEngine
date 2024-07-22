@@ -38,25 +38,23 @@ namespace Engine
 
         m_SquareEntity = m_ActiveScene->CreateEntity("red square");
         m_SquareEntity.AddComponent<SpriteRendererComponent>(Color::Red);
-        auto& transform = m_SquareEntity.GetComponent<TransformComponent>().Transform;
-        transform = glm::translate(transform, { -2.0f, 1.0f, 0.0f });
-        transform = glm::scale(transform, { 1.0f, 3.0f, 1.0f });
+        m_SquareEntity.GetComponent<TransformComponent>().Position = { -2.0f, 0.0f, 0.0f };
+        m_SquareEntity.GetComponent<TransformComponent>().Scale = { 1.0f, 3.0f, 1.0f };
+
 
         auto greensqaure = m_ActiveScene->CreateEntity("green square");
         greensqaure.AddComponent<SpriteRendererComponent>(Color::Green);
-        auto& g_transform = greensqaure.GetComponent<TransformComponent>().Transform;
-        g_transform = glm::translate(g_transform, { 0.0f, 0.0f, 0.0f });
-        g_transform = glm::scale(g_transform, { 1.0f, 3.0f, 1.0f });
+        greensqaure.GetComponent<TransformComponent>().Position = { 0.0f, 0.0f, 0.0f };
+        greensqaure.GetComponent<TransformComponent>().Scale = { 1.0f, 3.0f, 1.0f };
+
 
         auto bluesquare = m_ActiveScene->CreateEntity("blue square");
         bluesquare.AddComponent<SpriteRendererComponent>(Color::Blue);
-        auto& b_transform = bluesquare.GetComponent<TransformComponent>().Transform;
-        b_transform = glm::translate(b_transform, { 2.0f, -1.0f, 0.0f });
-        b_transform = glm::scale(b_transform, { 1.0f, 3.0f, 1.0f });
+        bluesquare.GetComponent<TransformComponent>().Position = { 2.0f, 0.0f, 0.0f };
+        bluesquare.GetComponent<TransformComponent>().Scale = { 1.0f, 3.0f, 1.0f };
+
 
         
-
-
         m_CameraEntity = m_ActiveScene->CreateEntity("camera");
         m_CameraEntity.AddComponent<CameraComponent>();
        
@@ -72,23 +70,17 @@ namespace Engine
 
             void OnUpdate(Timestep ts) 
             {
-                auto& transform = GetComponent<TransformComponent>().Transform;
+                auto& position = GetComponent<TransformComponent>().Position;
 				float speed = 5.0f;
 
 				if (Input::IsKeyPressed(Key::A))
-					transform[3][0] -= speed * ts;
+                    position.x -= speed * ts;
 				if (Input::IsKeyPressed(Key::D))
-					transform[3][0] += speed * ts;
+                    position.x += speed * ts;
 				if (Input::IsKeyPressed(Key::W))
-					transform[3][1] += speed * ts;
+                    position.y += speed * ts;
 				if (Input::IsKeyPressed(Key::S))
-					transform[3][1] -= speed * ts;
-
-                if(Input::IsKeyPressed(Key::Q))
-					transform = glm::rotate(transform, speed * ts, { 0.0f, 0.0f, 1.0f });
-                if (Input::IsKeyPressed(Key::E))
-                    transform = glm::rotate(transform, -speed * ts, { 0.0f, 0.0f, 1.0f });
-
+                    position.y -= speed * ts;
             }
 
         };
@@ -220,42 +212,25 @@ namespace Engine
         m_SceneHierarchyPanel.OnImGuiRender();
         ImGui::ShowDemoWindow();
 
+
         ImGui::Begin("Statistics");
         ImGui::Text("Draw Calls: %d", Renderer2D::GetStats().DrawCalls);
         ImGui::Text("Quads: %d", Renderer2D::GetStats().QuadCount);
         ImGui::Text("Vertices: %d", Renderer2D::GetStats().GetTotalVertexCount());
         ImGui::Text("Indices: %d", Renderer2D::GetStats().GetTotalIndexCount());
-
         ImGui::Separator();
-
-        ImGui::DragFloat3("Camera Transform", glm::value_ptr(m_CameraEntity.GetComponent<TransformComponent>().Transform[3]));
-
-        {
-            auto& Camera = m_CameraEntity.GetComponent<CameraComponent>().Camera;
-            float orthoSize = Camera.GetOrthographicSize();
-            if (ImGui::DragFloat("Camera Orthographic Size", &orthoSize, 0.1f)) 
-            {
-                Camera.SetOrthographicSize(orthoSize);
-            }
-        }
-
         ImGui::End();
 
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
         ImGui::Begin("Viewport");
-
         m_ViewportFocused = ImGui::IsWindowFocused();
         m_ViewportHovered = ImGui::IsWindowHovered();
-
         Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
-
         ImVec2 viewportSize = ImGui::GetContentRegionAvail();
         m_ViewportSize = { viewportSize.x, viewportSize.y };
-
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
         ImGui::Image((void*)textureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-
         ImGui::End();
         ImGui::PopStyleVar(); // Restore padding
 
