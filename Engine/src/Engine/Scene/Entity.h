@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Scene/Scene.h"
+//#include "Engine/Core/Log.h"
 #include "entt.hpp"
 
 namespace Engine
@@ -22,8 +23,15 @@ namespace Engine
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{
-			ASSERT(!HasComponent<T>(), "Entity already has component!");
+			if (HasComponent<T>() )
+			{
+				ENGINE_LOG_WARNING("Entity already has component!");
+				return GetComponent<T>();
+			}
+			
+			//ASSERT(!HasComponent<T>(), "Entity already has component!");
 			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
+			m_Scene->OnComponentAdded<T>(*this, component);
 			return component;
 		}
 

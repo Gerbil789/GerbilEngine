@@ -20,6 +20,9 @@ namespace Engine
 		Entity CreateEntity(const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
 
+	private:
+		template<typename T>
+		void OnComponentAdded(Entity entity, T& component);
 
 	private:
 		entt::registry m_Registry;
@@ -29,4 +32,5 @@ namespace Engine
 		friend class SceneHierarchyPanel;
 	
 	};
+
 }

@@ -47,8 +47,8 @@ namespace Engine
 
 		float m_AspectRatio = 16.0f / 9.0f;
 		float m_OrthographicSize = 10.0f;
-		float m_OrthographicNear = -1.0f;
-		float m_OrthographicFar = 1.0f;
+		float m_OrthographicNear = -100.0f;
+		float m_OrthographicFar = 100.0f;
 
 	};
 }
