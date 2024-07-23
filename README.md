@@ -1,24 +1,20 @@
 # GerbilEngine
 
-### Simple Game Engine with C# spripting API and node editor
+Game Engine hobby project
 
-Goals for first release:
- - [x] 2D Renderer
-   - [x] Textures
-   - [x] Spritesheets
-   - [x] Batch Rendering
- - [x] ECS
-   - [x] Transform component
-   - [x] Camera component
-   - [x] SpriteRenderer component
-   - [ ] Box collider component
-   - [ ] Script component
- - [ ] C# API
- - [ ] Asset manager
- - [x] Editor app
-   - [x] Viewport
-   - [x] Scene hiearchy
-   - [x] Inspector
-   - [ ] Manipulation gizmos
-   - [ ] Node Editor based on C# API
+Currently in development
 
+## Getting Started
+
+#### Prerequisites
+- Windows Operating System
+- Git installed
+
+#### Installation
+1. Clone the Project
+2. Navigate to the Scripts Folder
+3. Run `Win-GenerateProjects.bat`
+
+#### Note
+
+Currently, only the Windows platform is supported.
