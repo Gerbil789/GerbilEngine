@@ -121,6 +121,9 @@ namespace Engine
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
 
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
 		ImGui::PushID(label);
 
 		ImGui::Columns(2, (const char*)0, false);
@@ -148,12 +151,14 @@ namespace Engine
 		
 
 		ImGui::SameLine();
+		ImGui::PushFont(boldFont);
 		if (ImGui::Button("R", buttonSize))
 		{
 			values.x = resetValue;
 			values.y = resetValue;
 			values.z = resetValue;
 		}
+		ImGui::PopFont();
 
 		ImGui::Columns(1);
 		ImGui::PopID();
@@ -184,8 +189,8 @@ namespace Engine
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
 			bool open = ImGui::TreeNodeEx((void*)typeid(TransformComponent).hash_code(), treeNodeFlags, "Transform");
 
-			ImGui::SameLine(ImGui::GetWindowWidth() - 25.0f);
-			if (ImGui::Button("+", ImVec2{ 20, 20 }))
+			ImGui::SameLine(ImGui::GetWindowWidth() - 30.0f);
+			if (ImGui::Button("+", ImVec2{ 25, 25 }))
 			{
 				ImGui::OpenPopup("ComponentSettings");
 			}
@@ -225,8 +230,8 @@ namespace Engine
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
 			bool open = ImGui::TreeNodeEx((void*)typeid(SpriteRendererComponent).hash_code(), treeNodeFlags, "Sprite Renderer");
 
-			ImGui::SameLine(ImGui::GetWindowWidth() - 25.0f);
-			if(ImGui::Button("+", ImVec2{ 20, 20 }))
+			ImGui::SameLine(ImGui::GetWindowWidth() - 30.0f);
+			if(ImGui::Button("+", ImVec2{ 25, 25 }))
 			{
 				ImGui::OpenPopup("ComponentSettings");
 			}
@@ -262,8 +267,8 @@ namespace Engine
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
 			bool open = ImGui::TreeNodeEx((void*)typeid(CameraComponent).hash_code(), treeNodeFlags, "Camera");
 
-			ImGui::SameLine(ImGui::GetWindowWidth() - 25.0f);
-			if (ImGui::Button("+", ImVec2{ 20, 20 }))
+			ImGui::SameLine(ImGui::GetWindowWidth() - 30.0f);
+			if (ImGui::Button("+", ImVec2{ 25, 25 }))
 			{
 				ImGui::OpenPopup("ComponentSettings");
 			}
