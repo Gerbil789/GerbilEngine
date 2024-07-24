@@ -8,6 +8,8 @@
 
 #include "Engine/Core/Application.h"
 
+#include "Engine/Utils/Color.h"
+
 //temp
 #include "GLFW/glfw3.h"
 #include "glad/glad.h"
@@ -43,6 +45,9 @@ namespace Engine
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
+
+		SetDarkThemeColors();
+
 
 		Application& app = Application::Get();
 		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
@@ -95,6 +100,48 @@ namespace Engine
 			ImGui::RenderPlatformWindowsDefault();
 			glfwMakeContextCurrent(backup_current_context);
 		}
+	}
+
+	static ImVec4 ColorConvert(const glm::vec4& color)
+	{
+		return ImVec4(color.r, color.g, color.b, color.a);
+	}
+
+	void ImGuiLayer::SetDarkThemeColors()
+	{
+		auto& colors = ImGui::GetStyle().Colors;
+		colors[ImGuiCol_WindowBg] = ColorConvert(glm::vec4(0.12f, 0.12f, 0.12f, 1.0f));
+
+		// Headers
+		colors[ImGuiCol_Header] = ColorConvert(Color::Gray * glm::vec4(0.5f, 0.5, 0.5, 1.0f));
+		colors[ImGuiCol_HeaderHovered] = ColorConvert(Color::Gray * glm::vec4(0.5f, 0.5, 0.5, 1.0f));
+		colors[ImGuiCol_HeaderActive] = ColorConvert(Color::Gray * glm::vec4(0.5f, 0.5, 0.5, 1.0f));
+
+		// Buttons
+		colors[ImGuiCol_Button] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
+		colors[ImGuiCol_ButtonHovered] = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };
+		colors[ImGuiCol_ButtonActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+
+		// Frame BG
+		colors[ImGuiCol_FrameBg] = ColorConvert(Color::DarkGray * glm::vec4(0.5f, 0.5, 0.5, 1.0f));
+		colors[ImGuiCol_FrameBgHovered] = ColorConvert(Color::DarkGray * glm::vec4(0.5f, 0.5, 0.5, 1.0f));
+		colors[ImGuiCol_FrameBgActive] = ColorConvert(Color::DarkGray * glm::vec4(0.5f, 0.5, 0.5, 1.0f));
+
+		// Tabs
+		//colors[ImGuiCol_Tab] = ColorConvert(Color::Green);
+		//colors[ImGuiCol_TabHovered] = ImVec4{ 0.38f, 0.3805f, 0.381f, 1.0f };
+		//colors[ImGuiCol_TabActive] = ImVec4{ 0.28f, 0.2805f, 0.281f, 1.0f };
+
+		// Title
+		colors[ImGuiCol_TitleBg] = ColorConvert(Color::DarkGray * glm::vec4(0.5f, 0.5, 0.5, 1.0f));
+		colors[ImGuiCol_TitleBgActive] = ColorConvert(Color::DarkGray * glm::vec4(0.5f, 0.5, 0.5, 1.0f));
+		colors[ImGuiCol_TitleBgCollapsed] = ColorConvert(Color::DarkGray * glm::vec4(0.5f, 0.5, 0.5, 1.0f));
+
+		// Top bar
+		colors[ImGuiCol_MenuBarBg] = ColorConvert(Color::DarkGray * glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
+
+
+
 	}
 
 	void ImGuiLayer::OnImGuiRender()
