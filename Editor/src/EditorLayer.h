@@ -16,6 +16,12 @@ namespace Engine
 		void OnEvent(Event& e) override;
 		void OnImGuiRender() override;
 	private:
+		bool OnKeyPressed(KeyPressedEvent& e);
+
+		void NewScene();
+		void OpenScene();
+		void SaveSceneAs();
+	private:
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
 

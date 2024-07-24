@@ -19,11 +19,13 @@ Includedir["ImGui"] = "Engine/vendor/imgui"
 Includedir["glm"] = "Engine/vendor/glm"
 Includedir["stb_image"] = "Engine/vendor/stb_image"
 Includedir["entt"] = "Engine/vendor/entt/include"
+Includedir["yaml_cpp"] = "Engine/vendor/yaml-cpp/include"
 
 group "Dependencies"
 	include "Engine/vendor/GLFW"
 	include "Engine/vendor/Glad"
 	include "Engine/vendor/imgui"
+	include "Engine/vendor/yaml-cpp"
 group ""
 
 
@@ -69,7 +71,8 @@ project "Engine"
 		"%{Includedir.ImGui}",
 		"%{Includedir.glm}",
 		"%{Includedir.stb_image}",
-		"%{Includedir.entt}"
+		"%{Includedir.entt}",
+		"%{Includedir.yaml_cpp}"
 	}
 
 	links
@@ -77,7 +80,8 @@ project "Engine"
 		"GLFW",
 		"Glad",
 		"ImGui",
-		"opengl32.lib"
+		"opengl32.lib",
+		"yaml-cpp"
 	}
 
 	filter "system:windows"

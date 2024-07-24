@@ -14,6 +14,7 @@ namespace Engine
 	void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
 	{
 		m_Context = context;
+		m_SelectionContext = {};
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender()
@@ -53,10 +54,37 @@ namespace Engine
 		{
 			DrawComponents(m_SelectionContext);
 
-			if(ImGui::Button("Add Component"))
+			ImGui::Separator();
+
+			ImGuiStyle& style = ImGui::GetStyle();
+			style.FramePadding = ImVec2(20, 5);
+			style.FrameRounding = 7.5f;
+
+			float lineHeigth = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+
+			ImVec2 window_size = ImGui::GetWindowSize();
+			ImVec2 button_size = ImVec2{ 200, 30 };
+
+			// Calculate the center position
+			float window_center_x = window_size.x / 2.0f;
+			float button_center_x = button_size.x / 2.0f;
+
+			// Set the cursor position to center the button
+			ImGui::SetCursorPosX(window_center_x - button_center_x);
+
+			//set Y offset
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10);
+			
+
+
+			if (ImGui::Button("Add Component", button_size))
 			{
 				ImGui::OpenPopup("AddComponent");
 			}
+
+			style.FramePadding = ImVec2(4, 4);
+			style.FrameRounding = 0.0f;
+	
 
 			if(ImGui::BeginPopup("AddComponent"))
 			{

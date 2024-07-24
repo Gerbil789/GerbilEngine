@@ -1,0 +1,47 @@
+Scene: Untitled Scene
+Entities:
+  - Entity: 789
+    TagComponent:
+      Tag: camera
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -100
+        OrthographicFar: 100
+      Main: true
+      FixedAspectRatio: false
+  - Entity: 789
+    TagComponent:
+      Tag: blue square
+    TransformComponent:
+      Position: [2, 0, 0]
+      Rotation: [0, 0, 45.5999985]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.200000003, 0.300000012, 0.800000012, 1]
+  - Entity: 789
+    TagComponent:
+      Tag: green square
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 3, 1]
+    SpriteRendererComponent:
+      Color: [0.200000003, 0.800000012, 0.200000003, 1]
+  - Entity: 789
+    TagComponent:
+      Tag: red square
+    TransformComponent:
+      Position: [-2.79999995, 1.70000005, 0]
+      Rotation: [0, 0, 59.5999985]
+      Scale: [1, 3, 1]
+    SpriteRendererComponent:
+      Color: [0.800000012, 0.300000012, 0.200000003, 1]

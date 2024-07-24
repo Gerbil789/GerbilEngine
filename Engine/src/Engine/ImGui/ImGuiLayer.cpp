@@ -123,9 +123,9 @@ namespace Engine
 		colors[ImGuiCol_ButtonActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 
 		// Frame BG
-		colors[ImGuiCol_FrameBg] = ColorConvert(Color::DarkGray * glm::vec4(0.5f, 0.5, 0.5, 1.0f));
-		colors[ImGuiCol_FrameBgHovered] = ColorConvert(Color::DarkGray * glm::vec4(0.5f, 0.5, 0.5, 1.0f));
-		colors[ImGuiCol_FrameBgActive] = ColorConvert(Color::DarkGray * glm::vec4(0.5f, 0.5, 0.5, 1.0f));
+		colors[ImGuiCol_FrameBg] = ColorConvert(Color::DarkGray * glm::vec4(0.3f, 0.3, 0.3, 1.0f));
+		colors[ImGuiCol_FrameBgHovered] = ColorConvert(Color::DarkGray * glm::vec4(0.3f, 0.3, 0.3, 1.0f));
+		colors[ImGuiCol_FrameBgActive] = ColorConvert(Color::DarkGray * glm::vec4(0.3f, 0.3, 0.3, 1.0f));
 
 		// Tabs
 		//colors[ImGuiCol_Tab] = ColorConvert(Color::Green);
