@@ -16,6 +16,8 @@ namespace Engine
 		void SetContext(const Ref<Scene>& context);
 
 		void OnImGuiRender();
+
+		Entity GetSelectedEntity() const { return m_SelectionContext; }
 	private:
 		Ref<Scene> m_Context;
 

@@ -1,9 +1,11 @@
 #include "EditorLayer.h"
 #include "imgui/imgui.h"
+#include "ImGuizmo/ImGuizmo.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "Engine/Renderer/FrameBuffer.h"
 #include "Engine/Scene/SceneSerializer.h"
 #include "Engine/Utils/PlatformUtils.h"
+#include "Engine/Math/Math.h"
 
 namespace Engine
 {
@@ -37,32 +39,11 @@ namespace Engine
 
         //create scene
         m_ActiveScene = CreateRef<Scene>();
-
-        //SceneSerializer serializer(m_ActiveScene);
-        //serializer.Deserialize("assets/scenes/ExampleScene.scene");
-
-        /*m_SquareEntity = m_ActiveScene->CreateEntity("red square");
-        m_SquareEntity.AddComponent<SpriteRendererComponent>(Color::Red);
-        m_SquareEntity.GetComponent<TransformComponent>().Position = { -2.0f, 0.0f, 0.0f };
-        m_SquareEntity.GetComponent<TransformComponent>().Scale = { 1.0f, 3.0f, 1.0f };
+        m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 
-        auto greensqaure = m_ActiveScene->CreateEntity("green square");
-        greensqaure.AddComponent<SpriteRendererComponent>(Color::Green);
-        greensqaure.GetComponent<TransformComponent>().Position = { 0.0f, 0.0f, 0.0f };
-        greensqaure.GetComponent<TransformComponent>().Scale = { 1.0f, 3.0f, 1.0f };
 
-
-        auto bluesquare = m_ActiveScene->CreateEntity("blue square");
-        bluesquare.AddComponent<SpriteRendererComponent>(Color::Blue);
-        bluesquare.GetComponent<TransformComponent>().Position = { 2.0f, 0.0f, 0.0f };
-        bluesquare.GetComponent<TransformComponent>().Scale = { 1.0f, 3.0f, 1.0f };
-
-        
-        m_CameraEntity = m_ActiveScene->CreateEntity("camera");
-        m_CameraEntity.AddComponent<CameraComponent>();
-       
-        class CameraController : public ScriptableEntity
+      /*class CameraController : public ScriptableEntity
         {
         public:
             void OnCreate() {}
@@ -86,13 +67,8 @@ namespace Engine
 
         };
 
-        m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+        m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();*/
 
-        
-
-        SceneSerializer serializer(m_ActiveScene);
-        serializer.Serialize("assets/scenes/ExampleScene.scene");*/
-        m_SceneHierarchyPanel.SetContext(m_ActiveScene);
     }
 
     void EditorLayer::OnDetach()
@@ -128,11 +104,6 @@ namespace Engine
         m_FrameBuffer->Bind();
         RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
         RenderCommand::Clear();
-
-
-        //Renderer2D::BeginScene(m_CameraController.GetCamera());
-        //Renderer2D::DrawQuad({ 0.0f, 0.0f, -0.1f }, { 64.0f, 64.0f }, m_BackroundTexture, 8.0f, Color::White);  //Background
-        //Renderer2D::EndScene(); 
 
         //update scene
         m_ActiveScene->OnUpdate(ts);
@@ -258,9 +229,55 @@ namespace Engine
         m_ViewportSize = { viewportSize.x, viewportSize.y };
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
         ImGui::Image((void*)textureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+        //gizmo
+        Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+
+        if (selectedEntity && m_GizmoType != -1) 
+        {
+            ImGuizmo::SetOrthographic(false);
+            ImGuizmo::SetDrawlist();
+            float windowWidth = (float)ImGui::GetWindowWidth();
+            float windowHeight = (float)ImGui::GetWindowHeight();
+            ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
+
+
+            auto cameraEntity = m_ActiveScene->GetMainCameraEntity();
+            auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
+            const glm::mat4& cameraProjection = camera.GetProjection();
+            glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+
+
+            auto& tc = selectedEntity.GetComponent<TransformComponent>();
+            glm::mat4 transform = tc.GetTransform();
+
+            bool snap = Input::IsKeyPressed(Key::LeftControl);
+            float snapValue = 0.5f; // Snap to 0.5m for translation/scale
+            if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
+				snapValue = 45.0f; // Snap to 45 degrees for rotation
+
+            float snapValues[3] = { snapValue, snapValue, snapValue };
+
+            ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+                (ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr);
+
+			if (ImGuizmo::IsUsing())
+			{
+				glm::vec3 translation, rotation, scale;
+				Math::DecomposeTransform(transform, translation, rotation, scale);
+
+                glm::vec3 originalRotation = tc.Rotation;
+                glm::vec3 deltaRotation = rotation - originalRotation;
+
+				tc.Position = translation;
+				tc.Rotation += deltaRotation; // to prevent gimbal lock
+				tc.Scale = scale;
+			}
+
+        }
+
         ImGui::End();
         ImGui::PopStyleVar(); // Restore padding
-
 
         ImGui::End();
     }
@@ -300,6 +317,23 @@ namespace Engine
 		    	}
 		    	break;
 		    }
+            
+
+            case Key::Q:
+				m_GizmoType = -1;
+				break;
+
+            case Key::W:
+                m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+                break;
+
+            case Key::E:
+				m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+				break;
+
+            case Key::R:
+                m_GizmoType = ImGuizmo::OPERATION::SCALE;
+                break;
 		}
 
     }

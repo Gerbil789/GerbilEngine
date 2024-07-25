@@ -20,6 +20,7 @@ Includedir["glm"] = "Engine/vendor/glm"
 Includedir["stb_image"] = "Engine/vendor/stb_image"
 Includedir["entt"] = "Engine/vendor/entt/include"
 Includedir["yaml_cpp"] = "Engine/vendor/yaml-cpp/include"
+Includedir["ImGuizmo"] = "Engine/vendor/ImGuizmo"
 
 group "Dependencies"
 	include "Engine/vendor/GLFW"
@@ -54,7 +55,9 @@ project "Engine"
 		"%{prj.name}/vendor/stb_image/**.h",
 		"%{prj.name}/vendor/stb_image/**.cpp",
 		"%{prj.name}/vendor/glm/glm/**.hpp",
-		"%{prj.name}/vendor/glm/glm/**.inl"
+		"%{prj.name}/vendor/glm/glm/**.inl",
+		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
+		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp"
 	}
 
 	defines
@@ -72,7 +75,8 @@ project "Engine"
 		"%{Includedir.glm}",
 		"%{Includedir.stb_image}",
 		"%{Includedir.entt}",
-		"%{Includedir.yaml_cpp}"
+		"%{Includedir.yaml_cpp}",
+		"%{Includedir.ImGuizmo}"
 	}
 
 	links
@@ -83,6 +87,9 @@ project "Engine"
 		"opengl32.lib",
 		"yaml-cpp"
 	}
+
+	filter "files:Engine/vendor/ImGuizmo/**.cpp"
+		flags { "NoPCH" }
 
 	filter "system:windows"
 		systemversion "latest"
@@ -141,7 +148,8 @@ project "Editor"
 		"Engine/src",
 		"Engine/vendor",
 		"%{Includedir.glm}",
-		"%{Includedir.entt}"
+		"%{Includedir.entt}",
+		"%{Includedir.ImGuizmo}"
 	}
 
 	filter "system:windows"

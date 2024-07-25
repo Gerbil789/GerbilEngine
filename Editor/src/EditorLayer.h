@@ -3,6 +3,7 @@
 #include <Engine.h>
 #include "Panels/SceneHierarchyPanel.h"
 
+
 namespace Engine 
 {
 	class EditorLayer : public Layer
@@ -21,6 +22,8 @@ namespace Engine
 		void NewScene();
 		void OpenScene();
 		void SaveSceneAs();
+
+
 	private:
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
@@ -49,5 +52,7 @@ namespace Engine
 		//panels
 
 		SceneHierarchyPanel m_SceneHierarchyPanel;
+
+		int m_GizmoType = 7; //translate
 	};
 }

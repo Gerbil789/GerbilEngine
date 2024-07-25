@@ -20,6 +20,7 @@ namespace Engine
 		Entity CreateEntity(const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
 
+		Entity GetMainCameraEntity();
 	private:
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component);

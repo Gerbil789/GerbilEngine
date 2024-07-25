@@ -8,7 +8,7 @@ Entities:
       Rotation: [0, 45, 0]
       Scale: [1, 1, 1]
     SpriteRendererComponent:
-      Color: [0.715302467, 0.672869265, 0, 1]
+      Color: [0.416370094, 0.391670167, 0, 1]
   - Entity: 789
     TagComponent:
       Tag: Top
@@ -17,7 +17,7 @@ Entities:
       Rotation: [90, 0, 45]
       Scale: [1, 1, 1]
     SpriteRendererComponent:
-      Color: [0.925266922, 0.869289935, 0, 1]
+      Color: [1, 0.969427943, 0.494661927, 1]
   - Entity: 789
     TagComponent:
       Tag: Left
@@ -31,8 +31,8 @@ Entities:
     TagComponent:
       Tag: camera
     TransformComponent:
-      Position: [0, 2, 3]
-      Rotation: [-33.7000008, 0, 0]
+      Position: [0.200000003, 2, 3]
+      Rotation: [-30, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
       Camera:
