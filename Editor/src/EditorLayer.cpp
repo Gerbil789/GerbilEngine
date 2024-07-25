@@ -224,7 +224,7 @@ namespace Engine
         ImGui::Begin("Viewport");
         m_ViewportFocused = ImGui::IsWindowFocused();
         m_ViewportHovered = ImGui::IsWindowHovered();
-        Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
+        Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
         ImVec2 viewportSize = ImGui::GetContentRegionAvail();
         m_ViewportSize = { viewportSize.x, viewportSize.y };
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
@@ -267,7 +267,7 @@ namespace Engine
 				Math::DecomposeTransform(transform, translation, rotation, scale);
 
                 glm::vec3 originalRotation = tc.Rotation;
-                glm::vec3 deltaRotation = rotation - originalRotation;
+                glm::vec3 deltaRotation = glm::degrees(rotation) - originalRotation;
 
 				tc.Position = translation;
 				tc.Rotation += deltaRotation; // to prevent gimbal lock
