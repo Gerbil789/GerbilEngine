@@ -2,6 +2,7 @@
 
 #include <Engine.h>
 #include "Panels/SceneHierarchyPanel.h"
+#include "Engine/Renderer/EditorCamera.h"
 
 
 namespace Engine 
@@ -54,5 +55,7 @@ namespace Engine
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 
 		int m_GizmoType = 7; //translate
+
+		EditorCamera m_EditorCamera;
 	};
 }

@@ -1,3 +1,5 @@
+#include "enginepch.h"
+
 #include "SceneHierarchyPanel.h"
 #include "Engine/Scene/Components.h"
 #include <imgui/imgui.h>

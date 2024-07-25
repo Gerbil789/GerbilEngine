@@ -45,3 +45,12 @@ Entities:
       Scale: [1, 1, 1]
     SpriteRendererComponent:
       Color: [0.416370094, 0.391670167, 0, 1]
+  - Entity: 789
+    TagComponent:
+      Tag: Backgorund
+    TransformComponent:
+      Position: [0, 0, -3.79999995]
+      Rotation: [0, 0, 0]
+      Scale: [8, 4.9000001, 1]
+    SpriteRendererComponent:
+      Color: [0.336171538, 0.29786852, 0.373665452, 1]

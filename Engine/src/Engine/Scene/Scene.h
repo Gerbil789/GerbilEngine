@@ -2,6 +2,7 @@
 
 #include "entt.hpp"
 #include "Engine/Core/Timestep.h"
+#include "Engine/Renderer/EditorCamera.h"
 
 namespace Engine 
 {
@@ -13,7 +14,8 @@ namespace Engine
 		Scene();
 		~Scene();
 
-		void OnUpdate(Timestep ts);
+		void OnUpdateRuntime(Timestep ts);
+		void OnUpdateEditor(Timestep ts, EditorCamera& camera);
 
 		void OnViewportResize(uint32_t width, uint32_t height);
 
