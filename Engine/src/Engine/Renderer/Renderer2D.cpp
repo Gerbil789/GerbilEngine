@@ -8,11 +8,14 @@ namespace Engine
 {
 	struct QuadVertex
 	{
-		glm::vec3 Position;
-		glm::vec4 Color;
-		glm::vec2 TexCoord;
-		float TexIndex;
-		float TilingFactor;
+		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+		glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		glm::vec2 TexCoord = { 0.0f, 0.0f };
+		float TexIndex = 0.0f;
+		float TilingFactor = 1.0f;
+
+		// Editor only
+		int EntityID = -1;
 	};
 
 	struct Renderer2DData
@@ -62,7 +65,8 @@ namespace Engine
 			{ ShaderDataType::Float4, "a_Color" },
 			{ ShaderDataType::Float2, "a_TexCoord" },
 			{ ShaderDataType::Float, "a_TexIndex" },
-			{ ShaderDataType::Float, "a_TilingFactor" }
+			{ ShaderDataType::Float, "a_TilingFactor" },
+			{ ShaderDataType::Int, "a_EntityID" }
 		};
 
 		s_Data.QuadVertexBuffer->SetLayout(layout);
@@ -177,6 +181,14 @@ namespace Engine
 		RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
 
 		s_Data.Stats.DrawCalls++;
+	}
+
+	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID, bool selected)
+	{
+		ENGINE_PROFILE_FUNCTION();
+
+		DrawQuad(transform, src.Color, entityID);
+	
 	}
 
 	void Renderer2D::FlushAndReset()
@@ -346,7 +358,7 @@ namespace Engine
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityId)
 	{
 		ENGINE_PROFILE_FUNCTION();
 
@@ -366,6 +378,7 @@ namespace Engine
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			s_Data.QuadVertexBufferPtr->EntityID = entityId;
 			s_Data.QuadVertexBufferPtr++;
 		}
 
@@ -374,7 +387,7 @@ namespace Engine
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& color)
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& color, int entityId)
 	{
 		ENGINE_PROFILE_FUNCTION();
 		constexpr glm::vec2 textureCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} };
@@ -409,6 +422,7 @@ namespace Engine
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			s_Data.QuadVertexBufferPtr->EntityID = entityId;
 			s_Data.QuadVertexBufferPtr++;
 		}
 

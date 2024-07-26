@@ -4,14 +4,41 @@
 
 namespace Engine
 {
-	struct FrameBufferSpecification
+	enum class FrameBufferTextureFormat
 	{
-		uint32_t Width, Height;
-		uint32_t Samples = 1;
-
-		bool SwapChainTarget = false;
+		None = 0,
+		RGBA8,
+		RGBA16F,
+		RGBA32F,
+		DEPTH24STENCIL8,
+		RED_INTEGER
 	};
 
+	struct FrameBufferTextureSpecification 
+	{
+		FrameBufferTextureSpecification() = default;
+		FrameBufferTextureSpecification(FrameBufferTextureFormat format) : TextureFormat(format) {}
+
+
+		FrameBufferTextureFormat TextureFormat = FrameBufferTextureFormat::None;
+		//todo: filtering/wrap
+	};
+
+	struct FrameBufferAttachmentSpecification
+	{
+		FrameBufferAttachmentSpecification() = default;
+		FrameBufferAttachmentSpecification(std::initializer_list<FrameBufferTextureSpecification> attachments): Attachments(attachments) {}
+
+		std::vector<FrameBufferTextureSpecification> Attachments;
+	};
+
+	struct FrameBufferSpecification
+	{
+		uint32_t Width = 0, Height = 0;
+		FrameBufferAttachmentSpecification Attachments;
+		uint32_t Samples = 1;
+		bool SwapChainTarget = false;
+	};
 
 
 	class FrameBuffer
@@ -26,18 +53,19 @@ namespace Engine
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
-		virtual uint32_t GetColorAttachmentRendererID() const = 0;
-		virtual uint32_t GetDepthAttachmentRendererID() const = 0;
+		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
+		//virtual uint32_t GetDepthAttachmentRendererID() const = 0;
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 
-		static Ref<FrameBuffer> Create(const FrameBufferSpecification & spec);
+		static Ref<FrameBuffer> Create(const FrameBufferSpecification& spec);
 
-	private:
-		uint32_t m_RendererID = 0;
-		uint32_t m_ColorAttachment = 0, m_DepthAttachment = 0;
-		uint32_t m_Width = 0, m_Height = 0;
+		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) = 0;
+
+		virtual void ClearAttachment(uint32_t attachmentIndex, int value) = 0;
+
+
 
 	};
 }

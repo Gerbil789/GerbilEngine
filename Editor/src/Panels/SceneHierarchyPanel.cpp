@@ -108,7 +108,6 @@ namespace Engine
 		ImGui::End();
 	}
 
-
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
 		auto& tag = entity.GetComponent<TagComponent>().Tag;

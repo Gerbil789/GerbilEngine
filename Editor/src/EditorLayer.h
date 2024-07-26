@@ -19,6 +19,7 @@ namespace Engine
 		void OnImGuiRender() override;
 	private:
 		bool OnKeyPressed(KeyPressedEvent& e);
+		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
 
 		void NewScene();
 		void OpenScene();
@@ -57,5 +58,9 @@ namespace Engine
 		int m_GizmoType = 7; //translate
 
 		EditorCamera m_EditorCamera;
+
+		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
+
+		Entity m_HoveredEntity;
 	};
 }

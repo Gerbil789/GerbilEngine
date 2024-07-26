@@ -33,6 +33,7 @@ namespace Engine
 
         //create frame buffer
         FrameBufferSpecification fbSpec;
+        fbSpec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::DEPTH24STENCIL8 };
         fbSpec.Width = 1280;
         fbSpec.Height = 720;
         m_FrameBuffer = FrameBuffer::Create(fbSpec);
@@ -43,35 +44,6 @@ namespace Engine
         m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-
-
-
-      /*class CameraController : public ScriptableEntity
-        {
-        public:
-            void OnCreate() {}
-
-            void OnDestroy() {}
-
-            void OnUpdate(Timestep ts) 
-            {
-                auto& position = GetComponent<TransformComponent>().Position;
-				float speed = 5.0f;
-
-				if (Input::IsKeyPressed(Key::A))
-                    position.x -= speed * ts;
-				if (Input::IsKeyPressed(Key::D))
-                    position.x += speed * ts;
-				if (Input::IsKeyPressed(Key::W))
-                    position.y += speed * ts;
-				if (Input::IsKeyPressed(Key::S))
-                    position.y -= speed * ts;
-            }
-
-        };
-
-        m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();*/
-
     }
 
     void EditorLayer::OnDetach()
@@ -111,8 +83,26 @@ namespace Engine
         RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
         RenderCommand::Clear();
 
+        m_FrameBuffer->ClearAttachment(1, -1); //clear red integer attachment
+
         //update scene
         m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+
+
+        auto [mx, my] = ImGui::GetMousePos();
+        mx -= m_ViewportBounds[0].x;
+        my -= m_ViewportBounds[0].y;
+        glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+        my = viewportSize.y - my;
+        
+        int mouseX = (int)mx;
+        int mouseY = (int)my;
+
+        if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
+		{
+            int pixelData = m_FrameBuffer->ReadPixel(1, mouseX, mouseY);
+            m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.get() };
+		}
 
         m_FrameBuffer->Unbind();
     }
@@ -124,6 +114,7 @@ namespace Engine
 
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<KeyPressedEvent>(ENGINE_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
+        dispatcher.Dispatch<MouseButtonPressedEvent>(ENGINE_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
     }
 
     void EditorLayer::OnImGuiRender()
@@ -217,18 +208,28 @@ namespace Engine
         m_SceneHierarchyPanel.OnImGuiRender();
         ImGui::ShowDemoWindow();
 
-
         ImGui::Begin("Statistics");
-        ImGui::Text("Draw Calls: %d", Renderer2D::GetStats().DrawCalls);
-        ImGui::Text("Quads: %d", Renderer2D::GetStats().QuadCount);
-        ImGui::Text("Vertices: %d", Renderer2D::GetStats().GetTotalVertexCount());
-        ImGui::Text("Indices: %d", Renderer2D::GetStats().GetTotalIndexCount());
+        ImGui::Text("Hovered entity: %s", m_HoveredEntity ? m_HoveredEntity.GetComponent<TagComponent>().Tag.c_str() : "None");
+
+        auto stats = Renderer2D::GetStats();
+        ImGui::Text("Draw Calls: %d", stats.DrawCalls);
+        ImGui::Text("Quads: %d", stats.QuadCount);
+        ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
+        ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
         ImGui::Separator();
         ImGui::End();
 
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
         ImGui::Begin("Viewport");
+
+        auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+        auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+        auto viewportOffset = ImGui::GetWindowPos(); 
+
+        m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+        m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+
         m_ViewportFocused = ImGui::IsWindowFocused();
         m_ViewportHovered = ImGui::IsWindowHovered();
         Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
@@ -244,14 +245,10 @@ namespace Engine
         {
             ImGuizmo::SetOrthographic(false);
             ImGuizmo::SetDrawlist();
-            float windowWidth = (float)ImGui::GetWindowWidth();
-            float windowHeight = (float)ImGui::GetWindowHeight();
-            ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
+ 
+            ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
-            //auto cameraEntity = m_ActiveScene->GetMainCameraEntity();
-            //auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
             const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
-            //glm::mat4 cameraView = glm::inverse(m_EditorCamera.GetComponent<TransformComponent>().GetTransform());
             glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
             auto& tc = selectedEntity.GetComponent<TransformComponent>();
@@ -343,6 +340,18 @@ namespace Engine
 		}
 
     }
+    bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+    {
+        if(e.GetMouseButton() == Mouse::ButtonLeft)
+		{
+			if(m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+			{
+				m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+			}
+		}
+        return false;
+    }
+
     void EditorLayer::NewScene()
     {
         m_ActiveScene = CreateRef<Scene>();
