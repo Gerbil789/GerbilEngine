@@ -1,0 +1,33 @@
+name: Build C++ Game Engine on Windows
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
+    - name: Install Premake5
+      run: choco install premake --version=5.0.0-alpha15
+
+    - name: Generate project files
+      run: premake5 vs2022
+
+    - name: Build project
+      run: |
+        msbuild /p:Configuration=Release /p:Platform=x64 GerbilEngine.sln
+
