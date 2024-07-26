@@ -16,6 +16,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Set up MSVC
       uses: ilammy/msvc-dev-cmd@v1
@@ -23,11 +25,8 @@ jobs:
         arch: x64
 
     - name: Generate project files
-      run: |
-        pushd ..
-        call vendor\bin\premake\premake5.exe vs2022
-        popd
-
+      run: vendor\bin\premake\premake5.exe vs2022
+      
     - name: Build project
       run: |
         msbuild /p:Configuration=Release /p:Platform=x64 GerbilEngine.sln
