@@ -23,7 +23,10 @@ jobs:
         arch: x64
 
     - name: Generate project files
-      run: ..\vendor\bin\premake\premake5.exe vs2022
+      run: |
+        pushd ..
+        call vendor\bin\premake\premake5.exe vs2022
+        popd
 
     - name: Build project
       run: |
