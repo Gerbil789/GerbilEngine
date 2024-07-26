@@ -22,11 +22,8 @@ jobs:
       with:
         arch: x64
 
-    - name: Install Premake5
-      run: choco install premake --version=5.0.0-alpha15
-
     - name: Generate project files
-      run: premake5 vs2022
+      run: vendor\bin\premake\premake5.exe vs2022
 
     - name: Build project
       run: |
