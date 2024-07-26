@@ -1,0 +1,33 @@
+name: Build C++ Game Engine on Windows
+
+on:
+  push:
+    branches:
+      - main
+      - workflows
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Set up MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
+    - name: Generate project files
+      run: vendor\bin\premake\premake5.exe vs2022
+      
+    - name: Build project
+      run: |
+        msbuild /p:Configuration=Release /p:Platform=x64 GerbilEngine.sln
+
