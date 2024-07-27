@@ -1,10 +1,9 @@
-name: Build C++ Game Engine on Windows
+name: Build and Lint C++ Project
 
 on:
   push:
     branches:
       - main
-      - workflows
   pull_request:
     branches:
       - main
@@ -31,3 +30,19 @@ jobs:
       run: |
         msbuild /p:Configuration=Release /p:Platform=x64 GerbilEngine.sln
 
+  lint:
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up LLVM
+      uses: llvm/llvm-action@v1
+
+    - name: Run clang-tidy
+      run: |
+        vendor\bin\premake\premake5.exe vs2022
+        cd build
+        clang-tidy -p ./**/*.cpp ./**/*.h ./**/*.hpp
