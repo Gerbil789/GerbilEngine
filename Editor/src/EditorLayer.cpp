@@ -44,6 +44,7 @@ namespace Engine
         m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
     }
 
     void EditorLayer::OnDetach()
@@ -206,6 +207,8 @@ namespace Engine
         }
 
         m_SceneHierarchyPanel.OnImGuiRender();
+        m_ContentBrowserPanel.OnImGuiRender();
+
         ImGui::ShowDemoWindow();
 
         ImGui::Begin("Statistics");
@@ -237,6 +240,28 @@ namespace Engine
         m_ViewportSize = { viewportSize.x, viewportSize.y };
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
         ImGui::Image((void*)textureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+        if(ImGui::BeginDragDropTarget())
+		{
+			if(const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+			{
+				const wchar_t* path = (const wchar_t*)payload->Data;
+                //conver to string
+                std::wstring ws(path);
+                std::string str(ws.begin(), ws.end());
+
+
+				ENGINE_LOG_INFO("Dropped file: {0}", str);
+
+                //open scene
+                if(str.find(".scene") != std::string::npos)
+				{
+                   OpenScene(str);
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+
 
         //gizmo
         Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
@@ -362,15 +387,28 @@ namespace Engine
     void EditorLayer::OpenScene()
 	{
 		std::string path = FileDialogs::OpenFile("Scene (*.scene)\0*.scene\0");
-        if (!path.empty())
-		{
-			m_ActiveScene = CreateRef<Scene>();
-			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.Deserialize(path);
-			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-			ENGINE_LOG_INFO("Open file {0}", path);
-		}
+        if (path.empty()) {
+            ENGINE_LOG_ERROR("Failed to open file {0}", path);
+            return;
+        }
+        OpenScene(path);
+    }
+
+    void EditorLayer::OpenScene(const std::string& filepath)
+    {
+        if (!filepath.empty())
+        {
+            ENGINE_LOG_INFO("Open file {0}", filepath);
+            m_ActiveScene = CreateRef<Scene>();
+            m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+            SceneSerializer serializer(m_ActiveScene);
+            serializer.Deserialize(filepath);
+            m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+        }
+        else 
+        {
+            ENGINE_LOG_ERROR("File path is empty");
+        }
     }
 
 	void EditorLayer::SaveSceneAs()

@@ -22,6 +22,7 @@ namespace Engine
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Scene Hierarchy");
+	
 		if (m_Context)
 		{
 			m_Context->m_Registry.view<TagComponent>().each([&](auto entityId, auto tc)
@@ -46,9 +47,8 @@ namespace Engine
 
 			ImGui::EndPopup();
 		}
-
+	
 		ImGui::End();
-
 
 
 		ImGui::Begin("Inspector");

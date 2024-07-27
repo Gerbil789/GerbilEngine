@@ -3,6 +3,7 @@
 #include <Engine.h>
 #include "Panels/SceneHierarchyPanel.h"
 #include "Engine/Renderer/EditorCamera.h"
+#include "Panels/ContentBrowserPanel.h"
 
 
 namespace Engine 
@@ -23,6 +24,7 @@ namespace Engine
 
 		void NewScene();
 		void OpenScene();
+		void OpenScene(const std::string& filepath);
 		void SaveSceneAs();
 
 
@@ -54,6 +56,7 @@ namespace Engine
 		//panels
 
 		SceneHierarchyPanel m_SceneHierarchyPanel;
+		ContentBrowserPanel m_ContentBrowserPanel;
 
 		int m_GizmoType = 7; //translate
 
@@ -62,5 +65,7 @@ namespace Engine
 		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
 
 		Entity m_HoveredEntity;
+
+
 	};
 }
