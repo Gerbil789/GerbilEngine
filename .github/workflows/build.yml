@@ -29,27 +29,3 @@ jobs:
     - name: Build project
       run: |
         msbuild /p:Configuration=Release /p:Platform=x64 GerbilEngine.sln
-
-  lint:
-    runs-on: windows-latest
-    continue-on-error: true
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Download build files
-      uses: actions/download-artifact@v3
-      with:
-        name: build-artifacts
-        path: build/
-
-    - name: Set up LLVM and clang-tidy
-      run: |
-        choco install llvm --version=12.0.1
-
-    - name: Run clang-tidy
-      run: |
-        vendor\bin\premake\premake5.exe vs2022
-        cd build
-        clang-tidy -p ./**/*.cpp ./**/*.h ./**/*.hpp
