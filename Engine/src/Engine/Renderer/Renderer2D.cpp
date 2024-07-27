@@ -12,7 +12,7 @@ namespace Engine
 		glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		glm::vec2 TexCoord = { 0.0f, 0.0f };
 		float TexIndex = 0.0f;
-		float TilingFactor = 1.0f;
+		glm::vec2 TilingFactor = { 1.0f, 1.0f };
 
 		// Editor only
 		int EntityID = -1;
@@ -65,7 +65,7 @@ namespace Engine
 			{ ShaderDataType::Float4, "a_Color" },
 			{ ShaderDataType::Float2, "a_TexCoord" },
 			{ ShaderDataType::Float, "a_TexIndex" },
-			{ ShaderDataType::Float, "a_TilingFactor" },
+			{ ShaderDataType::Float2, "a_TilingFactor" },
 			{ ShaderDataType::Int, "a_EntityID" }
 		};
 
@@ -186,9 +186,14 @@ namespace Engine
 	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID, bool selected)
 	{
 		ENGINE_PROFILE_FUNCTION();
-
-		DrawQuad(transform, src.Color, entityID);
-	
+		if (src.Texture) 
+		{
+			DrawQuad(transform, src.Texture, src.TilingFactor, src.Color, entityID);
+		}
+		else 
+		{
+			DrawQuad(transform, s_Data.WhiteTexture, src.TilingFactor, src.Color, entityID);
+		}
 	}
 
 	void Renderer2D::FlushAndReset()
@@ -216,9 +221,6 @@ namespace Engine
 	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 	{
 		ENGINE_PROFILE_FUNCTION();
-
-		constexpr float textureIndex = 0.0f; // White Texture
-		constexpr float tilingFactor = 1.0f;
 		constexpr glm::vec2 textureCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} };
 
 		if(s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
@@ -233,8 +235,6 @@ namespace Engine
 			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
 			s_Data.QuadVertexBufferPtr->Color = color;
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
 			s_Data.QuadVertexBufferPtr++;
 		}
 
@@ -243,13 +243,13 @@ namespace Engine
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& color)
+	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture, glm::vec2 tilingFactor, const glm::vec4& color)
 	{
 		ENGINE_PROFILE_FUNCTION();
 		DrawQuad({ position.x, position.y, 0.0f }, size, texture, tilingFactor, color);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& color)
+	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture, glm::vec2 tilingFactor, const glm::vec4& color)
 	{
 		ENGINE_PROFILE_FUNCTION();
 
@@ -303,13 +303,13 @@ namespace Engine
 
 
 
-	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4& color)
+	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subtexture, glm::vec2 tilingFactor, const glm::vec4& color)
 	{
 		ENGINE_PROFILE_FUNCTION();
 		DrawQuad({ position.x, position.y, 0.0f }, size, subtexture, tilingFactor, color);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4& color)
+	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<SubTexture2D>& subtexture, glm::vec2 tilingFactor, const glm::vec4& color)
 	{
 		ENGINE_PROFILE_FUNCTION();
 
@@ -361,9 +361,6 @@ namespace Engine
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityId)
 	{
 		ENGINE_PROFILE_FUNCTION();
-
-		constexpr float textureIndex = 0.0f; // White Texture
-		constexpr float tilingFactor = 1.0f;
 		constexpr glm::vec2 textureCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} };
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
@@ -376,8 +373,6 @@ namespace Engine
 			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
 			s_Data.QuadVertexBufferPtr->Color = color;
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
 			s_Data.QuadVertexBufferPtr->EntityID = entityId;
 			s_Data.QuadVertexBufferPtr++;
 		}
@@ -387,7 +382,7 @@ namespace Engine
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& color, int entityId)
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, glm::vec2 tilingFactor, const glm::vec4& color, int entityId)
 	{
 		ENGINE_PROFILE_FUNCTION();
 		constexpr glm::vec2 textureCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} };
@@ -444,10 +439,7 @@ namespace Engine
 	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const glm::vec4& color)
 	{
 		ENGINE_PROFILE_FUNCTION();
-
-		constexpr float tilingFactor = 1.0f;
 		constexpr glm::vec2 textureCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} };
-		constexpr float textureIndex = 0.0f; // White Texture
 
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
 		{
@@ -461,8 +453,7 @@ namespace Engine
 			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
 			s_Data.QuadVertexBufferPtr->Color = color;
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
+
 			s_Data.QuadVertexBufferPtr++;
 		}
 
@@ -475,13 +466,13 @@ namespace Engine
 
 
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& color)
+	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, glm::vec2 tilingFactor, const glm::vec4& color)
 	{
 		ENGINE_PROFILE_FUNCTION();
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, tilingFactor, color);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& color)
+	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, glm::vec2 tilingFactor, const glm::vec4& color)
 	{
 		ENGINE_PROFILE_FUNCTION();
 
@@ -534,13 +525,13 @@ namespace Engine
 
 
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4& color)
+	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<SubTexture2D>& subtexture, glm::vec2 tilingFactor, const glm::vec4& color)
 	{
 		ENGINE_PROFILE_FUNCTION();
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, subtexture, tilingFactor, color);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4& color)
+	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<SubTexture2D>& subtexture, glm::vec2 tilingFactor, const glm::vec4& color)
 	{
 		ENGINE_PROFILE_FUNCTION();
 

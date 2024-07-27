@@ -7,8 +7,8 @@
 #include "Engine/Scene/Entity.h"
 
 
-namespace YAML {
-
+namespace YAML 
+{
 	template<>
 	struct convert<glm::vec2>
 	{
@@ -106,6 +106,14 @@ namespace YAML {
 
 namespace Engine 
 {
+	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
+		return out;
+	}
+
+
 	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v)
 	{
 		out << YAML::Flow;
@@ -173,6 +181,7 @@ namespace Engine
 			out << YAML::BeginMap;
 			auto& src = entity.GetComponent<SpriteRendererComponent>();
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
+			out << YAML::Key << "TilingFactor" << YAML::Value << src.TilingFactor;
 			out << YAML::EndMap;
 		}
 
@@ -279,6 +288,7 @@ namespace Engine
 			{
 				auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
 				src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
+				src.TilingFactor = spriteRendererComponent["TilingFactor"].as<glm::vec2>();
 			}
 		}
 

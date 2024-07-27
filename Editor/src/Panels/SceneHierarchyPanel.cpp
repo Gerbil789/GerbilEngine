@@ -5,6 +5,7 @@
 #include <imgui/imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui/imgui_internal.h>
+#include <filesystem>
 
 namespace Engine
 {
@@ -266,6 +267,39 @@ namespace Engine
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
 		{
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+
+			ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
+			if(ImGui::BeginDragDropTarget())
+			{
+				if(const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					std::filesystem::path texturePath = path;
+					if(texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
+					{
+						component.Texture = Texture2D::Create(texturePath.string());
+					}
+					else {
+						ENGINE_LOG_WARNING("Failed to load texture!");
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
+
+			// Set the width of the window or column you are working within
+			ImGui::PushItemWidth(-1);
+
+			ImGui::Text("Tiling");
+			ImGui::SameLine();
+			ImGui::PushItemWidth(50);
+			ImGui::DragFloat("x", &component.TilingFactor.x, 0.1f, 0.0f, 0.0f, "%.2f");
+
+			ImGui::SameLine();
+			ImGui::PushItemWidth(50);
+			ImGui::DragFloat("y", &component.TilingFactor.y, 0.1f, 0.0f, 0.0f, "%.2f");
+
+			ImGui::PopItemWidth();
+			ImGui::PopItemWidth();
 		});
 
 
