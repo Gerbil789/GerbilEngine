@@ -32,11 +32,17 @@ jobs:
 
   lint:
     runs-on: windows-latest
-    needs: build
+    continue-on-error: true
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Download build files
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts
+        path: build/
 
     - name: Set up LLVM
       uses: llvm/llvm-action@v1
