@@ -3,6 +3,7 @@
 #include "entt.hpp"
 #include "Engine/Core/Timestep.h"
 #include "Engine/Renderer/EditorCamera.h"
+#include "Engine/Core/UUID.h"
 
 namespace Engine 
 {
@@ -20,6 +21,7 @@ namespace Engine
 		void OnViewportResize(uint32_t width, uint32_t height);
 
 		Entity CreateEntity(const std::string& name = std::string());
+		Entity CreateEntity(UUID uuid, const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
 
 		Entity GetEntityByName(const std::string& name);

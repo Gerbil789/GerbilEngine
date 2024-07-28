@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Engine/Scene/Scene.h"
+#include "Engine/Core/UUID.h"
+#include "Engine/Scene/Components.h"
 #include "entt.hpp"
 
 namespace Engine
@@ -56,7 +58,7 @@ namespace Engine
 		operator entt::entity() const { return m_EntityHandle; }
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; } //entity id
 
-
+		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 		
 
 

@@ -1,0 +1,32 @@
+Scene: Untitled Scene
+Entities:
+  - Entity: 17510347425494942597
+    NameComponent:
+      Name: sprut
+    TransformComponent:
+      Position: [-1.57104111, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.768683255, 0.290822625, 0.0656526834, 1]
+      TilingFactor: [1, 1]
+  - Entity: 16379561264468609169
+    NameComponent:
+      Name: spret
+    TransformComponent:
+      Position: [1.4313966, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.160838902, 0.278830379, 0.355871916, 1]
+      TilingFactor: [1, 1]
+  - Entity: 3703745479677688527
+    NameComponent:
+      Name: sprit
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.721884608, 0.77224201, 0.0274819247, 1]
+      TilingFactor: [1, 1]

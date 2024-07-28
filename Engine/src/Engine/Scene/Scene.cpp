@@ -2,6 +2,7 @@
 #include "Engine/Scene/Scene.h"
 #include <glm/glm.hpp>
 #include "Engine/Scene/Components.h"
+#include "Engine/Scene/ScriptableEntity.h"
 #include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Scene/Entity.h"
 
@@ -110,7 +111,13 @@ namespace Engine
 
 	Entity Scene::CreateEntity(const std::string& name)
 	{
+		return CreateEntity(UUID(), name);
+	}
+
+	Entity Scene::CreateEntity(UUID uuid, const std::string& name)
+	{
 		Entity entity = { m_Registry.create(), this };
+		entity.AddComponent<IDComponent>(uuid);
 		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<NameComponent>(name);
 		return entity;
@@ -150,6 +157,8 @@ namespace Engine
 		return {};
 	}
 
+
+
 	template<typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component) 
 	{
@@ -158,6 +167,12 @@ namespace Engine
 
 	template<>
 	void Scene::OnComponentAdded<NameComponent>(Entity entity, NameComponent& component)
+	{
+
+	}
+
+	template<>
+	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
 	{
 
 	}

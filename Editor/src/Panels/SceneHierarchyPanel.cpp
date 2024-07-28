@@ -43,7 +43,8 @@ namespace Engine
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
-				m_Context->CreateEntity("Empty Entity");
+				Entity entity = m_Context->CreateEntity("Empty Entity");
+				m_SelectionContext = entity;
 			}
 
 			ImGui::EndPopup();
