@@ -9,7 +9,7 @@
 
 namespace Engine
 {
-    EditorLayer::EditorLayer() : Layer("EditorLayer"), m_CameraController(1280.f / 720.f, false, false) {}
+    EditorLayer::EditorLayer() : Layer("EditorLayer") {}
 
     void EditorLayer::OnAttach()
     {
@@ -20,6 +20,8 @@ namespace Engine
         m_GerbilTexture = Texture2D::Create("assets/textures/gerbil.jpg");
         m_TileTexture = Texture2D::Create("assets/textures/tile.png");
         m_Spritesheet = Texture2D::Create("assets/textures/spritesheet.png");
+        m_Icon_Play = Texture2D::Create("resources/icons/play.png");
+        m_Icon_Stop = Texture2D::Create("resources/icons/stop.png");
         for (int i = 0; i < 9; i++) {
             for (int j = 8; j > 5; j--) {
                 m_TileTextures.push_back(SubTexture2D::CreateFromCoords(m_Spritesheet, { i, j }, { 18, 18 }));
@@ -30,6 +32,7 @@ namespace Engine
                 m_TileTextures.push_back(SubTexture2D::CreateFromCoords(m_Spritesheet, { i, j }, { 18, 18 }, { 3, 3 }));
             }
         }
+
 
         //create frame buffer
         FrameBufferSpecification fbSpec;
@@ -62,21 +65,10 @@ namespace Engine
             (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 		{
 			m_FrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
-
             m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
             m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-
-        //update camera controller if viewport is focused
-        if (m_ViewportFocused) 
-        {
-            m_CameraController.OnUpdate(ts);
-            
-        }
-
-        m_EditorCamera.OnUpdate(ts);
 
         //clear frame buffer
         Renderer2D::ResetStats();
@@ -87,8 +79,19 @@ namespace Engine
         m_FrameBuffer->ClearAttachment(1, -1); //clear red integer attachment
 
         //update scene
-        m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
-
+        switch (m_SceneState)
+        {
+            case Engine::EditorLayer::SceneState::Edit:
+                m_EditorCamera.OnUpdate(ts);
+                m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+                break;
+            case Engine::EditorLayer::SceneState::Play:
+                m_ActiveScene->OnUpdateRuntime(ts);
+                break;
+            default:
+                ENGINE_LOG_WARNING("Unknown scene state");
+                break;
+        }
 
         auto [mx, my] = ImGui::GetMousePos();
         mx -= m_ViewportBounds[0].x;
@@ -110,7 +113,6 @@ namespace Engine
 
     void EditorLayer::OnEvent(Event& e)
     {
-        m_CameraController.OnEvent(e);
         m_EditorCamera.OnEvent(e);
 
         EventDispatcher dispatcher(e);
@@ -212,7 +214,7 @@ namespace Engine
         ImGui::ShowDemoWindow();
 
         ImGui::Begin("Statistics");
-        ImGui::Text("Hovered entity: %s", m_HoveredEntity ? m_HoveredEntity.GetComponent<TagComponent>().Tag.c_str() : "None");
+        ImGui::Text("Hovered entity: %s", m_HoveredEntity ? m_HoveredEntity.GetComponent<NameComponent>().Name.c_str() : "None");
 
         auto stats = Renderer2D::GetStats();
         ImGui::Text("Draw Calls: %d", stats.DrawCalls);
@@ -306,6 +308,8 @@ namespace Engine
 
         ImGui::End();
         ImGui::PopStyleVar(); // Restore padding
+
+        UI_Toolbar();
 
         ImGui::End();
     }
@@ -420,5 +424,41 @@ namespace Engine
 			serializer.Serialize(path);
 			ENGINE_LOG_INFO("Save as {0}", path);
 		}
+	}
+    void EditorLayer::UI_Toolbar()
+    {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.1f, 0.1f, 0.1f, 1));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.3f, 0.3f, 0.3f, 1));
+
+        ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+        Ref<Texture2D> icon = m_SceneState == SceneState::Play ? m_Icon_Stop : m_Icon_Play;
+        ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x * 0.5f - 24.0f * 0.5f);
+
+        if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), { 24, 24 }, { 0, 1 }, { 1, 0 }))
+		{
+			if (m_SceneState == SceneState::Edit)
+				OnScenePlay();
+			else if (m_SceneState == SceneState::Play)
+				OnSceneStop();
+		}
+
+		ImGui::End();
+
+        ImGui::PopStyleColor(3);
+        ImGui::PopStyleVar(2);
+    }
+
+    void EditorLayer::OnScenePlay()
+    {
+        m_SceneState = SceneState::Play;
+    }
+
+    void EditorLayer::OnSceneStop()
+	{
+        m_SceneState = SceneState::Edit;
 	}
 }

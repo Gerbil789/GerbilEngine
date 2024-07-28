@@ -26,7 +26,7 @@ namespace Engine
 	
 		if (m_Context)
 		{
-			m_Context->m_Registry.view<TagComponent>().each([&](auto entityId, auto tc)
+			m_Context->m_Registry.view<NameComponent>().each([&](auto entityId, auto tc)
 			{
 				Entity entity{ entityId, m_Context.get() };
 				DrawEntityNode(entity);
@@ -111,11 +111,11 @@ namespace Engine
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
-		auto& tag = entity.GetComponent<TagComponent>().Tag;
+		auto& name = entity.GetComponent<NameComponent>().Name;
 
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0);
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-		bool expanded =  ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+		bool expanded =  ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
 
 		if(ImGui::IsItemClicked())
 		{
@@ -242,18 +242,18 @@ namespace Engine
 
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
 	{
-		if(entity.HasComponent<TagComponent>())
+		if(entity.HasComponent<NameComponent>())
 		{
-			auto& tag = entity.GetComponent<TagComponent>().Tag;
+			auto& name = entity.GetComponent<NameComponent>().Name;
 
 			char buffer[64];
 			memset(buffer, 0, sizeof(buffer));
-			strcpy_s(buffer, sizeof(buffer), tag.c_str());
+			strcpy_s(buffer, sizeof(buffer), name.c_str());
 
 			
 			if(ImGui::InputText("Name", buffer, sizeof(buffer)))
 			{
-				tag = std::string(buffer);
+				name = std::string(buffer);
 			}
 		}
 

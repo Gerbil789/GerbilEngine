@@ -12,6 +12,11 @@ namespace Engine
 		Entity(entt::entity handle, Scene* scene);
 		Entity(const Entity& other) = default;
 
+		void SetName(const std::string& name);
+
+		void SetActive(bool active) { m_Active = active; }
+		bool IsActive() { return m_Active; }
+
 
 		template<typename T>
 		bool HasComponent()
@@ -28,7 +33,6 @@ namespace Engine
 				return GetComponent<T>();
 			}
 			
-			//ASSERT(!HasComponent<T>(), "Entity already has component!");
 			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 			m_Scene->OnComponentAdded<T>(*this, component);
 			return component;
@@ -42,17 +46,6 @@ namespace Engine
 		}
 
 		template<typename T>
-		bool TryGetComponent(T& outComponent)
-		{
-			if (HasComponent<T>()) {
-				outComponent = m_Scene->m_Registry.get<T>(m_EntityHandle);
-				return true;
-			}
-			return false;
-		}
-
-
-		template<typename T>
 		void RemoveComponent()
 		{
 			ASSERT(HasComponent<T>(), "Entity does not have component!");
@@ -62,6 +55,9 @@ namespace Engine
 		operator bool() const { return m_EntityHandle != entt::null; }
 		operator entt::entity() const { return m_EntityHandle; }
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; } //entity id
+
+
+		
 
 
 		bool operator==(const Entity& other) const
@@ -77,6 +73,9 @@ namespace Engine
 	private:
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_Scene = nullptr;
+
+		bool m_Active = true;
+
 		friend class Scene;
 	};
 }

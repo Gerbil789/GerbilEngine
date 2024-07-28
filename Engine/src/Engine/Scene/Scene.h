@@ -22,6 +22,8 @@ namespace Engine
 		Entity CreateEntity(const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
 
+		Entity GetEntityByName(const std::string& name);
+
 		Entity GetMainCameraEntity();
 	private:
 		template<typename T>

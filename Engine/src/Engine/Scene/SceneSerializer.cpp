@@ -140,7 +140,7 @@ namespace Engine
 		// Tag Component
 		out << YAML::Key << "TagComponent";
 		out << YAML::BeginMap;
-		out << YAML::Key << "Tag" << YAML::Value << entity.GetComponent<TagComponent>().Tag;
+		out << YAML::Key << "Tag" << YAML::Value << entity.GetComponent<NameComponent>().Name;
 		out << YAML::EndMap;
 
 		// Transform Component
@@ -197,7 +197,7 @@ namespace Engine
 		out << YAML::Key << "Scene" << YAML::Value << "Untitled Scene";
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
-		for (const auto [ent, ref] : m_Scene->m_Registry.storage<TagComponent>().each()) 
+		for (const auto [ent, ref] : m_Scene->m_Registry.storage<NameComponent>().each()) 
 		{
 			Entity entity = { ent, m_Scene.get() };
 			if (!entity) return;

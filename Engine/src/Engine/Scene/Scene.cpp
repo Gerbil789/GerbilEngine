@@ -63,17 +63,13 @@ namespace Engine
 			return;
 		}
 
-
 		Renderer2D::BeginScene(mainCamera->GetProjection(), cameraTransform);
 
 		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
 		for (auto entity : group)
 		{
 			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-
-			//Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);
 			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
-
 		}
 
 		Renderer2D::EndScene();
@@ -88,7 +84,7 @@ namespace Engine
 		{
 			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 
-			//Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);
+
 			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 		}
 
@@ -116,7 +112,7 @@ namespace Engine
 	{
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<TagComponent>(name);
+		entity.AddComponent<NameComponent>(name);
 		return entity;
 	}
 
@@ -124,6 +120,20 @@ namespace Engine
 	void Scene::DestroyEntity(Entity entity)
 	{
 		m_Registry.destroy(entity);
+	}
+
+	Entity Scene::GetEntityByName(const std::string& name)
+	{
+		auto view = m_Registry.view<NameComponent>();
+		for (auto entity : view)
+		{
+			if(view.get<NameComponent>(entity).Name == name)
+			{
+				return Entity{ entity, this };
+			}
+		}
+		return {};
+		
 	}
 
 	Entity Scene::GetMainCameraEntity()
@@ -147,7 +157,7 @@ namespace Engine
 	}
 
 	template<>
-	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
+	void Scene::OnComponentAdded<NameComponent>(Entity entity, NameComponent& component)
 	{
 
 	}

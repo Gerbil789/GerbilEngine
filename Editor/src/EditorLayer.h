@@ -27,19 +27,23 @@ namespace Engine
 		void OpenScene(const std::string& filepath);
 		void SaveSceneAs();
 
+		void UI_Toolbar();
 
+		void OnScenePlay();
+		void OnSceneStop();
 	private:
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
 
 		ShaderLibrary m_ShaderLibrary;
 		Ref<VertexArray> m_VertexArrayObject;
-		OrthographicCameraController m_CameraController;
 
 		Ref<Texture2D> m_BackroundTexture;
 		Ref<Texture2D> m_GerbilTexture;
 		Ref<Texture2D> m_TileTexture;
 		Ref<Texture2D> m_Spritesheet;
+		Ref<Texture2D> m_Icon_Play;
+		Ref<Texture2D> m_Icon_Stop;
 
 		std::vector<Ref<SubTexture2D>> m_TileTextures;
 
@@ -66,6 +70,12 @@ namespace Engine
 
 		Entity m_HoveredEntity;
 
+		enum class SceneState
+		{
+			Edit = 0, Play = 1
+		};
+		
+		SceneState m_SceneState = SceneState::Edit;
 
 	};
 }

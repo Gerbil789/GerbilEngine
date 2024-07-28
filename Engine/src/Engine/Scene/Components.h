@@ -2,7 +2,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "Engine/Renderer/OrthographicCamera.h"
 #include "Engine/Scene/SceneCamera.h"
 #include "Engine/Scene/ScriptableEntity.h"
 #include "Engine/Renderer/Texture.h"
@@ -12,16 +11,16 @@
 
 namespace Engine
 {
-	struct TagComponent
+	struct NameComponent
 	{
-		std::string Tag;
+		std::string Name;
 
-		TagComponent() = default;
-		TagComponent(const TagComponent&) = default;
-		TagComponent(const std::string& tag) : Tag(tag.empty() ? "Entity" : tag) {}
+		NameComponent() = default;
+		NameComponent(const NameComponent&) = default;
+		NameComponent(const std::string& name) : Name(name.empty() ? "Entity" : name) {}
 
-		operator std::string& () { return Tag; }
-		operator const std::string& () const { return Tag; }
+		operator std::string& () { return Name; }
+		operator const std::string& () const { return Name; }
 	};
 
 

@@ -13,7 +13,7 @@ namespace Engine
 		m_CurrentDirectory = assetsDirectory;
 
 		m_DirectoryIcon = Texture2D::Create("resources/icons/folder.png");
-		m_FileIcon = Texture2D::Create("resources/icons/description.png");
+		m_FileIcon = Texture2D::Create("resources/icons/file.png");
 	}
 
 	void ContentBrowserPanel::OnImGuiRender()
