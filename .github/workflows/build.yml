@@ -1,10 +1,9 @@
-name: Build C++ Game Engine on Windows
+name: Build Project
 
 on:
   push:
     branches:
       - main
-      - workflows
   pull_request:
     branches:
       - main
@@ -30,4 +29,3 @@ jobs:
     - name: Build project
       run: |
         msbuild /p:Configuration=Release /p:Platform=x64 GerbilEngine.sln
-
