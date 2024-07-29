@@ -1,32 +1,60 @@
 Scene: Untitled Scene
 Entities:
-  - Entity: 17510347425494942597
+  - Entity: 2473166468092466418
     NameComponent:
-      Name: sprut
+      Name: Camera
     TransformComponent:
-      Position: [-1.57104111, 0, 0]
+      Position: [0, 0, 7.80000019]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -100
+        OrthographicFar: 100
+      Main: true
+      FixedAspectRatio: false
+  - Entity: 3703745479677688527
+    NameComponent:
+      Name: sprit
+    TransformComponent:
+      Position: [0, 0, -0.5]
+      Rotation: [0, 0, 0]
+      Scale: [0.99999994, 3, 1]
     SpriteRendererComponent:
-      Color: [0.768683255, 0.290822625, 0.0656526834, 1]
+      Color: [0.721884608, 0.77224201, 0.0274819247, 1]
       TilingFactor: [1, 1]
   - Entity: 16379561264468609169
     NameComponent:
       Name: spret
     TransformComponent:
-      Position: [1.4313966, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Position: [1, 0, 0]
+      Rotation: [0, -45.0000038, 0]
+      Scale: [1.0085398, 3, 0.999999881]
     SpriteRendererComponent:
-      Color: [0.160838902, 0.278830379, 0.355871916, 1]
+      Color: [0.836298943, 0.465233028, 0.107141487, 1]
       TilingFactor: [1, 1]
-  - Entity: 3703745479677688527
+  - Entity: 17510347425494942597
     NameComponent:
-      Name: sprit
+      Name: sprut
     TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Position: [-2.38825488, 0.00916048884, 1.3882587]
+      Rotation: [5.58711004, -1.41463673, 178.695862]
+      Scale: [1.00000799, 3.00002503, 0.999999762]
     SpriteRendererComponent:
-      Color: [0.721884608, 0.77224201, 0.0274819247, 1]
+      Color: [0.857651234, 0.357100368, 0.624298573, 1]
+      TilingFactor: [1, 1]
+  - Entity: 3205262433915648988
+    NameComponent:
+      Name: sprut
+    TransformComponent:
+      Position: [-1.42134297, 0.00916048884, 0.42134428]
+      Rotation: [0, 45.0000038, 0]
+      Scale: [0.999999881, 3, 0.999999881]
+    SpriteRendererComponent:
+      Color: [0.857651234, 0.357100368, 0.624298573, 1]
       TilingFactor: [1, 1]

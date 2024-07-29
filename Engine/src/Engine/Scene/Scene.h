@@ -15,6 +15,11 @@ namespace Engine
 		Scene();
 		~Scene();
 
+		static Ref<Scene> Copy(const Ref<Scene>& other);
+
+		void OnRuntimeStart();
+		void OnRuntimeStop();
+
 		void OnUpdateRuntime(Timestep ts);
 		void OnUpdateEditor(Timestep ts, EditorCamera& camera);
 
@@ -27,6 +32,8 @@ namespace Engine
 		Entity GetEntityByName(const std::string& name);
 
 		Entity GetMainCameraEntity();
+
+		void DuplicateEntity(Entity entity);
 	private:
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component);
@@ -34,6 +41,7 @@ namespace Engine
 	private:
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
+		bool m_IsRunning = false;
 
 		friend class Entity;
 		friend class SceneHierarchyPanel;

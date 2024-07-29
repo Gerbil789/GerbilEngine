@@ -18,6 +18,77 @@ namespace Engine
 
 	}
 
+	template<typename Component>
+	static void CopyComponent(entt::registry& dstRegistry, entt::registry& srcRegistry, const std::unordered_map<UUID, entt::entity>& enttMap)
+	{
+		auto view = srcRegistry.view<Component>();
+		for(auto srcEntity : view)
+		{
+			UUID uuid = srcRegistry.get<IDComponent>(srcEntity).ID;
+			ASSERT(enttMap.find(uuid) != enttMap.end(), "Entity not found in map!");
+			entt::entity dstEnttId = enttMap.at(uuid);
+
+			auto& srcComponent = srcRegistry.get<Component>(srcEntity);
+			dstRegistry.emplace_or_replace<Component>(dstEnttId, srcComponent);
+
+		}
+	}
+
+	template<typename Component>
+	static void CopyComponentIfExists(Entity src, Entity dst)
+	{
+		if(src.HasComponent<Component>())
+		{
+			auto& srcComponent = src.GetComponent<Component>();
+			dst.AddOrReplaceComponent<Component>(srcComponent);
+		}
+		
+	}
+
+	Ref<Scene> Scene::Copy(const Ref<Scene>& other)
+	{
+		Ref<Scene> newScene = CreateRef<Scene>();
+		
+		newScene->m_ViewportWidth = other->m_ViewportWidth;
+		newScene->m_ViewportHeight = other->m_ViewportHeight;
+
+		std::unordered_map<UUID, entt::entity> enttMap;
+
+		// Copy entities
+		auto& srcSceneRegistry = other->m_Registry;
+		auto& dstSceneRegistry = newScene->m_Registry;
+
+		auto IdView = srcSceneRegistry.view<IDComponent>();
+
+		for(auto entity : IdView)
+		{
+			UUID uuid = IdView.get<IDComponent>(entity).ID;
+			const auto& name = srcSceneRegistry.get<NameComponent>(entity).Name;
+			Entity newEntity = newScene->CreateEntity(uuid, name);
+			enttMap[uuid] = (entt::entity)newEntity;
+
+		}
+
+		CopyComponent<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<SpriteRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+
+		return newScene;
+	}
+
+
+	void Scene::OnRuntimeStart()
+	{
+		m_IsRunning = true;
+	}
+
+	void Scene::OnRuntimeStop()
+	{
+		m_IsRunning = false;
+	}
+
+
 
 	void Scene::OnUpdateRuntime(Timestep ts)
 	{
@@ -155,6 +226,16 @@ namespace Engine
 			}
 		}
 		return {};
+	}
+
+	void Scene::DuplicateEntity(Entity entity)
+	{
+		Entity newEntity = CreateEntity(entity.GetName());
+		
+		CopyComponentIfExists<TransformComponent>(entity, newEntity);
+		CopyComponentIfExists<SpriteRendererComponent>(entity, newEntity);
+		CopyComponentIfExists<CameraComponent>(entity, newEntity);
+		CopyComponentIfExists<NativeScriptComponent>(entity, newEntity);
 	}
 
 

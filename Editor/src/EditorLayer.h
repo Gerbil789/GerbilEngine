@@ -26,11 +26,16 @@ namespace Engine
 		void OpenScene();
 		void OpenScene(const std::string& filepath);
 		void SaveSceneAs();
+		void SaveScene();
+
+		void SerializeScene(Ref<Scene> scene, const std::string& filepath);
 
 		void UI_Toolbar();
 
 		void OnScenePlay();
 		void OnSceneStop();
+
+		void OnDuplicatedEntity();
 	private:
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
@@ -52,10 +57,10 @@ namespace Engine
 		Ref<FrameBuffer> m_FrameBuffer;
 
 		Ref<Scene> m_ActiveScene;
+		Ref<Scene> m_EditorScene;
+		Ref<Scene> m_RuntimeScene;
 
-		Entity m_SquareEntity;
-		Entity m_CameraEntity;
-
+		std::filesystem::path m_EditorScenePath;
 
 		//panels
 
