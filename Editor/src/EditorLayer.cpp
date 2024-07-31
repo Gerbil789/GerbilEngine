@@ -16,22 +16,18 @@ namespace Engine
         ENGINE_PROFILE_FUNCTION();
 
         //load textures
-        m_BackroundTexture = Texture2D::Create("assets/textures/background.png");
-        m_GerbilTexture = Texture2D::Create("assets/textures/gerbil.jpg");
-        m_TileTexture = Texture2D::Create("assets/textures/tile.png");
-        m_Spritesheet = Texture2D::Create("assets/textures/spritesheet.png");
         m_Icon_Play = Texture2D::Create("resources/icons/play.png");
         m_Icon_Stop = Texture2D::Create("resources/icons/stop.png");
-        for (int i = 0; i < 9; i++) {
-            for (int j = 8; j > 5; j--) {
-                m_TileTextures.push_back(SubTexture2D::CreateFromCoords(m_Spritesheet, { i, j }, { 18, 18 }));
-            }
-        }
-        for (int i = 0; i < 9; i += 3) {
-            for (int j = 0; j < 6; j += 3) {
-                m_TileTextures.push_back(SubTexture2D::CreateFromCoords(m_Spritesheet, { i, j }, { 18, 18 }, { 3, 3 }));
-            }
-        }
+        //for (int i = 0; i < 9; i++) {
+        //    for (int j = 8; j > 5; j--) {
+        //        m_TileTextures.push_back(SubTexture2D::CreateFromCoords(m_Spritesheet, { i, j }, { 18, 18 }));
+        //    }
+        //}
+        //for (int i = 0; i < 9; i += 3) {
+        //    for (int j = 0; j < 6; j += 3) {
+        //        m_TileTextures.push_back(SubTexture2D::CreateFromCoords(m_Spritesheet, { i, j }, { 18, 18 }, { 3, 3 }));
+        //    }
+        //}
 
 
         //create frame buffer
@@ -41,13 +37,11 @@ namespace Engine
         fbSpec.Height = 720;
         m_FrameBuffer = FrameBuffer::Create(fbSpec);
 
-        //create scene
-        m_ActiveScene = CreateRef<Scene>();
-
         m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 
-        m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-
+        m_EditorScene = CreateRef<Scene>();
+        m_SceneHierarchyPanel.SetContext(m_EditorScene);
+        m_ActiveScene = m_EditorScene;
     }
 
     void EditorLayer::OnDetach()
@@ -59,6 +53,8 @@ namespace Engine
     {
         ENGINE_PROFILE_FUNCTION();
 
+        m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+
         //resize
         if (FrameBufferSpecification spec = m_FrameBuffer->GetSpecification();
             m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
@@ -66,7 +62,7 @@ namespace Engine
 		{
 			m_FrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-            m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+           
 		}
 
 
@@ -76,7 +72,7 @@ namespace Engine
         RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
         RenderCommand::Clear();
 
-        m_FrameBuffer->ClearAttachment(1, -1); //clear red integer attachment
+        m_FrameBuffer->ClearAttachment(1, -1); //clear ID attachment
 
         //update scene
         switch (m_SceneState)
@@ -398,11 +394,14 @@ namespace Engine
         if (m_SceneState != SceneState::Edit) {
             return;
         }
-        m_EditorScene = CreateRef<Scene>();
-        m_ActiveScene = m_EditorScene;
-		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
+        if (m_ActiveScene != nullptr) {
+            RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+            RenderCommand::Clear();
+        }
+
+        m_ActiveScene = CreateRef<Scene>();
+        m_SceneHierarchyPanel.SetContext(m_EditorScene);
         m_EditorScenePath = std::filesystem::path();
     }
 
@@ -412,7 +411,6 @@ namespace Engine
         {
             OnSceneStop();
         }
-            
 
 		std::string path = FileDialogs::OpenFile("Scene (*.scene)\0*.scene\0");
         if (path.empty()) {
@@ -509,22 +507,17 @@ namespace Engine
     {
         m_SceneState = SceneState::Play;
 
-        m_RuntimeScene = Scene::Copy(m_ActiveScene);
-        m_RuntimeScene->OnRuntimeStart();
-        m_ActiveScene = m_RuntimeScene;
+        m_ActiveScene = Scene::Copy(m_EditorScene);
+        m_ActiveScene->OnRuntimeStart();
+
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
     }
 
     void EditorLayer::OnSceneStop()
 	{
-        m_RuntimeScene->OnRuntimeStop();
-
+        m_ActiveScene->OnRuntimeStop();
         m_SceneState = SceneState::Edit;
-
-        
-        m_RuntimeScene = nullptr;
         m_ActiveScene = m_EditorScene;
-
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 

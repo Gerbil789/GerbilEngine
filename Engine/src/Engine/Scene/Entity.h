@@ -15,11 +15,33 @@ namespace Engine
 		Entity(const Entity& other) = default;
 
 		void SetName(const std::string& name);
+		const std::string& GetName() { return GetComponent<NameComponent>().Name; }
 
 		void SetActive(bool active) { m_Active = active; }
 		bool IsActive() { return m_Active; }
 
+		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
+		
+		operator bool() const { return m_EntityHandle != entt::null; }
+		operator entt::entity() const { return m_EntityHandle; }
+		operator uint32_t() const { return (uint32_t)m_EntityHandle; } //entity id
 
+		bool operator==(const Entity& other) const
+		{
+			return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene;
+		}
+
+		bool operator!=(const Entity& other) const
+		{
+			return !(*this == other);
+		}
+
+	private:
+		entt::entity m_EntityHandle{ entt::null };
+		Scene* m_Scene = nullptr;
+		bool m_Active = true;
+
+	public:
 		template<typename T>
 		bool HasComponent()
 		{
@@ -61,35 +83,5 @@ namespace Engine
 			ASSERT(HasComponent<T>(), "Entity does not have component!");
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
-
-		operator bool() const { return m_EntityHandle != entt::null; }
-		operator entt::entity() const { return m_EntityHandle; }
-		operator uint32_t() const { return (uint32_t)m_EntityHandle; } //entity id
-
-		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
-		const std::string& GetName() { return GetComponent<NameComponent>().Name; }
-		
-
-
-		bool operator==(const Entity& other) const
-		{
-			return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene;
-		}
-
-		bool operator!=(const Entity& other) const
-		{
-			return !(*this == other);
-		}
-
-	private:
-		entt::entity m_EntityHandle{ entt::null };
-		Scene* m_Scene = nullptr;
-
-		bool m_Active = true;
-
-		friend class Scene;
 	};
 }
-
-
-

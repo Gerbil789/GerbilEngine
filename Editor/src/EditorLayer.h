@@ -58,7 +58,6 @@ namespace Engine
 
 		Ref<Scene> m_ActiveScene;
 		Ref<Scene> m_EditorScene;
-		Ref<Scene> m_RuntimeScene;
 
 		std::filesystem::path m_EditorScenePath;
 

@@ -15,7 +15,9 @@ namespace Engine
 
 	Scene::~Scene()
 	{
-
+		//log entity count
+		auto view = m_Registry.view<IDComponent>();
+		ENGINE_LOG_INFO("Destroying scene with {0} entities", view.size());
 	}
 
 	template<typename Component>
@@ -155,8 +157,6 @@ namespace Engine
 		for (auto entity : group)
 		{
 			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-
-
 			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 		}
 

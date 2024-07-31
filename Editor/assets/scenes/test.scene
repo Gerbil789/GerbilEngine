@@ -1,23 +1,5 @@
 Scene: Untitled Scene
 Entities:
-  - Entity: 2473166468092466418
-    NameComponent:
-      Name: Camera
-    TransformComponent:
-      Position: [0, 0, 7.80000019]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFOV: 0.785398185
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 1000
-        OrthographicSize: 10
-        OrthographicNear: -100
-        OrthographicFar: 100
-      Main: true
-      FixedAspectRatio: false
   - Entity: 3703745479677688527
     NameComponent:
       Name: sprit
