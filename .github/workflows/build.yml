@@ -29,3 +29,21 @@ jobs:
     - name: Build project
       run: |
         msbuild /p:Configuration=Release /p:Platform=x64 GerbilEngine.sln
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up C++ Linter
+        # Example linter setup, you can replace this with your preferred linter
+        run: sudo apt-get install clang-tidy
+
+      - name: Run C++ Lint
+        # Adjust the command below to your project's needs
+        run: clang-tidy **/*.cpp -- -std=c++17
+        continue-on-error: true
