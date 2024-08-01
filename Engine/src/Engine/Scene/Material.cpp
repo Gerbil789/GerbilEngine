@@ -1,5 +1,5 @@
 #include "enginepch.h"
-#include "Engine/Scne/Material.h"
+#include "Engine/Scene/Material.h"
 
 namespace Engine
 {
