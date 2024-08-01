@@ -236,8 +236,58 @@ namespace Engine
 		CopyComponentIfExists<SpriteRendererComponent>(entity, newEntity);
 		CopyComponentIfExists<CameraComponent>(entity, newEntity);
 		CopyComponentIfExists<NativeScriptComponent>(entity, newEntity);
+
+		SelectEntity(newEntity);
 	}
 
+	void Scene::CopyEntity(Entity entity)
+	{
+		m_CopiedEntityUUID = entity.GetUUID();
+	}
+
+	void Scene::PasteEntity()
+	{
+		if(m_CopiedEntityUUID == 0)
+		{
+			return;
+		}
+
+		//find entity in the scene
+		auto view = m_Registry.view<IDComponent>();
+		for(auto entity : view)
+		{
+			if(view.get<IDComponent>(entity).ID == m_CopiedEntityUUID)
+			{
+				DuplicateEntity(Entity{ entity, this });
+				return;
+			}
+		}
+		
+
+	}
+
+	void Scene::SelectEntity(Entity entity)
+	{
+		selectedEntity = entity;
+	}
+
+	void Scene::DeselectEntity()
+	{
+		selectedEntity = entt::null;
+	}
+
+	bool Scene::IsEntitySelected(Entity entity)
+	{
+		return selectedEntity == entity;
+	}
+
+	const Entity& Scene::GetSelectedEntity()
+	{
+		Entity entity = { selectedEntity, this };
+		return entity;
+	}
+
+	
 
 
 	template<typename T>

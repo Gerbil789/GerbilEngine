@@ -18,17 +18,12 @@ namespace Engine
         //load textures
         m_Icon_Play = Texture2D::Create("resources/icons/play.png");
         m_Icon_Stop = Texture2D::Create("resources/icons/stop.png");
-        //for (int i = 0; i < 9; i++) {
-        //    for (int j = 8; j > 5; j--) {
-        //        m_TileTextures.push_back(SubTexture2D::CreateFromCoords(m_Spritesheet, { i, j }, { 18, 18 }));
-        //    }
-        //}
-        //for (int i = 0; i < 9; i += 3) {
-        //    for (int j = 0; j < 6; j += 3) {
-        //        m_TileTextures.push_back(SubTexture2D::CreateFromCoords(m_Spritesheet, { i, j }, { 18, 18 }, { 3, 3 }));
-        //    }
-        //}
 
+        m_ShaderLibrary.Load("Texture", "assets/shaders/Texture.glsl");
+
+        m_Material = CreateRef<Material>();
+        m_Material->shaderName = "Texture";
+        m_Material->texture = Texture2D::Create("assets/textures/gerbil.jpg");
 
         //create frame buffer
         FrameBufferSpecification fbSpec;
@@ -262,7 +257,7 @@ namespace Engine
 
 
         //gizmo
-        Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+        Entity selectedEntity = m_ActiveScene->GetSelectedEntity();
 
         if (selectedEntity && m_GizmoType != -1) 
         {
@@ -357,6 +352,23 @@ namespace Engine
 				}
 				break;
 			}
+            case Key::C:
+			{
+				if (control)
+				{
+					m_EditorScene->CopyEntity(m_ActiveScene->GetSelectedEntity());
+				}
+				break;
+			}
+            case Key::V:
+            {
+                if (control)
+                {
+                    m_EditorScene->PasteEntity();
+                }
+                break;
+            }
+			
             
 
             case Key::Q:
@@ -383,7 +395,7 @@ namespace Engine
 		{
 			if(m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
 			{
-				m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+                m_ActiveScene->SelectEntity(m_HoveredEntity);
 			}
 		}
         return false;
@@ -523,17 +535,10 @@ namespace Engine
 
     void EditorLayer::OnDuplicatedEntity()
     {
-        if(m_SceneState != SceneState::Edit)
-		{
-            return;
-        }
-
-        Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+        auto selectedEntity = m_ActiveScene->GetSelectedEntity();
         if (selectedEntity)
         {
             m_EditorScene->DuplicateEntity(selectedEntity);
         }
-
-        
     }
 }

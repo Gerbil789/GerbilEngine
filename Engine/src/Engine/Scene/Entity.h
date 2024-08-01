@@ -14,6 +14,7 @@ namespace Engine
 		Entity(entt::entity handle, Scene* scene);
 		Entity(const Entity& other) = default;
 
+
 		void SetName(const std::string& name);
 		const std::string& GetName() { return GetComponent<NameComponent>().Name; }
 

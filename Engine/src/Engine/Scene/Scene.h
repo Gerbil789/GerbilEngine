@@ -34,6 +34,13 @@ namespace Engine
 		Entity GetMainCameraEntity();
 
 		void DuplicateEntity(Entity entity);
+		void CopyEntity(Entity entity);
+		void PasteEntity();
+
+		void SelectEntity(Entity entity);
+		void DeselectEntity();
+		bool IsEntitySelected(Entity entity);
+		const Entity& GetSelectedEntity();
 	private:
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component);
@@ -42,6 +49,10 @@ namespace Engine
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 		bool m_IsRunning = false;
+
+		UUID m_CopiedEntityUUID = 0;
+
+		entt::entity selectedEntity = entt::null;
 
 		friend class Entity;
 		friend class SceneHierarchyPanel;

@@ -16,16 +16,11 @@ namespace Engine
 		void SetContext(const Ref<Scene>& context);
 
 		void OnImGuiRender();
-
-		void SetSelectedEntity(Entity entity) { m_SelectionContext = entity; }
-		Entity GetSelectedEntity() const { return m_SelectionContext; }
 	private:
 		Ref<Scene> m_Context;
 
 		void DrawEntityNode(Entity entity); // draw entity in scene hierarchy
 		void DrawComponents(Entity entity); // draw components in inspector
-
-		Entity m_SelectionContext;
 	};
 	
 }

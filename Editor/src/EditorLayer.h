@@ -4,6 +4,7 @@
 #include "Panels/SceneHierarchyPanel.h"
 #include "Engine/Renderer/EditorCamera.h"
 #include "Panels/ContentBrowserPanel.h"
+#include "Engine/Scene/Material.h"
 
 
 namespace Engine 
@@ -49,6 +50,8 @@ namespace Engine
 		Ref<Texture2D> m_Spritesheet;
 		Ref<Texture2D> m_Icon_Play;
 		Ref<Texture2D> m_Icon_Stop;
+
+		Ref<Material> m_Material;
 
 		std::vector<Ref<SubTexture2D>> m_TileTextures;
 

@@ -2,6 +2,7 @@
 #include "Engine/Scene/SceneCamera.h"
 #include "Engine/Renderer/Texture.h"
 #include "Engine/Core/UUID.h"
+#include "Engine/Scene/Material.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -53,6 +54,8 @@ namespace Engine
 
 	struct SpriteRendererComponent
 	{
+		Ref<Material> Material = nullptr;
+
 		glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		Ref<Texture2D> Texture = nullptr;
 		glm::vec2 TilingFactor = { 1.0f, 1.0f };

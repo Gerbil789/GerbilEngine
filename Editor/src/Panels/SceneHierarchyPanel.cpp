@@ -17,7 +17,7 @@ namespace Engine
 	void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
 	{
 		m_Context = context;
-		m_SelectionContext = {};
+		m_Context->DeselectEntity();
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender()
@@ -35,7 +35,7 @@ namespace Engine
 
 		if(ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 		{
-			m_SelectionContext = {};
+			m_Context->DeselectEntity();
 		}
 
 
@@ -44,7 +44,7 @@ namespace Engine
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
 				Entity entity = m_Context->CreateEntity("Empty Entity");
-				m_SelectionContext = entity;
+				m_Context->SelectEntity(entity);
 			}
 
 			ImGui::EndPopup();
@@ -54,9 +54,10 @@ namespace Engine
 
 
 		ImGui::Begin("Inspector");
-		if(m_SelectionContext)
+		Entity entity = m_Context->GetSelectedEntity();
+		if(entity)
 		{
-			DrawComponents(m_SelectionContext);
+			DrawComponents(entity);
 
 			ImGui::Separator();
 
@@ -94,13 +95,13 @@ namespace Engine
 			{
 				if(ImGui::MenuItem("Camera"))
 				{
-					m_SelectionContext.AddComponent<CameraComponent>();
+					entity.AddComponent<CameraComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 
 				if(ImGui::MenuItem("Sprite Renderer"))
 				{
-					m_SelectionContext.AddComponent<SpriteRendererComponent>();
+					entity.AddComponent<SpriteRendererComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 
@@ -114,13 +115,13 @@ namespace Engine
 	{
 		auto& name = entity.GetComponent<NameComponent>().Name;
 
-		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0);
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ((m_Context->IsEntitySelected(entity)) ? ImGuiTreeNodeFlags_Selected : 0);
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 		bool expanded =  ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
 
 		if(ImGui::IsItemClicked())
 		{
-			m_SelectionContext = entity;
+			m_Context->SelectEntity(entity);
 		}
 
 		bool entityDeleted = false;
@@ -141,9 +142,9 @@ namespace Engine
 		if(entityDeleted)
 		{
 			m_Context->DestroyEntity(entity);
-			if(m_SelectionContext == entity)
+			if(m_Context->IsEntitySelected(entity))
 			{
-				m_SelectionContext = {};
+				m_Context->DeselectEntity();
 			}
 		}
 	}
@@ -267,6 +268,16 @@ namespace Engine
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
 		{
+			if (ImGui::Button("Material", ImVec2(100.0f, 0.0f))) 
+			{
+				Ref<Material> material = CreateRef<Material>();
+				material->shaderName = "Texture";
+				material->texture = Texture2D::Create("assets/textures/gerbil.jpg");
+				material->color = glm::vec4(0.8f, 0.2f, 0.3f, 1.0f);
+				material->tiling = glm::vec2(2.0f, 2.0f);
+				component.Material = material;
+			}
+
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 
 			ImGui::Button("Texture", ImVec2(100.0f, 0.0f));

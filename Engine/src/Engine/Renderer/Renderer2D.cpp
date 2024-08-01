@@ -13,8 +13,6 @@ namespace Engine
 		glm::vec2 TexCoord = { 0.0f, 0.0f };
 		float TexIndex = 0.0f;
 		glm::vec2 TilingFactor = { 1.0f, 1.0f };
-
-		// Editor only
 		int EntityID = -1;
 	};
 
@@ -174,6 +172,14 @@ namespace Engine
 	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID, bool selected)
 	{
 		ENGINE_PROFILE_FUNCTION();
+		//tmp
+		if (src.Material != nullptr) 
+		{
+			DrawQuad(transform, src.Material->texture, src.Material->tiling, src.Material->color, entityID);
+			return;
+		}
+
+
 		if (src.Texture) 
 		{
 			DrawQuad(transform, src.Texture, src.TilingFactor, src.Color, entityID);
