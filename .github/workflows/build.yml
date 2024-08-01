@@ -28,20 +28,3 @@ jobs:
     - name: Build project
       run: |
         msbuild /p:Configuration=Release /p:Platform=x64 GerbilEngine.sln
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up C++ Linter
-        run: sudo apt-get install clang-tidy
-
-      - name: Run C++ Lint
-        run: |
-          for file in $(find . -name '*.cpp'); do
-            echo "Linting $file"
-            clang-tidy "$file" -- -std=c++17 -I./Engine/src -I./Engine/include || true
-          done
-        continue-on-error: true
