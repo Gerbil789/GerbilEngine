@@ -37,12 +37,17 @@ jobs:
         with:
           submodules: true
 
+      - name: List all files for debugging
+        run: |
+          echo "Listing all files in the directory for debugging:"
+          find . -type f
+
       - name: Set up C++ Linter
         # Example linter setup, you can replace this with your preferred linter
         run: sudo apt-get install clang-tidy
 
       - name: Run C++ Lint
-        # Adjust the command below to your project's needs
         run: |
-          find . -name '*.cpp' | xargs clang-tidy -- -std=c++17
+          echo "Running clang-tidy on all .cpp files:"
+          find . -name '*.cpp' -print0 | xargs -0 clang-tidy -- -std=c++17
         continue-on-error: true
