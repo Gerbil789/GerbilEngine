@@ -11,7 +11,6 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -32,7 +31,6 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,5 +43,6 @@ jobs:
 
       - name: Run C++ Lint
         # Adjust the command below to your project's needs
-        run: clang-tidy **/*.cpp -- -std=c++17
+        run: |
+          find . -name '*.cpp' | xargs clang-tidy -- -std=c++17
         continue-on-error: true
