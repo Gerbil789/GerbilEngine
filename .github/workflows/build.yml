@@ -40,9 +40,8 @@ jobs:
 
       - name: Run C++ Lint
         run: |
-          echo "Running clang-tidy on all .cpp files:"
           for file in $(find . -name '*.cpp'); do
             echo "Linting $file"
-            clang-tidy "$file" -- -std=c++17 || true
+            clang-tidy "$file" -- -std=c++17 -I./Engine/src -I./Engine/include || true
           done
         continue-on-error: true
