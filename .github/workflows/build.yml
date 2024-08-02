@@ -60,7 +60,7 @@ jobs:
                 },
                 @{
                   name = "Commit"
-                  value = "[`$SHA`]($URL)"
+                  value = "[$SHA]($URL)"
                 },
                 @{
                   name = "Status"
