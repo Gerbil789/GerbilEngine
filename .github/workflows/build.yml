@@ -25,14 +25,6 @@ jobs:
     - name: Generate project files
       run: vendor\bin\premake\premake5.exe vs2022
       
-    - name: Cache Build Artifacts
-      uses: actions/cache@v2
-      with:
-        path: |
-          path/to/your/output/binaries
-          path/to/your/output/obj
-        key: ${{ runner.os }}-build-${{ hashFiles('**/*.cpp', '**/*.h') }}
-
     - name: Build project
       if: steps.cache-build.outputs.cache-hit != 'true'
       run: |
@@ -45,8 +37,13 @@ jobs:
         WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         STATUS: ${{ job.status }}
       run: |
+        $STATUS = "${{ job.status }}"
+        $BRANCHREF = "${{ github.ref }}"
+        $BRANCH = $BRANCHREF -replace '^refs/heads/', ''
+        $SHA = "${{ github.sha }}"
+        $URL = "https://github.com/${{ github.repository }}/commit/$SHA"
         $payload = @{
-          username = "GitHub Actions"
+          username = "Git Watcher"
           embeds = @(
             @{
               title = "Build Project Workflow Status"
@@ -59,11 +56,11 @@ jobs:
                 },
                 @{
                   name = "Branch"
-                  value = "${{ github.ref }}"
+                  value = $BRANCH
                 },
                 @{
                   name = "Commit"
-                  value = "${{ github.sha }}"
+                  value = "[`$SHA`]($URL)"
                 },
                 @{
                   name = "Status"
