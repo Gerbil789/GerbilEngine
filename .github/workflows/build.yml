@@ -37,3 +37,39 @@ jobs:
       if: steps.cache-build.outputs.cache-hit != 'true'
       run: |
         msbuild /p:Configuration=Release /p:Platform=x64 GerbilEngine.sln
+
+    - name: Notify Discord
+      if: always()
+      env:
+        WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        STATUS: ${{ job.status }}
+      run: |
+        curl -H "Content-Type: application/json" \
+             -X POST \
+             -d '{
+                   "username": "GitHub Actions",
+                   "embeds": [{
+                     "title": "Build Project Workflow Status",
+                     "description": "The build project workflow has completed.",
+                     "color": ${STATUS == 'success' && 3066993 || 15158332},
+                     "fields": [
+                       {
+                         "name": "Repository",
+                         "value": "${{ github.repository }}"
+                       },
+                       {
+                         "name": "Branch",
+                         "value": "${{ github.ref }}"
+                       },
+                       {
+                         "name": "Commit",
+                         "value": "${{ github.sha }}"
+                       },
+                       {
+                         "name": "Status",
+                         "value": "${STATUS}"
+                       }
+                     ]
+                   }]
+                 }' \
+             $WEBHOOK_URL
