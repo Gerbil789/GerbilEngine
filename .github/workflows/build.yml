@@ -39,7 +39,9 @@ jobs:
         msbuild /p:Configuration=Release /p:Platform=x64 GerbilEngine.sln
 
     - name: Notify Discord
+      continue-on-error: true
       if: always()
+      shell: bash
       env:
         WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         STATUS: ${{ job.status }}
