@@ -41,37 +41,38 @@ jobs:
     - name: Notify Discord
       continue-on-error: true
       if: always()
-      shell: bash
       env:
         WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         STATUS: ${{ job.status }}
       run: |
-        curl -H "Content-Type: application/json" \
-             -X POST \
-             -d '{
-                   "username": "GitHub Actions",
-                   "embeds": [{
-                     "title": "Build Project Workflow Status",
-                     "description": "The build project workflow has completed.",
-                     "color": ${STATUS == 'success' && 3066993 || 15158332},
-                     "fields": [
-                       {
-                         "name": "Repository",
-                         "value": "${{ github.repository }}"
-                       },
-                       {
-                         "name": "Branch",
-                         "value": "${{ github.ref }}"
-                       },
-                       {
-                         "name": "Commit",
-                         "value": "${{ github.sha }}"
-                       },
-                       {
-                         "name": "Status",
-                         "value": "${STATUS}"
-                       }
-                     ]
-                   }]
-                 }' \
-             $WEBHOOK_URL
+        $payload = @{
+          username = "GitHub Actions"
+          embeds = @(
+            @{
+              title = "Build Project Workflow Status"
+              description = "The build project workflow has completed."
+              color = if ($STATUS -eq 'success') { 3066993 } else { 15158332 }
+              fields = @(
+                @{
+                  name = "Repository"
+                  value = "${{ github.repository }}"
+                },
+                @{
+                  name = "Branch"
+                  value = "${{ github.ref }}"
+                },
+                @{
+                  name = "Commit"
+                  value = "${{ github.sha }}"
+                },
+                @{
+                  name = "Status"
+                  value = "$STATUS"
+                }
+              )
+            }
+          )
+        }
+
+        $jsonPayload = $payload | ConvertTo-Json -Depth 4
+        Invoke-RestMethod -Uri $env:WEBHOOK_URL -Method Post -ContentType "application/json" -Body $jsonPayload
