@@ -15,11 +15,11 @@ namespace Engine
 		Entity(const Entity& other) = default;
 
 
-		void SetName(const std::string& name);
+		void SetName(const std::string& name) { GetComponent<NameComponent>() = name; }
 		const std::string& GetName() { return GetComponent<NameComponent>().Name; }
 
-		void SetActive(bool active) { m_Active = active; }
-		bool IsActive() { return m_Active; }
+		void SetActive(bool active) { GetComponent<EnablingComponent>().Enabled = active; }
+		bool IsActive() { return GetComponent<EnablingComponent>().Enabled; }
 
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 		
@@ -40,7 +40,6 @@ namespace Engine
 	private:
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_Scene = nullptr;
-		bool m_Active = true;
 
 	public:
 		template<typename T>

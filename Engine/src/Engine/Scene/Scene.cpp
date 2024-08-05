@@ -153,9 +153,10 @@ namespace Engine
 	{
 		Renderer2D::BeginScene(camera);
 
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent, EnablingComponent>);
 		for (auto entity : group)
 		{
+			if (!group.get<EnablingComponent>(entity).Enabled) { return; }
 			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 		}
@@ -189,8 +190,9 @@ namespace Engine
 	{
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<IDComponent>(uuid);
-		entity.AddComponent<TransformComponent>();
+		entity.AddComponent<EnablingComponent>(true);
 		entity.AddComponent<NameComponent>(name);
+		entity.AddComponent<TransformComponent>();
 		return entity;
 	}
 
@@ -304,6 +306,12 @@ namespace Engine
 
 	template<>
 	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
+	{
+
+	}
+
+	template<>
+	void Scene::OnComponentAdded<EnablingComponent>(Entity entity, EnablingComponent& component)
 	{
 
 	}

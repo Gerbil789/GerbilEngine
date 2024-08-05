@@ -7,11 +7,11 @@
 
 namespace Engine
 {
-	class SceneHierarchyPanel
+	class InspectorPanel
 	{
 	public:
-		SceneHierarchyPanel() = default;
-		SceneHierarchyPanel(const Ref<Scene>& context);
+		InspectorPanel() = default;
+		InspectorPanel(const Ref<Scene>& context);
 
 		void SetContext(const Ref<Scene>& context);
 
@@ -19,7 +19,7 @@ namespace Engine
 	private:
 		Ref<Scene> m_Context;
 
-		void DrawEntityNode(Entity entity); // draw entity in scene hierarchy
+		void DrawComponents(Entity entity);
+		void DrawAddComponentButton(Entity entity);
 	};
-	
 }

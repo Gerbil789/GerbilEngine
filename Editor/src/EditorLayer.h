@@ -4,6 +4,7 @@
 #include "Panels/SceneHierarchyPanel.h"
 #include "Engine/Renderer/EditorCamera.h"
 #include "Panels/ContentBrowserPanel.h"
+#include "Panels/InspectorPanel.h"
 #include "Engine/Scene/Material.h"
 
 
@@ -67,6 +68,7 @@ namespace Engine
 		//panels
 
 		SceneHierarchyPanel m_SceneHierarchyPanel;
+		InspectorPanel m_InspectorPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
 
 		int m_GizmoType = 7; //translate

@@ -20,6 +20,14 @@ namespace Engine
 		IDComponent(const IDComponent&) = default;
 	};
 
+	struct EnablingComponent
+	{
+		bool Enabled = true;
+
+		EnablingComponent() = default;
+		EnablingComponent(const EnablingComponent&) = default;
+	};
+
 
 	struct NameComponent
 	{

@@ -36,6 +36,7 @@ namespace Engine
 
         m_EditorScene = CreateRef<Scene>();
         m_SceneHierarchyPanel.SetContext(m_EditorScene);
+        m_InspectorPanel.SetContext(m_EditorScene);
         m_ActiveScene = m_EditorScene;
     }
 
@@ -200,6 +201,7 @@ namespace Engine
         }
 
         m_SceneHierarchyPanel.OnImGuiRender();
+        m_InspectorPanel.OnImGuiRender();
         m_ContentBrowserPanel.OnImGuiRender();
 
         ImGui::ShowDemoWindow();
@@ -414,6 +416,7 @@ namespace Engine
 
         m_ActiveScene = CreateRef<Scene>();
         m_SceneHierarchyPanel.SetContext(m_EditorScene);
+        m_InspectorPanel.SetContext(m_EditorScene);
         m_EditorScenePath = std::filesystem::path();
     }
 
@@ -446,6 +449,7 @@ namespace Engine
                 m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
                 m_SceneHierarchyPanel.SetContext(m_EditorScene);
+                m_InspectorPanel.SetContext(m_EditorScene);
 
                 m_ActiveScene = m_EditorScene;
                 m_EditorScenePath = filepath;
@@ -523,6 +527,7 @@ namespace Engine
         m_ActiveScene->OnRuntimeStart();
 
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+        m_InspectorPanel.SetContext(m_ActiveScene);
     }
 
     void EditorLayer::OnSceneStop()
@@ -531,6 +536,7 @@ namespace Engine
         m_SceneState = SceneState::Edit;
         m_ActiveScene = m_EditorScene;
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+        m_InspectorPanel.SetContext(m_ActiveScene);
 	}
 
     void EditorLayer::OnDuplicatedEntity()
