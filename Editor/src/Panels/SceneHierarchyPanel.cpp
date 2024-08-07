@@ -9,33 +9,37 @@
 
 namespace Engine
 {
-	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context)
+	SceneHierarchyPanel::SceneHierarchyPanel()
 	{
-		SetContext(context);
+		SceneManager::AddObserver(this);
 	}
 
-	void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
+	SceneHierarchyPanel::~SceneHierarchyPanel()
 	{
-		m_Context = context;
-		m_Context->DeselectEntity();
+		SceneManager::RemoveObserver(this);
+	}
+
+	void SceneHierarchyPanel::OnSceneChanged()
+	{
+		m_Scene = SceneManager::GetCurrentScene();
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Scene Hierarchy");
 	
-		if (m_Context)
+		if (m_Scene)
 		{
-			m_Context->m_Registry.view<NameComponent>().each([&](auto entityId, auto tc)
+			m_Scene->m_Registry.view<NameComponent>().each([&](auto entityId, auto tc)
 			{
-				Entity entity{ entityId, m_Context.get() };
+				Entity entity{ entityId, m_Scene.get() };
 				DrawEntityNode(entity);
 			});
 		}
 
 		if(ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 		{
-			m_Context->DeselectEntity();
+			m_Scene->DeselectEntity();
 		}
 
 
@@ -43,8 +47,8 @@ namespace Engine
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
-				Entity entity = m_Context->CreateEntity("Empty Entity");
-				m_Context->SelectEntity(entity);
+				Entity entity = m_Scene->CreateEntity("Empty Entity");
+				m_Scene->SelectEntity(entity);
 			}
 
 			ImGui::EndPopup();
@@ -57,13 +61,13 @@ namespace Engine
 	{
 		auto& name = entity.GetComponent<NameComponent>().Name;
 
-		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ((m_Context->IsEntitySelected(entity)) ? ImGuiTreeNodeFlags_Selected : 0);
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ((m_Scene->IsEntitySelected(entity)) ? ImGuiTreeNodeFlags_Selected : 0);
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 		bool expanded =  ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
 
 		if(ImGui::IsItemClicked())
 		{
-			m_Context->SelectEntity(entity);
+			m_Scene->SelectEntity(entity);
 		}
 
 		bool entityDeleted = false;
@@ -83,10 +87,10 @@ namespace Engine
 
 		if(entityDeleted)
 		{
-			m_Context->DestroyEntity(entity);
-			if(m_Context->IsEntitySelected(entity))
+			m_Scene->DestroyEntity(entity);
+			if(m_Scene->IsEntitySelected(entity))
 			{
-				m_Context->DeselectEntity();
+				m_Scene->DeselectEntity();
 			}
 		}
 	}

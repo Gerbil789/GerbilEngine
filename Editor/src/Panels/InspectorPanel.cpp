@@ -9,20 +9,25 @@
 
 namespace Engine
 {
-	InspectorPanel::InspectorPanel(const Ref<Scene>& context)
+	InspectorPanel::InspectorPanel()
 	{
-		SetContext(context);
+		SceneManager::AddObserver(this);
 	}
 
-	void InspectorPanel::SetContext(const Ref<Scene>& context)
+	InspectorPanel::~InspectorPanel()
 	{
-		m_Context = context;
+		SceneManager::RemoveObserver(this);
+	}
+
+	void InspectorPanel::OnSceneChanged()
+	{
+		m_Scene = SceneManager::GetCurrentScene();
 	}
 
 	void InspectorPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Inspector");
-		Entity entity = m_Context->GetSelectedEntity();
+		Entity entity = m_Scene->GetSelectedEntity();
 		if (entity)
 		{
 			DrawComponents(entity);

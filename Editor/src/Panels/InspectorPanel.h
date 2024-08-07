@@ -3,20 +3,21 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Core/Core.h"
 #include "Engine/Scene/Entity.h"
+#include "Engine/Scene/SceneManager.h"
 
 namespace Engine
 {
-	class InspectorPanel
+	class InspectorPanel : public ISceneObserver
 	{
 	public:
-		InspectorPanel() = default;
-		InspectorPanel(const Ref<Scene>& context);
+		InspectorPanel();
+		~InspectorPanel();
 
-		void SetContext(const Ref<Scene>& context);
-
+		void OnSceneChanged() override;
 		void OnImGuiRender();
+
 	private:
-		Ref<Scene> m_Context;
+		Ref<Scene> m_Scene;
 
 		void DrawComponents(Entity entity);
 		void DrawAddComponentButton(Entity entity);

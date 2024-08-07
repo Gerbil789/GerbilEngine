@@ -1,11 +1,9 @@
 #include "EditorLayer.h"
+#include "Engine/Renderer/FrameBuffer.h"
+#include "Engine/Math/Math.h"
 #include "imgui/imgui.h"
 #include "ImGuizmo/ImGuizmo.h"
 #include <glm/gtc/type_ptr.hpp>
-#include "Engine/Renderer/FrameBuffer.h"
-//#include "Engine/Scene/SceneSerializer.h"
-//#include "Engine/Utils/PlatformUtils.h"
-#include "Engine/Math/Math.h"
 
 namespace Engine
 {
@@ -14,6 +12,7 @@ namespace Engine
     void EditorLayer::OnAttach()
     {
         ENGINE_PROFILE_FUNCTION();
+        SceneManager::AddObserver(this);
 
         //load textures
         m_Icon_Play = Texture2D::Create("resources/icons/play.png");
@@ -33,27 +32,20 @@ namespace Engine
         m_FrameBuffer = FrameBuffer::Create(fbSpec);
 
         m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
-
         SceneManager::CreateScene("New Scene");
-        m_SceneHierarchyPanel.SetContext(SceneManager::GetCurrentScene());
-        m_InspectorPanel.SetContext(SceneManager::GetCurrentScene());
-
-        //m_EditorScene = CreateRef<Scene>();
-        //m_SceneHierarchyPanel.SetContext(m_EditorScene);
-        //m_InspectorPanel.SetContext(m_EditorScene);
-        //m_ActiveScene = m_EditorScene;
     }
 
     void EditorLayer::OnDetach()
     {
         ENGINE_PROFILE_FUNCTION();
+        SceneManager::RemoveObserver(this);
     }
 
     void EditorLayer::OnUpdate(Timestep ts)
     {
         ENGINE_PROFILE_FUNCTION();
 
-        SceneManager::GetCurrentScene()->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+        m_CurrentScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
         //resize
         if (FrameBufferSpecification spec = m_FrameBuffer->GetSpecification();
@@ -64,7 +56,6 @@ namespace Engine
             m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
            
 		}
-
 
         //clear frame buffer
         Renderer2D::ResetStats();
@@ -79,12 +70,10 @@ namespace Engine
         {
             case Scene::SceneState::Edit:
                 m_EditorCamera.OnUpdate(ts);
-                SceneManager::GetCurrentScene()->OnUpdateEditor(ts, m_EditorCamera);
-                //m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+                m_CurrentScene->OnUpdateEditor(ts, m_EditorCamera);
                 break;
             case Scene::SceneState::Play:
-                SceneManager::GetCurrentScene()->OnUpdateRuntime(ts);
-                //m_ActiveScene->OnUpdateRuntime(ts);
+                m_CurrentScene->OnUpdateRuntime(ts);
                 break;
             default:
                 ENGINE_LOG_WARNING("Unknown scene state");
@@ -103,7 +92,7 @@ namespace Engine
         if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
             int pixelData = m_FrameBuffer->ReadPixel(1, mouseX, mouseY);
-            m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, SceneManager::GetCurrentScene().get() };
+            m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_CurrentScene.get() };
 		}
 
         m_FrameBuffer->Unbind();
@@ -205,7 +194,7 @@ namespace Engine
                 //open scene
                 if (str.find(".scene") != std::string::npos)
                 {
-                    OpenScene(str);
+                    SceneManager::LoadScene(str);
                 }
             }
             ImGui::EndDragDropTarget();
@@ -213,7 +202,7 @@ namespace Engine
 
 
         //gizmo
-        Entity selectedEntity = SceneManager::GetCurrentScene()->GetSelectedEntity();
+        Entity selectedEntity = m_CurrentScene->GetSelectedEntity();
 
         if (selectedEntity && m_GizmoType != -1)
         {
@@ -260,6 +249,11 @@ namespace Engine
         ImGui::End();
     }
 
+    void EditorLayer::OnSceneChanged()
+    {
+        m_CurrentScene = SceneManager::GetCurrentScene();
+    }
+
     bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
     {
         if (e.GetRepeatCount() > 0)
@@ -273,14 +267,14 @@ namespace Engine
 		    case Key::N:
 		    {
 		    	if (control)
-		    		NewScene();
+                    SceneManager::CreateScene("New Scene");
 		    	break;
 		    }
 		    case Key::O:
 		    {
 		    	if (control)
 		    	{
-		    		OpenScene();
+                    SceneManager::LoadScene();
 		    	}
 		    	break;
 		    }
@@ -290,11 +284,11 @@ namespace Engine
 		    	{
                     if(shift)
 					{
-						SaveSceneAs();
+                        SceneManager::SaveSceneAs();
 					}
 					else
 					{
-						SaveScene();
+						SceneManager::SaveScene();
 					}
 		    	}
 		    	break;
@@ -311,8 +305,7 @@ namespace Engine
 			{
 				if (control)
 				{
-                    SceneManager::GetCurrentScene()->CopyEntity(SceneManager::GetCurrentScene()->GetSelectedEntity());
-					//m_EditorScene->CopyEntity(m_ActiveScene->GetSelectedEntity());
+                    m_CurrentScene->CopyEntity(m_CurrentScene->GetSelectedEntity());
 				}
 				break;
 			}
@@ -320,8 +313,7 @@ namespace Engine
             {
                 if (control)
                 {
-                    SceneManager::GetCurrentScene()->PasteEntity();
-                    //m_EditorScene->PasteEntity();
+                    m_CurrentScene->PasteEntity();
                 }
                 break;
             }
@@ -350,109 +342,11 @@ namespace Engine
 		{
 			if(m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
 			{
-                SceneManager::GetCurrentScene()->SelectEntity(m_HoveredEntity);
-                //m_ActiveScene->SelectEntity(m_HoveredEntity);
+                m_CurrentScene->SelectEntity(m_HoveredEntity);
 			}
 		}
         return false;
     }
-
-    void EditorLayer::NewScene()
-    {
-       /* if (m_SceneState != Scene::SceneState::Edit) {
-            return;
-        }
-
-        if (m_ActiveScene != nullptr) {
-            RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
-            RenderCommand::Clear();
-        }
-
-        m_ActiveScene = CreateRef<Scene>();
-        m_SceneHierarchyPanel.SetContext(m_EditorScene);
-        m_InspectorPanel.SetContext(m_EditorScene);
-        m_EditorScenePath = std::filesystem::path();*/
-    }
-
-    void EditorLayer::OpenScene()
-	{
-        SceneManager::LoadScene();
-
-       /* if (m_SceneState == Scene::SceneState::Play)
-        {
-            OnSceneStop();
-        }
-
-		std::string path = FileDialogs::OpenFile("Scene (*.scene)\0*.scene\0");
-        if (path.empty()) {
-            ENGINE_LOG_ERROR("Failed to open file {0}", path);
-            return;
-        }
-        OpenScene(path);*/
-    }
-
-    void EditorLayer::OpenScene(const std::string& filepath)
-    {
-        SceneManager::LoadScene(filepath);
-
-        /*if (!filepath.empty())
-        {
-            Ref<Scene> newScene = CreateRef<Scene>();
-            SceneSerializer serializer(newScene);
-            ENGINE_LOG_INFO("Open file {0}", filepath);
-
-            if (serializer.Deserialize(filepath)) 
-            {
-                m_EditorScene = newScene;
-                m_EditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-
-                m_SceneHierarchyPanel.SetContext(m_EditorScene);
-                m_InspectorPanel.SetContext(m_EditorScene);
-
-                m_ActiveScene = m_EditorScene;
-                m_EditorScenePath = filepath;
-            }
-            else 
-            {
-                ENGINE_LOG_ERROR("Failed to deserialize file {0}", filepath);
-            }
-        }
-        else 
-        {
-            ENGINE_LOG_ERROR("File path is empty");
-        }*/
-    }
-
-	void EditorLayer::SaveSceneAs()
-    {
-        SceneManager::SaveSceneAs();
-
-		/*std::string path = FileDialogs::SaveFile("Scene (*.scene)\0*.scene\0");
-		if (!path.empty())
-		{
-			SerializeScene(m_ActiveScene, path);
-            m_EditorScenePath = path;
-			ENGINE_LOG_INFO("Save as {0}", path);
-		}*/
-	}
-
-    void EditorLayer::SaveScene()
-    {
-        SceneManager::SaveScene();
-
-      /*  if(!m_EditorScenePath.empty())
-		{
-            SerializeScene(m_ActiveScene, m_EditorScenePath.string());
-            ENGINE_LOG_INFO("Save {0}", m_EditorScenePath.string());
-		}*/
-
-    }
-
-  //  void EditorLayer::SerializeScene(Ref<Scene> scene, const std::string& filepath)
-  //  {
-  //      SceneSerializer serializer(scene);
-		//serializer.Serialize(filepath);
-  //  }
 
     void EditorLayer::OnScenePlay()
     {
@@ -491,22 +385,22 @@ namespace Engine
             {
                 if (ImGui::MenuItem("New", "ctrl + N"))
                 {
-                    NewScene();
+                    SceneManager::CreateScene("New Scene");
                 }
 
                 if (ImGui::MenuItem("Open", "ctrl + O"))
                 {
-                    OpenScene();
+                    SceneManager::LoadScene();
                 }
 
                 if (ImGui::MenuItem("Save", "ctrl + S"))
                 {
-                    ENGINE_LOG_INFO("Save");
+                    SceneManager::SaveScene();
                 }
 
                 if (ImGui::MenuItem("Save as", "ctrl + shift + S"))
                 {
-                    SaveSceneAs();
+                    SceneManager::SaveSceneAs();
                 }
 
                 ImGui::Separator();
