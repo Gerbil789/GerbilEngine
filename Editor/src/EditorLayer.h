@@ -7,7 +7,7 @@
 #include "Panels/InspectorPanel.h"
 #include "Engine/Scene/Material.h"
 #include "Engine/Scene/Scene.h"
-
+#include "Engine/Scene/SceneManager.h"
 
 namespace Engine 
 {
@@ -31,7 +31,7 @@ namespace Engine
 		void SaveSceneAs();
 		void SaveScene();
 
-		void SerializeScene(Ref<Scene> scene, const std::string& filepath);
+		//void SerializeScene(Ref<Scene> scene, const std::string& filepath);
 
 		void OnScenePlay();
 		void OnSceneStop();
@@ -52,33 +52,25 @@ namespace Engine
 		Ref<Texture2D> m_Spritesheet;
 		Ref<Texture2D> m_Icon_Play;
 		Ref<Texture2D> m_Icon_Stop;
-
 		Ref<Material> m_Material;
-
 		std::vector<Ref<SubTexture2D>> m_TileTextures;
 
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
-
 		Ref<FrameBuffer> m_FrameBuffer;
-
-		Ref<Scene> m_ActiveScene;
-		Ref<Scene> m_EditorScene;
-
 		std::filesystem::path m_EditorScenePath;
 
 		//panels
-
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		InspectorPanel m_InspectorPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
 
 		int m_GizmoType = 7; //translate
-
 		EditorCamera m_EditorCamera;
-
 		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
-
 		Entity m_HoveredEntity;
+
+		//Ref<Scene> m_ActiveScene;
+		//Ref<Scene> m_EditorScene;
 
 		Scene::SceneState m_SceneState = Scene::SceneState::Edit;
 
