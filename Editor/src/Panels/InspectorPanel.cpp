@@ -37,41 +37,40 @@ namespace Engine
 	{
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
-		if (entity.HasComponent<T>())
+		if (!entity.HasComponent<T>()) { return; }
+
+		auto& component = entity.GetComponent<T>();
+		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 4));
+		float lineHeigth = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImGui::Separator();
+		bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
+		ImGui::PopStyleVar();
+		ImGui::SameLine(contentRegionAvailable.x - lineHeigth * 0.5f);
+		if (ImGui::Button("+", ImVec2{ lineHeigth, lineHeigth }))
 		{
-			auto& component = entity.GetComponent<T>();
-			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 4));
-			float lineHeigth = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-			ImGui::Separator();
-			bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
-			ImGui::PopStyleVar();
-			ImGui::SameLine(contentRegionAvailable.x - lineHeigth * 0.5f);
-			if (ImGui::Button("+", ImVec2{ lineHeigth, lineHeigth }))
-			{
-				ImGui::OpenPopup("ComponentSettings");
-			}
+			ImGui::OpenPopup("ComponentSettings");
+		}
 
-			bool removeComponent = false;
-			if (ImGui::BeginPopup("ComponentSettings"))
+		bool removeComponent = false;
+		if (ImGui::BeginPopup("ComponentSettings"))
+		{
+			if (ImGui::MenuItem("Remove component"))
 			{
-				if (ImGui::MenuItem("Remove component"))
-				{
-					removeComponent = true;
-				}
-				ImGui::EndPopup();
+				removeComponent = true;
 			}
+			ImGui::EndPopup();
+		}
 
-			if (open)
-			{
-				function(component);
-				ImGui::TreePop();
-			}
+		if (open)
+		{
+			function(component);
+			ImGui::TreePop();
+		}
 
-			if (removeComponent)
-			{
-				entity.RemoveComponent<T>();
-			}
+		if (removeComponent)
+		{
+			entity.RemoveComponent<T>();
 		}
 
 	}

@@ -73,11 +73,11 @@ namespace Engine
         //update scene
         switch (m_SceneState)
         {
-            case Engine::EditorLayer::SceneState::Edit:
+            case Scene::SceneState::Edit:
                 m_EditorCamera.OnUpdate(ts);
                 m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
                 break;
-            case Engine::EditorLayer::SceneState::Play:
+            case Scene::SceneState::Play:
                 m_ActiveScene->OnUpdateRuntime(ts);
                 break;
             default:
@@ -118,97 +118,43 @@ namespace Engine
 
         static bool dockspaceOpen = true;
         static bool opt_fullscreen = true;
-        static bool opt_padding = false;
         static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
-        // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-        // because it would be confusing to have two docking targets within each others.
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-        if (opt_fullscreen)
-        {
-            const ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(viewport->WorkPos);
-            ImGui::SetNextWindowSize(viewport->WorkSize);
-            ImGui::SetNextWindowViewport(viewport->ID);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-            window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-        }
-        else
-        {
-            dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
-        }
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-        // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
-        // and handle the pass-thru hole, so we ask Begin() to not render a background.
         if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
             window_flags |= ImGuiWindowFlags_NoBackground;
 
-        // Important: note that we proceed even if Begin() returns false (aka window is collapsed).
-        // This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
-        // all active windows docked into it will lose their parent and become undocked.
-        // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
-        // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-        if (!opt_padding)
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
-        if (!opt_padding)
-            ImGui::PopStyleVar();
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        ImGui::Begin("DockSpace", &dockspaceOpen, window_flags);
+        ImGui::PopStyleVar();
 
-        if (opt_fullscreen)
-            ImGui::PopStyleVar(2);
+        if (opt_fullscreen) { ImGui::PopStyleVar(2); }
 
-        // Submit the DockSpace
         ImGuiIO& io = ImGui::GetIO();
         if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
         {
-            ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+            ImGui::DockSpace(ImGui::GetID("MyDockSpace"), ImVec2(0.0f, 0.0f), dockspace_flags);
         }
 
-        if (ImGui::BeginMenuBar())
-        {
-            if (ImGui::BeginMenu("File"))
-            {
-                if(ImGui::MenuItem("New", "ctrl + N"))
-				{
-					NewScene();
-				}
 
-                if (ImGui::MenuItem("Open", "ctrl + O"))
-                {
-                    OpenScene();
-                }
-
-                if (ImGui::MenuItem("Save", "ctrl + S"))
-                {
-                    ENGINE_LOG_INFO("Save");
-                }
-
-                if (ImGui::MenuItem("Save as", "ctrl + shift + S"))
-                {
-                    SaveSceneAs();
-                }
-
-                ImGui::Separator();
-
-                if (ImGui::MenuItem("Exit")) { Application::Get().Close(); }
-
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenuBar();
-        }
-
+        MenuBar();
         m_SceneHierarchyPanel.OnImGuiRender();
         m_InspectorPanel.OnImGuiRender();
         m_ContentBrowserPanel.OnImGuiRender();
-
         ImGui::ShowDemoWindow();
 
+        { //stats
         ImGui::Begin("Statistics");
         ImGui::Text("Hovered entity: %s", m_HoveredEntity ? m_HoveredEntity.GetComponent<NameComponent>().Name.c_str() : "None");
-
+        ImGui::Separator();
         auto stats = Renderer2D::GetStats();
         ImGui::Text("Draw Calls: %d", stats.DrawCalls);
         ImGui::Text("Quads: %d", stats.QuadCount);
@@ -216,6 +162,8 @@ namespace Engine
         ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
         ImGui::Separator();
         ImGui::End();
+        }
+       
 
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
@@ -223,7 +171,7 @@ namespace Engine
 
         auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
         auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-        auto viewportOffset = ImGui::GetWindowPos(); 
+        auto viewportOffset = ImGui::GetWindowPos();
 
         m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
         m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
@@ -236,36 +184,36 @@ namespace Engine
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
         ImGui::Image((void*)textureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
-        if(ImGui::BeginDragDropTarget())
-		{
-			if(const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-			{
-				const wchar_t* path = (const wchar_t*)payload->Data;
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+            {
+                const wchar_t* path = (const wchar_t*)payload->Data;
                 //conver to string
                 std::wstring ws(path);
                 std::string str(ws.begin(), ws.end());
 
 
-				ENGINE_LOG_INFO("Dropped file: {0}", str);
+                ENGINE_LOG_INFO("Dropped file: {0}", str);
 
                 //open scene
-                if(str.find(".scene") != std::string::npos)
-				{
-                   OpenScene(str);
-				}
-			}
-			ImGui::EndDragDropTarget();
-		}
+                if (str.find(".scene") != std::string::npos)
+                {
+                    OpenScene(str);
+                }
+            }
+            ImGui::EndDragDropTarget();
+        }
 
 
         //gizmo
         Entity selectedEntity = m_ActiveScene->GetSelectedEntity();
 
-        if (selectedEntity && m_GizmoType != -1) 
+        if (selectedEntity && m_GizmoType != -1)
         {
             ImGuizmo::SetOrthographic(false);
             ImGuizmo::SetDrawlist();
- 
+
             ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
             const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
@@ -277,32 +225,31 @@ namespace Engine
             bool snap = Input::IsKeyPressed(Key::LeftControl);
             float snapValue = 0.5f; // Snap to 0.5m for translation/scale
             if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
-				snapValue = 45.0f; // Snap to 45 degrees for rotation
+                snapValue = 45.0f; // Snap to 45 degrees for rotation
 
             float snapValues[3] = { snapValue, snapValue, snapValue };
 
             ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
                 (ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr);
 
-			if (ImGuizmo::IsUsing())
-			{
-				glm::vec3 translation, rotation, scale;
-				Math::DecomposeTransform(transform, translation, rotation, scale);
+            if (ImGuizmo::IsUsing())
+            {
+                glm::vec3 translation, rotation, scale;
+                Math::DecomposeTransform(transform, translation, rotation, scale);
 
                 glm::vec3 originalRotation = tc.Rotation;
                 glm::vec3 deltaRotation = glm::degrees(rotation) - originalRotation;
 
-				tc.Position = translation;
-				tc.Rotation += deltaRotation; // to prevent gimbal lock
-				tc.Scale = scale;
-			}
+                tc.Position = translation;
+                tc.Rotation += deltaRotation; // to prevent gimbal lock
+                tc.Scale = scale;
+            }
 
         }
 
         ImGui::End();
         ImGui::PopStyleVar(); // Restore padding
 
-        UI_Toolbar();
 
         ImGui::End();
     }
@@ -405,7 +352,7 @@ namespace Engine
 
     void EditorLayer::NewScene()
     {
-        if (m_SceneState != SceneState::Edit) {
+        if (m_SceneState != Scene::SceneState::Edit) {
             return;
         }
 
@@ -422,7 +369,7 @@ namespace Engine
 
     void EditorLayer::OpenScene()
 	{
-        if (m_SceneState == SceneState::Play)
+        if (m_SceneState == Scene::SceneState::Play)
         {
             OnSceneStop();
         }
@@ -492,36 +439,9 @@ namespace Engine
 		serializer.Serialize(filepath);
     }
 
-    void EditorLayer::UI_Toolbar()
-    {
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.1f, 0.1f, 0.1f, 1));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.3f, 0.3f, 0.3f, 1));
-
-        ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-
-        Ref<Texture2D> icon = m_SceneState == SceneState::Play ? m_Icon_Stop : m_Icon_Play;
-        ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x * 0.5f - 24.0f * 0.5f);
-
-        if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), { 24, 24 }, { 0, 1 }, { 1, 0 }))
-		{
-			if (m_SceneState == SceneState::Edit)
-				OnScenePlay();
-			else if (m_SceneState == SceneState::Play)
-				OnSceneStop();
-		}
-
-		ImGui::End();
-
-        ImGui::PopStyleColor(3);
-        ImGui::PopStyleVar(2);
-    }
-
     void EditorLayer::OnScenePlay()
     {
-        m_SceneState = SceneState::Play;
+        m_SceneState = Scene::SceneState::Play;
 
         m_ActiveScene = Scene::Copy(m_EditorScene);
         m_ActiveScene->OnRuntimeStart();
@@ -533,7 +453,7 @@ namespace Engine
     void EditorLayer::OnSceneStop()
 	{
         m_ActiveScene->OnRuntimeStop();
-        m_SceneState = SceneState::Edit;
+        m_SceneState = Scene::SceneState::Edit;
         m_ActiveScene = m_EditorScene;
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
         m_InspectorPanel.SetContext(m_ActiveScene);
@@ -545,6 +465,59 @@ namespace Engine
         if (selectedEntity)
         {
             m_EditorScene->DuplicateEntity(selectedEntity);
+        }
+    }
+
+    void EditorLayer::MenuBar()
+    {
+        if (ImGui::BeginMenuBar())
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("New", "ctrl + N"))
+                {
+                    NewScene();
+                }
+
+                if (ImGui::MenuItem("Open", "ctrl + O"))
+                {
+                    OpenScene();
+                }
+
+                if (ImGui::MenuItem("Save", "ctrl + S"))
+                {
+                    ENGINE_LOG_INFO("Save");
+                }
+
+                if (ImGui::MenuItem("Save as", "ctrl + shift + S"))
+                {
+                    SaveSceneAs();
+                }
+
+                ImGui::Separator();
+
+                if (ImGui::MenuItem("Exit")) { Application::Get().Close(); }
+
+                ImGui::EndMenu();
+            }
+
+            ImGui::SetCursorPosX(ImGui::GetWindowWidth() * 0.5f);
+
+            Ref<Texture2D> icon = m_SceneState == Scene::SceneState::Play ? m_Icon_Stop : m_Icon_Play;
+
+            if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), { 20, 20 }, { 0, 1 }, { 1, 0 }))
+            {
+                if (m_SceneState == Scene::SceneState::Edit)
+                {
+                    OnScenePlay();
+                }
+                else if (m_SceneState == Scene::SceneState::Play)
+                {
+                    OnSceneStop();
+                }
+            }
+
+            ImGui::EndMenuBar();
         }
     }
 }

@@ -2,7 +2,6 @@
 
 #include "Engine/Scene/Scene.h"
 #include "Engine/Core/Core.h"
-#include "Engine/Core/Log.h"
 #include "Engine/Scene/Entity.h"
 
 namespace Engine

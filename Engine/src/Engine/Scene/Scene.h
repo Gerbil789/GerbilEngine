@@ -12,6 +12,11 @@ namespace Engine
 	class Scene
 	{
 	public:
+		enum class SceneState
+		{
+			Edit = 0, Play = 1
+		};
+	public:
 		Scene();
 		~Scene();
 

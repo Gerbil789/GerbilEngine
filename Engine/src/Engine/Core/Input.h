@@ -2,7 +2,7 @@
 
 #include "Engine/Core/Core.h"
 #include "Engine/Core/KeyCodes.h"
-#include "Engine/Core/MouseButtonCodes.h"
+#include "Engine/Core/MouseCodes.h"
 
 namespace Engine 
 {

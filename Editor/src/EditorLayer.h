@@ -6,6 +6,7 @@
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/InspectorPanel.h"
 #include "Engine/Scene/Material.h"
+#include "Engine/Scene/Scene.h"
 
 
 namespace Engine 
@@ -32,12 +33,12 @@ namespace Engine
 
 		void SerializeScene(Ref<Scene> scene, const std::string& filepath);
 
-		void UI_Toolbar();
-
 		void OnScenePlay();
 		void OnSceneStop();
 
 		void OnDuplicatedEntity();
+
+		void MenuBar();
 	private:
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
@@ -79,12 +80,7 @@ namespace Engine
 
 		Entity m_HoveredEntity;
 
-		enum class SceneState
-		{
-			Edit = 0, Play = 1
-		};
-		
-		SceneState m_SceneState = SceneState::Edit;
+		Scene::SceneState m_SceneState = Scene::SceneState::Edit;
 
 	};
 }
