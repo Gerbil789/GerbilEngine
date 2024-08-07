@@ -1,24 +1,21 @@
 Scene: Untitled Scene
 Entities:
-  - Entity: 3703745479677688527
+  - Entity: 6077249409231415967
     NameComponent:
-      Name: sprit
+      Name: Empty Entity
     TransformComponent:
-      Position: [0, 0, -0.5]
+      Position: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.99999994, 3, 1]
-    SpriteRendererComponent:
-      Color: [0.721884608, 0.77224201, 0.0274819247, 1]
-      TilingFactor: [1, 1]
-  - Entity: 16379561264468609169
+      Scale: [1, 1, 1]
+  - Entity: 3205262433915648988
     NameComponent:
-      Name: spret
+      Name: sprut
     TransformComponent:
-      Position: [1, 0, 0]
-      Rotation: [0, -45.0000038, 0]
-      Scale: [1.0085398, 3, 0.999999881]
+      Position: [-1.42134297, 0.00916048884, 0.42134428]
+      Rotation: [0, 45.0000038, 0]
+      Scale: [0.999999881, 3, 0.999999881]
     SpriteRendererComponent:
-      Color: [0.836298943, 0.465233028, 0.107141487, 1]
+      Color: [0.857651234, 0.357100368, 0.624298573, 1]
       TilingFactor: [1, 1]
   - Entity: 17510347425494942597
     NameComponent:
@@ -30,13 +27,23 @@ Entities:
     SpriteRendererComponent:
       Color: [0.857651234, 0.357100368, 0.624298573, 1]
       TilingFactor: [1, 1]
-  - Entity: 3205262433915648988
+  - Entity: 16379561264468609169
     NameComponent:
-      Name: sprut
+      Name: spret
     TransformComponent:
-      Position: [-1.42134297, 0.00916048884, 0.42134428]
-      Rotation: [0, 45.0000038, 0]
-      Scale: [0.999999881, 3, 0.999999881]
+      Position: [1, 0, 0]
+      Rotation: [0, -45.0000038, 0]
+      Scale: [1.0085398, 3, 0.999999881]
     SpriteRendererComponent:
-      Color: [0.857651234, 0.357100368, 0.624298573, 1]
+      Color: [0.836298943, 0.465233028, 0.107141487, 1]
+      TilingFactor: [1, 1]
+  - Entity: 3703745479677688527
+    NameComponent:
+      Name: sprit
+    TransformComponent:
+      Position: [0, 0, -0.5]
+      Rotation: [0, 0, 0]
+      Scale: [0.99999994, 3, 1]
+    SpriteRendererComponent:
+      Color: [0.721884608, 0.77224201, 0.0274819247, 1]
       TilingFactor: [1, 1]

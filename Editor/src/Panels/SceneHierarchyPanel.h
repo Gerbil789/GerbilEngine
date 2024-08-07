@@ -4,22 +4,22 @@
 #include "Engine/Core/Core.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Scene/Entity.h"
+#include "Engine/Scene/SceneManager.h"
 
 namespace Engine
 {
-	class SceneHierarchyPanel
+	class SceneHierarchyPanel : public ISceneObserver
 	{
 	public:
-		SceneHierarchyPanel() = default;
-		SceneHierarchyPanel(const Ref<Scene>& context);
+		SceneHierarchyPanel();
+		~SceneHierarchyPanel();
 
-		void SetContext(const Ref<Scene>& context);
-
+		void OnSceneChanged() override;
 		void OnImGuiRender();
-	private:
-		Ref<Scene> m_Context;
 
-		void DrawEntityNode(Entity entity); // draw entity in scene hierarchy
+	private:
+		Ref<Scene> m_Scene;
+
+		void DrawEntityNode(Entity entity);
 	};
-	
 }
