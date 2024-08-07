@@ -144,6 +144,7 @@ namespace Engine
         m_SceneHierarchyPanel.OnImGuiRender();
         m_InspectorPanel.OnImGuiRender();
         m_ContentBrowserPanel.OnImGuiRender();
+        m_SettingsPanel.OnImGuiRender();
         ImGui::ShowDemoWindow();
 
         { //stats
@@ -402,6 +403,10 @@ namespace Engine
                 {
                     SceneManager::SaveSceneAs();
                 }
+
+                ImGui::Separator();
+
+                if (ImGui::MenuItem("Settings")) { m_SettingsPanel.SetVisible(true); }
 
                 ImGui::Separator();
 

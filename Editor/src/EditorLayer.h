@@ -7,6 +7,7 @@
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/InspectorPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/SettingsPanel.h"
 
 namespace Engine 
 {
@@ -45,6 +46,7 @@ namespace Engine
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		InspectorPanel m_InspectorPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
+		SettingsPanel m_SettingsPanel;
 
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 		Ref<FrameBuffer> m_FrameBuffer;
