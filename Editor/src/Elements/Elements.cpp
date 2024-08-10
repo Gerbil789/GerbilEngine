@@ -28,20 +28,21 @@ namespace Engine
 		}
 
 
-		void FloatControl(const char* label, float& value, float resetValue)
+		bool FloatControl(const char* label, float& value, float resetValue)
 		{
+			bool valueChanged = false;
 			ImGui::PushID(label);
 			ImGui::Columns(2);
 			ImGui::SetColumnWidth(0, labelWidth);
 			ImGui::Text(label);
 			ImGui::NextColumn();
 			ImGui::PushItemWidth(-1);
-			if (ImGui::DragFloat("##value", &value, 0.1f))
-			{
-			}
+			if (ImGui::DragFloat("##value", &value, 0.1f)) { valueChanged = true; }
 			ImGui::PopItemWidth();
 			ImGui::Columns(1);
 			ImGui::PopID();
+
+			return valueChanged;
 		}
 
 		void Vec2Control(const char* label, glm::vec2& values, float resetValue)
@@ -211,6 +212,37 @@ namespace Engine
 		void StringControl(const char* label, std::string& value, const char* resetValue)
 		{
 			ASSERT(false, "StringControl Not implemented")
+		}
+
+		bool EnumControl(const char* label, int& value, const char* options[], int optionCount)
+		{
+			bool valueChanged = false;
+			ImGui::PushID(label);
+			ImGui::Columns(2);
+			ImGui::SetColumnWidth(0, labelWidth);
+			ImGui::Text(label);
+			ImGui::NextColumn();
+			ImGui::PushItemWidth(-1);
+			if (ImGui::BeginCombo("##value", options[value]))
+			{
+				for (int i = 0; i < optionCount; i++)
+				{
+					bool isSelected = value == i;
+					if (ImGui::Selectable(options[i], isSelected))
+					{
+						value = i;
+						valueChanged = true;
+					}
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::PopItemWidth();
+			ImGui::Columns(1);
+			ImGui::PopID();
+
+			return valueChanged;
 		}
 
 	}

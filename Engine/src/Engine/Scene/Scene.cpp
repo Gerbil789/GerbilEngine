@@ -80,14 +80,75 @@ namespace Engine
 	}
 
 
-	void Scene::OnRuntimeStart()
+	void Scene::OnUpdate(Timestep ts)
 	{
-		m_IsRunning = true;
+		//get scene camera  and its transform from scene
+		
+		auto view = m_Registry.view<TransformComponent, CameraComponent>();
+		glm::mat4 transform = glm::mat4(1.0f);
+		Camera* camera = nullptr;
+
+		for (auto entity : view)
+		{
+			auto& [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
+			if(cameraComponent.Main)
+			{
+				camera = &cameraComponent.Camera;
+				transform = transformComponent.GetTransform();
+				break;
+			}
+		}
+
+		if(!camera) { return; }
+
+		switch (m_SceneState)
+		{
+		case SceneState::Editor:
+			OnUpdateEditor(ts, *camera, transform);
+			break;
+		case SceneState::Runtime:
+			//OnUpdateRuntime(ts);
+			break;
+		}
 	}
 
-	void Scene::OnRuntimeStop()
+	void Scene::OnUpdate(Timestep ts, EditorCamera& camera)
 	{
-		m_IsRunning = false;
+		switch(m_SceneState)
+		{
+			case SceneState::Editor:
+				OnUpdateEditor(ts, camera);
+				break;
+			case SceneState::Runtime:
+				OnUpdateRuntime(ts);
+				break;
+		}
+	}
+
+
+	void Scene::OnPlay()
+	{
+		m_IsPlaying = true;
+	}
+
+	void Scene::OnStop()
+	{
+		m_IsPlaying = false;
+	}
+
+	void Scene::OnPause()
+	{
+		m_IsPaused = true;
+	}
+
+	void Scene::OnResume()
+	{
+		m_IsPaused = false;
+	}
+
+	void Scene::OnNextFrame()
+	{
+		ENGINE_LOG_WARNING("OnNextFrame not implemented yet!");
 	}
 
 
@@ -133,7 +194,7 @@ namespace Engine
 
 		if(mainCamera == nullptr)
 		{
-			ENGINE_LOG_WARNING("No main camera entity found!");
+			//ENGINE_LOG_WARNING("No main camera entity found!");
 			return;
 		}
 
@@ -164,6 +225,21 @@ namespace Engine
 		Renderer2D::EndScene();
 	}
 
+	void Scene::OnUpdateEditor(Timestep ts, Camera& camera, const glm::mat4& transform)
+	{
+		Renderer2D::BeginScene(camera, transform);
+
+		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent, EnablingComponent>);
+		for (auto entity : group)
+		{
+			if (!group.get<EnablingComponent>(entity).Enabled) { return; }
+			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+		}
+
+		Renderer2D::EndScene();
+	}
+
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
@@ -171,14 +247,16 @@ namespace Engine
 		m_ViewportHeight = height;
 
 		auto view = m_Registry.view<CameraComponent>();
-		for (auto entity : view)
+
+		for(auto entity : view)
 		{
 			auto& cameraComponent = view.get<CameraComponent>(entity);
-			if (!cameraComponent.FixedAspectRatio) 
+			if(!cameraComponent.FixedAspectRatio)
 			{
 				cameraComponent.Camera.SetViewportSize(width, height);
 			}
 		}
+
 	}
 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -216,19 +294,7 @@ namespace Engine
 		
 	}
 
-	Entity Scene::GetMainCameraEntity()
-	{
-		auto view = m_Registry.view<CameraComponent>();
-		for (auto entity : view)
-		{
-			const auto& camera = view.get<CameraComponent>(entity);
-			if(camera.Main)
-			{
-				return Entity{ entity, this };
-			}
-		}
-		return {};
-	}
+	
 
 	void Scene::DuplicateEntity(Entity entity)
 	{
@@ -249,12 +315,8 @@ namespace Engine
 
 	void Scene::PasteEntity()
 	{
-		if(m_CopiedEntityUUID == 0)
-		{
-			return;
-		}
+		if(m_CopiedEntityUUID == 0) { return; }
 
-		//find entity in the scene
 		auto view = m_Registry.view<IDComponent>();
 		for(auto entity : view)
 		{
@@ -264,28 +326,26 @@ namespace Engine
 				return;
 			}
 		}
-		
-
 	}
 
 	void Scene::SelectEntity(Entity entity)
 	{
-		selectedEntity = entity;
+		m_SelectedEntity = entity;
 	}
 
 	void Scene::DeselectEntity()
 	{
-		selectedEntity = entt::null;
+		m_SelectedEntity = entt::null;
 	}
 
 	bool Scene::IsEntitySelected(Entity entity)
 	{
-		return selectedEntity == entity;
+		return m_SelectedEntity == entity;
 	}
 
 	const Entity& Scene::GetSelectedEntity()
 	{
-		Entity entity = { selectedEntity, this };
+		Entity entity = { m_SelectedEntity, this };
 		return entity;
 	}
 

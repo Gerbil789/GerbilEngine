@@ -26,15 +26,12 @@ namespace Engine
         float windowWidth = ImGui::GetContentRegionAvail().x;
 
         // ----- Top Section -----
-        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.5f, 0.1f, 0.1f, 1.0f));
         ImGui::BeginChild("TopBar", ImVec2(0, topBarHeight), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
         RenderPath();
         ImGui::EndChild(); 
-        ImGui::PopStyleColor();
 
 
         // ----- Main Content -----
-        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.0f, 0.5f, 0.1f, 1.0f));
         ImGui::BeginChild("MainContent", ImVec2(0, availableHeight), false);
 
         static float padding = 16.0f;
@@ -80,18 +77,15 @@ namespace Engine
 
         ImGui::Columns(1);
         ImGui::EndChild(); 
-        ImGui::PopStyleColor();
 
         // ----- Bottom Section -----
         float sliderWidth = 200.0f;
-        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.0f, 0.1f, 0.5f, 1.0f));
         ImGui::BeginChild("BottomBar", ImVec2(0, bottomBarHeight));
         ImGui::SetCursorPosX((windowWidth - sliderWidth));
         ImGui::PushItemWidth(sliderWidth);
         ImGui::SliderFloat("##ThumbnailSize", &thumbnailSize, 64, 128, "%.0f");
         ImGui::PopItemWidth();
         ImGui::EndChild(); 
-        ImGui::PopStyleColor();
 
         ImGui::End(); // Content Browser
 	}

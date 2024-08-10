@@ -16,20 +16,26 @@ namespace Engine
 
         //load textures
         m_Icon_Play = Texture2D::Create("resources/icons/play.png");
-        m_Icon_Stop = Texture2D::Create("resources/icons/stop.png");
+        m_Icon_Pause = Texture2D::Create("resources/icons/pause.png");
+        m_Icon_Next = Texture2D::Create("resources/icons/skip_next.png");
 
-        m_ShaderLibrary.Load("Texture", "assets/shaders/Texture.glsl");
-
+        //temp material
         m_Material = CreateRef<Material>();
         m_Material->shaderName = "Texture";
         m_Material->texture = Texture2D::Create("assets/textures/gerbil.jpg");
 
         //create frame buffer
-        FrameBufferSpecification fbSpec;
-        fbSpec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::DEPTH24STENCIL8 };
-        fbSpec.Width = 1280;
-        fbSpec.Height = 720;
-        m_FrameBuffer = FrameBuffer::Create(fbSpec);
+        FrameBufferSpecification editorFrameBufferSpecification;
+        editorFrameBufferSpecification.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::DEPTH24STENCIL8 };
+        editorFrameBufferSpecification.Width = 1280;
+        editorFrameBufferSpecification.Height = 720;
+        m_EditorFrameBuffer = FrameBuffer::Create(editorFrameBufferSpecification);
+
+        FrameBufferSpecification gameFrameBufferSpecification;
+        gameFrameBufferSpecification.Attachments = { FrameBufferTextureFormat::RGBA8 };
+        gameFrameBufferSpecification.Width = 1280;
+        gameFrameBufferSpecification.Height = 720;
+        m_GameFrameBuffer = FrameBuffer::Create(gameFrameBufferSpecification);
 
         m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
         SceneManager::CreateScene("New Scene");
@@ -48,37 +54,24 @@ namespace Engine
         m_CurrentScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
         //resize
-        if (FrameBufferSpecification spec = m_FrameBuffer->GetSpecification();
-            m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
-            (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
+        FrameBufferSpecification spec = m_EditorFrameBuffer->GetSpecification();
+        if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 		{
-			m_FrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_EditorFrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-           
 		}
 
         //clear frame buffer
         Renderer2D::ResetStats();
-        m_FrameBuffer->Bind();
+        m_EditorFrameBuffer->Bind();
         RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
         RenderCommand::Clear();
-
-        m_FrameBuffer->ClearAttachment(1, -1); //clear ID attachment
+        m_EditorFrameBuffer->ClearAttachment(1, -1); //clear ID attachment
 
         //update scene
-        switch (m_SceneState)
-        {
-            case Scene::SceneState::Edit:
-                m_EditorCamera.OnUpdate(ts);
-                m_CurrentScene->OnUpdateEditor(ts, m_EditorCamera);
-                break;
-            case Scene::SceneState::Play:
-                m_CurrentScene->OnUpdateRuntime(ts);
-                break;
-            default:
-                ENGINE_LOG_WARNING("Unknown scene state");
-                break;
-        }
+        m_EditorCamera.OnUpdate(ts);
+        m_CurrentScene->OnUpdate(ts, m_EditorCamera);
+
 
         auto [mx, my] = ImGui::GetMousePos();
         mx -= m_ViewportBounds[0].x;
@@ -91,11 +84,33 @@ namespace Engine
 
         if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
-            int pixelData = m_FrameBuffer->ReadPixel(1, mouseX, mouseY);
+            int pixelData = m_EditorFrameBuffer->ReadPixel(1, mouseX, mouseY);
             m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_CurrentScene.get() };
 		}
 
-        m_FrameBuffer->Unbind();
+        m_EditorFrameBuffer->Unbind();
+
+
+
+
+        ////////// GAME FRAMEBUFFER //////////
+
+        //resize
+        FrameBufferSpecification gameViewSpec = m_GameFrameBuffer->GetSpecification();
+        if (m_GameViewSize.x > 0.0f && m_GameViewSize.y > 0.0f && (gameViewSpec.Width != m_GameViewSize.x || gameViewSpec.Height != m_GameViewSize.y))
+        {
+            m_GameFrameBuffer->Resize((uint32_t)m_GameViewSize.x, (uint32_t)m_GameViewSize.y);
+        }
+
+        //clear frame buffer
+        Renderer2D::ResetStats();
+        m_GameFrameBuffer->Bind();
+        RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+        RenderCommand::Clear();
+
+        //update scene
+        m_CurrentScene->OnUpdate(ts);
+        m_GameFrameBuffer->Unbind();
     }
 
     void EditorLayer::OnEvent(Event& e)
@@ -177,7 +192,7 @@ namespace Engine
         Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
         ImVec2 viewportSize = ImGui::GetContentRegionAvail();
         m_ViewportSize = { viewportSize.x, viewportSize.y };
-        uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
+        uint32_t textureID = m_EditorFrameBuffer->GetColorAttachmentRendererID();
         ImGui::Image((void*)textureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
         if (ImGui::BeginDragDropTarget())
@@ -246,6 +261,20 @@ namespace Engine
         ImGui::End();
         ImGui::PopStyleVar(); // Restore padding
 
+
+        ////////
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
+        ImGui::Begin("Game");
+
+
+        auto gameViewSize = ImGui::GetContentRegionAvail();
+        m_GameViewSize = { gameViewSize.x, gameViewSize.y };
+        uint32_t GameViewtextureID = m_GameFrameBuffer->GetColorAttachmentRendererID();
+        ImGui::Image((void*)GameViewtextureID, ImVec2(m_GameViewSize.x, m_GameViewSize.y), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+        ImGui::End();
+        ImGui::PopStyleVar(); // Restore padding
 
         ImGui::End();
     }
@@ -415,20 +444,44 @@ namespace Engine
                 ImGui::EndMenu();
             }
 
-            ImGui::SetCursorPosX(ImGui::GetWindowWidth() * 0.5f);
+            // ---- BUTTONS ----
+            ImGui::SetCursorPosX(ImGui::GetWindowWidth() * 0.5f - 30);
 
-            Ref<Texture2D> icon = m_SceneState == Scene::SceneState::Play ? m_Icon_Stop : m_Icon_Play;
 
-            if (ImGui::ImageButton((ImTextureID)icon->GetRendererID(), { 20, 20 }, { 0, 1 }, { 1, 0 }))
+            if (m_CurrentScene->IsPlaying())
             {
-                if (m_SceneState == Scene::SceneState::Edit)
-                {
-                    OnScenePlay();
-                }
-                else if (m_SceneState == Scene::SceneState::Play)
-                {
-                    OnSceneStop();
-                }
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+            }
+            else
+            {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+            }
+
+            if (ImGui::ImageButton((ImTextureID)m_Icon_Play->GetRendererID(), { 20, 20 }, { 0, 1 }, { 1, 0 }))
+            {
+                if(m_CurrentScene->IsPlaying())
+				{
+					m_CurrentScene->OnStop();
+				}
+				else
+				{
+					m_CurrentScene->OnPlay();
+				}
+
+            }
+
+            ImGui::PopStyleColor(1);
+      
+
+
+            if (ImGui::ImageButton((ImTextureID)m_Icon_Pause->GetRendererID(), { 20, 20 }, { 0, 1 }, { 1, 0 })) 
+            {
+
+            }
+
+            if (ImGui::ImageButton((ImTextureID)m_Icon_Next->GetRendererID(), { 20, 20 }, { 0, 1 }, { 1, 0 })) 
+            {
+            
             }
 
             ImGui::EndMenuBar();

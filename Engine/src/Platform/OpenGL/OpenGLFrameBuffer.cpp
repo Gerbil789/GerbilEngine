@@ -108,7 +108,10 @@ namespace Engine
 		glViewport(0, 0, m_Specification.Width, m_Specification.Height);
 
 		int value = -1;
-		glClearTexImage(m_ColorAttachments[1], 0, GL_RGBA, GL_UNSIGNED_BYTE, &value);
+		if(m_ColorAttachments.size() > 1)
+		{
+			glClearTexImage(m_ColorAttachments[1], 0, GL_RGBA, GL_UNSIGNED_BYTE, &value);
+		}
 	}
 
 	void OpenGLFrameBuffer::Unbind()

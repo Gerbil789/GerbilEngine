@@ -49,19 +49,18 @@ namespace Engine
 		SettingsPanel m_SettingsPanel;
 
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
-		Ref<FrameBuffer> m_FrameBuffer;
+		Ref<FrameBuffer> m_EditorFrameBuffer;
 
-
+		glm::vec2 m_GameViewSize = { 0.0f, 0.0f };
+		Ref<FrameBuffer> m_GameFrameBuffer;
 
 		// ---- MOVE TO OTHER FILES / TEMP----
-		ShaderLibrary m_ShaderLibrary;
 		Ref<Texture2D> m_GerbilTexture;
 		Ref<Texture2D> m_TileTexture;
 		Ref<Texture2D> m_Icon_Play;
-		Ref<Texture2D> m_Icon_Stop;
+		Ref<Texture2D> m_Icon_Pause;
+		Ref<Texture2D> m_Icon_Next;
 		Ref<Material> m_Material;
 		std::vector<Ref<SubTexture2D>> m_TileTextures;
-
-		Scene::SceneState m_SceneState = Scene::SceneState::Edit;
 	};
 }

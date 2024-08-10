@@ -14,7 +14,7 @@ namespace Engine
 		void Vec3IntControl(const char* label, glm::ivec3& values, int resetValue = 0);
 		void Vec4IntControl(const char* label, glm::ivec4& values, int resetValue = 0);
 
-		void FloatControl(const char* label, float& value, float resetValue = 0.0f);
+		bool FloatControl(const char* label, float& value, float resetValue = 0.0f);
 		void Vec2Control(const char* label, glm::vec2& values, float resetValue = 0.0f);
 		void Vec3Control(const char* label, glm::vec3& values, float resetValue = 0.0f);
 		void Vec4Control(const char* label, glm::vec4& values, float resetValue = 0.0f);
@@ -25,5 +25,7 @@ namespace Engine
 		void Vec4BoolControl(const char* label, glm::bvec4& values);
 
 		void StringControl(const char* label, std::string& value, const char* resetValue = "");
+
+		bool EnumControl(const char* label, int& value, const char* options[], int optionCount);
 	}
 }
