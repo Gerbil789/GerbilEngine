@@ -345,13 +345,10 @@ namespace Engine
 
 	const Entity& Scene::GetSelectedEntity()
 	{
-		Entity entity = { m_SelectedEntity, this };
-		return entity;
+		return { m_SelectedEntity, this };
 	}
 
 	
-
-
 	template<typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component) 
 	{
@@ -359,34 +356,19 @@ namespace Engine
 	}
 
 	template<>
-	void Scene::OnComponentAdded<NameComponent>(Entity entity, NameComponent& component)
-	{
-
-	}
+	void Scene::OnComponentAdded<NameComponent>(Entity entity, NameComponent& component) {}
 
 	template<>
-	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
-	{
-
-	}
+	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component) {}
 
 	template<>
-	void Scene::OnComponentAdded<EnablingComponent>(Entity entity, EnablingComponent& component)
-	{
-
-	}
+	void Scene::OnComponentAdded<EnablingComponent>(Entity entity, EnablingComponent& component) {}
 
 	template<>
-	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
-	{
-
-	}
+	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) {}
 
 	template<>
-	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component)
-	{
-
-	}
+	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) {}
 
 	template<>
 	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
@@ -395,8 +377,5 @@ namespace Engine
 	}
 
 	template<>
-	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
-	{
-
-	}
+	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) {}
 }

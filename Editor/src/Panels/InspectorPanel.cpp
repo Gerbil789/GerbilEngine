@@ -1,11 +1,13 @@
 #include "enginepch.h"
-#include "../Elements/Elements.h"
 #include "InspectorPanel.h"
 #include "Engine/Scene/Components.h"
+#include "../Elements/Elements.h"
+#include "Engine/Core/AssetManager.h"
 #include <imgui/imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui/imgui_internal.h>
 #include <filesystem>
+
 
 namespace Engine
 {
@@ -126,7 +128,7 @@ namespace Engine
 						std::filesystem::path texturePath = path;
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 						{
-							component.Texture = Texture2D::Create(texturePath.string());
+							component.Texture = AssetManager::GetAsset<Texture2D>(texturePath.string());
 						}
 						else {
 							ENGINE_LOG_WARNING("Failed to load texture!");
