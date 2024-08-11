@@ -4,6 +4,7 @@
 #include "imgui/imgui.h"
 #include "ImGuizmo/ImGuizmo.h"
 #include <glm/gtc/type_ptr.hpp>
+#include "Engine/Core/AssetManager.h"
 
 namespace Engine
 {
@@ -15,14 +16,14 @@ namespace Engine
         SceneManager::AddObserver(this);
 
         //load textures
-        m_Icon_Play = Texture2D::Create("resources/icons/play.png");
-        m_Icon_Pause = Texture2D::Create("resources/icons/pause.png");
-        m_Icon_Next = Texture2D::Create("resources/icons/skip_next.png");
+        m_Icon_Play = AssetManager::GetAsset<Texture2D>("resources/icons/play.png");
+        m_Icon_Pause = AssetManager::GetAsset<Texture2D>("resources/icons/pause.png");
+        m_Icon_Next = AssetManager::GetAsset<Texture2D>("resources/icons/skip_next.png");
 
         //temp material
         m_Material = CreateRef<Material>();
         m_Material->shaderName = "Texture";
-        m_Material->texture = Texture2D::Create("assets/textures/gerbil.jpg");
+        m_Material->texture = AssetManager::GetAsset<Texture2D>("assets/textures/gerbil.jpg");
 
         //create frame buffer
         FrameBufferSpecification editorFrameBufferSpecification;

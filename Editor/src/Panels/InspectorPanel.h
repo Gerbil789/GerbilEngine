@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Engine/Scene/Scene.h"
-#include "Engine/Core/Core.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Scene/SceneManager.h"
 
