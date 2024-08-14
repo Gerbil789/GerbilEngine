@@ -15,15 +15,14 @@ namespace Engine
         ENGINE_PROFILE_FUNCTION();
         SceneManager::AddObserver(this);
 
-        //load textures
-        m_Icon_Play = AssetManager::GetAsset<Texture2D>("resources/icons/play.png");
-        m_Icon_Pause = AssetManager::GetAsset<Texture2D>("resources/icons/pause.png");
-        m_Icon_Next = AssetManager::GetAsset<Texture2D>("resources/icons/skip_next.png");
+        m_Material = AssetManager::LoadAsset<Material>("temp");
+        m_MaterialPanel.SetMaterial(m_Material);
 
-        //temp material
-        m_Material = CreateRef<Material>();
-        m_Material->shaderName = "Texture";
-        m_Material->texture = AssetManager::GetAsset<Texture2D>("assets/textures/gerbil.jpg");
+
+        //load textures
+        m_Icon_Play = AssetManager::LoadAsset<Texture2D>("resources/icons/play.png");
+        m_Icon_Pause = AssetManager::LoadAsset<Texture2D>("resources/icons/pause.png");
+        m_Icon_Next = AssetManager::LoadAsset<Texture2D>("resources/icons/skip_next.png");
 
         //create frame buffer
         FrameBufferSpecification editorFrameBufferSpecification;
@@ -160,6 +159,7 @@ namespace Engine
         m_SceneHierarchyPanel.OnImGuiRender();
         m_InspectorPanel.OnImGuiRender();
         m_ContentBrowserPanel.OnImGuiRender();
+        m_MaterialPanel.OnImGuiRender();
         m_SettingsPanel.OnImGuiRender();
         ImGui::ShowDemoWindow();
 

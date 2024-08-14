@@ -294,6 +294,21 @@ namespace Engine
 		
 	}
 
+	std::vector<Entity> Scene::GetLightEntities()
+	{
+		std::vector<Entity> lightEntities;
+
+		auto view = m_Registry.view<LightComponent>();
+		for(auto entity : view)
+		{
+			lightEntities.push_back(Entity{ entity, this });
+		}
+
+	
+
+		return lightEntities;
+	}
+
 	
 
 	void Scene::DuplicateEntity(Entity entity)
@@ -378,4 +393,7 @@ namespace Engine
 
 	template<>
 	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) {}
+
+	template<>
+	void Scene::OnComponentAdded<LightComponent>(Entity entity, LightComponent& component) {}
 }

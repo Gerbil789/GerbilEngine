@@ -109,12 +109,7 @@ namespace Engine
 			{
 				if (ImGui::Button("Material", ImVec2(100.0f, 0.0f)))
 				{
-					Ref<Material> material = CreateRef<Material>();
-					material->shaderName = "Texture";
-					material->texture = Texture2D::Create("assets/textures/gerbil.jpg");
-					material->color = glm::vec4(0.8f, 0.2f, 0.3f, 1.0f);
-					material->tiling = glm::vec2(2.0f, 2.0f);
-					component.Material = material;
+					component.Material = AssetManager::LoadAsset<Material>("temp");
 				}
 
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
@@ -128,7 +123,7 @@ namespace Engine
 						std::filesystem::path texturePath = path;
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 						{
-							component.Texture = AssetManager::GetAsset<Texture2D>(texturePath.string());
+							component.Texture = AssetManager::LoadAsset<Texture2D>(texturePath.string());
 						}
 						else {
 							ENGINE_LOG_WARNING("Failed to load texture!");
@@ -211,6 +206,12 @@ namespace Engine
 					}
 				}
 			});
+
+		DrawComponent<LightComponent>("Light", entity, [](auto& component)
+			{
+				UI::ColorControl(component.Color);
+				UI::FloatControl("Intensity", component.Intensity, 1.0f);
+			});
 	}
 
 	void InspectorPanel::DrawAddComponentButton(Entity entity)
@@ -256,6 +257,12 @@ namespace Engine
 			if (ImGui::MenuItem("Sprite Renderer"))
 			{
 				entity.AddComponent<SpriteRendererComponent>();
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::MenuItem("Light"))
+			{
+				entity.AddComponent<LightComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 

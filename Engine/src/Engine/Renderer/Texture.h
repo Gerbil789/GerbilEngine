@@ -25,5 +25,7 @@ namespace Engine
 	protected:
 		uint32_t m_Width, m_Height;
 		uint32_t m_RendererID;
+
+		Texture2D() = default;
 	};
 }

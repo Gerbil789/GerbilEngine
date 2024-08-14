@@ -216,11 +216,6 @@ namespace Engine
 		fout << out.c_str();
 	}
 
-	void SceneSerializer::SerializeRuntime(const std::string& filepath)
-	{
-		ASSERT(false, "Not implemented");
-	}
-
 
 	bool SceneSerializer::Deserialize(const std::string& filepath)
 	{
@@ -298,11 +293,5 @@ namespace Engine
 
 		return true;
 		
-	}
-
-	bool SceneSerializer::DeserializeRuntime(const std::string& filepath)
-	{
-		ASSERT(false, "Not implemented");
-		return false;
 	}
 }

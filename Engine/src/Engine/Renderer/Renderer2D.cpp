@@ -3,12 +3,16 @@
 #include "Engine/Renderer/RenderCommand.h"
 #include "Engine/Renderer/VertexArray.h"
 #include "Engine/Renderer/Shader.h"
+#include "Engine/Scene/SceneManager.h"
+#include "Engine/Scene/Components.h"
+#include "Engine/Scene/Entity.h"
 
 namespace Engine 
 {
 	struct QuadVertex
 	{
 		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 Normal = { 0.0f, 0.0f, 0.0f };
 		glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		glm::vec2 TexCoord = { 0.0f, 0.0f };
 		float TexIndex = 0.0f;
@@ -60,6 +64,7 @@ namespace Engine
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
 		BufferLayout layout = {
 			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float3, "a_Normal" },
 			{ ShaderDataType::Float4, "a_Color" },
 			{ ShaderDataType::Float2, "a_TexCoord" },
 			{ ShaderDataType::Float, "a_TexIndex" },
@@ -137,12 +142,27 @@ namespace Engine
 		ENGINE_PROFILE_FUNCTION();
 		s_Data.TextureShader->Bind();
 		s_Data.TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjection());
+		s_Data.TextureShader->SetFloat3("u_CameraPosition", camera.GetPosition());
+
+
+		Ref<Scene> scene = SceneManager::GetCurrentScene(); //todo: use observer pattern
+		std::vector<Entity> lights = scene->GetLightEntities();
+		s_Data.TextureShader->SetInt("u_NumLights", lights.size());
+
+		for(uint32_t i = 0; i < lights.size(); i++)
+		{
+			auto& light = lights[i];
+			auto& lightComponent = light.GetComponent<LightComponent>();
+
+			std::string lightName = "u_PointLights[" + std::to_string(i) + "].";
+			s_Data.TextureShader->SetFloat3(lightName + "position", light.GetComponent<TransformComponent>().Position);
+			s_Data.TextureShader->SetFloat3(lightName + "color", lightComponent.Color);
+			s_Data.TextureShader->SetFloat(lightName + "intensity", lightComponent.Intensity);
+		}
 
 		s_Data.QuadIndexCount = 0;
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-
 		s_Data.TextureSlotIndex = 1;
-	
 	}
 
 	void Renderer2D::EndScene()
@@ -175,7 +195,7 @@ namespace Engine
 		//tmp
 		if (src.Material != nullptr) 
 		{
-			DrawQuad(transform, src.Material->texture, src.Material->tiling, src.Material->color, entityID);
+			DrawQuad(transform, src.Material->colorTexture, src.Material->tiling, src.Material->color, entityID);
 			return;
 		}
 
@@ -404,10 +424,14 @@ namespace Engine
 			s_Data.TextureSlotIndex++;
 		}
 
+		//calculate normal from transform
+		glm::vec3 normal = glm::normalize(glm::cross(glm::vec3(transform[1]), glm::vec3(transform[0])));
+
 		for (uint32_t i = 0; i < 4; i++)
 		{
 			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
 			s_Data.QuadVertexBufferPtr->Color = color;
+			s_Data.QuadVertexBufferPtr->Normal = normal;
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;

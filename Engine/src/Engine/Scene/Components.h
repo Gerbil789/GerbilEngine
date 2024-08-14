@@ -87,6 +87,23 @@ namespace Engine
 		CameraComponent(const CameraComponent&) = default;
 	};
 
+
+	struct LightComponent
+	{
+		glm::vec3 Color = { 1.0f, 1.0f, 1.0f };
+		float Intensity = 1.0f;
+
+		LightComponent() = default;
+		LightComponent(const LightComponent&) = default;
+	};
+
+
+
+
+
+
+
+
 	class ScriptableEntity; //forward declaration
 
 	struct NativeScriptComponent
