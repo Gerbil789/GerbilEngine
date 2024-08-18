@@ -1,5 +1,6 @@
 #include "enginepch.h"
 #include "ContentBrowserPanel.h"
+#include "Engine/Core/AssetManager.h"
 #include <imgui/imgui.h>
 
 namespace Engine 
@@ -11,8 +12,8 @@ namespace Engine
 		m_RootDirectory = assetsDirectory;
 		m_CurrentDirectory = assetsDirectory;
 
-		m_FolderIcon = Texture2D::Create("resources/icons/folder.png");
-		m_FileIcon = Texture2D::Create("resources/icons/file.png");
+        m_FolderIcon = AssetManager::LoadAsset<Texture2D>("resources/icons/folder.png");
+        m_FileIcon = AssetManager::LoadAsset<Texture2D>("resources/icons/file.png");
 	}
 
 	void ContentBrowserPanel::OnImGuiRender()

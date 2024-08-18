@@ -10,6 +10,12 @@ namespace Engine
 {
 	enum class SurfaceType { Opaque, Transparent };
 
+	class MaterialFactory : public IAssetFactory
+	{
+	public:
+		Ref<Asset> Create(const std::string& filePath) override;
+	};
+
 	class Material : public Asset
 	{
 	public:
@@ -17,7 +23,6 @@ namespace Engine
 
 		virtual void Load(const std::string& filePath) override;
 		virtual void Unload() override;
-
 
 		std::string shaderName = "Texture"; //todo: change to shader
 

@@ -5,6 +5,12 @@
 
 namespace Engine
 {
+	class Texture2DFactory : public IAssetFactory
+	{
+	public:
+		virtual Ref<Asset> Create(const std::string& filePath) override;
+	};
+
 	class Texture2D : public Asset
 	{
 	public:
@@ -21,7 +27,7 @@ namespace Engine
 		virtual bool operator == (const Texture2D& other) const { return m_RendererID == other.GetRendererID(); }
 
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
-		static Ref<Texture2D> Create(const std::string& path);
+		/*static Ref<Texture2D> Create(const std::string& path);*/
 	protected:
 		uint32_t m_Width, m_Height;
 		uint32_t m_RendererID;

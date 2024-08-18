@@ -16,4 +16,10 @@ namespace Engine
         std::string filePath;
         bool isLoaded = false;
     };
+
+    class IAssetFactory {
+    public:
+        virtual ~IAssetFactory() = default;
+        virtual Ref<Asset> Create(const std::string& filePath) = 0;
+    };
 }

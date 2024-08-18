@@ -1,7 +1,9 @@
 #include "enginepch.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Renderer/Renderer.h"
-
+#include "Engine/Core/AssetManager.h"
+#include "Engine/Renderer/Texture.h"
+#include "Engine/Scene/Material.h"
 
 #include <GLFW/glfw3.h> // TEMP
 
@@ -26,6 +28,9 @@ namespace Engine
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
+
+		AssetManager::RegisterFactory<Texture2D>(std::make_unique<Texture2DFactory>());
+		AssetManager::RegisterFactory<Material>(std::make_unique<MaterialFactory>());
 	}
 
 	Application::~Application() {}
