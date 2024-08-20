@@ -5,6 +5,7 @@
 #include "ImGuizmo/ImGuizmo.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "Engine/Core/AssetManager.h"
+#include "Engine/Core/Serializer.h"
 
 namespace Engine
 {
@@ -15,15 +16,24 @@ namespace Engine
         ENGINE_PROFILE_FUNCTION();
         SceneManager::AddObserver(this);
 
-        //load textures
-        m_Icon_Play = AssetManager::GetAsset<Texture2D>("resources/icons/play.png");
-        m_Icon_Pause = AssetManager::GetAsset<Texture2D>("resources/icons/pause.png");
-        m_Icon_Next = AssetManager::GetAsset<Texture2D>("resources/icons/skip_next.png");
 
-        //temp material
-        m_Material = CreateRef<Material>();
-        m_Material->shaderName = "Texture";
-        m_Material->texture = AssetManager::GetAsset<Texture2D>("assets/textures/gerbil.jpg");
+
+        //Serializer::Serialize(m_Material, "C:/Users/vojta/source/repos/GerbilEngine/Editor/assets/test.material");
+
+        //if (!Serializer::Deserialize("C:/Users/vojta/source/repos/GerbilEngine/Editor/assets/test.material", m_Material))
+        //{
+        //    ENGINE_LOG_ERROR("Failed to deserialize material");
+        //}
+
+
+        //m_Material = AssetManager::LoadAsset<Material>("temp");
+        m_MaterialPanel.SetMaterial(m_Material);
+
+
+        //load textures
+        m_Icon_Play = AssetManager::LoadAsset<Texture2D>("resources/icons/play.png");
+        m_Icon_Pause = AssetManager::LoadAsset<Texture2D>("resources/icons/pause.png");
+        m_Icon_Next = AssetManager::LoadAsset<Texture2D>("resources/icons/skip_next.png");
 
         //create frame buffer
         FrameBufferSpecification editorFrameBufferSpecification;
@@ -40,6 +50,9 @@ namespace Engine
 
         m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
         SceneManager::CreateScene("New Scene");
+
+
+
     }
 
     void EditorLayer::OnDetach()
@@ -160,6 +173,7 @@ namespace Engine
         m_SceneHierarchyPanel.OnImGuiRender();
         m_InspectorPanel.OnImGuiRender();
         m_ContentBrowserPanel.OnImGuiRender();
+        m_MaterialPanel.OnImGuiRender();
         m_SettingsPanel.OnImGuiRender();
         ImGui::ShowDemoWindow();
 

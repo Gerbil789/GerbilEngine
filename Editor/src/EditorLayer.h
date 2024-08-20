@@ -2,11 +2,11 @@
 
 #include <Engine.h>
 #include "Engine/Renderer/EditorCamera.h"
-#include "Engine/Scene/Material.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/InspectorPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/MaterialPanel.h"
 #include "Panels/SettingsPanel.h"
 
 namespace Engine 
@@ -46,6 +46,7 @@ namespace Engine
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		InspectorPanel m_InspectorPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
+		MaterialPanel m_MaterialPanel;
 		SettingsPanel m_SettingsPanel;
 
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };

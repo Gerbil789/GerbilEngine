@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "OpenGLTexture.h"
-
 #include "stb_image.h"
 
 namespace Engine 
@@ -21,7 +20,6 @@ namespace Engine
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
-
 
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
 	{
@@ -68,6 +66,8 @@ namespace Engine
 
 		stbi_image_free(data);
 
+		this->filePath = path;
+		SetName(path);
 	}
 
 	OpenGLTexture2D::~OpenGLTexture2D()
@@ -91,5 +91,4 @@ namespace Engine
 		ENGINE_PROFILE_FUNCTION();
 		glBindTextureUnit(slot, m_RendererID);
 	}
-
 }

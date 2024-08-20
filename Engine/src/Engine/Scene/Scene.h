@@ -39,6 +39,10 @@ namespace Engine
 
 		Entity GetEntityByName(const std::string& name);
 
+		std::vector<Entity> GetLightEntities();
+
+
+
 		void DuplicateEntity(Entity entity);
 		void CopyEntity(Entity entity);
 		void PasteEntity();

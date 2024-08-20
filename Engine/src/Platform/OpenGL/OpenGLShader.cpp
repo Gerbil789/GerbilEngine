@@ -88,9 +88,9 @@ namespace Engine
 
 			glCompileShader(shader);
 
-			GLint isCompiled = 0;
-			glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
-			if (isCompiled == GL_FALSE)
+			GLint success = 0;
+			glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+			if (success == GL_FALSE)
 			{
 				GLint maxLength = 0;
 				glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
@@ -100,7 +100,7 @@ namespace Engine
 
 				glDeleteShader(shader);
 
-				//ENGINE_LOG_ERROR("{0}", infoLog.data());
+				ENGINE_LOG_ERROR("{0}", infoLog.data());
 				ASSERT(false, "Shader compilation failure!");
 				break;
 			}
@@ -126,7 +126,7 @@ namespace Engine
 			for (auto id : glShaderIDs)
 				glDeleteShader(id);
 
-			//ENGINE_LOG_ERROR("{0}", infoLog.data());
+			ENGINE_LOG_ERROR("{0}", infoLog.data());
 			ASSERT(false, "Shader link failure!");
 			return;
 		}

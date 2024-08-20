@@ -84,23 +84,22 @@ namespace YAML
 		}
 	};
 
-	/*template<>
-	struct convert<Hazel::UUID>
-	{
-		static Node encode(const Hazel::UUID& uuid)
-		{
-			Node node;
-			node.push_back((uint64_t)uuid);
-			return node;
-		}
+	//template<>
+	//struct convert<Engine::UUID>
+	//{
+	//	static Node encode(const Engine::UUID& uuid)
+	//	{
+	//		Node node;
+	//		node.push_back((uint64_t)uuid);
+	//		return node;
+	//	}
 
-		static bool decode(const Node& node, Hazel::UUID& uuid)
-		{
-			uuid = node.as<uint64_t>();
-			return true;
-		}
-	};*/
-
+	//	static bool decode(const Node& node, Engine::UUID& uuid)
+	//	{
+	//		uuid = node.as<uint64_t>();
+	//		return true;
+	//	}
+	//};
 }
 
 
@@ -128,7 +127,6 @@ namespace Engine
 		return out;
 	}
 
-
 	SceneSerializer::SceneSerializer(const Ref<Scene>& scene) : m_Scene(scene) {}
 
 
@@ -137,18 +135,10 @@ namespace Engine
 		ASSERT(entity.HasComponent<IDComponent>(), "Entity has no IdComponent!");
 
 		out << YAML::BeginMap;
-
-		// ID Component
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
-
-		// Name Component
-		out << YAML::Key << "NameComponent";
-		out << YAML::BeginMap;
 		out << YAML::Key << "Name" << YAML::Value << entity.GetComponent<NameComponent>().Name;
-		out << YAML::EndMap;
 
-		// Transform Component
-		out << YAML::Key << "TransformComponent";
+		out << YAML::Key << "Transform";
 		out << YAML::BeginMap;
 		auto& tc = entity.GetComponent<TransformComponent>();
 		out << YAML::Key << "Position" << YAML::Value << tc.Position;
@@ -216,11 +206,6 @@ namespace Engine
 		fout << out.c_str();
 	}
 
-	void SceneSerializer::SerializeRuntime(const std::string& filepath)
-	{
-		ASSERT(false, "Not implemented");
-	}
-
 
 	bool SceneSerializer::Deserialize(const std::string& filepath)
 	{
@@ -248,23 +233,18 @@ namespace Engine
 		for (auto entity : entities) 
 		{
 			uint64_t uuid = entity["Entity"].as<uint64_t>();
-
-			std::string name;
-			auto nameComponent = entity["NameComponent"];
-			if (nameComponent)
-				name = nameComponent["Name"].as<std::string>();
-
+			std::string name = entity["Name"].as<std::string>();
 			ENGINE_LOG_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
 			Entity deserializedEntity = m_Scene->CreateEntity(uuid, name);
 
-			auto transformComponent = entity["TransformComponent"];
-			if (transformComponent)
+			auto transform = entity["Transform"];
+			if (transform)
 			{
 				auto& tc = deserializedEntity.GetComponent<TransformComponent>();
-				tc.Position = transformComponent["Position"].as<glm::vec3>();
-				tc.Rotation = transformComponent["Rotation"].as<glm::vec3>();
-				tc.Scale = transformComponent["Scale"].as<glm::vec3>();
+				tc.Position = transform["Position"].as<glm::vec3>();
+				tc.Rotation = transform["Rotation"].as<glm::vec3>();
+				tc.Scale = transform["Scale"].as<glm::vec3>();
 			}
 
 			auto cameraComponent = entity["CameraComponent"];
@@ -298,11 +278,5 @@ namespace Engine
 
 		return true;
 		
-	}
-
-	bool SceneSerializer::DeserializeRuntime(const std::string& filepath)
-	{
-		ASSERT(false, "Not implemented");
-		return false;
 	}
 }

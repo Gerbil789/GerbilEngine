@@ -1,35 +1,33 @@
 #pragma once
 
 #include <string>
-#include <type_traits>
-#include <memory>
 
 namespace Engine 
 {
-    template <typename T>
-    class has_create_method {
-    private:
-        template <typename U>
-        static auto test(int) -> decltype(U::Create(std::string()), std::true_type());
-
-        template <typename>
-        static std::false_type test(...);
-
-    public:
-        static constexpr bool value = std::is_same_v<decltype(test<T>(0)), std::true_type>;
-    };
-
-
     class Asset
     {
     public:
         virtual ~Asset() = default;
+        //virtual void Load(const std::string& filePath) = 0;
+        //virtual void Unload() = 0;
+        virtual const std::string& GetFilePath() const { return filePath; }
+        virtual const std::string& GetName() const { return name; }
+   
+    protected:
+        std::string filePath;
+        std::string name;
+        //bool isLoaded = false;
 
-        template<typename T>
-        static Ref<T> Create(const std::string& filePath)
-		{
-            ASSERT(has_create_method<T>::value, "T must have a static Create() method");
-			return T::Create(filePath);
+        void SetName(const std::string& filePath) {
+			size_t lastSlash = filePath.find_last_of("/\\");
+			size_t lastDot = filePath.find_last_of(".");
+			name = filePath.substr(lastSlash + 1, lastDot - lastSlash - 1);
 		}
+    };
+
+    class IAssetFactory {
+    public:
+        virtual ~IAssetFactory() = default;
+        virtual Ref<Asset> Create(const std::string& filePath) = 0;
     };
 }
