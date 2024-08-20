@@ -107,9 +107,23 @@ namespace Engine
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
 			{
-				if (ImGui::Button("Material", ImVec2(100.0f, 0.0f)))
+				ImGui::Button("Material", ImVec2(100.0f, 0.0f));
+				if (ImGui::BeginDragDropTarget())
 				{
-					component.Material = AssetManager::LoadAsset<Material>("temp");
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path texturePath = path;
+						if (texturePath.extension() == ".material")
+						{
+							component.Material = AssetManager::LoadAsset<Material>(texturePath.string());
+						}
+						else 
+						{
+							ENGINE_LOG_WARNING("Failed to load material!");
+						}
+					}
+					ImGui::EndDragDropTarget();
 				}
 
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));

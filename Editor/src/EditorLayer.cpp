@@ -5,6 +5,7 @@
 #include "ImGuizmo/ImGuizmo.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "Engine/Core/AssetManager.h"
+#include "Engine/Core/Serializer.h"
 
 namespace Engine
 {
@@ -15,7 +16,17 @@ namespace Engine
         ENGINE_PROFILE_FUNCTION();
         SceneManager::AddObserver(this);
 
-        m_Material = AssetManager::LoadAsset<Material>("temp");
+
+
+        //Serializer::Serialize(m_Material, "C:/Users/vojta/source/repos/GerbilEngine/Editor/assets/test.material");
+
+        //if (!Serializer::Deserialize("C:/Users/vojta/source/repos/GerbilEngine/Editor/assets/test.material", m_Material))
+        //{
+        //    ENGINE_LOG_ERROR("Failed to deserialize material");
+        //}
+
+
+        //m_Material = AssetManager::LoadAsset<Material>("temp");
         m_MaterialPanel.SetMaterial(m_Material);
 
 
@@ -39,6 +50,9 @@ namespace Engine
 
         m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
         SceneManager::CreateScene("New Scene");
+
+
+
     }
 
     void EditorLayer::OnDetach()

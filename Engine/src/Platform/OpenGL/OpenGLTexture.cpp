@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "OpenGLTexture.h"
-
 #include "stb_image.h"
 
 namespace Engine 
@@ -25,41 +24,13 @@ namespace Engine
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
 	{
 		ENGINE_PROFILE_FUNCTION();
-		Load(path);
-	}
-
-	OpenGLTexture2D::~OpenGLTexture2D()
-	{
-		ENGINE_PROFILE_FUNCTION();
-		Unload();
-	}
-
-	void OpenGLTexture2D::SetData(void* data, uint32_t size)
-	{
-		ENGINE_PROFILE_FUNCTION();
-		uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
-
-		ASSERT(size == m_Width * m_Height * bpp, "Data must be entire texture!");
-		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
-	
-	}
-
-	void OpenGLTexture2D::Bind(uint32_t slot) const
-	{
-		ENGINE_PROFILE_FUNCTION();
-		glBindTextureUnit(slot, m_RendererID);
-	}
-
-	void OpenGLTexture2D::Load(const std::string& filePath)
-	{
-		ENGINE_PROFILE_FUNCTION();
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(1);
 
 		stbi_uc* data = nullptr;
 		{
 			ENGINE_PROFILE_SCOPE("OpenGLTexture2D::OpenGLTexture2D - stbi_load");
-			data = stbi_load(filePath.c_str(), &width, &height, &channels, 0);
+			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 		}
 
 		ASSERT(data, "Failed to load image!");
@@ -95,15 +66,29 @@ namespace Engine
 
 		stbi_image_free(data);
 
-		this->filePath = filePath;
-		isLoaded = true;
+		this->filePath = path;
+		SetName(path);
 	}
 
-	void OpenGLTexture2D::Unload()
+	OpenGLTexture2D::~OpenGLTexture2D()
 	{
 		ENGINE_PROFILE_FUNCTION();
 		glDeleteTextures(1, &m_RendererID);
-		isLoaded = false;
 	}
 
+	void OpenGLTexture2D::SetData(void* data, uint32_t size)
+	{
+		ENGINE_PROFILE_FUNCTION();
+		uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
+
+		ASSERT(size == m_Width * m_Height * bpp, "Data must be entire texture!");
+		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+	
+	}
+
+	void OpenGLTexture2D::Bind(uint32_t slot) const
+	{
+		ENGINE_PROFILE_FUNCTION();
+		glBindTextureUnit(slot, m_RendererID);
+	}
 }

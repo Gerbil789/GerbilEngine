@@ -24,19 +24,18 @@ namespace Engine
 
             // Check if factory exists
             auto it_f = factories.find(typeid(T).name());
-            if (it_f != factories.end()) {
-                auto factory = std::dynamic_pointer_cast<IAssetFactory>(it_f->second);
-				auto asset = factory->Create(filePath);
-            
-				if (asset) {
-					assets[filePath] = asset;
-                    ENGINE_LOG_INFO("Loaded asset '{0}'", filePath);
-					return std::dynamic_pointer_cast<T>(asset);
-				}
-            }
-            else 
-            {
+            if (it_f == factories.end()) {
                 ENGINE_LOG_ERROR("Factory for asset '{0}' not found", filePath);
+                return nullptr;
+            }
+
+            auto factory = std::dynamic_pointer_cast<IAssetFactory>(it_f->second);
+            auto asset = factory->Create(filePath);
+
+            if (asset) {
+                assets[filePath] = asset;
+                ENGINE_LOG_INFO("Loaded asset '{0}'", filePath);
+                return std::dynamic_pointer_cast<T>(asset);
             }
 
             ENGINE_LOG_ERROR("Failed to load asset '{0}'", filePath);

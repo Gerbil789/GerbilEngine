@@ -21,10 +21,10 @@ namespace Engine
 	public:
 		Material() = default;
 
-		virtual void Load(const std::string& filePath) override;
-		virtual void Unload() override;
+		//virtual void Load(const std::string& filePath) override;
+		//virtual void Unload() override;
 
-		std::string shaderName = "Texture"; //todo: change to shader
+		std::string shaderName = "Texture"; //TODO: change to shader
 
 		SurfaceType surfaceType = SurfaceType::Opaque;
 
