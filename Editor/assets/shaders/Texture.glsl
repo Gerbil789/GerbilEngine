@@ -41,6 +41,14 @@ struct PointLight {
     vec3 position;
     vec3 color;
     float intensity;
+	float range;
+	vec3 attenuation;
+};
+
+struct DirectionalLight {
+	vec3 direction;
+	vec3 color;
+	float intensity;
 };
 
 layout(location = 0) out vec4 color;
@@ -62,6 +70,8 @@ uniform vec3 u_CameraPos;
 uniform PointLight u_PointLights[10];
 uniform int u_NumLights;
 
+uniform DirectionalLight u_DirectionalLight;
+
 void main()
 {
 	vec3 ambient = vec3(0.1);
@@ -71,11 +81,21 @@ void main()
 	{
 		vec3 lightDir = normalize(u_PointLights[i].position - v_WorldPos);
 		float distance = length(u_PointLights[i].position - v_WorldPos);
-		 float attenuation = 1.0 / (0.1 + 1.0 * distance + 0.032 * distance * distance);
-		vec3 lightColor = u_PointLights[i].color * u_PointLights[i].intensity;
+		float attenuation = 1.0 / (u_PointLights[i].attenuation.x + 
+								   u_PointLights[i].attenuation.y * distance + 
+								   u_PointLights[i].attenuation.z * distance * distance);
+		float rangeFactor = max(0.0, 1.0 - distance / u_PointLights[i].range);
+		vec3 lightColor = u_PointLights[i].color * u_PointLights[i].intensity * rangeFactor;
 		vec3 diffuse = max(dot(lightDir, normalize(v_Normal)), 0.0) * lightColor;
 		result += diffuse * attenuation;
 	}
+
+	
+	
+	vec3 lightDir = normalize(u_DirectionalLight.direction);
+	vec3 lightColor = u_DirectionalLight.color * u_DirectionalLight.intensity;
+	vec3 diffuse = max(dot(lightDir, normalize(v_Normal)), 0.0) * lightColor;
+	result += diffuse;
 	
 
 	color = (vec4(ambient, 1.0) + vec4(result, 1.0)) * texture(u_Textures[int(v_TexIndex)], v_TexCoord * v_TilingFactor) * v_Color;

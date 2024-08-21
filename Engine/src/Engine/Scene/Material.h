@@ -19,12 +19,9 @@ namespace Engine
 	class Material : public Asset
 	{
 	public:
-		Material() = default;
+		Material(const std::string& filePath) : Asset(filePath) {}
 
-		//virtual void Load(const std::string& filePath) override;
-		//virtual void Unload() override;
-
-		std::string shaderName = "Texture"; //TODO: change to shader
+		std::string shaderName = "Texture"; //TODO: make shader selectable when better shader system is implemented
 
 		SurfaceType surfaceType = SurfaceType::Opaque;
 

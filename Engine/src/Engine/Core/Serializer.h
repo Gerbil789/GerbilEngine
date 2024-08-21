@@ -10,9 +10,11 @@ namespace Engine
 	class Serializer
 	{
 	public:
-		static void Serialize(const Ref<Material>& material, const std::string& filePath);
-		static bool Deserialize(const std::string& filePath, Ref<Material>& material);
+		static void Serialize(const Ref<Material>& material);
+		static bool Deserialize(Ref<Material>& material);
 
+		static void Serialize(const Ref<Scene>& scene);
+		static bool Deserialize(Ref<Scene>& scene);
 
 	};
 

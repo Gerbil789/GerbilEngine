@@ -4,7 +4,7 @@
 
 namespace Engine 
 {
-	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height) : Texture2D("none")
 	{
 		ENGINE_PROFILE_FUNCTION();
 		m_Width = width;
@@ -21,7 +21,7 @@ namespace Engine
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
+	OpenGLTexture2D::OpenGLTexture2D(const std::string& filepath) : Texture2D(filepath)
 	{
 		ENGINE_PROFILE_FUNCTION();
 		int width, height, channels;
@@ -30,7 +30,7 @@ namespace Engine
 		stbi_uc* data = nullptr;
 		{
 			ENGINE_PROFILE_SCOPE("OpenGLTexture2D::OpenGLTexture2D - stbi_load");
-			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+			data = stbi_load(filepath.c_str(), &width, &height, &channels, 0);
 		}
 
 		ASSERT(data, "Failed to load image!");
@@ -65,9 +65,6 @@ namespace Engine
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
 
 		stbi_image_free(data);
-
-		this->filePath = path;
-		SetName(path);
 	}
 
 	OpenGLTexture2D::~OpenGLTexture2D()

@@ -16,19 +16,8 @@ namespace Engine
         ENGINE_PROFILE_FUNCTION();
         SceneManager::AddObserver(this);
 
-
-
-        //Serializer::Serialize(m_Material, "C:/Users/vojta/source/repos/GerbilEngine/Editor/assets/test.material");
-
-        //if (!Serializer::Deserialize("C:/Users/vojta/source/repos/GerbilEngine/Editor/assets/test.material", m_Material))
-        //{
-        //    ENGINE_LOG_ERROR("Failed to deserialize material");
-        //}
-
-
         //m_Material = AssetManager::LoadAsset<Material>("temp");
         m_MaterialPanel.SetMaterial(m_Material);
-
 
         //load textures
         m_Icon_Play = AssetManager::LoadAsset<Texture2D>("resources/icons/play.png");
@@ -48,11 +37,8 @@ namespace Engine
         gameFrameBufferSpecification.Height = 720;
         m_GameFrameBuffer = FrameBuffer::Create(gameFrameBufferSpecification);
 
-        m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
+        m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f); //TODO: what are these values? must it be there?
         SceneManager::CreateScene("New Scene");
-
-
-
     }
 
     void EditorLayer::OnDetach()
@@ -299,6 +285,7 @@ namespace Engine
         m_CurrentScene = SceneManager::GetCurrentScene();
     }
 
+    //TODO: move somewhere else, this is making the editor layer too big
     bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
     {
         if (e.GetRepeatCount() > 0)

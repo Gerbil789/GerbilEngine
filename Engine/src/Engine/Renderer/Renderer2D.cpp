@@ -145,8 +145,25 @@ namespace Engine
 		s_Data.TextureShader->SetFloat3("u_CameraPosition", camera.GetPosition());
 
 
-		Ref<Scene> scene = SceneManager::GetCurrentScene(); //todo: use observer pattern
-		std::vector<Entity> lights = scene->GetLightEntities();
+		Ref<Scene> scene = SceneManager::GetCurrentScene(); //TODO: use observer pattern
+		std::vector<Entity> lights = scene->GetLightEntities(); //TODO: filter by enabled
+
+		for (int i = 0; i < lights.size(); i++)
+		{
+			auto& light = lights[i];
+			auto& lightComponent = light.GetComponent<LightComponent>();
+
+			if (lightComponent.Type == LightType::Directional)
+			{
+				//directional light
+				s_Data.TextureShader->SetFloat3("u_DirectionalLight.direction", light.GetComponent<TransformComponent>().Rotation);
+				s_Data.TextureShader->SetFloat3("u_DirectionalLight.color", light.GetComponent<LightComponent>().Color);
+				s_Data.TextureShader->SetFloat("u_DirectionalLight.intensity", light.GetComponent<LightComponent>().Intensity);
+				lights.erase(lights.begin() + i);
+				break;
+			}
+		}
+
 		s_Data.TextureShader->SetInt("u_NumLights", lights.size());
 
 		for(uint32_t i = 0; i < lights.size(); i++)
@@ -158,6 +175,8 @@ namespace Engine
 			s_Data.TextureShader->SetFloat3(lightName + "position", light.GetComponent<TransformComponent>().Position);
 			s_Data.TextureShader->SetFloat3(lightName + "color", lightComponent.Color);
 			s_Data.TextureShader->SetFloat(lightName + "intensity", lightComponent.Intensity);
+			s_Data.TextureShader->SetFloat(lightName + "range", lightComponent.Range);
+			s_Data.TextureShader->SetFloat3(lightName + "attenuation", lightComponent.Attenuation);
 		}
 
 		s_Data.QuadIndexCount = 0;

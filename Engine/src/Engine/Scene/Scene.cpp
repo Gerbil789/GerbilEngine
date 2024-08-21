@@ -8,11 +8,6 @@
 
 namespace Engine
 {
-	Scene::Scene()
-	{
-		
-	}
-
 	Scene::~Scene()
 	{
 		//log entity count
@@ -49,7 +44,7 @@ namespace Engine
 
 	Ref<Scene> Scene::Copy(const Ref<Scene>& other)
 	{
-		Ref<Scene> newScene = CreateRef<Scene>();
+		Ref<Scene> newScene = CreateRef<Scene>(other->GetFilePath());
 		
 		newScene->m_ViewportWidth = other->m_ViewportWidth;
 		newScene->m_ViewportHeight = other->m_ViewportHeight;
@@ -307,6 +302,18 @@ namespace Engine
 	
 
 		return lightEntities;
+	}
+
+	std::vector<Entity> Scene::GetEntities()
+	{
+		std::vector<Entity> entities;
+
+		auto view = m_Registry.view<IDComponent>();
+		for(auto entity : view)
+		{
+			entities.push_back(Entity{ entity, this });
+		}
+		return entities;
 	}
 
 	

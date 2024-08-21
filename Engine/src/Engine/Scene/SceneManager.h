@@ -18,9 +18,9 @@ namespace Engine
 		~SceneManager() = default;
 
 		static Ref<Scene> GetCurrentScene() { return s_CurrentScene; }
-		static void CreateScene(const std::string& name = "Untitled Scene");
+		static void CreateScene(const std::string& filePath);
 		static void LoadScene();
-		static void LoadScene(const std::string& filepath);
+		static void LoadScene(const std::string& filePath);
 		static void SaveScene();
 		static void SaveSceneAs();
 
@@ -28,13 +28,9 @@ namespace Engine
 		static void RemoveObserver(ISceneObserver* observer) { s_Observers.erase(std::remove(s_Observers.begin(), s_Observers.end(), observer), s_Observers.end()); }
 
 	private:
-		static void SerializeScene(const Ref<Scene>& scene, const std::string& filepath);
-		static Ref<Scene> DeserializeScene(const std::string& filepath);
-
 		static void NotifyObservers();
 
 	private:
-		static std::string s_CurrentScenePath;
 		static Ref<Scene> s_CurrentScene;
 		static std::vector<ISceneObserver*> s_Observers;
 	};

@@ -225,6 +225,30 @@ namespace Engine
 			{
 				UI::ColorControl(component.Color);
 				UI::FloatControl("Intensity", component.Intensity, 1.0f);
+
+				const char* lightTypeString[] = { "Point", "Directional", "Spot" };
+				const char* currentLightTypeString = lightTypeString[(int)component.Type];
+				if (UI::EnumControl("Type", (int&)component.Type, lightTypeString, 3))
+				{
+					component.Type = (LightType)component.Type;
+				}
+
+				if(component.Type == LightType::Spot)
+				{
+					//TODO: Add spot light controls
+				}
+				else if(component.Type == LightType::Point)
+				{
+					UI::FloatControl("Range", component.Range, 1.0f);
+
+					if (ImGui::CollapsingHeader("Advanced"))
+					{
+						ImGui::Text("Attenuation");
+						UI::FloatControl("Constant", component.Attenuation.x, 0.1f);
+						UI::FloatControl("Linear", component.Attenuation.y, 0.1f);
+						UI::FloatControl("Quadratic", component.Attenuation.z, 0.1f);
+					}
+				}
 			});
 	}
 

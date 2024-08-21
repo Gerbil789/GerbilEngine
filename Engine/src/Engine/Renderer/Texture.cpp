@@ -16,17 +16,6 @@ namespace Engine
 		}
 	}
 
-
-	//Ref<Texture2D> Texture2D::Create(const std::string& path)
-	//{
-	//	switch (Renderer::GetAPI())
-	//	{
-	//	case RendererAPI::API::None: ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-	//	case RendererAPI::API::OpenGL: return CreateRef<OpenGLTexture2D>(path);
-	//	default: ASSERT(false, "Unknown RendererAPI!"); return nullptr;
-	//	}
-	//}
-
 	
 	Ref<Asset> Texture2DFactory::Create(const std::string& filePath)
 	{

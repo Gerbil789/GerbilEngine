@@ -4,24 +4,25 @@
 #include "Engine/Core/Timestep.h"
 #include "Engine/Renderer/EditorCamera.h"
 #include "Engine/Core/UUID.h"
+#include "Engine/Core/Asset.h"
 
 namespace Engine 
 {
 	class Entity; // Forward declaration
 
-	class Scene
+	class Scene : public Asset
 	{
 	public:
 		enum class SceneState { Editor = 0, Runtime = 1 };
+
 	public:
-		Scene();
+		Scene(const std::string& filePath) : Asset(filePath) {}
 		~Scene();
 
 		static Ref<Scene> Copy(const Ref<Scene>& other);
 		SceneState GetSceneState() const { return m_SceneState; }
 		bool IsPlaying() const { return m_IsPlaying; }
 		bool IsPaused() const { return m_IsPaused; }
-
 		void OnUpdate(Timestep ts);
 		void OnUpdate(Timestep ts, EditorCamera& camera);
 
@@ -30,19 +31,14 @@ namespace Engine
 		void OnPause();
 		void OnResume();
 		void OnNextFrame();
-
 		void OnViewportResize(uint32_t width, uint32_t height);
 
 		Entity CreateEntity(const std::string& name = std::string());
 		Entity CreateEntity(UUID uuid, const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
-
 		Entity GetEntityByName(const std::string& name);
-
 		std::vector<Entity> GetLightEntities();
-
-
-
+		std::vector<Entity> GetEntities();
 		void DuplicateEntity(Entity entity);
 		void CopyEntity(Entity entity);
 		void PasteEntity();

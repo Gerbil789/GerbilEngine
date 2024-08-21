@@ -88,10 +88,20 @@ namespace Engine
 	};
 
 
+	enum class LightType
+	{
+		Point = 0,
+		Directional = 1,
+		Spot = 2
+	};
+
 	struct LightComponent
 	{
+		LightType Type = LightType::Point;
 		glm::vec3 Color = { 1.0f, 1.0f, 1.0f };
 		float Intensity = 1.0f;
+		float Range = 10.0f;
+		glm::vec3 Attenuation = { 1.0f, 0.09f, 0.032f }; // Constant, Linear, Quadratic
 
 		LightComponent() = default;
 		LightComponent(const LightComponent&) = default;
