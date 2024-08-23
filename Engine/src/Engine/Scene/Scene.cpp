@@ -266,27 +266,29 @@ namespace Engine
 		entity.AddComponent<EnablingComponent>(true);
 		entity.AddComponent<NameComponent>(name);
 		entity.AddComponent<TransformComponent>();
+		entity.AddComponent<RelationshipComponent>();
+		m_EntityMap[uuid] = entity;
+		m_EntityOrder.push_back(uuid);
 		return entity;
 	}
 
 
 	void Scene::DestroyEntity(Entity entity)
 	{
+		m_EntityMap.erase(entity.GetComponent<IDComponent>().ID);
+		m_EntityOrder.erase(std::remove(m_EntityOrder.begin(), m_EntityOrder.end(), entity.GetComponent<IDComponent>().ID), m_EntityOrder.end());
 		m_Registry.destroy(entity);
 	}
 
-	Entity Scene::GetEntityByName(const std::string& name)
+
+	Entity Scene::GetEntityByUUID(UUID uuid)
 	{
-		auto view = m_Registry.view<NameComponent>();
-		for (auto entity : view)
+		auto it = m_EntityMap.find(uuid);
+		if (it != m_EntityMap.end())
 		{
-			if(view.get<NameComponent>(entity).Name == name)
-			{
-				return Entity{ entity, this };
-			}
+			return Entity(it->second, this);
 		}
-		return {};
-		
+		return Entity(); // Return invalid entity if not found
 	}
 
 	std::vector<Entity> Scene::GetLightEntities()
@@ -298,9 +300,6 @@ namespace Engine
 		{
 			lightEntities.push_back(Entity{ entity, this });
 		}
-
-	
-
 		return lightEntities;
 	}
 
@@ -316,7 +315,20 @@ namespace Engine
 		return entities;
 	}
 
-	
+	std::vector<Entity> Scene::GetEntitiesOrdered()
+	{
+		std::vector<Entity> entities;
+
+		for(auto uuid : m_EntityOrder)
+		{
+			auto entity = GetEntityByUUID(uuid);
+			if(entity)
+			{
+				entities.push_back(entity);
+			}
+		}
+		return entities;
+	}
 
 	void Scene::DuplicateEntity(Entity entity)
 	{
@@ -360,14 +372,37 @@ namespace Engine
 		m_SelectedEntity = entt::null;
 	}
 
-	bool Scene::IsEntitySelected(Entity entity)
+	bool Scene::IsEntitySelected(Entity entity) const
 	{
 		return m_SelectedEntity == entity;
 	}
 
-	const Entity& Scene::GetSelectedEntity()
+	const Entity& Scene::GetSelectedEntity() 
 	{
 		return { m_SelectedEntity, this };
+	}
+
+	void Scene::ReorderEntity(Entity sourceEntity, Entity targetEntity)
+	{
+		auto sourceUUID = sourceEntity.GetUUID();
+		auto targetUUID = targetEntity.GetUUID();
+
+		// Find the current position of the source entity
+		auto sourceIt = std::find(m_EntityOrder.begin(), m_EntityOrder.end(), sourceUUID);
+		if (sourceIt == m_EntityOrder.end())
+			return;
+
+		// Find the position of the target entity
+		auto targetIt = std::find(m_EntityOrder.begin(), m_EntityOrder.end(), targetUUID);
+		if (targetIt == m_EntityOrder.end())
+			return;
+
+		// Remove the source entity from its current position
+		m_EntityOrder.erase(sourceIt);
+
+		// Insert the source entity before the target entity
+		targetIt = std::find(m_EntityOrder.begin(), m_EntityOrder.end(), targetUUID); // Refind the target iterator after erasure
+		m_EntityOrder.insert(targetIt, sourceUUID);
 	}
 
 	
@@ -385,6 +420,9 @@ namespace Engine
 
 	template<>
 	void Scene::OnComponentAdded<EnablingComponent>(Entity entity, EnablingComponent& component) {}
+
+	template<>
+	void Scene::OnComponentAdded<RelationshipComponent>(Entity entity, RelationshipComponent& component) {}
 
 	template<>
 	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) {}

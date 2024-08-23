@@ -36,16 +36,19 @@ namespace Engine
 		Entity CreateEntity(const std::string& name = std::string());
 		Entity CreateEntity(UUID uuid, const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
-		Entity GetEntityByName(const std::string& name);
+		Entity GetEntityByUUID(UUID uuid);
 		std::vector<Entity> GetLightEntities();
 		std::vector<Entity> GetEntities();
+		std::vector<Entity> GetEntitiesOrdered();
 		void DuplicateEntity(Entity entity);
 		void CopyEntity(Entity entity);
 		void PasteEntity();
 		void SelectEntity(Entity entity);
 		void DeselectEntity();
-		bool IsEntitySelected(Entity entity);
+		bool IsEntitySelected(Entity entity) const;
 		const Entity& GetSelectedEntity();
+		const std::vector<UUID>& GetEntityOrder() const { return m_EntityOrder; }
+		void ReorderEntity(Entity sourceEntity, Entity targetEntity);
 	private:
 		void OnUpdateRuntime(Timestep ts);
 		void OnUpdateEditor(Timestep ts, EditorCamera& camera);
@@ -58,7 +61,11 @@ namespace Engine
 
 	private:
 		entt::registry m_Registry;
+		std::unordered_map<UUID, entt::entity> m_EntityMap;
+		std::vector<UUID> m_EntityOrder;
+
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
+
 		bool m_IsPlaying = false;
 		bool m_IsPaused = false;
 		
@@ -69,7 +76,6 @@ namespace Engine
 
 		friend class Entity;
 		friend class SceneHierarchyPanel;
-		friend class SceneSerializer;
 	};
 
 }

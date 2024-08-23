@@ -10,6 +10,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
+#include <entt.hpp>
+
 namespace Engine
 {
 	struct IDComponent
@@ -39,6 +41,15 @@ namespace Engine
 
 		operator std::string& () { return Name; }
 		operator const std::string& () const { return Name; }
+	};
+
+	struct RelationshipComponent
+	{
+		entt::entity Parent = entt::null;
+		std::vector<entt::entity> Children;
+
+		RelationshipComponent() = default;
+		RelationshipComponent(const RelationshipComponent&) = default;
 	};
 
 

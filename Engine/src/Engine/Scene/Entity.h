@@ -11,9 +11,9 @@ namespace Engine
 	{
 	public:
 		Entity() = default;
-		Entity(entt::entity handle, Scene* scene);
+		Entity(entt::entity handle, Scene* scene) : m_EntityHandle(handle), m_Scene(scene) {}
 		Entity(const Entity& other) = default;
-
+		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 
 		void SetName(const std::string& name) { GetComponent<NameComponent>() = name; }
 		const std::string& GetName() { return GetComponent<NameComponent>().Name; }
@@ -21,25 +21,31 @@ namespace Engine
 		void SetActive(bool active) { GetComponent<EnablingComponent>().Enabled = active; }
 		bool IsActive() { return GetComponent<EnablingComponent>().Enabled; }
 
-		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
-		
+		void SetParent(Entity newParent);
+		void AddChild(Entity child);
+		void RemoveChild(Entity child);
+		void RemoveParent();
+
+		bool HasParent();
+		bool HasChildren();
+		int GetChildCount();
+
+		Entity GetParent();
+		std::vector<Entity> GetChildren();
+		Entity GetRoot();
+
+
+
 		operator bool() const { return m_EntityHandle != entt::null; }
 		operator entt::entity() const { return m_EntityHandle; }
-		operator uint32_t() const { return (uint32_t)m_EntityHandle; } //entity id
+		operator uint32_t() const { return (uint32_t)m_EntityHandle; } // entity id
 
-		bool operator==(const Entity& other) const
-		{
-			return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene;
-		}
-
-		bool operator!=(const Entity& other) const
-		{
-			return !(*this == other);
-		}
+		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
+		bool operator!=(const Entity& other) const { return !(*this == other); }
 
 	private:
 		entt::entity m_EntityHandle{ entt::null };
-		Scene* m_Scene = nullptr;
+		Scene* m_Scene = nullptr; 
 
 	public:
 		template<typename T>

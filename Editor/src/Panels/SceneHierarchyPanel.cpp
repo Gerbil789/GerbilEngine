@@ -26,15 +26,20 @@ namespace Engine
 
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
+		// Save the current style
+		ImGuiStyle& style = ImGui::GetStyle();
+		ImVec2 oldWindowPadding = style.WindowPadding;
+		float oldIndentSpacing = style.IndentSpacing;
+
+		// Set window padding to zero
+		style.WindowPadding = ImVec2(0, 0);
+
 		ImGui::Begin("Scene Hierarchy");
-	
-		if (m_Scene)
+		if (!m_Scene) { return; }
+
+		for(auto& entity : m_Scene->GetEntitiesOrdered())
 		{
-			m_Scene->m_Registry.view<NameComponent>().each([&](auto entityId, auto tc)
-			{
-				Entity entity{ entityId, m_Scene.get() };
-				DrawEntityNode(entity);
-			});
+			DrawEntityNode(entity);
 		}
 
 		if(ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
@@ -55,19 +60,53 @@ namespace Engine
 		}
 	
 		ImGui::End();
+
+		style.WindowPadding = oldWindowPadding;
+		style.IndentSpacing = oldIndentSpacing;
 	}
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
 		auto& name = entity.GetComponent<NameComponent>().Name;
 
+		// Save the current style
+		ImGuiStyle& style = ImGui::GetStyle();
+		ImVec2 oldPadding = style.FramePadding;
+		ImVec2 oldItemSpacing = style.ItemSpacing;
+
+		// Set padding and spacing to zero
+		style.FramePadding = ImVec2(0, 0);
+		style.ItemSpacing = ImVec2(0, 0);
+
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ((m_Scene->IsEntitySelected(entity)) ? ImGuiTreeNodeFlags_Selected : 0);
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 		bool expanded =  ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
 
+
+		style.FramePadding = oldPadding;
+		style.ItemSpacing = oldItemSpacing;
+
 		if(ImGui::IsItemClicked())
 		{
 			m_Scene->SelectEntity(entity);
+		}
+
+		// Handle dragging and dropping
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+		{
+			ImGui::SetDragDropPayload("DND_ENTITY", &entity, sizeof(Entity));
+			ImGui::Text("%s", name.c_str());
+			ImGui::EndDragDropSource();
+		}
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_ENTITY"))
+			{
+				Entity* sourceEntity = (Entity*)payload->Data;
+				m_Scene->ReorderEntity(*sourceEntity, entity);
+			}
+			ImGui::EndDragDropTarget();
 		}
 
 		bool entityDeleted = false;
