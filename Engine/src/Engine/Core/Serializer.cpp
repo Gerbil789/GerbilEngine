@@ -131,6 +131,8 @@ namespace Engine
 			out << YAML::Key << "Intensity" << YAML::Value << lc.Intensity;
 			out << YAML::Key << "Range" << YAML::Value << lc.Range;
 			out << YAML::Key << "Attenuation" << YAML::Flow << YAML::BeginSeq << lc.Attenuation.x << lc.Attenuation.y << lc.Attenuation.z << YAML::EndSeq;
+			out << YAML::Key << "InnerAngle" << YAML::Value << lc.InnerAngle;
+			out << YAML::Key << "OuterAngle" << YAML::Value << lc.OuterAngle;
 			out << YAML::EndMap;
 		}
 
@@ -253,6 +255,8 @@ namespace Engine
 				lc.Attenuation.x = lightComponent["Attenuation"][0].as<float>();
 				lc.Attenuation.y = lightComponent["Attenuation"][1].as<float>();
 				lc.Attenuation.z = lightComponent["Attenuation"][2].as<float>();
+				lc.InnerAngle = lightComponent["InnerAngle"].as<float>();
+				lc.OuterAngle = lightComponent["OuterAngle"].as<float>();
 			}
 		}
 

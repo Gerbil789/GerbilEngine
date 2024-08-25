@@ -112,6 +112,8 @@ namespace Engine
 		glm::vec3 Color = { 1.0f, 1.0f, 1.0f };
 		float Intensity = 1.0f;
 		float Range = 10.0f;
+		float InnerAngle = 30.0f;
+		float OuterAngle = 50.0f;
 		glm::vec3 Attenuation = { 1.0f, 0.09f, 0.032f }; // Constant, Linear, Quadratic
 
 		LightComponent() = default;

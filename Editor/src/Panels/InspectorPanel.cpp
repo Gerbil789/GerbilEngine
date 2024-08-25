@@ -233,11 +233,7 @@ namespace Engine
 					component.Type = (LightType)component.Type;
 				}
 
-				if(component.Type == LightType::Spot)
-				{
-					//TODO: Add spot light controls
-				}
-				else if(component.Type == LightType::Point)
+				if(component.Type == LightType::Point)
 				{
 					UI::FloatControl("Range", component.Range, 1.0f);
 
@@ -249,6 +245,20 @@ namespace Engine
 						UI::FloatControl("Quadratic", component.Attenuation.z, 0.1f);
 					}
 				}
+				else if (component.Type == LightType::Spot)
+				{
+					UI::FloatControl("Inner angle", component.InnerAngle);
+					UI::FloatControl("Outer Angle", component.OuterAngle);
+
+					if (ImGui::CollapsingHeader("Advanced"))
+					{
+						ImGui::Text("Attenuation");
+						UI::FloatControl("Constant", component.Attenuation.x, 0.1f);
+						UI::FloatControl("Linear", component.Attenuation.y, 0.1f);
+						UI::FloatControl("Quadratic", component.Attenuation.z, 0.1f);
+					}
+				}
+
 			});
 	}
 

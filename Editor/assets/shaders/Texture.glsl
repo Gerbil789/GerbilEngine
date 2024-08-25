@@ -37,19 +37,18 @@ void main()
 #type fragment
 #version 330 core
 
-struct PointLight {
+struct Light {
+	int type; // 0 = point, 1 = directional, 2 = spot
     vec3 position;
     vec3 color;
     float intensity;
 	float range;
 	vec3 attenuation;
+	vec3 direction;
+	float innerAngle;
+	float outerAngle;
 };
 
-struct DirectionalLight {
-	vec3 direction;
-	vec3 color;
-	float intensity;
-};
 
 layout(location = 0) out vec4 color;
 layout(location = 1) out int entity;
@@ -63,14 +62,10 @@ in vec3 v_WorldPos;
 flat in int v_EntityID;
 
 uniform sampler2D u_Textures[32];
-
-//uniform PointLight u_PointLight;
 uniform vec3 u_CameraPos;
 
-uniform PointLight u_PointLights[10];
+uniform Light u_Lights[16];
 uniform int u_NumLights;
-
-uniform DirectionalLight u_DirectionalLight;
 
 void main()
 {
@@ -79,26 +74,53 @@ void main()
 	vec3 result = vec3(0.0);
 	for (int i = 0; i < u_NumLights; i++)
 	{
-		vec3 lightDir = normalize(u_PointLights[i].position - v_WorldPos);
-		float distance = length(u_PointLights[i].position - v_WorldPos);
-		float attenuation = 1.0 / (u_PointLights[i].attenuation.x + 
-								   u_PointLights[i].attenuation.y * distance + 
-								   u_PointLights[i].attenuation.z * distance * distance);
-		float rangeFactor = max(0.0, 1.0 - distance / u_PointLights[i].range);
-		vec3 lightColor = u_PointLights[i].color * u_PointLights[i].intensity * rangeFactor;
-		vec3 diffuse = max(dot(lightDir, normalize(v_Normal)), 0.0) * lightColor;
-		result += diffuse * attenuation;
+		if (u_Lights[i].type == 0) //point
+		{
+			vec3 lightDir = normalize(u_Lights[i].position - v_WorldPos);
+			float distance = length(u_Lights[i].position - v_WorldPos);
+			float attenuation = 1.0 / (u_Lights[i].attenuation.x + 
+								   u_Lights[i].attenuation.y * distance + 
+								   u_Lights[i].attenuation.z * distance * distance);
+			float rangeFactor = max(0.0, 1.0 - distance / u_Lights[i].range);
+			vec3 lightColor = u_Lights[i].color * u_Lights[i].intensity * rangeFactor;
+			vec3 diffuse = max(dot(lightDir, normalize(v_Normal)), 0.0) * lightColor;
+			result += diffuse * attenuation;
+    	} 
+		else if (u_Lights[i].type == 1) //directional 
+		{
+			vec3 lightDir = normalize(u_Lights[i].direction);
+			vec3 lightColor = u_Lights[i].color * u_Lights[i].intensity;
+			vec3 diffuse = max(dot(lightDir, normalize(v_Normal)), 0.0) * lightColor;
+			result += diffuse;
+    	} 
+		else if (u_Lights[i].type == 2) //spot
+		{
+			vec3 lightDir = normalize(u_Lights[i].position - v_WorldPos);
+			float distance = length(u_Lights[i].position - v_WorldPos);
+			float attenuation = 1.0 / (u_Lights[i].attenuation.x + 
+								   u_Lights[i].attenuation.y * distance + 
+								   u_Lights[i].attenuation.z * distance * distance);
+
+			// Calculate the angle between the light direction and the vector from the light to the fragment
+			float theta = dot(lightDir, normalize(-u_Lights[i].direction));
+			
+			// Convert inner and outer angles to cosines for easier comparison
+			float innerCos = cos(radians(u_Lights[i].innerAngle));
+			float outerCos = cos(radians(u_Lights[i].outerAngle));
+
+			// Calculate the spotlight's intensity based on the angle
+			float intensity = clamp((theta - outerCos) / (innerCos - outerCos), 0.0, 1.0);
+
+			// Apply spotlight if within the outer cone
+			if (theta > outerCos) 
+			{
+				vec3 lightColor = u_Lights[i].color * u_Lights[i].intensity * intensity;
+				vec3 diffuse = max(dot(lightDir, normalize(v_Normal)), 0.0) * lightColor;
+				result += diffuse * attenuation;
+			}
+    	}
 	}
 
-	
-	
-	vec3 lightDir = normalize(u_DirectionalLight.direction);
-	vec3 lightColor = u_DirectionalLight.color * u_DirectionalLight.intensity;
-	vec3 diffuse = max(dot(lightDir, normalize(v_Normal)), 0.0) * lightColor;
-	result += diffuse;
-	
-
 	color = (vec4(ambient, 1.0) + vec4(result, 1.0)) * texture(u_Textures[int(v_TexIndex)], v_TexCoord * v_TilingFactor) * v_Color;
-	
 	entity = v_EntityID;
 }

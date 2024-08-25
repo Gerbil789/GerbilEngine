@@ -1,34 +1,3 @@
 Scene: New Scene
 Entities:
-  - Entity: 11775332357528850569
-    Name: Light_Red
-    Enabled: true
-    Transform:
-      Position: [0, 1, -1.38469636]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    LightComponent:
-      Color: [1, 0, 0]
-      Intensity: 4
-  - Entity: 4199717773076342222
-    Name: Light_Blue
-    Enabled: true
-    Transform:
-      Position: [-1.17644978, -1.15927124, -2.28371596]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    LightComponent:
-      Color: [0, 0.0311286449, 1]
-      Intensity: 7.0999999
-  - Entity: 5978162978946344977
-    Name: Sprite
-    Enabled: true
-    Transform:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [4, 4, 4]
-    SpriteRendererComponent:
-      Material: "null"
-      Texture: assets\textures\background.png
-      Color: [1, 1, 1, 1]
-      TilingFactor: [1, 1]
+  []
