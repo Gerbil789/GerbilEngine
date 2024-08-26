@@ -30,11 +30,16 @@ jobs:
       run: |
         msbuild /p:Configuration=Release /p:Platform=x64 GerbilEngine.sln
 
-    - name: Send Discord Notification
-      uses: ./.github/workflows/discord-notification.yml
-      with:
-        status: ${{ job.status }}
-        branch: ${{ github.ref_name }}
-        repository: ${{ github.repository }}
-        sha: ${{ github.sha }}
+  notify-discord:
+    runs-on: ubuntu-latest
+    needs: build
+    if: always()  # Ensure this job runs even if the build job fails
+    steps:
+      - name: Send Discord Notification
+        uses: ./.github/workflows/discord_notification.yml
+        with:
+          status: ${{ needs.build.result }}
+          branch: ${{ github.ref_name }}
+          repository: ${{ github.repository }}
+          sha: ${{ github.sha }}
     
