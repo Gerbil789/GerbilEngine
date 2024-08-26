@@ -30,46 +30,13 @@ jobs:
       run: |
         msbuild /p:Configuration=Release /p:Platform=x64 GerbilEngine.sln
 
-    - name: Notify Discord
-      continue-on-error: true
-      if: always()
-      env:
-        WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        STATUS: ${{ job.status }}
-      run: |
-        $STATUS = "${{ job.status }}"
-        $BRANCHREF = "${{ github.ref }}"
-        $BRANCH = $BRANCHREF -replace '^refs/heads/', ''
-        $SHA = "${{ github.sha }}"
-        $URL = "https://github.com/${{ github.repository }}/commit/$SHA"
-        $payload = @{
-          username = "Git Watcher"
-          embeds = @(
-            @{
-              title = "Build Project Workflow Status"
-              description = "The build project workflow has completed."
-              color = if ($STATUS -eq 'success') { 3066993 } else { 15158332 }
-              fields = @(
-                @{
-                  name = "Repository"
-                  value = "${{ github.repository }}"
-                },
-                @{
-                  name = "Branch"
-                  value = $BRANCH
-                },
-                @{
-                  name = "Commit"
-                  value = "[$SHA]($URL)"
-                },
-                @{
-                  name = "Status"
-                  value = "$STATUS"
-                }
-              )
-            }
-          )
-        }
-
-        $jsonPayload = $payload | ConvertTo-Json -Depth 4
-        Invoke-RestMethod -Uri $env:WEBHOOK_URL -Method Post -ContentType "application/json" -Body $jsonPayload
+    - name: Send Discord Notification
+      uses: ./.github/workflows/discord-notification.yml
+      with:
+        status: ${{ job.status }}
+        branch: ${{ github.ref_name }}
+        repository: ${{ github.repository }}
+        sha: ${{ github.sha }}
+      secrets:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    
