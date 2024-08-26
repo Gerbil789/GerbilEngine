@@ -37,6 +37,4 @@ jobs:
         branch: ${{ github.ref_name }}
         repository: ${{ github.repository }}
         sha: ${{ github.sha }}
-      secrets:
-        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
     
