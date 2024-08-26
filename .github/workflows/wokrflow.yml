@@ -1,3 +1,5 @@
+name: Build Project
+
 on:
   push:
     branches:
@@ -35,11 +37,11 @@ jobs:
     steps:
       - name: Send Discord Notification
         run: |
-          STATUS = "${{ job.status }}"
-          BRANCH = "${{ github._name }}"
-          REPOSITORY = "${{ github.repository }}"
-          SHA = "${{ github.sha }}"
-          URL = "https://github.com/${{ github.repository }}/commit/$SHA"
+          $STATUS = "${{ job.status }}"
+          $BRANCH = "${{ github._name }}"
+          $REPOSITORY = "${{ github.repository }}"
+          $SHA = "${{ github.sha }}"
+          $URL = "https://github.com/${{ github.repository }}/commit/$SHA"
 
           $payload = @{
             username = "Git Watcher"
