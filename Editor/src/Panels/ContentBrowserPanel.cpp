@@ -133,7 +133,7 @@ namespace Engine
                                 draw_list->AddText(ImVec2(box_min.x + LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data->Label).x / 2, box_max.y - ImGui::GetFontSize() + 10), label_col, item_data->Label);
                                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
                                 {
-                                    newDirectory = m_CurrentDirectory /= item_data->Filename;
+                                    m_NewDirectory = m_CurrentDirectory /= item_data->Filename;
                                 }
 							    break;
 
@@ -190,10 +190,10 @@ namespace Engine
             }
         }
 
-        if (newDirectory != "") 
+        if (m_NewDirectory != "") 
         {
-            m_CurrentDirectory = newDirectory;
-            newDirectory = "";
+            m_CurrentDirectory = m_NewDirectory;
+            m_NewDirectory = "";
             Reload();
         }
 

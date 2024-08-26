@@ -1,4 +1,4 @@
-[![Build Project](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build.yml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build.yml)
+[![Build Project](https://github.com/Gerbil789/GerbilEngine/actions/workflows/workflow.yml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/workflow.yml)
 
 # GerbilEngine
 
@@ -8,12 +8,17 @@ Game Engine hobby project
 
 ## Getting Started
 
+#### Prerequisites
+ - Windows machine
+ - Visual Studio 2022
+
 #### Setup
 1. Clone the Project
 2. Navigate to the Scripts Folder
 3. Generate project files by executing script
     - Windows: `Win-GenerateProjects.bat`
     - Linux: `Not supported`
-    - Mac: `Not supported`
 4. Build **`Editor`** project
+5. Set **`Editor`** as startup project (if not set by default)
+6. Run
 
