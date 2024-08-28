@@ -85,15 +85,18 @@ namespace Engine
 	{
 		ImGuiID ID;
 		ItemType Type;
+		char Path[256];
 		char Label[32];
-		std::string Filename;
 
-		ContentBrowserItem(ImGuiID id, ItemType type, const std::string& filename)
+		ContentBrowserItem(ImGuiID id, ItemType type, std::filesystem::path path)
 		{
 			ID = id;
 			Type = type;
-			Filename = filename;
-			strncpy(Label, filename.c_str(), sizeof(Label) - 1);
+
+			strncpy(Path, path.string().c_str(), sizeof(Path) - 1);
+			Path[sizeof(Path) - 1] = '\0'; // Ensure null-termination
+			
+			strncpy(Label, path.filename().string().c_str(), sizeof(Label) - 1);
 			Label[sizeof(Label) - 1] = '\0'; // Ensure null-termination
 		}
 	};
@@ -118,6 +121,7 @@ namespace Engine
 		std::filesystem::path m_NewDirectory = ""; // handle for switching directories
 
 		Ref<Texture2D> m_FolderIcon;
+		Ref<Texture2D> m_EmptyFolderIcon;
 		Ref<Texture2D> m_FileIcon;
 
 		ImVector<ContentBrowserItem> Items;

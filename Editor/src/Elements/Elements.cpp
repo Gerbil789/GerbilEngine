@@ -343,7 +343,7 @@ namespace Engine
 					std::filesystem::path texturePath = path;
 					if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 					{
-						texture = AssetManager::LoadAsset<Texture2D>(texturePath.string());
+						texture = AssetManager::GetAsset<Texture2D>(texturePath.string());
 						valueChanged = true;
 					}
 				}

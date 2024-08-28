@@ -20,6 +20,7 @@ namespace Engine
     private:
         void SetName(const std::string& filePath) 
         {
+            //TODO: Implement a better way to get the name, use some std function or something...
             size_t lastSlash = filePath.find_last_of("/\\");
             size_t lastDot = filePath.find_last_of(".");
             name = filePath.substr(lastSlash + 1, lastDot - lastSlash - 1);
@@ -29,6 +30,7 @@ namespace Engine
     class IAssetFactory {
     public:
         virtual ~IAssetFactory() = default;
+        virtual Ref<Asset> Load(const std::string& filePath) = 0;
         virtual Ref<Asset> Create(const std::string& filePath) = 0;
     };
 }

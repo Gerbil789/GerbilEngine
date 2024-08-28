@@ -116,7 +116,7 @@ namespace Engine
 						std::filesystem::path texturePath = path;
 						if (texturePath.extension() == ".material")
 						{
-							component.Material = AssetManager::LoadAsset<Material>(texturePath.string());
+							component.Material = AssetManager::GetAsset<Material>(texturePath.string());
 						}
 						else 
 						{
@@ -137,7 +137,7 @@ namespace Engine
 						std::filesystem::path texturePath = path;
 						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
 						{
-							component.Texture = AssetManager::LoadAsset<Texture2D>(texturePath.string());
+							component.Texture = AssetManager::GetAsset<Texture2D>(texturePath.string());
 						}
 						else {
 							ENGINE_LOG_WARNING("Failed to load texture!");

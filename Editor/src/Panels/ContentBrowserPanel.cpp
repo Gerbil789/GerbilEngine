@@ -1,6 +1,8 @@
 #include "enginepch.h"
 #include "ContentBrowserPanel.h"
 #include "Engine/Core/AssetManager.h"
+#include "Engine/Scene/Material.h"
+#include "Engine/Core/Serializer.h"
 
 
 namespace Engine 
@@ -12,8 +14,9 @@ namespace Engine
 		m_RootDirectory = assetsDirectory;
 		m_CurrentDirectory = assetsDirectory;
 
-        m_FolderIcon = AssetManager::LoadAsset<Texture2D>("resources/icons/folder.png");
-        m_FileIcon = AssetManager::LoadAsset<Texture2D>("resources/icons/file.png");
+        m_FolderIcon = AssetManager::GetAsset<Texture2D>("resources/icons/folder.png");
+        m_EmptyFolderIcon = AssetManager::GetAsset<Texture2D>("resources/icons/folder_empty.png");
+        m_FileIcon = AssetManager::GetAsset<Texture2D>("resources/icons/file.png");
 
         Reload();
 	}
@@ -114,7 +117,7 @@ namespace Engine
 
                     if (ImGui::BeginDragDropSource())
                     {
-                        std::filesystem::path relativePath(m_CurrentDirectory / item_data->Filename);
+                        std::filesystem::path relativePath(m_CurrentDirectory / item_data->Label);
                         const wchar_t* itemPath = relativePath.c_str();
                         ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
                         ImGui::EndDragDropSource();
@@ -129,11 +132,19 @@ namespace Engine
                         switch (item_data->Type)
                         {
                             case ItemType::Directory:
-                                draw_list->AddImage((ImTextureID)m_FolderIcon->GetRendererID(), box_min, box_max, ImVec2(0, 1), ImVec2(1, 0)); 
+
+                                if (std::filesystem::is_empty(m_CurrentDirectory / item_data->Label))
+                                {
+                                    draw_list->AddImage((ImTextureID)m_EmptyFolderIcon->GetRendererID(), box_min, box_max, ImVec2(0, 1), ImVec2(1, 0));
+                                }
+                                else {
+                                    draw_list->AddImage((ImTextureID)m_FolderIcon->GetRendererID(), box_min, box_max, ImVec2(0, 1), ImVec2(1, 0));
+                                }
+
                                 draw_list->AddText(ImVec2(box_min.x + LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data->Label).x / 2, box_max.y - ImGui::GetFontSize() + 10), label_col, item_data->Label);
                                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
                                 {
-                                    m_NewDirectory = m_CurrentDirectory /= item_data->Filename;
+                                    m_NewDirectory = std::filesystem::path(item_data->Path);
                                 }
 							    break;
 
@@ -190,10 +201,10 @@ namespace Engine
             }
         }
 
-        if (m_NewDirectory != "") 
+        if (!m_NewDirectory.empty())
         {
             m_CurrentDirectory = m_NewDirectory;
-            m_NewDirectory = "";
+            m_NewDirectory.clear();
             Reload();
         }
 
@@ -244,16 +255,16 @@ namespace Engine
         for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
         {
             const auto& path = directoryEntry.path();
-            std::string filenameString = path.filename().string();
-            auto id = (ImGuiID)filenameString.c_str();
+            std::size_t hash = std::hash<std::string>{}(path.filename().string());
+            ImGuiID id = static_cast<ImGuiID>(hash); 
 
-            if (directoryEntry.is_directory())
+            if(directoryEntry.is_directory())
             {
-                Items.push_back(ContentBrowserItem(id, ItemType::Directory, filenameString));
+                Items.push_back(ContentBrowserItem(id, ItemType::Directory, path));
             }
             else
             {
-                Items.push_back(ContentBrowserItem(id, ItemType::File, filenameString));
+                Items.push_back(ContentBrowserItem(id, ItemType::File, path));
             }
         }
     }
@@ -269,7 +280,11 @@ namespace Engine
             {
                 if (ImGui::MenuItem("Folder"))
                 {
-
+                    //create a new folder
+                    std::string folderName = "NewFolder";
+                    std::filesystem::path newFolderPath = m_CurrentDirectory / folderName;
+                    std::filesystem::create_directory(newFolderPath);
+                    Reload();
                 }
 
                 ImGui::Separator();
@@ -277,11 +292,22 @@ namespace Engine
                 if (ImGui::MenuItem("Scene"))
                 {
                     // Logic to create a new scene
+                    //TODO: Implement
                 }
 
                 if (ImGui::MenuItem("Material"))
                 {
-                    // Logic to create a new material
+                    //Create new material
+                    std::string filename = "NewMaterial";
+                    std::string path = m_CurrentDirectory.string() + "/" + filename + ".material";
+                    Ref<Material> newMaterial = AssetManager::CreateAsset<Material>(path);
+                    if (newMaterial) 
+                    {
+                        std::size_t hash = std::hash<std::string>{}(filename);
+                        ImGuiID id = static_cast<ImGuiID>(hash);
+                        Serializer::Serialize(newMaterial); //TODO: fix default textures
+                        Items.push_back(ContentBrowserItem(id, ItemType::File, path));
+                    }
                 }
 
                 ImGui::EndMenu(); // End of "Create" menu
@@ -297,7 +323,12 @@ namespace Engine
         {
             if (ImGui::MenuItem("Delete"))
             {
-                // Logic to delete the selected item
+                ImGui::Text("Selection: %d items", Selection.Size);
+                ImGui::Separator();
+                if (ImGui::MenuItem("Delete", "Del", false, Selection.Size > 0))
+                    RequestDelete = true;
+                ImGui::EndPopup();
+
             }
 
             ImGui::EndPopup();

@@ -49,16 +49,16 @@ namespace Engine
 		material->shaderName = data["Shader"].as<std::string>();
 		material->surfaceType = (SurfaceType)data["SurfaceType"].as<int>();
 		std::string colorTexturePath = data["ColorTexture"].as<std::string>();
-		if(colorTexturePath != "null") material->colorTexture = AssetManager::LoadAsset<Texture2D>(colorTexturePath);
+		if(colorTexturePath != "null") material->colorTexture = AssetManager::GetAsset<Texture2D>(colorTexturePath);
 		material->color = glm::vec4(data["Color"][0].as<float>(), data["Color"][1].as<float>(), data["Color"][2].as<float>(), data["Color"][3].as<float>());
 		std::string metallicTexturePath = data["MetallicTexture"].as<std::string>();
-		if (metallicTexturePath != "null") material->metallicTexture = AssetManager::LoadAsset<Texture2D>(metallicTexturePath);
+		if (metallicTexturePath != "null") material->metallicTexture = AssetManager::GetAsset<Texture2D>(metallicTexturePath);
 		material->metallic = data["Metallic"].as<float>();
 		std::string roughnessTexturePath = data["RoughnessTexture"].as<std::string>();
-		if (roughnessTexturePath != "null") material->roughnessTexture = AssetManager::LoadAsset<Texture2D>(roughnessTexturePath);
+		if (roughnessTexturePath != "null") material->roughnessTexture = AssetManager::GetAsset<Texture2D>(roughnessTexturePath);
 		material->roughness = data["Roughness"].as<float>();
 		std::string normalTexturePath = data["NormalTexture"].as<std::string>();
-		if (normalTexturePath != "null") material->normalTexture = AssetManager::LoadAsset<Texture2D>(normalTexturePath);
+		if (normalTexturePath != "null") material->normalTexture = AssetManager::GetAsset<Texture2D>(normalTexturePath);
 		material->normalStrength = data["NormalStrength"].as<float>();
 		material->tiling = glm::vec2(data["Tiling"][0].as<float>(), data["Tiling"][1].as<float>());
 		material->offset = glm::vec2(data["Offset"][0].as<float>(), data["Offset"][1].as<float>());
@@ -235,10 +235,10 @@ namespace Engine
 			{
 				auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
 				std::string materialPath = spriteRendererComponent["Material"].as<std::string>();
-				if (materialPath != "null") src.Material = AssetManager::LoadAsset<Material>(materialPath);
+				if (materialPath != "null") src.Material = AssetManager::GetAsset<Material>(materialPath);
 
 				std::string texturePath = spriteRendererComponent["Texture"].as<std::string>();
-				if (texturePath != "null") src.Texture = AssetManager::LoadAsset<Texture2D>(texturePath);
+				if (texturePath != "null") src.Texture = AssetManager::GetAsset<Texture2D>(texturePath);
 				
 				src.Color = { spriteRendererComponent["Color"][0].as<float>(), spriteRendererComponent["Color"][1].as<float>(), spriteRendererComponent["Color"][2].as<float>(), spriteRendererComponent["Color"][3].as<float>() };
 				src.TilingFactor = { spriteRendererComponent["TilingFactor"][0].as<float>(), spriteRendererComponent["TilingFactor"][1].as<float>() };

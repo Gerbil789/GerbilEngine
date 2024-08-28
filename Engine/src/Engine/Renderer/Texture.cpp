@@ -16,7 +16,11 @@ namespace Engine
 		}
 	}
 
-	
+	Ref<Asset> Texture2DFactory::Load(const std::string& filePath)
+	{
+		return Create(filePath);
+	}
+
 	Ref<Asset> Texture2DFactory::Create(const std::string& filePath)
 	{
 		switch (Renderer::GetAPI())
@@ -26,5 +30,4 @@ namespace Engine
 		default: ASSERT(false, "Unknown RendererAPI!"); return nullptr;
 		}
 	}
-
 }

@@ -3,7 +3,6 @@
 #include "Engine/Core/Asset.h"
 #include "Engine/Renderer/Shader.h"
 #include "Engine/Renderer/Texture.h"
-
 #include <glm/glm.hpp>
 
 namespace Engine 
@@ -13,6 +12,7 @@ namespace Engine
 	class MaterialFactory : public IAssetFactory
 	{
 	public:
+		Ref<Asset> Load(const std::string& filePath) override;
 		Ref<Asset> Create(const std::string& filePath) override;
 	};
 
