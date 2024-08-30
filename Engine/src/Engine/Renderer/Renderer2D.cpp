@@ -215,6 +215,13 @@ namespace Engine
 		//tmp
 		if (src.Material != nullptr) 
 		{
+			if(src.Material->colorTexture == nullptr)
+			{
+				DrawQuad(transform, s_Data.WhiteTexture, src.Material->tiling, src.Material->color, entityID);
+				return;
+			}
+
+
 			DrawQuad(transform, src.Material->colorTexture, src.Material->tiling, src.Material->color, entityID);
 			return;
 		}
@@ -427,6 +434,7 @@ namespace Engine
 		}
 
 		float textureIndex = 0.0f;
+
 
 		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{

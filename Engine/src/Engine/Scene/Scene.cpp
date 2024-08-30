@@ -405,6 +405,11 @@ namespace Engine
 		m_EntityOrder.insert(targetIt, sourceUUID);
 	}
 
+	void Scene::SelectMaterial(const Ref<Material>& material)
+	{
+		m_SelectedMaterial = material;
+	}
+
 	
 	template<typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component) 

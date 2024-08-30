@@ -5,6 +5,7 @@
 #include "Engine/Renderer/EditorCamera.h"
 #include "Engine/Core/UUID.h"
 #include "Engine/Core/Asset.h"
+#include "Engine/Scene/Material.h"
 
 namespace Engine 
 {
@@ -49,6 +50,10 @@ namespace Engine
 		const Entity& GetSelectedEntity();
 		const std::vector<UUID>& GetEntityOrder() const { return m_EntityOrder; }
 		void ReorderEntity(Entity sourceEntity, Entity targetEntity);
+
+		//temp
+		void SelectMaterial(const Ref<Material>& material);
+		const Ref<Material>& GetSelectedMaterial() const { return m_SelectedMaterial; }
 	private:
 		void OnUpdateRuntime(Timestep ts);
 		void OnUpdateEditor(Timestep ts, EditorCamera& camera);
@@ -68,9 +73,11 @@ namespace Engine
 
 		bool m_IsPlaying = false;
 		bool m_IsPaused = false;
-		
+
+		//TODO: move to project when projtects are implemented & implement observer pattern to notify selection change
 		UUID m_CopiedEntityUUID = 0;
 		entt::entity m_SelectedEntity = entt::null;
+		Ref<Material> m_SelectedMaterial = nullptr; 
 
 		SceneState m_SceneState = SceneState::Editor;
 

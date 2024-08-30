@@ -3,20 +3,21 @@
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Scene/Material.h"
 #include "Engine/Core/Serializer.h"
+#include "Engine/Scene/SceneManager.h"
 
 
 namespace Engine 
 {
-	constexpr char* assetsDirectory = "assets";
-
 	ContentBrowserPanel::ContentBrowserPanel()
 	{
-		m_RootDirectory = assetsDirectory;
-		m_CurrentDirectory = assetsDirectory;
+		m_RootDirectory = "assets";
+		m_CurrentDirectory = "assets";
 
         m_FolderIcon = AssetManager::GetAsset<Texture2D>("resources/icons/folder.png");
         m_EmptyFolderIcon = AssetManager::GetAsset<Texture2D>("resources/icons/folder_empty.png");
         m_FileIcon = AssetManager::GetAsset<Texture2D>("resources/icons/file.png");
+        m_ImageIcon = AssetManager::GetAsset<Texture2D>("resources/icons/image.png");
+        m_SceneIcon = AssetManager::GetAsset<Texture2D>("resources/icons/landscape.png");
 
         Reload();
 	}
@@ -151,8 +152,23 @@ namespace Engine
                             case ItemType::File:
                                 draw_list->AddImage((ImTextureID)m_FileIcon->GetRendererID(), box_min, box_max, ImVec2(0, 1), ImVec2(1, 0));
                                 draw_list->AddText(ImVec2(box_min.x + LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data->Label).x / 2, box_max.y - ImGui::GetFontSize() + 10), label_col, item_data->Label);
+                                if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                                {
+                                    std::string extension = std::filesystem::path(item_data->Label).extension().string();
+
+                                    if (extension == ".material")
+                                    {
+                                        Ref<Material> material = AssetManager::GetAsset<Material>(item_data->Path);
+                                        if (!material) break;
+
+                                        Ref<Scene> scene = SceneManager::GetCurrentScene(); //TODO: use observer pattern
+                                        scene->SelectMaterial(material);
+
+                                    }
+                                }
                                 break;
                         }
+                        ItemContextMenu();
                     }
 
 					
@@ -168,7 +184,12 @@ namespace Engine
         ms_io = ImGui::EndMultiSelect();
         Selection.ApplyRequests(ms_io);
         if (want_delete)
+        {
+            //TODO: unload assets & delete files
+            //also handle folder/s deletion
             Selection.ApplyDeletionPostLoop(ms_io, Items, item_curr_idx_to_focus);
+        }
+           
 
         // Zooming with CTRL+Wheel
         if (ImGui::IsWindowAppearing())
@@ -255,7 +276,7 @@ namespace Engine
         for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
         {
             const auto& path = directoryEntry.path();
-            std::size_t hash = std::hash<std::string>{}(path.filename().string());
+            std::size_t hash = std::hash<std::string>{}(path.string());
             ImGuiID id = static_cast<ImGuiID>(hash); 
 
             if(directoryEntry.is_directory())
@@ -297,15 +318,28 @@ namespace Engine
 
                 if (ImGui::MenuItem("Material"))
                 {
-                    //Create new material
                     std::string filename = "NewMaterial";
                     std::string path = m_CurrentDirectory.string() + "/" + filename + ".material";
+
+                    //cheeck if file already exists
+                    if (std::filesystem::exists(path))
+					{
+						int i = 1;
+						while (std::filesystem::exists(path))
+						{
+							filename += std::to_string(i);
+							i++;
+						}
+                        path = m_CurrentDirectory.string() + "/" + filename + std::to_string(i) + ".material";
+					}
+
+
                     Ref<Material> newMaterial = AssetManager::CreateAsset<Material>(path);
                     if (newMaterial) 
                     {
-                        std::size_t hash = std::hash<std::string>{}(filename);
+                        std::size_t hash = std::hash<std::string>{}(path);
                         ImGuiID id = static_cast<ImGuiID>(hash);
-                        Serializer::Serialize(newMaterial); //TODO: fix default textures
+                        Serializer::Serialize(newMaterial);
                         Items.push_back(ContentBrowserItem(id, ItemType::File, path));
                     }
                 }
@@ -317,18 +351,13 @@ namespace Engine
         }
     }
 
-    void ContentBrowserPanel::ItemContextMenu(const char* id)
+    void ContentBrowserPanel::ItemContextMenu()
     {
         if (ImGui::BeginPopupContextItem("ItemContextMenu"))
         {
-            if (ImGui::MenuItem("Delete"))
+            if (ImGui::MenuItem("Delete", "Del", false, Selection.Size > 0))
             {
-                ImGui::Text("Selection: %d items", Selection.Size);
-                ImGui::Separator();
-                if (ImGui::MenuItem("Delete", "Del", false, Selection.Size > 0))
-                    RequestDelete = true;
-                ImGui::EndPopup();
-
+                RequestDelete = true;
             }
 
             ImGui::EndPopup();

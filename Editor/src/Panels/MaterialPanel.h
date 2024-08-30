@@ -15,5 +15,6 @@ namespace Engine
 		void SetMaterial(Ref<Material> material) { m_Material = material; }
 	private:
 		Ref<Material> m_Material;
+		//TODO: set material when selected material is changed in scene
 	};
 }

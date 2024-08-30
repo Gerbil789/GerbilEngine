@@ -17,7 +17,7 @@ namespace Engine
         SceneManager::AddObserver(this);
 
         //m_Material = AssetManager::LoadAsset<Material>("temp");
-        m_MaterialPanel.SetMaterial(m_Material);
+        //m_MaterialPanel.SetMaterial(m_Material);
 
         //load textures
         m_Icon_Play = AssetManager::GetAsset<Texture2D>("resources/icons/play.png");

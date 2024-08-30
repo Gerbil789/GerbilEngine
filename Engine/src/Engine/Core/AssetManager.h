@@ -16,7 +16,7 @@ namespace Engine
             factories[typeid(T).name()] = std::move(factory);
         }
 
-        //use this to get asset, if it is not loaded it will be loaded
+        // use this to get asset, if it is not loaded it will be loaded
         template <typename T>
         static Ref<T> GetAsset(const std::string& filePath) {
             // Check if asset is already loaded
@@ -29,7 +29,7 @@ namespace Engine
         }
 
 
-        //use this only if you want to explicitly pre-load the asset (make sure it is not already loaded)
+        // use this only if you want to explicitly pre-load the asset (make sure it is not already loaded)
         template <typename T>
         static Ref<T> LoadAsset(const std::string& filePath) {
             // Check if factory exists

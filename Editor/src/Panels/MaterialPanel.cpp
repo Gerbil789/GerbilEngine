@@ -1,6 +1,7 @@
 #include "enginepch.h"
 #include "MaterialPanel.h"
 #include "Engine/Core/AssetManager.h"
+#include "Engine/Scene/SceneManager.h"
 #include "../Elements/Elements.h"
 
 #include <imgui/imgui.h>
@@ -22,6 +23,13 @@ namespace Engine
 
 	void MaterialPanel::OnImGuiRender() 
 	{
+		auto scene = SceneManager::GetCurrentScene();
+		if (scene) 
+		{
+			m_Material = scene->GetSelectedMaterial();
+		}
+		
+
 		ImGui::Begin("Material");
 		
 		if(!m_Material)

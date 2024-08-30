@@ -61,7 +61,7 @@ namespace Engine
 		Ref<Texture2D> m_Icon_Play;
 		Ref<Texture2D> m_Icon_Pause;
 		Ref<Texture2D> m_Icon_Next;
-		Ref<Material> m_Material;
+		//Ref<Material> m_Material;
 		std::vector<Ref<SubTexture2D>> m_TileTextures;
 	};
 }

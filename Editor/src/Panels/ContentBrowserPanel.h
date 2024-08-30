@@ -113,7 +113,7 @@ namespace Engine
 		void UpdateLayoutSizes(float avail_width);
 		void RenderPath();
 		void ContentBrowserContextMenu();
-		void ItemContextMenu(const char* id);
+		void ItemContextMenu();
 
 	private:
 		std::filesystem::path m_CurrentDirectory;
@@ -123,6 +123,8 @@ namespace Engine
 		Ref<Texture2D> m_FolderIcon;
 		Ref<Texture2D> m_EmptyFolderIcon;
 		Ref<Texture2D> m_FileIcon;
+		Ref<Texture2D> m_ImageIcon;
+		Ref<Texture2D> m_SceneIcon;
 
 		ImVector<ContentBrowserItem> Items;
 		ExampleSelectionWithDeletion Selection;
