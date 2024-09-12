@@ -49,6 +49,8 @@ namespace Engine
     {
         ENGINE_PROFILE_FUNCTION();
 
+        fps = 1 / ts;
+
         m_CurrentScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
         //resize
@@ -171,6 +173,7 @@ namespace Engine
         ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
         ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
         ImGui::Separator();
+        ImGui::Text("FPS: %d", static_cast<int>(fps));
         ImGui::End();
         }
        

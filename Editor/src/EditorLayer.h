@@ -63,5 +63,7 @@ namespace Engine
 		Ref<Texture2D> m_Icon_Next;
 		//Ref<Material> m_Material;
 		std::vector<Ref<SubTexture2D>> m_TileTextures;
+
+		float fps = 0.0f;
 	};
 }

@@ -1,4 +1,4 @@
-[![Build Project](https://github.com/Gerbil789/GerbilEngine/actions/workflows/workflow.yml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/workflow.yml)
+[![Build Project](https://github.com/Gerbil789/GerbilEngine/actions/workflows/wokrflow.yml/badge.svg?branch=main&event=check_run)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/wokrflow.yml)
 
 # GerbilEngine
 
