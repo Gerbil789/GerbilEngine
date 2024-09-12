@@ -43,10 +43,11 @@ namespace Engine
 		while (m_Running)
 		{
 			ENGINE_PROFILE_SCOPE("RunLoop");
+			
 			float time = (float)glfwGetTime();
 			Timestep timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
-
+			fps = 1 / timestep;
 			if (!m_Minimized)
 			{
 				{

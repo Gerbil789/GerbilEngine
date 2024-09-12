@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EditorWindowBase.h"
 #include "Engine/Core/Core.h"
 #include "Engine/Renderer/Texture.h"
 #include <filesystem>
@@ -132,11 +133,11 @@ namespace Engine
 	};
 
 
-	class ContentBrowserPanel
+	class ContentBrowserWindow : public EditorWindowBase
 	{
 	public:
-		ContentBrowserPanel();
-		void OnImGuiRender();
+		ContentBrowserWindow();
+		void OnImGuiRender() override;
 
 	private:
 		void Reload();

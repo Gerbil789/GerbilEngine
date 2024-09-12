@@ -1,12 +1,12 @@
 #include "enginepch.h"
-#include "SettingsPanel.h"
+#include "SettingsWindow.h"
 
 #include "imgui/imgui.h"
 #include <imgui/imgui_internal.h>
 
 namespace Engine
 {
-	void SettingsPanel::OnImGuiRender()
+	void SettingsWindow::OnImGuiRender()
 	{
 		if(!m_IsVisible) return;
 

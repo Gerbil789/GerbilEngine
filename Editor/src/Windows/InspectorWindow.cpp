@@ -1,5 +1,5 @@
 #include "enginepch.h"
-#include "InspectorPanel.h"
+#include "InspectorWindow.h"
 #include "Engine/Scene/Components.h"
 #include "../Elements/Elements.h"
 #include "Engine/Core/AssetManager.h"
@@ -11,24 +11,31 @@
 
 namespace Engine
 {
-	InspectorPanel::InspectorPanel()
+	InspectorWindow::InspectorWindow()
 	{
 		SceneManager::AddObserver(this);
+		OnSceneChanged();
 	}
 
-	InspectorPanel::~InspectorPanel()
+	InspectorWindow::~InspectorWindow()
 	{
 		SceneManager::RemoveObserver(this);
 	}
 
-	void InspectorPanel::OnSceneChanged()
+	void InspectorWindow::OnSceneChanged()
 	{
 		m_Scene = SceneManager::GetCurrentScene();
 	}
 
-	void InspectorPanel::OnImGuiRender()
+	void InspectorWindow::OnImGuiRender()
 	{
 		ImGui::Begin("Inspector");
+		if (!m_Scene) 
+		{
+			ImGui::End();
+			return;
+		}
+
 		Entity entity = m_Scene->GetSelectedEntity();
 		if (entity)
 		{
@@ -82,7 +89,7 @@ namespace Engine
 
 	}
 
-	void InspectorPanel::DrawComponents(Entity entity)
+	void InspectorWindow::DrawComponents(Entity entity)
 	{
 		if (entity.HasComponent<NameComponent>())
 		{
@@ -262,7 +269,7 @@ namespace Engine
 			});
 	}
 
-	void InspectorPanel::DrawAddComponentButton(Entity entity)
+	void InspectorWindow::DrawAddComponentButton(Entity entity)
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.FramePadding = ImVec2(20, 5);

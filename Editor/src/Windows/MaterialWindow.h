@@ -1,20 +1,20 @@
 #pragma once
 
+#include "EditorWindowBase.h"
 #include "Engine/Scene/Material.h"
 
 namespace Engine 
 {
-	class MaterialPanel
+	class MaterialWindow : public EditorWindowBase
 	{
 	public:
-		MaterialPanel();
-		~MaterialPanel();
+		MaterialWindow();
+		~MaterialWindow();
 
-		void OnImGuiRender();
+		void OnImGuiRender() override;
 
 		void SetMaterial(Ref<Material> material) { m_Material = material; }
 	private:
 		Ref<Material> m_Material;
-		//TODO: set material when selected material is changed in scene
 	};
 }

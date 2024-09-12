@@ -3,11 +3,7 @@
 #include <Engine.h>
 #include "Engine/Renderer/EditorCamera.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Panels/ContentBrowserPanel.h"
-#include "Panels/InspectorPanel.h"
-#include "Panels/SceneHierarchyPanel.h"
-#include "Panels/MaterialPanel.h"
-#include "Panels/SettingsPanel.h"
+#include "Windows/EditorWindowBase.h"
 
 namespace Engine 
 {
@@ -42,12 +38,7 @@ namespace Engine
 		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
 		Entity m_HoveredEntity;
 
-		//panels
-		SceneHierarchyPanel m_SceneHierarchyPanel;
-		InspectorPanel m_InspectorPanel;
-		ContentBrowserPanel m_ContentBrowserPanel;
-		MaterialPanel m_MaterialPanel;
-		SettingsPanel m_SettingsPanel;
+		std::vector<Ref<EditorWindowBase>> m_EditorWindows;
 
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 		Ref<FrameBuffer> m_EditorFrameBuffer;
@@ -55,15 +46,8 @@ namespace Engine
 		glm::vec2 m_GameViewSize = { 0.0f, 0.0f };
 		Ref<FrameBuffer> m_GameFrameBuffer;
 
-		// ---- MOVE TO OTHER FILES / TEMP----
-		Ref<Texture2D> m_GerbilTexture;
-		Ref<Texture2D> m_TileTexture;
 		Ref<Texture2D> m_Icon_Play;
 		Ref<Texture2D> m_Icon_Pause;
 		Ref<Texture2D> m_Icon_Next;
-		//Ref<Material> m_Material;
-		std::vector<Ref<SubTexture2D>> m_TileTextures;
-
-		float fps = 0.0f;
 	};
 }

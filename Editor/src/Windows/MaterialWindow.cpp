@@ -1,5 +1,5 @@
 #include "enginepch.h"
-#include "MaterialPanel.h"
+#include "MaterialWindow.h"
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Scene/SceneManager.h"
 #include "../Elements/Elements.h"
@@ -11,17 +11,17 @@
 
 namespace Engine 
 {
-	MaterialPanel::MaterialPanel()
+	MaterialWindow::MaterialWindow()
 	{
 
 	}
 
-	MaterialPanel::~MaterialPanel()
+	MaterialWindow::~MaterialWindow()
 	{
 
 	}
 
-	void MaterialPanel::OnImGuiRender() 
+	void MaterialWindow::OnImGuiRender() 
 	{
 		auto scene = SceneManager::GetCurrentScene();
 		if (scene) 

@@ -1,5 +1,5 @@
 #include "enginepch.h"
-#include "ContentBrowserPanel.h"
+#include "ContentBrowserWindow.h"
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Scene/Material.h"
 #include "Engine/Core/Serializer.h"
@@ -9,7 +9,7 @@
 
 namespace Engine 
 {
-	ContentBrowserPanel::ContentBrowserPanel()
+    ContentBrowserWindow::ContentBrowserWindow()
 	{
 		m_RootDirectory = "assets";
 		m_CurrentDirectory = "assets";
@@ -23,7 +23,7 @@ namespace Engine
         Reload();
 	}
 
-    void ContentBrowserPanel::UpdateLayoutSizes(float avail_width)
+    void ContentBrowserWindow::UpdateLayoutSizes(float avail_width)
     {
         LayoutItemSpacing = (float)IconSpacing;
 
@@ -36,7 +36,7 @@ namespace Engine
         LayoutOuterPadding = floorf(LayoutItemSpacing * 0.5f);
     }
 
-	void ContentBrowserPanel::OnImGuiRender()
+	void ContentBrowserWindow::OnImGuiRender()
 	{
         ImGuiIO& io = ImGui::GetIO();
         ImGui::Begin("Content Browser", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
@@ -98,7 +98,7 @@ namespace Engine
 
         // Use custom selection adapter: store ID in selection (recommended)
         Selection.UserData = this;
-        Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { ContentBrowserPanel* self = (ContentBrowserPanel*)self_->UserData; return self->Items[idx].ID; };
+        Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { ContentBrowserWindow* self = (ContentBrowserWindow*)self_->UserData; return self->Items[idx].ID; };
         Selection.ApplyRequests(ms_io);
 
         const bool want_delete = (ImGui::Shortcut(ImGuiKey_Delete, ImGuiInputFlags_Repeat) && (Selection.Size > 0)) || RequestDelete;
@@ -274,7 +274,7 @@ namespace Engine
         ImGui::End(); // Content Browser
 	}
 
-	void ContentBrowserPanel::RenderPath()
+	void ContentBrowserWindow::RenderPath()
 	{
 		auto currentDirectory = m_CurrentDirectory;
 		std::vector<std::filesystem::path> pathComponents;
@@ -309,7 +309,7 @@ namespace Engine
 		}
 	}
 
-    void ContentBrowserPanel::Reload()
+    void ContentBrowserWindow::Reload()
     {
         Items.clear();
 
@@ -331,7 +331,7 @@ namespace Engine
 
 
 
-    void ContentBrowserPanel::ContentBrowserContextMenu()
+    void ContentBrowserWindow::ContentBrowserContextMenu()
     {
         if (ImGui::BeginPopupContextWindow("ContentBrowserContextMenu", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
         {
@@ -379,7 +379,7 @@ namespace Engine
         }
     }
 
-    void ContentBrowserPanel::ItemContextMenu()
+    void ContentBrowserWindow::ItemContextMenu()
     {
         if (ImGui::BeginPopupContextItem("ItemContextMenu"))
         {

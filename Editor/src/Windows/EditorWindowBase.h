@@ -1,19 +1,19 @@
 #pragma once
 
-namespace Engine
+namespace Engine 
 {
-	class SettingsPanel
+	class EditorWindowBase
 	{
 	public:
-		SettingsPanel() = default;
-		~SettingsPanel() = default;
+		EditorWindowBase() = default;
+		virtual ~EditorWindowBase() = default;
 
-		void OnImGuiRender();
+		virtual void OnImGuiRender() = 0;
 
 		bool IsVisible() const { return m_IsVisible; }
 		void SetVisible(bool visible) { m_IsVisible = visible; }
 
-	private:
+	protected:
 		bool m_IsVisible = false;
 	};
 }

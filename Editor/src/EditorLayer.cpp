@@ -1,11 +1,19 @@
 #include "EditorLayer.h"
 #include "Engine/Renderer/FrameBuffer.h"
 #include "Engine/Math/Math.h"
+#include "Engine/Core/AssetManager.h"
+#include "Engine/Core/Serializer.h"
+
+#include "Windows/ContentBrowserWindow.h"
+#include "Windows/InspectorWindow.h"
+#include "Windows/SceneHierarchyWindow.h"
+#include "Windows/MaterialWindow.h"
+#include "Windows/SettingsWindow.h"
+#include "Windows/StatisticsWindow.h"
+
 #include "imgui/imgui.h"
 #include "ImGuizmo/ImGuizmo.h"
 #include <glm/gtc/type_ptr.hpp>
-#include "Engine/Core/AssetManager.h"
-#include "Engine/Core/Serializer.h"
 
 namespace Engine
 {
@@ -35,8 +43,17 @@ namespace Engine
         gameFrameBufferSpecification.Height = 720;
         m_GameFrameBuffer = FrameBuffer::Create(gameFrameBufferSpecification);
 
+        RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+
         m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f); //TODO: what are these values? must it be there?
         SceneManager::CreateScene("New Scene");
+
+		m_EditorWindows.push_back(CreateRef<SceneHierarchyWindow>());
+		m_EditorWindows.push_back(CreateRef<InspectorWindow>());
+		m_EditorWindows.push_back(CreateRef<ContentBrowserWindow>());
+		m_EditorWindows.push_back(CreateRef<MaterialWindow>());
+		m_EditorWindows.push_back(CreateRef<SettingsWindow>());
+		m_EditorWindows.push_back(CreateRef<StatisticsWindow>());
     }
 
     void EditorLayer::OnDetach()
@@ -48,9 +65,6 @@ namespace Engine
     void EditorLayer::OnUpdate(Timestep ts)
     {
         ENGINE_PROFILE_FUNCTION();
-
-        fps = 1 / ts;
-
         m_CurrentScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
         //resize
@@ -64,7 +78,6 @@ namespace Engine
         //clear frame buffer
         Renderer2D::ResetStats();
         m_EditorFrameBuffer->Bind();
-        RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
         RenderCommand::Clear();
         m_EditorFrameBuffer->ClearAttachment(1, -1); //clear ID attachment
 
@@ -73,6 +86,7 @@ namespace Engine
         m_CurrentScene->OnUpdate(ts, m_EditorCamera);
 
 
+		//hovered entity
         auto [mx, my] = ImGui::GetMousePos();
         mx -= m_ViewportBounds[0].x;
         my -= m_ViewportBounds[0].y;
@@ -103,9 +117,8 @@ namespace Engine
         }
 
         //clear frame buffer
-        Renderer2D::ResetStats();
+        //Renderer2D::ResetStats();
         m_GameFrameBuffer->Bind();
-        RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
         RenderCommand::Clear();
 
         //update scene
@@ -156,28 +169,11 @@ namespace Engine
 
 
         MenuBar();
-        m_SceneHierarchyPanel.OnImGuiRender();
-        m_InspectorPanel.OnImGuiRender();
-        m_ContentBrowserPanel.OnImGuiRender();
-        m_MaterialPanel.OnImGuiRender();
-        m_SettingsPanel.OnImGuiRender();
-        ImGui::ShowDemoWindow();
-
-        { //stats
-        ImGui::Begin("Statistics");
-        ImGui::Text("Hovered entity: %s", m_HoveredEntity ? m_HoveredEntity.GetComponent<NameComponent>().Name.c_str() : "None");
-        ImGui::Separator();
-        auto stats = Renderer2D::GetStats();
-        ImGui::Text("Draw Calls: %d", stats.DrawCalls);
-        ImGui::Text("Quads: %d", stats.QuadCount);
-        ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
-        ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
-        ImGui::Separator();
-        ImGui::Text("FPS: %d", static_cast<int>(fps));
-        ImGui::End();
-        }
-       
-
+		for (auto& window : m_EditorWindows)
+		{
+            window->OnImGuiRender();
+		}
+        //ImGui::ShowDemoWindow();
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
         ImGui::Begin("Viewport");
@@ -286,7 +282,6 @@ namespace Engine
         m_CurrentScene = SceneManager::GetCurrentScene();
     }
 
-    //TODO: move somewhere else, this is making the editor layer too big
     bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
     {
         if (e.GetRepeatCount() > 0)
@@ -369,6 +364,7 @@ namespace Engine
 		}
 
     }
+
     bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
     {
         if(e.GetMouseButton() == Mouse::ButtonLeft)
@@ -438,7 +434,7 @@ namespace Engine
 
                 ImGui::Separator();
 
-                if (ImGui::MenuItem("Settings")) { m_SettingsPanel.SetVisible(true); }
+                if (ImGui::MenuItem("Settings")) { /*m_SettingsPanel.SetVisible(true);*/ }
 
                 ImGui::Separator();
 

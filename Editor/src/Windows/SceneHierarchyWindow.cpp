@@ -1,6 +1,6 @@
 #include "enginepch.h"
 #include "../Elements/Elements.h"
-#include "SceneHierarchyPanel.h"
+#include "SceneHierarchyWindow.h"
 #include "Engine/Scene/Components.h"
 #include <imgui/imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -9,22 +9,23 @@
 
 namespace Engine
 {
-	SceneHierarchyPanel::SceneHierarchyPanel()
+	SceneHierarchyWindow::SceneHierarchyWindow()
 	{
 		SceneManager::AddObserver(this);
+		OnSceneChanged();
 	}
 
-	SceneHierarchyPanel::~SceneHierarchyPanel()
+	SceneHierarchyWindow::~SceneHierarchyWindow()
 	{
 		SceneManager::RemoveObserver(this);
 	}
 
-	void SceneHierarchyPanel::OnSceneChanged()
+	void SceneHierarchyWindow::OnSceneChanged()
 	{
 		m_Scene = SceneManager::GetCurrentScene();
 	}
 
-	void SceneHierarchyPanel::OnImGuiRender()
+	void SceneHierarchyWindow::OnImGuiRender()
 	{
 		// Save the current style
 		ImGuiStyle& style = ImGui::GetStyle();
@@ -35,7 +36,11 @@ namespace Engine
 		style.WindowPadding = ImVec2(0, 0);
 
 		ImGui::Begin("Scene Hierarchy");
-		if (!m_Scene) { return; }
+		if (!m_Scene) 
+		{ 
+			ImGui::End(); 
+			return; 
+		}
 
 		for(auto& entity : m_Scene->GetEntitiesOrdered())
 		{
@@ -65,7 +70,7 @@ namespace Engine
 		style.IndentSpacing = oldIndentSpacing;
 	}
 
-	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
+	void SceneHierarchyWindow::DrawEntityNode(Entity entity)
 	{
 		auto& name = entity.GetComponent<NameComponent>().Name;
 
