@@ -3,8 +3,6 @@
 #include "Engine/Core/Asset.h"
 #include <type_traits>
 
-//TODO: unloading assets
-
 namespace Engine 
 {
     class AssetManager
@@ -55,7 +53,7 @@ namespace Engine
         }
 
 
-        // use this only if you want to explicitly create new asset
+        // use this only if you want to create new asset
         template <typename T>
         static Ref<T> CreateAsset(const std::string& filePath) 
         {
@@ -86,9 +84,21 @@ namespace Engine
 			}
 
 			ENGINE_LOG_ERROR("Failed to create asset '{0}'", filePath);
-			return nullptr;
-			
+			return nullptr;	
 		}
+
+        // use this to unload asset, for example when loading a new scene
+        static void AssetManager::UnloadUnusedAssets() {
+            for (auto it = assets.begin(); it != assets.end(); ) {
+                if (it->second.use_count() == 1) { // Reference count is 1, meaning only AssetManager has a reference to it
+                    ENGINE_LOG_TRACE("Unloaded asset '{0}'", it->first);
+                    it = assets.erase(it);  
+                }
+                else {
+                    ++it;  
+                }
+            }
+        }
 
     private:
         static std::unordered_map<std::string, Ref<IAssetFactory>> factories;

@@ -5,14 +5,9 @@
 #include <filesystem>
 #include <imgui/imgui.h>
 
-#define IM_MIN(A, B) (((A) < (B)) ? (A) : (B))
-#define IM_MAX(A, B) (((A) > (B)) ? (A) : (B))
-#define IM_CLAMP(V, MN, MX)     ((V) < (MN) ? (MN) : (V) > (MX) ? (MX) : (V))
-
 namespace Engine
 {
-	//TODO: move to some imgui helper file (and remove these #defines)
-	struct ExampleSelectionWithDeletion : ImGuiSelectionBasicStorage
+	struct SelectionWithDeletion : ImGuiSelectionBasicStorage
 	{
 		// Find which item should be Focused after deletion.
 		// Call _before_ item submission. Retunr an index in the before-deletion item list, your item loop should call SetKeyboardFocusHere() on it.
@@ -40,7 +35,7 @@ namespace Engine
 					return idx;
 
 			// If focused item is selected: otherwise return last unselected item before focused item.
-			for (int idx = IM_MIN(focused_idx, items_count) - 1; idx >= 0; idx--)
+			for (int idx = std::min(focused_idx, items_count) - 1; idx >= 0; idx--)
 				if (!Contains(GetStorageIdFromIndex(idx)))
 					return idx;
 
@@ -49,19 +44,32 @@ namespace Engine
 
 		// Rewrite item list (delete items) + update selection.
 		// - Call after EndMultiSelect()
-		// - We cannot provide this logic in core Dear ImGui because we don't have access to your items, nor to selection data.
 		template<typename ITEM_TYPE>
 		void ApplyDeletionPostLoop(ImGuiMultiSelectIO* ms_io, ImVector<ITEM_TYPE>& items, int item_curr_idx_to_select)
 		{
-			// Rewrite item list (delete items) + convert old selection index (before deletion) to new selection index (after selection).
-			// If NavId was not part of selection, we will stay on same item.
 			ImVector<ITEM_TYPE> new_items;
 			new_items.reserve(items.Size - Size);
 			int item_next_idx_to_select = -1;
 			for (int idx = 0; idx < items.Size; idx++)
 			{
-				if (!Contains(GetStorageIdFromIndex(idx)))
+				if (!Contains(GetStorageIdFromIndex(idx))) 
+				{
 					new_items.push_back(items[idx]);
+				}
+				else 
+				{
+					//TODO:: unload asset if it is loaded
+
+					if (items[idx].Type == ItemType::Directory)
+					{
+						std::filesystem::remove_all(items[idx].Path);
+					}
+					else if (items[idx].Type == ItemType::File)
+					{
+						std::filesystem::remove(items[idx].Path);
+					}
+				}
+					
 				if (item_curr_idx_to_select == idx)
 					item_next_idx_to_select = new_items.Size - 1;
 			}
@@ -87,17 +95,39 @@ namespace Engine
 		ItemType Type;
 		char Path[256];
 		char Label[32];
+		char Extension[8];
 
-		ContentBrowserItem(ImGuiID id, ItemType type, std::filesystem::path path)
+		ContentBrowserItem(ItemType type, std::filesystem::path path)
 		{
-			ID = id;
 			Type = type;
+			std::size_t hash = std::hash<std::string>{}(path.string());
+			ID = static_cast<ImGuiID>(hash);
 
 			strncpy(Path, path.string().c_str(), sizeof(Path) - 1);
 			Path[sizeof(Path) - 1] = '\0'; // Ensure null-termination
-			
+
 			strncpy(Label, path.filename().string().c_str(), sizeof(Label) - 1);
 			Label[sizeof(Label) - 1] = '\0'; // Ensure null-termination
+
+			strncpy(Extension, path.extension().string().c_str(), sizeof(Extension) - 1);
+			Extension[sizeof(Extension) - 1] = '\0'; // Ensure null-termination
+		}
+
+		void Rename(std::filesystem::path path)
+		{
+			std::filesystem::rename(Path, path);
+
+			std::size_t hash = std::hash<std::string>{}(path.string());
+			ID = static_cast<ImGuiID>(hash);
+
+			strncpy(Path, path.string().c_str(), sizeof(Path) - 1);
+			Path[sizeof(Path) - 1] = '\0'; // Ensure null-termination
+
+			strncpy(Label, path.filename().string().c_str(), sizeof(Label) - 1);
+			Label[sizeof(Label) - 1] = '\0'; // Ensure null-termination
+
+			strncpy(Extension, path.extension().string().c_str(), sizeof(Extension) - 1);
+			Extension[sizeof(Extension) - 1] = '\0'; // Ensure null-termination
 		}
 	};
 
@@ -120,6 +150,8 @@ namespace Engine
 		std::filesystem::path m_RootDirectory;
 		std::filesystem::path m_NewDirectory = ""; // handle for switching directories
 
+		char m_SearchBuffer[256] = { 0 };
+
 		Ref<Texture2D> m_FolderIcon;
 		Ref<Texture2D> m_EmptyFolderIcon;
 		Ref<Texture2D> m_FileIcon;
@@ -127,7 +159,7 @@ namespace Engine
 		Ref<Texture2D> m_SceneIcon;
 
 		ImVector<ContentBrowserItem> Items;
-		ExampleSelectionWithDeletion Selection;
+		SelectionWithDeletion Selection;
 
 		const float m_TopBarHeight = 24.0f;
 		const int IconHitSpacing = 4;
@@ -141,6 +173,6 @@ namespace Engine
 		int LayoutColumnCount = 0;
 		int LayoutLineCount = 0;
 		float ZoomWheelAccum = 0.0f;
-		bool RequestDelete = false; // Deferred deletion request
+		bool RequestDelete = false;
 	};
 }

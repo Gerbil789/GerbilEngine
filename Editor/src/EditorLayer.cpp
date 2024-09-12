@@ -16,21 +16,19 @@ namespace Engine
         ENGINE_PROFILE_FUNCTION();
         SceneManager::AddObserver(this);
 
-        //m_Material = AssetManager::LoadAsset<Material>("temp");
-        //m_MaterialPanel.SetMaterial(m_Material);
-
         //load textures
         m_Icon_Play = AssetManager::GetAsset<Texture2D>("resources/icons/play.png");
         m_Icon_Pause = AssetManager::GetAsset<Texture2D>("resources/icons/pause.png");
         m_Icon_Next = AssetManager::GetAsset<Texture2D>("resources/icons/skip_next.png");
 
-        //create frame buffer
+        //create editor frame buffer
         FrameBufferSpecification editorFrameBufferSpecification;
         editorFrameBufferSpecification.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::DEPTH24STENCIL8 };
         editorFrameBufferSpecification.Width = 1280;
         editorFrameBufferSpecification.Height = 720;
         m_EditorFrameBuffer = FrameBuffer::Create(editorFrameBufferSpecification);
 
+		//create game frame buffer
         FrameBufferSpecification gameFrameBufferSpecification;
         gameFrameBufferSpecification.Attachments = { FrameBufferTextureFormat::RGBA8 };
         gameFrameBufferSpecification.Width = 1280;

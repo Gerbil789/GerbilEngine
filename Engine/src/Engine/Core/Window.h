@@ -34,6 +34,7 @@ namespace Engine
 		virtual bool IsVSync() const = 0;
 
 		virtual void* GetNativeWindow() const = 0;
+		virtual void MakeContextCurrent() const = 0;
 
 		static Scope<Window> Create(const WindowProps& props = WindowProps());
 	};

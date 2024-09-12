@@ -23,6 +23,7 @@ namespace Engine
 		bool IsVSync() const override;
 
 		inline virtual void* GetNativeWindow() const override { return m_Window; }
+		inline virtual void MakeContextCurrent() const override { glfwMakeContextCurrent(static_cast<GLFWwindow*>(m_Window)); }
 	private:
 		virtual void Init(const WindowProps& props);
 		virtual void Shutdown();

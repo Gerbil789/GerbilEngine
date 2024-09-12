@@ -2,6 +2,7 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Core/Serializer.h"
 #include "Engine/Utils/PlatformUtils.h"
+#include "Engine/Core/AssetManager.h"
 
 namespace Engine
 {
@@ -26,6 +27,8 @@ namespace Engine
 		Ref<Scene> scene = CreateRef<Scene>(filePath);
 		Serializer::Deserialize(scene);
 		if(scene == nullptr) { ENGINE_LOG_ERROR("Failed to load scene from file {0}", filePath); }
+		s_CurrentScene->OnDestroy();
+		AssetManager::UnloadUnusedAssets();
 		s_CurrentScene = scene;
 		NotifyObservers();
 	}

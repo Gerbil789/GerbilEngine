@@ -1,9 +1,6 @@
 #pragma once
 
 #include "Engine/Core/Layer.h"
-#include "Engine/Events/ApplicationEvent.h"
-#include "Engine/Events/KeyEvent.h"
-#include "Engine/Events/MouseEvent.h"
 
 namespace Engine 
 {
@@ -22,10 +19,8 @@ namespace Engine
 		void End();
 
 		void BlockEvents(bool block) { m_BlockEvents = block; }
-		void SetDarkThemeColors();
 
 	private:
 		bool m_BlockEvents = true;
-		float m_Time = 0.0f;
 	};
 }

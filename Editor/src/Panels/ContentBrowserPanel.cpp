@@ -4,6 +4,7 @@
 #include "Engine/Scene/Material.h"
 #include "Engine/Core/Serializer.h"
 #include "Engine/Scene/SceneManager.h"
+#include "Engine/Utils/Utilities.h"
 
 
 namespace Engine 
@@ -26,12 +27,12 @@ namespace Engine
     {
         LayoutItemSpacing = (float)IconSpacing;
 
-        LayoutItemSize = ImVec2(floorf(IconSize), floorf(IconSize));
-        LayoutColumnCount = IM_MAX((int)(avail_width / (LayoutItemSize.x + LayoutItemSpacing)), 1);
+        LayoutItemSize = ImVec2(floorf(IconSize), floorf(IconSize) + 20.0f);
+        LayoutColumnCount = std::max((int)(avail_width / (LayoutItemSize.x + LayoutItemSpacing)), 1);
         LayoutLineCount = (Items.Size + LayoutColumnCount - 1) / LayoutColumnCount;
 
         LayoutItemStep = ImVec2(LayoutItemSize.x + LayoutItemSpacing, LayoutItemSize.y + LayoutItemSpacing);
-        LayoutSelectableSpacing = IM_MAX(floorf(LayoutItemSpacing) - IconHitSpacing, 0.0f);
+        LayoutSelectableSpacing = std::max(floorf(LayoutItemSpacing) - IconHitSpacing, 0.0f);
         LayoutOuterPadding = floorf(LayoutItemSpacing * 0.5f);
     }
 
@@ -42,6 +43,41 @@ namespace Engine
 
         // ----- Top Section -----
         ImGui::BeginChild("TopBar", ImVec2(0, m_TopBarHeight), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+        // search bar
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
+        ImGui::PushItemWidth(100.0f);
+
+        if (ImGui::InputText("##Search", m_SearchBuffer, IM_ARRAYSIZE(m_SearchBuffer)))
+		{
+            if (m_SearchBuffer[0] != '\0')
+            {
+                Items.clear();
+                for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
+                {
+                    const auto& path = directoryEntry.path();
+
+                    if (path.filename().string().find(m_SearchBuffer) != std::string::npos)
+                    {
+                        if (directoryEntry.is_directory())
+                        {
+                            Items.push_back(ContentBrowserItem(ItemType::Directory, path));
+                        }
+                        else
+                        {
+                            Items.push_back(ContentBrowserItem(ItemType::File, path));
+                        }
+                    }
+                }
+            }
+            else 
+            {
+                Reload();
+            }
+		}
+        ImGui::PopStyleVar();
+        ImGui::SameLine();
+
         RenderPath();
         ImGui::EndChild(); 
 
@@ -91,7 +127,7 @@ namespace Engine
             for (int line_idx = clipper.DisplayStart; line_idx < clipper.DisplayEnd; line_idx++)
             {
                 const int item_min_idx_for_current_line = line_idx * column_count;
-                const int item_max_idx_for_current_line = IM_MIN((line_idx + 1) * column_count, Items.Size);
+                const int item_max_idx_for_current_line = std::min((line_idx + 1) * column_count, Items.Size);
                 for (int item_idx = item_min_idx_for_current_line; item_idx < item_max_idx_for_current_line; ++item_idx)
                 {
                     ContentBrowserItem* item_data = &Items[item_idx];
@@ -104,8 +140,7 @@ namespace Engine
                     ImGui::SetNextItemSelectionUserData(item_idx);
                     bool item_is_selected = Selection.Contains((ImGuiID)item_data->ID);
                     bool item_is_visible = ImGui::IsRectVisible(LayoutItemSize);
-                    //ImGui::ShowMetricsWindow();
-                    ImGui::Selectable("", item_is_selected, ImGuiSelectableFlags_None, LayoutItemSize);
+                    ImGui::Selectable("##unique_id", item_is_selected, ImGuiSelectableFlags_None, ImVec2(LayoutItemSize.x, LayoutItemSize.y));
 
                     // Update our selection state immediately (without waiting for EndMultiSelect() requests)
                     // because we use this to alter the color of our text/icon.
@@ -124,52 +159,58 @@ namespace Engine
                         ImGui::EndDragDropSource();
                     }
 
-                    if (item_is_visible)
+                    if (!item_is_visible)
                     {
-                        ImVec2 box_min(pos.x - 1, pos.y - 1);
-                        ImVec2 box_max(box_min.x + LayoutItemSize.x + 2, box_min.y + LayoutItemSize.y + 2);
-                        ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
-
-                        switch (item_data->Type)
-                        {
-                            case ItemType::Directory:
-
-                                if (std::filesystem::is_empty(m_CurrentDirectory / item_data->Label))
-                                {
-                                    draw_list->AddImage((ImTextureID)m_EmptyFolderIcon->GetRendererID(), box_min, box_max, ImVec2(0, 1), ImVec2(1, 0));
-                                }
-                                else {
-                                    draw_list->AddImage((ImTextureID)m_FolderIcon->GetRendererID(), box_min, box_max, ImVec2(0, 1), ImVec2(1, 0));
-                                }
-
-                                draw_list->AddText(ImVec2(box_min.x + LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data->Label).x / 2, box_max.y - ImGui::GetFontSize() + 10), label_col, item_data->Label);
-                                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-                                {
-                                    m_NewDirectory = std::filesystem::path(item_data->Path);
-                                }
-							    break;
-
-                            case ItemType::File:
-                                draw_list->AddImage((ImTextureID)m_FileIcon->GetRendererID(), box_min, box_max, ImVec2(0, 1), ImVec2(1, 0));
-                                draw_list->AddText(ImVec2(box_min.x + LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data->Label).x / 2, box_max.y - ImGui::GetFontSize() + 10), label_col, item_data->Label);
-                                if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                                {
-                                    std::string extension = std::filesystem::path(item_data->Label).extension().string();
-
-                                    if (extension == ".material")
-                                    {
-                                        Ref<Material> material = AssetManager::GetAsset<Material>(item_data->Path);
-                                        if (!material) break;
-
-                                        Ref<Scene> scene = SceneManager::GetCurrentScene(); //TODO: use observer pattern
-                                        scene->SelectMaterial(material);
-
-                                    }
-                                }
-                                break;
-                        }
-                        ItemContextMenu();
+                        break;
                     }
+
+                    ImVec2 box_min(pos.x - 1, pos.y - 1);
+                    ImVec2 box_max(box_min.x + LayoutItemSize.x + 2, box_min.y + LayoutItemSize.y + 2);
+                    ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
+
+                    switch (item_data->Type)
+                    {
+                    case ItemType::Directory:
+
+                        if (std::filesystem::is_empty(m_CurrentDirectory / item_data->Label))
+                        {
+                            draw_list->AddImage((ImTextureID)m_EmptyFolderIcon->GetRendererID(), box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x), ImVec2(0, 1), ImVec2(1, 0));
+                        }
+                        else 
+                        {
+                            draw_list->AddImage((ImTextureID)m_FolderIcon->GetRendererID(), box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x), ImVec2(0, 1), ImVec2(1, 0));
+                        }
+
+                        draw_list->AddText(ImVec2(box_min.x + LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data->Label).x / 2, box_max.y - ImGui::GetFontSize() + 10), label_col, item_data->Label);
+                        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+                        {
+                            m_NewDirectory = std::filesystem::path(item_data->Path);
+                        }
+                        break;
+
+                    case ItemType::File:
+                        draw_list->AddImage((ImTextureID)m_FileIcon->GetRendererID(), box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x), ImVec2(0, 1), ImVec2(1, 0));
+						draw_list->PushClipRect(box_min, ImVec2(box_max.x, box_max.y + ImGui::GetFontSize() + 10), !item_is_selected);
+                        draw_list->AddText(ImVec2(box_min.x + LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data->Label).x / 2, box_max.y - ImGui::GetFontSize() + 10), label_col, item_data->Label);
+						draw_list->PopClipRect();
+
+                        if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                        {
+                            std::string extension = std::filesystem::path(item_data->Label).extension().string();
+
+                            if (extension == ".material")
+                            {
+                                Ref<Material> material = AssetManager::GetAsset<Material>(item_data->Path);
+                                if (!material) break;
+
+                                Ref<Scene> scene = SceneManager::GetCurrentScene(); //TODO: use observer pattern
+                                scene->SelectMaterial(material);
+
+                            }
+                        }
+                        break;
+                    }
+                    ItemContextMenu();
 
 					
 
@@ -186,7 +227,6 @@ namespace Engine
         if (want_delete)
         {
             //TODO: unload assets & delete files
-            //also handle folder/s deletion
             Selection.ApplyDeletionPostLoop(ms_io, Items, item_curr_idx_to_focus);
         }
            
@@ -208,7 +248,7 @@ namespace Engine
 
                 // Zoom
                 IconSize *= powf(1.1f, (float)(int)ZoomWheelAccum);
-                IconSize = IM_CLAMP(IconSize, 32.0f, 128.0f);
+                IconSize = std::clamp(IconSize, 32.0f, 128.0f);
                 ZoomWheelAccum -= (int)ZoomWheelAccum;
                 UpdateLayoutSizes(ImGui::GetContentRegionAvail().x);
 
@@ -276,16 +316,14 @@ namespace Engine
         for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
         {
             const auto& path = directoryEntry.path();
-            std::size_t hash = std::hash<std::string>{}(path.string());
-            ImGuiID id = static_cast<ImGuiID>(hash); 
 
             if(directoryEntry.is_directory())
             {
-                Items.push_back(ContentBrowserItem(id, ItemType::Directory, path));
+                Items.push_back(ContentBrowserItem(ItemType::Directory, path));
             }
             else
             {
-                Items.push_back(ContentBrowserItem(id, ItemType::File, path));
+                Items.push_back(ContentBrowserItem(ItemType::File, path));
             }
         }
     }
@@ -302,7 +340,7 @@ namespace Engine
                 if (ImGui::MenuItem("Folder"))
                 {
                     //create a new folder
-                    std::string folderName = "NewFolder";
+                    std::string folderName = "newFolder";
                     std::filesystem::path newFolderPath = m_CurrentDirectory / folderName;
                     std::filesystem::create_directory(newFolderPath);
                     Reload();
@@ -312,39 +350,29 @@ namespace Engine
 
                 if (ImGui::MenuItem("Scene"))
                 {
-                    // Logic to create a new scene
-                    //TODO: Implement
+					std::string path = Utilities::EnsureFileNameUniqueness("newScene", m_CurrentDirectory.string());
+					Ref<Scene> newScene = AssetManager::CreateAsset<Scene>(path);
+                    if (newScene) 
+                    {
+						Serializer::Serialize(newScene);
+						Items.push_back(ContentBrowserItem(ItemType::File, path));
+                    }
                 }
 
                 if (ImGui::MenuItem("Material"))
                 {
-                    std::string filename = "NewMaterial";
-                    std::string path = m_CurrentDirectory.string() + "/" + filename + ".material";
-
-                    //cheeck if file already exists
-                    if (std::filesystem::exists(path))
-					{
-						int i = 1;
-						while (std::filesystem::exists(path))
-						{
-							filename += std::to_string(i);
-							i++;
-						}
-                        path = m_CurrentDirectory.string() + "/" + filename + std::to_string(i) + ".material";
-					}
-
-
+                    std::string path = Utilities::EnsureFileNameUniqueness("newMaterial", m_CurrentDirectory.string());
                     Ref<Material> newMaterial = AssetManager::CreateAsset<Material>(path);
                     if (newMaterial) 
                     {
-                        std::size_t hash = std::hash<std::string>{}(path);
-                        ImGuiID id = static_cast<ImGuiID>(hash);
                         Serializer::Serialize(newMaterial);
-                        Items.push_back(ContentBrowserItem(id, ItemType::File, path));
+                        Items.push_back(ContentBrowserItem( ItemType::File, path));
                     }
                 }
 
                 ImGui::EndMenu(); // End of "Create" menu
+
+
             }
 
             ImGui::EndPopup();
@@ -358,6 +386,42 @@ namespace Engine
             if (ImGui::MenuItem("Delete", "Del", false, Selection.Size > 0))
             {
                 RequestDelete = true;
+            }
+
+            if (ImGui::MenuItem("Rename", 0, false, Selection.Size == 1))
+            {
+                //get the selected item
+                void* it = NULL;
+                ImGuiID id = 0;
+                Selection.GetNextSelectedItem(&it, &id);
+                auto item = std::find_if(Items.begin(), Items.end(), [id](const ContentBrowserItem& item) { return item.ID == id; });
+                if (item == Items.end())
+				{
+                    ENGINE_LOG_WARNING("Item not found in the items list");
+                    return;
+				}
+
+                //rename the item
+                std::string extension = item->Extension;
+                std::string newName = "NewName" + extension;
+                std::filesystem::path newPath = m_CurrentDirectory / newName;
+
+                if(std::filesystem::exists(newPath))
+				{
+					int i = 1;
+					while (std::filesystem::exists(newPath))
+					{
+						newName = "NewName" + std::to_string(i) + extension;
+						newPath = m_CurrentDirectory / newName;
+						i++;
+					}
+				}
+
+
+                item->Rename(newPath);
+                Reload();
+
+
             }
 
             ImGui::EndPopup();

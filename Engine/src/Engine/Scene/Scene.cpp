@@ -8,9 +8,20 @@
 
 namespace Engine
 {
+	Ref<Asset> SceneFactory::Load(const std::string& filePath)
+	{
+		return Create(filePath);
+	}
+
+	Ref<Asset> SceneFactory::Create(const std::string& filePath)
+	{
+		return CreateRef<Scene>(filePath);
+	}
+
+
+
 	Scene::~Scene()
 	{
-		//log entity count
 		auto view = m_Registry.view<IDComponent>();
 		ENGINE_LOG_INFO("Destroying scene with {0} entities", view.size());
 	}
@@ -252,6 +263,13 @@ namespace Engine
 			}
 		}
 
+	}
+
+	void Scene::OnDestroy()
+	{
+		m_Registry.clear();
+		m_EntityMap.clear();
+		m_EntityOrder.clear();
 	}
 
 	Entity Scene::CreateEntity(const std::string& name)

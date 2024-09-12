@@ -11,6 +11,13 @@ namespace Engine
 {
 	class Entity; // Forward declaration
 
+	class SceneFactory : public IAssetFactory
+	{
+	public:
+		virtual Ref<Asset> Load(const std::string& filePath) override;
+		virtual Ref<Asset> Create(const std::string& filePath) override;
+	};
+
 	class Scene : public Asset
 	{
 	public:
@@ -33,6 +40,7 @@ namespace Engine
 		void OnResume();
 		void OnNextFrame();
 		void OnViewportResize(uint32_t width, uint32_t height);
+		void OnDestroy();
 
 		Entity CreateEntity(const std::string& name = std::string());
 		Entity CreateEntity(UUID uuid, const std::string& name = std::string());
