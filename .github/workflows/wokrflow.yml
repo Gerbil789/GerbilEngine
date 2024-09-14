@@ -11,6 +11,9 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        configuration: [Debug, Release] 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -22,13 +25,16 @@ jobs:
       with:
         arch: x64
 
+    - name: Fetch LFS files
+      run: git lfs pull
+
     - name: Generate project files
       run: vendor\bin\premake\premake5.exe vs2022
       
     - name: Build project
       if: steps.cache-build.outputs.cache-hit != 'true'
       run: |
-        msbuild /p:Configuration=Release /p:Platform=x64 GerbilEngine.sln
+        msbuild /p:Configuration=${{ matrix.configuration }} /p:Platform=x64 GerbilEngine.sln
 
   notify-discord:
     runs-on: windows-latest
