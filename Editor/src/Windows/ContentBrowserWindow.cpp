@@ -161,6 +161,7 @@ namespace Engine
 
                     if (!item_is_visible)
                     {
+                        ImGui::PopID();
                         break;
                     }
 

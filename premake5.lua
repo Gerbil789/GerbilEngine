@@ -5,12 +5,10 @@ workspace "GerbilEngine"
 	configurations
 	{
 		"Debug",
-		"Release",
-		"Dist"
+		"Release"
 	}
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
-
 
 Includedir = {}
 Includedir["GLFW"] = "Engine/vendor/GLFW/include"
@@ -21,6 +19,10 @@ Includedir["stb_image"] = "Engine/vendor/stb_image"
 Includedir["entt"] = "Engine/vendor/entt/include"
 Includedir["yaml_cpp"] = "Engine/vendor/yaml-cpp/include"
 Includedir["ImGuizmo"] = "Engine/vendor/ImGuizmo"
+Includedir["FBXSDK"] = "Engine/vendor/FBXSDK/2020.3.7/include"
+
+Libdir = {}
+Libdir["FBXSDK"] = "Engine/vendor/FBXSDK/2020.3.7/lib/x64"
 
 group "Dependencies"
 	include "Engine/vendor/GLFW"
@@ -28,10 +30,6 @@ group "Dependencies"
 	include "Engine/vendor/imgui"
 	include "Engine/vendor/yaml-cpp"
 group ""
-
-
-
-
 
 
 
@@ -57,7 +55,8 @@ project "Engine"
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl",
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
-		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp"
+		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
+		"%{prj.name}/vendor/FBXSDK/2020.3.7/include/**.h"
 	}
 
 	defines
@@ -76,7 +75,8 @@ project "Engine"
 		"%{Includedir.stb_image}",
 		"%{Includedir.entt}",
 		"%{Includedir.yaml_cpp}",
-		"%{Includedir.ImGuizmo}"
+		"%{Includedir.ImGuizmo}",
+		"%{Includedir.FBXSDK}"
 	}
 
 	links
@@ -112,21 +112,6 @@ project "Engine"
 		runtime "Release"
 		optimize "on"
 
-	filter "configurations:Dist"
-		defines "ENGINE_DIST"
-		runtime "Release"
-		optimize "on"
-
-
-
-
-
-
-
-
-
-
-
 project "Editor"
 	location "Editor"
 	kind "ConsoleApp"
@@ -150,38 +135,41 @@ project "Editor"
 		"Engine/vendor",
 		"%{Includedir.glm}",
 		"%{Includedir.entt}",
-		"%{Includedir.ImGuizmo}"
+		"%{Includedir.ImGuizmo}",
+		"%{Includedir.FBXSDK}"
+	}
+
+	links
+	{
+		"Engine",
+		"libfbxsdk-mt.lib",
+		"libxml2-mt.lib",
+		"zlib-mt.lib"
 	}
 
 	filter "system:windows"
 		cppdialect "C++17"
 		systemversion "latest"
 		buildoptions { "/MP" }
-
 		defines
 		{
 			"ENGINE_PLATFORM_WINDOWS"
-		}
-
-		links
-		{
-			"Engine"
 		}
 
 	filter "configurations:Debug"
 		defines "ENGINE_DEBUG"
 		runtime "Debug"
 		symbols "on"
+		libdirs
+		{
+			"%{Libdir.FBXSDK}/debug"
+		}
 
 	filter "configurations:Release"
 		defines "ENGINE_RELEASE"
 		runtime "Release"
 		optimize "on"
-
-	filter "configurations:Dist"
-		defines "ENGINE_DIST"
-		runtime "Release"
-		optimize "on"
-
-
-
+		libdirs
+		{
+			"%{Libdir.FBXSDK}/release"
+		}

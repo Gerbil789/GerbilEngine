@@ -15,6 +15,8 @@
 #include "ImGuizmo/ImGuizmo.h"
 #include <glm/gtc/type_ptr.hpp>
 
+#include <fbxsdk.h> //temp
+
 namespace Engine
 {
     EditorLayer::EditorLayer() : Layer("EditorLayer") {}
@@ -54,6 +56,47 @@ namespace Engine
 		m_EditorWindows.push_back(CreateRef<MaterialWindow>());
 		m_EditorWindows.push_back(CreateRef<SettingsWindow>());
 		m_EditorWindows.push_back(CreateRef<StatisticsWindow>());
+
+        //FbxManager* lSdkManager = FbxManager::Create();
+        //if (!lSdkManager) {
+        //    std::cerr << "Error: Unable to create FBX Manager." << std::endl;
+        //    return;
+        //}
+
+        //// Create an IO Settings object
+        //FbxIOSettings* ios = FbxIOSettings::Create(lSdkManager, IOSROOT);
+        //lSdkManager->SetIOSettings(ios);
+
+        //// Create an FBX Scene object
+        //FbxScene* lScene = FbxScene::Create(lSdkManager, "My Scene");
+        //if (!lScene) {
+        //    std::cerr << "Error: Unable to create FBX Scene." << std::endl;
+        //    lSdkManager->Destroy();
+        //    return;
+        //}
+
+        //// Load an FBX file
+        //FbxImporter* lImporter = FbxImporter::Create(lSdkManager, "");
+        //bool lImportStatus = lImporter->Initialize("C:/Users/vojta/Desktop/UCX_Blocks.fbx", -1, lSdkManager->GetIOSettings());
+        //if (!lImportStatus) {
+        //    std::cerr << "Error: Unable to initialize FBX importer." << std::endl;
+        //    lSdkManager->Destroy();
+        //    return;
+        //}
+
+        //// Import the scene
+        //lImportStatus = lImporter->Import(lScene);
+        //if (!lImportStatus) {
+        //    std::cerr << "Error: Unable to import FBX file." << std::endl;
+        //    lSdkManager->Destroy();
+        //    return;
+        //}
+
+        //std::cout << "FBX file loaded successfully!" << std::endl;
+
+        //// Cleanup
+        //lImporter->Destroy();
+        //lSdkManager->Destroy();
     }
 
     void EditorLayer::OnDetach()
