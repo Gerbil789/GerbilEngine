@@ -22,6 +22,9 @@ jobs:
       with:
         arch: x64
 
+    - name: Fetch LFS files
+      run: git lfs pull
+
     - name: Generate project files
       run: vendor\bin\premake\premake5.exe vs2022
       
