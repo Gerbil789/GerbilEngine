@@ -45,7 +45,7 @@ namespace Engine
         gameFrameBufferSpecification.Height = 720;
         m_GameFrameBuffer = FrameBuffer::Create(gameFrameBufferSpecification);
 
-        RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+        RenderCommand::SetClearColor({ 0.05f, 0.05f, 0.05f, 1.0f });
 
         m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f); //TODO: what are these values? must it be there?
         SceneManager::CreateScene("New Scene");
@@ -60,7 +60,16 @@ namespace Engine
 
         // ---- testing -----
 		Ref<Mesh> cube = AssetManager::GetAsset<Mesh>("assets/cube.fbx");
-        Ref<Mesh> skull = AssetManager::GetAsset<Mesh>("assets/skull.fbx");
+		ENGINE_LOG_INFO("Cube vertices: {0}", cube->GetVertexCount());
+        ENGINE_LOG_INFO("Cube indices: {0}", cube->GetIndices().size());
+        ENGINE_LOG_INFO("Cube normals: {0}", cube->GetNormals().size());
+        ENGINE_LOG_INFO("Cube UVs: {0}", cube->GetUVs().size());
+
+        //Ref<Mesh> skull = AssetManager::GetAsset<Mesh>("assets/skull.fbx");
+		//ENGINE_LOG_INFO("Skull vertices: {0}", skull->GetVertexCount());
+        //ENGINE_LOG_INFO("Skull indices: {0}", skull->GetIndices().size());
+        //ENGINE_LOG_INFO("Skull normals: {0}", skull->GetNormals().size());
+        //ENGINE_LOG_INFO("Skull UVs: {0}", skull->GetUVs().size());
     }
 
     void EditorLayer::OnDetach()

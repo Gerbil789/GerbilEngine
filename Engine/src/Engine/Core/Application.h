@@ -7,7 +7,7 @@
 #include "Engine/Core/LayerStack.h"
 #include "Engine/Core/Input.h"
 #include "Engine/ImGui/ImGuiLayer.h"
-#include "Engine/Core/Timestep.h"
+#include <chrono>
 
 namespace Engine
 {
@@ -42,7 +42,7 @@ namespace Engine
 		bool m_Minimized = false;
 		LayerStack m_LayerStack;
 
-		float m_LastFrameTime = 0.0f;
+		std::chrono::steady_clock::time_point m_LastFrameTime;
 		
 	private:
 		static Application* s_Instance;

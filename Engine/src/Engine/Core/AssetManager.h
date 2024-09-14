@@ -62,7 +62,7 @@ namespace Engine
 			if (it_a != assets.end())
 			{
                 ENGINE_LOG_WARNING("Asset '{0}' already exists", filePath);
-                return nullptr;
+                return std::dynamic_pointer_cast<T>(it_a->second);
 			}
 
 			// Check if factory exists

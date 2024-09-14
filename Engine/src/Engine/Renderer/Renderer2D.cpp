@@ -6,6 +6,7 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/Entity.h"
+#include "Engine/Core/AssetManager.h"
 
 namespace Engine 
 {
@@ -47,7 +48,6 @@ namespace Engine
 		};
 
 		Renderer2D::Statistics Stats;
-
 	};
 
 	static Renderer2DData s_Data;
@@ -97,15 +97,13 @@ namespace Engine
 		s_Data.QuadVertexArray->SetIndexBuffer(QuadIndexBuffer);
 		delete[] quadIndices;
 
-		
-		s_Data.WhiteTexture = Texture2D::Create(1, 1);
-		uint32_t whiteTextureData = 0xffffffff;
-		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+		Texture2DFactory factory;
+		s_Data.WhiteTexture = std::dynamic_pointer_cast<Texture2D>(factory.CreateTexture(1, 1, 0xffffffff));
+
 		
 		int32_t samplers[s_Data.MaxTextureSlots];
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
-
 
 		s_Data.TextureShader = Shader::Create("assets/shaders/Texture.glsl");
 		s_Data.TextureShader->Bind();

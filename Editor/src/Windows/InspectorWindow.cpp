@@ -8,7 +8,6 @@
 #include <imgui/imgui_internal.h>
 #include <filesystem>
 
-
 namespace Engine
 {
 	InspectorWindow::InspectorWindow()
@@ -271,6 +270,47 @@ namespace Engine
 				}
 
 			});
+
+		DrawComponent<MeshRendererComponent>("MeshRenderer", entity, [](auto& component)
+			{
+				ImGui::Button("Mesh", ImVec2(100.0f, 0.0f));
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path meshPath = path;
+						if (meshPath.extension() == ".fbx")
+						{
+							component.Mesh = AssetManager::GetAsset<Mesh>(meshPath.string());
+						}
+						else
+						{
+							ENGINE_LOG_WARNING("Failed to load mesh!");
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				ImGui::Button("Material", ImVec2(100.0f, 0.0f));
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path texturePath = path;
+						if (texturePath.extension() == ".material")
+						{
+							component.Material = AssetManager::GetAsset<Material>(texturePath.string());
+						}
+						else
+						{
+							ENGINE_LOG_WARNING("Failed to load material!");
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+			});
 	}
 
 	void InspectorWindow::DrawAddComponentButton(Entity entity)
@@ -322,6 +362,12 @@ namespace Engine
 			if (ImGui::MenuItem("Light"))
 			{
 				entity.AddComponent<LightComponent>();
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::MenuItem("MeshRenderer"))
+			{
+				entity.AddComponent<MeshRendererComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 

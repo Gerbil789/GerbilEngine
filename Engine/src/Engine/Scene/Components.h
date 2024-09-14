@@ -1,6 +1,7 @@
 #pragma once
 #include "Engine/Scene/SceneCamera.h"
 #include "Engine/Renderer/Texture.h"
+#include "Engine/Renderer/Mesh.h"
 #include "Engine/Core/UUID.h"
 #include "Engine/Scene/Material.h"
 
@@ -120,12 +121,14 @@ namespace Engine
 		LightComponent(const LightComponent&) = default;
 	};
 
+	struct MeshRendererComponent
+	{
+		Ref<Material> Material = nullptr;
+		Ref<Mesh> Mesh = nullptr;
 
-
-
-
-
-
+		MeshRendererComponent() = default;
+		MeshRendererComponent(const MeshRendererComponent&) = default;
+	};
 
 	class ScriptableEntity; //forward declaration
 

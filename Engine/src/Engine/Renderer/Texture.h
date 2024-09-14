@@ -10,6 +10,8 @@ namespace Engine
 	public:
 		virtual Ref<Asset> Load(const std::string& filePath) override;
 		virtual Ref<Asset> Create(const std::string& filePath) override;
+
+		Ref<Asset> CreateTexture(uint32_t width, uint32_t height, uint32_t data);
 	};
 
 	class Texture2D : public Asset
@@ -27,7 +29,6 @@ namespace Engine
 
 		virtual bool operator == (const Texture2D& other) const { return m_RendererID == other.GetRendererID(); }
 
-		static Ref<Texture2D> Create(uint32_t width, uint32_t height); //TODO: what is this? move it to the factory
 	protected:
 		uint32_t m_Width, m_Height;
 		uint32_t m_RendererID;

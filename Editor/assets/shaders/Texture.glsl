@@ -120,7 +120,6 @@ void main()
 			}
     	}
 	}
-
 	color = (vec4(ambient, 1.0) + vec4(result, 1.0)) * texture(u_Textures[int(v_TexIndex)], v_TexCoord * v_TilingFactor) * v_Color;
 	entity = v_EntityID;
 }

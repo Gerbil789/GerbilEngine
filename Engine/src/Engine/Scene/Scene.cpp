@@ -5,20 +5,24 @@
 #include "Engine/Scene/ScriptableEntity.h"
 #include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Scene/Entity.h"
+#include "Engine/Core/Serializer.h"
 
 namespace Engine
 {
 	Ref<Asset> SceneFactory::Load(const std::string& filePath)
 	{
-		return Create(filePath);
+		Ref<Scene> scene = CreateRef<Scene>(filePath);
+		if (!Serializer::Deserialize(scene))
+		{
+			ENGINE_LOG_ERROR("Failed to load scene from file {0}", filePath);
+		}
+		return scene;
 	}
 
 	Ref<Asset> SceneFactory::Create(const std::string& filePath)
 	{
 		return CreateRef<Scene>(filePath);
 	}
-
-
 
 	Scene::~Scene()
 	{
@@ -464,4 +468,7 @@ namespace Engine
 
 	template<>
 	void Scene::OnComponentAdded<LightComponent>(Entity entity, LightComponent& component) {}
+
+	template<>
+	void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component) {}
 }

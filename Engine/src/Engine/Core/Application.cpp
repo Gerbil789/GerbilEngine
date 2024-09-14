@@ -1,13 +1,12 @@
 #include "enginepch.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Renderer/Renderer.h"
+#include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Renderer/Texture.h"
 #include "Engine/Scene/Material.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Renderer/Mesh.h"
-
-#include <GLFW/glfw3.h> // TEMP
 
 namespace Engine
 {
@@ -26,15 +25,17 @@ namespace Engine
 		m_Window = Window::Create(WindowProps(name));
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-		Renderer::Init();
-
-		m_ImGuiLayer = new ImGuiLayer();
-		PushOverlay(m_ImGuiLayer);
-
 		AssetManager::RegisterFactory<Texture2D>(std::make_unique<Texture2DFactory>());
 		AssetManager::RegisterFactory<Material>(std::make_unique<MaterialFactory>());
 		AssetManager::RegisterFactory<Scene>(std::make_unique<SceneFactory>());
 		AssetManager::RegisterFactory<Mesh>(std::make_unique<MeshFactory>());
+
+		RenderCommand::Init();
+		Renderer::Init();
+		Renderer2D::Init();
+
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
 	}
 
 	Application::~Application() {}
@@ -46,10 +47,13 @@ namespace Engine
 		{
 			ENGINE_PROFILE_SCOPE("RunLoop");
 			
-			float time = (float)glfwGetTime();
-			Timestep timestep = time - m_LastFrameTime;
-			m_LastFrameTime = time;
-			fps = 1 / timestep;
+			auto now = std::chrono::steady_clock::now();
+			Timestep timestep = std::chrono::duration<float>(now - m_LastFrameTime).count();
+			m_LastFrameTime = now;
+
+			// avoid division by zero or unrealistic values
+			if (timestep > 0.0f) { fps = 1.0f / timestep; }
+
 			if (!m_Minimized)
 			{
 				{
