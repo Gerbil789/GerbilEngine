@@ -165,7 +165,7 @@ namespace Engine
 		{
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 			{
-				//todo: move this to scene::onplay
+				//TODO: move this to scene::onplay
 				if (!nsc.Instance)
 				{
 					nsc.Instance = nsc.InstantiateScript();
@@ -395,7 +395,7 @@ namespace Engine
 		return m_SelectedEntity == entity;
 	}
 
-	const Entity& Scene::GetSelectedEntity() 
+	Entity Scene::GetSelectedEntity() 
 	{
 		return { m_SelectedEntity, this };
 	}

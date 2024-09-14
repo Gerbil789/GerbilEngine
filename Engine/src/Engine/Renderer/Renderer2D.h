@@ -4,10 +4,7 @@
 #include "Engine/Renderer/Texture.h"
 #include "Engine/Renderer/SubTexture2D.h"
 #include "Engine/Renderer/EditorCamera.h"
-
-
 #include "Engine/Scene/Components.h"
-
 
 namespace Engine
 {
@@ -50,6 +47,7 @@ namespace Engine
 		{
 			uint32_t DrawCalls = 0;
 			uint32_t QuadCount = 0;
+			uint32_t TriangleCount = 0;
 
 			uint32_t GetTotalVertexCount() { return QuadCount * 4; }
 			uint32_t GetTotalIndexCount() { return QuadCount * 6; }
@@ -61,5 +59,3 @@ namespace Engine
 		static void FlushAndReset();
 	};
 }
-
-

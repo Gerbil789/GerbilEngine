@@ -3,7 +3,6 @@
 #include "imgui/imgui.h"
 #include "Engine/Renderer/Renderer2D.h"
 
-
 namespace Engine
 {
 
@@ -14,6 +13,7 @@ namespace Engine
 		auto stats = Renderer2D::GetStats();
 		ImGui::Text("Draw Calls: %d", stats.DrawCalls);
 		ImGui::Text("Quads: %d", stats.QuadCount);
+		ImGui::Text("Triangles: %d", stats.TriangleCount);
 		ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
 		ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
 		ImGui::Separator();

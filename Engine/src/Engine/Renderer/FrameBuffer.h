@@ -21,7 +21,7 @@ namespace Engine
 
 
 		FrameBufferTextureFormat TextureFormat = FrameBufferTextureFormat::None;
-		//todo: filtering/wrap
+		//TODO: filtering/wrap
 	};
 
 	struct FrameBufferAttachmentSpecification

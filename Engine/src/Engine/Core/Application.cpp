@@ -5,6 +5,7 @@
 #include "Engine/Renderer/Texture.h"
 #include "Engine/Scene/Material.h"
 #include "Engine/Scene/Scene.h"
+#include "Engine/Renderer/Mesh.h"
 
 #include <GLFW/glfw3.h> // TEMP
 
@@ -33,6 +34,7 @@ namespace Engine
 		AssetManager::RegisterFactory<Texture2D>(std::make_unique<Texture2DFactory>());
 		AssetManager::RegisterFactory<Material>(std::make_unique<MaterialFactory>());
 		AssetManager::RegisterFactory<Scene>(std::make_unique<SceneFactory>());
+		AssetManager::RegisterFactory<Mesh>(std::make_unique<MeshFactory>());
 	}
 
 	Application::~Application() {}

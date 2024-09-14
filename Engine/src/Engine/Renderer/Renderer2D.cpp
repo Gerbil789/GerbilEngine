@@ -133,7 +133,6 @@ namespace Engine
 
 		s_Data.QuadIndexCount = 0;
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-
 		s_Data.TextureSlotIndex = 1;
 	}
 
@@ -247,12 +246,6 @@ namespace Engine
 	}
 
 
-
-
-
-
-
-
 	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 	{
 		ENGINE_PROFILE_FUNCTION();
@@ -337,10 +330,6 @@ namespace Engine
 
 		s_Data.Stats.QuadCount++;
 	}
-
-
-
-
 
 
 
@@ -638,6 +627,7 @@ namespace Engine
 
 	Renderer2D::Statistics Renderer2D::GetStats()
 	{
+		s_Data.Stats.TriangleCount = s_Data.Stats.QuadCount * 2;
 		return s_Data.Stats;
 	}
 }

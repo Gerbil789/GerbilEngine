@@ -37,12 +37,16 @@ namespace Engine
 		}
 
 		Entity entity = m_Scene->GetSelectedEntity();
-		if (entity)
+		if (!entity)
 		{
-			DrawComponents(entity);
-			ImGui::Separator();
-			DrawAddComponentButton(entity);
+			ImGui::End();
+			return;
 		}
+
+		DrawComponents(entity);
+		ImGui::Separator();
+		DrawAddComponentButton(entity);
+
 		ImGui::End();
 	}
 

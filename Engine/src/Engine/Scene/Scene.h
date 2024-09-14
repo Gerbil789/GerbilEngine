@@ -55,7 +55,7 @@ namespace Engine
 		void SelectEntity(Entity entity);
 		void DeselectEntity();
 		bool IsEntitySelected(Entity entity) const;
-		const Entity& GetSelectedEntity();
+		Entity GetSelectedEntity();
 		const std::vector<UUID>& GetEntityOrder() const { return m_EntityOrder; }
 		void ReorderEntity(Entity sourceEntity, Entity targetEntity);
 
