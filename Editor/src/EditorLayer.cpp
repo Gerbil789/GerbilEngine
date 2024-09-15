@@ -15,7 +15,7 @@
 #include "ImGuizmo/ImGuizmo.h"
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Engine/Renderer/Mesh.h"
+#include "Engine/Renderer/Mesh.h" //temp
 
 namespace Engine
 {
@@ -46,9 +46,8 @@ namespace Engine
         m_GameFrameBuffer = FrameBuffer::Create(gameFrameBufferSpecification);
 
         RenderCommand::SetClearColor({ 0.05f, 0.05f, 0.05f, 1.0f });
-
         m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f); //TODO: what are these values? must it be there?
-        SceneManager::CreateScene("New Scene");
+        SceneManager::CreateScene("untitledScene");
 
 		m_EditorWindows.push_back(CreateRef<SceneHierarchyWindow>());
 		m_EditorWindows.push_back(CreateRef<InspectorWindow>());

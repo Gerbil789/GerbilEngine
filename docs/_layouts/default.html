@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>{{ page.title }} - {{ site.title }}</title>
+  <title>{{ site.title }}</title>
   <link rel="stylesheet" href= "{{ site.baseurl }}/assets/main.css">
 </head>
 <body>
@@ -11,7 +11,8 @@
     <nav>
       <ul>
         <li><a href="{{ site.baseurl }}/">Home</a></li>
-        <li><a href= "{{ site.baseurl }}/docs/">Documentation</a></li>
+        <li><a href="{{ site.baseurl }}/guide.md/">Guide</a></li>
+        <li><a href="{{ site.baseurl }}/reference.md/">Reference</a></li>
       </ul>
     </nav>
   </header>

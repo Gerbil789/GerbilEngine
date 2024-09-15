@@ -32,9 +32,14 @@ namespace Engine
 	{
 	public:
 		virtual Ref<Asset> Load(const std::string& filePath) override;
-		virtual Ref<Asset> Create(const std::string& filePath) override;
+		virtual Ref<Asset> Create(const std::string& filePath) { return nullptr; } // Not implemented, meshes are not created, only loaded
 
 	private:
-		void ExtractMeshData(FbxMesh* fbxMesh, Ref<Mesh> mesh);
+		Ref<Mesh> m_Mesh;
+
+		void GetVertices(FbxMesh* fbxMesh);
+		void GetIndices(FbxMesh* fbxMesh);
+		void GetNormals(FbxNode* pNode);
+		void GetUVs(FbxMesh* fbxMesh);
 	};
 }
