@@ -3,6 +3,7 @@ body {
     line-height: 1.6;
     margin: 0;
     padding: 0;
+    overflow-x: hidden;
   }
   
   header {
@@ -36,7 +37,9 @@ body {
     text-align: center;
     padding: 1rem;
     width: 100%;
-    position: relative;
-    box-sizing: border-box; 
-}
+    position: fixed; /* Stick to the bottom */
+    bottom: 0;
+    left: 0;
+    box-sizing: border-box; /* Ensure padding is included in width */
+  }
   

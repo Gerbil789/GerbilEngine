@@ -17,6 +17,8 @@
 
 #include "Engine/Renderer/Mesh.h" //temp
 
+//TODO: clean up this file
+
 namespace Engine
 {
     EditorLayer::EditorLayer() : Layer("EditorLayer") {}

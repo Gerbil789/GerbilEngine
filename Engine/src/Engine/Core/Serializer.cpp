@@ -136,6 +136,17 @@ namespace Engine
 			out << YAML::EndMap;
 		}
 
+		// Mesh Renderer Component
+		if (entity.HasComponent<MeshRendererComponent>())
+		{
+			out << YAML::Key << "MeshRendererComponent";
+			out << YAML::BeginMap;
+			auto& mrc = entity.GetComponent<MeshRendererComponent>();
+			out << YAML::Key << "Mesh" << YAML::Value << (mrc.Mesh ? mrc.Mesh->GetFilePath() : "null");
+			out << YAML::Key << "Material" << YAML::Value << (mrc.Material ? mrc.Material->GetFilePath() : "null");
+			out << YAML::EndMap;
+		}
+
 		// --- END ---
 		out << YAML::EndMap;
 	}
@@ -257,6 +268,17 @@ namespace Engine
 				lc.Attenuation.z = lightComponent["Attenuation"][2].as<float>();
 				lc.InnerAngle = lightComponent["InnerAngle"].as<float>();
 				lc.OuterAngle = lightComponent["OuterAngle"].as<float>();
+			}
+
+			auto meshRendererComponent = entity["MeshRendererComponent"];
+			if (meshRendererComponent)
+			{
+				auto& mrc = deserializedEntity.AddComponent<MeshRendererComponent>();
+				std::string meshPath = meshRendererComponent["Mesh"].as<std::string>();
+				if (meshPath != "null") mrc.Mesh = AssetManager::GetAsset<Mesh>(meshPath);
+
+				std::string materialPath = meshRendererComponent["Material"].as<std::string>();
+				if (materialPath != "null") mrc.Material = AssetManager::GetAsset<Material>(materialPath);
 			}
 		}
 
