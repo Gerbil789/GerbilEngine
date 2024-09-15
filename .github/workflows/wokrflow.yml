@@ -20,6 +20,16 @@ jobs:
       with:
         submodules: true
 
+    # Cache LFS files
+    - name: Cache LFS files
+      uses: actions/cache@v3
+      with:
+        path: |
+          .git/lfs
+        key: ${{ runner.os }}-lfs-${{ hashFiles('.gitattributes') }}
+        restore-keys: |
+          ${{ runner.os }}-lfs
+
     - name: Set up MSVC
       uses: ilammy/msvc-dev-cmd@v1
       with:
@@ -27,6 +37,8 @@ jobs:
 
     - name: Fetch LFS files
       run: git lfs pull
+      # Skip pull if cache exists
+      if: steps.cache.outputs.cache-hit != 'true'
 
     - name: Generate project files
       run: vendor\bin\premake\premake5.exe vs2022
