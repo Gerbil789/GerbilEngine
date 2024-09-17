@@ -60,17 +60,17 @@ namespace Engine
 
 
         // ---- testing -----
-		Ref<Mesh> cube = AssetManager::GetAsset<Mesh>("assets/cube.fbx");
-		ENGINE_LOG_INFO("Cube vertices: {0}", cube->GetVertexCount());
-        ENGINE_LOG_INFO("Cube indices: {0}", cube->GetIndices().size());
-        ENGINE_LOG_INFO("Cube normals: {0}", cube->GetNormals().size());
-        ENGINE_LOG_INFO("Cube UVs: {0}", cube->GetUVs().size());
-
         Ref<Mesh> quad = AssetManager::GetAsset<Mesh>("assets/quad.fbx");
         ENGINE_LOG_INFO("Quad vertices: {0}", quad->GetVertexCount());
         ENGINE_LOG_INFO("Quad indices: {0}", quad->GetIndices().size());
         ENGINE_LOG_INFO("Quad normals: {0}", quad->GetNormals().size());
         ENGINE_LOG_INFO("Quad UVs: {0}", quad->GetUVs().size());
+
+		Ref<Mesh> cube = AssetManager::GetAsset<Mesh>("assets/cube.fbx");
+		ENGINE_LOG_INFO("Cube vertices: {0}", cube->GetVertexCount());
+        ENGINE_LOG_INFO("Cube indices: {0}", cube->GetIndices().size());
+        ENGINE_LOG_INFO("Cube normals: {0}", cube->GetNormals().size());
+        ENGINE_LOG_INFO("Cube UVs: {0}", cube->GetUVs().size());
 
         //Ref<Mesh> skull = AssetManager::GetAsset<Mesh>("assets/skull.fbx");
 		//ENGINE_LOG_INFO("Skull vertices: {0}", skull->GetVertexCount());

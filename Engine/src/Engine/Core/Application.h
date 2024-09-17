@@ -30,7 +30,7 @@ namespace Engine
 		void Close();
 
 		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
-		float fps = 0.0f;
+		float m_AverageFPS = 0.0f; // To store the calculated average FPS
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
@@ -43,6 +43,12 @@ namespace Engine
 		LayerStack m_LayerStack;
 
 		std::chrono::steady_clock::time_point m_LastFrameTime;
+
+		static constexpr int FrameHistorySize = 30; // Number of frames to average over
+		std::array<float, FrameHistorySize> m_FPSHistory = { 0.0f }; // To store FPS values
+		int m_FPSHistoryIndex = 0; // To track the current position in the array
+		float m_FPSHistorySum = 0.0f; // To keep track of the sum of the FPS values
+		
 		
 	private:
 		static Application* s_Instance;

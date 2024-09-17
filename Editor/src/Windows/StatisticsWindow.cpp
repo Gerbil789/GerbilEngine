@@ -9,7 +9,7 @@ namespace Engine
 	void StatisticsWindow::OnImGuiRender()
 	{
 		ImGui::Begin("Statistics");
-		ImGui::Text("FPS: %d", static_cast<int>(Application::Get().fps));
+		ImGui::Text("FPS: %d", static_cast<int>(Application::Get().m_AverageFPS));
 		ImGui::Separator();
 		auto stats2D = Renderer2D::GetStats();
 		ImGui::Text("2D");

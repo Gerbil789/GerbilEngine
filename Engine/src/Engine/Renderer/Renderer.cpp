@@ -132,13 +132,12 @@ namespace Engine
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-
 	}
 
 	void Renderer::Flush()
 	{
 		ENGINE_PROFILE_FUNCTION();
-
+		//TODO: for batch rendering
 	}
 
 
@@ -153,16 +152,12 @@ namespace Engine
 		const auto& uvs = mesh->GetUVs();
 		auto indices = mesh->GetIndices();
 
-		//for (size_t i = 0; i < indices.size(); i++) {
-		//	std::cout << "Index " << i << ": " << indices[i] << " Vertex Position: " << vertices[indices[i]].x << ", " << vertices[indices[i]].y << ", " << vertices[indices[i]].z << std::endl;
-		//}
-
 		int vertexCount = mesh->GetVertexCount();
 		int indicesCount = indices.size();
 
 		Ref<VertexArray> vertexArray = VertexArray::Create();
 
-		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(indicesCount * sizeof(Vertex));
+		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertexCount * sizeof(Vertex));
 		vertexBuffer->SetLayout(s_Data.Layout);
 		vertexArray->AddVertexBuffer(vertexBuffer);
 
@@ -170,44 +165,17 @@ namespace Engine
 		vertexArray->SetIndexBuffer(IndexBuffer);
 
 
-		std::vector<Vertex> vertexBufferData(indicesCount);
+		std::vector<Vertex> vertexBufferData(vertexCount);
 
-		bool debug = false;
-		for (uint32_t i = 0; i < indicesCount; i++)
+		for (uint32_t i = 0; i < vertexCount; i++)
 		{
-			int vertexIndex = indices[i];
-
-			vertexBufferData[i].Position = transform * glm::vec4(vertices[vertexIndex], 1.0f);
-			vertexBufferData[i].Color = glm::vec4(uvs[vertexIndex], 0.0f, 1.0f);
+			vertexBufferData[i].Position = transform * glm::vec4(vertices[i], 1.0f);
+			vertexBufferData[i].Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 			vertexBufferData[i].Normal = glm::normalize(glm::mat3(glm::transpose(glm::inverse(transform))) * normals[i]);
-			vertexBufferData[i].TexCoord = uvs[vertexIndex];
+			vertexBufferData[i].TexCoord = uvs[i];
 			vertexBufferData[i].TexIndex = 0.0f;
 			vertexBufferData[i].TilingFactor = glm::vec2(1.0f, 1.0f);
 			vertexBufferData[i].EntityID = entityID;
-
-
-			if (debug)
-			{
-				std::cout << "Vertex " << i << ": " << std::endl;
-				std::cout << "  Index: " << vertexIndex << std::endl;
-				std::cout << "  Position: " << vertexBufferData[i].Position.x << ", "
-					<< vertexBufferData[i].Position.y << ", "
-					<< vertexBufferData[i].Position.z << std::endl;
-				std::cout << "  Color: " << vertexBufferData[i].Color.r << ", "
-					<< vertexBufferData[i].Color.g << ", "
-					<< vertexBufferData[i].Color.b << ", "
-					<< vertexBufferData[i].Color.a << std::endl;
-				std::cout << "  Normal: " << vertexBufferData[i].Normal.x << ", "
-					<< vertexBufferData[i].Normal.y << ", "
-					<< vertexBufferData[i].Normal.z << std::endl;
-				std::cout << "  TexCoord: " << vertexBufferData[i].TexCoord.x << ", "
-					<< vertexBufferData[i].TexCoord.y << std::endl;
-				std::cout << "  TexIndex: " << vertexBufferData[i].TexIndex << std::endl;
-				std::cout << "  TilingFactor: " << vertexBufferData[i].TilingFactor.x << ", "
-					<< vertexBufferData[i].TilingFactor.y << std::endl;
-				std::cout << "  EntityID: " << vertexBufferData[i].EntityID << std::endl;
-			}
-			
 		}
 
 		vertexBuffer->SetData(vertexBufferData.data(), vertexBufferData.size() * sizeof(Vertex));
@@ -217,7 +185,6 @@ namespace Engine
 		s_Data.Stats.VertexCount += vertexCount;
 		s_Data.Stats.IndicesCount += indicesCount;
 	}
-
 
 
 	Renderer::Statistics Renderer::GetStats()

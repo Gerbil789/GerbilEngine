@@ -51,8 +51,17 @@ namespace Engine
 			Timestep timestep = std::chrono::duration<float>(now - m_LastFrameTime).count();
 			m_LastFrameTime = now;
 
-			// avoid division by zero or unrealistic values
-			if (timestep > 0.0f) { fps = 1.0f / timestep; }
+			float currentFPS = (timestep > 0.0f) ? 1.0f / timestep : 0.0f;
+
+			// Update FPS history
+			m_FPSHistorySum -= m_FPSHistory[m_FPSHistoryIndex]; // Subtract the oldest FPS value
+			m_FPSHistory[m_FPSHistoryIndex] = currentFPS;        // Insert the new FPS value
+			m_FPSHistorySum += currentFPS;                       // Add the new FPS value to the sum
+
+			m_FPSHistoryIndex = (m_FPSHistoryIndex + 1) % FrameHistorySize; // Update the index
+
+			// Calculate the average FPS over the last 30 frames
+			m_AverageFPS = m_FPSHistorySum / FrameHistorySize;
 
 			if (!m_Minimized)
 			{
