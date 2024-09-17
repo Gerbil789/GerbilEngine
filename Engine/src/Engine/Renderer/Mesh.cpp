@@ -49,12 +49,19 @@ namespace Engine
             return nullptr;
         }
 
+        if (!fbxMesh->IsTriangleMesh()) 
+        {
+            ENGINE_LOG_ERROR("Mesh is not triangulated");
+            sdkManager->Destroy();
+            return nullptr;
+        }
+
         m_Mesh = CreateRef<Mesh>(filePath);
 
 		GetVertices(fbxMesh);
 		GetIndices(fbxMesh);
 		GetUVs(fbxMesh);
-		GetNormals(rootNode);
+		GetNormals(fbxMesh);
 
         sdkManager->Destroy();
         return m_Mesh;
@@ -75,114 +82,58 @@ namespace Engine
 
     void MeshFactory::GetIndices(FbxMesh* fbxMesh)
     {
-        int polygonCount = fbxMesh->GetPolygonCount();
-		m_Mesh->m_Indices.reserve(polygonCount * 3);
+        m_Mesh->m_PolygonCount = fbxMesh->GetPolygonCount();
 
-        for (int i = 0; i < polygonCount; ++i)
+		m_Mesh->m_Indices.reserve(m_Mesh->m_PolygonCount * 3);
+
+        for (int i = 0; i < m_Mesh->m_PolygonCount; ++i)
         {
-            int polygonSize = fbxMesh->GetPolygonSize(i);
-
-            // Triangulate the polygon if it has more than 3 vertices
-            if (polygonSize > 3)
+            for (int j = 0; j < 3; ++j)
             {
-                for (int j = 1; j < polygonSize - 1; ++j)
-                {
-                    // Add indices for the two triangles forming the polygon
-                    m_Mesh->m_Indices.push_back(fbxMesh->GetPolygonVertex(i, 0));
-                    m_Mesh->m_Indices.push_back(fbxMesh->GetPolygonVertex(i, j));
-                    m_Mesh->m_Indices.push_back(fbxMesh->GetPolygonVertex(i, j + 1));
-                }
-            }
-            else // Polygon is a triangle
-            {
-                for (int j = 0; j < polygonSize; ++j)
-                {
-                    m_Mesh->m_Indices.push_back(fbxMesh->GetPolygonVertex(i, j));
-                }
+                m_Mesh->m_Indices.push_back(fbxMesh->GetPolygonVertex(i, j));
             }
         }
     }
 
-    void MeshFactory::GetNormals(FbxNode* pNode)
+    void MeshFactory::GetNormals(FbxMesh* fbxMesh)
     {
-        if (!pNode) return;
-            
-        //get mesh
-        FbxMesh* lMesh = pNode->GetMesh();
-        if (lMesh)
-        {
-            //print mesh node name
-            FBXSDK_printf("current mesh node: %s\n", pNode->GetName());
+        if (!fbxMesh) return;
 
-            //get the normal element
-            FbxGeometryElementNormal* lNormalElement = lMesh->GetElementNormal();
-            if (lNormalElement)
+        FbxGeometryElementNormal* lNormalElement = fbxMesh->GetElementNormal();
+        if (lNormalElement)
+        {
+            if (lNormalElement->GetMappingMode() == FbxGeometryElement::eByControlPoint)
             {
-                //mapping mode is by control points. The mesh should be smooth and soft.
-                //we can get normals by retrieving each control point
-                if (lNormalElement->GetMappingMode() == FbxGeometryElement::eByControlPoint)
+                // Handle control point normals
+                for (int lVertexIndex = 0; lVertexIndex < fbxMesh->GetControlPointsCount(); lVertexIndex++)
                 {
-                    //Let's get normals of each vertex, since the mapping mode of normal element is by control point
-                    for (int lVertexIndex = 0; lVertexIndex < lMesh->GetControlPointsCount(); lVertexIndex++)
+                    int lNormalIndex = (lNormalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
+                        ? lVertexIndex
+                        : lNormalElement->GetIndexArray().GetAt(lVertexIndex);
+
+                    FbxVector4 lNormal = lNormalElement->GetDirectArray().GetAt(lNormalIndex);
+                    m_Mesh->m_Normals.push_back(glm::vec3((float)lNormal[0], (float)lNormal[1], (float)lNormal[2]));
+                }
+            }
+            else if (lNormalElement->GetMappingMode() == FbxGeometryElement::eByPolygonVertex)
+            {
+                // Handle polygon-vertex normals
+                int lIndexByPolygonVertex = 0;
+                for (int lPolygonIndex = 0; lPolygonIndex < fbxMesh->GetPolygonCount(); lPolygonIndex++)
+                {
+                    int lPolygonSize = fbxMesh->GetPolygonSize(lPolygonIndex);
+                    for (int i = 0; i < lPolygonSize; i++)
                     {
-                        int lNormalIndex = 0;
-                        //reference mode is direct, the normal index is same as vertex index.
-                        //get normals by the index of control vertex
-                        if (lNormalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
-                            lNormalIndex = lVertexIndex;
+                        int lNormalIndex = (lNormalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
+                            ? lIndexByPolygonVertex
+                            : lNormalElement->GetIndexArray().GetAt(lIndexByPolygonVertex);
 
-                        //reference mode is index-to-direct, get normals by the index-to-direct
-                        if (lNormalElement->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
-                            lNormalIndex = lNormalElement->GetIndexArray().GetAt(lVertexIndex);
-
-                        //Got normals of each vertex.
                         FbxVector4 lNormal = lNormalElement->GetDirectArray().GetAt(lNormalIndex);
-                        //FBXSDK_printf("normals for vertex[%d]: %f %f %f %f \n", lVertexIndex, lNormal[0], lNormal[1], lNormal[2], lNormal[3]);
-
                         m_Mesh->m_Normals.push_back(glm::vec3((float)lNormal[0], (float)lNormal[1], (float)lNormal[2]));
-                    }//end for lVertexIndex
-                }//end eByControlPoint
-                //mapping mode is by polygon-vertex.
-                //we can get normals by retrieving polygon-vertex.
-                else if (lNormalElement->GetMappingMode() == FbxGeometryElement::eByPolygonVertex)
-                {
-                    int lIndexByPolygonVertex = 0;
-                    //Let's get normals of each polygon, since the mapping mode of normal element is by polygon-vertex.
-                    for (int lPolygonIndex = 0; lPolygonIndex < lMesh->GetPolygonCount(); lPolygonIndex++)
-                    {
-                        //get polygon size, you know how many vertices in current polygon.
-                        int lPolygonSize = lMesh->GetPolygonSize(lPolygonIndex);
-                        //retrieve each vertex of current polygon.
-                        for (int i = 0; i < lPolygonSize; i++)
-                        {
-                            int lNormalIndex = 0;
-                            //reference mode is direct, the normal index is same as lIndexByPolygonVertex.
-                            if (lNormalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
-                                lNormalIndex = lIndexByPolygonVertex;
-
-                            //reference mode is index-to-direct, get normals by the index-to-direct
-                            if (lNormalElement->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
-                                lNormalIndex = lNormalElement->GetIndexArray().GetAt(lIndexByPolygonVertex);
-
-                            //Got normals of each polygon-vertex.
-                            FbxVector4 lNormal = lNormalElement->GetDirectArray().GetAt(lNormalIndex);
-                            //FBXSDK_printf("normals for polygon[%d]vertex[%d]: %f %f %f %f \n", lPolygonIndex, i, lNormal[0], lNormal[1], lNormal[2], lNormal[3]);
-
-                            m_Mesh->m_Normals.push_back(glm::vec3((float)lNormal[0], (float)lNormal[1], (float)lNormal[2]));
-                            lIndexByPolygonVertex++;
-                        }//end for i //lPolygonSize
-                    }//end for lPolygonIndex //PolygonCount
-
-                }//end eByPolygonVertex
-            }//end if lNormalElement
-
-        }//end if lMesh
-
-        //recursively traverse each node in the scene
-        int i, lCount = pNode->GetChildCount();
-        for (i = 0; i < lCount; i++)
-        {
-            GetNormals(pNode->GetChild(i));
+                        lIndexByPolygonVertex++;
+                    }
+                }
+            }
         }
     }
 

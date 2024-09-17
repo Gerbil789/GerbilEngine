@@ -13,6 +13,7 @@ namespace Engine
 		Mesh(const std::string& filePath) : Asset(filePath) {}
 
 		int GetVertexCount() const { return m_VertexCount; }
+		int GetPolygonCount() const { return m_PolygonCount; }
 		const std::vector<glm::vec3>& GetVertices() const { return m_Vertices; }
 		const std::vector< uint32_t>& GetIndices() const { return m_Indices; }
 		const std::vector<glm::vec3>& GetNormals() const { return m_Normals; }
@@ -21,6 +22,7 @@ namespace Engine
 		friend class MeshFactory;
 	private:
 		int m_VertexCount = 0;
+		int m_PolygonCount = 0;
 
 		std::vector<glm::vec3> m_Vertices;
 		std::vector<uint32_t> m_Indices;
@@ -39,7 +41,7 @@ namespace Engine
 
 		void GetVertices(FbxMesh* fbxMesh);
 		void GetIndices(FbxMesh* fbxMesh);
-		void GetNormals(FbxNode* pNode);
+		void GetNormals(FbxMesh* fbxMesh);
 		void GetUVs(FbxMesh* fbxMesh);
 	};
 }

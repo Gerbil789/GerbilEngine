@@ -66,6 +66,12 @@ namespace Engine
         ENGINE_LOG_INFO("Cube normals: {0}", cube->GetNormals().size());
         ENGINE_LOG_INFO("Cube UVs: {0}", cube->GetUVs().size());
 
+        Ref<Mesh> quad = AssetManager::GetAsset<Mesh>("assets/quad.fbx");
+        ENGINE_LOG_INFO("Quad vertices: {0}", quad->GetVertexCount());
+        ENGINE_LOG_INFO("Quad indices: {0}", quad->GetIndices().size());
+        ENGINE_LOG_INFO("Quad normals: {0}", quad->GetNormals().size());
+        ENGINE_LOG_INFO("Quad UVs: {0}", quad->GetUVs().size());
+
         //Ref<Mesh> skull = AssetManager::GetAsset<Mesh>("assets/skull.fbx");
 		//ENGINE_LOG_INFO("Skull vertices: {0}", skull->GetVertexCount());
         //ENGINE_LOG_INFO("Skull indices: {0}", skull->GetIndices().size());
@@ -93,7 +99,6 @@ namespace Engine
 		}
 
         //clear frame buffer
-        Renderer2D::ResetStats();
         m_EditorFrameBuffer->Bind();
         RenderCommand::Clear();
         m_EditorFrameBuffer->ClearAttachment(1, -1); //clear ID attachment

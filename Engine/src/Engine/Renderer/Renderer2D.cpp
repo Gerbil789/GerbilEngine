@@ -59,7 +59,7 @@ namespace Engine
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-		s_Data.QuadVertexArray.reset(VertexArray::Create());
+		s_Data.QuadVertexArray = VertexArray::Create();
 
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
 		BufferLayout layout = {
@@ -100,7 +100,6 @@ namespace Engine
 		Texture2DFactory factory;
 		s_Data.WhiteTexture = std::dynamic_pointer_cast<Texture2D>(factory.CreateTexture(1, 1, 0xffffffff));
 
-		
 		int32_t samplers[s_Data.MaxTextureSlots];
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
@@ -137,6 +136,7 @@ namespace Engine
 	void Renderer2D::BeginScene(const EditorCamera& camera)
 	{
 		ENGINE_PROFILE_FUNCTION();
+		Renderer2D::ResetStats();
 		s_Data.TextureShader->Bind();
 		s_Data.TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjection());
 		s_Data.TextureShader->SetFloat3("u_CameraPosition", camera.GetPosition());
@@ -201,12 +201,15 @@ namespace Engine
 			s_Data.TextureSlots[i]->Bind(i);
 		}
 
-		RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
+		if (s_Data.QuadIndexCount != 0) 
+		{
+			RenderCommand::DrawIndexed(s_Data.QuadIndexCount);
+			s_Data.Stats.DrawCalls++;
+		}
 
-		s_Data.Stats.DrawCalls++;
 	}
 
-	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID, bool selected)
+	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID)
 	{
 		ENGINE_PROFILE_FUNCTION();
 		//tmp

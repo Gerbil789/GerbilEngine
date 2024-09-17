@@ -20,7 +20,7 @@ namespace Engine
 		static void Flush();
 
 
-		static void DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID, bool selected = false);
+		static void DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID);
 
 
 		static void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);

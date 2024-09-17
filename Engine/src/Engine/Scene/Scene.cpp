@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/ScriptableEntity.h"
+#include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Core/Serializer.h"
@@ -222,16 +223,25 @@ namespace Engine
 
 	void Scene::OnUpdateEditor(Timestep ts, EditorCamera& camera)
 	{
-		Renderer2D::BeginScene(camera);
-
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent, EnablingComponent>);
+		Renderer::BeginScene(camera);
+		auto group = m_Registry.group<MeshRendererComponent>(entt::get<TransformComponent, EnablingComponent>);
 		for (auto entity : group)
 		{
 			if (!group.get<EnablingComponent>(entity).Enabled) { return; }
-			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+			auto [transform, mesh] = group.get<TransformComponent, MeshRendererComponent>(entity);
+			Renderer::DrawMesh(transform.GetTransform(), mesh.Mesh, mesh.Material, (int)entity);
+		}
+		Renderer::EndScene();
+
+
+		Renderer2D::BeginScene(camera);
+		auto group2D = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent, EnablingComponent>);
+		for (auto entity : group2D)
+		{
+			if (!group2D.get<EnablingComponent>(entity).Enabled) { return; }
+			auto [transform, sprite] = group2D.get<TransformComponent, SpriteRendererComponent>(entity);
 			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 		}
-
 		Renderer2D::EndScene();
 	}
 

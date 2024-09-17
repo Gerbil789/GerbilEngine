@@ -3,12 +3,16 @@
 #include "Engine/Renderer/RenderCommand.h"
 #include "Engine/Renderer/Shader.h"
 #include "Engine/Renderer/EditorCamera.h"
+#include "Engine/Renderer/Mesh.h"
+#include "Engine/Scene/Material.h"
 
 namespace Engine
 {
 	class Renderer
 	{
 	public:
+		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
+
 		static void Init();
 		static void Shutdown();
 
@@ -19,6 +23,18 @@ namespace Engine
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
 
-		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
+		static void DrawMesh(const glm::mat4& transform, Ref<Mesh> mesh, Ref<Material> material, int entityID);
+
+
+
+		struct Statistics
+		{
+			uint32_t DrawCalls = 0;
+			uint32_t VertexCount = 0;
+			uint32_t IndicesCount = 0;
+		};
+
+		static Statistics GetStats();
+		static void ResetStats();
 	};
 }
