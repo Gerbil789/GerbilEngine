@@ -2,11 +2,7 @@ workspace "GerbilEngine"
 	architecture "x64"
 	startproject "Editor"
 
-	configurations
-	{
-		"Debug",
-		"Release"
-	}
+	configurations { "Debug", "Release" }
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
@@ -19,18 +15,16 @@ Includedir["stb_image"] = "Engine/vendor/stb_image"
 Includedir["entt"] = "Engine/vendor/entt/include"
 Includedir["yaml_cpp"] = "Engine/vendor/yaml-cpp/include"
 Includedir["ImGuizmo"] = "Engine/vendor/ImGuizmo"
-Includedir["FBXSDK"] = "Engine/vendor/FBXSDK/2020.3.7/include"
-
-Libdir = {}
-Libdir["FBXSDK"] = "Engine/vendor/FBXSDK/2020.3.7/lib/x64"
+Includedir["assimp"] = "Engine/vendor/assimp/include"
 
 group "Dependencies"
 	include "Engine/vendor/GLFW"
 	include "Engine/vendor/Glad"
 	include "Engine/vendor/imgui"
 	include "Engine/vendor/yaml-cpp"
+	include "Engine/vendor/assimp"
+	include "Engine/vendor/assimp/contrib/zlib"
 group ""
-
 
 
 project "Engine"
@@ -56,7 +50,8 @@ project "Engine"
 		"%{prj.name}/vendor/glm/glm/**.inl",
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
-		"%{prj.name}/vendor/FBXSDK/2020.3.7/include/**.h"
+		"%{prj.name}/vendor/assimp/include/**.h",
+		"%{prj.name}/vendor/assimp/include/**.hpp"
 	}
 
 	defines
@@ -76,7 +71,7 @@ project "Engine"
 		"%{Includedir.entt}",
 		"%{Includedir.yaml_cpp}",
 		"%{Includedir.ImGuizmo}",
-		"%{Includedir.FBXSDK}"
+		"%{Includedir.assimp}"
 	}
 
 	links
@@ -85,7 +80,8 @@ project "Engine"
 		"Glad",
 		"ImGui",
 		"opengl32.lib",
-		"yaml-cpp"
+		"yaml-cpp",
+		"assimp",
 	}
 
 	filter "files:Engine/vendor/ImGuizmo/**.cpp"
@@ -135,16 +131,12 @@ project "Editor"
 		"Engine/vendor",
 		"%{Includedir.glm}",
 		"%{Includedir.entt}",
-		"%{Includedir.ImGuizmo}",
-		"%{Includedir.FBXSDK}"
+		"%{Includedir.ImGuizmo}"
 	}
 
 	links
 	{
-		"Engine",
-		"libfbxsdk-mt.lib",
-		"libxml2-mt.lib",
-		"zlib-mt.lib"
+		"Engine"
 	}
 
 	filter "system:windows"
@@ -160,16 +152,8 @@ project "Editor"
 		defines "ENGINE_DEBUG"
 		runtime "Debug"
 		symbols "on"
-		libdirs
-		{
-			"%{Libdir.FBXSDK}/debug"
-		}
 
 	filter "configurations:Release"
 		defines "ENGINE_RELEASE"
 		runtime "Release"
 		optimize "on"
-		libdirs
-		{
-			"%{Libdir.FBXSDK}/release"
-		}

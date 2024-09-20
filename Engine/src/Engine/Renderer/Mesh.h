@@ -2,7 +2,6 @@
 
 #include "Engine/Core/Asset.h"
 
-#include <fbxsdk.h>
 #include <glm/glm.hpp>
 
 namespace Engine
@@ -35,13 +34,5 @@ namespace Engine
 	public:
 		virtual Ref<Asset> Load(const std::string& filePath) override;
 		virtual Ref<Asset> Create(const std::string& filePath) { return nullptr; } // Not implemented, meshes are not created, only loaded
-
-	private:
-		Ref<Mesh> m_Mesh;
-
-		void GetVertices(FbxMesh* fbxMesh);
-		void GetIndices(FbxMesh* fbxMesh);
-		void GetNormals(FbxMesh* fbxMesh);
-		void GetUVs(FbxMesh* fbxMesh);
 	};
 }

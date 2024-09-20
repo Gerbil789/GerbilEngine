@@ -1,215 +1,89 @@
 #include "enginepch.h"
 #include "Engine/Renderer/Mesh.h"
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 namespace Engine
 {
 	Ref<Asset> MeshFactory::Load(const std::string& filePath)
 	{
-        // Initialize FBX SDK
-        FbxManager* sdkManager = FbxManager::Create();
-        FbxIOSettings* ios = FbxIOSettings::Create(sdkManager, IOSROOT);
-        sdkManager->SetIOSettings(ios);
+		Assimp::Importer importer;
 
-        FbxImporter* importer = FbxImporter::Create(sdkManager, "");
-        if (!importer->Initialize(filePath.c_str(), -1, sdkManager->GetIOSettings()))
+		const aiScene* scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+
+        // Check if the file was loaded successfully
+        if (!scene || !scene->mRootNode)
         {
-			ENGINE_LOG_ERROR("Failed to initialize FBX importer: {0}", importer->GetStatus().GetErrorString());
-            sdkManager->Destroy();
+            // Log the error
+            ENGINE_LOG_ERROR("Failed to load FBX file: " + filePath + " (" + importer.GetErrorString() + ")");
             return nullptr;
         }
 
-        FbxScene* scene = FbxScene::Create(sdkManager, "Scene");
-        importer->Import(scene);
-        importer->Destroy();
-
-        // Retrieve the mesh node
-        FbxNode* rootNode = scene->GetRootNode();
-        if (!rootNode)
+        // Assume we only want to process the first mesh
+        aiMesh* mesh = scene->mMeshes[0];
+        if (!mesh)
         {
-			ENGINE_LOG_ERROR("No root node found in FBX scene.");
-            sdkManager->Destroy();
+            ENGINE_LOG_ERROR("No meshes found in FBX file: " + filePath);
             return nullptr;
         }
 
-        FbxMesh* fbxMesh = nullptr;
-        for (int i = 0; i < rootNode->GetChildCount(); ++i)
+        // Create a new Mesh object
+        Ref<Mesh> newMesh = CreateRef<Mesh>(filePath);
+
+        // Process vertices
+        newMesh->m_VertexCount = mesh->mNumVertices;
+        newMesh->m_Vertices.reserve(newMesh->m_VertexCount);
+        for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
         {
-            FbxNode* node = rootNode->GetChild(i);
-            if (node->GetNodeAttribute() && node->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eMesh)
+            aiVector3D pos = mesh->mVertices[i];
+            newMesh->m_Vertices.emplace_back(pos.x, pos.y, pos.z);
+        }
+
+        // Process normals
+        newMesh->m_Normals.reserve(mesh->mNumVertices);
+        if (mesh->HasNormals())
+        {
+            for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
             {
-                fbxMesh = (FbxMesh*)node->GetNodeAttribute();
-                break;
+                aiVector3D normal = mesh->mNormals[i];
+                newMesh->m_Normals.emplace_back(normal.x, normal.y, normal.z);
             }
         }
 
-        if (!fbxMesh)
+        // Process UVs
+        newMesh->m_UVs.reserve(mesh->mNumVertices);
+        if (mesh->HasTextureCoords(0))
         {
-			ENGINE_LOG_ERROR("No mesh found in FBX scene.");
-            sdkManager->Destroy();
-            return nullptr;
+            for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
+            {
+                aiVector3D uv = mesh->mTextureCoords[0][i];
+                newMesh->m_UVs.emplace_back(uv.x, uv.y);
+            }
         }
 
-        if (!fbxMesh->IsTriangleMesh()) 
+        // Process indices
+        newMesh->m_Indices.reserve(mesh->mNumFaces * 3);
+        for (unsigned int i = 0; i < mesh->mNumFaces; ++i)
         {
-            ENGINE_LOG_ERROR("Mesh is not triangulated");
-            sdkManager->Destroy();
-            return nullptr;
+            const aiFace& face = mesh->mFaces[i];
+            if (face.mNumIndices == 3)
+            {
+                newMesh->m_Indices.push_back(face.mIndices[0]);
+                newMesh->m_Indices.push_back(face.mIndices[1]);
+                newMesh->m_Indices.push_back(face.mIndices[2]);
+            }
+            else
+            {
+                ENGINE_LOG_WARNING("Face with more than 3 indices detected, which is not handled.");
+            }
         }
 
-        m_Mesh = CreateRef<Mesh>(filePath);
+        // Set polygon count
+        newMesh->m_PolygonCount = mesh->mNumFaces;
 
-		GetVertices(fbxMesh);
-		GetIndices(fbxMesh);
-		GetUVs(fbxMesh);
-		GetNormals(fbxMesh);
-
-        sdkManager->Destroy();
-        return m_Mesh;
+        // Return the Mesh as an Asset
+        return newMesh;
 	}
-
-    void MeshFactory::GetVertices(FbxMesh* fbxMesh)
-    {
-        m_Mesh->m_VertexCount = fbxMesh->GetControlPointsCount();
-        m_Mesh->m_Vertices.reserve(m_Mesh->m_VertexCount);
-        FbxVector4* fbxVertices = fbxMesh->GetControlPoints();
-
-        for (int i = 0; i < m_Mesh->m_VertexCount; ++i)
-        {
-            FbxVector4 vertex = fbxVertices[i];
-            m_Mesh->m_Vertices.push_back(glm::vec3((float)vertex[0], (float)vertex[1], (float)vertex[2]));
-        }
-    }
-
-    void MeshFactory::GetIndices(FbxMesh* fbxMesh)
-    {
-        m_Mesh->m_PolygonCount = fbxMesh->GetPolygonCount();
-
-		m_Mesh->m_Indices.reserve(m_Mesh->m_PolygonCount * 3);
-
-        for (int i = 0; i < m_Mesh->m_PolygonCount; ++i)
-        {
-            for (int j = 0; j < 3; ++j)
-            {
-                m_Mesh->m_Indices.push_back(fbxMesh->GetPolygonVertex(i, j));
-            }
-        }
-    }
-
-    void MeshFactory::GetNormals(FbxMesh* fbxMesh)
-    {
-        if (!fbxMesh) return;
-
-        FbxGeometryElementNormal* lNormalElement = fbxMesh->GetElementNormal();
-        if (lNormalElement)
-        {
-            if (lNormalElement->GetMappingMode() == FbxGeometryElement::eByControlPoint)
-            {
-                // Handle control point normals
-                for (int lVertexIndex = 0; lVertexIndex < fbxMesh->GetControlPointsCount(); lVertexIndex++)
-                {
-                    int lNormalIndex = (lNormalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
-                        ? lVertexIndex
-                        : lNormalElement->GetIndexArray().GetAt(lVertexIndex);
-
-                    FbxVector4 lNormal = lNormalElement->GetDirectArray().GetAt(lNormalIndex);
-                    m_Mesh->m_Normals.push_back(glm::vec3((float)lNormal[0], (float)lNormal[1], (float)lNormal[2]));
-                }
-            }
-            else if (lNormalElement->GetMappingMode() == FbxGeometryElement::eByPolygonVertex)
-            {
-                // Handle polygon-vertex normals
-                int lIndexByPolygonVertex = 0;
-                for (int lPolygonIndex = 0; lPolygonIndex < fbxMesh->GetPolygonCount(); lPolygonIndex++)
-                {
-                    int lPolygonSize = fbxMesh->GetPolygonSize(lPolygonIndex);
-                    for (int i = 0; i < lPolygonSize; i++)
-                    {
-                        int lNormalIndex = (lNormalElement->GetReferenceMode() == FbxGeometryElement::eDirect)
-                            ? lIndexByPolygonVertex
-                            : lNormalElement->GetIndexArray().GetAt(lIndexByPolygonVertex);
-
-                        FbxVector4 lNormal = lNormalElement->GetDirectArray().GetAt(lNormalIndex);
-                        m_Mesh->m_Normals.push_back(glm::vec3((float)lNormal[0], (float)lNormal[1], (float)lNormal[2]));
-                        lIndexByPolygonVertex++;
-                    }
-                }
-            }
-        }
-    }
-
-    void MeshFactory::GetUVs(FbxMesh* fbxMesh)
-    {
-        FbxStringList lUVSetNameList;
-        fbxMesh->GetUVSetNames(lUVSetNameList);
-
-        //iterating over all uv sets
-        for (int lUVSetIndex = 0; lUVSetIndex < lUVSetNameList.GetCount(); lUVSetIndex++)
-        {
-            //get lUVSetIndex-th uv set
-            const char* lUVSetName = lUVSetNameList.GetStringAt(lUVSetIndex);
-            const FbxGeometryElementUV* lUVElement = fbxMesh->GetElementUV(lUVSetName);
-
-            if (!lUVElement)
-                continue;
-
-            // only support mapping mode eByPolygonVertex and eByControlPoint
-            if (lUVElement->GetMappingMode() != FbxGeometryElement::eByPolygonVertex &&
-                lUVElement->GetMappingMode() != FbxGeometryElement::eByControlPoint)
-                return;
-
-            //index array, where holds the index referenced to the uv data
-            const bool lUseIndex = lUVElement->GetReferenceMode() != FbxGeometryElement::eDirect;
-            const int lIndexCount = (lUseIndex) ? lUVElement->GetIndexArray().GetCount() : 0;
-
-            //iterating through the data by polygon
-            const int lPolyCount = fbxMesh->GetPolygonCount();
-
-            if (lUVElement->GetMappingMode() == FbxGeometryElement::eByControlPoint)
-            {
-                for (int lPolyIndex = 0; lPolyIndex < lPolyCount; ++lPolyIndex)
-                {
-                    // build the max index array that we need to pass into MakePoly
-                    const int lPolySize = fbxMesh->GetPolygonSize(lPolyIndex);
-                    for (int lVertIndex = 0; lVertIndex < lPolySize; ++lVertIndex)
-                    {
-                        FbxVector2 lUVValue;
-
-                        //get the index of the current vertex in control points array
-                        int lPolyVertIndex = fbxMesh->GetPolygonVertex(lPolyIndex, lVertIndex);
-
-                        //the UV index depends on the reference mode
-                        int lUVIndex = lUseIndex ? lUVElement->GetIndexArray().GetAt(lPolyVertIndex) : lPolyVertIndex;
-
-                        lUVValue = lUVElement->GetDirectArray().GetAt(lUVIndex);
-                        m_Mesh->m_UVs.push_back(glm::vec2((float)lUVValue[0], (float)lUVValue[1]));
-                    }
-                }
-            }
-            else if (lUVElement->GetMappingMode() == FbxGeometryElement::eByPolygonVertex)
-            {
-                int lPolyIndexCounter = 0;
-                for (int lPolyIndex = 0; lPolyIndex < lPolyCount; ++lPolyIndex)
-                {
-                    // build the max index array that we need to pass into MakePoly
-                    const int lPolySize = fbxMesh->GetPolygonSize(lPolyIndex);
-                    for (int lVertIndex = 0; lVertIndex < lPolySize; ++lVertIndex)
-                    {
-                        if (lPolyIndexCounter < lIndexCount)
-                        {
-                            FbxVector2 lUVValue;
-
-                            //the UV index depends on the reference mode
-                            int lUVIndex = lUseIndex ? lUVElement->GetIndexArray().GetAt(lPolyIndexCounter) : lPolyIndexCounter;
-
-                            lUVValue = lUVElement->GetDirectArray().GetAt(lUVIndex);
-
-                            m_Mesh->m_UVs.push_back(glm::vec2((float)lUVValue[0], (float)lUVValue[1]));
-
-                            lPolyIndexCounter++;
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
