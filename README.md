@@ -13,12 +13,10 @@ Game Engine hobby project
  - Visual Studio 2022
 
 #### Setup
-1. Clone the Project
+1. Clone the Project `git clone --recursive https://github.com/Gerbil789/GerbilEngine.git`
 2. Navigate to the Scripts Folder
 3. Generate project files by executing script
     - Windows: `Win-GenerateProjects.bat`
     - Linux: `Not supported`
 4. Build **`Editor`** project
-5. Set **`Editor`** as startup project (if not set by default)
 6. Run
-
