@@ -3,6 +3,6 @@
 
 namespace Engine
 {
-	std::unordered_map<std::string, Ref<IAssetFactory>> AssetManager::factories;
-	std::unordered_map<std::string, Ref<Asset>> AssetManager::assets;
+	std::unordered_map<std::filesystem::path, Ref<IAssetFactory>> AssetManager::factories;
+	std::unordered_map<std::filesystem::path, Ref<Asset>> AssetManager::assets;
 }

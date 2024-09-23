@@ -122,16 +122,25 @@ namespace Engine
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						const wchar_t* path = (const wchar_t*)payload->Data;
-						std::filesystem::path texturePath = path;
-						if (texturePath.extension() == ".material")
-						{
-							component.Material = AssetManager::GetAsset<Material>(texturePath.string());
+						if (payload->DataSize == 0) 
+						{ 
+							ENGINE_LOG_WARNING("Failed to load material! (DataSize == 0)");
 						}
 						else 
 						{
-							ENGINE_LOG_WARNING("Failed to load material!");
+							const wchar_t* droppedPath = (const wchar_t*)payload->Data;
+							std::filesystem::path path(droppedPath);
+							if (path.extension() == ".material")
+							{
+								component.Material = AssetManager::GetAsset<Material>(path);
+							}
+							else
+							{
+								ENGINE_LOG_WARNING("Failed to load material!");
+							}
 						}
+
+						
 					}
 					ImGui::EndDragDropTarget();
 				}
@@ -143,11 +152,11 @@ namespace Engine
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						const wchar_t* path = (const wchar_t*)payload->Data;
-						std::filesystem::path texturePath = path;
-						if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
+						const wchar_t* droppedPath = (const wchar_t*)payload->Data;
+						std::filesystem::path path(droppedPath);
+						if (path.extension() == ".png" || path.extension() == ".jpg")
 						{
-							component.Texture = AssetManager::GetAsset<Texture2D>(texturePath.string());
+							component.Texture = AssetManager::GetAsset<Texture2D>(path);
 						}
 						else {
 							ENGINE_LOG_WARNING("Failed to load texture!");
@@ -278,11 +287,11 @@ namespace Engine
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						const wchar_t* path = (const wchar_t*)payload->Data;
-						std::filesystem::path meshPath = path;
-						if (meshPath.extension() == ".fbx")
+						const wchar_t* droppedPath = (const wchar_t*)payload->Data;
+						std::filesystem::path path(droppedPath);
+						if (path.extension() == ".fbx")
 						{
-							component.Mesh = AssetManager::GetAsset<Mesh>(meshPath.string());
+							component.Mesh = AssetManager::GetAsset<Mesh>(path);
 						}
 						else
 						{
@@ -297,11 +306,11 @@ namespace Engine
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						const wchar_t* path = (const wchar_t*)payload->Data;
-						std::filesystem::path texturePath = path;
-						if (texturePath.extension() == ".material")
+						const wchar_t* droppedPath = (const wchar_t*)payload->Data;
+						std::filesystem::path path(droppedPath);
+						if (path.extension() == ".material")
 						{
-							component.Material = AssetManager::GetAsset<Material>(texturePath.string());
+							component.Material = AssetManager::GetAsset<Material>(path);
 						}
 						else
 						{

@@ -339,11 +339,11 @@ namespace Engine
 			{
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
-					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path texturePath = path;
-					if (texturePath.extension() == ".png" || texturePath.extension() == ".jpg")
+					const wchar_t* droppedPath = (const wchar_t*)payload->Data;
+					std::filesystem::path path(droppedPath);
+					if (path.extension() == ".png" || path.extension() == ".jpg")
 					{
-						texture = AssetManager::GetAsset<Texture2D>(texturePath.string());
+						texture = AssetManager::GetAsset<Texture2D>(path);
 						valueChanged = true;
 					}
 				}

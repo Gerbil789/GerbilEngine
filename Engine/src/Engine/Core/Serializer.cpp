@@ -14,13 +14,13 @@ namespace Engine
 		out << YAML::BeginMap;
 		out << YAML::Key << "Shader" << YAML::Value << material->shaderName;
 		out << YAML::Key << "SurfaceType" << YAML::Value << (int)material->surfaceType;
-		out << YAML::Key << "ColorTexture" << YAML::Value << ((material->colorTexture) ? material->colorTexture->GetFilePath() : "null");
+		out << YAML::Key << "ColorTexture" << YAML::Value << ((material->colorTexture) ? material->colorTexture->GetFilePath().string() : "null");
 		out << YAML::Key << "Color" << YAML::Value << YAML::Flow << YAML::BeginSeq << material->color.r << material->color.g << material->color.b << material->color.a << YAML::EndSeq;
-		out << YAML::Key << "MetallicTexture" << YAML::Value << ((material->metallicTexture) ? material->metallicTexture->GetFilePath() : "null");
+		out << YAML::Key << "MetallicTexture" << YAML::Value << ((material->metallicTexture) ? material->metallicTexture->GetFilePath().string() : "null");
 		out << YAML::Key << "Metallic" << YAML::Value << material->metallic;
-		out << YAML::Key << "RoughnessTexture" << YAML::Value << ((material->roughnessTexture) ? material->roughnessTexture->GetFilePath() : "null");
+		out << YAML::Key << "RoughnessTexture" << YAML::Value << ((material->roughnessTexture) ? material->roughnessTexture->GetFilePath().string() : "null");
 		out << YAML::Key << "Roughness" << YAML::Value << material->roughness;
-		out << YAML::Key << "NormalTexture" << YAML::Value << ((material->normalTexture) ? material->normalTexture->GetFilePath() : "null");
+		out << YAML::Key << "NormalTexture" << YAML::Value << ((material->normalTexture) ? material->normalTexture->GetFilePath().string() : "null");
 		out << YAML::Key << "NormalStrength" << YAML::Value << material->normalStrength;
 		out << YAML::Key << "Tiling" << YAML::Value << YAML::Flow << YAML::BeginSeq << material->tiling.x << material->tiling.y << YAML::EndSeq;
 		out << YAML::Key << "Offset" << YAML::Value << YAML::Flow << YAML::BeginSeq << material->offset.x << material->offset.y << YAML::EndSeq;
@@ -33,15 +33,15 @@ namespace Engine
 
 	bool Serializer::Deserialize(Ref<Material>& material)
 	{
-		std::string filePath = material->GetFilePath();
-		std::ifstream stream(filePath);
+		std::filesystem::path path = material->GetFilePath();
+		std::ifstream stream(path);
 		if (!stream.is_open())
 		{
-			ENGINE_LOG_ERROR("Failed to open file '{0}'", filePath);
+			ENGINE_LOG_ERROR("Failed to open file '{0}'", path);
 			return false;
 		}
 
-		YAML::Node data = YAML::LoadFile(filePath);
+		YAML::Node data = YAML::LoadFile(path.string());
 		if (!data["Shader"]) return false; //TODO: is this necessary?
 
 
@@ -113,8 +113,8 @@ namespace Engine
 			out << YAML::Key << "SpriteRendererComponent";
 			out << YAML::BeginMap;
 			auto& src = entity.GetComponent<SpriteRendererComponent>();
-			out << YAML::Key << "Material" << YAML::Value << (src.Material ? src.Material->GetFilePath() : "null");
-			out << YAML::Key << "Texture" << YAML::Value << (src.Texture ? src.Texture->GetFilePath() : "null");
+			out << YAML::Key << "Material" << YAML::Value << (src.Material ? src.Material->GetFilePath().string() : "null");
+			out << YAML::Key << "Texture" << YAML::Value << (src.Texture ? src.Texture->GetFilePath().string() : "null");
 			out << YAML::Key << "Color" << YAML::Flow << YAML::BeginSeq << src.Color.r << src.Color.g << src.Color.b << src.Color.a << YAML::EndSeq;
 			out << YAML::Key << "TilingFactor" << YAML::Flow << YAML::BeginSeq << src.TilingFactor.x << src.TilingFactor.y << YAML::EndSeq;
 			out << YAML::EndMap;
@@ -142,8 +142,8 @@ namespace Engine
 			out << YAML::Key << "MeshRendererComponent";
 			out << YAML::BeginMap;
 			auto& mrc = entity.GetComponent<MeshRendererComponent>();
-			out << YAML::Key << "Mesh" << YAML::Value << (mrc.Mesh ? mrc.Mesh->GetFilePath() : "null");
-			out << YAML::Key << "Material" << YAML::Value << (mrc.Material ? mrc.Material->GetFilePath() : "null");
+			out << YAML::Key << "Mesh" << YAML::Value << (mrc.Mesh ? mrc.Mesh->GetFilePath().string() : "null");
+			out << YAML::Key << "Material" << YAML::Value << (mrc.Material ? mrc.Material->GetFilePath().string() : "null");
 			out << YAML::EndMap;
 		}
 
@@ -156,7 +156,7 @@ namespace Engine
 	{
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "Scene" << YAML::Value << scene->GetName();
+		out << YAML::Key << "Scene" << YAML::Value << scene->GetFilePath().filename().string();
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 		std::vector<Entity> entites = scene->GetEntities();
 		for(const Entity& entity : entites)
@@ -175,7 +175,7 @@ namespace Engine
 
 	bool Serializer::Deserialize(Ref<Scene>& scene)
 	{
-		std::string filePath = scene->GetFilePath();
+		std::string filePath = scene->GetFilePath().filename().string();
 		std::ifstream stream(filePath);
 		if (!stream.is_open())
 		{

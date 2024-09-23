@@ -12,14 +12,14 @@ namespace Engine
 	class MaterialFactory : public IAssetFactory
 	{
 	public:
-		Ref<Asset> Load(const std::string& filePath) override;
-		Ref<Asset> Create(const std::string& filePath) override;
+		Ref<Asset> Load(const std::filesystem::path& path) override;
+		Ref<Asset> Create(const std::filesystem::path& path) override;
 	};
 
 	class Material : public Asset
 	{
 	public:
-		Material(const std::string& filePath) : Asset(filePath) {}
+		Material(const std::filesystem::path& path) : Asset(path) {}
 
 		std::string shaderName = "Texture"; //TODO: make shader selectable when better shader system is implemented
 

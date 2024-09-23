@@ -132,6 +132,11 @@ namespace Engine
 	{
 		ENGINE_PROFILE_FUNCTION();
 
+		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
+		{
+			s_Data.TextureSlots[i]->Bind(i);
+		}
+
 	}
 
 	void Renderer::Flush()
@@ -167,13 +172,38 @@ namespace Engine
 
 		std::vector<Vertex> vertexBufferData(vertexCount);
 
+
+		float textureIndex = 0.0f;
+
+		if (material != nullptr) 
+		{
+			auto colorTexture = material->colorTexture ? material->colorTexture : s_Data.WhiteTexture;
+
+			for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+			{
+				if (*s_Data.TextureSlots[i].get() == *colorTexture.get())
+				{
+					textureIndex = (float)i;
+					break;
+				}
+			}
+
+			if (textureIndex == 0.0f)
+			{
+				textureIndex = (float)s_Data.TextureSlotIndex;
+				s_Data.TextureSlots[s_Data.TextureSlotIndex] = colorTexture;
+				s_Data.TextureSlotIndex++;
+			}
+		}
+
+
 		for (uint32_t i = 0; i < vertexCount; i++)
 		{
 			vertexBufferData[i].Position = transform * glm::vec4(vertices[i], 1.0f);
 			vertexBufferData[i].Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 			vertexBufferData[i].Normal = glm::normalize(glm::mat3(glm::transpose(glm::inverse(transform))) * normals[i]);
 			vertexBufferData[i].TexCoord = uvs[i];
-			vertexBufferData[i].TexIndex = 0.0f;
+			vertexBufferData[i].TexIndex = textureIndex;
 			vertexBufferData[i].TilingFactor = glm::vec2(1.0f, 1.0f);
 			vertexBufferData[i].EntityID = entityID;
 		}

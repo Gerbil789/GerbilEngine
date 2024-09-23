@@ -7,17 +7,17 @@
 
 namespace Engine
 {
-	Ref<Asset> MeshFactory::Load(const std::string& filePath)
+	Ref<Asset> MeshFactory::Load(const std::filesystem::path& path)
 	{
 		Assimp::Importer importer;
 
-		const aiScene* scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+		const aiScene* scene = importer.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
 
         // Check if the file was loaded successfully
         if (!scene || !scene->mRootNode)
         {
             // Log the error
-            ENGINE_LOG_ERROR("Failed to load FBX file: " + filePath + " (" + importer.GetErrorString() + ")");
+            //ENGINE_LOG_ERROR("Failed to load FBX file: " + path.string() + " (" + importer.GetErrorString() + ")");
             return nullptr;
         }
 
@@ -25,12 +25,12 @@ namespace Engine
         aiMesh* mesh = scene->mMeshes[0];
         if (!mesh)
         {
-            ENGINE_LOG_ERROR("No meshes found in FBX file: " + filePath);
+            //ENGINE_LOG_ERROR("No meshes found in FBX file: " + path.string());
             return nullptr;
         }
 
         // Create a new Mesh object
-        Ref<Mesh> newMesh = CreateRef<Mesh>(filePath);
+        Ref<Mesh> newMesh = CreateRef<Mesh>(path);
 
         // Process vertices
         newMesh->m_VertexCount = mesh->mNumVertices;

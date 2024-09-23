@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/string_cast.hpp"
+#include <filesystem>
+#include <string>
 
 // This ignores all warnings raised inside External headers
 #pragma warning(push, 0)
@@ -26,6 +28,14 @@ namespace Engine
 		static std::shared_ptr<spdlog::logger> s_ClientLogger;
 	};
 }
+
+template <>
+struct fmt::formatter<std::filesystem::path> : fmt::formatter<std::string> {
+	template <typename FormatContext>
+	auto format(const std::filesystem::path& path, FormatContext& ctx) {
+		return fmt::formatter<std::string>::format(path.string(), ctx);
+	}
+};
 
 #define ENGINE_LOG_TRACE(...) ::Engine::Log::GetCoreLogger()->trace(__VA_ARGS__)
 #define ENGINE_LOG_INFO(...)  ::Engine::Log::GetCoreLogger()->info(__VA_ARGS__)

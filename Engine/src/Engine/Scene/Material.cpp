@@ -5,9 +5,9 @@
 
 namespace Engine
 {
-	Ref<Asset> MaterialFactory::Load(const std::string& filePath)
+	Ref<Asset> MaterialFactory::Load(const std::filesystem::path& path)
 	{
-		Ref<Material> material = CreateRef<Material>(filePath);
+		Ref<Material> material = CreateRef<Material>(path);
 		if (!Serializer::Deserialize(material))
 		{
 			ENGINE_LOG_ERROR("Failed to deserialize material");
@@ -15,9 +15,9 @@ namespace Engine
 		return material;
 	}
 
-	Ref<Asset> MaterialFactory::Create(const std::string& filePath)
+	Ref<Asset> MaterialFactory::Create(const std::filesystem::path& path)
 	{
-		Ref<Material> material = CreateRef<Material>(filePath);
+		Ref<Material> material = CreateRef<Material>(path);
 		return material;
 	}
 }

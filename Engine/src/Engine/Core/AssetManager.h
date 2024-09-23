@@ -16,52 +16,52 @@ namespace Engine
 
         // use this to get asset, if it is not loaded it will be loaded
         template <typename T>
-        static Ref<T> GetAsset(const std::string& filePath) {
+        static Ref<T> GetAsset(const std::filesystem::path& path) {
             // Check if asset is already loaded
-            auto it_a = assets.find(filePath);
+            auto it_a = assets.find(path);
             if (it_a != assets.end())
             {
                 return std::dynamic_pointer_cast<T>(it_a->second);
             }
-            return LoadAsset<T>(filePath);
+            return LoadAsset<T>(path);
         }
 
 
         // use this only if you want to explicitly pre-load the asset (make sure it is not already loaded)
         template <typename T>
-        static Ref<T> LoadAsset(const std::string& filePath) {
+        static Ref<T> LoadAsset(const std::filesystem::path& path) {
             // Check if factory exists
             auto it_f = factories.find(typeid(T).name());
             if (it_f == factories.end()) 
             {
-                ENGINE_LOG_ERROR("Factory for asset '{0}' not found", filePath);
+                ENGINE_LOG_ERROR("Factory for asset '{0}' not found", path.string());
                 return nullptr;
             }
 
             auto factory = std::dynamic_pointer_cast<IAssetFactory>(it_f->second);
-            auto asset = factory->Load(filePath);
+            auto asset = factory->Load(path);
 
             if (asset) 
             {
-                assets[filePath] = asset;
-                ENGINE_LOG_TRACE("Loaded asset '{0}'", filePath);
+                assets[path] = asset;
+                ENGINE_LOG_TRACE("Loaded asset '{0}'", path);
                 return std::dynamic_pointer_cast<T>(asset);
             }
 
-            ENGINE_LOG_ERROR("Failed to load asset '{0}'", filePath);
+            ENGINE_LOG_ERROR("Failed to load asset '{0}'", path.string());
             return nullptr;
         }
 
 
         // use this only if you want to create new asset
         template <typename T>
-        static Ref<T> CreateAsset(const std::string& filePath) 
+        static Ref<T> CreateAsset(const std::filesystem::path& path) 
         {
             // Check if asset is already loaded
-			auto it_a = assets.find(filePath);
+			auto it_a = assets.find(path);
 			if (it_a != assets.end())
 			{
-                ENGINE_LOG_WARNING("Asset '{0}' already exists", filePath);
+                ENGINE_LOG_WARNING("Asset '{0}' already exists", path.string());
                 return std::dynamic_pointer_cast<T>(it_a->second);
 			}
 
@@ -69,24 +69,25 @@ namespace Engine
 			auto it_f = factories.find(typeid(T).name());
 			if (it_f == factories.end()) 
             {
-				ENGINE_LOG_ERROR("Factory for asset '{0}' not found", filePath);
+				ENGINE_LOG_ERROR("Factory for asset '{0}' not found", path.string());
 				return nullptr;
 			}
 
 			auto factory = std::dynamic_pointer_cast<IAssetFactory>(it_f->second);
-			auto asset = factory->Create(filePath);
+			auto asset = factory->Create(path);
 
 			if (asset) 
             {
-				assets[filePath] = asset;
-                ENGINE_LOG_TRACE("Created new asset '{0}'", filePath);
+				assets[path] = asset;
+                ENGINE_LOG_TRACE("Created new asset '{0}'", path.string());
 				return std::dynamic_pointer_cast<T>(asset);
 			}
 
-			ENGINE_LOG_ERROR("Failed to create asset '{0}'", filePath);
+			ENGINE_LOG_ERROR("Failed to create asset '{0}'", path.string());
 			return nullptr;	
 		}
 
+        //TODO: test if its wokrs correctly when loading/unloding scenes
         // use this to unload asset, for example when loading a new scene
         static void AssetManager::UnloadUnusedAssets() {
             for (auto it = assets.begin(); it != assets.end(); ) {
@@ -101,7 +102,7 @@ namespace Engine
         }
 
     private:
-        static std::unordered_map<std::string, Ref<IAssetFactory>> factories;
-        static std::unordered_map<std::string, Ref<Asset>> assets;
+        static std::unordered_map<std::filesystem::path, Ref<IAssetFactory>> factories;
+        static std::unordered_map<std::filesystem::path, Ref<Asset>> assets;
     };
 }

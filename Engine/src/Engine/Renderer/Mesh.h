@@ -9,7 +9,7 @@ namespace Engine
 	class Mesh : public Asset
 	{
 	public:
-		Mesh(const std::string& filePath) : Asset(filePath) {}
+		Mesh(const std::filesystem::path& path) : Asset(path) {}
 
 		int GetVertexCount() const { return m_VertexCount; }
 		int GetPolygonCount() const { return m_PolygonCount; }
@@ -32,7 +32,7 @@ namespace Engine
 	class MeshFactory : public IAssetFactory
 	{
 	public:
-		virtual Ref<Asset> Load(const std::string& filePath) override;
-		virtual Ref<Asset> Create(const std::string& filePath) { return nullptr; } // Not implemented, meshes are not created, only loaded
+		virtual Ref<Asset> Load(const std::filesystem::path& path) override;
+		virtual Ref<Asset> Create(const std::filesystem::path& path) { return nullptr; } // Not implemented, meshes are not created, only loaded
 	};
 }

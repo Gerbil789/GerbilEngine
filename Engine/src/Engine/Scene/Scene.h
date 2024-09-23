@@ -14,8 +14,8 @@ namespace Engine
 	class SceneFactory : public IAssetFactory
 	{
 	public:
-		virtual Ref<Asset> Load(const std::string& filePath) override;
-		virtual Ref<Asset> Create(const std::string& filePath) override;
+		virtual Ref<Asset> Load(const std::filesystem::path& path) override;
+		virtual Ref<Asset> Create(const std::filesystem::path& path) override;
 	};
 
 	class Scene : public Asset
@@ -24,7 +24,7 @@ namespace Engine
 		enum class SceneState { Editor = 0, Runtime = 1 };
 
 	public:
-		Scene(const std::string& filePath) : Asset(filePath) {}
+		Scene(const std::filesystem::path& path) : Asset(path) {}
 		~Scene();
 
 		static Ref<Scene> Copy(const Ref<Scene>& other);

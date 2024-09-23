@@ -8,8 +8,8 @@ namespace Engine
 	class Texture2DFactory : public IAssetFactory
 	{
 	public:
-		virtual Ref<Asset> Load(const std::string& filePath) override;
-		virtual Ref<Asset> Create(const std::string& filePath) override;
+		virtual Ref<Asset> Load(const std::filesystem::path& path) override;
+		virtual Ref<Asset> Create(const std::filesystem::path& path) override;
 
 		Ref<Asset> CreateTexture(uint32_t width, uint32_t height, uint32_t data);
 	};
@@ -33,6 +33,6 @@ namespace Engine
 		uint32_t m_Width, m_Height;
 		uint32_t m_RendererID;
 
-		Texture2D(const std::string& filePath) : Asset(filePath) {}
+		Texture2D(const std::filesystem::path& path) : Asset(path) {}
 	};
 }

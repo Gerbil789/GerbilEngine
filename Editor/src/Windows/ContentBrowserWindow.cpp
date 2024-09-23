@@ -154,8 +154,9 @@ namespace Engine
                     if (ImGui::BeginDragDropSource())
                     {
                         std::filesystem::path relativePath(m_CurrentDirectory / item_data->Label);
-                        const wchar_t* itemPath = relativePath.c_str();
-                        ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
+                        const std::wstring& itemPath = relativePath.wstring();
+                        ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath.c_str(), (itemPath.size() + 1) * sizeof(wchar_t));
+                        ImGui::Text("Dragging %s", relativePath.string().c_str());
                         ImGui::EndDragDropSource();
                     }
 

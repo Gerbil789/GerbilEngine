@@ -1,6 +1,5 @@
 #pragma once
-
-#include <string>
+#include <filesystem>
 
 namespace Engine 
 {
@@ -8,29 +7,17 @@ namespace Engine
     {
     public:
         virtual ~Asset() = default;
-        const std::string& GetFilePath() const { return filePath; }
-        const std::string& GetName() const { return name; }
-        void SetFilePath(const std::string& filePath) { this->filePath = filePath;  SetName(filePath); }
-       
+		const std::filesystem::path& GetFilePath() const { return path; }
+		void SetFilePath(const std::filesystem::path& path) { this->path = path; }
     protected:
-        Asset(const std::string& filePath) : filePath(filePath) { SetName(filePath); }
-        std::string filePath;
-        std::string name;
-
-    private:
-        void SetName(const std::string& filePath) 
-        {
-            //TODO: Implement a better way to get the name, use some std function or something...
-            size_t lastSlash = filePath.find_last_of("/\\");
-            size_t lastDot = filePath.find_last_of(".");
-            name = filePath.substr(lastSlash + 1, lastDot - lastSlash - 1);
-        }
+		Asset(const std::filesystem::path& path) { SetFilePath(path); }
+		std::filesystem::path path;
     };
 
     class IAssetFactory {
     public:
         virtual ~IAssetFactory() = default;
-        virtual Ref<Asset> Load(const std::string& filePath) = 0;
-        virtual Ref<Asset> Create(const std::string& filePath) = 0;
+        virtual Ref<Asset> Load(const std::filesystem::path& filePath) = 0;
+        virtual Ref<Asset> Create(const std::filesystem::path& filePath) = 0;
     };
 }

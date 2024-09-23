@@ -17,7 +17,7 @@
 
 #include "Engine/Renderer/Mesh.h" //temp
 
-//TODO: clean up this file
+//TODO: clean up this file, move some parts to other files, this is a core file, it should be clean and easy to read
 
 namespace Engine
 {
@@ -60,17 +60,17 @@ namespace Engine
 
 
         // ---- testing -----
-        Ref<Mesh> quad = AssetManager::GetAsset<Mesh>("assets/quad.fbx");
-        ENGINE_LOG_INFO("Quad vertices: {0}", quad->GetVertexCount());
-        ENGINE_LOG_INFO("Quad indices: {0}", quad->GetIndices().size());
-        ENGINE_LOG_INFO("Quad normals: {0}", quad->GetNormals().size());
-        ENGINE_LOG_INFO("Quad UVs: {0}", quad->GetUVs().size());
+        //Ref<Mesh> quad = AssetManager::GetAsset<Mesh>("assets/quad.fbx");
+        //ENGINE_LOG_INFO("Quad vertices: {0}", quad->GetVertexCount());
+        //ENGINE_LOG_INFO("Quad indices: {0}", quad->GetIndices().size());
+        //ENGINE_LOG_INFO("Quad normals: {0}", quad->GetNormals().size());
+        //ENGINE_LOG_INFO("Quad UVs: {0}", quad->GetUVs().size());
 
-	/*	Ref<Mesh> cube = AssetManager::GetAsset<Mesh>("assets/cube.fbx");
-		ENGINE_LOG_INFO("Cube vertices: {0}", cube->GetVertexCount());
-        ENGINE_LOG_INFO("Cube indices: {0}", cube->GetIndices().size());
-        ENGINE_LOG_INFO("Cube normals: {0}", cube->GetNormals().size());
-        ENGINE_LOG_INFO("Cube UVs: {0}", cube->GetUVs().size());*/
+		//Ref<Mesh> cube = AssetManager::GetAsset<Mesh>("assets/cube.fbx");
+		//ENGINE_LOG_INFO("Cube vertices: {0}", cube->GetVertexCount());
+        //ENGINE_LOG_INFO("Cube indices: {0}", cube->GetIndices().size());
+        //ENGINE_LOG_INFO("Cube normals: {0}", cube->GetNormals().size());
+        //ENGINE_LOG_INFO("Cube UVs: {0}", cube->GetUVs().size());
 
         //Ref<Mesh> skull = AssetManager::GetAsset<Mesh>("assets/skull.fbx");
 		//ENGINE_LOG_INFO("Skull vertices: {0}", skull->GetVertexCount());
@@ -219,19 +219,16 @@ namespace Engine
         {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
             {
-                const wchar_t* path = (const wchar_t*)payload->Data;
-                //conver to string
-                std::wstring ws(path);
-                std::string str(ws.begin(), ws.end());
+                const wchar_t* droppedPath = (const wchar_t*)payload->Data;
+                std::filesystem::path path(droppedPath);
 
-
-                ENGINE_LOG_INFO("Dropped file: {0}", str);
+                ENGINE_LOG_INFO("Dropped file: {0}", path);
 
                 //open scene
-                if (str.find(".scene") != std::string::npos)
-                {
-                    SceneManager::LoadScene(str);
-                }
+				if (path.extension() == ".scene")
+				{
+					SceneManager::LoadScene(path);
+				}
             }
             ImGui::EndDragDropTarget();
         }

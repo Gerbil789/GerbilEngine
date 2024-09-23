@@ -10,6 +10,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <filesystem>
 
 #include "Engine/Core/Log.h"
 #include "Engine/Debug/Instrumentor.h"

@@ -18,9 +18,9 @@ namespace Engine
 		~SceneManager() = default;
 
 		static Ref<Scene> GetCurrentScene() { return s_CurrentScene; }
-		static void CreateScene(const std::string& filePath);
+		static void CreateScene(const std::filesystem::path& path);
 		static void LoadScene();
-		static void LoadScene(const std::string& filePath);
+		static void LoadScene(const std::filesystem::path& path);
 		static void SaveScene();
 		static void SaveSceneAs();
 

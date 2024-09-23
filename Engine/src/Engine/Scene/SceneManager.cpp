@@ -9,9 +9,9 @@ namespace Engine
 	Ref<Scene> SceneManager::s_CurrentScene = nullptr;
 	std::vector<ISceneObserver*> SceneManager::s_Observers;
 
-	void SceneManager::CreateScene(const std::string& filePath)
+	void SceneManager::CreateScene(const std::filesystem::path& path)
 	{
-		s_CurrentScene = AssetManager::CreateAsset<Scene>(filePath);
+		s_CurrentScene = AssetManager::CreateAsset<Scene>(path);
 		NotifyObservers();
 	}
 
@@ -22,9 +22,9 @@ namespace Engine
 		LoadScene(filePath);
 	}
 
-	void SceneManager::LoadScene(const std::string& filePath)
+	void SceneManager::LoadScene(const std::filesystem::path& path)
 	{
-		Ref<Scene> scene = AssetManager::GetAsset<Scene>(filePath);
+		Ref<Scene> scene = AssetManager::GetAsset<Scene>(path);
 		s_CurrentScene->OnDestroy();
 		s_CurrentScene = scene;
 		AssetManager::UnloadUnusedAssets();

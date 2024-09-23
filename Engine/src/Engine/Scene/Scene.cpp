@@ -10,19 +10,19 @@
 
 namespace Engine
 {
-	Ref<Asset> SceneFactory::Load(const std::string& filePath)
+	Ref<Asset> SceneFactory::Load(const std::filesystem::path& path)
 	{
-		Ref<Scene> scene = CreateRef<Scene>(filePath);
+		Ref<Scene> scene = CreateRef<Scene>(path);
 		if (!Serializer::Deserialize(scene))
 		{
-			ENGINE_LOG_ERROR("Failed to load scene from file {0}", filePath);
+			ENGINE_LOG_ERROR("Failed to load scene from file {0}", path.string());
 		}
 		return scene;
 	}
 
-	Ref<Asset> SceneFactory::Create(const std::string& filePath)
+	Ref<Asset> SceneFactory::Create(const std::filesystem::path& path)
 	{
-		return CreateRef<Scene>(filePath);
+		return CreateRef<Scene>(path);
 	}
 
 	Scene::~Scene()
