@@ -3,6 +3,7 @@
 #include <Engine.h>
 #include "Engine/Renderer/EditorCamera.h"
 #include "Engine/Scene/SceneManager.h"
+#include "Engine/Events/WindowEvent.h"
 #include "Windows/EditorWindowBase.h"
 
 namespace Engine 
@@ -21,6 +22,7 @@ namespace Engine
 	private:
 		bool OnKeyPressed(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+		bool OnWindowOpen(WindowOpenEvent& e);
 
 		void OnScenePlay();
 		void OnSceneStop();

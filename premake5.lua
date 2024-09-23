@@ -131,7 +131,8 @@ project "Editor"
 		"Engine/vendor",
 		"%{Includedir.glm}",
 		"%{Includedir.entt}",
-		"%{Includedir.ImGuizmo}"
+		"%{Includedir.ImGuizmo}",
+		"%{Includedir.assimp}"
 	}
 
 	links

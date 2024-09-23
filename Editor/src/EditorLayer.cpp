@@ -10,6 +10,7 @@
 #include "Windows/MaterialWindow.h"
 #include "Windows/SettingsWindow.h"
 #include "Windows/StatisticsWindow.h"
+#include "Windows/MeshImportWindow.h"
 
 #include "imgui/imgui.h"
 #include "ImGuizmo/ImGuizmo.h"
@@ -57,6 +58,7 @@ namespace Engine
 		m_EditorWindows.push_back(CreateRef<MaterialWindow>());
 		m_EditorWindows.push_back(CreateRef<SettingsWindow>());
 		m_EditorWindows.push_back(CreateRef<StatisticsWindow>());
+		//m_EditorWindows.push_back(CreateRef<MeshImportWindow>());
 
 
         // ---- testing -----
@@ -72,11 +74,13 @@ namespace Engine
         //ENGINE_LOG_INFO("Cube normals: {0}", cube->GetNormals().size());
         //ENGINE_LOG_INFO("Cube UVs: {0}", cube->GetUVs().size());
 
-        //Ref<Mesh> skull = AssetManager::GetAsset<Mesh>("assets/skull.fbx");
-		//ENGINE_LOG_INFO("Skull vertices: {0}", skull->GetVertexCount());
-        //ENGINE_LOG_INFO("Skull indices: {0}", skull->GetIndices().size());
-        //ENGINE_LOG_INFO("Skull normals: {0}", skull->GetNormals().size());
-        //ENGINE_LOG_INFO("Skull UVs: {0}", skull->GetUVs().size());
+        Ref<Mesh> kat = AssetManager::GetAsset<Mesh>("assets/katarina.fbx");
+		ENGINE_LOG_INFO("Skull vertices: {0}", kat->GetVertexCount());
+        ENGINE_LOG_INFO("Skull indices: {0}", kat->GetIndices().size());
+        ENGINE_LOG_INFO("Skull normals: {0}", kat->GetNormals().size());
+        ENGINE_LOG_INFO("Skull UVs: {0}", kat->GetUVs().size());
+
+
     }
 
     void EditorLayer::OnDetach()
@@ -155,6 +159,7 @@ namespace Engine
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<KeyPressedEvent>(ENGINE_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
         dispatcher.Dispatch<MouseButtonPressedEvent>(ENGINE_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
+        dispatcher.Dispatch<WindowOpenEvent>(ENGINE_BIND_EVENT_FN(EditorLayer::OnWindowOpen));
     }
 
     void EditorLayer::OnImGuiRender()
@@ -393,6 +398,19 @@ namespace Engine
                 m_CurrentScene->SelectEntity(m_HoveredEntity);
 			}
 		}
+        return false;
+    }
+
+    bool EditorLayer::OnWindowOpen(WindowOpenEvent& e)
+    {
+		std::string windowName = e.GetWindowName();
+
+        if (windowName == "ImportMeshWindow") 
+        {
+			MeshImportWindow window = MeshImportWindow();
+			window.SetScene(e.GetData<void>());
+        }
+
         return false;
     }
 

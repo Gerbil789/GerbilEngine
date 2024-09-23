@@ -91,7 +91,7 @@ namespace Engine
 		s_Data.TextureShader->SetFloat3("u_CameraPosition", camera.GetPosition());
 
 
-		Ref<Scene> scene = SceneManager::GetCurrentScene(); //TODO: use observer pattern
+		Ref<Scene> scene = SceneManager::GetCurrentScene(); //TODO: use observer pattern, don't call every frame
 		std::vector<Entity> lights = scene->GetLightEntities(); //TODO: filter by enabled
 
 		s_Data.TextureShader->SetInt("u_NumLights", lights.size());
@@ -202,7 +202,7 @@ namespace Engine
 			vertexBufferData[i].Position = transform * glm::vec4(vertices[i], 1.0f);
 			vertexBufferData[i].Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 			vertexBufferData[i].Normal = glm::normalize(glm::mat3(glm::transpose(glm::inverse(transform))) * normals[i]);
-			vertexBufferData[i].TexCoord = uvs[i];
+			vertexBufferData[i].TexCoord = uvs.size() > 0 ? uvs[i] : glm::vec2(0.0f, 0.0f);
 			vertexBufferData[i].TexIndex = textureIndex;
 			vertexBufferData[i].TilingFactor = glm::vec2(1.0f, 1.0f);
 			vertexBufferData[i].EntityID = entityID;

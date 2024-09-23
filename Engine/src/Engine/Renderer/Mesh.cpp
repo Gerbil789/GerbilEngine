@@ -1,5 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Renderer/Mesh.h"
+#include "Engine/Events/WindowEvent.h"
+#include "Engine/Core/Application.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -13,11 +15,13 @@ namespace Engine
 
 		const aiScene* scene = importer.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
 
-        // Check if the file was loaded successfully
+        //WindowOpenEvent windowOpenEvent("ImportMeshWindow", (void*)scene);
+		//Application::Get().OnEvent(windowOpenEvent);
+
+
         if (!scene || !scene->mRootNode)
         {
-            // Log the error
-            //ENGINE_LOG_ERROR("Failed to load FBX file: " + path.string() + " (" + importer.GetErrorString() + ")");
+            ENGINE_LOG_ERROR("Failed to load FBX file: " + path.string() + " (" + importer.GetErrorString() + ")");
             return nullptr;
         }
 

@@ -28,6 +28,7 @@ namespace Engine
 
 	void InspectorWindow::OnImGuiRender()
 	{
+		
 		ImGui::Begin("Inspector");
 		if (!m_Scene) 
 		{
