@@ -32,7 +32,7 @@ namespace Engine
 	class MeshFactory : public IAssetFactory
 	{
 	public:
-		virtual Ref<Asset> Load(const std::filesystem::path& path) override;
-		virtual Ref<Asset> Create(const std::filesystem::path& path) { return nullptr; } // Not implemented, meshes are not created, only loaded
+		virtual Ref<Asset> Load(const std::filesystem::path& path, const std::any& data) override;
+		virtual Ref<Asset> Create(const std::filesystem::path& path, const std::any& data) { return nullptr; } // Not implemented, meshes are not created, only loaded
 	};
 }

@@ -74,13 +74,11 @@ namespace Engine
         //ENGINE_LOG_INFO("Cube normals: {0}", cube->GetNormals().size());
         //ENGINE_LOG_INFO("Cube UVs: {0}", cube->GetUVs().size());
 
-        Ref<Mesh> kat = AssetManager::GetAsset<Mesh>("assets/katarina.fbx");
-		ENGINE_LOG_INFO("Skull vertices: {0}", kat->GetVertexCount());
-        ENGINE_LOG_INFO("Skull indices: {0}", kat->GetIndices().size());
-        ENGINE_LOG_INFO("Skull normals: {0}", kat->GetNormals().size());
-        ENGINE_LOG_INFO("Skull UVs: {0}", kat->GetUVs().size());
-
-
+        //Ref<Mesh> kat = AssetManager::GetAsset<Mesh>("assets/katarina.fbx");
+		//ENGINE_LOG_INFO("Skull vertices: {0}", kat->GetVertexCount());
+        //ENGINE_LOG_INFO("Skull indices: {0}", kat->GetIndices().size());
+        //ENGINE_LOG_INFO("Skull normals: {0}", kat->GetNormals().size());
+        //ENGINE_LOG_INFO("Skull UVs: {0}", kat->GetUVs().size());
     }
 
     void EditorLayer::OnDetach()
@@ -227,7 +225,7 @@ namespace Engine
                 const wchar_t* droppedPath = (const wchar_t*)payload->Data;
                 std::filesystem::path path(droppedPath);
 
-                ENGINE_LOG_INFO("Dropped file: {0}", path);
+                LOG_INFO("Dropped file: {0}", path);
 
                 //open scene
 				if (path.extension() == ".scene")

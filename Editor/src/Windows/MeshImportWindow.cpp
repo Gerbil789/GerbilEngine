@@ -17,7 +17,7 @@ namespace Engine
 		if (!m_IsVisible) { return; }
 		if (!m_Scene) 
 		{ 
-			ENGINE_LOG_ERROR("No scene to import");
+			LOG_ERROR("No scene to import");
 			return; 
 		}
 

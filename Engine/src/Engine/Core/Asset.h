@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem>
+#include <any>
 
 namespace Engine 
 {
@@ -17,7 +18,7 @@ namespace Engine
     class IAssetFactory {
     public:
         virtual ~IAssetFactory() = default;
-        virtual Ref<Asset> Load(const std::filesystem::path& filePath) = 0;
-        virtual Ref<Asset> Create(const std::filesystem::path& filePath) = 0;
+        virtual Ref<Asset> Load(const std::filesystem::path& path, const std::any& data = std::any()) = 0;
+        virtual Ref<Asset> Create(const std::filesystem::path& path, const std::any& data = std::any()) = 0;
     };
 }

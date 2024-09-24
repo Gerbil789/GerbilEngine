@@ -1,16 +1,20 @@
 #pragma once
 
-#include <string>
+#include "Engine/Core/Asset.h"
 
 namespace Engine 
 {
-	class Shader 
+	enum ShaderSettings {
+		LIGHTING = 1 << 0,
+		POST_PROCESS = 1 << 1,
+		SHADOWS = 1 << 2,
+	};
+
+
+	class Shader : public Asset
 	{
 	public:
-		virtual ~Shader() = default;
-		virtual std::string GetName() const = 0;
-		static Ref<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
-		static Ref<Shader> Create(const std::string& filepath);
+		Shader(const std::filesystem::path& path) : Asset(path) {}
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -23,18 +27,11 @@ namespace Engine
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;
 	};
 
-	class ShaderLibrary
+	class ShaderFactory : public IAssetFactory
 	{
 	public:
-		void Add(const std::string& name, Ref<Shader> shader);
-		void Add(Ref<Shader> shader);
-		Ref<Shader> Load(const std::string& filepath);
-		Ref<Shader> Load(const std::string& name, const std::string& filepath);
+		virtual Ref<Asset> Load(const std::filesystem::path& path, const std::any& data) override;
+		virtual Ref<Asset> Create(const std::filesystem::path& path, const std::any& data) { return nullptr; }
 
-		Ref<Shader> Get(const std::string& name);
-
-		bool Exists(const std::string& name) const;
-	private:
-		std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 	};
 }

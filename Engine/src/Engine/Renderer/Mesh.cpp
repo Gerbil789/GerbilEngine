@@ -9,7 +9,7 @@
 
 namespace Engine
 {
-	Ref<Asset> MeshFactory::Load(const std::filesystem::path& path)
+	Ref<Asset> MeshFactory::Load(const std::filesystem::path& path, const std::any& data)
 	{
 		Assimp::Importer importer;
 
@@ -21,7 +21,7 @@ namespace Engine
 
         if (!scene || !scene->mRootNode)
         {
-            ENGINE_LOG_ERROR("Failed to load FBX file: " + path.string() + " (" + importer.GetErrorString() + ")");
+            LOG_ERROR("Failed to load FBX file: " + path.string() + " (" + importer.GetErrorString() + ")");
             return nullptr;
         }
 
@@ -80,7 +80,7 @@ namespace Engine
             }
             else
             {
-                ENGINE_LOG_WARNING("Face with more than 3 indices detected, which is not handled.");
+                LOG_WARNING("Face with more than 3 indices detected, which is not handled.");
             }
         }
 

@@ -59,7 +59,7 @@ namespace Engine
 		{
 			if (HasComponent<T>() )
 			{
-				ENGINE_LOG_WARNING("Entity already has component!");
+				LOG_WARNING("Entity already has component!");
 				return GetComponent<T>();
 			}
 			

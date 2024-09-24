@@ -5,17 +5,17 @@
 
 namespace Engine
 {
-	Ref<Asset> MaterialFactory::Load(const std::filesystem::path& path)
+	Ref<Asset> MaterialFactory::Load(const std::filesystem::path& path, const std::any& data)
 	{
 		Ref<Material> material = CreateRef<Material>(path);
 		if (!Serializer::Deserialize(material))
 		{
-			ENGINE_LOG_ERROR("Failed to deserialize material");
+			LOG_ERROR("Failed to deserialize material");
 		}
 		return material;
 	}
 
-	Ref<Asset> MaterialFactory::Create(const std::filesystem::path& path)
+	Ref<Asset> MaterialFactory::Create(const std::filesystem::path& path, const std::any& data)
 	{
 		Ref<Material> material = CreateRef<Material>(path);
 		return material;

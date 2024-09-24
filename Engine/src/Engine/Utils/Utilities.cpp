@@ -3,7 +3,7 @@
 
 namespace Engine
 {
-	//TODO: i dont like this...
+	//TODO: i dont like this... delete it after content browser naming/renaming is done
 	std::string Utilities::EnsureFileNameUniqueness(const std::string& filename, const std::string& path)
 	{
 		std::string filepath = path + "/" + filename;

@@ -7,6 +7,7 @@
 #include "Engine/Scene/Material.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Renderer/Mesh.h"
+#include "Engine/Renderer/Shader.h"
 
 namespace Engine
 {
@@ -29,6 +30,7 @@ namespace Engine
 		AssetManager::RegisterFactory<Material>(std::make_unique<MaterialFactory>());
 		AssetManager::RegisterFactory<Scene>(std::make_unique<SceneFactory>());
 		AssetManager::RegisterFactory<Mesh>(std::make_unique<MeshFactory>());
+		AssetManager::RegisterFactory<Shader>(std::make_unique<ShaderFactory>());
 
 		RenderCommand::Init();
 		Renderer::Init();
@@ -136,7 +138,7 @@ namespace Engine
 	void Application::Close()
 	{
 		m_Running = false;
-		ENGINE_LOG_INFO("Application Closed");
+		LOG_INFO("Application Closed");
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)

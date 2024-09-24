@@ -6,12 +6,12 @@
 
 namespace Engine
 {
-	Ref<Asset> Texture2DFactory::Load(const std::filesystem::path& path)
+	Ref<Asset> Texture2DFactory::Load(const std::filesystem::path& path, const std::any& data)
 	{
 		return Create(path);
 	}
 
-	Ref<Asset> Texture2DFactory::Create(const std::filesystem::path& path)
+	Ref<Asset> Texture2DFactory::Create(const std::filesystem::path& path, const std::any& data)
 	{
 		switch (Renderer::GetAPI())
 		{

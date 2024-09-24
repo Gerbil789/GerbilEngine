@@ -38,7 +38,7 @@ namespace Engine
 		}
 		else
 		{
-			ENGINE_LOG_WARNING("Layer not found in LayerStack!");
+			LOG_WARNING("Layer not found in LayerStack!");
 		}
 	}
 
@@ -52,7 +52,7 @@ namespace Engine
 		}
 		else
 		{
-			ENGINE_LOG_WARNING("Overlay not found in LayerStack!");
+			LOG_WARNING("Overlay not found in LayerStack!");
 		}
 	}
 }

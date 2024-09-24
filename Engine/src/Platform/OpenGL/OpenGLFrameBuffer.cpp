@@ -75,7 +75,7 @@ namespace Engine
 		case FrameBufferTextureFormat::RED_INTEGER:
 			return GL_RED_INTEGER;
 		default:
-			ENGINE_LOG_ERROR("Unknown Texture Format!");
+			LOG_ERROR("Unknown Texture Format!");
 			return 0;
 		}
 	}
@@ -123,7 +123,7 @@ namespace Engine
 	{
 		if (width == 0 || height == 0 || width > s_MaxFramebufferSize || height > s_MaxFramebufferSize)
 		{
-			ENGINE_LOG_WARNING("Attempted to resize framebuffer to {0}, {1}", width, height);
+			LOG_WARNING("Attempted to resize framebuffer to {0}, {1}", width, height);
 			return;
 		}
 
@@ -183,7 +183,7 @@ namespace Engine
 					}
 					default:
 					{
-						ENGINE_LOG_ERROR("Unknown Texture Format!");
+						LOG_ERROR("Unknown Texture Format!");
 						break;
 					}
 				}
@@ -205,7 +205,7 @@ namespace Engine
 				}
 				default:
 				{
-					ENGINE_LOG_ERROR("Unknown Texture Format!");
+					LOG_ERROR("Unknown Texture Format!");
 					break;
 				}
 			}

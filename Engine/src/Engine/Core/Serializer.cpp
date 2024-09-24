@@ -37,7 +37,7 @@ namespace Engine
 		std::ifstream stream(path);
 		if (!stream.is_open())
 		{
-			ENGINE_LOG_ERROR("Failed to open file '{0}'", path);
+			LOG_ERROR("Failed to open file '{0}'", path);
 			return false;
 		}
 
@@ -179,7 +179,7 @@ namespace Engine
 		std::ifstream stream(filePath);
 		if (!stream.is_open())
 		{
-			ENGINE_LOG_ERROR("Failed to open file '{0}'", filePath);
+			LOG_ERROR("Failed to open file '{0}'", filePath);
 			return false;
 		}
 
@@ -190,17 +190,17 @@ namespace Engine
 		}
 		catch (YAML::ParserException e)
 		{
-			ENGINE_LOG_ERROR("Failed to load .scene file '{0}'\n{1}", filePath, e.what());
+			LOG_ERROR("Failed to load .scene file '{0}'\n{1}", filePath, e.what());
 			return false;
 		}
 		if (!data["Scene"]) return false;
 
 		std::string sceneName = data["Scene"].as<std::string>();
-		ENGINE_LOG_TRACE("Deserializing scene '{0}'", sceneName);
+		LOG_TRACE("Deserializing scene '{0}'", sceneName);
 
 		auto entities = data["Entities"];
 		if (!entities) {
-			ENGINE_LOG_WARNING("No entities found in scene file");
+			LOG_WARNING("No entities found in scene file");
 			return true;
 		}
 
@@ -208,7 +208,7 @@ namespace Engine
 		{
 			uint64_t uuid = entity["Entity"].as<uint64_t>();
 			std::string name = entity["Name"].as<std::string>();
-			ENGINE_LOG_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
+			LOG_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
 			Entity deserializedEntity = scene->CreateEntity(uuid, name);
 

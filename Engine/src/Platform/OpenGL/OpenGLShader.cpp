@@ -1,5 +1,6 @@
 #include "enginepch.h"
 #include "OpenGLShader.h"
+#include "Engine/Utils/File.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
@@ -12,41 +13,28 @@ namespace Engine
 		if (type == "vertex")return GL_VERTEX_SHADER;
 		if (type == "fragment" || type == "pixel") return GL_FRAGMENT_SHADER;
 
+
 		ASSERT(false, "Unknown shader type!");
 		return 0;
 	}
 
 
-	OpenGLShader::OpenGLShader(const std::string& filepath)
+	OpenGLShader::OpenGLShader(const std::filesystem::path& path, const ShaderSettings& settings) : Shader(path)
 	{
 		ENGINE_PROFILE_FUNCTION();
-		std::string source = ReadFile(filepath);
-		auto shaderSources = PreProcess(source);
-		Compile(shaderSources);
 
-		// Extract name from filepath
-		auto lastSlash = filepath.find_last_of("/\\");
-		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-		auto lastDot = filepath.rfind('.');
-		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
-		m_Name = filepath.substr(lastSlash, count);
+		auto source = ReadFile(path.string());
+		if (!source) { return; }
+		Compile(PreProcess(*source));
 	}
 
-
-	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc) : m_Name(name)
-	{
-		std::unordered_map<GLenum, std::string> shaderSources;
-		shaderSources[GL_VERTEX_SHADER] = vertexSrc;
-		shaderSources[GL_FRAGMENT_SHADER] = fragmentSrc;
-		Compile(shaderSources);
-	}
-
-
-	std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source)
+	std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(std::string& source)
 	{
 		ENGINE_PROFILE_FUNCTION();
-		std::unordered_map<GLenum, std::string> shaderSources;
 
+		IncludeLibs(source);
+
+		std::unordered_map<GLenum, std::string> shaderSources;
 		const char* typeToken = "#type";
 		size_t typeTokenLength = strlen(typeToken);
 		size_t pos = source.find(typeToken, 0); // Start of shader type declaration line
@@ -67,6 +55,21 @@ namespace Engine
 		}
 
 		return shaderSources;
+	}
+
+	void OpenGLShader::IncludeLibs(std::string& source)
+	{
+		ENGINE_PROFILE_FUNCTION();
+		size_t pos = source.find("#include");
+		while (pos != std::string::npos)
+		{
+			size_t start = source.find("\"", pos);
+			size_t end = source.find("\"", start + 1);
+			std::string include = source.substr(start + 1, end - start - 1);
+			std::string includeSource = *ReadFile("resources/shaders/" + include);
+			source.replace(pos, end - pos + 1, includeSource);
+			pos = source.find("#include");
+		}
 	}
 
 	void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources)
@@ -100,7 +103,7 @@ namespace Engine
 
 				glDeleteShader(shader);
 
-				ENGINE_LOG_ERROR("{0}", infoLog.data());
+				LOG_ERROR("{0}", infoLog.data());
 				ASSERT(false, "Shader compilation failure!");
 				break;
 			}
@@ -126,7 +129,7 @@ namespace Engine
 			for (auto id : glShaderIDs)
 				glDeleteShader(id);
 
-			ENGINE_LOG_ERROR("{0}", infoLog.data());
+			LOG_ERROR("{0}", infoLog.data());
 			ASSERT(false, "Shader link failure!");
 			return;
 		}
@@ -177,32 +180,6 @@ namespace Engine
 	{
 		UploadUniformMat4f(name, value);
 	}
-
-
-	std::string OpenGLShader::ReadFile(const std::string& filepath)
-	{
-		ENGINE_PROFILE_FUNCTION();
-		std::string result;
-
-		std::ifstream in(filepath, std::ios::in | std::ios::binary);
-
-		if (!in)
-		{
-			ENGINE_LOG_ERROR("Could not open file '{0}'", filepath);
-			return "";
-		}
-
-		in.seekg(0, std::ios::end);
-		size_t size = in.tellg();
-		result.resize(size);
-		in.seekg(0, std::ios::beg);
-		in.read(&result[0], size);
-
-		in.close();
-
-		return result;
-	}
-
 
 	void OpenGLShader::Bind() const
 	{

@@ -12,8 +12,8 @@ namespace Engine
 	class MaterialFactory : public IAssetFactory
 	{
 	public:
-		Ref<Asset> Load(const std::filesystem::path& path) override;
-		Ref<Asset> Create(const std::filesystem::path& path) override;
+		Ref<Asset> Load(const std::filesystem::path& path, const std::any& data = std::any()) override;
+		Ref<Asset> Create(const std::filesystem::path& path, const std::any& data = std::any()) override;
 	};
 
 	class Material : public Asset

@@ -18,7 +18,7 @@ namespace Engine
 	void SceneManager::LoadScene()
 	{
 		std::string filePath = FileDialogs::OpenFile("Scene (*.scene)\0*.scene\0");
-		if (filePath.empty()) { ENGINE_LOG_ERROR("Failed to open file {0}", filePath); return; }
+		if (filePath.empty()) { LOG_ERROR("Failed to open file {0}", filePath); return; }
 		LoadScene(filePath);
 	}
 
@@ -33,10 +33,10 @@ namespace Engine
 
 	void SceneManager::SaveScene()
 	{
-		if(s_CurrentScene == nullptr) { ENGINE_LOG_ERROR("Saving scene failed. Current scene is null"); return; }
+		if(s_CurrentScene == nullptr) { LOG_ERROR("Saving scene failed. Current scene is null"); return; }
 		if (s_CurrentScene->GetFilePath().empty()) { SaveSceneAs(); return; }
 		Serializer::Serialize(s_CurrentScene);
-		ENGINE_LOG_INFO("Scene saved to file {0}", s_CurrentScene->GetFilePath());
+		LOG_INFO("Scene saved to file {0}", s_CurrentScene->GetFilePath());
 	}
 
 	void SceneManager::SaveSceneAs()
@@ -46,7 +46,7 @@ namespace Engine
 		{
 			s_CurrentScene->SetFilePath(path);
 			Serializer::Serialize(s_CurrentScene);
-			ENGINE_LOG_INFO("Save as {0}", path);
+			LOG_INFO("Save as {0}", path);
 		}
 	}
 

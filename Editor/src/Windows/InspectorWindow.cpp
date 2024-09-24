@@ -125,7 +125,7 @@ namespace Engine
 					{
 						if (payload->DataSize == 0) 
 						{ 
-							ENGINE_LOG_WARNING("Failed to load material! (DataSize == 0)");
+							LOG_WARNING("Failed to load material! (DataSize == 0)");
 						}
 						else 
 						{
@@ -137,7 +137,7 @@ namespace Engine
 							}
 							else
 							{
-								ENGINE_LOG_WARNING("Failed to load material!");
+								LOG_WARNING("Failed to load material!");
 							}
 						}
 
@@ -160,7 +160,7 @@ namespace Engine
 							component.Texture = AssetManager::GetAsset<Texture2D>(path);
 						}
 						else {
-							ENGINE_LOG_WARNING("Failed to load texture!");
+							LOG_WARNING("Failed to load texture!");
 						}
 					}
 					ImGui::EndDragDropTarget();
@@ -296,7 +296,7 @@ namespace Engine
 						}
 						else
 						{
-							ENGINE_LOG_WARNING("Failed to load mesh!");
+							LOG_WARNING("Failed to load mesh!");
 						}
 					}
 					ImGui::EndDragDropTarget();
@@ -315,7 +315,7 @@ namespace Engine
 						}
 						else
 						{
-							ENGINE_LOG_WARNING("Failed to load material!");
+							LOG_WARNING("Failed to load material!");
 						}
 					}
 					ImGui::EndDragDropTarget();

@@ -17,11 +17,11 @@ namespace Engine
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		ASSERT(status, "Failed to initialize Glad!");
 
-		ENGINE_LOG_INFO("--- OpenGL Info ---");
-		ENGINE_LOG_INFO(" Vendor:\t {0}", (const char*)glGetString(GL_VENDOR));
-		ENGINE_LOG_INFO(" Renderer:\t {0}", (const char*)glGetString(GL_RENDERER));
-		ENGINE_LOG_INFO(" Version:\t {0}", (const char*)glGetString(GL_VERSION));
-		ENGINE_LOG_INFO("-------------------");
+		LOG_INFO("--- OpenGL Info ---");
+		LOG_INFO(" Vendor:\t {0}", (const char*)glGetString(GL_VENDOR));
+		LOG_INFO(" Renderer:\t {0}", (const char*)glGetString(GL_RENDERER));
+		LOG_INFO(" Version:\t {0}", (const char*)glGetString(GL_VERSION));
+		LOG_INFO("-------------------");
 	}
 
 	void OpenGLContext::SwapBuffers()

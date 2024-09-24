@@ -95,7 +95,7 @@ namespace Engine
 				case ShaderDataType::Mat3:
 				case ShaderDataType::Mat4:
 				{
-					ENGINE_LOG_ERROR("OpenGLVertexArray::AddVertexBuffer (Mat3, Mat4) Not implemented.");
+					LOG_ERROR("OpenGLVertexArray::AddVertexBuffer (Mat3, Mat4) Not implemented.");
 				}
 			}
 		}

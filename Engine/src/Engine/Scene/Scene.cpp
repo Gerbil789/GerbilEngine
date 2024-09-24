@@ -10,17 +10,17 @@
 
 namespace Engine
 {
-	Ref<Asset> SceneFactory::Load(const std::filesystem::path& path)
+	Ref<Asset> SceneFactory::Load(const std::filesystem::path& path, const std::any& data)
 	{
 		Ref<Scene> scene = CreateRef<Scene>(path);
 		if (!Serializer::Deserialize(scene))
 		{
-			ENGINE_LOG_ERROR("Failed to load scene from file {0}", path.string());
+			LOG_ERROR("Failed to load scene from file {0}", path.string());
 		}
 		return scene;
 	}
 
-	Ref<Asset> SceneFactory::Create(const std::filesystem::path& path)
+	Ref<Asset> SceneFactory::Create(const std::filesystem::path& path, const std::any& data)
 	{
 		return CreateRef<Scene>(path);
 	}
@@ -28,7 +28,7 @@ namespace Engine
 	Scene::~Scene()
 	{
 		auto view = m_Registry.view<IDComponent>();
-		ENGINE_LOG_INFO("Destroying scene with {0} entities", view.size());
+		LOG_INFO("Destroying scene with {0} entities", view.size());
 	}
 
 	template<typename Component>
@@ -159,7 +159,7 @@ namespace Engine
 
 	void Scene::OnNextFrame()
 	{
-		ENGINE_LOG_WARNING("OnNextFrame not implemented yet!");
+		LOG_WARNING("OnNextFrame not implemented yet!");
 	}
 
 

@@ -5,6 +5,9 @@
 #include "Engine/Core/Serializer.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Utils/Utilities.h"
+#include "Engine/Core/Application.h"
+
+#include <GLFW/glfw3.h>
 
 
 namespace Engine 
@@ -19,6 +22,21 @@ namespace Engine
         m_FileIcon = AssetManager::GetAsset<Texture2D>("resources/icons/file.png");
         m_ImageIcon = AssetManager::GetAsset<Texture2D>("resources/icons/image.png");
         m_SceneIcon = AssetManager::GetAsset<Texture2D>("resources/icons/landscape.png");
+
+		glfwSetDropCallback((GLFWwindow*)Application::Get().GetWindow().GetNativeWindow(), [](GLFWwindow* window, int count, const char* paths[]) {
+			for (int i = 0; i < count; i++)
+			{
+				std::filesystem::path path = paths[i];
+				if (std::filesystem::is_directory(path))
+				{
+					LOG_INFO("Dropped directory: {0}", path.string());
+				}
+				else
+				{
+					LOG_INFO("Dropped file: {0}", path.string());
+				}
+			}
+			});
 
         Reload();
 	}
@@ -158,6 +176,16 @@ namespace Engine
                         ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath.c_str(), (itemPath.size() + 1) * sizeof(wchar_t));
                         ImGui::Text("Dragging %s", relativePath.string().c_str());
                         ImGui::EndDragDropSource();
+                    }
+
+                    // Check for dropped files
+                    if (ImGui::BeginDragDropTarget()) {
+                        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM")) {
+                            // Handle the dropped file
+                            const wchar_t* droppedFilePath = static_cast<const wchar_t*>(payload->Data);
+                            //LoadFile(droppedFilePath); // Implement LoadFile to handle the dropped file
+                        }
+                        ImGui::EndDragDropTarget();
                     }
 
                     if (!item_is_visible)
@@ -399,7 +427,7 @@ namespace Engine
                 auto item = std::find_if(Items.begin(), Items.end(), [id](const ContentBrowserItem& item) { return item.ID == id; });
                 if (item == Items.end())
 				{
-                    ENGINE_LOG_WARNING("Item not found in the items list");
+                    LOG_WARNING("Item not found in the items list");
                     return;
 				}
 

@@ -129,6 +129,7 @@ project "Editor"
 		"Engine/vendor/spdlog/include",
 		"Engine/src",
 		"Engine/vendor",
+		"%{Includedir.GLFW}",
 		"%{Includedir.glm}",
 		"%{Includedir.entt}",
 		"%{Includedir.ImGuizmo}",
