@@ -1,0 +1,12 @@
+Shader: Texture
+SurfaceType: 0
+ColorTexture: "assets/textures/concrete_pillar/color.png"
+Color: [1, 1, 1, 1]
+MetallicTexture: "null"
+Metallic: 0
+RoughnessTexture: "assets/textures/concrete_pillar/roughness.png"
+Roughness: 0
+NormalTexture: "assets/textures/concrete_pillar/normal.png"
+NormalStrength: 1
+Tiling: [1, 1]
+Offset: [0, 0]

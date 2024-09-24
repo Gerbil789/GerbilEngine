@@ -1,3 +1,17 @@
+struct Light {
+	int type; // 0 = point, 1 = directional, 2 = spot
+    vec3 position;
+    vec3 color;
+    float intensity;
+	float range;
+	vec3 attenuation;
+	vec3 direction;
+	float innerAngle;
+	float outerAngle;
+};
+
+
+
 vec3 calculatePointLight(Light light, vec3 fragPos, vec3 normal) {
     vec3 lightDir = normalize(light.position - fragPos);
     float distance = length(light.position - fragPos);

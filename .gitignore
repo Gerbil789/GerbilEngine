@@ -14,5 +14,3 @@ Game/*.json
 
 Editor/imgui.ini
 Editor/*.json
-Editor/assets/scenes/*.scene
-Editor/assets/*.material

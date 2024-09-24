@@ -16,7 +16,7 @@ namespace Engine
 		glm::vec3 Normal = { 0.0f, 0.0f, 0.0f };
 		glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		glm::vec2 TexCoord = { 0.0f, 0.0f };
-		float TexIndex = 0.0f;
+		glm::vec3 TexIndex = { 0.0f, 0.0f, 0.0f };
 		glm::vec2 TilingFactor = { 1.0f, 1.0f };
 		int EntityID = -1;
 	};
@@ -36,7 +36,7 @@ namespace Engine
 			{ ShaderDataType::Float3, "a_Normal" },
 			{ ShaderDataType::Float4, "a_Color" },
 			{ ShaderDataType::Float2, "a_TexCoord" },
-			{ ShaderDataType::Float, "a_TexIndex" },
+			{ ShaderDataType::Float3, "a_TexIndex" },
 			{ ShaderDataType::Float2, "a_TilingFactor" },
 			{ ShaderDataType::Int, "a_EntityID" }
 		};
@@ -173,7 +173,8 @@ namespace Engine
 		std::vector<Vertex> vertexBufferData(vertexCount);
 
 
-		float textureIndex = 0.0f;
+		glm::vec3 textureIndex = { 0.0f, 0.0f, 0.0f };
+
 
 		if (material != nullptr) 
 		{
@@ -183,15 +184,52 @@ namespace Engine
 			{
 				if (*s_Data.TextureSlots[i].get() == *colorTexture.get())
 				{
-					textureIndex = (float)i;
+					textureIndex[0] = (float)i;
 					break;
 				}
 			}
 
-			if (textureIndex == 0.0f)
+			if (textureIndex[0] == 0.0f)
 			{
-				textureIndex = (float)s_Data.TextureSlotIndex;
+				textureIndex[0] = (float)s_Data.TextureSlotIndex;
 				s_Data.TextureSlots[s_Data.TextureSlotIndex] = colorTexture;
+				s_Data.TextureSlotIndex++;
+			}
+
+			auto normalTexture = material->normalTexture ? material->normalTexture : s_Data.WhiteTexture;
+
+			for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+			{
+				if (*s_Data.TextureSlots[i].get() == *normalTexture.get())
+				{
+					textureIndex[1] = (float)i;
+					break;
+				}
+			}
+
+			if (textureIndex[1] == 0.0f)
+			{
+				textureIndex[1] = (float)s_Data.TextureSlotIndex;
+				s_Data.TextureSlots[s_Data.TextureSlotIndex] = normalTexture;
+				s_Data.TextureSlotIndex++;
+			}
+
+
+			auto roughnessTexture = material->roughnessTexture ? material->roughnessTexture : s_Data.WhiteTexture;
+
+			for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+			{
+				if (*s_Data.TextureSlots[i].get() == *roughnessTexture.get())
+				{
+					textureIndex[2] = (float)i;
+					break;
+				}
+			}
+
+			if (textureIndex[2] == 0.0f)
+			{
+				textureIndex[2] = (float)s_Data.TextureSlotIndex;
+				s_Data.TextureSlots[s_Data.TextureSlotIndex] = roughnessTexture;
 				s_Data.TextureSlotIndex++;
 			}
 		}
@@ -204,7 +242,7 @@ namespace Engine
 			vertexBufferData[i].Normal = glm::normalize(glm::mat3(glm::transpose(glm::inverse(transform))) * normals[i]);
 			vertexBufferData[i].TexCoord = uvs.size() > 0 ? uvs[i] : glm::vec2(0.0f, 0.0f);
 			vertexBufferData[i].TexIndex = textureIndex;
-			vertexBufferData[i].TilingFactor = glm::vec2(1.0f, 1.0f);
+			vertexBufferData[i].TilingFactor = material ? material->tiling : glm::vec2(1.0f, 1.0f);
 			vertexBufferData[i].EntityID = entityID;
 		}
 

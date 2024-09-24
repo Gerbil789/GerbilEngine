@@ -37,7 +37,7 @@ namespace Engine
 		Ref<Texture2D> normalTexture;
 		float normalStrength = 1.0f;
 
-		glm::vec2 tiling = glm::vec2(1.0f);
-		glm::vec2 offset = glm::vec2(0.0f);
+		glm::vec2 tiling = { 1.0f, 1.0f };
+		glm::vec2 offset = { 0.0f, 0.0f };
 	};
 }

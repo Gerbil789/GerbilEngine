@@ -83,7 +83,6 @@ namespace Engine
 		}
 	};
 
-
 	enum class ItemType
 	{
 		Directory = 0,
@@ -175,5 +174,7 @@ namespace Engine
 		int LayoutLineCount = 0;
 		float ZoomWheelAccum = 0.0f;
 		bool RequestDelete = false;
+
+		std::vector<std::string> droppedFiles;
 	};
 }
