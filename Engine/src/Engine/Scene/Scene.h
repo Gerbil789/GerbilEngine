@@ -5,7 +5,7 @@
 #include "Engine/Renderer/EditorCamera.h"
 #include "Engine/Core/UUID.h"
 #include "Engine/Core/Asset.h"
-#include "Engine/Scene/Material.h"
+#include "Engine/Renderer/Material.h"
 
 namespace Engine 
 {

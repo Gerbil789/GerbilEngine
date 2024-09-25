@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EditorWindowBase.h"
-#include "Engine/Scene/Material.h"
+#include "Engine/Renderer/Material.h"
 
 namespace Engine 
 {

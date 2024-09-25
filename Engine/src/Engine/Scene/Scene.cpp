@@ -234,7 +234,8 @@ namespace Engine
 		Renderer::EndScene();
 
 
-		Renderer2D::BeginScene(camera);
+		//TODO: 2D renderer is somehow colliding with 3D renderer -> 3D does not work when it is enabled
+		/*Renderer2D::BeginScene(camera);
 		auto group2D = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent, EnablingComponent>);
 		for (auto entity : group2D)
 		{
@@ -242,7 +243,7 @@ namespace Engine
 			auto [transform, sprite] = group2D.get<TransformComponent, SpriteRendererComponent>(entity);
 			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 		}
-		Renderer2D::EndScene();
+		Renderer2D::EndScene();*/
 	}
 
 	void Scene::OnUpdateEditor(Timestep ts, Camera& camera, const glm::mat4& transform)

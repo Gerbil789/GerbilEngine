@@ -4,7 +4,7 @@
 #include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Renderer/Texture.h"
-#include "Engine/Scene/Material.h"
+#include "Engine/Renderer/Material.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Renderer/Mesh.h"
 #include "Engine/Renderer/Shader.h"

@@ -3,7 +3,7 @@
 #include "Engine/Core/Core.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Core/Asset.h"
-#include "Engine/Scene/Material.h"
+#include "Engine/Renderer/Material.h"
 
 namespace Engine
 {

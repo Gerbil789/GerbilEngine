@@ -12,7 +12,7 @@ namespace Engine
 	{
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "Shader" << YAML::Value << material->shaderName;
+		out << YAML::Key << "Shader" << YAML::Value << material->GetFilePath().filename().string();
 		out << YAML::Key << "SurfaceType" << YAML::Value << (int)material->surfaceType;
 		out << YAML::Key << "ColorTexture" << YAML::Value << ((material->colorTexture) ? material->colorTexture->GetFilePath().string() : "null");
 		out << YAML::Key << "Color" << YAML::Value << YAML::Flow << YAML::BeginSeq << material->color.r << material->color.g << material->color.b << material->color.a << YAML::EndSeq;
@@ -46,7 +46,7 @@ namespace Engine
 
 
 		//TODO: make oneliners
-		material->shaderName = data["Shader"].as<std::string>();
+		//material->shaderName = data["Shader"].as<std::string>();
 		material->surfaceType = (SurfaceType)data["SurfaceType"].as<int>();
 		std::string colorTexturePath = data["ColorTexture"].as<std::string>();
 		if(colorTexturePath != "null") material->colorTexture = AssetManager::GetAsset<Texture2D>(colorTexturePath);

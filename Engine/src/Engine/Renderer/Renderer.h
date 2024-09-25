@@ -4,7 +4,7 @@
 #include "Engine/Renderer/Shader.h"
 #include "Engine/Renderer/EditorCamera.h"
 #include "Engine/Renderer/Mesh.h"
-#include "Engine/Scene/Material.h"
+#include "Engine/Renderer/Material.h"
 
 namespace Engine
 {

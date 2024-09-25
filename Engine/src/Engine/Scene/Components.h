@@ -3,7 +3,7 @@
 #include "Engine/Renderer/Texture.h"
 #include "Engine/Renderer/Mesh.h"
 #include "Engine/Core/UUID.h"
-#include "Engine/Scene/Material.h"
+#include "Engine/Renderer/Material.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "ContentBrowserWindow.h"
 #include "Engine/Core/AssetManager.h"
-#include "Engine/Scene/Material.h"
+#include "Engine/Renderer/Material.h"
 #include "Engine/Core/Serializer.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Utils/Utilities.h"

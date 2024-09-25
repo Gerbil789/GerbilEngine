@@ -39,7 +39,7 @@ namespace Engine
 			return;
 		}
 
-		ImGui::Text("Shader: %s", m_Material->shaderName.c_str());
+		ImGui::Text("Shader: %s", m_Material->GetFilePath().filename());
 		ImGui::Separator();
 
 		ImGui::Text("Surface Type");
