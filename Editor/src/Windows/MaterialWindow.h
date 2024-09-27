@@ -16,5 +16,7 @@ namespace Engine
 		void SetMaterial(Ref<Material> material) { m_Material = material; }
 	private:
 		Ref<Material> m_Material;
+
+		std::vector<std::filesystem::path> m_ShaderPaths;
 	};
 }

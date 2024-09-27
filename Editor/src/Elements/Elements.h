@@ -27,7 +27,7 @@ namespace Engine
 		bool FloatSliderControl(const char* label, float& value, float min = 0.0f, float max = 1.0f);
 
 		void StringControl(const char* label, std::string& value, const char* resetValue = "");
-		bool EnumControl(const char* label, int& value, const char* options[], int optionCount);
+		bool EnumControl(const char* label, int& value, const std::vector<std::string>& options);
 
 
 		bool ColorControl(glm::vec4& color);

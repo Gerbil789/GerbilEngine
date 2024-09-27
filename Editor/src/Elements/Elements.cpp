@@ -239,7 +239,7 @@ namespace Engine
 			ASSERT(false, "StringControl Not implemented")
 		}
 
-		bool EnumControl(const char* label, int& value, const char* options[], int optionCount)
+		bool EnumControl(const char* label, int& value, const std::vector<std::string>& options)
 		{
 			bool valueChanged = false;
 			ImGui::PushID(label);
@@ -248,12 +248,12 @@ namespace Engine
 			ImGui::Text(label);
 			ImGui::NextColumn();
 			ImGui::PushItemWidth(-1);
-			if (ImGui::BeginCombo("##value", options[value]))
+			if (ImGui::BeginCombo("##value", options[value].c_str()))
 			{
-				for (int i = 0; i < optionCount; i++)
+				for (int i = 0; i < options.size(); i++)
 				{
 					bool isSelected = value == i;
-					if (ImGui::Selectable(options[i], isSelected))
+					if (ImGui::Selectable(options[i].c_str(), isSelected))
 					{
 						value = i;
 						valueChanged = true;

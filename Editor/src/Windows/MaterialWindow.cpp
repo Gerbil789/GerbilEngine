@@ -13,7 +13,12 @@ namespace Engine
 {
 	MaterialWindow::MaterialWindow()
 	{
+		std::string path = "resources/shaders";
 
+		for(auto& p: std::filesystem::directory_iterator(path))
+		{
+			m_ShaderPaths.emplace_back(p.path());
+		}
 	}
 
 	MaterialWindow::~MaterialWindow()
@@ -39,36 +44,37 @@ namespace Engine
 			return;
 		}
 
-		ImGui::Text("Shader: %s", m_Material->GetFilePath().filename());
+
+		std::vector<std::string> stringPaths;
+		stringPaths.reserve(m_ShaderPaths.size()); // Reserve memory for efficiency
+
+		for (const auto& path : m_ShaderPaths) {
+			stringPaths.push_back(path.string()); // Convert path to string and push to the new vector
+		}
+
+		
+		//UI::EnumControl("Shader", *0, stringPaths);
 		ImGui::Separator();
 
-		ImGui::Text("Surface Type");
-		ImGui::RadioButton("Opaque", (int*)&m_Material->surfaceType, (int)SurfaceType::Opaque);
-		ImGui::SameLine();
-		ImGui::RadioButton("Transparent", (int*)&m_Material->surfaceType, (int)SurfaceType::Transparent);
 		ImGui::Separator();
 
-
-		//ImGui::Text("Color");
-		UI::TextureControl("Color", m_Material->colorTexture);
+		UI::TextureControl("Albedo", m_Material->colorTexture);
 		ImGui::SameLine();
 		UI::ColorControl( m_Material->color);
 
-		//ImGui::Text("Metallic");
 		UI::TextureControl("Metallic", m_Material->metallicTexture);
 		ImGui::SameLine();
 		UI::FloatSliderControl("##matealic", m_Material->metallic);
 
-		//ImGui::Text("Roughness");
 		UI::TextureControl("Roughness", m_Material->roughnessTexture);
 		ImGui::SameLine();
 		UI::FloatSliderControl("##roughness", m_Material->roughness);
 
-		//ImGui::Text("Normal");
 		UI::TextureControl("Normal", m_Material->normalTexture);
+		UI::TextureControl("Height", m_Material->heightTexture);
+		UI::TextureControl("Occlusion", m_Material->occlusionTexture);
 
 		ImGui::Separator();
-
 		UI::Vec2Control("Tiling", m_Material->tiling, 1.0f);
 		UI::Vec2Control("Offset", m_Material->offset);
 	

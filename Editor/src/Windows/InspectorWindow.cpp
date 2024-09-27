@@ -189,11 +189,13 @@ namespace Engine
 				UI::BoolControl("Primary", component.Main);
 				UI::BoolControl("Fixed Aspect Ratio", component.FixedAspectRatio);
 
-				const char* projectionTypeString[] = { "Perspective", "Orthographic" };
-				const char* currentProjectionTypeString = projectionTypeString[(int)camera.GetProjectionType()];
+
+				std::vector<std::string> projectionTypes = { "Perspective", "Orthographic" };
+			
+				//const char* currentProjectionTypeString = projectionTypeString[(int)camera.GetProjectionType()];
 
 				SceneCamera::ProjectionType projectionType = camera.GetProjectionType();
-				if (UI::EnumControl("Projection", (int&)projectionType, projectionTypeString, 2))
+				if (UI::EnumControl("Projection", (int&)projectionType, projectionTypes))
 				{
 					camera.SetProjectionType((SceneCamera::ProjectionType)projectionType);
 				}
@@ -246,9 +248,10 @@ namespace Engine
 				UI::ColorControl(component.Color);
 				UI::FloatControl("Intensity", component.Intensity, 1.0f);
 
-				const char* lightTypeString[] = { "Point", "Directional", "Spot" };
-				const char* currentLightTypeString = lightTypeString[(int)component.Type];
-				if (UI::EnumControl("Type", (int&)component.Type, lightTypeString, 3))
+				std::vector<std::string> lightTypes = { "Point", "Directional", "Spot" };
+			
+				//const char* currentLightTypeString = lightTypeString[(int)component.Type];
+				if (UI::EnumControl("Type", (int&)component.Type, lightTypes))
 				{
 					component.Type = (LightType)component.Type;
 				}
