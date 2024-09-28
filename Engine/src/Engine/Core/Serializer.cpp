@@ -3,30 +3,51 @@
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/Entity.h"
+
 #define YAML_CPP_STATIC_DEFINE
-#include <yaml-cpp/yaml.h>
+#include "yaml-cpp/yaml.h"
 
 namespace Engine 
 {
 	void Serializer::Serialize(const Ref<Material>& material)
 	{
+		if (!material)
+		{
+			LOG_ERROR("Material is null, cannot serialize.");
+			return;
+		}
+
 		YAML::Emitter out;
+
+		auto writeAssetPath = [&out](const std::string& key, const Ref<Asset>& asset) {
+			WriteString(out, key, (asset ? asset->GetFilePath().string() : ""));
+		};
+
 		out << YAML::BeginMap;
-		out << YAML::Key << "Shader" << YAML::Value << material->GetFilePath().filename().string();
-		out << YAML::Key << "SurfaceType" << YAML::Value << (int)material->surfaceType;
-		out << YAML::Key << "ColorTexture" << YAML::Value << ((material->colorTexture) ? material->colorTexture->GetFilePath().string() : "null");
-		out << YAML::Key << "Color" << YAML::Value << YAML::Flow << YAML::BeginSeq << material->color.r << material->color.g << material->color.b << material->color.a << YAML::EndSeq;
-		out << YAML::Key << "MetallicTexture" << YAML::Value << ((material->metallicTexture) ? material->metallicTexture->GetFilePath().string() : "null");
-		out << YAML::Key << "Metallic" << YAML::Value << material->metallic;
-		out << YAML::Key << "RoughnessTexture" << YAML::Value << ((material->roughnessTexture) ? material->roughnessTexture->GetFilePath().string() : "null");
-		out << YAML::Key << "Roughness" << YAML::Value << material->roughness;
-		out << YAML::Key << "NormalTexture" << YAML::Value << ((material->normalTexture) ? material->normalTexture->GetFilePath().string() : "null");
-		out << YAML::Key << "NormalStrength" << YAML::Value << material->normalStrength;
-		out << YAML::Key << "Tiling" << YAML::Value << YAML::Flow << YAML::BeginSeq << material->tiling.x << material->tiling.y << YAML::EndSeq;
-		out << YAML::Key << "Offset" << YAML::Value << YAML::Flow << YAML::BeginSeq << material->offset.x << material->offset.y << YAML::EndSeq;
+		writeAssetPath(SHADER_KEY, material->shader);
+		writeAssetPath(COLOR_TEXTURE_KEY, material->colorTexture);
+		writeAssetPath(METALLIC_TEXTURE_KEY, material->metallicTexture);
+		writeAssetPath(ROUGHNESS_TEXTURE_KEY, material->roughnessTexture);
+		writeAssetPath(NORMAL_TEXTURE_KEY, material->normalTexture);
+		writeAssetPath(HEIGHT_TEXTURE_KEY, material->heightTexture);
+		writeAssetPath(OCCLUSION_TEXTURE_KEY, material->occlusionTexture);
+		writeAssetPath(EMISSION_TEXTURE_KEY, material->emissionTexture);
+		WriteVec4(out, COLOR_KEY, material->color);
+		WriteFloat(out, METALLIC_KEY, material->metallic);
+		WriteFloat(out, ROUGHNESS_KEY, material->roughness);
+		WriteFloat(out, NORMAL_STRENGTH_KEY, material->normalStrength);
+		WriteVec3(out, EMISSION_COLOR_KEY, material->emissionColor);
+		WriteFloat(out, EMISSION_STRENGTH_KEY, material->emmissionStrength);
+		WriteVec2(out, TILING_KEY, material->tiling);
+		WriteVec2(out, OFFSET_KEY, material->offset);
 		out << YAML::EndMap;
 
 		std::ofstream fout(material->GetFilePath());
+		if (!fout.is_open())
+		{
+			LOG_ERROR("Failed to open file for serialization: {0}", material->GetFilePath());
+			return;
+		}
 		fout << out.c_str();
 		fout.close();
 	}
@@ -42,26 +63,36 @@ namespace Engine
 		}
 
 		YAML::Node data = YAML::LoadFile(path.string());
-		if (!data["Shader"]) return false; //TODO: is this necessary?
+		if (!data[SHADER_KEY].IsDefined())
+		{
+			LOG_ERROR("Shader field missing from material!");
+			return false;
+		}
+
+		auto loadTexture = [&](const std::string& key, Ref<Texture2D>& texture) {
+			if (data[key].IsNull()) { return; }
+			texture = AssetManager::GetAsset<Texture2D>(data[key].as<std::string>());
+			};
 
 
-		//TODO: make oneliners
-		//material->shaderName = data["Shader"].as<std::string>();
-		material->surfaceType = (SurfaceType)data["SurfaceType"].as<int>();
-		std::string colorTexturePath = data["ColorTexture"].as<std::string>();
-		if(colorTexturePath != "null") material->colorTexture = AssetManager::GetAsset<Texture2D>(colorTexturePath);
-		material->color = glm::vec4(data["Color"][0].as<float>(), data["Color"][1].as<float>(), data["Color"][2].as<float>(), data["Color"][3].as<float>());
-		std::string metallicTexturePath = data["MetallicTexture"].as<std::string>();
-		if (metallicTexturePath != "null") material->metallicTexture = AssetManager::GetAsset<Texture2D>(metallicTexturePath);
-		material->metallic = data["Metallic"].as<float>();
-		std::string roughnessTexturePath = data["RoughnessTexture"].as<std::string>();
-		if (roughnessTexturePath != "null") material->roughnessTexture = AssetManager::GetAsset<Texture2D>(roughnessTexturePath);
-		material->roughness = data["Roughness"].as<float>();
-		std::string normalTexturePath = data["NormalTexture"].as<std::string>();
-		if (normalTexturePath != "null") material->normalTexture = AssetManager::GetAsset<Texture2D>(normalTexturePath);
-		material->normalStrength = data["NormalStrength"].as<float>();
-		material->tiling = glm::vec2(data["Tiling"][0].as<float>(), data["Tiling"][1].as<float>());
-		material->offset = glm::vec2(data["Offset"][0].as<float>(), data["Offset"][1].as<float>());
+		if (data[SHADER_KEY].IsDefined()) material->shader = AssetManager::GetAsset<Shader>(data[SHADER_KEY].as<std::string>());
+
+		loadTexture(COLOR_TEXTURE_KEY, material->colorTexture);
+		loadTexture(METALLIC_TEXTURE_KEY, material->metallicTexture);
+		loadTexture(ROUGHNESS_TEXTURE_KEY, material->roughnessTexture);
+		loadTexture(NORMAL_TEXTURE_KEY, material->normalTexture);
+		loadTexture(HEIGHT_TEXTURE_KEY, material->heightTexture);
+		loadTexture(OCCLUSION_TEXTURE_KEY, material->occlusionTexture);
+		loadTexture(EMISSION_TEXTURE_KEY, material->emissionTexture);
+
+		if (data[COLOR_KEY].IsDefined()) material->color = { data[COLOR_KEY][0].as<float>(), data[COLOR_KEY][1].as<float>(), data[COLOR_KEY][2].as<float>(), data[COLOR_KEY][3].as<float>() };
+		if (data[METALLIC_KEY].IsDefined()) material->metallic = data[METALLIC_KEY].as<float>();
+		if (data[ROUGHNESS_KEY].IsDefined()) material->roughness = data[ROUGHNESS_KEY].as<float>();
+		if (data[NORMAL_STRENGTH_KEY].IsDefined()) material->normalStrength = data[NORMAL_STRENGTH_KEY].as<float>();
+		if (data[EMISSION_COLOR_KEY].IsDefined()) material->emissionColor = { data[EMISSION_COLOR_KEY][0].as<float>(), data[EMISSION_COLOR_KEY][1].as<float>(), data[EMISSION_COLOR_KEY][2].as<float>() };
+		if (data[EMISSION_STRENGTH_KEY].IsDefined()) material->emmissionStrength = data[EMISSION_STRENGTH_KEY].as<float>();
+		if (data[TILING_KEY].IsDefined()) material->tiling = { data[TILING_KEY][0].as<float>(), data[TILING_KEY][1].as<float>() };
+		if (data[OFFSET_KEY].IsDefined()) material->offset = { data[OFFSET_KEY][0].as<float>(), data[OFFSET_KEY][1].as<float>() };
 
 		return true;
 	}
@@ -283,5 +314,44 @@ namespace Engine
 		}
 
 		return true;
+	}
+
+	void Serializer::WriteVec4(YAML::Emitter& out, const std::string& key, const glm::vec4& vec) 
+	{
+		out << YAML::Key << key << YAML::Value << YAML::Flow << YAML::BeginSeq << vec.x << vec.y << vec.z << vec.w << YAML::EndSeq;
+	}
+
+	void Serializer::WriteVec3(YAML::Emitter& out, const std::string& key, const glm::vec3& vec) 
+	{
+		out << YAML::Key << key << YAML::Value << YAML::Flow << YAML::BeginSeq << vec.x << vec.y << vec.z << YAML::EndSeq;
+	}
+
+	void Serializer::WriteVec2(YAML::Emitter& out, const std::string& key, const glm::vec2& vec) 
+	{
+		out << YAML::Key << key << YAML::Value << YAML::Flow << YAML::BeginSeq << vec.x << vec.y << YAML::EndSeq;
+	}
+
+	void Serializer::WriteFloat(YAML::Emitter& out, const std::string& key, float value) 
+	{
+		out << YAML::Key << key << YAML::Value << value;
+	}
+
+	void Serializer::WriteInt(YAML::Emitter& out, const std::string& key, int value) 
+	{
+		out << YAML::Key << key << YAML::Value << value;
+	}
+
+	void Serializer::WriteString(YAML::Emitter& out, const std::string& key, const std::string& value) 
+	{
+		out << YAML::Key << key;
+
+		if (value.empty()) 
+		{
+			out << YAML::Null;
+		}
+		else 
+		{
+			out << YAML::Value << value; 
+		}
 	}
 }

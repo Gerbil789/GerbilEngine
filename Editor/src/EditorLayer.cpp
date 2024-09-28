@@ -79,6 +79,19 @@ namespace Engine
         //ENGINE_LOG_INFO("Skull indices: {0}", kat->GetIndices().size());
         //ENGINE_LOG_INFO("Skull normals: {0}", kat->GetNormals().size());
         //ENGINE_LOG_INFO("Skull UVs: {0}", kat->GetUVs().size());
+
+		// --- SERIALIZATION TEST ---
+		//Ref<Material> material = AssetManager::CreateAsset<Material>("assets/test.material");
+		//material->shader = AssetManager::GetAsset<Shader>("resources/shaders/standard.glsl");
+		//material->color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+		//material->colorTexture = AssetManager::GetAsset<Texture2D>("assets/textures/concrete_pillar/color.png");
+		//material->metallic = 0.1f;
+		//material->roughness = 0.8f;
+		//material->roughnessTexture = AssetManager::GetAsset<Texture2D>("assets/textures/concrete_pillar/roughness.png");
+		//Serializer::Serialize(material);
+
+		// --- DESERIALIZATION TEST ---
+		//Ref<Material> loadedMaterial = AssetManager::GetAsset<Material>("assets/test.material");
     }
 
     void EditorLayer::OnDetach()

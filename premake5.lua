@@ -48,6 +48,7 @@ project "Engine"
 		"%{prj.name}/vendor/stb_image/**.cpp",
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl",
+		"%{prj.name}/vendor/yaml-cpp/include/**.h",
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
 		"%{prj.name}/vendor/assimp/include/**.h",

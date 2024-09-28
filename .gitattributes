@@ -1,1 +1,0 @@
-Engine/vendor/FBXSDK/2020.3.7/lib/*.lib filter=lfs diff=lfs merge=lfs -text

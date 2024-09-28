@@ -31,6 +31,13 @@ namespace Engine
         // use this only if you want to explicitly pre-load the asset (make sure it is not already loaded)
         template <typename T>
         static Ref<T> LoadAsset(const std::filesystem::path& path, const std::any& data = std::any()) {
+            //check if file exists
+			if (!std::filesystem::exists(path))
+			{
+				LOG_ERROR("Asset '{0}' not found", path.string());
+				return nullptr;
+			}
+            
             // Check if factory exists
             auto it_f = factories.find(typeid(T).name());
             if (it_f == factories.end()) 

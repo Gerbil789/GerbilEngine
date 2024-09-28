@@ -45,18 +45,14 @@ namespace Engine
 		}
 
 
-		std::vector<std::string> stringPaths;
-		stringPaths.reserve(m_ShaderPaths.size()); // Reserve memory for efficiency
-
-		for (const auto& path : m_ShaderPaths) {
-			stringPaths.push_back(path.string()); // Convert path to string and push to the new vector
-		}
-
-		
 		//UI::EnumControl("Shader", *0, stringPaths);
+		std::string materialName = m_Material->GetFilePath().filename().string();
+		ImGui::Text(materialName.c_str());
+
+		std::string shaderName = m_Material->shader->GetFilePath().filename().string();
+		ImGui::Text(shaderName.c_str());
 		ImGui::Separator();
 
-		ImGui::Separator();
 
 		UI::TextureControl("Albedo", m_Material->colorTexture);
 		ImGui::SameLine();

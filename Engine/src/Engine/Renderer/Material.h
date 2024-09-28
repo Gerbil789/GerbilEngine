@@ -23,19 +23,20 @@ namespace Engine
 
 		Ref<Shader> shader;
 
-		SurfaceType surfaceType = SurfaceType::Opaque;
 		Ref<Texture2D> colorTexture;
-		glm::vec4 color = glm::vec4(1.0f);
 		Ref<Texture2D> metallicTexture;
-		float metallic = 0.0f;
 		Ref<Texture2D> roughnessTexture;
-		float roughness = 0.0f;
 		Ref<Texture2D> normalTexture;
-		float normalStrength = 1.0f;
 		Ref<Texture2D> heightTexture;
 		Ref<Texture2D> occlusionTexture;
 		Ref<Texture2D> emissionTexture;
-		glm::vec3 emissiveColor = glm::vec3(0.0f);
+
+		glm::vec4 color = glm::vec4(1.0f);
+		float metallic = 0.0f;
+		float roughness = 0.0f;
+		float normalStrength = 1.0f;
+		glm::vec3 emissionColor = glm::vec3(0.0f);
+		float emmissionStrength = 1.0f;
 
 		glm::vec2 tiling = { 1.0f, 1.0f };
 		glm::vec2 offset = { 0.0f, 0.0f };
