@@ -109,8 +109,17 @@ namespace Engine
             }
         }
 
+		static std::vector<Ref<Asset>> GetLoadedAssets() {
+			std::vector<Ref<Asset>> loadedAssets;
+			for (auto& asset : assets) {
+				loadedAssets.push_back(asset.second);
+			}
+			return loadedAssets;
+		}
+
     private:
         static std::unordered_map<std::filesystem::path, Ref<IAssetFactory>> factories;
         static std::unordered_map<std::filesystem::path, Ref<Asset>> assets;
+
     };
 }

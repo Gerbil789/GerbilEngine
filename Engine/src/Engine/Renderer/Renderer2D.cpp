@@ -215,14 +215,14 @@ namespace Engine
 		//tmp
 		if (src.Material != nullptr) 
 		{
-			if(src.Material->colorTexture == nullptr)
+			if(src.Material->GetColorTexture() == nullptr)
 			{
-				DrawQuad(transform, s_Data.WhiteTexture, src.Material->tiling, src.Material->color, entityID);
+				DrawQuad(transform, s_Data.WhiteTexture, src.Material->GetTiling(), src.Material->GetColor(), entityID);
 				return;
 			}
 
 
-			DrawQuad(transform, src.Material->colorTexture, src.Material->tiling, src.Material->color, entityID);
+			DrawQuad(transform, src.Material->GetColorTexture(), src.Material->GetTiling(), src.Material->GetColor(), entityID);
 			return;
 		}
 

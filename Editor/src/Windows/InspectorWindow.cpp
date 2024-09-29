@@ -203,19 +203,19 @@ namespace Engine
 				if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 				{
 					float perspectiveVerticalFOV = glm::degrees(camera.GetPerspectiveVerticalFOV());
-					if (UI::FloatControl("Vertical FOV", perspectiveVerticalFOV)) 
+					if (UI::FloatField("Vertical FOV", perspectiveVerticalFOV)) 
 					{
 						camera.SetPerspectiveVerticalFOV(glm::radians(perspectiveVerticalFOV));
 					}
 
 					float perspectiveNearClip = camera.GetPerspectiveNearClip();
-					if (UI::FloatControl("Near Clip", perspectiveNearClip)) 
+					if (UI::FloatField("Near Clip", perspectiveNearClip)) 
 					{
 						camera.SetPerspectiveNearClip(perspectiveNearClip);
 					}
 
 					float perspectiveFarClip = camera.GetPerspectiveFarClip();
-					if (UI::FloatControl("Far Clip", perspectiveFarClip)) 
+					if (UI::FloatField("Far Clip", perspectiveFarClip)) 
 					{
 						camera.SetPerspectiveFarClip(perspectiveFarClip); 
 					}
@@ -224,19 +224,19 @@ namespace Engine
 				if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
 				{
 					float orthographicSize = camera.GetOrthographicSize();
-					if(UI::FloatControl("Size", orthographicSize))
+					if(UI::FloatField("Size", orthographicSize))
 					{
 						camera.SetOrthographicSize(orthographicSize);
 					}
 
 					float orthographicNearClip = camera.GetOrthographicNearClip();
-					if (UI::FloatControl("Near Clip", orthographicNearClip)) 
+					if (UI::FloatField("Near Clip", orthographicNearClip)) 
 					{
 						camera.SetOrthographicNearClip(orthographicNearClip);
 					}
 						
 					float orthographicFarClip = camera.GetOrthographicFarClip();
-					if(UI::FloatControl("Far Clip", orthographicFarClip))
+					if(UI::FloatField("Far Clip", orthographicFarClip))
 					{
 						camera.SetOrthographicFarClip(orthographicFarClip);
 					}
@@ -245,8 +245,8 @@ namespace Engine
 
 		DrawComponent<LightComponent>("Light", entity, [](auto& component)
 			{
-				UI::ColorControl(component.Color);
-				UI::FloatControl("Intensity", component.Intensity, 1.0f);
+				UI::ColorField("##color", component.Color);
+				UI::FloatField("Intensity", component.Intensity);
 
 				std::vector<std::string> lightTypes = { "Point", "Directional", "Spot" };
 			
@@ -258,27 +258,27 @@ namespace Engine
 
 				if(component.Type == LightType::Point)
 				{
-					UI::FloatControl("Range", component.Range, 1.0f);
+					UI::FloatField("Range", component.Range);
 
 					if (ImGui::CollapsingHeader("Advanced"))
 					{
 						ImGui::Text("Attenuation");
-						UI::FloatControl("Constant", component.Attenuation.x, 0.1f);
-						UI::FloatControl("Linear", component.Attenuation.y, 0.1f);
-						UI::FloatControl("Quadratic", component.Attenuation.z, 0.1f);
+						UI::FloatField("Constant", component.Attenuation.x);
+						UI::FloatField("Linear", component.Attenuation.y);
+						UI::FloatField("Quadratic", component.Attenuation.z);
 					}
 				}
 				else if (component.Type == LightType::Spot)
 				{
-					UI::FloatControl("Inner angle", component.InnerAngle);
-					UI::FloatControl("Outer Angle", component.OuterAngle);
+					UI::FloatField("Inner angle", component.InnerAngle);
+					UI::FloatField("Outer Angle", component.OuterAngle);
 
 					if (ImGui::CollapsingHeader("Advanced"))
 					{
 						ImGui::Text("Attenuation");
-						UI::FloatControl("Constant", component.Attenuation.x, 0.1f);
-						UI::FloatControl("Linear", component.Attenuation.y, 0.1f);
-						UI::FloatControl("Quadratic", component.Attenuation.z, 0.1f);
+						UI::FloatField("Constant", component.Attenuation.x);
+						UI::FloatField("Linear", component.Attenuation.y);
+						UI::FloatField("Quadratic", component.Attenuation.z);
 					}
 				}
 

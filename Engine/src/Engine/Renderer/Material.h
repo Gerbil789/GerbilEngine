@@ -7,8 +7,6 @@
 
 namespace Engine 
 {
-	enum class SurfaceType { Opaque, Transparent };
-
 	class MaterialFactory : public IAssetFactory
 	{
 	public:
@@ -21,24 +19,24 @@ namespace Engine
 	public:
 		Material(const std::filesystem::path& path) : Asset(path) {}
 
-		Ref<Shader> shader;
+		PROPERTY(Ref<Shader>, Shader);
 
-		Ref<Texture2D> colorTexture;
-		Ref<Texture2D> metallicTexture;
-		Ref<Texture2D> roughnessTexture;
-		Ref<Texture2D> normalTexture;
-		Ref<Texture2D> heightTexture;
-		Ref<Texture2D> occlusionTexture;
-		Ref<Texture2D> emissionTexture;
+		PROPERTY(Ref<Texture2D>, ColorTexture);
+		PROPERTY(Ref<Texture2D>, MetallicTexture);
+		PROPERTY(Ref<Texture2D>, RoughnessTexture);
+		PROPERTY(Ref<Texture2D>, NormalTexture);
+		PROPERTY(Ref<Texture2D>, HeightTexture);
+		PROPERTY(Ref<Texture2D>, AmbientTexture);
+		PROPERTY(Ref<Texture2D>, EmissionTexture);
 
-		glm::vec4 color = glm::vec4(1.0f);
-		float metallic = 0.0f;
-		float roughness = 0.0f;
-		float normalStrength = 1.0f;
-		glm::vec3 emissionColor = glm::vec3(0.0f);
-		float emmissionStrength = 1.0f;
+		PROPERTY(glm::vec4, Color);
+		PROPERTY(float, Metallic);
+		PROPERTY(float, Roughness);
+		PROPERTY(float, NormalStrength);
+		PROPERTY(glm::vec3, EmissionColor);
+		PROPERTY(float, EmmissionStrength);
 
-		glm::vec2 tiling = { 1.0f, 1.0f };
-		glm::vec2 offset = { 0.0f, 0.0f };
+		PROPERTY(glm::vec2, Tiling);
+		PROPERTY(glm::vec2, Offset);
 	};
 }

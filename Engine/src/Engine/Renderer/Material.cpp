@@ -20,7 +20,7 @@ namespace Engine
 	Ref<Asset> MaterialFactory::Create(const std::filesystem::path& path, const std::any& data)
 	{
 		Ref<Material> material = CreateRef<Material>(path);
-		material->shader = AssetManager::GetAsset<Shader>("resources/shaders/standard.glsl");
+		material->SetShader(AssetManager::GetAsset<Shader>("resources/shaders/standard.glsl"));
 		return material;
 	}
 }

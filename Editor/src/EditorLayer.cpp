@@ -91,7 +91,7 @@ namespace Engine
 		//Serializer::Serialize(material);
 
 		// --- DESERIALIZATION TEST ---
-		//Ref<Material> loadedMaterial = AssetManager::GetAsset<Material>("assets/test.material");
+		Ref<Material> loadedMaterial = AssetManager::GetAsset<Material>("assets/test.material");
     }
 
     void EditorLayer::OnDetach()
@@ -473,6 +473,18 @@ namespace Engine
                 if (ImGui::MenuItem("Save", "ctrl + S"))
                 {
                     SceneManager::SaveScene();
+                    auto assets = AssetManager::GetLoadedAssets();
+					for (auto asset : assets)
+					{
+                        if (asset->IsModified()) 
+                        {
+							//TODO: save asset
+							LOG_INFO("Asset '{0}' is modified", asset->GetFilePath());
+                        }
+						
+					}
+
+
                 }
 
                 if (ImGui::MenuItem("Save as", "ctrl + shift + S"))

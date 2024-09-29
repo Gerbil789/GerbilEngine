@@ -5,7 +5,7 @@
 #include "Engine/Scene/Entity.h"
 
 #define YAML_CPP_STATIC_DEFINE
-#include "yaml-cpp/yaml.h"
+#include <yaml-cpp/yaml.h>
 
 namespace Engine 
 {
@@ -24,22 +24,22 @@ namespace Engine
 		};
 
 		out << YAML::BeginMap;
-		writeAssetPath(SHADER_KEY, material->shader);
-		writeAssetPath(COLOR_TEXTURE_KEY, material->colorTexture);
-		writeAssetPath(METALLIC_TEXTURE_KEY, material->metallicTexture);
-		writeAssetPath(ROUGHNESS_TEXTURE_KEY, material->roughnessTexture);
-		writeAssetPath(NORMAL_TEXTURE_KEY, material->normalTexture);
-		writeAssetPath(HEIGHT_TEXTURE_KEY, material->heightTexture);
-		writeAssetPath(OCCLUSION_TEXTURE_KEY, material->occlusionTexture);
-		writeAssetPath(EMISSION_TEXTURE_KEY, material->emissionTexture);
-		WriteVec4(out, COLOR_KEY, material->color);
-		WriteFloat(out, METALLIC_KEY, material->metallic);
-		WriteFloat(out, ROUGHNESS_KEY, material->roughness);
-		WriteFloat(out, NORMAL_STRENGTH_KEY, material->normalStrength);
-		WriteVec3(out, EMISSION_COLOR_KEY, material->emissionColor);
-		WriteFloat(out, EMISSION_STRENGTH_KEY, material->emmissionStrength);
-		WriteVec2(out, TILING_KEY, material->tiling);
-		WriteVec2(out, OFFSET_KEY, material->offset);
+		writeAssetPath(SHADER_KEY, material->GetShader());
+		writeAssetPath(COLOR_TEXTURE_KEY, material->GetColorTexture());
+		writeAssetPath(METALLIC_TEXTURE_KEY, material->GetMetallicTexture());
+		writeAssetPath(ROUGHNESS_TEXTURE_KEY, material->GetRoughnessTexture());
+		writeAssetPath(NORMAL_TEXTURE_KEY, material->GetNormalTexture());
+		writeAssetPath(HEIGHT_TEXTURE_KEY, material->GetHeightTexture());
+		writeAssetPath(OCCLUSION_TEXTURE_KEY, material->GetAmbientTexture());
+		writeAssetPath(EMISSION_TEXTURE_KEY, material->GetEmissionTexture());
+		WriteVec4(out, COLOR_KEY, material->GetColor());
+		WriteFloat(out, METALLIC_KEY, material->GetMetallic());
+		WriteFloat(out, ROUGHNESS_KEY, material->GetRoughness());
+		WriteFloat(out, NORMAL_STRENGTH_KEY, material->GetNormalStrength());
+		WriteVec3(out, EMISSION_COLOR_KEY, material->GetEmissionColor());
+		WriteFloat(out, EMISSION_STRENGTH_KEY, material->GetEmmissionStrength());
+		WriteVec2(out, TILING_KEY, material->GetTiling());
+		WriteVec2(out, OFFSET_KEY, material->GetOffset());
 		out << YAML::EndMap;
 
 		std::ofstream fout(material->GetFilePath());
@@ -69,31 +69,31 @@ namespace Engine
 			return false;
 		}
 
-		auto loadTexture = [&](const std::string& key, Ref<Texture2D>& texture) {
-			if (data[key].IsNull()) { return; }
-			texture = AssetManager::GetAsset<Texture2D>(data[key].as<std::string>());
+		auto loadTexture = [&](const std::string& key) -> Ref<Texture2D> {
+			if (data[key].IsNull()) { return nullptr; }
+			return AssetManager::GetAsset<Texture2D>(data[key].as<std::string>());
 			};
 
 
-		if (data[SHADER_KEY].IsDefined()) material->shader = AssetManager::GetAsset<Shader>(data[SHADER_KEY].as<std::string>());
+		if (data[SHADER_KEY].IsDefined()) material->SetShader(AssetManager::GetAsset<Shader>(data[SHADER_KEY].as<std::string>()));
 
-		loadTexture(COLOR_TEXTURE_KEY, material->colorTexture);
-		loadTexture(METALLIC_TEXTURE_KEY, material->metallicTexture);
-		loadTexture(ROUGHNESS_TEXTURE_KEY, material->roughnessTexture);
-		loadTexture(NORMAL_TEXTURE_KEY, material->normalTexture);
-		loadTexture(HEIGHT_TEXTURE_KEY, material->heightTexture);
-		loadTexture(OCCLUSION_TEXTURE_KEY, material->occlusionTexture);
-		loadTexture(EMISSION_TEXTURE_KEY, material->emissionTexture);
+		material->SetColorTexture(loadTexture(COLOR_TEXTURE_KEY));
+		material->SetMetallicTexture(loadTexture(METALLIC_TEXTURE_KEY));
+		material->SetRoughnessTexture(loadTexture(ROUGHNESS_TEXTURE_KEY));
+		material->SetNormalTexture(loadTexture(NORMAL_TEXTURE_KEY));
+		material->SetHeightTexture(loadTexture(HEIGHT_TEXTURE_KEY));
+		material->SetAmbientTexture(loadTexture(OCCLUSION_TEXTURE_KEY));
+		material->SetEmissionTexture(loadTexture(EMISSION_TEXTURE_KEY));
+		material->SetColor(ReadVec4(data, COLOR_KEY));
+		material->SetMetallic(ReadFloat(data, METALLIC_KEY));
+		material->SetRoughness(ReadFloat(data, ROUGHNESS_KEY));
+		material->SetNormalStrength(ReadFloat(data, NORMAL_STRENGTH_KEY));
+		material->SetEmissionColor(ReadVec3(data, EMISSION_COLOR_KEY));
+		material->SetEmmissionStrength(ReadFloat(data, EMISSION_STRENGTH_KEY));
+		material->SetTiling(ReadVec2(data, TILING_KEY));
+		material->SetOffset(ReadVec2(data, OFFSET_KEY));
 
-		if (data[COLOR_KEY].IsDefined()) material->color = { data[COLOR_KEY][0].as<float>(), data[COLOR_KEY][1].as<float>(), data[COLOR_KEY][2].as<float>(), data[COLOR_KEY][3].as<float>() };
-		if (data[METALLIC_KEY].IsDefined()) material->metallic = data[METALLIC_KEY].as<float>();
-		if (data[ROUGHNESS_KEY].IsDefined()) material->roughness = data[ROUGHNESS_KEY].as<float>();
-		if (data[NORMAL_STRENGTH_KEY].IsDefined()) material->normalStrength = data[NORMAL_STRENGTH_KEY].as<float>();
-		if (data[EMISSION_COLOR_KEY].IsDefined()) material->emissionColor = { data[EMISSION_COLOR_KEY][0].as<float>(), data[EMISSION_COLOR_KEY][1].as<float>(), data[EMISSION_COLOR_KEY][2].as<float>() };
-		if (data[EMISSION_STRENGTH_KEY].IsDefined()) material->emmissionStrength = data[EMISSION_STRENGTH_KEY].as<float>();
-		if (data[TILING_KEY].IsDefined()) material->tiling = { data[TILING_KEY][0].as<float>(), data[TILING_KEY][1].as<float>() };
-		if (data[OFFSET_KEY].IsDefined()) material->offset = { data[OFFSET_KEY][0].as<float>(), data[OFFSET_KEY][1].as<float>() };
-
+		material->SetModified(false);
 		return true;
 	}
 
@@ -353,5 +353,37 @@ namespace Engine
 		{
 			out << YAML::Value << value; 
 		}
+	}
+
+	glm::vec4& Serializer::ReadVec4(const YAML::Node& node, const std::string& key)
+	{
+		return glm::vec4 { node[key][0].as<float>(), node[key][1].as<float>(), node[key][2].as<float>(), node[key][3].as<float>() };
+	}
+
+	glm::vec3& Serializer::ReadVec3(const YAML::Node& node, const std::string& key)
+	{
+		return glm::vec3 { node[key][0].as<float>(), node[key][1].as<float>(), node[key][2].as<float>() };
+	}
+
+	glm::vec2& Serializer::ReadVec2(const YAML::Node& node, const std::string& key)
+	{
+		return glm::vec2 { node[key][0].as<float>(), node[key][1].as<float>() };
+	}
+
+	float& Serializer::ReadFloat(const YAML::Node& node, const std::string& key)
+	{
+		float value = node[key].as<float>();
+		return value;
+	}
+
+	int& Serializer::ReadInt(const YAML::Node& node, const std::string& key)
+	{
+		int value = node[key].as<int>();
+		return value;
+	}
+
+	std::string& Serializer::ReadString(const YAML::Node& node, const std::string& key)
+	{
+		return node[key].as<std::string>();
 	}
 }

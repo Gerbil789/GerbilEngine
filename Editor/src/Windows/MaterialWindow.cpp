@@ -44,37 +44,89 @@ namespace Engine
 			return;
 		}
 
-
-		//UI::EnumControl("Shader", *0, stringPaths);
-		std::string materialName = m_Material->GetFilePath().filename().string();
-		ImGui::Text(materialName.c_str());
-
-		std::string shaderName = m_Material->shader->GetFilePath().filename().string();
-		ImGui::Text(shaderName.c_str());
+		ImGui::Text(m_Material->GetFilePath().filename().string().c_str());
+		ImGui::Text(m_Material->GetShader()->GetFilePath().filename().string().c_str());
 		ImGui::Separator();
 
+		ImGui::Columns(3, nullptr, false);
+		ImGui::SetColumnWidth(0, 32);
+		ImGui::SetColumnWidth(1, 100);
+		ImGui::SetColumnWidth(2, 300);
 
-		UI::TextureControl("Albedo", m_Material->colorTexture);
-		ImGui::SameLine();
-		UI::ColorControl( m_Material->color);
+		if(UI::TextureField("albedo", m_Material->GetColorTexture())) { m_Material->SetModified(true); }
+		ImGui::NextColumn();
+		ImGui::Text("Albedo");
+		ImGui::NextColumn();
+		if(UI::ColorField("##color", m_Material->GetColor())) { m_Material->SetModified(true); }
+		ImGui::NextColumn();
 
-		UI::TextureControl("Metallic", m_Material->metallicTexture);
-		ImGui::SameLine();
-		UI::FloatSliderControl("##matealic", m_Material->metallic);
+		if(UI::TextureField("metallic", m_Material->GetMetallicTexture())) { m_Material->SetModified(true); }
+		ImGui::NextColumn();
+		ImGui::Text("Metallic");
+		ImGui::NextColumn();
+		ImGui::BeginDisabled(m_Material->GetMetallicTexture() != nullptr);
+		if(UI::FloatSliderField("##metallic", m_Material->GetMetallic())) { m_Material->SetModified(true); }
+		ImGui::EndDisabled();
+		ImGui::NextColumn();
 
-		UI::TextureControl("Roughness", m_Material->roughnessTexture);
-		ImGui::SameLine();
-		UI::FloatSliderControl("##roughness", m_Material->roughness);
+		if(UI::TextureField("roughness", m_Material->GetRoughnessTexture())) { m_Material->SetModified(true); }
+		ImGui::NextColumn();
+		ImGui::Text("Roughness");
+		ImGui::NextColumn();
+		ImGui::BeginDisabled(m_Material->GetRoughnessTexture() != nullptr);
+		if(UI::FloatSliderField("##roughness", m_Material->GetRoughness())) { m_Material->SetModified(true); }
+		ImGui::EndDisabled();
+		ImGui::NextColumn();
 
-		UI::TextureControl("Normal", m_Material->normalTexture);
-		UI::TextureControl("Height", m_Material->heightTexture);
-		UI::TextureControl("Occlusion", m_Material->occlusionTexture);
+		if(UI::TextureField("normal", m_Material->GetNormalTexture())) { m_Material->SetModified(true); }
+		ImGui::NextColumn();
+		ImGui::Text("Normal");
+		ImGui::NextColumn();
+		ImGui::NextColumn();
 
-		ImGui::Separator();
-		UI::Vec2Control("Tiling", m_Material->tiling, 1.0f);
-		UI::Vec2Control("Offset", m_Material->offset);
-	
+		if(UI::TextureField("height", m_Material->GetHeightTexture())) { m_Material->SetModified(true); }
+		ImGui::NextColumn();
+		ImGui::Text("Height");
+		ImGui::NextColumn();
+		ImGui::NextColumn();
 
+		if(UI::TextureField("occlusion", m_Material->GetAmbientTexture())) { m_Material->SetModified(true); }
+		ImGui::NextColumn();
+		ImGui::Text("Occlusion");
+		ImGui::NextColumn();
+		ImGui::NextColumn();
+
+		if (UI::TextureField("emission", m_Material->GetEmissionTexture())) { m_Material->SetModified(true); }
+		ImGui::NextColumn();
+		ImGui::Text("Emission");
+		ImGui::NextColumn();
+		if (UI::ColorField("##emission", m_Material->GetEmissionColor())) { m_Material->SetModified(true); }
+		ImGui::NextColumn();
+
+		ImGui::NextColumn();
+		ImGui::Text("    Strenght");
+		ImGui::NextColumn();
+		if (UI::FloatField("##emission", m_Material->GetEmmissionStrength())) { m_Material->SetModified(true); }
+		ImGui::NextColumn();
+
+		ImGui::NextColumn();
+		ImGui::NextColumn();
+		ImGui::NextColumn();
+
+		ImGui::NextColumn();
+		ImGui::Text("Tiling");
+		ImGui::NextColumn();
+		if (UI::Vec2Field("Tiling", m_Material->GetTiling())) { m_Material->SetModified(true); }
+		ImGui::NextColumn();
+
+		ImGui::NextColumn();
+		ImGui::Text("Offset");
+		ImGui::NextColumn();
+		if (UI::Vec2Field("Offset", m_Material->GetOffset())) { m_Material->SetModified(true); }
+		ImGui::NextColumn();
+
+
+		ImGui::Columns(1);
 		ImGui::End();
 	}
 }

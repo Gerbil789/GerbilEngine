@@ -169,22 +169,22 @@ namespace Engine
 
 		if (material != nullptr) 
 		{
-			s_Data.TextureSlots[0] = material->colorTexture ? material->colorTexture : s_Data.WhiteTexture;
-			s_Data.TextureSlots[1] = material->metallicTexture ? material->metallicTexture : s_Data.WhiteTexture;
-			s_Data.TextureSlots[2] = material->roughnessTexture ? material->roughnessTexture : s_Data.WhiteTexture;
-			s_Data.TextureSlots[3] = material->normalTexture ? material->normalTexture : s_Data.WhiteTexture;
-			s_Data.TextureSlots[4] = material->heightTexture ? material->heightTexture : s_Data.WhiteTexture;
-			s_Data.TextureSlots[5] = material->occlusionTexture ? material->occlusionTexture : s_Data.WhiteTexture;
+			s_Data.TextureSlots[0] = material->GetColorTexture() ? material->GetColorTexture() : s_Data.WhiteTexture;
+			s_Data.TextureSlots[1] = material->GetMetallicTexture() ? material->GetMetallicTexture() : s_Data.WhiteTexture;
+			s_Data.TextureSlots[2] = material->GetRoughnessTexture() ? material->GetRoughnessTexture() : s_Data.WhiteTexture;
+			s_Data.TextureSlots[3] = material->GetNormalTexture() ? material->GetNormalTexture() : s_Data.WhiteTexture;
+			s_Data.TextureSlots[4] = material->GetHeightTexture() ? material->GetHeightTexture() : s_Data.WhiteTexture;
+			s_Data.TextureSlots[5] = material->GetAmbientTexture() ? material->GetAmbientTexture() : s_Data.WhiteTexture;
 		}
 
 
 		for (uint32_t i = 0; i < vertexCount; i++)
 		{
 			vertexBufferData[i].Position = transform * glm::vec4(vertices[i], 1.0f);
-			vertexBufferData[i].Color = material ? material->color : glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+			vertexBufferData[i].Color = material ? material->GetColor() : glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 			vertexBufferData[i].Normal = normals[i];// glm::normalize(glm::mat3(glm::transpose(glm::inverse(transform))) * normals[i]);
 			vertexBufferData[i].TexCoord = uvs.size() > 0 ? uvs[i] : glm::vec2(0.0f, 0.0f);
-			vertexBufferData[i].TilingFactor = material ? material->tiling : glm::vec2(1.0f, 1.0f);
+			vertexBufferData[i].TilingFactor = material ? material->GetTiling() : glm::vec2(1.0f, 1.0f);
 			vertexBufferData[i].EntityID = entityID;
 		}
 
