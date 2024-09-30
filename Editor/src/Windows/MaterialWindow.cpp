@@ -48,10 +48,15 @@ namespace Engine
 		ImGui::Text(m_Material->GetShader()->GetFilePath().filename().string().c_str());
 		ImGui::Separator();
 
+		float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 32 - 100, 100.0f);
+
 		ImGui::Columns(3, nullptr, false);
+
+
 		ImGui::SetColumnWidth(0, 32);
 		ImGui::SetColumnWidth(1, 100);
-		ImGui::SetColumnWidth(2, 300);
+		
+		ImGui::SetColumnWidth(2, availWidth);
 
 		if(UI::TextureField("albedo", m_Material->GetColorTexture())) { m_Material->SetModified(true); }
 		ImGui::NextColumn();

@@ -1,0 +1,16 @@
+shader: resources/shaders/standard.glsl
+colorTexture: assets/textures/usp/albedo.png
+metallicTexture: assets/textures/usp/metallic.png
+roughnessTexture: assets/textures/usp/roughness.png
+normalTexture: assets/textures/usp/normal.png
+heightTexture: ~
+ambientTexture: assets/textures/usp/ambient.png
+emissionTexture: ~
+color: [1, 1, 1, 1]
+metallic: 0.100000001
+roughness: 0.800000012
+normalStrength: 1
+emissionColor: [0, 0, 0]
+emissionStrength: 1
+tiling: [1, 1]
+offset: [0, 0]

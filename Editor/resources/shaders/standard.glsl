@@ -5,15 +5,20 @@ layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec3 a_Normal;
 layout(location = 2) in vec4 a_Color;
 layout(location = 3) in vec2 a_TexCoord;	
-layout(location = 4) in vec2 a_TilingFactor;
-layout(location = 5) in int a_EntityID;
+layout(location = 4) in vec3 a_Tangent;
+layout(location = 5) in vec3 a_Bitangent;
+layout(location = 6) in vec2 a_Tiling;
+layout(location = 7) in vec2 a_Offset;
+layout(location = 8) in int a_EntityID;
 
 uniform mat4 u_ViewProjection;
 
 out vec2 v_TexCoord;
 out vec3 v_Normal;
 out vec4 v_Color;
-out vec2 v_TilingFactor;
+out mat3 TBN;  // Tangent-Bitangent-Normal matrix
+out vec2 v_Tiling;
+out vec2 v_Offset;
 out vec3 v_WorldPos;
 flat out int v_EntityID;
 
@@ -22,7 +27,12 @@ void main()
 	v_TexCoord = a_TexCoord;
 	v_Normal = a_Normal;
 	v_Color = a_Color;
-	v_TilingFactor = a_TilingFactor;
+    vec3 T = normalize(a_Tangent);
+    vec3 B = normalize(a_Bitangent);
+    vec3 N = normalize(a_Normal);
+    TBN = mat3(T, B, N);
+	v_Tiling = a_Tiling;
+    v_Offset = a_Offset;
     v_WorldPos = a_Position;
 	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 	v_EntityID = a_EntityID;
@@ -40,7 +50,9 @@ layout(location = 1) out int entity;
 in vec2 v_TexCoord;	
 in vec3 v_Normal;
 in vec4 v_Color;
-in vec2 v_TilingFactor;
+in mat3 TBN;
+in vec2 v_Tiling;
+in vec2 v_Offset;
 in vec3 v_WorldPos;
 flat in int v_EntityID;
 
@@ -55,13 +67,16 @@ void main()
 	vec3 ambient = vec3(0.1);
 	vec3 result = vec3(0.0);
 
-	vec3 albedo = texture(u_Textures[0], v_TexCoord * v_TilingFactor).rgb;
-    float metallic = texture(u_Textures[1], v_TexCoord * v_TilingFactor).r;
-    float roughness = texture(u_Textures[2], v_TexCoord * v_TilingFactor).r;
-	vec3 normal = texture(u_Textures[3], v_TexCoord * v_TilingFactor).rgb;
-	normal = normalize(normal * 2.0 - 1.0); // Convert from [0, 1] to [-1, 1]
-    float height = texture(u_Textures[4], v_TexCoord * v_TilingFactor).r;
-    float ao = texture(u_Textures[5], v_TexCoord * v_TilingFactor).r;
+    vec2 UV = v_TexCoord * v_Tiling + v_Offset;
+
+	vec3 albedo = texture(u_Textures[0], UV).rgb;
+    float metallic = texture(u_Textures[1], UV).r;
+    float roughness = texture(u_Textures[2], UV).r;
+	vec3 normalMap = texture(u_Textures[3], UV).rgb;
+	normalMap = normalMap * 2.0 - 1.0; 
+    vec3 normal = normalize(TBN * normalMap);
+    float height = texture(u_Textures[4], UV).r;
+    float ao = texture(u_Textures[5], UV).r;
 
 	for (int i = 0; i < u_NumLights; i++) 
     {

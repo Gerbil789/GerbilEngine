@@ -11,6 +11,7 @@ namespace Engine
 		Editor() : Application("Gerbil Editor")
 		{
 			PushLayer(new EditorLayer());
+			LOG_INFO("--- Initialization complete ---");
 		}
 
 		~Editor()

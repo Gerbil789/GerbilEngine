@@ -91,7 +91,7 @@ namespace Engine
 		//Serializer::Serialize(material);
 
 		// --- DESERIALIZATION TEST ---
-		Ref<Material> loadedMaterial = AssetManager::GetAsset<Material>("assets/test.material");
+		//Ref<Material> loadedMaterial = AssetManager::GetAsset<Material>("assets/test.material");
     }
 
     void EditorLayer::OnDetach()

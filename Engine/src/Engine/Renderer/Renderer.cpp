@@ -16,7 +16,10 @@ namespace Engine
 		glm::vec3 Normal = { 0.0f, 0.0f, 0.0f };
 		glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		glm::vec2 TexCoord = { 0.0f, 0.0f };
-		glm::vec2 TilingFactor = { 1.0f, 1.0f };
+		glm::vec3 Tangent = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 Bitangent = { 0.0f, 0.0f, 0.0f };
+		glm::vec2 Tiling = { 1.0f, 1.0f };
+		glm::vec2 Offset = { 0.0f, 0.0f };
 		int EntityID = -1;
 	};
 
@@ -25,16 +28,17 @@ namespace Engine
 	{
 		Ref<Shader> Shader;
 		Ref<Texture2D> WhiteTexture;
-
 		std::array<Ref<Texture2D>, 6> TextureSlots;
 
-		BufferLayout Layout = {
+		BufferLayout Layout {
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float3, "a_Normal" },
 			{ ShaderDataType::Float4, "a_Color" },
 			{ ShaderDataType::Float2, "a_TexCoord" },
-			//{ ShaderDataType::, "a_TexIndex" },
-			{ ShaderDataType::Float2, "a_TilingFactor" },
+			{ ShaderDataType::Float3, "a_Tangent" },
+			{ ShaderDataType::Float3, "a_Bitangent" },
+			{ ShaderDataType::Float2, "a_Tiling" },
+			{ ShaderDataType::Float2, "a_Offset" },
 			{ ShaderDataType::Int, "a_EntityID" }
 		};
 
@@ -134,13 +138,6 @@ namespace Engine
 
 	}
 
-	void Renderer::Flush()
-	{
-		ENGINE_PROFILE_FUNCTION();
-		//TODO: for batch rendering
-	}
-
-
 	void Renderer::DrawMesh(const glm::mat4& transform, Ref<Mesh> mesh, Ref<Material> material, int entityID)
 	{
 		ENGINE_PROFILE_FUNCTION();
@@ -177,14 +174,67 @@ namespace Engine
 			s_Data.TextureSlots[5] = material->GetAmbientTexture() ? material->GetAmbientTexture() : s_Data.WhiteTexture;
 		}
 
+		// Calculate the tangent and bitangent for each triangle
+		for (size_t i = 0; i < indices.size(); i += 3)
+		{
+			// Get the indices of the triangle's vertices
+			uint32_t i0 = indices[i];
+			uint32_t i1 = indices[i + 1];
+			uint32_t i2 = indices[i + 2];
 
+			// Get the positions and texture coordinates of the vertices
+			const glm::vec3& v0 = vertices[i0];
+			const glm::vec3& v1 = vertices[i1];
+			const glm::vec3& v2 = vertices[i2];
+
+			const glm::vec2& uv0 = uvs[i0];
+			const glm::vec2& uv1 = uvs[i1];
+			const glm::vec2& uv2 = uvs[i2];
+
+			// Calculate the edges of the triangle
+			glm::vec3 deltaPos1 = v1 - v0;
+			glm::vec3 deltaPos2 = v2 - v0;
+
+			glm::vec2 deltaUV1 = uv1 - uv0;
+			glm::vec2 deltaUV2 = uv2 - uv0;
+
+			// Calculate the tangent and bitangent
+			float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+			glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+			glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+
+			// Accumulate the tangent and bitangent for each vertex of the triangle
+			vertexBufferData[i0].Tangent += tangent;
+			vertexBufferData[i1].Tangent += tangent;
+			vertexBufferData[i2].Tangent += tangent;
+
+			vertexBufferData[i0].Bitangent += bitangent;
+			vertexBufferData[i1].Bitangent += bitangent;
+			vertexBufferData[i2].Bitangent += bitangent;
+		}
+
+
+		glm::vec4 color { 1.0f, 1.0f, 1.0f, 1.0f };
+		glm::vec2 tiling { 1.0f, 1.0f };
+		glm::vec2 offset{ 0.0f, 0.0f };
+
+		if (material != nullptr) 
+		{
+			color = material->GetColor();
+			tiling = material->GetTiling();
+			offset = material->GetOffset();
+		}
+		
 		for (uint32_t i = 0; i < vertexCount; i++)
 		{
 			vertexBufferData[i].Position = transform * glm::vec4(vertices[i], 1.0f);
-			vertexBufferData[i].Color = material ? material->GetColor() : glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-			vertexBufferData[i].Normal = normals[i];// glm::normalize(glm::mat3(glm::transpose(glm::inverse(transform))) * normals[i]);
+			vertexBufferData[i].Color = color;
+			vertexBufferData[i].Normal = normals[i];
 			vertexBufferData[i].TexCoord = uvs.size() > 0 ? uvs[i] : glm::vec2(0.0f, 0.0f);
-			vertexBufferData[i].TilingFactor = material ? material->GetTiling() : glm::vec2(1.0f, 1.0f);
+			vertexBufferData[i].Tangent = glm::normalize(vertexBufferData[i].Tangent);
+			vertexBufferData[i].Bitangent = glm::normalize(vertexBufferData[i].Bitangent);
+			vertexBufferData[i].Tiling = tiling;
+			vertexBufferData[i].Offset = offset;
 			vertexBufferData[i].EntityID = entityID;
 		}
 

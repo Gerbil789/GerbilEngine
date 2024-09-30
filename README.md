@@ -14,9 +14,10 @@ Game Engine hobby project
 
 #### Setup
 1. Clone the Project `git clone --recursive https://github.com/Gerbil789/GerbilEngine.git`
-2. Navigate to the Scripts Folder
-3. Generate project files by executing script
-    - Windows: `Win-GenerateProjects.bat`
-    - Linux: `Not supported`
-4. Build **`Editor`** project
+3. Generate project files
+   - Navigate to the Scripts Folder
+   - Run `Win-GenerateProjects.bat` 
+5. Build project in Visual Studio
+   - Find **`Editor`** project in Solution Explorer
+   - Right click -> **Build**
 6. Run

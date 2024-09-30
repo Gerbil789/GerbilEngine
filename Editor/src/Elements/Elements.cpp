@@ -1,6 +1,5 @@
 #include "Elements.h"
 #include "Engine/Core/Core.h"
-
 #include "Engine/Core/AssetManager.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
@@ -81,6 +80,7 @@ namespace Engine::UI
 		bool valueChanged = false;
 		ImGui::PushID(label);
 
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 		if (ImGui::DragFloat("##input", &value, 0.05f, 0.0f, 0.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
 		{
 			valueChanged = true;
@@ -123,11 +123,16 @@ namespace Engine::UI
 		bool valueChanged = false;
 		ImGui::PushID(label);
 
-		float inputWidth = ImGui::CalcItemWidth() / 3.0f; // Divide by 3 to leave space for X, Y labels and the values
+		//TODO: this is not perfectly aligned with other fields...
+		//float fieldWidth = ImGui::GetContentRegionAvail().x / 2.0f - ImGui::GetStyle().ItemSpacing.x - 14.0f;
+		float availableWidth = ImGui::GetContentRegionAvail().x;
+		float itemSpacing = ImGui::GetStyle().ItemSpacing.x;
+		float totalSpacing = itemSpacing * 3;
+		float fieldWidth = (availableWidth - totalSpacing) / 2.0f; 
 
 		ImGui::Text("X");
 		ImGui::SameLine();
-		ImGui::SetNextItemWidth(inputWidth);
+		ImGui::SetNextItemWidth(fieldWidth);
 		if (ImGui::DragFloat("##X", &values.x, 0.05f, 0.0f, 0.0f, "%.2f"))
 		{
 			valueChanged = true; 
@@ -136,7 +141,7 @@ namespace Engine::UI
 		ImGui::SameLine();
 		ImGui::Text("Y");
 		ImGui::SameLine();
-		ImGui::SetNextItemWidth(inputWidth);
+		ImGui::SetNextItemWidth(fieldWidth);
 		if (ImGui::DragFloat("##Y", &values.y, 0.05f, 0.0f, 0.0f, "%.2f"))
 		{
 			valueChanged = true;
