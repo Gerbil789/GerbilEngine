@@ -8,10 +8,24 @@ namespace Engine
 {
 	Ref<Asset> Texture2DFactory::Load(const std::filesystem::path& path, const std::any& data)
 	{
+		int format = 0;
+		if (data.has_value()) 
+		{
+			try
+			{
+				format = std::any_cast<int>(data);
+			}
+			catch (const std::bad_any_cast&)
+			{
+				LOG_WARNING("Failed to cast 'data' to GLenum. Using default settings.");
+			}
+		}
+		
+
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None: ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL: return CreateRef<OpenGLTexture2D>(path);
+		case RendererAPI::API::OpenGL: return CreateRef<OpenGLTexture2D>(path, format);
 		default: ASSERT(false, "Unknown RendererAPI!"); return nullptr;
 		}
 	}

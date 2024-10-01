@@ -5,6 +5,8 @@
 #include "Engine/Events/KeyEvent.h"
 #include "Engine/Core/Core.h"
 #include "Platform/OpenGL/OpenGLContext.h"
+#include "Engine/Core/AssetManager.h"
+#include "Engine/Renderer/Texture.h"
 
 
 namespace Engine
@@ -43,6 +45,7 @@ namespace Engine
 		m_Data.Title = props.Title;
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
+		m_Data.IconPath = props.IconPath;
 
 		LOG_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
 
@@ -61,9 +64,16 @@ namespace Engine
 		m_Context = new OpenGLContext(m_Window);
 		m_Context->Init();
 
-
-
 		glfwSetWindowUserPointer(m_Window, &m_Data);
+
+		Texture2DFactory textureFactory;
+		auto texture = std::dynamic_pointer_cast<Texture2D>(textureFactory.Load(m_Data.IconPath, 4)); // Force 4 channels (RGBA)
+		GLFWimage images[1];
+		images[0].width = texture->GetWidth();
+		images[0].height = texture->GetHeight();
+		images[0].pixels = texture->GetPixelData();
+		glfwSetWindowIcon(m_Window, 1, images);
+
 		SetVSync(true);
 
 		// Set GLFW callbacks

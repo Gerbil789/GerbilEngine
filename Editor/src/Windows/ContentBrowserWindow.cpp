@@ -308,7 +308,7 @@ namespace Engine
 		auto currentDirectory = m_CurrentDirectory;
 		std::vector<std::filesystem::path> pathComponents;
 		for (auto& component : currentDirectory) {
-			pathComponents.push_back(component);
+			pathComponents.emplace_back(component);
 		}
 
 		for (auto it = pathComponents.begin(); it != pathComponents.end(); ++it)

@@ -21,21 +21,30 @@ namespace Engine
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path) : Texture2D(path)
+	OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path, GLenum format) : Texture2D(path)
 	{
 		ENGINE_PROFILE_FUNCTION();
 		int width, height, channels;
-		stbi_set_flip_vertically_on_load(1);
+		stbi_set_flip_vertically_on_load(!format);
 
 		stbi_uc* data = nullptr;
 		{
 			ENGINE_PROFILE_SCOPE("OpenGLTexture2D::OpenGLTexture2D - stbi_load");
-			data = stbi_load(path.string().c_str(), &width, &height, &channels, 0);
+			data = stbi_load(path.string().c_str(), &width, &height, &channels, format);
 		}
 
 		ASSERT(data, "Failed to load image!");
 		m_Width = width;
 		m_Height = height;
+
+
+		if (format != 0) 
+		{
+			m_PixelData = new stbi_uc[width * height * channels];
+			std::memcpy(m_PixelData, data, width * height * channels);
+		}
+		
+
 
 		switch (channels)
 		{

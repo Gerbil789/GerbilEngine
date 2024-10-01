@@ -40,7 +40,7 @@ namespace Engine
 		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
 		Entity m_HoveredEntity;
 
-		std::vector<Ref<EditorWindowBase>> m_EditorWindows;
+		std::array< Ref<EditorWindowBase>, 6> m_EditorWindows;
 
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 		Ref<FrameBuffer> m_EditorFrameBuffer;

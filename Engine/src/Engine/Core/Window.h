@@ -11,8 +11,9 @@ namespace Engine
 		std::string Title;
 		uint32_t Width;
 		uint32_t Height;
+		std::filesystem::path IconPath;
 
-		WindowProps(const std::string& title = "Gerbil Engine", uint32_t width = 1600, uint32_t height = 900) : Title(title), Width(width), Height(height) {}
+		WindowProps(const std::string& title = "Gerbil Engine", uint32_t width = 1600, uint32_t height = 900, std::filesystem::path iconPath = "resources/icons/logo.png") : Title(title), Width(width), Height(height), IconPath(iconPath) {}
 	};
 
 	// Interface representing a desktop system based Window

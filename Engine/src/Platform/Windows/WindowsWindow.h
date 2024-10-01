@@ -36,6 +36,7 @@ namespace Engine
 			std::string Title;
 			unsigned int Width, Height;
 			bool VSync;
+			std::filesystem::path IconPath;
 
 			EventCallbackFn EventCallback;
 		};

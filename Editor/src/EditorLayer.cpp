@@ -22,17 +22,26 @@
 
 namespace Engine
 {
-    EditorLayer::EditorLayer() : Layer("EditorLayer") {}
-
-    void EditorLayer::OnAttach()
+    EditorLayer::EditorLayer() : Layer("EditorLayer") 
     {
-        ENGINE_PROFILE_FUNCTION();
-        SceneManager::AddObserver(this);
+        m_EditorWindows[0] = CreateRef<SceneHierarchyWindow>();
+        m_EditorWindows[1] = CreateRef<InspectorWindow>();
+        m_EditorWindows[2] = CreateRef<ContentBrowserWindow>();
+        m_EditorWindows[3] = CreateRef<MaterialWindow>();
+        m_EditorWindows[4] = CreateRef<SettingsWindow>();
+        m_EditorWindows[5] = CreateRef<StatisticsWindow>();
+        //m_EditorWindows.push_back(CreateRef<MeshImportWindow>());
 
         //load textures
         m_Icon_Play = AssetManager::GetAsset<Texture2D>("resources/icons/play.png");
         m_Icon_Pause = AssetManager::GetAsset<Texture2D>("resources/icons/pause.png");
         m_Icon_Next = AssetManager::GetAsset<Texture2D>("resources/icons/skip_next.png");
+    }
+
+    void EditorLayer::OnAttach()
+    {
+        ENGINE_PROFILE_FUNCTION();
+        SceneManager::AddObserver(this);
 
         //create editor frame buffer
         FrameBufferSpecification editorFrameBufferSpecification;
@@ -51,47 +60,6 @@ namespace Engine
         RenderCommand::SetClearColor({ 0.05f, 0.05f, 0.05f, 1.0f });
         m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f); //TODO: what are these values? must it be there?
         SceneManager::CreateScene("untitledScene");
-
-		m_EditorWindows.push_back(CreateRef<SceneHierarchyWindow>());
-		m_EditorWindows.push_back(CreateRef<InspectorWindow>());
-		m_EditorWindows.push_back(CreateRef<ContentBrowserWindow>());
-		m_EditorWindows.push_back(CreateRef<MaterialWindow>());
-		m_EditorWindows.push_back(CreateRef<SettingsWindow>());
-		m_EditorWindows.push_back(CreateRef<StatisticsWindow>());
-		//m_EditorWindows.push_back(CreateRef<MeshImportWindow>());
-
-
-        // ---- testing -----
-        //Ref<Mesh> quad = AssetManager::GetAsset<Mesh>("assets/quad.fbx");
-        //ENGINE_LOG_INFO("Quad vertices: {0}", quad->GetVertexCount());
-        //ENGINE_LOG_INFO("Quad indices: {0}", quad->GetIndices().size());
-        //ENGINE_LOG_INFO("Quad normals: {0}", quad->GetNormals().size());
-        //ENGINE_LOG_INFO("Quad UVs: {0}", quad->GetUVs().size());
-
-		//Ref<Mesh> cube = AssetManager::GetAsset<Mesh>("assets/cube.fbx");
-		//ENGINE_LOG_INFO("Cube vertices: {0}", cube->GetVertexCount());
-        //ENGINE_LOG_INFO("Cube indices: {0}", cube->GetIndices().size());
-        //ENGINE_LOG_INFO("Cube normals: {0}", cube->GetNormals().size());
-        //ENGINE_LOG_INFO("Cube UVs: {0}", cube->GetUVs().size());
-
-        //Ref<Mesh> kat = AssetManager::GetAsset<Mesh>("assets/katarina.fbx");
-		//ENGINE_LOG_INFO("Skull vertices: {0}", kat->GetVertexCount());
-        //ENGINE_LOG_INFO("Skull indices: {0}", kat->GetIndices().size());
-        //ENGINE_LOG_INFO("Skull normals: {0}", kat->GetNormals().size());
-        //ENGINE_LOG_INFO("Skull UVs: {0}", kat->GetUVs().size());
-
-		// --- SERIALIZATION TEST ---
-		//Ref<Material> material = AssetManager::CreateAsset<Material>("assets/test.material");
-		//material->shader = AssetManager::GetAsset<Shader>("resources/shaders/standard.glsl");
-		//material->color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-		//material->colorTexture = AssetManager::GetAsset<Texture2D>("assets/textures/concrete_pillar/color.png");
-		//material->metallic = 0.1f;
-		//material->roughness = 0.8f;
-		//material->roughnessTexture = AssetManager::GetAsset<Texture2D>("assets/textures/concrete_pillar/roughness.png");
-		//Serializer::Serialize(material);
-
-		// --- DESERIALIZATION TEST ---
-		//Ref<Material> loadedMaterial = AssetManager::GetAsset<Material>("assets/test.material");
     }
 
     void EditorLayer::OnDetach()

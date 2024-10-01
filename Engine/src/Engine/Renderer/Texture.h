@@ -22,6 +22,7 @@ namespace Engine
 		uint32_t GetWidth() const { return m_Width; }
 		uint32_t GetHeight() const { return m_Height; }
 		uint32_t GetRendererID() const { return m_RendererID; }
+		unsigned char* GetPixelData() const { return m_PixelData; }
 
 		virtual void SetData(void* data, uint32_t size) = 0;
 
@@ -32,6 +33,7 @@ namespace Engine
 	protected:
 		uint32_t m_Width, m_Height;
 		uint32_t m_RendererID;
+		unsigned char* m_PixelData = nullptr;
 
 		Texture2D(const std::filesystem::path& path) : Asset(path) {}
 	};
