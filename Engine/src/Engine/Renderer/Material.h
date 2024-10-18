@@ -4,9 +4,12 @@
 #include "Engine/Renderer/Shader.h"
 #include "Engine/Renderer/Texture.h"
 #include <glm/glm.hpp>
+#include <variant>
 
 namespace Engine 
 {
+	using MaterialProperty = std::variant<float, int, glm::vec2, glm::vec3, glm::vec4, std::shared_ptr<Texture2D>>;
+
 	class MaterialFactory : public IAssetFactory
 	{
 	public:
@@ -19,24 +22,38 @@ namespace Engine
 	public:
 		Material(const std::filesystem::path& path) : Asset(path) {}
 
-		PROPERTY(Ref<Shader>, Shader);
+		Ref<Shader> GetShader() const { return m_Shader; }
+		void SetShader(const Ref<Shader>& shader);
 
-		PROPERTY(Ref<Texture2D>, ColorTexture);
-		PROPERTY(Ref<Texture2D>, MetallicTexture);
-		PROPERTY(Ref<Texture2D>, RoughnessTexture);
-		PROPERTY(Ref<Texture2D>, NormalTexture);
-		PROPERTY(Ref<Texture2D>, HeightTexture);
-		PROPERTY(Ref<Texture2D>, AmbientTexture);
-		PROPERTY(Ref<Texture2D>, EmissionTexture);
+		template<typename T>
+		void SetProperty(const std::string& name, const T& value)
+		{
+			m_Properties[name] = value;
+		}
 
-		PROPERTY(glm::vec4, Color);
-		PROPERTY(float, Metallic);
-		PROPERTY(float, Roughness);
-		PROPERTY(float, NormalStrength);
-		PROPERTY(glm::vec3, EmissionColor);
-		PROPERTY(float, EmmissionStrength);
+		template<typename T>
+		T GetProperty(const std::string& name) const
+		{
+			if (m_Properties.find(name) != m_Properties.end())
+			{
+				return std::get<T>(m_Properties.at(name));
+			}
+			throw std::runtime_error("Property not found");
+		}
 
-		PROPERTY(glm::vec2, Tiling);
-		PROPERTY(glm::vec2, Offset);
+		bool HasProperty(const std::string& name) const
+		{
+			return m_Properties.find(name) != m_Properties.end();
+		}
+
+		std::unordered_map<std::string, MaterialProperty> GetProperties()
+		{
+			return m_Properties;
+		}
+
+	private:
+		Ref<Shader> m_Shader;
+		std::unordered_map<std::string, MaterialProperty> m_Properties;
+
 	};
 }

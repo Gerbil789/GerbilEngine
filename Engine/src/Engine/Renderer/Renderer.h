@@ -19,12 +19,8 @@ namespace Engine
 		static void BeginScene(const Camera& camera, const glm::mat4& transform);
 		static void BeginScene(const EditorCamera& camera);
 		static void EndScene();
-
 		static void OnWindowResize(uint32_t width, uint32_t height);
-
 		static void DrawMesh(const glm::mat4& transform, Ref<Mesh> mesh, Ref<Material> material, int entityID);
-
-
 
 		struct Statistics
 		{
@@ -35,5 +31,8 @@ namespace Engine
 
 		static Statistics GetStats();
 		static void ResetStats();
+
+	private:
+		static void AlignOffset(size_t& currentOffset, size_t alignment);
 	};
 }

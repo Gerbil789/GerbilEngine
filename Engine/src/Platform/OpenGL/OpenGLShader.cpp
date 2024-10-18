@@ -6,12 +6,14 @@
 #include <glad/glad.h>
 #include <fstream>
 
+#include <shaderc/shaderc.hpp>
+
 namespace Engine
 {
 	static GLenum ShaderTypeFromString(const std::string& type)
 	{
-		if (type == "vertex")return GL_VERTEX_SHADER;
-		if (type == "fragment" || type == "pixel") return GL_FRAGMENT_SHADER;
+		if (type == "vertex") return GL_VERTEX_SHADER;
+		if (type == "fragment") return GL_FRAGMENT_SHADER;
 
 
 		ASSERT(false, "Unknown shader type!");
@@ -19,12 +21,13 @@ namespace Engine
 	}
 
 
-	OpenGLShader::OpenGLShader(const std::filesystem::path& path, const ShaderSettings& settings) : Shader(path)
+	OpenGLShader::OpenGLShader(const std::filesystem::path& path) : Shader(path)
 	{
 		ENGINE_PROFILE_FUNCTION();
 
 		auto source = ReadFile(path.string());
 		if (!source) { return; }
+
 		Compile(PreProcess(*source));
 	}
 
@@ -32,7 +35,7 @@ namespace Engine
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-		IncludeLibs(source);
+		IncludeLibs(source); // merge multiple files into one
 
 		std::unordered_map<GLenum, std::string> shaderSources;
 		const char* typeToken = "#type";
@@ -75,39 +78,45 @@ namespace Engine
 	void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources)
 	{
 		ENGINE_PROFILE_FUNCTION();
+
+		shaderc::Compiler compiler;
+		shaderc::CompileOptions options;
+		options.SetOptimizationLevel(shaderc_optimization_level_performance);
+		options.SetGenerateDebugInfo();
+
 		GLuint program = glCreateProgram();
 		ASSERT(shaderSources.size() <= 2, "Only 2 shaders are currently supported");
 		std::array<GLenum, 2> glShaderIDs; // [0] = vertex, [1] = fragment
 		int glShaderIDIndex = 0;
 
-		for (auto& kv : shaderSources) {
+		for (auto& kv : shaderSources)
+		{
 			GLenum type = kv.first;
 			const std::string& source = kv.second;
 
-			GLuint shader = glCreateShader(type);
+			std::string sourceName = type == GL_VERTEX_SHADER ? "Vertex" : "Fragment";
+			shaderc_shader_kind shaderType = type == GL_VERTEX_SHADER ? shaderc_glsl_vertex_shader : shaderc_glsl_fragment_shader;
 
-			const GLchar* sourceCStr = source.c_str();
-			glShaderSource(shader, 1, &sourceCStr, 0);
+			shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, shaderType, sourceName.c_str(), options);
 
-			glCompileShader(shader);
-
-			GLint success = 0;
-			glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-			if (success == GL_FALSE)
+			if (result.GetCompilationStatus() != shaderc_compilation_status_success)
 			{
-				GLint maxLength = 0;
-				glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
-
-				std::vector<GLchar> infoLog(maxLength);
-				glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
-
-				glDeleteShader(shader);
-
-				LOG_ERROR("{0}", infoLog.data());
+				LOG_ERROR("{0}", result.GetErrorMessage());
 				ASSERT(false, "Shader compilation failure!");
-				break;
 			}
 
+			std::vector<uint32_t> spirvBinary(result.cbegin(), result.cend());
+
+			Reflect(sourceName, spirvBinary);
+
+			// Create and bind the OpenGL shader
+			GLuint shader = glCreateShader(type);
+			glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, spirvBinary.data(), spirvBinary.size() * sizeof(uint32_t));
+
+			// Specialize the shader (if needed, optional)
+			glSpecializeShader(shader, "main", 0, nullptr, nullptr);
+
+			// Attach the shader to the program
 			glAttachShader(program, shader);
 			glShaderIDs[glShaderIDIndex++] = shader;
 		}
@@ -127,7 +136,9 @@ namespace Engine
 			glDeleteProgram(program);
 
 			for (auto id : glShaderIDs)
+			{
 				glDeleteShader(id);
+			}
 
 			LOG_ERROR("{0}", infoLog.data());
 			ASSERT(false, "Shader link failure!");
@@ -141,6 +152,129 @@ namespace Engine
 		}
 
 		m_RendererID = program;
+	}
+
+	void OpenGLShader::Reflect(const std::string& shaderName, const std::vector<uint32_t>& spirv)
+	{
+		ENGINE_PROFILE_FUNCTION();
+
+		spirv_cross::Compiler compiler(spirv);
+		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+
+		LOG_INFO("----- {0} -----", shaderName);
+		LOG_TRACE("Uniform Buffers Size ........ {0}", resources.uniform_buffers.size());
+		LOG_TRACE("Storage Buffers Size ........ {0}", resources.storage_buffers.size());
+		LOG_TRACE("Sampled Images Size ......... {0}", resources.sampled_images.size());
+		LOG_TRACE("Storage Images Size ......... {0}", resources.storage_images.size());
+		LOG_TRACE("Subpass Inputs Size ......... {0}", resources.subpass_inputs.size());
+		LOG_TRACE("Separate Images Size ........ {0}", resources.separate_images.size());
+		LOG_TRACE("Separate Samplers Size ...... {0}", resources.separate_samplers.size());
+		LOG_TRACE("Push Constant Buffers Size .. {0}", resources.push_constant_buffers.size());
+		LOG_TRACE("Atomic Counters Size ........ {0}", resources.atomic_counters.size());
+		LOG_TRACE("Separate Images Size ........ {0}", resources.separate_images.size());
+		LOG_TRACE("Separate Samplers Size ...... {0}", resources.separate_samplers.size());
+		LOG_TRACE("Input Variables Size ........ {0}", resources.stage_inputs.size());
+		LOG_TRACE("Output Variables Size ....... {0}", resources.stage_outputs.size());
+
+		// Reflect Uniform Buffers
+		std::vector<BufferElement> allElements;
+
+		for (const auto& uniform_buffer : resources.uniform_buffers)
+		{
+			std::string buffer_name = compiler.get_name(uniform_buffer.id);
+			auto& buffer_type = compiler.get_type(uniform_buffer.base_type_id);
+
+			LOG_TRACE("Uniform Buffer: {0} {1}", buffer_name, buffer_type.array.size());
+
+			for (uint32_t i = 0; i < buffer_type.member_types.size(); i++)
+			{
+				auto& memberType = compiler.get_type(buffer_type.member_types[i]);
+				std::string memberName = compiler.get_member_name(uniform_buffer.base_type_id, i);
+
+				ShaderDataType type = ShaderTypeFromSpv(memberType);
+				uint32_t size = ShaderDataTypeSize(type);
+				if (size > 0)
+				{
+					BufferElement element(type, memberName);
+					allElements.push_back(element);
+				}
+			}
+		}
+		m_UniformBuffer = BufferLayout(allElements);
+
+		// Reflect Input Variables
+		for (const auto& input : resources.stage_inputs)
+		{
+			std::string input_name = compiler.get_name(input.id);
+			auto& input_type = compiler.get_type(input.base_type_id);
+
+			LOG_TRACE("Input Variable: {0}", input_name);
+
+			ShaderDataType type = ShaderTypeFromSpv(input_type);
+			uint32_t size = ShaderDataTypeSize(type);
+			/*if (size > 0)
+			{
+				BufferElement element(type, input_name);
+				allElements.push_back(element);
+			}*/
+		}
+	}
+
+	ShaderDataType OpenGLShader::ShaderTypeFromSpv(spirv_cross::SPIRType spvType)
+	{
+		switch (spvType.basetype)
+		{
+		case spirv_cross::SPIRType::Float:
+			if (spvType.columns == 4 && spvType.vecsize == 4)
+			{
+				return ShaderDataType::Mat4;
+			}
+			else if (spvType.columns == 3 && spvType.vecsize == 3)
+			{
+				return ShaderDataType::Mat3;
+			}
+			else if (spvType.columns == 1 && spvType.vecsize == 4)
+			{
+				return ShaderDataType::Float4;
+			}
+			else if (spvType.columns == 1 && spvType.vecsize == 3)
+			{
+				return ShaderDataType::Float3;
+			}
+			else if (spvType.columns == 1 && spvType.vecsize == 2)
+			{
+				return ShaderDataType::Float2;
+			}
+			else
+			{
+				return ShaderDataType::Float;
+			}
+			
+		case spirv_cross::SPIRType::Int:
+			if (spvType.columns == 4 && spvType.vecsize == 4)
+			{
+				return ShaderDataType::Int4;
+			}
+			else if (spvType.columns == 3 && spvType.vecsize == 3)
+			{
+				return ShaderDataType::Int3;
+			}
+			else if (spvType.columns == 2 && spvType.vecsize == 2)
+			{
+				return ShaderDataType::Int2;
+			}
+			else
+			{
+				return ShaderDataType::Int;
+			}
+		case spirv_cross::SPIRType::Boolean:
+			return ShaderDataType::Bool;
+
+
+		//default:
+		//	ASSERT(false, "Unknown type!");
+		}
+		
 	}
 
 
@@ -175,7 +309,7 @@ namespace Engine
 		UploadUniformFloat4(name, value);
 	}
 
-	
+
 	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value)
 	{
 		UploadUniformMat4f(name, value);

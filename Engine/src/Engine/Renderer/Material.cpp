@@ -10,6 +10,7 @@ namespace Engine
 	Ref<Asset> MaterialFactory::Load(const std::filesystem::path& path, const std::any& data)
 	{
 		Ref<Material> material = CreateRef<Material>(path);
+
 		if (!Serializer::Deserialize(material))
 		{
 			LOG_ERROR("Failed to deserialize material");
@@ -20,7 +21,23 @@ namespace Engine
 	Ref<Asset> MaterialFactory::Create(const std::filesystem::path& path, const std::any& data)
 	{
 		Ref<Material> material = CreateRef<Material>(path);
-		material->SetShader(AssetManager::GetAsset<Shader>("resources/shaders/standard.glsl"));
 		return material;
+	}
+	void Material::SetShader(const Ref<Shader>& shader)
+	{
+		m_Shader = shader;
+
+		auto& uniformBuffer = m_Shader->GetUniformBuffer();
+
+		for (const auto& element : uniformBuffer)
+		{
+			if (element.Type == ShaderDataType::Float4)
+			{
+				//SetProperty(element.Name, glm::vec4(1.0f));
+			}
+
+
+		}
+		
 	}
 }

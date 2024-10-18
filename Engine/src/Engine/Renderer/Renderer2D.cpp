@@ -104,7 +104,7 @@ namespace Engine
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
 
-		s_Data.TextureShader = AssetManager::GetAsset<Shader>("resources/shaders/standard2D.glsl", ShaderSettings::LIGHTING);
+		s_Data.TextureShader = AssetManager::GetAsset<Shader>("resources/shaders/flatColor.shader"); //TODO: use 2D shader
 		s_Data.TextureShader->Bind();
 		s_Data.TextureShader->SetIntArray("u_Textures", samplers, s_Data.MaxTextureSlots);
 
@@ -138,7 +138,7 @@ namespace Engine
 		ENGINE_PROFILE_FUNCTION();
 		Renderer2D::ResetStats();
 		s_Data.TextureShader->Bind();
-		s_Data.TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjection());
+		s_Data.TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
 		s_Data.TextureShader->SetFloat3("u_CameraPosition", camera.GetPosition());
 
 
@@ -213,7 +213,7 @@ namespace Engine
 	{
 		ENGINE_PROFILE_FUNCTION();
 		//tmp
-		if (src.Material != nullptr) 
+		/*if (src.Material != nullptr) 
 		{
 			if(src.Material->GetColorTexture() == nullptr)
 			{
@@ -224,7 +224,7 @@ namespace Engine
 
 			DrawQuad(transform, src.Material->GetColorTexture(), src.Material->GetTiling(), src.Material->GetColor(), entityID);
 			return;
-		}
+		}*/
 
 
 		if (src.Texture) 

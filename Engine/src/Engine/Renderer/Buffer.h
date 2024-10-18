@@ -1,8 +1,8 @@
 #pragma once
 
-namespace Engine 
+namespace Engine
 {
-	enum class ShaderDataType 
+	enum class ShaderDataType
 	{
 		None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Bool
 	};
@@ -11,24 +11,24 @@ namespace Engine
 	{
 		switch (type)
 		{
-			case ShaderDataType::None:     return 0;	// 0 bytes
-			case ShaderDataType::Float:    return 4;	// 4 bytes
-			case ShaderDataType::Float2:   return 8;	// 2 * 4 bytes
-			case ShaderDataType::Float3:   return 12;	// 3 * 4 bytes
-			case ShaderDataType::Float4:   return 16;	// 4 * 4 bytes
-			case ShaderDataType::Mat3:     return 36;	// 3 * 3 * 4 bytes
-			case ShaderDataType::Mat4:     return 64;	// 4 * 4 * 4 bytes
-			case ShaderDataType::Int:      return 4;	// 4 bytes
-			case ShaderDataType::Int2:     return 8;	// 2 * 4 bytes
-			case ShaderDataType::Int3:     return 12;	// 3 * 4 bytes
-			case ShaderDataType::Int4:     return 16;	// 4 * 4 bytes
-			case ShaderDataType::Bool:     return 1;	// 1 byte
-			default: ASSERT(false, "Unknown ShaderDataType!"); return 0;
+		case ShaderDataType::None:     return 0;	// 0 bytes
+		case ShaderDataType::Float:    return 4;	// 4 bytes
+		case ShaderDataType::Float2:   return 8;	// 2 * 4 bytes
+		case ShaderDataType::Float3:   return 12;	// 3 * 4 bytes
+		case ShaderDataType::Float4:   return 16;	// 4 * 4 bytes
+		case ShaderDataType::Mat3:     return 36;	// 3 * 3 * 4 bytes
+		case ShaderDataType::Mat4:     return 64;	// 4 * 4 * 4 bytes
+		case ShaderDataType::Int:      return 4;	// 4 bytes
+		case ShaderDataType::Int2:     return 8;	// 2 * 4 bytes
+		case ShaderDataType::Int3:     return 12;	// 3 * 4 bytes
+		case ShaderDataType::Int4:     return 16;	// 4 * 4 bytes
+		case ShaderDataType::Bool:     return 1;	// 1 byte
+		default: ASSERT(false, "Unknown ShaderDataType!"); return 0;
 		}
 	}
 
 
-	struct BufferElement 
+	struct BufferElement
 	{
 		std::string Name;
 		ShaderDataType Type = ShaderDataType::None;
@@ -43,18 +43,18 @@ namespace Engine
 		{
 			switch (Type)
 			{
-				case ShaderDataType::Float:    return 1;
-				case ShaderDataType::Float2:   return 2;
-				case ShaderDataType::Float3:   return 3;
-				case ShaderDataType::Float4:   return 4;
-				case ShaderDataType::Mat3:     return 9;
-				case ShaderDataType::Mat4:     return 16;
-				case ShaderDataType::Int:      return 1;
-				case ShaderDataType::Int2:     return 2;
-				case ShaderDataType::Int3:     return 3;
-				case ShaderDataType::Int4:     return 4;
-				case ShaderDataType::Bool:     return 1;
-				default: ASSERT(false, "Unknown ShaderDataType!"); return 0;
+			case ShaderDataType::Float:    return 1;
+			case ShaderDataType::Float2:   return 2;
+			case ShaderDataType::Float3:   return 3;
+			case ShaderDataType::Float4:   return 4;
+			case ShaderDataType::Mat3:     return 9;
+			case ShaderDataType::Mat4:     return 16;
+			case ShaderDataType::Int:      return 1;
+			case ShaderDataType::Int2:     return 2;
+			case ShaderDataType::Int3:     return 3;
+			case ShaderDataType::Int4:     return 4;
+			case ShaderDataType::Bool:     return 1;
+			default: ASSERT(false, "Unknown ShaderDataType!"); return 0;
 			}
 		}
 	};
@@ -68,6 +68,11 @@ namespace Engine
 		{
 			CalculateOffsetAndStride();
 		}
+		BufferLayout(std::vector<BufferElement> elements) : m_Elements(elements)
+		{
+			CalculateOffsetAndStride();
+		}
+
 		inline const std::vector<BufferElement>& GetElements() const { return m_Elements; }
 		inline uint32_t GetStride() const { return m_Stride; }
 

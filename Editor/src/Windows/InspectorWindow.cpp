@@ -28,9 +28,9 @@ namespace Engine
 
 	void InspectorWindow::OnImGuiRender()
 	{
-		
+
 		ImGui::Begin("Inspector");
-		if (!m_Scene) 
+		if (!m_Scene)
 		{
 			ImGui::End();
 			return;
@@ -111,9 +111,26 @@ namespace Engine
 
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
 			{
-				UI::Vec3Control("Position", component.Position);
-				UI::Vec3Control("Rotation", component.Rotation);
-				UI::Vec3Control("Scale", component.Scale, 1.0f);
+				float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 100, 100.0f);
+				ImGui::Columns(2, "transform", false);
+				ImGui::SetColumnWidth(0, 100);
+				ImGui::SetColumnWidth(1, availWidth);
+
+				ImGui::Text("Position");
+				ImGui::NextColumn();
+				UI::Vec3Field("Position", component.Position);
+				ImGui::NextColumn();
+
+				ImGui::Text("Rotation");
+				ImGui::NextColumn();
+				UI::Vec3Field("Rotation", component.Rotation);
+				ImGui::NextColumn();
+
+				ImGui::Text("Scale");
+				ImGui::NextColumn();
+				UI::Vec3Field("Scale", component.Scale);
+				ImGui::NextColumn();
+				ImGui::Columns(1);
 			});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
@@ -123,11 +140,11 @@ namespace Engine
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						if (payload->DataSize == 0) 
-						{ 
+						if (payload->DataSize == 0)
+						{
 							LOG_WARNING("Failed to load material! (DataSize == 0)");
 						}
-						else 
+						else
 						{
 							const wchar_t* droppedPath = (const wchar_t*)payload->Data;
 							std::filesystem::path path(droppedPath);
@@ -141,7 +158,7 @@ namespace Engine
 							}
 						}
 
-						
+
 					}
 					ImGui::EndDragDropTarget();
 				}
@@ -186,16 +203,16 @@ namespace Engine
 			{
 				auto& camera = component.Camera;
 
-				UI::BoolControl("Primary", component.Main);
-				UI::BoolControl("Fixed Aspect Ratio", component.FixedAspectRatio);
+				//UI::BoolControl("Primary", component.Main);
+				//UI::BoolControl("Fixed Aspect Ratio", component.FixedAspectRatio);
 
 
 				std::vector<std::string> projectionTypes = { "Perspective", "Orthographic" };
-			
+
 				//const char* currentProjectionTypeString = projectionTypeString[(int)camera.GetProjectionType()];
 
 				SceneCamera::ProjectionType projectionType = camera.GetProjectionType();
-				if (UI::EnumControl("Projection", (int&)projectionType, projectionTypes))
+				if (UI::EnumField("Projection", (int&)projectionType, projectionTypes))
 				{
 					camera.SetProjectionType((SceneCamera::ProjectionType)projectionType);
 				}
@@ -203,40 +220,40 @@ namespace Engine
 				if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 				{
 					float perspectiveVerticalFOV = glm::degrees(camera.GetPerspectiveVerticalFOV());
-					if (UI::FloatField("Vertical FOV", perspectiveVerticalFOV)) 
+					if (UI::FloatField("Vertical FOV", perspectiveVerticalFOV))
 					{
 						camera.SetPerspectiveVerticalFOV(glm::radians(perspectiveVerticalFOV));
 					}
 
 					float perspectiveNearClip = camera.GetPerspectiveNearClip();
-					if (UI::FloatField("Near Clip", perspectiveNearClip)) 
+					if (UI::FloatField("Near Clip", perspectiveNearClip))
 					{
 						camera.SetPerspectiveNearClip(perspectiveNearClip);
 					}
 
 					float perspectiveFarClip = camera.GetPerspectiveFarClip();
-					if (UI::FloatField("Far Clip", perspectiveFarClip)) 
+					if (UI::FloatField("Far Clip", perspectiveFarClip))
 					{
-						camera.SetPerspectiveFarClip(perspectiveFarClip); 
+						camera.SetPerspectiveFarClip(perspectiveFarClip);
 					}
 				}
 
 				if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
 				{
 					float orthographicSize = camera.GetOrthographicSize();
-					if(UI::FloatField("Size", orthographicSize))
+					if (UI::FloatField("Size", orthographicSize))
 					{
 						camera.SetOrthographicSize(orthographicSize);
 					}
 
 					float orthographicNearClip = camera.GetOrthographicNearClip();
-					if (UI::FloatField("Near Clip", orthographicNearClip)) 
+					if (UI::FloatField("Near Clip", orthographicNearClip))
 					{
 						camera.SetOrthographicNearClip(orthographicNearClip);
 					}
-						
+
 					float orthographicFarClip = camera.GetOrthographicFarClip();
-					if(UI::FloatField("Far Clip", orthographicFarClip))
+					if (UI::FloatField("Far Clip", orthographicFarClip))
 					{
 						camera.SetOrthographicFarClip(orthographicFarClip);
 					}
@@ -245,48 +262,83 @@ namespace Engine
 
 		DrawComponent<LightComponent>("Light", entity, [](auto& component)
 			{
-				UI::ColorField("##color", component.Color);
-				UI::FloatField("Intensity", component.Intensity);
+				float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 100, 100.0f);
+				ImGui::Columns(2, "light_body", false);
+				ImGui::SetColumnWidth(0, 100);
+				ImGui::SetColumnWidth(1, availWidth);
 
+
+				ImGui::Text("Type");
+				ImGui::NextColumn();
 				std::vector<std::string> lightTypes = { "Point", "Directional", "Spot" };
-			
-				//const char* currentLightTypeString = lightTypeString[(int)component.Type];
-				if (UI::EnumControl("Type", (int&)component.Type, lightTypes))
+				if (UI::EnumField("Type", (int&)component.Type, lightTypes))
 				{
 					component.Type = (LightType)component.Type;
 				}
+				ImGui::NextColumn();
 
-				if(component.Type == LightType::Point)
+
+				ImGui::Text("Color");
+				ImGui::NextColumn();
+				UI::ColorField("##color", component.Color);
+				ImGui::NextColumn();
+
+				ImGui::Text("Intensity");
+				ImGui::NextColumn();
+				UI::FloatField("Intensity", component.Intensity);
+				ImGui::NextColumn();
+
+
+				switch (component.Type)
 				{
+				case LightType::Directional:
+					break;
+				case LightType::Point:
+					ImGui::Text("Range");
+					ImGui::NextColumn();
 					UI::FloatField("Range", component.Range);
+					ImGui::NextColumn();
 
-					if (ImGui::CollapsingHeader("Advanced"))
-					{
-						ImGui::Text("Attenuation");
-						UI::FloatField("Constant", component.Attenuation.x);
-						UI::FloatField("Linear", component.Attenuation.y);
-						UI::FloatField("Quadratic", component.Attenuation.z);
-					}
-				}
-				else if (component.Type == LightType::Spot)
-				{
-					UI::FloatField("Inner angle", component.InnerAngle);
+					ImGui::Text("Attenuation");
+					ImGui::NextColumn();
+					UI::Vec3Field("Attenuation", component.Attenuation);
+					ImGui::NextColumn();
+					break;
+
+				case LightType::Spot:
+					ImGui::Text("Inner Angle");
+					ImGui::NextColumn();
+					UI::FloatField("Inner Angle", component.InnerAngle);
+					ImGui::NextColumn();
+
+					ImGui::Text("Outer Angle");
+					ImGui::NextColumn();
 					UI::FloatField("Outer Angle", component.OuterAngle);
+					ImGui::NextColumn();
 
-					if (ImGui::CollapsingHeader("Advanced"))
-					{
-						ImGui::Text("Attenuation");
-						UI::FloatField("Constant", component.Attenuation.x);
-						UI::FloatField("Linear", component.Attenuation.y);
-						UI::FloatField("Quadratic", component.Attenuation.z);
-					}
+					ImGui::Text("Attenuation");
+					ImGui::NextColumn();
+					UI::Vec3Field("Attenuation", component.Attenuation);
+					ImGui::NextColumn();
+					break;
 				}
 
+				ImGui::Columns(1);
 			});
 
 		DrawComponent<MeshRendererComponent>("MeshRenderer", entity, [](auto& component)
 			{
-				ImGui::Button("Mesh", ImVec2(100.0f, 0.0f));
+				float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 100, 100.0f);
+				ImGui::Columns(2, "light_body", false);
+				ImGui::SetColumnWidth(0, 100);
+				ImGui::SetColumnWidth(1, availWidth);
+
+
+				ImGui::Text("Mesh");
+				ImGui::NextColumn();
+				Ref<Mesh> mesh = component.Mesh;
+				std::string meshButtonText = mesh != nullptr ? mesh->GetFilePath().filename().string() : "##Mesh";
+				ImGui::Button(meshButtonText.c_str(), ImVec2(availWidth, 0.0f));
 				if (ImGui::BeginDragDropTarget())
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -304,8 +356,12 @@ namespace Engine
 					}
 					ImGui::EndDragDropTarget();
 				}
+				ImGui::NextColumn();
 
-				ImGui::Button("Material", ImVec2(100.0f, 0.0f));
+				ImGui::Text("Material");
+				ImGui::NextColumn();
+				std::string materialButtonText = component.Material ? component.Material->GetFilePath().filename().string() : "##Material";
+				ImGui::Button(materialButtonText.c_str(), ImVec2(availWidth, 0.0f));
 				if (ImGui::BeginDragDropTarget())
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -323,6 +379,8 @@ namespace Engine
 					}
 					ImGui::EndDragDropTarget();
 				}
+				ImGui::NextColumn();
+				ImGui::Columns(1);
 			});
 	}
 

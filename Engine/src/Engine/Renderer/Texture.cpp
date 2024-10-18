@@ -54,4 +54,19 @@ namespace Engine
 		default: ASSERT(false, "Unknown RendererAPI!"); return nullptr;
 		}
 	}
+	Ref<Asset> Texture2DFactory::CreateSolidColorTexture(uint32_t color)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None: ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+		case RendererAPI::API::OpenGL:
+		{
+			Ref<Texture2D> texture = CreateRef<OpenGLTexture2D>(1, 1);
+			std::vector<uint32_t> colorData(1, color);
+			texture->SetData(colorData.data(), sizeof(uint32_t));
+			return texture;
+		}
+		default: ASSERT(false, "Unknown RendererAPI!"); return nullptr;
+		}
+	}
 }

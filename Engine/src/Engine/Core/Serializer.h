@@ -12,22 +12,8 @@ namespace YAML
 }
 
 // material serialization keys
-constexpr const char* SHADER_KEY = "shader";
-constexpr const char* COLOR_TEXTURE_KEY = "colorTexture";
-constexpr const char* METALLIC_TEXTURE_KEY = "metallicTexture";
-constexpr const char* ROUGHNESS_TEXTURE_KEY = "roughnessTexture";
-constexpr const char* NORMAL_TEXTURE_KEY = "normalTexture";
-constexpr const char* HEIGHT_TEXTURE_KEY = "heightTexture";
-constexpr const char* OCCLUSION_TEXTURE_KEY = "ambientTexture";
-constexpr const char* EMISSION_TEXTURE_KEY = "emissionTexture";
-constexpr const char* COLOR_KEY = "color";
-constexpr const char* METALLIC_KEY = "metallic";
-constexpr const char* ROUGHNESS_KEY = "roughness";
-constexpr const char* NORMAL_STRENGTH_KEY = "normalStrength";
-constexpr const char* EMISSION_COLOR_KEY = "emissionColor";
-constexpr const char* EMISSION_STRENGTH_KEY = "emissionStrength";
-constexpr const char* TILING_KEY = "tiling";
-constexpr const char* OFFSET_KEY = "offset";
+constexpr const char* SHADER_KEY = "Shader";
+constexpr const char* PROPERTIES_KEY = "Properties";
 
 // scene serialization keys
 //TODO: add scene serialization keys & update scene serialization

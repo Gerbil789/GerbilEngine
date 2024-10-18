@@ -23,14 +23,9 @@ namespace Engine
 		ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		AssetManager::RegisterFactory<Texture2D>(std::make_unique<Texture2DFactory>());
-		AssetManager::RegisterFactory<Material>(std::make_unique<MaterialFactory>());
-		AssetManager::RegisterFactory<Scene>(std::make_unique<SceneFactory>());
-		AssetManager::RegisterFactory<Mesh>(std::make_unique<MeshFactory>());
-		AssetManager::RegisterFactory<Shader>(std::make_unique<ShaderFactory>());
-
 		m_Window = Window::Create(WindowProps(name));
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+
 
 		RenderCommand::Init();
 		Renderer::Init();

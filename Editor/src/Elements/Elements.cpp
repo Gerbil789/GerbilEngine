@@ -54,26 +54,22 @@ namespace Engine::UI
 		ImGui::PopID();
 		return modified;
 	}
-	void IntControl(const char* label, int& value, int resetValue)
-	{
-		ASSERT(false, "IntControl Not implemented")
-	}
 
-	void Vec2IntControl(const char* label, glm::ivec2& values, int resetValue)
+	bool IntField(const char* label, int& value)
 	{
-		ASSERT(false, "Vec2IntControl Not implemented")
-	}
+		bool valueChanged = false;
+		ImGui::PushID(label);
 
-	void Vec3IntControl(const char* label, glm::ivec3& values, int resetValue)
-	{
-		ASSERT(false, "Vec3IntControl Not implemented")
-	}
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		if (ImGui::DragInt("##input", &value, 1.0f, 0, 0, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
+		{
+			valueChanged = true;
+		}
 
-	void Vec4IntControl(const char* label, glm::ivec4& values, int resetValue)
-	{
-		ASSERT(false, "Vec4IntControl Not implemented")
+		ImGui::PopID();
+		return valueChanged;
+		
 	}
-
 
 	bool FloatField(const char* label, float& value)
 	{
@@ -151,131 +147,49 @@ namespace Engine::UI
 		return valueChanged;
 	}
 
-	void Vec3Control(const char* label, glm::vec3& values, float resetValue)
+	bool Vec3Field(const char* label, glm::vec3& values)
 	{
+		bool valueChanged = false;
 		ImGui::PushID(label);
-		ImGui::Columns(2, (const char*)0, false);
 
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 5, 5 });
+		float itemSpacing = ImGui::GetStyle().ItemSpacing.x;
+		float fullWidth = ImGui::GetContentRegionAvail().x - itemSpacing;
 
-		// Label
-		ImGui::Text(label);
-		ImGui::NextColumn();
+		float labelWidth = ImGui::CalcTextSize("X").x;       
 
-		ImGui::SetColumnOffset(1, labelWidth);
-		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
+		// Calculate the width for each drag float field, ensuring space for labels and padding
+		float inputWidth = (fullWidth - (labelWidth * 3) - (itemSpacing * 4)) / 3.0f;
 
 		// X component
 		ImGui::Text("X");
 		ImGui::SameLine();
-		ImGui::DragFloat("##X", &values.x, 0.1f);
+		ImGui::PushItemWidth(inputWidth);
+		valueChanged |= ImGui::DragFloat("##X", &values.x, 0.1f);
 		ImGui::PopItemWidth();
+
 		ImGui::SameLine();
 
 		// Y component
 		ImGui::Text("Y");
 		ImGui::SameLine();
-		ImGui::DragFloat("##Y", &values.y, 0.1f);
+		ImGui::PushItemWidth(inputWidth);
+		valueChanged |= ImGui::DragFloat("##Y", &values.y, 0.1f);
 		ImGui::PopItemWidth();
+
 		ImGui::SameLine();
 
 		// Z component
 		ImGui::Text("Z");
 		ImGui::SameLine();
-		ImGui::DragFloat("##Z", &values.z, 0.1f);
+		ImGui::PushItemWidth(inputWidth);
+		valueChanged |= ImGui::DragFloat("##Z", &values.z, 0.1f);
 		ImGui::PopItemWidth();
-		ImGui::SameLine();
 
-		// Reset button
-		if (ImGui::Button("R", ImVec2(22, 22))) { values = glm::vec3(resetValue); }
-
-		ImGui::PopStyleVar(2);
-		ImGui::Columns(1);
 		ImGui::PopID();
+		return valueChanged;
 	}
 
-	void Vec4Control(const char* label, glm::vec4& values, float resetValue)
-	{
-		ImGui::PushID(label);
-		ImGui::Columns(2, (const char*)0, false);
-
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 5, 5 });
-
-		// Label
-		ImGui::Text(label);
-		ImGui::NextColumn();
-
-		ImGui::SetColumnOffset(1, labelWidth);
-		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
-
-		// X component
-		ImGui::Text("X");
-		ImGui::SameLine();
-		ImGui::DragFloat("##X", &values.x, 0.1f);
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-
-		// Y component
-		ImGui::Text("Y");
-		ImGui::SameLine();
-		ImGui::DragFloat("##Y", &values.y, 0.1f);
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-
-		// Z component
-		ImGui::Text("Z");
-		ImGui::SameLine();
-		ImGui::DragFloat("##Z", &values.z, 0.1f);
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-
-		// W component
-		ImGui::Text("W");
-		ImGui::SameLine();
-		ImGui::DragFloat("##W", &values.w, 0.1f);
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-
-		// Reset button
-		if (ImGui::Button("R", ImVec2(22, 22))) { values = glm::vec4(resetValue); }
-
-		ImGui::PopStyleVar(2);
-		ImGui::Columns(1);
-		ImGui::PopID();
-	}
-
-	void BoolControl(const char* label, bool& value)
-	{
-		ImGui::PushID(label);
-		ImGui::Columns(2);
-		ImGui::SetColumnWidth(0, labelWidth);
-		ImGui::Text(label);
-		ImGui::NextColumn();
-		ImGui::PushItemWidth(-1);
-		if (ImGui::Checkbox("##value", &value))
-		{
-		}
-		ImGui::PopItemWidth();
-		ImGui::Columns(1);
-		ImGui::PopID();
-	}
-
-	void Vec2BoolControl(const char* label, glm::bvec2& values)
-	{
-		ASSERT(false, "Vec2BoolControl Not implemented")
-	}
-
-	void Vec3BoolControl(const char* label, glm::bvec3& values)
-	{
-		ASSERT(false, "Vec3BoolControl Not implemented")
-	}
-
-	void Vec4BoolControl(const char* label, glm::bvec4& values)
-	{
-		ASSERT(false, "Vec4BoolControl Not implemented")
-	}
+	
 
 	bool FloatSliderControl(const char* label, float& value, float min, float max)
 	{
@@ -297,15 +211,11 @@ namespace Engine::UI
 		ASSERT(false, "StringControl Not implemented")
 	}
 
-	bool EnumControl(const char* label, int& value, const std::vector<std::string>& options)
+	bool EnumField(const char* label, int& value, const std::vector<std::string>& options)
 	{
 		bool valueChanged = false;
 		ImGui::PushID(label);
-		ImGui::Columns(2);
-		ImGui::SetColumnWidth(0, labelWidth);
-		ImGui::Text(label);
-		ImGui::NextColumn();
-		ImGui::PushItemWidth(-1);
+
 		if (ImGui::BeginCombo("##value", options[value].c_str()))
 		{
 			for (int i = 0; i < options.size(); i++)
@@ -321,10 +231,33 @@ namespace Engine::UI
 			}
 			ImGui::EndCombo();
 		}
-		ImGui::PopItemWidth();
-		ImGui::Columns(1);
-		ImGui::PopID();
 
+		ImGui::PopID();
+		return valueChanged;
+	}
+
+	bool EnumField(const char* label, int& value, const std::vector<std::filesystem::path>& options)
+	{
+		bool valueChanged = false;
+		ImGui::PushID(label);
+
+		if (ImGui::BeginCombo("##value", options[value].stem().string().c_str()))
+		{
+			for (int i = 0; i < options.size(); i++)
+			{
+				bool isSelected = value == i;
+				if (ImGui::Selectable(options[i].stem().string().c_str(), isSelected))
+				{
+					value = i;
+					valueChanged = true;
+				}
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+
+		ImGui::PopID();
 		return valueChanged;
 	}
 

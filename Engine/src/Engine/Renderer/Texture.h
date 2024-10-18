@@ -12,6 +12,7 @@ namespace Engine
 		virtual Ref<Asset> Create(const std::filesystem::path& path, const std::any& data = std::any()) override;
 
 		Ref<Asset> CreateTexture(uint32_t width, uint32_t height, uint32_t data);
+		Ref<Asset> CreateSolidColorTexture(uint32_t color); //ABGR
 	};
 
 	class Texture2D : public Asset

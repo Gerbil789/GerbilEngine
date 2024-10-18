@@ -1,7 +1,6 @@
 workspace "GerbilEngine"
 	architecture "x64"
 	startproject "Editor"
-
 	configurations { "Debug", "Release" }
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
@@ -16,6 +15,11 @@ Includedir["entt"] = "Engine/vendor/entt/include"
 Includedir["yaml_cpp"] = "Engine/vendor/yaml-cpp/include"
 Includedir["ImGuizmo"] = "Engine/vendor/ImGuizmo"
 Includedir["assimp"] = "Engine/vendor/assimp/include"
+Includedir["SPIRV_Cross"] = "Engine/vendor/SPIRV-Cross/include"
+Includedir["spirv_tools"] = "Engine/vendor/shaderc/third_party/spirv-tools/include"
+Includedir["glslang"] = "Engine/vendor/shaderc/third_party/glslang/glslang/Include"
+Includedir["shaderc"] = "Engine/vendor/shaderc/libshaderc/include"
+
 
 group "Dependencies"
 	include "Engine/vendor/GLFW"
@@ -24,6 +28,9 @@ group "Dependencies"
 	include "Engine/vendor/yaml-cpp"
 	include "Engine/vendor/assimp"
 	include "Engine/vendor/assimp/contrib/zlib"
+	include "Engine/vendor/shaderc/third_party/spirv-tools"
+	include "Engine/vendor/shaderc/third_party/glslang"
+	include "Engine/vendor/shaderc"
 group ""
 
 
@@ -52,7 +59,11 @@ project "Engine"
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
 		"%{prj.name}/vendor/assimp/include/**.h",
-		"%{prj.name}/vendor/assimp/include/**.hpp"
+		"%{prj.name}/vendor/assimp/include/**.hpp",
+		"%{prj.name}/vendor/SPIRV-Cross/include/**.h",
+		"%{prj.name}/vendor/SPIRV-Cross/include/**.hpp",
+		"%{prj.name}/vendor/SPIRV-Cross/include/**.c",
+		"%{prj.name}/vendor/SPIRV-Cross/include/**.cpp",
 	}
 
 	defines
@@ -72,8 +83,16 @@ project "Engine"
 		"%{Includedir.entt}",
 		"%{Includedir.yaml_cpp}",
 		"%{Includedir.ImGuizmo}",
-		"%{Includedir.assimp}"
+		"%{Includedir.assimp}",
+		"%{Includedir.spirv_tools}",
+		"Engine/vendor/shaderc/third_party/spirv-tools/external/spirv-headers/include",
+		"Engine/vendor/shaderc/third_party/spirv-tools/external/spirv-headers/include/spirv/unified1",
+		"%{Includedir.glslang}",
+		"%{Includedir.shaderc}",
+		"%{Includedir.SPIRV_Cross}"
+
 	}
+
 
 	links
 	{
@@ -83,10 +102,15 @@ project "Engine"
 		"opengl32.lib",
 		"yaml-cpp",
 		"assimp",
+		"spirv-tools",
+		"shaderc",
 	}
 
 	filter "files:Engine/vendor/ImGuizmo/**.cpp"
 		flags { "NoPCH" }
+
+	filter { "files:Engine/vendor/SPIRV-Cross/include/**.cpp" }
+    	flags { "NoPCH" }
 
 	filter "system:windows"
 		systemversion "latest"
@@ -134,13 +158,16 @@ project "Editor"
 		"%{Includedir.glm}",
 		"%{Includedir.entt}",
 		"%{Includedir.ImGuizmo}",
-		"%{Includedir.assimp}"
+		"%{Includedir.assimp}",
+		"%{Includedir.glslang}"
 	}
 
 	links
 	{
 		"Engine"
 	}
+
+
 
 	filter "system:windows"
 		cppdialect "C++17"

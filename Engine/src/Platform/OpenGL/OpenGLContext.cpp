@@ -18,9 +18,9 @@ namespace Engine
 		ASSERT(status, "Failed to initialize Glad!");
 
 		LOG_INFO("--- OpenGL Info ---");
-		LOG_INFO(" Vendor:\t {0}", (const char*)glGetString(GL_VENDOR));
-		LOG_INFO(" Renderer:\t {0}", (const char*)glGetString(GL_RENDERER));
-		LOG_INFO(" Version:\t {0}", (const char*)glGetString(GL_VERSION));
+		LOG_INFO(" Vendor:   {0}", (const char*)glGetString(GL_VENDOR));
+		LOG_INFO(" Renderer: {0}", (const char*)glGetString(GL_RENDERER));
+		LOG_INFO(" Version:  {0}", (const char*)glGetString(GL_VERSION));
 		LOG_INFO("-------------------");
 	}
 

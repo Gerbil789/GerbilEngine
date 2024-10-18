@@ -24,22 +24,48 @@ namespace Engine
 		};
 
 		out << YAML::BeginMap;
+
 		writeAssetPath(SHADER_KEY, material->GetShader());
-		writeAssetPath(COLOR_TEXTURE_KEY, material->GetColorTexture());
-		writeAssetPath(METALLIC_TEXTURE_KEY, material->GetMetallicTexture());
-		writeAssetPath(ROUGHNESS_TEXTURE_KEY, material->GetRoughnessTexture());
-		writeAssetPath(NORMAL_TEXTURE_KEY, material->GetNormalTexture());
-		writeAssetPath(HEIGHT_TEXTURE_KEY, material->GetHeightTexture());
-		writeAssetPath(OCCLUSION_TEXTURE_KEY, material->GetAmbientTexture());
-		writeAssetPath(EMISSION_TEXTURE_KEY, material->GetEmissionTexture());
-		WriteVec4(out, COLOR_KEY, material->GetColor());
-		WriteFloat(out, METALLIC_KEY, material->GetMetallic());
-		WriteFloat(out, ROUGHNESS_KEY, material->GetRoughness());
-		WriteFloat(out, NORMAL_STRENGTH_KEY, material->GetNormalStrength());
-		WriteVec3(out, EMISSION_COLOR_KEY, material->GetEmissionColor());
-		WriteFloat(out, EMISSION_STRENGTH_KEY, material->GetEmmissionStrength());
-		WriteVec2(out, TILING_KEY, material->GetTiling());
-		WriteVec2(out, OFFSET_KEY, material->GetOffset());
+
+		out << YAML::Key << PROPERTIES_KEY << YAML::Value << YAML::BeginMap;
+
+		auto properties = material->GetProperties();
+		for (auto& property : properties)
+		{
+			std::string name = property.first;
+			auto value = property.second;
+
+			if (std::holds_alternative<glm::vec4>(value))
+			{
+				WriteVec4(out, name, std::get<glm::vec4>(value));
+			}
+			else if (std::holds_alternative<glm::vec3>(value))
+			{
+				WriteVec3(out, name, std::get<glm::vec3>(value));
+			}
+			else if (std::holds_alternative<glm::vec2>(value))
+			{
+				WriteVec2(out, name, std::get<glm::vec2>(value));
+			}
+			else if (std::holds_alternative<float>(value))
+			{
+				WriteFloat(out, name, std::get<float>(value));
+			}
+			else if (std::holds_alternative<int>(value))
+			{
+				WriteInt(out, name, std::get<int>(value));
+			}
+			else if (std::holds_alternative<Ref<Texture2D>>(value))
+			{
+				writeAssetPath(name, std::get<Ref<Texture2D>>(value));
+			}
+			else
+			{
+				LOG_ERROR("Unknown material property type!");
+			}
+		}
+
+		out << YAML::EndMap; //properties
 		out << YAML::EndMap;
 
 		std::ofstream fout(material->GetFilePath());
@@ -58,14 +84,14 @@ namespace Engine
 		std::ifstream stream(path);
 		if (!stream.is_open())
 		{
-			LOG_ERROR("Failed to open file '{0}'", path);
+			LOG_ERROR("Failed to open file {0}", path);
 			return false;
 		}
 
 		YAML::Node data = YAML::LoadFile(path.string());
 		if (!data[SHADER_KEY].IsDefined())
 		{
-			LOG_ERROR("Shader field missing from material!");
+			LOG_ERROR("Shader field missing in material! {0}", path);
 			return false;
 		}
 
@@ -74,24 +100,58 @@ namespace Engine
 			return AssetManager::GetAsset<Texture2D>(data[key].as<std::string>());
 			};
 
+		auto shader = AssetManager::GetAsset<Shader>(data[SHADER_KEY].as<std::string>());
+		material->SetShader(shader);
 
-		if (data[SHADER_KEY].IsDefined()) material->SetShader(AssetManager::GetAsset<Shader>(data[SHADER_KEY].as<std::string>()));
+		//auto shaderProperties = shader->GetUniformBuffers(); //TODO: check if properties of material and shader match
+		auto materialProperties = data[PROPERTIES_KEY];
 
-		material->SetColorTexture(loadTexture(COLOR_TEXTURE_KEY));
-		material->SetMetallicTexture(loadTexture(METALLIC_TEXTURE_KEY));
-		material->SetRoughnessTexture(loadTexture(ROUGHNESS_TEXTURE_KEY));
-		material->SetNormalTexture(loadTexture(NORMAL_TEXTURE_KEY));
-		material->SetHeightTexture(loadTexture(HEIGHT_TEXTURE_KEY));
-		material->SetAmbientTexture(loadTexture(OCCLUSION_TEXTURE_KEY));
-		material->SetEmissionTexture(loadTexture(EMISSION_TEXTURE_KEY));
-		material->SetColor(ReadVec4(data, COLOR_KEY));
-		material->SetMetallic(ReadFloat(data, METALLIC_KEY));
-		material->SetRoughness(ReadFloat(data, ROUGHNESS_KEY));
-		material->SetNormalStrength(ReadFloat(data, NORMAL_STRENGTH_KEY));
-		material->SetEmissionColor(ReadVec3(data, EMISSION_COLOR_KEY));
-		material->SetEmmissionStrength(ReadFloat(data, EMISSION_STRENGTH_KEY));
-		material->SetTiling(ReadVec2(data, TILING_KEY));
-		material->SetOffset(ReadVec2(data, OFFSET_KEY));
+		for (auto property : materialProperties)
+		{
+			std::string name = property.first.as<std::string>();
+			auto value = property.second;
+
+			if (value.IsSequence())
+			{
+				if (value.size() == 2)
+				{
+					glm::vec2 vec = { value[0].as<float>(), value[1].as<float>() };
+					material->SetProperty(name, vec);
+				}
+				else if (value.size() == 3)
+				{
+					glm::vec3 vec = { value[0].as<float>(), value[1].as<float>(), value[2].as<float>() };
+					material->SetProperty(name, vec);
+				}
+				else if (value.size() == 4)
+				{
+					glm::vec4 vec = { value[0].as<float>(), value[1].as<float>(), value[2].as<float>(), value[3].as<float>() };
+					material->SetProperty(name, vec);
+				}
+			}
+			else if (value.IsScalar())
+			{
+				/*if (value[0].as<int>())
+				{
+					material->SetProperty(name, value.as<int>());
+				}
+				else if (value.Is<float>())
+				{
+					material->SetProperty(name, value.as<float>());
+				}*/
+			}
+		/*	else if (value.IsScalar() && value.Is<std::string>())
+			{
+				material->SetProperty(name, loadTexture(name));
+				
+			}
+			else if (value.IsScalar() && value.Is<std::string>())
+			{
+				material->SetProperty(name, loadTexture(name));
+			}*/
+		}
+
+
 
 		material->SetModified(false);
 		return true;
