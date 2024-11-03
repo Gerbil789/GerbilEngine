@@ -2,6 +2,7 @@
 
 #include "Engine/Core/Asset.h"
 #include "Engine/Renderer/Buffer.h"
+#include "Engine/Renderer/DynamicVertex.h"
 
 namespace Engine 
 {
@@ -20,8 +21,15 @@ namespace Engine
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) = 0;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;
 
-		virtual const BufferLayout& GetUniformBuffer() const = 0;
+		const BufferLayout& GetInputBuffer() const { return m_InputLayout; }
+		BufferLayout GetMaterialBuffer() const { return m_MaterialLayout; }
 
+		const DynamicVertex& GetVertex() const { return m_Vertex; }
+
+	protected:
+		BufferLayout m_InputLayout = BufferLayout();		//shader inputs
+		BufferLayout m_MaterialLayout = BufferLayout(); //shader material uniforms
+		DynamicVertex m_Vertex;													//vertex data
 	};
 
 	class ShaderFactory : public IAssetFactory

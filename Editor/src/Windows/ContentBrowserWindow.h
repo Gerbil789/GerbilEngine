@@ -8,6 +8,14 @@
 
 namespace Engine
 {
+
+
+	enum class ItemType
+	{
+		Directory = 0,
+		File = 1
+	};
+
 	struct SelectionWithDeletion : ImGuiSelectionBasicStorage
 	{
 		// Find which item should be Focused after deletion.
@@ -83,11 +91,6 @@ namespace Engine
 		}
 	};
 
-	enum class ItemType
-	{
-		Directory = 0,
-		File = 1
-	};
 
 	struct ContentBrowserItem
 	{

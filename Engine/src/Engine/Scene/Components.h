@@ -4,6 +4,7 @@
 #include "Engine/Renderer/Mesh.h"
 #include "Engine/Core/UUID.h"
 #include "Engine/Renderer/Material.h"
+#include "Engine/Core/AssetManager.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -21,6 +22,7 @@ namespace Engine
 
 		IDComponent() = default;
 		IDComponent(const IDComponent&) = default;
+		IDComponent(UUID uuid) : ID(uuid) {}
 	};
 
 	struct EnablingComponent
@@ -29,6 +31,7 @@ namespace Engine
 
 		EnablingComponent() = default;
 		EnablingComponent(const EnablingComponent&) = default;
+		EnablingComponent(bool enabled) : Enabled(enabled) {}
 	};
 
 

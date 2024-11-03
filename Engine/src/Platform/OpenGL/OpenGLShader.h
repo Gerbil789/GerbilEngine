@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Engine/Renderer/Shader.h"
-
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
 
@@ -35,18 +34,16 @@ namespace Engine
 		void UploadUniformMat3f(const std::string& name, const glm::mat3& matrix);
 		void UploadUniformMat4f(const std::string& name, const glm::mat4& matrix);
 
-		virtual const BufferLayout& GetUniformBuffer() const override { return m_UniformBuffer; }
-
 	private:
+		void Compile(const std::unordered_map<GLenum, std::string>& shaderSources);
 		std::unordered_map<GLenum, std::string> PreProcess(std::string& source);
 		void IncludeLibs(std::string& source);
-		void Compile(const std::unordered_map<GLenum, std::string>& shaderSources);
 		void Reflect(const std::string& shaderName, const std::vector<uint32_t>& spirv);
 
 		ShaderDataType ShaderTypeFromSpv(spirv_cross::SPIRType spvType);
 
 	private:
 		uint32_t m_RendererID = 0;
-		BufferLayout m_UniformBuffer;
+
 	};
 }

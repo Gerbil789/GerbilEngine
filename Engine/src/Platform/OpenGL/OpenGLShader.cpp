@@ -15,7 +15,6 @@ namespace Engine
 		if (type == "vertex") return GL_VERTEX_SHADER;
 		if (type == "fragment") return GL_FRAGMENT_SHADER;
 
-
 		ASSERT(false, "Unknown shader type!");
 		return 0;
 	}
@@ -35,7 +34,7 @@ namespace Engine
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-		IncludeLibs(source); // merge multiple files into one
+		IncludeLibs(source); 
 
 		std::unordered_map<GLenum, std::string> shaderSources;
 		const char* typeToken = "#type";
@@ -83,7 +82,7 @@ namespace Engine
 		shaderc::CompileOptions options;
 		options.SetOptimizationLevel(shaderc_optimization_level_performance);
 		options.SetGenerateDebugInfo();
-
+		
 		GLuint program = glCreateProgram();
 		ASSERT(shaderSources.size() <= 2, "Only 2 shaders are currently supported");
 		std::array<GLenum, 2> glShaderIDs; // [0] = vertex, [1] = fragment
@@ -158,27 +157,31 @@ namespace Engine
 	{
 		ENGINE_PROFILE_FUNCTION();
 
+
 		spirv_cross::Compiler compiler(spirv);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
 		LOG_INFO("----- {0} -----", shaderName);
-		LOG_TRACE("Uniform Buffers Size ........ {0}", resources.uniform_buffers.size());
-		LOG_TRACE("Storage Buffers Size ........ {0}", resources.storage_buffers.size());
-		LOG_TRACE("Sampled Images Size ......... {0}", resources.sampled_images.size());
-		LOG_TRACE("Storage Images Size ......... {0}", resources.storage_images.size());
-		LOG_TRACE("Subpass Inputs Size ......... {0}", resources.subpass_inputs.size());
-		LOG_TRACE("Separate Images Size ........ {0}", resources.separate_images.size());
-		LOG_TRACE("Separate Samplers Size ...... {0}", resources.separate_samplers.size());
-		LOG_TRACE("Push Constant Buffers Size .. {0}", resources.push_constant_buffers.size());
-		LOG_TRACE("Atomic Counters Size ........ {0}", resources.atomic_counters.size());
-		LOG_TRACE("Separate Images Size ........ {0}", resources.separate_images.size());
-		LOG_TRACE("Separate Samplers Size ...... {0}", resources.separate_samplers.size());
-		LOG_TRACE("Input Variables Size ........ {0}", resources.stage_inputs.size());
-		LOG_TRACE("Output Variables Size ....... {0}", resources.stage_outputs.size());
+
+		// Reflect Input Variables
+		if (shaderName == "Vertex") 
+		{
+			for (const auto& input : resources.stage_inputs)
+			{
+				std::string input_name = compiler.get_name(input.id);
+				auto& input_type = compiler.get_type(input.base_type_id);
+
+				LOG_TRACE("Input Variable: {0}", input_name);
+
+				ShaderDataType type = ShaderTypeFromSpv(input_type);
+
+				m_InputLayout.Push(type, input_name);
+				m_Vertex.AddAttribute(input_name, type);
+			}
+		}
+		
 
 		// Reflect Uniform Buffers
-		std::vector<BufferElement> allElements;
-
 		for (const auto& uniform_buffer : resources.uniform_buffers)
 		{
 			std::string buffer_name = compiler.get_name(uniform_buffer.id);
@@ -191,35 +194,25 @@ namespace Engine
 				auto& memberType = compiler.get_type(buffer_type.member_types[i]);
 				std::string memberName = compiler.get_member_name(uniform_buffer.base_type_id, i);
 
+				LOG_TRACE("  Member: {0} {1}, columns: {2}, vecsize: {3}", memberName, (int)memberType.basetype, memberType.columns, memberType.vecsize);
 				ShaderDataType type = ShaderTypeFromSpv(memberType);
-				uint32_t size = ShaderDataTypeSize(type);
-				if (size > 0)
+
+				if (buffer_name == "u_Material")
 				{
-					BufferElement element(type, memberName);
-					allElements.push_back(element);
+					m_MaterialLayout.Push(type, memberName);
+				}
+				else
+				{
+					LOG_WARNING("Unknown uniform buffer: {0}", buffer_name);
+					//m_ObjectLayout.Push(type, memberName);
 				}
 			}
 		}
-		m_UniformBuffer = BufferLayout(allElements);
-
-		// Reflect Input Variables
-		for (const auto& input : resources.stage_inputs)
-		{
-			std::string input_name = compiler.get_name(input.id);
-			auto& input_type = compiler.get_type(input.base_type_id);
-
-			LOG_TRACE("Input Variable: {0}", input_name);
-
-			ShaderDataType type = ShaderTypeFromSpv(input_type);
-			uint32_t size = ShaderDataTypeSize(type);
-			/*if (size > 0)
-			{
-				BufferElement element(type, input_name);
-				allElements.push_back(element);
-			}*/
-		}
 	}
 
+
+
+	//TODO: use predefined map
 	ShaderDataType OpenGLShader::ShaderTypeFromSpv(spirv_cross::SPIRType spvType)
 	{
 		switch (spvType.basetype)

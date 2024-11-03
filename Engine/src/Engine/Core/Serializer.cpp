@@ -19,18 +19,59 @@ namespace Engine
 
 		YAML::Emitter out;
 
-		auto writeAssetPath = [&out](const std::string& key, const Ref<Asset>& asset) {
-			WriteString(out, key, (asset ? asset->GetFilePath().string() : ""));
-		};
-
 		out << YAML::BeginMap;
 
-		writeAssetPath(SHADER_KEY, material->GetShader());
+		auto shader = material->GetShader();
+		WriteString(out, SHADER_KEY, (shader ? shader->GetFilePath().string() : ""));
 
 		out << YAML::Key << PROPERTIES_KEY << YAML::Value << YAML::BeginMap;
 
-		auto properties = material->GetProperties();
-		for (auto& property : properties)
+		//auto properties = shader->GetUniformBuffer();
+		//for (auto& element : properties)
+		//{
+		//	std::string name = element.Name;
+
+		//	if (!material->HasProperty(name))
+		//	{
+		//		LOG_ERROR("Material does not have property: {0}", name);
+		//		continue;
+		//	}
+
+		//	auto type = element.Type;
+
+		//	if (type == ShaderDataType::Float4)
+		//	{
+		//		WriteVec4(out, name, material->GetProperty<glm::vec4>(name));
+		//	}
+		//	else if (type == ShaderDataType::Float3)
+		//	{
+		//		WriteVec3(out, name, material->GetProperty<glm::vec3>(name));
+		//	}
+		//	else if (type == ShaderDataType::Float2)
+		//	{
+		//		WriteVec2(out, name, material->GetProperty<glm::vec2>(name));
+		//	}
+		//	else if (type == ShaderDataType::Float)
+		//	{
+		//		WriteFloat(out, name, material->GetProperty<float>(name));
+		//	}
+		//	else if (type == ShaderDataType::Int)
+		//	{
+		//		WriteInt(out, name, material->GetProperty<int>(name));
+		//	}
+		//	//else if (type == ShaderDataType::Texture2D)
+		//	//{
+		//	//	//writeAssetPath(name, material->GetProperty<Ref<Texture2D>>(name));
+		//	//}
+		//	else
+		//	{
+		//		LOG_ERROR("Unknown material property type!");
+		//	}
+		//
+		//}
+
+		//auto properties = material->GetProperties();
+		/*for (auto& property : properties)
 		{
 			std::string name = property.first;
 			auto value = property.second;
@@ -63,7 +104,7 @@ namespace Engine
 			{
 				LOG_ERROR("Unknown material property type!");
 			}
-		}
+		}*/
 
 		out << YAML::EndMap; //properties
 		out << YAML::EndMap;
@@ -103,52 +144,50 @@ namespace Engine
 		auto shader = AssetManager::GetAsset<Shader>(data[SHADER_KEY].as<std::string>());
 		material->SetShader(shader);
 
+		auto materialProperties = shader->GetMaterialBuffer();
+
 		//auto shaderProperties = shader->GetUniformBuffers(); //TODO: check if properties of material and shader match
-		auto materialProperties = data[PROPERTIES_KEY];
+		//auto materialProperties = data[PROPERTIES_KEY];
 
-		for (auto property : materialProperties)
+		for (auto& property : materialProperties)
 		{
-			std::string name = property.first.as<std::string>();
-			auto value = property.second;
+			std::string name = property.Name;
+			auto type = property.Type;
 
-			if (value.IsSequence())
+			if (!data[PROPERTIES_KEY][name].IsDefined())
 			{
-				if (value.size() == 2)
-				{
-					glm::vec2 vec = { value[0].as<float>(), value[1].as<float>() };
-					material->SetProperty(name, vec);
-				}
-				else if (value.size() == 3)
-				{
-					glm::vec3 vec = { value[0].as<float>(), value[1].as<float>(), value[2].as<float>() };
-					material->SetProperty(name, vec);
-				}
-				else if (value.size() == 4)
-				{
-					glm::vec4 vec = { value[0].as<float>(), value[1].as<float>(), value[2].as<float>(), value[3].as<float>() };
-					material->SetProperty(name, vec);
-				}
+				continue;
 			}
-			else if (value.IsScalar())
+
+			if (type == ShaderDataType::Float4)
 			{
-				/*if (value[0].as<int>())
-				{
-					material->SetProperty(name, value.as<int>());
-				}
-				else if (value.Is<float>())
-				{
-					material->SetProperty(name, value.as<float>());
-				}*/
+				material->SetProperty(name, ReadVec4(data[PROPERTIES_KEY], name));
 			}
-		/*	else if (value.IsScalar() && value.Is<std::string>())
+			else if (type == ShaderDataType::Float3)
 			{
-				material->SetProperty(name, loadTexture(name));
-				
+				material->SetProperty(name, ReadVec3(data[PROPERTIES_KEY], name));
 			}
-			else if (value.IsScalar() && value.Is<std::string>())
+			else if (type == ShaderDataType::Float2)
 			{
-				material->SetProperty(name, loadTexture(name));
-			}*/
+				material->SetProperty(name, ReadVec2(data[PROPERTIES_KEY], name));
+			}
+			else if (type == ShaderDataType::Float)
+			{
+				material->SetProperty(name, ReadFloat(data[PROPERTIES_KEY], name));
+			}
+			else if (type == ShaderDataType::Int)
+			{
+				material->SetProperty(name, ReadInt(data[PROPERTIES_KEY], name));
+			}
+			//else if (type == ShaderDataType::Texture2D)
+			//{
+			//	//writeAssetPath(name, material->GetProperty<Ref<Texture2D>>(name));
+			//}
+			else
+			{
+				LOG_ERROR("Unknown material property type!");
+			}
+			
 		}
 
 
@@ -317,7 +356,7 @@ namespace Engine
 			{
 				auto& cc = deserializedEntity.AddComponent<CameraComponent>();
 
-				auto& cameraProps = cameraComponent["Camera"];
+				auto cameraProps = cameraComponent["Camera"];
 				cc.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
 
 				cc.Camera.SetPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());
@@ -415,34 +454,34 @@ namespace Engine
 		}
 	}
 
-	glm::vec4& Serializer::ReadVec4(const YAML::Node& node, const std::string& key)
+	glm::vec4 Serializer::ReadVec4(const YAML::Node& node, const std::string& key)
 	{
 		return glm::vec4 { node[key][0].as<float>(), node[key][1].as<float>(), node[key][2].as<float>(), node[key][3].as<float>() };
 	}
 
-	glm::vec3& Serializer::ReadVec3(const YAML::Node& node, const std::string& key)
+	glm::vec3 Serializer::ReadVec3(const YAML::Node& node, const std::string& key)
 	{
 		return glm::vec3 { node[key][0].as<float>(), node[key][1].as<float>(), node[key][2].as<float>() };
 	}
 
-	glm::vec2& Serializer::ReadVec2(const YAML::Node& node, const std::string& key)
+	glm::vec2 Serializer::ReadVec2(const YAML::Node& node, const std::string& key)
 	{
 		return glm::vec2 { node[key][0].as<float>(), node[key][1].as<float>() };
 	}
 
-	float& Serializer::ReadFloat(const YAML::Node& node, const std::string& key)
+	float Serializer::ReadFloat(const YAML::Node& node, const std::string& key)
 	{
 		float value = node[key].as<float>();
 		return value;
 	}
 
-	int& Serializer::ReadInt(const YAML::Node& node, const std::string& key)
+	int Serializer::ReadInt(const YAML::Node& node, const std::string& key)
 	{
 		int value = node[key].as<int>();
 		return value;
 	}
 
-	std::string& Serializer::ReadString(const YAML::Node& node, const std::string& key)
+	std::string Serializer::ReadString(const YAML::Node& node, const std::string& key)
 	{
 		return node[key].as<std::string>();
 	}

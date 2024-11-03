@@ -54,7 +54,7 @@ namespace Engine
 		ImGui::SetColumnWidth(1, 100);
 		ImGui::SetColumnWidth(2, availWidth);
 
-		ImGui::NextColumn();
+		/*ImGui::NextColumn();
 		ImGui::Text("Shader");
 		ImGui::NextColumn();
 
@@ -77,178 +77,87 @@ namespace Engine
 			m_Material->SetModified(true);
 		}
 
-		ImGui::NextColumn();
+		ImGui::NextColumn();*/
 
 		ImGui::Separator();
 
-		std::array<const char*, 2> colorProperties = { "Color", "Albedo" };
+		Ref<Shader> shader = m_Material->GetShader();
+		auto properties = shader->GetMaterialBuffer();
 
-		auto properties = m_Material->GetProperties();
-
-		for (auto& [name, property] : properties)
+		for (auto& prop : properties)
 		{
+			std::string name = prop.Name;
+
 			ImGui::NextColumn();
 			ImGui::Text(name.c_str());
 			ImGui::NextColumn();
 
-			if (std::holds_alternative<float>(property))
+			if (prop.Type == ShaderDataType::Float)
 			{
-				float value = std::get<float>(property);
+				float value = m_Material->GetProperty<float>(name);
 				if (UI::FloatField("##float", value))
 				{
-					m_Material->SetProperty(name, value);
+					m_Material->SetProperty(prop.Name, value);
 					m_Material->SetModified(true);
 				}
 			}
-			else if (std::holds_alternative<int>(property))
+			else if (prop.Type == ShaderDataType::Int)
 			{
-				int value = std::get<int>(property);
+				int value = m_Material->GetProperty<int>(name);
 				if (UI::IntField("##int", value))
 				{
-					m_Material->SetProperty(name, value);
+					m_Material->SetProperty(prop.Name, value);
 					m_Material->SetModified(true);
 				}
 			}
-			else if (std::holds_alternative<glm::vec2>(property))
+			else if (prop.Type == ShaderDataType::Float2)
 			{
-				glm::vec2 value = std::get<glm::vec2>(property);
+				glm::vec2 value = m_Material->GetProperty<glm::vec2>(name);
 				if (UI::Vec2Field("##vec2", value))
 				{
-					m_Material->SetProperty(name, value);
+					m_Material->SetProperty(prop.Name, value);
 					m_Material->SetModified(true);
 				}
 			}
-			else if (std::holds_alternative<glm::vec3>(property))
+			else if (prop.Type == ShaderDataType::Float3)
 			{
-				glm::vec3 value = std::get<glm::vec3>(property);
-				bool isColor = false;
-				for (auto& colorProp : colorProperties)
-				{
-					if (name == colorProp)
-					{
-						isColor = true;
-						break;
-					}
-				}
-
-				if (isColor) 
-				{
-					if (UI::ColorField("##color", value))
-					{
-						m_Material->SetProperty(name, value);
-						m_Material->SetModified(true);
-					}
-				}
-				else 
-				{
-					if (UI::Vec3Field("##vec3", value))
-					{
-						m_Material->SetProperty(name, value);
-						m_Material->SetModified(true);
-					}
-				}
-
-
+				glm::vec3 value = m_Material->GetProperty<glm::vec3>(name);
 			
-			}
-		}
-			/*else if (std::holds_alternative<glm::vec4>(property))
-			{
-				glm::vec4 value = std::get<glm::vec4>(property);
-				if (UI::Vec4Field("##vec4", value))
+				if (IsColorProperty(name))
 				{
-					m_Material->SetProperty(name, value);
-					m_Material->SetModified(true);
+					if (UI::ColorField(name.c_str(), value))
+					{
+						m_Material->SetProperty(name, value);
+						m_Material->SetModified(true);
+					}
 				}
-			}*/
-			//else if (std::holds_alternative<std::shared_ptr<Texture2D>>(property))
-			//{
-			//	auto value = std::get<std::shared_ptr<Texture2D>>(property);
-			//	if (UI::TextureField("##texture", value))
-			//	{
-			//		m_Material->SetProperty(name, value);
-			//		m_Material->SetModified(true);
-			//	}
-			//}
+				else
+				{
+					if (UI::Vec3Field(name.c_str(), value))
+					{
+						m_Material->SetProperty(name, value);
+						m_Material->SetModified(true);
+					}
+				}
 
+				
+
+
+			}
 			ImGui::NextColumn();
-
-
-		/*if(UI::TextureField("albedo", m_Material->GetColorTexture())) { m_Material->SetModified(true); }
-		ImGui::NextColumn();
-		ImGui::Text("Albedo");
-		ImGui::NextColumn();
-		if(UI::ColorField("##color", m_Material->GetColor())) { m_Material->SetModified(true); }
-		ImGui::NextColumn();
-
-		if(UI::TextureField("metallic", m_Material->GetMetallicTexture())) { m_Material->SetModified(true); }
-		ImGui::NextColumn();
-		ImGui::Text("Metallic");
-		ImGui::NextColumn();
-		ImGui::BeginDisabled(m_Material->GetMetallicTexture() != nullptr);
-		if(UI::FloatSliderField("##metallic", m_Material->GetMetallic())) { m_Material->SetModified(true); }
-		ImGui::EndDisabled();
-		ImGui::NextColumn();
-
-		if(UI::TextureField("roughness", m_Material->GetRoughnessTexture())) { m_Material->SetModified(true); }
-		ImGui::NextColumn();
-		ImGui::Text("Roughness");
-		ImGui::NextColumn();
-		ImGui::BeginDisabled(m_Material->GetRoughnessTexture() != nullptr);
-		if(UI::FloatSliderField("##roughness", m_Material->GetRoughness())) { m_Material->SetModified(true); }
-		ImGui::EndDisabled();
-		ImGui::NextColumn();
-
-		if(UI::TextureField("normal", m_Material->GetNormalTexture())) { m_Material->SetModified(true); }
-		ImGui::NextColumn();
-		ImGui::Text("Normal");
-		ImGui::NextColumn();
-		ImGui::NextColumn();
-
-		if(UI::TextureField("height", m_Material->GetHeightTexture())) { m_Material->SetModified(true); }
-		ImGui::NextColumn();
-		ImGui::Text("Height");
-		ImGui::NextColumn();
-		ImGui::NextColumn();
-
-		if(UI::TextureField("occlusion", m_Material->GetAmbientTexture())) { m_Material->SetModified(true); }
-		ImGui::NextColumn();
-		ImGui::Text("Occlusion");
-		ImGui::NextColumn();
-		ImGui::NextColumn();
-
-		if (UI::TextureField("emission", m_Material->GetEmissionTexture())) { m_Material->SetModified(true); }
-		ImGui::NextColumn();
-		ImGui::Text("Emission");
-		ImGui::NextColumn();
-		if (UI::ColorField("##emission", m_Material->GetEmissionColor())) { m_Material->SetModified(true); }
-		ImGui::NextColumn();
-
-		ImGui::NextColumn();
-		ImGui::Text("    Strenght");
-		ImGui::NextColumn();
-		if (UI::FloatField("##emission", m_Material->GetEmmissionStrength())) { m_Material->SetModified(true); }
-		ImGui::NextColumn();
-
-		ImGui::NextColumn();
-		ImGui::NextColumn();
-		ImGui::NextColumn();
-
-		ImGui::NextColumn();
-		ImGui::Text("Tiling");
-		ImGui::NextColumn();
-		if (UI::Vec2Field("Tiling", m_Material->GetTiling())) { m_Material->SetModified(true); }
-		ImGui::NextColumn();
-
-		ImGui::NextColumn();
-		ImGui::Text("Offset");
-		ImGui::NextColumn();
-		if (UI::Vec2Field("Offset", m_Material->GetOffset())) { m_Material->SetModified(true); }
-		ImGui::NextColumn();*/
-
-
+		}
+		
 		ImGui::Columns(1);
 		ImGui::End();
+	}
+	bool MaterialWindow::IsColorProperty(const std::string& name)
+	{
+		const std::string color = "Color";
+		if (name.find(color) != std::string::npos)
+		{
+			return true;
+		}
+		return false;
 	}
 }
 

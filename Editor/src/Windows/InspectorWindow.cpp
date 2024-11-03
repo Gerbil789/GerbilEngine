@@ -438,7 +438,8 @@ namespace Engine
 
 			if (ImGui::MenuItem("MeshRenderer"))
 			{
-				entity.AddComponent<MeshRendererComponent>();
+				auto component = entity.AddComponent<MeshRendererComponent>();
+				//component.Material = AssetManager::GetAsset<Material>("resources/materials/default.material");
 				ImGui::CloseCurrentPopup();
 			}
 

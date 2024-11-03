@@ -39,12 +39,12 @@ namespace Engine
 		static void WriteString(YAML::Emitter& out, const std::string& key, const std::string& value);
 
 
-		static glm::vec4& ReadVec4(const YAML::Node& node, const std::string& key);
-		static glm::vec3& ReadVec3(const YAML::Node& node, const std::string& key);
-		static glm::vec2& ReadVec2(const YAML::Node& node, const std::string& key);
-		static float& ReadFloat(const YAML::Node& node, const std::string& key);
-		static int& ReadInt(const YAML::Node& node, const std::string& key);
-		static std::string& ReadString(const YAML::Node& node, const std::string& key);
+		static glm::vec4 ReadVec4(const YAML::Node& node, const std::string& key);
+		static glm::vec3 ReadVec3(const YAML::Node& node, const std::string& key);
+		static glm::vec2 ReadVec2(const YAML::Node& node, const std::string& key);
+		static float ReadFloat(const YAML::Node& node, const std::string& key);
+		static int ReadInt(const YAML::Node& node, const std::string& key);
+		static std::string ReadString(const YAML::Node& node, const std::string& key);
 
 	};
 }

@@ -101,7 +101,7 @@ namespace Engine
 
 		for (auto entity : view)
 		{
-			auto& [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
+			auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
 			if(cameraComponent.Main)
 			{
 				camera = &cameraComponent.Camera;
@@ -447,7 +447,7 @@ namespace Engine
 	template<typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component) 
 	{
-		static_assert(false);
+		ASSERT(false, "OnComponentAdded not implemented for this component type");
 	}
 
 	template<>

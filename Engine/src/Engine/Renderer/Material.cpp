@@ -5,39 +5,57 @@
 
 namespace Engine
 {
-
-
 	Ref<Asset> MaterialFactory::Load(const std::filesystem::path& path, const std::any& data)
 	{
 		Ref<Material> material = CreateRef<Material>(path);
-
-		if (!Serializer::Deserialize(material))
-		{
-			LOG_ERROR("Failed to deserialize material");
-		}
+		Serializer::Deserialize(material);
 		return material;
 	}
 
 	Ref<Asset> MaterialFactory::Create(const std::filesystem::path& path, const std::any& data)
 	{
 		Ref<Material> material = CreateRef<Material>(path);
+		material->SetShader(AssetManager::GetAsset<Shader>("resources/shaders/flatColor.shader"));
+		Serializer::Serialize(material);
 		return material;
 	}
+
 	void Material::SetShader(const Ref<Shader>& shader)
 	{
 		m_Shader = shader;
+		this->SetProperties();
+	}
 
-		auto& uniformBuffer = m_Shader->GetUniformBuffer();
+	void Material::SetProperties()
+	{
+		this->ClearProperties();
 
-		for (const auto& element : uniformBuffer)
+		const BufferLayout& properties = m_Shader->GetMaterialBuffer();
+		for (const auto& prop : properties)
 		{
-			if (element.Type == ShaderDataType::Float4)
+			switch (prop.Type)
 			{
-				//SetProperty(element.Name, glm::vec4(1.0f));
+			case ShaderDataType::Int:
+				SetProperty(prop.Name, 0);
+				break;
+			case ShaderDataType::Float:
+				SetProperty(prop.Name, 0.0f);
+				break;
+			case ShaderDataType::Float2:
+				SetProperty(prop.Name, glm::vec2(0.0f));
+				break;
+			case ShaderDataType::Float3:
+				SetProperty(prop.Name, glm::vec3(0.0f));
+				break;
+			case ShaderDataType::Float4:
+				SetProperty(prop.Name, glm::vec4(0.0f));
+				break;
+			
+			default:
+				LOG_WARNING("Unknown ShaderDataType (Material.cpp)");
+				break;
 			}
 
-
 		}
-		
 	}
 }

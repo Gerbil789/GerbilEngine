@@ -1,4 +1,4 @@
-//flatColor shader
+//test shader
 #type vertex
 #version 460 core
 
@@ -18,14 +18,12 @@ void main()
     gl_Position = u_Global.ViewProjection * vec4(Position, 1.0);
 }
 
-
 #type fragment
 #version 460 core
 
-layout(set = 0, binding = 1) uniform MaterialProperties
+layout(std140, binding = 1) uniform MaterialProperties
 {
     vec3 Color;
-    float Value;
 } u_Material;
 
 layout(location = 0) flat in int id;
@@ -36,6 +34,6 @@ layout(location = 1) out int entityID;
 
 void main()
 {
-    color = vec4(u_Material.Color , u_Material.Value);
+    color = vec4(u_Material.Color, 1.0);
     entityID = id;
 }

@@ -29,10 +29,8 @@ namespace Engine
 		glViewport(x, y, width, height);
 	}
 
-	void OpenGLRendererAPI::DrawIndexed(/*const Ref<VertexArray>& vertexArray, */uint32_t indexCount)
+	void OpenGLRendererAPI::DrawIndexed(uint32_t indexCount)
 	{
-		//uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
-
 		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
 		//glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture
 	}

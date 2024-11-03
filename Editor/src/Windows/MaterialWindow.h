@@ -18,5 +18,7 @@ namespace Engine
 		Ref<Material> m_Material;
 
 		std::vector<std::filesystem::path> m_ShaderPaths;
+
+		bool IsColorProperty(const std::string& name);
 	};
 }

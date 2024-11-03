@@ -28,16 +28,16 @@ namespace Engine
 	}
 
 
+
 	struct BufferElement
 	{
 		std::string Name;
 		ShaderDataType Type = ShaderDataType::None;
 		uint32_t Size = 0;
 		uint32_t Offset = 0;
-		bool Normalized = false;
 
-		BufferElement() {}
-		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false) : Name(name), Type(type), Size(ShaderDataTypeSize(type)), Offset(0), Normalized(normalized) {}
+		BufferElement() = default;
+		BufferElement(ShaderDataType type, const std::string& name) : Name(name), Type(type), Size(ShaderDataTypeSize(type)) {}
 
 		uint32_t GetComponentCount() const
 		{
@@ -64,17 +64,23 @@ namespace Engine
 	{
 	public:
 		BufferLayout() {}
-		BufferLayout(std::initializer_list<BufferElement> elements) : m_Elements(elements)
-		{
-			CalculateOffsetAndStride();
-		}
 		BufferLayout(std::vector<BufferElement> elements) : m_Elements(elements)
 		{
 			CalculateOffsetAndStride();
 		}
 
-		inline const std::vector<BufferElement>& GetElements() const { return m_Elements; }
+		void Push(const ShaderDataType& type, const std::string& name)
+		{
+			m_Elements.emplace_back(type, name);
+			CalculateOffsetAndStride();
+		}
+
+		uint32_t count() const { return m_Elements.size(); }
+		size_t size() const { return m_Size; }
+		bool empty() const { return m_Elements.empty(); }
 		inline uint32_t GetStride() const { return m_Stride; }
+
+		inline const std::vector<BufferElement>& GetElements() const { return m_Elements; }
 
 		std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
 		std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
@@ -86,17 +92,20 @@ namespace Engine
 		{
 			uint32_t offset = 0;
 			m_Stride = 0;
+			m_Size = 0;
 			for (auto& element : m_Elements)
 			{
 				element.Offset = offset;
 				offset += element.Size;
 				m_Stride += element.Size;
+				m_Size += element.Size;
 			}
 		}
 
 	private:
 		std::vector<BufferElement> m_Elements;
 		uint32_t m_Stride = 0;
+		size_t m_Size = 0;
 	};
 
 

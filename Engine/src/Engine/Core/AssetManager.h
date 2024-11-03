@@ -74,7 +74,7 @@ namespace Engine
 
 		//TODO: test if this wokrs correctly when loading/unloding scenes
 		// use this to unload asset, for example when loading a new scene
-		static void AssetManager::UnloadUnusedAssets() {
+		static void UnloadUnusedAssets() {
 			for (auto it = assets.begin(); it != assets.end(); )
 			{
 				if (it->second.use_count() == 1) // Reference count is 1, meaning only AssetManager has a reference to it

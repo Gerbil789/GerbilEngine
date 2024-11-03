@@ -62,7 +62,8 @@ namespace Engine
 		s_Data.QuadVertexArray = VertexArray::Create();
 
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
-		BufferLayout layout = {
+
+		std::vector<BufferElement> elements = {
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float3, "a_Normal" },
 			{ ShaderDataType::Float4, "a_Color" },
@@ -71,6 +72,9 @@ namespace Engine
 			{ ShaderDataType::Float2, "a_TilingFactor" },
 			{ ShaderDataType::Int, "a_EntityID" }
 		};
+
+		BufferLayout layout = BufferLayout(elements);
+
 
 		s_Data.QuadVertexBuffer->SetLayout(layout);
 

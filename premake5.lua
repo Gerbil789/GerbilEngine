@@ -38,7 +38,7 @@ project "Engine"
 	location "Engine"
 	kind "StaticLib"
 	language "C++"
-	cppdialect "C++17"
+	cppdialect "C++20"
 	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
@@ -137,7 +137,7 @@ project "Editor"
 	location "Editor"
 	kind "ConsoleApp"
 	language "C++"
-	cppdialect "C++17"
+	cppdialect "C++20"
 	staticruntime "on"
 	
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
@@ -170,7 +170,7 @@ project "Editor"
 
 
 	filter "system:windows"
-		cppdialect "C++17"
+		cppdialect "C++20"
 		systemversion "latest"
 		buildoptions { "/MP" }
 		defines

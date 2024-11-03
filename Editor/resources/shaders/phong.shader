@@ -1,15 +1,15 @@
 #type vertex
 #version 460 core
 
-layout(location = 0) in vec3 a_Position;
-layout(location = 1) in vec3 a_Normal;
-layout(location = 2) in vec4 a_Color;
-layout(location = 3) in vec2 a_TexCoord;	
-layout(location = 4) in vec3 a_Tangent;
-layout(location = 5) in vec3 a_Bitangent;
-layout(location = 6) in vec2 a_Tiling;
-layout(location = 7) in vec2 a_Offset;
-layout(location = 8) in int a_EntityID;
+layout(location = 0) in vec3 Position;
+layout(location = 1) in vec3 Normal;
+layout(location = 2) in vec4 Color_m;
+layout(location = 3) in vec2 TexCoord;	
+layout(location = 4) in vec3 Tangent;
+layout(location = 5) in vec3 Bitangent;
+layout(location = 6) in vec2 Tiling_m;
+layout(location = 7) in vec2 Offset_m;
+layout(location = 8) in int EntityID;
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -39,19 +39,19 @@ layout(location = 20) flat out int v_EntityID;
 
 void main()
 {
-	Output.TexCoord = a_TexCoord;
-	Output.Normal = a_Normal;
-	Output.Color = a_Color;
-    vec3 T = normalize(a_Tangent);
-    vec3 B = normalize(a_Bitangent);
-    vec3 N = normalize(a_Normal);
+	Output.TexCoord = TexCoord;
+	Output.Normal = Normal;
+	Output.Color = Color_m;
+    vec3 T = normalize(Tangent);
+    vec3 B = normalize(Bitangent);
+    vec3 N = normalize(Normal);
     Output.TBN = mat3(T, B, N);
-	Output.Tiling = a_Tiling;
-    Output.Offset = a_Offset;
-    Output.WorldPos = a_Position;
+	Output.Tiling = Tiling_m;
+    Output.Offset = Offset_m;
+    Output.WorldPos = Position;
 
-	gl_Position = CameraData.u_ViewProjection * vec4(a_Position, 1.0);
-	v_EntityID = a_EntityID;
+	gl_Position = CameraData.u_ViewProjection * vec4(Position, 1.0);
+	v_EntityID = EntityID;
 }
 
 

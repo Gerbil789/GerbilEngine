@@ -29,7 +29,7 @@ namespace Engine
 
 		RenderCommand::Init();
 		Renderer::Init();
-		Renderer2D::Init();
+		//Renderer2D::Init();
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);

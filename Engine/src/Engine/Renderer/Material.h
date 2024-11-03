@@ -22,8 +22,10 @@ namespace Engine
 	public:
 		Material(const std::filesystem::path& path) : Asset(path) {}
 
-		Ref<Shader> GetShader() const { return m_Shader; }
+		const Ref<Shader>& GetShader() const { return m_Shader; }
 		void SetShader(const Ref<Shader>& shader);
+
+		void SetProperties();
 
 		template<typename T>
 		void SetProperty(const std::string& name, const T& value)
@@ -38,12 +40,18 @@ namespace Engine
 			{
 				return std::get<T>(m_Properties.at(name));
 			}
-			throw std::runtime_error("Property not found");
+			LOG_ERROR("Property {0} not found", name);
+			return T();
 		}
 
 		bool HasProperty(const std::string& name) const
 		{
 			return m_Properties.find(name) != m_Properties.end();
+		}
+
+		void ClearProperties()
+		{
+			m_Properties.clear();
 		}
 
 		std::unordered_map<std::string, MaterialProperty> GetProperties()
