@@ -60,12 +60,6 @@ namespace Engine
 		RenderCommand::SetClearColor({ 0.05f, 0.05f, 0.05f, 1.0f });
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f); //TODO: what are these values? must it be there?
 		SceneManager::CreateScene("NewScene");
-
-
-		/*Ref<Material> mat = AssetManager::CreateAsset<Material>("resources/materials/test.material");
-		mat->SetShader(AssetManager::GetAsset<Shader>("resources/shaders/flatColor.shader"));
-		Serializer::Serialize(mat);*/
-
 	}
 
 	void EditorLayer::OnDetach()

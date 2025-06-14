@@ -25,7 +25,6 @@ void main()
 layout(set = 0, binding = 1) uniform MaterialProperties
 {
     vec3 Color;
-    float Value;
 } u_Material;
 
 layout(location = 0) flat in int id;
@@ -36,6 +35,6 @@ layout(location = 1) out int entityID;
 
 void main()
 {
-    color = vec4(u_Material.Color , u_Material.Value);
+    color = vec4(u_Material.Color, 1.0);
     entityID = id;
 }

@@ -3,6 +3,7 @@
 #include "Engine/Core/Asset.h"
 #include "Engine/Renderer/Shader.h"
 #include "Engine/Renderer/Texture.h"
+#include "Engine/Renderer/UniformBuffer.h"
 #include <glm/glm.hpp>
 #include <variant>
 
@@ -23,6 +24,7 @@ namespace Engine
 		Material(const std::filesystem::path& path) : Asset(path) {}
 
 		const Ref<Shader>& GetShader() const { return m_Shader; }
+		const Ref<UniformBuffer>& GetUniformBuffer() const { return m_UniformBuffer; }
 		void SetShader(const Ref<Shader>& shader);
 
 		void SetProperties();
@@ -61,6 +63,7 @@ namespace Engine
 
 	private:
 		Ref<Shader> m_Shader;
+		Ref<UniformBuffer> m_UniformBuffer;
 		std::unordered_map<std::string, MaterialProperty> m_Properties;
 
 	};

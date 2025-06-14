@@ -23,6 +23,7 @@ namespace Engine
 	void Material::SetShader(const Ref<Shader>& shader)
 	{
 		m_Shader = shader;
+		m_UniformBuffer = UniformBuffer::Create(shader->GetMaterialBufferLayout().size(), 1);
 		this->SetProperties();
 	}
 
@@ -30,7 +31,7 @@ namespace Engine
 	{
 		this->ClearProperties();
 
-		const BufferLayout& properties = m_Shader->GetMaterialBuffer();
+		const BufferLayout& properties = m_Shader->GetMaterialBufferLayout();
 		for (const auto& prop : properties)
 		{
 			switch (prop.Type)

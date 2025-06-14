@@ -1,7 +1,27 @@
 Scene: test.scene
 Entities:
+  - Entity: 13622220926187726815
+    Name: MeshEntity2
+    Enabled: true
+    Transform:
+      Position: [-2.57659149, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      Mesh: assets\cube.fbx
+      Material: assets\materials\red.material
+  - Entity: 16609705927530689593
+    Name: MeshEntity
+    Enabled: true
+    Transform:
+      Position: [1.49011612e-08, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      Mesh: assets\cube.fbx
+      Material: assets/materials/test.material
   - Entity: 4133977510332845504
-    Name: Empty Entity
+    Name: LightEntity
     Enabled: true
     Transform:
       Position: [0, 1.50327647, 0]
@@ -15,13 +35,3 @@ Entities:
       Attenuation: [1, 0.0900000036, 0.0320000015]
       InnerAngle: 30
       OuterAngle: 50
-  - Entity: 16609705927530689593
-    Name: Empty Entity
-    Enabled: true
-    Transform:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    MeshRendererComponent:
-      Mesh: assets\cube.fbx
-      Material: assets\newMaterial.material

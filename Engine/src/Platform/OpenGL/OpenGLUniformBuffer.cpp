@@ -7,7 +7,7 @@ namespace Engine
 	OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t size, uint32_t binding)
 	{
 		glCreateBuffers(1, &m_RendererID);
-		glNamedBufferData(m_RendererID, size, nullptr, GL_DYNAMIC_DRAW); // TODO: investigate usage hint
+		glNamedBufferData(m_RendererID, size, nullptr, GL_DYNAMIC_DRAW);
 		glBindBufferBase(GL_UNIFORM_BUFFER, binding, m_RendererID);
 	}
 
@@ -21,5 +21,13 @@ namespace Engine
 	{
 		glNamedBufferSubData(m_RendererID, offset, size, data);
 	}
+
+	void OpenGLUniformBuffer::Bind(uint32_t binding) const
+	{
+
+		glBindBufferBase(GL_UNIFORM_BUFFER, binding, m_RendererID);
+	}
+
+
 
 }

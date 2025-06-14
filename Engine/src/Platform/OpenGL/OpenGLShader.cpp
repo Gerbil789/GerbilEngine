@@ -201,6 +201,10 @@ namespace Engine
 				{
 					m_MaterialLayout.Push(type, memberName);
 				}
+				else if (buffer_name == "u_Global") 
+				{
+
+				}
 				else
 				{
 					LOG_WARNING("Unknown uniform buffer: {0}", buffer_name);

@@ -144,7 +144,7 @@ namespace Engine
 		auto shader = AssetManager::GetAsset<Shader>(data[SHADER_KEY].as<std::string>());
 		material->SetShader(shader);
 
-		auto materialProperties = shader->GetMaterialBuffer();
+		auto materialProperties = shader->GetMaterialBufferLayout();
 
 		//auto shaderProperties = shader->GetUniformBuffers(); //TODO: check if properties of material and shader match
 		//auto materialProperties = data[PROPERTIES_KEY];
@@ -305,7 +305,7 @@ namespace Engine
 
 	bool Serializer::Deserialize(Ref<Scene>& scene)
 	{
-		std::string filePath = scene->GetFilePath().filename().string();
+		std::string filePath = scene->GetFilePath().string();
 		std::ifstream stream(filePath);
 		if (!stream.is_open())
 		{

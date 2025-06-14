@@ -22,14 +22,21 @@ namespace Engine
 		static void OnWindowResize(uint32_t width, uint32_t height);
 		static void DrawMesh(const glm::mat4& transform, Ref<Mesh> mesh, Ref<Material> material, int entityID);
 
-		struct Statistics
+
+		struct GlobalUniform
+		{
+			glm::mat4 ViewProjection = glm::mat4(1.0f);
+		};
+
+
+		struct RendererStatistics
 		{
 			uint32_t DrawCalls = 0;
 			uint32_t VertexCount = 0;
 			uint32_t IndicesCount = 0;
 		};
 
-		static Statistics GetStats();
+		static RendererStatistics GetStats();
 		static void ResetStats();
 
 	private:

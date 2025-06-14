@@ -2,8 +2,7 @@
 #type vertex
 #version 460 core
 
-layout(std140, binding = 0) uniform GlobalProperties
-{
+layout(std140, binding = 0) uniform GlobalProperties {
     mat4 ViewProjection;
 } u_Global;
 
@@ -12,8 +11,7 @@ layout(location = 1) in vec3 Position;
 
 layout(location = 0) flat out int id;
 
-void main()
-{
+void main() {
     id = EntityID;
     gl_Position = u_Global.ViewProjection * vec4(Position, 1.0);
 }
@@ -26,9 +24,7 @@ layout(location = 0) flat in int id;
 layout(location = 0) out vec4 color;
 layout(location = 1) out int entityID;
 
-
-void main()
-{
-    color = vec4(0.8, 0.3, 0.2, 1.0);
+void main() {
+    color = vec4(1.0, 0.0, 0.0, 1.0);
     entityID = id;
 }

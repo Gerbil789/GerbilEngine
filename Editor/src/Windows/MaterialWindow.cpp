@@ -82,7 +82,7 @@ namespace Engine
 		ImGui::Separator();
 
 		Ref<Shader> shader = m_Material->GetShader();
-		auto properties = shader->GetMaterialBuffer();
+		auto properties = shader->GetMaterialBufferLayout();
 
 		for (auto& prop : properties)
 		{

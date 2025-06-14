@@ -11,29 +11,15 @@
 
 namespace Engine
 {
-	struct RendererData
-	{
-		Ref<Material> defaultMaterial;
-		Renderer::Statistics Stats;
-
-		struct GlobalUniforms
-		{
-			glm::mat4 ViewProjection = glm::mat4(1.0f);
-		};
-
-		GlobalUniforms GlobalUniforms;
-		Ref<UniformBuffer> GlobalUniformBuffer;
-	};
-
-	static RendererData s_Data;
+	static Renderer::GlobalUniform s_GlobalUniform;
+	static Ref<UniformBuffer> s_GlobalUniformBuffer;
+	static Renderer::RendererStatistics s_Stats;
 
 	void Renderer::Init()
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-		//s_Data.defaultMaterial = AssetManager::GetAsset<Material>("resources/materials/default.material");
-		s_Data.defaultMaterial = AssetManager::GetAsset<Material>("assets/materials/test.material");
-		s_Data.GlobalUniformBuffer = UniformBuffer::Create(sizeof(RendererData::GlobalUniforms), 0);
+		s_GlobalUniformBuffer = UniformBuffer::Create(sizeof(Renderer::GlobalUniform), 0);
 	}
 
 	void Renderer::Shutdown()
@@ -59,8 +45,8 @@ namespace Engine
 		ResetStats();
 
 		//GLOBAL DATA
-		s_Data.GlobalUniforms.ViewProjection = camera.GetViewProjectionMatrix();
-		s_Data.GlobalUniformBuffer->SetData(&s_Data.GlobalUniforms, sizeof(RendererData::GlobalUniforms), 0);
+		s_GlobalUniform.ViewProjection = camera.GetViewProjectionMatrix();
+		s_GlobalUniformBuffer->SetData(&s_GlobalUniform, sizeof(Renderer::GlobalUniform), 0);
 	}
 
 	void Renderer::EndScene()
@@ -78,9 +64,10 @@ namespace Engine
 		ENGINE_PROFILE_FUNCTION();
 
 		if (mesh == nullptr) { return; }
-		if (material == nullptr) { material = s_Data.defaultMaterial; }
+		if (material == nullptr) { material = AssetManager::GetAsset<Material>("assets/materials/pink.material"); } 
 
 		const Ref<Shader> shader = material->GetShader();
+		shader->Bind();
 		DynamicVertex vertex = shader->GetVertex();
 
 		const std::vector<glm::vec3>& vertices = mesh->GetVertices();
@@ -91,7 +78,7 @@ namespace Engine
 		int vertexCount = mesh->GetVertexCount();
 		uint32_t indicesCount = indices.size();
 
-		BufferLayout shaderInputLayout = shader->GetInputBuffer(); //per vertex data
+		BufferLayout shaderInputLayout = shader->GetInputBufferLayout(); //per vertex data
 
 		//PER VERTEX DATA
 		std::vector<uint8_t> vertexBufferData = std::vector<uint8_t>(vertexCount * shaderInputLayout.size());
@@ -129,11 +116,11 @@ namespace Engine
 
 
 		//MATERIAL DATA
-		BufferLayout shaderMaterialBuffer = shader->GetMaterialBuffer();
-		if (!shaderMaterialBuffer.empty()) 
+		BufferLayout shaderMaterialBufferLayout = shader->GetMaterialBufferLayout();
+		if (!shaderMaterialBufferLayout.empty()) 
 		{
-			std::vector<uint8_t> bufferData(shaderMaterialBuffer.size());
-			for (const auto& var : shaderMaterialBuffer)
+			std::vector<uint8_t> bufferData(shaderMaterialBufferLayout.size());
+			for (const auto& var : shaderMaterialBufferLayout)
 			{
 				std::string name = var.Name;
 				ShaderDataType type = var.Type;
@@ -166,26 +153,29 @@ namespace Engine
 				}
 			}
 
-			Ref<UniformBuffer> MaterialUniformBuffer = UniformBuffer::Create(bufferData.size(), 1);
-			MaterialUniformBuffer->SetData(bufferData.data(), bufferData.size(), 0);
+			const Ref<UniformBuffer> materialUniformBuffer = material->GetUniformBuffer();
+			materialUniformBuffer->SetData(bufferData.data(), bufferData.size(), 0);
+			materialUniformBuffer->Bind(1);
+
 		}
+
 
 		RenderCommand::DrawIndexed(indicesCount);
 
-		s_Data.Stats.DrawCalls++;
-		s_Data.Stats.VertexCount += vertexCount;
-		s_Data.Stats.IndicesCount += indicesCount;
+		s_Stats.DrawCalls++;
+		s_Stats.VertexCount += vertexCount;
+		s_Stats.IndicesCount += indicesCount;
 	}
 
 
-	Renderer::Statistics Renderer::GetStats()
+	Renderer::RendererStatistics Renderer::GetStats()
 	{
-		return s_Data.Stats;
+		return s_Stats;
 	}
 
 	void Renderer::ResetStats()
 	{
-		memset(&s_Data.Stats, 0, sizeof(Statistics));
+		memset(&s_Stats, 0, sizeof(RendererStatistics));
 	}
 
 	void Renderer::AlignOffset(size_t& currentOffset, size_t alignment)

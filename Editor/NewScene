@@ -1,0 +1,12 @@
+Scene: NewScene
+Entities:
+  - Entity: 3628738369976798465
+    Name: Empty Entity
+    Enabled: true
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      Mesh: assets\cube.fbx
+      Material: assets\materials\test.material
