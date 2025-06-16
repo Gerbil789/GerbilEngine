@@ -10,20 +10,19 @@
 
 namespace Engine
 {
-	InspectorWindow::InspectorWindow()
+	InspectorWindow::InspectorWindow(EditorContext* context) : EditorWindow(context)
 	{
-		SceneManager::AddObserver(this);
-		OnSceneChanged();
+		SceneManager::RegisterObserver(this);
 	}
 
 	InspectorWindow::~InspectorWindow()
 	{
-		SceneManager::RemoveObserver(this);
+		SceneManager::UnregisterObserver(this);
 	}
 
-	void InspectorWindow::OnSceneChanged()
+	void InspectorWindow::OnSceneChanged(Ref<Scene> newScene)
 	{
-		m_Scene = SceneManager::GetCurrentScene();
+		m_Scene = newScene;
 	}
 
 	void InspectorWindow::OnImGuiRender()

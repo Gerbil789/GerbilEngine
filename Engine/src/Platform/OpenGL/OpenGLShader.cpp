@@ -84,7 +84,7 @@ namespace Engine
 		options.SetGenerateDebugInfo();
 		
 		GLuint program = glCreateProgram();
-		ASSERT(shaderSources.size() <= 2, "Only 2 shaders are currently supported");
+		ASSERT(shaderSources.size() <= 2, "Only 2 shaders are currently supported (vertex, fragment)");
 		std::array<GLenum, 2> glShaderIDs; // [0] = vertex, [1] = fragment
 		int glShaderIDIndex = 0;
 
@@ -170,14 +170,21 @@ namespace Engine
 			{
 				std::string input_name = compiler.get_name(input.id);
 				auto& input_type = compiler.get_type(input.base_type_id);
+				uint32_t location = compiler.get_decoration(input.id, spv::DecorationLocation);
 
-				LOG_TRACE("Input Variable: {0}", input_name);
+				LOG_TRACE("Input Variable: {0}, Location: {1}", input_name, location);
 
 				ShaderDataType type = ShaderTypeFromSpv(input_type);
 
-				m_InputLayout.Push(type, input_name);
-				m_Vertex.AddAttribute(input_name, type);
+				m_Vertex.AddAttribute(input_name, type, location);
 			}
+
+			// Make sure to preserve the order of attributes (order by locations in shader)
+			for(const auto& attribute : m_Vertex.GetAttributesOredered())
+			{
+				m_InputLayout.Push(attribute.type, attribute.name);
+			}
+
 		}
 		
 

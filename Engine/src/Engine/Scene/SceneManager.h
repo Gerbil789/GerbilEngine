@@ -8,7 +8,7 @@ namespace Engine
 	{
 	public:
 		virtual ~ISceneObserver() = default;
-		virtual void OnSceneChanged() = 0;
+		virtual void OnSceneChanged(Ref<Scene> newScene) = 0;
 	};
 
 	class SceneManager
@@ -24,14 +24,14 @@ namespace Engine
 		static void SaveScene();
 		static void SaveSceneAs();
 
-		static void AddObserver(ISceneObserver* observer) { s_Observers.push_back(observer); }
-		static void RemoveObserver(ISceneObserver* observer) { s_Observers.erase(std::remove(s_Observers.begin(), s_Observers.end(), observer), s_Observers.end()); }
+		static void RegisterObserver(ISceneObserver* observer) { s_Observers.insert(observer); observer->OnSceneChanged(s_CurrentScene); }
+		static void UnregisterObserver(ISceneObserver* observer) { s_Observers.erase(observer); }
 
 	private:
 		static void NotifyObservers();
 
 	private:
-		static Ref<Scene> s_CurrentScene;
-		static std::vector<ISceneObserver*> s_Observers;
+		static inline Ref<Scene> s_CurrentScene = nullptr;
+		static inline std::unordered_set<ISceneObserver*> s_Observers;
 	};
 }

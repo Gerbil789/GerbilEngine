@@ -9,17 +9,18 @@
 
 namespace Engine 
 {
-  struct VertexAttribute 
+  struct VertexAttribute //TODO: order matters?
   {
     ShaderDataType type;
     size_t offset;
     std::string name;
+    uint32_t location;
   };
 
   class DynamicVertex 
   {
   public:
-    void AddAttribute(const std::string& name, ShaderDataType type);
+    void AddAttribute(const std::string& name, ShaderDataType type, uint32_t location);
 
     template<typename T>
     void SetAttribute(const std::string& name, const T& value) 
@@ -51,7 +52,20 @@ namespace Engine
       return value;
     }
 
+    std::vector<VertexAttribute> GetAttributesOredered() const 
+    {
+      //sort by attribute location
 
+			std::vector<VertexAttribute> orderedAttributes(m_attributes.size());
+      for (const auto& pair : m_attributes) 
+      {
+        orderedAttributes.push_back(pair.second);
+      }
+      std::sort(orderedAttributes.begin(), orderedAttributes.end(), [](const VertexAttribute& a, const VertexAttribute& b) {
+        return a.location < b.location;
+      });
+      return orderedAttributes;
+    }
 
     const void* GetData() const { return m_data.data(); }
     size_t GetSize() const { return m_data.size(); }

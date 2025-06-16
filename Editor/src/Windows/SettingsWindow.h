@@ -1,13 +1,13 @@
 #pragma once
 
-#include "EditorWindowBase.h"
+#include "EditorWindow.h"
 
 namespace Engine
 {
-	class SettingsWindow : public EditorWindowBase
+	class SettingsWindow : public EditorWindow
 	{
 	public:
-		SettingsWindow() = default;
+		SettingsWindow(EditorContext* context) : EditorWindow(context) {}
 		~SettingsWindow() = default;
 
 		void OnImGuiRender() override;

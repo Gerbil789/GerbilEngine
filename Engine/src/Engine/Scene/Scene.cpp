@@ -27,8 +27,8 @@ namespace Engine
 
 	Scene::~Scene()
 	{
-		auto view = m_Registry.view<IDComponent>();
-		LOG_INFO("Destroying scene with {0} entities", view.size());
+		//auto view = m_Registry.view<IDComponent>();
+		//LOG_INFO("Destroying scene with {0} entities", view.size());
 	}
 
 	template<typename Component>

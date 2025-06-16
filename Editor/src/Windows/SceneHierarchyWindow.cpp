@@ -9,20 +9,19 @@
 
 namespace Engine
 {
-	SceneHierarchyWindow::SceneHierarchyWindow()
+	SceneHierarchyWindow::SceneHierarchyWindow(EditorContext* context) : EditorWindow(context)
 	{
-		SceneManager::AddObserver(this);
-		OnSceneChanged();
+		SceneManager::RegisterObserver(this);
 	}
 
 	SceneHierarchyWindow::~SceneHierarchyWindow()
 	{
-		SceneManager::RemoveObserver(this);
+		SceneManager::UnregisterObserver(this);
 	}
 
-	void SceneHierarchyWindow::OnSceneChanged()
+	void SceneHierarchyWindow::OnSceneChanged(Ref<Scene> newScene)
 	{
-		m_Scene = SceneManager::GetCurrentScene();
+		m_Scene = newScene;
 	}
 
 	void SceneHierarchyWindow::OnImGuiRender()

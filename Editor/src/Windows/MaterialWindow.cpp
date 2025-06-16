@@ -11,7 +11,7 @@
 
 namespace Engine 
 {
-	MaterialWindow::MaterialWindow()
+	MaterialWindow::MaterialWindow(EditorContext* context) : EditorWindow(context)
 	{
 		std::string path = "resources/shaders";
 

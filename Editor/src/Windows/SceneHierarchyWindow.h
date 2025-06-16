@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EditorWindowBase.h"
+#include "EditorWindow.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Core/Core.h"
 #include "Engine/Core/Log.h"
@@ -9,13 +9,13 @@
 
 namespace Engine
 {
-	class SceneHierarchyWindow : public EditorWindowBase, public ISceneObserver
+	class SceneHierarchyWindow : public EditorWindow, public ISceneObserver
 	{
 	public:
-		SceneHierarchyWindow();
+		SceneHierarchyWindow(EditorContext* context);
 		~SceneHierarchyWindow();
 
-		void OnSceneChanged() override;
+		void OnSceneChanged(Ref<Scene> newScene) override;
 		void OnImGuiRender() override;
 
 	private:

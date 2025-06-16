@@ -1,14 +1,14 @@
 #pragma once
 
-#include "EditorWindowBase.h"
+#include "EditorWindow.h"
 #include "Engine/Renderer/Material.h"
 
 namespace Engine 
 {
-	class MaterialWindow : public EditorWindowBase
+	class MaterialWindow : public EditorWindow
 	{
 	public:
-		MaterialWindow();
+		MaterialWindow(EditorContext* context);
 		~MaterialWindow();
 
 		void OnImGuiRender() override;

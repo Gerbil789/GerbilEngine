@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EditorWindowBase.h"
+#include "EditorWindow.h"
 #include "Engine/Core/Core.h"
 #include <assimp/scene.h>
 
@@ -12,10 +12,10 @@ namespace Engine
 		bool ImportTextures = true;
 	};
 
-	class MeshImportWindow : public EditorWindowBase
+	class MeshImportWindow : public EditorWindow
 	{
 	public:
-		MeshImportWindow() {}
+		MeshImportWindow(EditorContext* context) : EditorWindow(context) {}
 		~MeshImportWindow() = default;
 
 		void SetScene(void* scene);

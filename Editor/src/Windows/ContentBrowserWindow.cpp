@@ -11,7 +11,7 @@
 
 namespace Engine
 {
-	ContentBrowserWindow::ContentBrowserWindow()
+	ContentBrowserWindow::ContentBrowserWindow(EditorContext* context) : EditorWindow(context)
 	{
 		m_RootDirectory = "assets";
 		m_CurrentDirectory = "assets";

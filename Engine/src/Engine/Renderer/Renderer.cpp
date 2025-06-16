@@ -78,7 +78,7 @@ namespace Engine
 		int vertexCount = mesh->GetVertexCount();
 		uint32_t indicesCount = indices.size();
 
-		BufferLayout shaderInputLayout = shader->GetInputBufferLayout(); //per vertex data
+		BufferLayout shaderInputLayout = shader->GetInputBufferLayout();
 
 		//PER VERTEX DATA
 		std::vector<uint8_t> vertexBufferData = std::vector<uint8_t>(vertexCount * shaderInputLayout.size());
@@ -99,6 +99,53 @@ namespace Engine
 					glm::vec3 position = transform * glm::vec4(vertices[i], 1.0f);
 					memcpy(vertexBufferData.data() + currentOffset, &position, size);
 				}
+				else if (name == "Normal")
+				{
+					glm::vec3 normal = glm::normalize(glm::vec3(transform * glm::vec4(normals[i], 0.0f)));
+					memcpy(vertexBufferData.data() + currentOffset, &normal, size);
+				}
+				else if (name == "Tangent")
+				{
+					glm::vec3 tangent = glm::vec3(1.0f, 0.0f, 0.0f); // Default tangent, can be calculated if needed
+					memcpy(vertexBufferData.data() + currentOffset, &tangent, size);
+				}
+				else if (name == "Bitangent")
+				{
+					glm::vec3 bitangent = glm::vec3(0.0f, 1.0f, 0.0f); // Default bitangent, can be calculated if needed
+					memcpy(vertexBufferData.data() + currentOffset, &bitangent, size);
+				}
+				else if (name == "UV")
+				{
+					glm::vec2 uv = uvs.empty() ? glm::vec2(0.0f) : uvs[i];
+					memcpy(vertexBufferData.data() + currentOffset, &uv, size);
+				}
+				else if (name == "Color")
+				{
+					glm::vec4 color = material->GetProperty<glm::vec4>("Color");
+					memcpy(vertexBufferData.data() + currentOffset, &color, size);
+				}
+				else if (name == "Metallic")
+				{
+					float metallic = material->GetProperty<float>("Metallic");
+					memcpy(vertexBufferData.data() + currentOffset, &metallic, size);
+				}
+				else if (name == "Roughness")
+				{
+					float roughness = material->GetProperty<float>("Roughness");
+					memcpy(vertexBufferData.data() + currentOffset, &roughness, size);
+				}
+				else if (name == "Height")
+				{
+					float height = material->GetProperty<float>("Height");
+					memcpy(vertexBufferData.data() + currentOffset, &height, size);
+				}
+				else if (name == "AmbientOcclusion")
+				{
+					float ambientOcclusion = material->GetProperty<float>("AmbientOcclusion");
+					memcpy(vertexBufferData.data() + currentOffset, &ambientOcclusion, size);
+				}
+
+
 				currentOffset += size; 
 			}
 		}

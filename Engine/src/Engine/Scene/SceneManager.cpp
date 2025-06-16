@@ -6,8 +6,9 @@
 
 namespace Engine
 {
-	Ref<Scene> SceneManager::s_CurrentScene = nullptr;
-	std::vector<ISceneObserver*> SceneManager::s_Observers;
+	//Ref<Scene> SceneManager::s_CurrentScene = nullptr;
+	//std::unordered_set<ISceneObserver*> SceneManager::s_Observers;
+
 
 	void SceneManager::CreateScene(const std::filesystem::path& path)
 	{
@@ -54,7 +55,7 @@ namespace Engine
 	{
 		for (auto observer : s_Observers) 
 		{
-			observer->OnSceneChanged();
+			observer->OnSceneChanged(s_CurrentScene);
 		}
 	}
 }

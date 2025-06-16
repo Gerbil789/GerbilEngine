@@ -1,14 +1,14 @@
 #pragma once
 
-#include "EditorWindowBase.h"
+#include "EditorWindow.h"
 #include "Engine/Core/Application.h"
 
 namespace Engine 
 {
-	class StatisticsWindow : public EditorWindowBase
+	class StatisticsWindow : public EditorWindow
 	{
 	public:
-		StatisticsWindow() = default;
+		StatisticsWindow(EditorContext* context) : EditorWindow(context) {};
 		~StatisticsWindow() = default;
 
 		void OnImGuiRender() override;

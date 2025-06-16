@@ -1,18 +1,18 @@
 #pragma once
 
-#include "EditorWindowBase.h"
+#include "EditorWindow.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Scene/SceneManager.h"
 
 namespace Engine
 {
-	class InspectorWindow : public EditorWindowBase, public ISceneObserver
+	class InspectorWindow : public EditorWindow, public ISceneObserver
 	{
 	public:
-		InspectorWindow();
+		InspectorWindow(EditorContext* context);
 		~InspectorWindow();
 
-		void OnSceneChanged() override;
+		void OnSceneChanged(Ref<Scene> newScene) override;
 		void OnImGuiRender() override;
 
 	private:
