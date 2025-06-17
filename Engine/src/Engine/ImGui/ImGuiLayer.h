@@ -19,6 +19,7 @@ namespace Engine
 		void End();
 
 		void BlockEvents(bool block) { m_BlockEvents = block; }
+		static void ResetLayout();
 
 	private:
 		bool m_BlockEvents = true;

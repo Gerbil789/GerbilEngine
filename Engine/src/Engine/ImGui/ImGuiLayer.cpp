@@ -2,6 +2,7 @@
 #include "Engine/Imgui/ImGuiLayer.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Utils/Color.h"
+#include "Engine/Utils/File.h"
 
 #include "imgui.h"
 #include "ImGuizmo.h"
@@ -19,6 +20,15 @@ namespace Engine
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+		const std::string imgui_ini = "resources/layouts/imgui.ini";
+		if (!std::filesystem::exists(imgui_ini))
+		{
+			ResetLayout();
+			ImGui::SaveIniSettingsToDisk(imgui_ini.c_str());
+		}
+
+		io.IniFilename = "resources/layouts/imgui.ini";
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
@@ -76,10 +86,25 @@ namespace Engine
 			app.GetWindow().MakeContextCurrent();
 		}
 	}
-	void ImGuiLayer::OnImGuiRender()
+
+	void ImGuiLayer::ResetLayout()
 	{
-		//static bool show = true;
-		//ImGui::ShowDemoWindow(&show);
+		const std::string default_ini = "resources/layouts/default.ini";
+
+		auto defaultLayoutContent = ReadFile(default_ini);
+		if (!defaultLayoutContent)
+		{ 
+			LOG_ERROR("Failed to load default ImGui layout");
+			return; 
+		}
+
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGui::LoadIniSettingsFromMemory(defaultLayoutContent.value().c_str());
+		LOG_INFO("ImGui layout reset to default");
 	}
 
+	void ImGuiLayer::OnImGuiRender()
+	{
+
+	}
 }

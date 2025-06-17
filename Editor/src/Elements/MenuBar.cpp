@@ -62,6 +62,16 @@ namespace Engine
 				ImGui::EndMenu();
 			}
 
+
+			//if (ImGui::BeginMenu("Windows"))
+			//{
+			//	if (ImGui::MenuItem("Reset layout"))
+			//	{
+			//		ImGuiLayer::ResetLayout();
+			//	}
+			//	ImGui::EndMenu();
+			//}
+
 			// ---- BUTTONS ----
 			//ImGui::SetCursorPosX(ImGui::GetWindowWidth() * 0.5f - 30);
 
@@ -102,5 +112,4 @@ namespace Engine
 			ImGui::EndMenuBar();
 		}
 	}
-
 }
