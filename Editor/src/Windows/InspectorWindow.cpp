@@ -3,6 +3,7 @@
 #include "Engine/Scene/Components.h"
 #include "../Elements/Elements.h"
 #include "Engine/Core/AssetManager.h"
+#include "../EditorServiceRegistry.h"
 #include <imgui/imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui/imgui_internal.h>
@@ -13,6 +14,7 @@ namespace Engine
 	InspectorWindow::InspectorWindow(EditorContext* context) : EditorWindow(context)
 	{
 		SceneManager::RegisterObserver(this);
+		m_SceneController = EditorServiceRegistry::Get<SceneController>();
 	}
 
 	InspectorWindow::~InspectorWindow()
@@ -35,7 +37,7 @@ namespace Engine
 			return;
 		}
 
-		Entity entity = m_Scene->GetSelectedEntity();
+		Entity entity = m_SceneController->GetSelectedEntity();
 		if (!entity)
 		{
 			ImGui::End();

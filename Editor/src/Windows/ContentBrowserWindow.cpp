@@ -233,7 +233,7 @@ namespace Engine
 								if (!material) break;
 
 								Ref<Scene> scene = SceneManager::GetCurrentScene(); //TODO: use observer pattern
-								scene->SelectMaterial(material);
+								//scene->SelectMaterial(material);
 
 							}
 						}

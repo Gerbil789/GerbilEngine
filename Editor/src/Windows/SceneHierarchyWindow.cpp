@@ -2,6 +2,8 @@
 #include "../Elements/Elements.h"
 #include "SceneHierarchyWindow.h"
 #include "Engine/Scene/Components.h"
+#include "../EditorServiceRegistry.h"
+#include "../ImGui/ScopedStyle.h"
 #include <imgui/imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui/imgui_internal.h>
@@ -12,6 +14,7 @@ namespace Engine
 	SceneHierarchyWindow::SceneHierarchyWindow(EditorContext* context) : EditorWindow(context)
 	{
 		SceneManager::RegisterObserver(this);
+		m_SceneController = EditorServiceRegistry::Get<SceneController>();
 	}
 
 	SceneHierarchyWindow::~SceneHierarchyWindow()
@@ -26,52 +29,54 @@ namespace Engine
 
 	void SceneHierarchyWindow::OnImGuiRender()
 	{
-		// Save the current style
-		ImGuiStyle& style = ImGui::GetStyle();
-		ImVec2 oldWindowPadding = style.WindowPadding;
-		float oldIndentSpacing = style.IndentSpacing;
+		ScopedStyle style({
+			{ ImGuiStyleVar_WindowPadding, { 0, 0 } },
+			{ ImGuiStyleVar_ItemSpacing, { 0, 0 } }
+		});
 
-		// Set window padding to zero
-		style.WindowPadding = ImVec2(0, 0);
 
 		ImGui::Begin("Scene Hierarchy");
-		if (!m_Scene) 
-		{ 
-			ImGui::End(); 
-			return; 
-		}
-
-		for(auto& entity : m_Scene->GetEntitiesOrdered())
+		if (!m_Scene)
 		{
-			DrawEntityNode(entity);
+			ImGui::End();
+			return;
 		}
 
-		if(ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+		auto& registry = m_Scene->m_Registry;
+		auto& roots = m_Scene->GetRootEntities();
+
+		for (size_t i = 0; i < roots.size(); ++i)
 		{
-			m_Scene->DeselectEntity();
-		}
+			entt::entity root = roots[i];
 
+			DrawReorderDropTarget(entt::null, i);
+			DrawEntityNode(root);
+		}
+		DrawReorderDropTarget(entt::null, roots.size());
+
+		// Handle mouse click to deselect entity
+		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+		{
+			m_SceneController->DeselectEntity();
+		}
 
 		if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
 				Entity entity = m_Scene->CreateEntity("Empty Entity");
-				m_Scene->SelectEntity(entity);
+				m_SceneController->SelectEntity(entity);
 			}
-
 			ImGui::EndPopup();
 		}
-	
-		ImGui::End();
 
-		style.WindowPadding = oldWindowPadding;
-		style.IndentSpacing = oldIndentSpacing;
+		ImGui::End();
 	}
 
-	void SceneHierarchyWindow::DrawEntityNode(Entity entity)
+	void SceneHierarchyWindow::DrawEntityNode(entt::entity entity)
 	{
-		auto& name = entity.GetComponent<NameComponent>().Name;
+		auto& registry = m_Scene->m_Registry;
+		Entity wrapper(entity, &registry);
 
 		// Save the current style
 		ImGuiStyle& style = ImGui::GetStyle();
@@ -82,59 +87,115 @@ namespace Engine
 		style.FramePadding = ImVec2(0, 0);
 		style.ItemSpacing = ImVec2(0, 0);
 
-		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ((m_Scene->IsEntitySelected(entity)) ? ImGuiTreeNodeFlags_Selected : 0);
-		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-		bool expanded =  ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
+		auto& name = wrapper.GetName();
+		bool hasChildren = wrapper.HasChildren();
+
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
+
+		// If entity has no children, mark as leaf
+		if (!hasChildren)
+			flags |= ImGuiTreeNodeFlags_Leaf;
+
+		ImGui::PushID((uint32_t)wrapper);
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)wrapper, flags, name.c_str());
 
 
 		style.FramePadding = oldPadding;
 		style.ItemSpacing = oldItemSpacing;
 
-		if(ImGui::IsItemClicked())
+
+
+		// Handle selection
+		if (ImGui::IsItemClicked())
 		{
-			m_Scene->SelectEntity(entity);
+			m_SceneController->SelectEntity(wrapper);
 		}
 
-		// Handle dragging and dropping
-		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+		// Drag source
+		if (ImGui::BeginDragDropSource())
 		{
-			ImGui::SetDragDropPayload("DND_ENTITY", &entity, sizeof(Entity));
-			ImGui::Text("%s", name.c_str());
+			ImGui::SetDragDropPayload("ENTITY", &entity, sizeof(entt::entity));
+			ImGui::Text("%s", wrapper.GetName().c_str());
 			ImGui::EndDragDropSource();
 		}
 
+		// Drop target
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_ENTITY"))
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY"))
 			{
-				Entity* sourceEntity = (Entity*)payload->Data;
-				m_Scene->ReorderEntity(*sourceEntity, entity);
+				entt::entity dropped = *(entt::entity*)payload->Data;
+				if (dropped != entity)
+				{
+					m_Scene->SetParent(dropped, entity);
+					m_Scene->RemoveRootEntity(dropped); // If dropped entity was root
+				}
 			}
 			ImGui::EndDragDropTarget();
 		}
 
-		bool entityDeleted = false;
-		if(ImGui::BeginPopupContextItem())
-		{
-			if(ImGui::MenuItem("Delete Entity"))
+		/*	bool entityDeleted = false;
+			if(ImGui::BeginPopupContextItem())
 			{
-				entityDeleted = true;
-			}
-			ImGui::EndPopup();
-		}
+				if(ImGui::MenuItem("Delete Entity"))
+				{
+					entityDeleted = true;
+				}
+				ImGui::EndPopup();
+			}*/
 
-		if (expanded)
+		if (opened)
 		{
+			entt::entity child = registry.get<HierarchyComponent>(entity).FirstChild;
+			size_t i = 0;
+
+			while (child != entt::null)
+			{
+				DrawReorderDropTarget(entity, i);
+				DrawEntityNode(child);
+				child = registry.get<HierarchyComponent>(child).NextSibling;
+				i++;
+			}
+			//DrawReorderDropTarget(entity, i);
+
 			ImGui::TreePop();
 		}
 
-		if(entityDeleted)
-		{
-			m_Scene->DestroyEntity(entity);
-			if(m_Scene->IsEntitySelected(entity))
+		/*	if(entityDeleted)
 			{
-				m_Scene->DeselectEntity();
-			}
-		}
+				m_Scene->DestroyEntity(entity);
+				if(m_SceneController->IsEntitySelected(entity))
+				{
+					m_SceneController->DeselectEntity();
+				}
+			}*/
+
+		ImGui::PopID();
 	}
+	void SceneHierarchyWindow::DrawReorderDropTarget(entt::entity parent, size_t index)
+	{
+		ImGui::PushID((int)index);
+		ImGui::Selectable("##DropTarget", false, ImGuiSelectableFlags_SpanAllColumns, ImVec2(0, 1));
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY"))
+			{
+				entt::entity dropped = *(entt::entity*)payload->Data;
+
+				m_Scene->SetParent(dropped, parent);
+
+				if (parent == entt::null)
+				{
+					m_Scene->RemoveRootEntity(dropped);
+					m_Scene->AddRootEntity(dropped);
+					m_Scene->ReorderRootEntity(dropped, index);
+				}
+
+			}
+			ImGui::EndDragDropTarget();
+		}
+		ImGui::PopID();
+	}
+
 }

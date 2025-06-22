@@ -6,6 +6,7 @@
 #include "Engine/Core/Log.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Scene/SceneManager.h"
+#include "../Services/SceneController.h"
 
 namespace Engine
 {
@@ -21,6 +22,9 @@ namespace Engine
 	private:
 		Ref<Scene> m_Scene;
 
-		void DrawEntityNode(Entity entity);
+		void DrawEntityNode(entt::entity);
+		void DrawReorderDropTarget(entt::entity parent, size_t index);
+
+		SceneController* m_SceneController;
 	};
 }

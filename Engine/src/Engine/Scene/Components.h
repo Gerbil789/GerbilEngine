@@ -20,8 +20,7 @@ namespace Engine
 	{
 		UUID ID;
 
-		IDComponent() = default;
-		IDComponent(const IDComponent&) = default;
+		IDComponent() : ID(UUID()) {}
 		IDComponent(UUID uuid) : ID(uuid) {}
 	};
 
@@ -30,7 +29,6 @@ namespace Engine
 		bool Enabled = true;
 
 		EnablingComponent() = default;
-		EnablingComponent(const EnablingComponent&) = default;
 		EnablingComponent(bool enabled) : Enabled(enabled) {}
 	};
 
@@ -40,22 +38,32 @@ namespace Engine
 		std::string Name;
 
 		NameComponent() = default;
-		NameComponent(const NameComponent&) = default;
 		NameComponent(const std::string& name) : Name(name.empty() ? "Entity" : name) {}
 
 		operator std::string& () { return Name; }
 		operator const std::string& () const { return Name; }
 	};
 
-	struct RelationshipComponent
-	{
+	//struct ParentComponent 
+	//{
+	//	entt::entity parent = entt::null;
+
+	//	ParentComponent() = default;
+	//};
+
+	//struct ChildrenComponent 
+	//{
+	//	std::vector<entt::entity> children;
+
+	//	ChildrenComponent() = default;
+	//};
+
+	struct HierarchyComponent {
 		entt::entity Parent = entt::null;
-		std::vector<entt::entity> Children;
-
-		RelationshipComponent() = default;
-		RelationshipComponent(const RelationshipComponent&) = default;
+		entt::entity FirstChild = entt::null;
+		entt::entity NextSibling = entt::null;
+		entt::entity PrevSibling = entt::null;
 	};
-
 
 	struct TransformComponent
 	{
@@ -63,8 +71,8 @@ namespace Engine
 		glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f }; 
 		glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
 
+
 		TransformComponent() = default;
-		TransformComponent(const TransformComponent&) = default;
 		TransformComponent(const glm::vec3& position) : Position(position) {}
 
 		glm::mat4 GetTransform() const
@@ -84,7 +92,6 @@ namespace Engine
 		glm::vec2 TilingFactor = { 1.0f, 1.0f };
 
 		SpriteRendererComponent() = default;
-		SpriteRendererComponent(const SpriteRendererComponent&) = default;
 		SpriteRendererComponent(const glm::vec4& color) : Color(color) {}
 
 		operator glm::vec4& () { return Color; }
@@ -99,7 +106,6 @@ namespace Engine
 		bool FixedAspectRatio = false;
 
 		CameraComponent() = default;
-		CameraComponent(const CameraComponent&) = default;
 	};
 
 
@@ -121,7 +127,6 @@ namespace Engine
 		glm::vec3 Attenuation = { 1.0f, 0.09f, 0.032f }; // Constant, Linear, Quadratic
 
 		LightComponent() = default;
-		LightComponent(const LightComponent&) = default;
 	};
 
 	struct MeshRendererComponent
@@ -130,31 +135,30 @@ namespace Engine
 		Ref<Mesh> Mesh = nullptr;
 
 		MeshRendererComponent() = default;
-		MeshRendererComponent(const MeshRendererComponent&) = default;
 	};
 
-	class ScriptableEntity; //forward declaration
+	//class ScriptableEntity; //forward declaration
 
-	struct NativeScriptComponent
-	{
-		ScriptableEntity* Instance = nullptr;
+	//struct NativeScriptComponent
+	//{
+	//	ScriptableEntity* Instance = nullptr;
 
-		ScriptableEntity*(*InstantiateScript)() = nullptr;
-		void(*DestroyScript)(NativeScriptComponent*) = nullptr;
+	//	ScriptableEntity*(*InstantiateScript)() = nullptr;
+	//	void(*DestroyScript)(NativeScriptComponent*) = nullptr;
 
-		void(*OnCreateFunction)(ScriptableEntity*) = nullptr;
-		void(*OnDestroyFunction)(ScriptableEntity*) = nullptr;
-		void(*OnUpdateFunction)(ScriptableEntity*, Timestep) = nullptr;
+	//	void(*OnCreateFunction)(ScriptableEntity*) = nullptr;
+	//	void(*OnDestroyFunction)(ScriptableEntity*) = nullptr;
+	//	void(*OnUpdateFunction)(ScriptableEntity*, Timestep) = nullptr;
 
-		template<typename T>
-		void Bind()
-		{
-			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
-			DestroyScript = [](NativeScriptComponent* nsc) {delete nsc->Instance; nsc->Instance = nullptr; };
+	//	template<typename T>
+	//	void Bind()
+	//	{
+	//		InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
+	//		DestroyScript = [](NativeScriptComponent* nsc) {delete nsc->Instance; nsc->Instance = nullptr; };
 
-			OnCreateFunction = [](ScriptableEntity* entity) {static_cast<T*>(entity)->OnCreate(); };
-			OnDestroyFunction = [](ScriptableEntity* entity) {static_cast<T*>(entity)->OnDestroy(); };
-			OnUpdateFunction = [](ScriptableEntity* entity, Timestep ts) {static_cast<T*>(entity)->OnUpdate(ts); };
-		}
-	};
+	//		OnCreateFunction = [](ScriptableEntity* entity) {static_cast<T*>(entity)->OnCreate(); };
+	//		OnDestroyFunction = [](ScriptableEntity* entity) {static_cast<T*>(entity)->OnDestroy(); };
+	//		OnUpdateFunction = [](ScriptableEntity* entity, Timestep ts) {static_cast<T*>(entity)->OnUpdate(ts); };
+	//	}
+	//};
 }

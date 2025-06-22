@@ -17,6 +17,8 @@ namespace Engine
 		{
 			LOG_ERROR("Failed to load scene from file {0}", path.string());
 		}
+		scene->RefreshRootEntities();
+
 		return scene;
 	}
 
@@ -31,11 +33,24 @@ namespace Engine
 		//LOG_INFO("Destroying scene with {0} entities", view.size());
 	}
 
+	void Scene::RefreshRootEntities()
+	{
+		m_RootEntities.clear();
+
+		auto view = m_Registry.view<HierarchyComponent>();
+		for (auto entity : view)
+		{
+			const auto& hc = view.get<HierarchyComponent>(entity);
+			if (hc.Parent == entt::null)
+				m_RootEntities.push_back(entity);
+		}
+	}
+
 	template<typename Component>
 	static void CopyComponent(entt::registry& dstRegistry, entt::registry& srcRegistry, const std::unordered_map<UUID, entt::entity>& enttMap)
 	{
 		auto view = srcRegistry.view<Component>();
-		for(auto srcEntity : view)
+		for (auto srcEntity : view)
 		{
 			UUID uuid = srcRegistry.get<IDComponent>(srcEntity).ID;
 			ASSERT(enttMap.find(uuid) != enttMap.end(), "Entity not found in map!");
@@ -47,21 +62,21 @@ namespace Engine
 		}
 	}
 
-	template<typename Component>
-	static void CopyComponentIfExists(Entity src, Entity dst)
-	{
-		if(src.HasComponent<Component>())
-		{
-			auto& srcComponent = src.GetComponent<Component>();
-			dst.AddOrReplaceComponent<Component>(srcComponent);
-		}
-		
-	}
+	//template<typename Component>
+	//static void CopyComponentIfExists(Entity src, Entity dst)
+	//{
+	//	if(src.HasComponent<Component>())
+	//	{
+	//		auto& srcComponent = src.GetComponent<Component>();
+	//		dst.AddOrReplaceComponent<Component>(srcComponent);
+	//	}
+	//	
+	//}
 
 	Ref<Scene> Scene::Copy(const Ref<Scene>& other)
 	{
 		Ref<Scene> newScene = CreateRef<Scene>(other->GetFilePath());
-		
+
 		newScene->m_ViewportWidth = other->m_ViewportWidth;
 		newScene->m_ViewportHeight = other->m_ViewportHeight;
 
@@ -73,7 +88,7 @@ namespace Engine
 
 		auto IdView = srcSceneRegistry.view<IDComponent>();
 
-		for(auto entity : IdView)
+		for (auto entity : IdView)
 		{
 			UUID uuid = IdView.get<IDComponent>(entity).ID;
 			const auto& name = srcSceneRegistry.get<NameComponent>(entity).Name;
@@ -85,7 +100,7 @@ namespace Engine
 		CopyComponent<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<SpriteRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		//CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return newScene;
 	}
@@ -94,7 +109,7 @@ namespace Engine
 	void Scene::OnUpdate(Timestep ts)
 	{
 		//get scene camera  and its transform from scene
-		
+
 		auto view = m_Registry.view<TransformComponent, CameraComponent>();
 		glm::mat4 transform = glm::mat4(1.0f);
 		Camera* camera = nullptr;
@@ -102,7 +117,7 @@ namespace Engine
 		for (auto entity : view)
 		{
 			auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
-			if(cameraComponent.Main)
+			if (cameraComponent.Main)
 			{
 				camera = &cameraComponent.Camera;
 				transform = transformComponent.GetTransform();
@@ -110,7 +125,7 @@ namespace Engine
 			}
 		}
 
-		if(!camera) { return; }
+		if (!camera) { return; }
 
 		switch (m_SceneState)
 		{
@@ -125,14 +140,14 @@ namespace Engine
 
 	void Scene::OnUpdate(Timestep ts, EditorCamera& camera)
 	{
-		switch(m_SceneState)
+		switch (m_SceneState)
 		{
-			case SceneState::Editor:
-				OnUpdateEditor(ts, camera);
-				break;
-			case SceneState::Runtime:
-				OnUpdateRuntime(ts);
-				break;
+		case SceneState::Editor:
+			OnUpdateEditor(ts, camera);
+			break;
+		case SceneState::Runtime:
+			OnUpdateRuntime(ts);
+			break;
 		}
 	}
 
@@ -167,20 +182,20 @@ namespace Engine
 	void Scene::OnUpdateRuntime(Timestep ts)
 	{
 		//scripts
-		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-			{
-				//TODO: move this to scene::onplay
-				if (!nsc.Instance)
-				{
-					nsc.Instance = nsc.InstantiateScript();
-					nsc.Instance->m_Entity = Entity{ entity, this };
-					nsc.Instance->OnCreate();
-					
-				}
-				nsc.Instance->OnUpdate(ts);
-			});
-		}
+		//{
+		//	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		//	{
+		//		//TODO: move this to scene::onplay
+		//		if (!nsc.Instance)
+		//		{
+		//			nsc.Instance = nsc.InstantiateScript();
+		//			nsc.Instance->m_Entity = Entity{ entity, this };
+		//			nsc.Instance->OnCreate();
+		//			
+		//		}
+		//		nsc.Instance->OnUpdate(ts);
+		//	});
+		//}
 
 
 
@@ -194,7 +209,7 @@ namespace Engine
 			{
 				auto [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
 
-				if(camera.Main)
+				if (camera.Main)
 				{
 					mainCamera = &camera.Camera;
 					cameraTransform = transform.GetTransform();
@@ -203,7 +218,7 @@ namespace Engine
 			}
 		}
 
-		if(mainCamera == nullptr)
+		if (mainCamera == nullptr)
 		{
 			//ENGINE_LOG_WARNING("No main camera entity found!");
 			return;
@@ -269,10 +284,10 @@ namespace Engine
 
 		auto view = m_Registry.view<CameraComponent>();
 
-		for(auto entity : view)
+		for (auto entity : view)
 		{
 			auto& cameraComponent = view.get<CameraComponent>(entity);
-			if(!cameraComponent.FixedAspectRatio)
+			if (!cameraComponent.FixedAspectRatio)
 			{
 				cameraComponent.Camera.SetViewportSize(width, height);
 			}
@@ -283,8 +298,6 @@ namespace Engine
 	void Scene::OnDestroy()
 	{
 		m_Registry.clear();
-		m_EntityMap.clear();
-		m_EntityOrder.clear();
 	}
 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -294,34 +307,22 @@ namespace Engine
 
 	Entity Scene::CreateEntity(UUID uuid, const std::string& name)
 	{
-		Entity entity = { m_Registry.create(), this };
+		Entity entity = { m_Registry.create(), &m_Registry };
 		entity.AddComponent<IDComponent>(uuid);
 		entity.AddComponent<EnablingComponent>(true);
 		entity.AddComponent<NameComponent>(name);
+		entity.AddComponent<HierarchyComponent>();
 		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<RelationshipComponent>();
-		m_EntityMap[uuid] = entity;
-		m_EntityOrder.push_back(uuid);
+
+		m_RootEntities.push_back(entity);
+
 		return entity;
 	}
 
 
 	void Scene::DestroyEntity(Entity entity)
 	{
-		m_EntityMap.erase(entity.GetComponent<IDComponent>().ID);
-		m_EntityOrder.erase(std::remove(m_EntityOrder.begin(), m_EntityOrder.end(), entity.GetComponent<IDComponent>().ID), m_EntityOrder.end());
 		m_Registry.destroy(entity);
-	}
-
-
-	Entity Scene::GetEntityByUUID(UUID uuid)
-	{
-		auto it = m_EntityMap.find(uuid);
-		if (it != m_EntityMap.end())
-		{
-			return Entity(it->second, this);
-		}
-		return Entity(); // Return invalid entity if not found
 	}
 
 	std::vector<Entity> Scene::GetLightEntities()
@@ -329,9 +330,9 @@ namespace Engine
 		std::vector<Entity> lightEntities;
 
 		auto view = m_Registry.view<LightComponent>();
-		for(auto entity : view)
+		for (auto entity : view)
 		{
-			lightEntities.push_back(Entity{ entity, this });
+			lightEntities.push_back(Entity{ entity, &m_Registry });
 		}
 		return lightEntities;
 	}
@@ -341,145 +342,92 @@ namespace Engine
 		std::vector<Entity> entities;
 
 		auto view = m_Registry.view<IDComponent>();
-		for(auto entity : view)
+		for (auto entity : view)
 		{
-			entities.push_back(Entity{ entity, this });
+			entities.push_back(Entity{ entity, &m_Registry });
 		}
 		return entities;
 	}
 
-	std::vector<Entity> Scene::GetEntitiesOrdered()
+	void Scene::AddRootEntity(entt::entity entity)
 	{
-		std::vector<Entity> entities;
-
-		for(auto uuid : m_EntityOrder)
-		{
-			auto entity = GetEntityByUUID(uuid);
-			if(entity)
-			{
-				entities.push_back(entity);
-			}
-		}
-		return entities;
+		auto& hc = m_Registry.get_or_emplace<HierarchyComponent>(entity);
+		hc.Parent = entt::null;
+		m_RootEntities.push_back(entity);
 	}
 
-	void Scene::DuplicateEntity(Entity entity)
+	void Scene::RemoveRootEntity(entt::entity entity)
 	{
-		Entity newEntity = CreateEntity(entity.GetName());
-		
-		CopyComponentIfExists<TransformComponent>(entity, newEntity);
-		CopyComponentIfExists<SpriteRendererComponent>(entity, newEntity);
-		CopyComponentIfExists<CameraComponent>(entity, newEntity);
-		CopyComponentIfExists<NativeScriptComponent>(entity, newEntity);
-
-		SelectEntity(newEntity);
+		m_RootEntities.erase(std::remove(m_RootEntities.begin(), m_RootEntities.end(), entity), m_RootEntities.end());
 	}
 
-	void Scene::CopyEntity(Entity entity)
+	void Scene::ReorderRootEntity(entt::entity entity, size_t newIndex)
 	{
-		m_CopiedEntityUUID = entity.GetUUID();
-	}
-
-	void Scene::PasteEntity()
-	{
-		if(m_CopiedEntityUUID == 0) { return; }
-
-		auto view = m_Registry.view<IDComponent>();
-		for(auto entity : view)
-		{
-			if(view.get<IDComponent>(entity).ID == m_CopiedEntityUUID)
-			{
-				DuplicateEntity(Entity{ entity, this });
-				return;
-			}
-		}
-	}
-
-	void Scene::SelectEntity(Entity entity)
-	{
-		m_SelectedEntity = entity;
-	}
-
-	void Scene::DeselectEntity()
-	{
-		m_SelectedEntity = entt::null;
-	}
-
-	bool Scene::IsEntitySelected(Entity entity) const
-	{
-		return m_SelectedEntity == entity;
-	}
-
-	Entity Scene::GetSelectedEntity() 
-	{
-		return { m_SelectedEntity, this };
-	}
-
-	void Scene::ReorderEntity(Entity sourceEntity, Entity targetEntity)
-	{
-		auto sourceUUID = sourceEntity.GetUUID();
-		auto targetUUID = targetEntity.GetUUID();
-
-		// Find the current position of the source entity
-		auto sourceIt = std::find(m_EntityOrder.begin(), m_EntityOrder.end(), sourceUUID);
-		if (sourceIt == m_EntityOrder.end())
+		auto& roots = m_RootEntities;
+		auto it = std::find(roots.begin(), roots.end(), entity);
+		if (it == roots.end())
 			return;
 
-		// Find the position of the target entity
-		auto targetIt = std::find(m_EntityOrder.begin(), m_EntityOrder.end(), targetUUID);
-		if (targetIt == m_EntityOrder.end())
+		roots.erase(it);
+		if (newIndex >= roots.size())
+			roots.push_back(entity);
+		else
+			roots.insert(roots.begin() + newIndex, entity);
+	}
+
+
+
+
+	void Scene::SetParent(entt::entity child, entt::entity newParent)
+	{
+		// Check for cycles, if the child is already the new parent or a descendant of it, do nothing
+		if (child == newParent || IsDescendant(child, newParent))
 			return;
 
-		// Remove the source entity from its current position
-		m_EntityOrder.erase(sourceIt);
+		auto& hc = m_Registry.get_or_emplace<HierarchyComponent>(child);
 
-		// Insert the source entity before the target entity
-		targetIt = std::find(m_EntityOrder.begin(), m_EntityOrder.end(), targetUUID); // Refind the target iterator after erasure
-		m_EntityOrder.insert(targetIt, sourceUUID);
+		// Unlink from current parent or root
+		if (hc.Parent != entt::null)
+		{
+			auto& oldParentHC = m_Registry.get<HierarchyComponent>(hc.Parent);
+			if (oldParentHC.FirstChild == child)
+				oldParentHC.FirstChild = hc.NextSibling;
+
+			if (hc.PrevSibling != entt::null)
+				m_Registry.get<HierarchyComponent>(hc.PrevSibling).NextSibling = hc.NextSibling;
+			if (hc.NextSibling != entt::null)
+				m_Registry.get<HierarchyComponent>(hc.NextSibling).PrevSibling = hc.PrevSibling;
+		}
+
+		// Set new parent
+		hc.Parent = newParent;
+		hc.NextSibling = entt::null;
+		hc.PrevSibling = entt::null;
+
+		if (newParent != entt::null)
+		{
+			auto& parentHC = m_Registry.get_or_emplace<HierarchyComponent>(newParent);
+			hc.NextSibling = parentHC.FirstChild;
+			if (hc.NextSibling != entt::null)
+				m_Registry.get<HierarchyComponent>(hc.NextSibling).PrevSibling = child;
+			parentHC.FirstChild = child;
+		}
 	}
 
-	void Scene::SelectMaterial(const Ref<Material>& material)
+	bool Scene::IsDescendant(entt::entity parent, entt::entity child) 
 	{
-		m_SelectedMaterial = material;
+		if (parent == entt::null || child == entt::null)
+			return false;
+
+		const auto* hierarchy = m_Registry.try_get<HierarchyComponent>(child);
+		while (hierarchy && hierarchy->Parent != entt::null)
+		{
+			if (hierarchy->Parent == parent)
+				return true;
+
+			hierarchy = m_Registry.try_get<HierarchyComponent>(hierarchy->Parent);
+		}
+
+		return false;
 	}
-
-	
-	template<typename T>
-	void Scene::OnComponentAdded(Entity entity, T& component) 
-	{
-		ASSERT(false, "OnComponentAdded not implemented for this component type");
-	}
-
-	template<>
-	void Scene::OnComponentAdded<NameComponent>(Entity entity, NameComponent& component) {}
-
-	template<>
-	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component) {}
-
-	template<>
-	void Scene::OnComponentAdded<EnablingComponent>(Entity entity, EnablingComponent& component) {}
-
-	template<>
-	void Scene::OnComponentAdded<RelationshipComponent>(Entity entity, RelationshipComponent& component) {}
-
-	template<>
-	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component) {}
-
-	template<>
-	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component) {}
-
-	template<>
-	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
-	{
-		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-	}
-
-	template<>
-	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component) {}
-
-	template<>
-	void Scene::OnComponentAdded<LightComponent>(Entity entity, LightComponent& component) {}
-
-	template<>
-	void Scene::OnComponentAdded<MeshRendererComponent>(Entity entity, MeshRendererComponent& component) {}
 }

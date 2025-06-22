@@ -2,6 +2,7 @@
 
 #include "Engine/Core/Timestep.h"
 #include "Engine/Events/Event.h"
+#include "../EditorServiceRegistry.h"
 
 namespace Engine 
 {

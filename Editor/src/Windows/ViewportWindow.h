@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include "EditorWindow.h"
 #include "Engine/Scene/SceneManager.h"
+#include "../Services/SceneController.h"
 #include <Engine.h>
 
 
@@ -38,5 +39,8 @@ namespace Engine
 
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
+
+
+		SceneController* m_SceneController;
 	};
 }

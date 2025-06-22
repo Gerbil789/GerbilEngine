@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EditorContext.h"
-#include "Controllers/SceneController.h"
+#include "Services/SceneController.h"
 
 namespace Engine 
 {
@@ -17,7 +17,10 @@ namespace Engine
 		void OnImGuiRender() override;
 
 	private:
-		EditorContext m_Context;
-		SceneController m_SceneController;
+		Scope<SceneController> m_SceneController;
+
+		Ref<EditorContext> m_Context;
+
+
 	};
 }

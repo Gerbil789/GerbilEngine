@@ -32,7 +32,7 @@ namespace Engine
 		if (scene) 
 		{
 			//TODO: hold selected material reference
-			m_Material = scene->GetSelectedMaterial();
+			//m_Material = scene->GetSelectedMaterial();
 		}
 		
 

@@ -1,15 +1,22 @@
 #include "EditorLayer.h"
+#include "EditorServiceRegistry.h"
 #include "imgui/imgui.h"
 
 namespace Engine
 {
-	EditorLayer::EditorLayer() : Layer("EditorLayer") {}
+	EditorLayer::EditorLayer() : Layer("EditorLayer") 
+	{
+		m_SceneController = CreateScope<SceneController>();
+		EditorServiceRegistry::Register<SceneController>(m_SceneController.get());
+	}
 
 	void EditorLayer::OnAttach()
 	{
 		ENGINE_PROFILE_FUNCTION();
 		RenderCommand::SetClearColor({ 0.05f, 0.05f, 0.05f, 1.0f });
 		SceneManager::CreateScene("NewScene");
+
+		m_Context = CreateRef<EditorContext>();
 	}
 
 	void EditorLayer::OnDetach()
@@ -20,14 +27,14 @@ namespace Engine
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
 		ENGINE_PROFILE_FUNCTION();
-		m_Context.OnUpdate(ts);
+		m_Context->OnUpdate(ts);
 	}
 
 	void EditorLayer::OnEvent(Event& e)
 	{
 		ENGINE_PROFILE_FUNCTION();
-		m_SceneController.OnEvent(e);
-		m_Context.OnEvent(e); 
+		m_SceneController->OnEvent(e);
+		m_Context->OnEvent(e); 
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -64,7 +71,7 @@ namespace Engine
 		}
 
 		// draw windows
-		m_Context.OnImGuiRender(); 
+		m_Context->OnImGuiRender(); 
 
 		ImGui::End();
 	}

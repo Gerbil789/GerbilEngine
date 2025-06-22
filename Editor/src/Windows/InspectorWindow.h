@@ -3,6 +3,7 @@
 #include "EditorWindow.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Scene/SceneManager.h"
+#include "../Services/SceneController.h"
 
 namespace Engine
 {
@@ -20,5 +21,9 @@ namespace Engine
 
 		void DrawComponents(Entity entity);
 		void DrawAddComponentButton(Entity entity);
+
+
+
+		SceneController* m_SceneController;
 	};
 }

@@ -26,6 +26,7 @@ namespace Engine
 	public:
 		Scene(const std::filesystem::path& path) : Asset(path) {}
 		~Scene();
+		void RefreshRootEntities();
 
 		static Ref<Scene> Copy(const Ref<Scene>& other);
 		SceneState GetSceneState() const { return m_SceneState; }
@@ -42,53 +43,44 @@ namespace Engine
 		void OnViewportResize(uint32_t width, uint32_t height);
 		void OnDestroy();
 
-		Entity CreateEntity(const std::string& name = std::string());
-		Entity CreateEntity(UUID uuid, const std::string& name = std::string());
+		Entity CreateEntity(const std::string& name = "");
+		Entity CreateEntity(UUID uuid, const std::string& name = "");
 		void DestroyEntity(Entity entity);
-		Entity GetEntityByUUID(UUID uuid);
 		std::vector<Entity> GetLightEntities();
 		std::vector<Entity> GetEntities();
-		std::vector<Entity> GetEntitiesOrdered();
-		void DuplicateEntity(Entity entity);
-		void CopyEntity(Entity entity);
-		void PasteEntity();
-		void SelectEntity(Entity entity);
-		void DeselectEntity();
-		bool IsEntitySelected(Entity entity) const;
-		Entity GetSelectedEntity();
-		const std::vector<UUID>& GetEntityOrder() const { return m_EntityOrder; }
-		void ReorderEntity(Entity sourceEntity, Entity targetEntity);
 
-		//temp
-		void SelectMaterial(const Ref<Material>& material);
-		const Ref<Material>& GetSelectedMaterial() const { return m_SelectedMaterial; }
+		std::vector<entt::entity>& GetRootEntities() { return m_RootEntities; }
+		const std::vector<entt::entity>& GetRootEntities() const { return m_RootEntities; }
+
+		void AddRootEntity(entt::entity entity);
+		void RemoveRootEntity(entt::entity entity);
+		void ReorderRootEntity(entt::entity entity, size_t newIndex);
+
+		//void ReorderChild(entt::entity parent, entt::entity child, size_t newIndex);
+
+
+		void SetParent(entt::entity child, entt::entity newParent);
+		bool IsDescendant(entt::entity parent, entt::entity child);
+
+		entt::registry m_Registry;
 	private:
 		void OnUpdateRuntime(Timestep ts);
 		void OnUpdateEditor(Timestep ts, EditorCamera& camera);
 		void OnUpdateEditor(Timestep ts, Camera& camera, const glm::mat4& transform);
 
 
-
-		template<typename T>
-		void OnComponentAdded(Entity entity, T& component);
-
 	private:
-		entt::registry m_Registry;
-		std::unordered_map<UUID, entt::entity> m_EntityMap;
-		std::vector<UUID> m_EntityOrder;
+		std::vector<entt::entity> m_RootEntities;
+
 
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 
 		bool m_IsPlaying = false;
 		bool m_IsPaused = false;
 
-		//TODO: move to project when projtects are implemented & implement observer pattern to notify selection change
-		UUID m_CopiedEntityUUID = 0;
-		entt::entity m_SelectedEntity = entt::null;
-		Ref<Material> m_SelectedMaterial = nullptr; 
-
 		SceneState m_SceneState = SceneState::Editor;
 
+		friend class SceneController;
 		friend class Entity;
 		friend class SceneHierarchyPanel;
 	};

@@ -4,6 +4,7 @@
 #include "Engine/Scene/Entity.h"
 #include "Engine/Math/Math.h"
 #include "Engine/Core/Core.h"
+#include "../EditorServiceRegistry.h"
 #include "imgui/imgui.h"
 #include "ImGuizmo/ImGuizmo.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -13,6 +14,8 @@ namespace Engine
 	ViewportWindow::ViewportWindow(EditorContext* context) : EditorWindow(context)
 	{
 		SceneManager::RegisterObserver(this);
+
+		m_SceneController = EditorServiceRegistry::Get<SceneController>();
 
 		//create editor frame buffer
 		FrameBufferSpecification editorFrameBufferSpecification;
@@ -122,7 +125,7 @@ namespace Engine
 
 
 		//gizmo
-		Entity selectedEntity = m_Scene->GetSelectedEntity();
+		Entity selectedEntity = m_SceneController->GetSelectedEntity();
 
 		if (selectedEntity && m_GizmoType != -1)
 		{
@@ -213,7 +216,7 @@ namespace Engine
 
 			if (m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
 			{
-				m_Scene->SelectEntity(m_HoveredEntity);
+				m_SceneController->SelectEntity(m_HoveredEntity);
 			}
 		}
 		return false;
