@@ -57,8 +57,6 @@ project "Engine"
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl",
 		"%{prj.name}/vendor/yaml-cpp/include/**.h",
-		-- "%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
-		-- "%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
 		"%{prj.name}/vendor/assimp/include/**.h",
 		"%{prj.name}/vendor/assimp/include/**.hpp",
 		"%{prj.name}/vendor/SPIRV-Cross/include/**.h",
@@ -78,12 +76,10 @@ project "Engine"
 		"%{prj.name}/vendor/spdlog/include",
 		"%{Includedir.GLFW}",
 		"%{Includedir.Glad}",
-		-- "%{Includedir.ImGui}",
 		"%{Includedir.glm}",
 		"%{Includedir.stb_image}",
 		"%{Includedir.entt}",
 		"%{Includedir.yaml_cpp}",
-		-- "%{Includedir.ImGuizmo}",
 		"%{Includedir.assimp}",
 		"%{Includedir.spirv_tools}",
 		"Engine/vendor/shaderc/third_party/spirv-tools/external/spirv-headers/include",
@@ -91,7 +87,6 @@ project "Engine"
 		"%{Includedir.glslang}",
 		"%{Includedir.shaderc}",
 		"%{Includedir.SPIRV_Cross}"
-
 	}
 
 
@@ -99,7 +94,6 @@ project "Engine"
 	{
 		"GLFW",
 		"Glad",
-		-- "ImGui",
 		"opengl32.lib",
 		"yaml-cpp",
 		"assimp",
@@ -156,6 +150,7 @@ project "Editor"
 	{
 		"Engine/vendor/spdlog/include",
 		"Engine/src",
+		"Editor/src",
 		"Engine/vendor",
 		"Editor/vendor",
 		"%{Includedir.GLFW}",
