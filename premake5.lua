@@ -6,32 +6,21 @@ workspace "GerbilEngine"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 Includedir = {}
-Includedir["GLFW"] = "Engine/vendor/GLFW/include"
-Includedir["Glad"] = "Engine/vendor/Glad/include"
 Includedir["glm"] = "Engine/vendor/glm"
 Includedir["stb_image"] = "Engine/vendor/stb_image"
 Includedir["entt"] = "Engine/vendor/entt/include"
 Includedir["yaml_cpp"] = "Engine/vendor/yaml-cpp/include"
 Includedir["assimp"] = "Engine/vendor/assimp/include"
-Includedir["SPIRV_Cross"] = "Engine/vendor/SPIRV-Cross/include"
-Includedir["spirv_tools"] = "Engine/vendor/shaderc/third_party/spirv-tools/include"
-Includedir["glslang"] = "Engine/vendor/shaderc/third_party/glslang/glslang/Include"
-Includedir["shaderc"] = "Engine/vendor/shaderc/libshaderc/include"
 
 Includedir["ImGui"] = "Editor/vendor/imgui"
 Includedir["ImGuizmo"] = "Editor/vendor/ImGuizmo"
 
 
 group "Dependencies"
-	include "Engine/vendor/GLFW"
-	include "Engine/vendor/Glad"
 	include "Editor/vendor/imgui"
 	include "Engine/vendor/yaml-cpp"
 	include "Engine/vendor/assimp"
 	include "Engine/vendor/assimp/contrib/zlib"
-	include "Engine/vendor/shaderc/third_party/spirv-tools"
-	include "Engine/vendor/shaderc/third_party/glslang"
-	include "Engine/vendor/shaderc"
 group ""
 
 
@@ -58,11 +47,7 @@ project "Engine"
 		"%{prj.name}/vendor/glm/glm/**.inl",
 		"%{prj.name}/vendor/yaml-cpp/include/**.h",
 		"%{prj.name}/vendor/assimp/include/**.h",
-		"%{prj.name}/vendor/assimp/include/**.hpp",
-		"%{prj.name}/vendor/SPIRV-Cross/include/**.h",
-		"%{prj.name}/vendor/SPIRV-Cross/include/**.hpp",
-		"%{prj.name}/vendor/SPIRV-Cross/include/**.c",
-		"%{prj.name}/vendor/SPIRV-Cross/include/**.cpp",
+		"%{prj.name}/vendor/assimp/include/**.hpp"
 	}
 
 	defines
@@ -74,38 +59,22 @@ project "Engine"
 	{
 		"%{prj.name}/src",
 		"%{prj.name}/vendor/spdlog/include",
-		"%{Includedir.GLFW}",
-		"%{Includedir.Glad}",
 		"%{Includedir.glm}",
 		"%{Includedir.stb_image}",
 		"%{Includedir.entt}",
 		"%{Includedir.yaml_cpp}",
-		"%{Includedir.assimp}",
-		"%{Includedir.spirv_tools}",
-		"Engine/vendor/shaderc/third_party/spirv-tools/external/spirv-headers/include",
-		"Engine/vendor/shaderc/third_party/spirv-tools/external/spirv-headers/include/spirv/unified1",
-		"%{Includedir.glslang}",
-		"%{Includedir.shaderc}",
-		"%{Includedir.SPIRV_Cross}"
+		"%{Includedir.assimp}"
 	}
 
 
 	links
 	{
-		"GLFW",
-		"Glad",
-		"opengl32.lib",
 		"yaml-cpp",
 		"assimp",
-		"spirv-tools",
-		"shaderc",
 	}
 
 	-- filter "files:Engine/vendor/ImGuizmo/**.cpp"
 	-- 	flags { "NoPCH" }
-
-	filter { "files:Engine/vendor/SPIRV-Cross/include/**.cpp" }
-    	flags { "NoPCH" }
 
 	filter "system:windows"
 		systemversion "latest"
@@ -114,8 +83,7 @@ project "Engine"
 		defines
 		{
 			"ENGINE_PLATFORM_WINDOWS",
-			"ENGINE_BUILD_DLL",
-			"GLFW_INCLUDE_NONE"
+			"ENGINE_BUILD_DLL"
 		}
 
 	filter "configurations:Debug"
@@ -148,18 +116,16 @@ project "Editor"
 
 	includedirs
 	{
+		"Editor/src",
 		"Engine/vendor/spdlog/include",
 		"Engine/src",
-		"Editor/src",
 		"Engine/vendor",
 		"Editor/vendor",
-		"%{Includedir.GLFW}",
 		"%{Includedir.glm}",
 		"%{Includedir.entt}",
 		"%{Includedir.ImGui}",
 		"%{Includedir.ImGuizmo}",
-		"%{Includedir.assimp}",
-		"%{Includedir.glslang}",
+		"%{Includedir.assimp}"
 	}
 
 	links
