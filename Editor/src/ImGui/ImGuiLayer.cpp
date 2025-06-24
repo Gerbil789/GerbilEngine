@@ -1,5 +1,5 @@
 #include "enginepch.h"
-#include "Engine/Imgui/ImGuiLayer.h"
+#include "ImGuiLayer.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Utils/Color.h"
 #include "Engine/Utils/File.h"
@@ -66,7 +66,7 @@ namespace Engine
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		ImGuizmo::BeginFrame();
+		ImGuizmo::BeginFrame(); //TODO: must be here?
 	}
 
 	void ImGuiLayer::End()
@@ -101,10 +101,5 @@ namespace Engine
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		ImGui::LoadIniSettingsFromMemory(defaultLayoutContent.value().c_str());
 		LOG_INFO("ImGui layout reset to default");
-	}
-
-	void ImGuiLayer::OnImGuiRender()
-	{
-
 	}
 }

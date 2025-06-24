@@ -3,9 +3,7 @@
 
 namespace Engine
 {
-	LayerStack::LayerStack()
-	{
-	}
+	LayerStack::LayerStack() {}
 
 	LayerStack::~LayerStack()
 	{
@@ -22,10 +20,6 @@ namespace Engine
 		m_LayerInsertIndex++;
 	}
 
-	void LayerStack::PushOverlay(Layer* overlay)
-	{
-		m_Layers.emplace_back(overlay);
-	}
 
 	void LayerStack::PopLayer(Layer* layer)
 	{
@@ -39,20 +33,6 @@ namespace Engine
 		else
 		{
 			LOG_WARNING("Layer not found in LayerStack!");
-		}
-	}
-
-	void LayerStack::PopOverlay(Layer* overlay)
-	{
-		auto it = std::find(m_Layers.begin() + m_LayerInsertIndex, m_Layers.end(), overlay);
-		if (it != m_Layers.end())
-		{
-			overlay->OnDetach();
-			m_Layers.erase(it);
-		}
-		else
-		{
-			LOG_WARNING("Overlay not found in LayerStack!");
 		}
 	}
 }

@@ -4,6 +4,7 @@
 #include "Engine/Scene/Entity.h"
 #include "Engine/Math/Math.h"
 #include "Engine/Core/Core.h"
+#include "../EditorApp.h"
 #include "../EditorServiceRegistry.h"
 #include "imgui/imgui.h"
 #include "ImGuizmo/ImGuizmo.h"
@@ -99,7 +100,10 @@ namespace Engine
 
 		m_ViewportFocused = ImGui::IsWindowFocused();
 		m_ViewportHovered = ImGui::IsWindowHovered();
-		Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
+
+		auto editorApp = static_cast<EditorApp*>(&Engine::Application::Get()); //TODO: dont get it every cycle, store it somewhere
+		editorApp->GetImGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
+
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 		m_ViewportSize = { viewportSize.x, viewportSize.y };
 		uint32_t textureID = m_EditorFrameBuffer->GetColorAttachmentRendererID();

@@ -5,7 +5,6 @@
 #include "Engine/Core/KeyCodes.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Core/Timestep.h"
-#include "Engine/ImGui/ImGuiLayer.h"
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Renderer/RenderCommand.h"

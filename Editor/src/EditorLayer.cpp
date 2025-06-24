@@ -6,6 +6,7 @@ namespace Engine
 {
 	EditorLayer::EditorLayer() : Layer("EditorLayer") 
 	{
+		m_ImGuiLayer = new Engine::ImGuiLayer();
 		m_SceneController = CreateScope<SceneController>();
 		EditorServiceRegistry::Register<SceneController>(m_SceneController.get());
 	}
@@ -40,6 +41,7 @@ namespace Engine
 	void EditorLayer::OnImGuiRender()
 	{
 		ENGINE_PROFILE_FUNCTION();
+		m_ImGuiLayer->Begin();
 
 		// imgui dockspace setup
 		static bool dockspaceOpen = true;
@@ -74,5 +76,6 @@ namespace Engine
 		m_Context->OnImGuiRender(); 
 
 		ImGui::End();
+		m_ImGuiLayer->End();
 	}
 }

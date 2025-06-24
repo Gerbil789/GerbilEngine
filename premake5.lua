@@ -8,23 +8,24 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 Includedir = {}
 Includedir["GLFW"] = "Engine/vendor/GLFW/include"
 Includedir["Glad"] = "Engine/vendor/Glad/include"
-Includedir["ImGui"] = "Engine/vendor/imgui"
 Includedir["glm"] = "Engine/vendor/glm"
 Includedir["stb_image"] = "Engine/vendor/stb_image"
 Includedir["entt"] = "Engine/vendor/entt/include"
 Includedir["yaml_cpp"] = "Engine/vendor/yaml-cpp/include"
-Includedir["ImGuizmo"] = "Engine/vendor/ImGuizmo"
 Includedir["assimp"] = "Engine/vendor/assimp/include"
 Includedir["SPIRV_Cross"] = "Engine/vendor/SPIRV-Cross/include"
 Includedir["spirv_tools"] = "Engine/vendor/shaderc/third_party/spirv-tools/include"
 Includedir["glslang"] = "Engine/vendor/shaderc/third_party/glslang/glslang/Include"
 Includedir["shaderc"] = "Engine/vendor/shaderc/libshaderc/include"
 
+Includedir["ImGui"] = "Editor/vendor/imgui"
+Includedir["ImGuizmo"] = "Editor/vendor/ImGuizmo"
+
 
 group "Dependencies"
 	include "Engine/vendor/GLFW"
 	include "Engine/vendor/Glad"
-	include "Engine/vendor/imgui"
+	include "Editor/vendor/imgui"
 	include "Engine/vendor/yaml-cpp"
 	include "Engine/vendor/assimp"
 	include "Engine/vendor/assimp/contrib/zlib"
@@ -56,8 +57,8 @@ project "Engine"
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl",
 		"%{prj.name}/vendor/yaml-cpp/include/**.h",
-		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
-		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
+		-- "%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
+		-- "%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
 		"%{prj.name}/vendor/assimp/include/**.h",
 		"%{prj.name}/vendor/assimp/include/**.hpp",
 		"%{prj.name}/vendor/SPIRV-Cross/include/**.h",
@@ -77,12 +78,12 @@ project "Engine"
 		"%{prj.name}/vendor/spdlog/include",
 		"%{Includedir.GLFW}",
 		"%{Includedir.Glad}",
-		"%{Includedir.ImGui}",
+		-- "%{Includedir.ImGui}",
 		"%{Includedir.glm}",
 		"%{Includedir.stb_image}",
 		"%{Includedir.entt}",
 		"%{Includedir.yaml_cpp}",
-		"%{Includedir.ImGuizmo}",
+		-- "%{Includedir.ImGuizmo}",
 		"%{Includedir.assimp}",
 		"%{Includedir.spirv_tools}",
 		"Engine/vendor/shaderc/third_party/spirv-tools/external/spirv-headers/include",
@@ -98,7 +99,7 @@ project "Engine"
 	{
 		"GLFW",
 		"Glad",
-		"ImGui",
+		-- "ImGui",
 		"opengl32.lib",
 		"yaml-cpp",
 		"assimp",
@@ -106,8 +107,8 @@ project "Engine"
 		"shaderc",
 	}
 
-	filter "files:Engine/vendor/ImGuizmo/**.cpp"
-		flags { "NoPCH" }
+	-- filter "files:Engine/vendor/ImGuizmo/**.cpp"
+	-- 	flags { "NoPCH" }
 
 	filter { "files:Engine/vendor/SPIRV-Cross/include/**.cpp" }
     	flags { "NoPCH" }
@@ -147,6 +148,8 @@ project "Editor"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
+		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
 	}
 
 	includedirs
@@ -154,17 +157,20 @@ project "Editor"
 		"Engine/vendor/spdlog/include",
 		"Engine/src",
 		"Engine/vendor",
+		"Editor/vendor",
 		"%{Includedir.GLFW}",
 		"%{Includedir.glm}",
 		"%{Includedir.entt}",
+		"%{Includedir.ImGui}",
 		"%{Includedir.ImGuizmo}",
 		"%{Includedir.assimp}",
-		"%{Includedir.glslang}"
+		"%{Includedir.glslang}",
 	}
 
 	links
 	{
-		"Engine"
+		"Engine",
+		"ImGui",
 	}
 
 

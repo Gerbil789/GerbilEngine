@@ -1,8 +1,8 @@
 [submodule "Engine/vendor/spdlog"]
 	path = Engine/vendor/spdlog
 	url = https://github.com/gabime/spdlog
-[submodule "Engine/vendor/imgui"]
-	path = Engine/vendor/imgui
+[submodule "Editor/vendor/imgui"]
+	path = Editor/vendor/imgui
 	url = https://github.com/Gerbil789/imgui
 [submodule "Engine/vendor/glm"]
 	path = Engine/vendor/glm
@@ -13,8 +13,8 @@
 [submodule "Engine/vendor/yaml-cpp"]
 	path = Engine/vendor/yaml-cpp
 	url = https://github.com/Gerbil789/yaml-cpp
-[submodule "Engine/vendor/ImGuizmo"]
-	path = Engine/vendor/ImGuizmo
+[submodule "Editor/vendor/ImGuizmo"]
+	path = Editor/vendor/ImGuizmo
 	url = https://github.com/Gerbil789/ImGuizmo
 [submodule "Engine/vendor/assimp"]
 	path = Engine/vendor/assimp
