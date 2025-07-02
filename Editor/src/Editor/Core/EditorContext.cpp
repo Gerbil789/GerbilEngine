@@ -14,15 +14,17 @@ namespace Editor
 		m_ViewportWindow = new ViewportWindow(this);
 		m_GameWindow = new GameWindow(this);
 
-		m_Windows.push_back(m_ContentBrowserWindow);
+		//m_Windows.push_back(m_ContentBrowserWindow);
 		m_Windows.push_back(m_InspectorWindow);
 		m_Windows.push_back(m_SceneHierarchyWindow);
 		m_Windows.push_back(m_MaterialWindow);
-		m_Windows.push_back(m_SettingsWindow);
+		//m_Windows.push_back(m_SettingsWindow);
 		m_Windows.push_back(m_StatisticsWindow);
 		m_Windows.push_back(m_MeshImportWindow);
 		m_Windows.push_back(m_ViewportWindow);
 		m_Windows.push_back(m_GameWindow);
+
+		//TODO: make a function to register windows (create and add to the list)
 	}
 
 	void EditorContext::OnUpdate(Engine::Timestep ts)
@@ -42,7 +44,8 @@ namespace Editor
 			window->OnImGuiRender();
 		}
 
-		//ImGui::ShowDemoWindow();
+		//bool show_demo_window = true;
+		//ImGui::ShowDemoWindow(&show_demo_window);
 	}
 
 	void EditorContext::OnEvent(Engine::Event& e)

@@ -14,8 +14,8 @@ namespace Engine
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
 	Application* Application::s_Instance = nullptr;
+	GraphicsContext* Application::s_Context = new GraphicsContext();
 
-	
 	Application::Application(const std::string& name)
 	{
 		ENGINE_PROFILE_FUNCTION();
@@ -23,15 +23,13 @@ namespace Engine
 		ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		m_Window = Window::Create(WindowProps(name));
+		m_Window = CreateScope<Window>(name);
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-
+		s_Context->Init();
 		RenderCommand::Init();
 		Renderer::Init();
 		//Renderer2D::Init();
-
-
 	}
 
 	Application::~Application() {}

@@ -3,40 +3,40 @@
 #include "enginepch.h"
 #include "Engine/Core/Core.h"
 #include "Engine/Events/Event.h"
+#include "Engine/Renderer/GraphicsContext.h"
+#include <GLFW/glfw3.h>
 
 namespace Engine
 {
-	struct WindowProps
-	{
-		std::string Title;
-		uint32_t Width;
-		uint32_t Height;
-		std::filesystem::path IconPath;
-
-		WindowProps(const std::string& title = "Gerbil Engine", uint32_t width = 1600, uint32_t height = 900, std::filesystem::path iconPath = "resources/icons/logo.png") : Title(title), Width(width), Height(height), IconPath(iconPath) {}
-	};
-
-	// Interface representing a desktop system based Window
 	class Window
 	{
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
 
-		virtual ~Window() = default;
+		Window(const std::string& title = "New Window", uint32_t width = 1600, uint32_t height = 900, std::filesystem::path iconPath = "resources/icons/logo.png");
+		~Window();
 
-		virtual void OnUpdate() = 0;
+		void OnUpdate();
 
-		virtual uint32_t GetWidth() const = 0;
-		virtual uint32_t GetHeight() const = 0;
+		uint32_t GetWidth() const { return m_Data.Width; }
+		uint32_t GetHeight() const { return m_Data.Height; }
 
-		// Window attributes
-		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
-		virtual void SetVSync(bool enabled) = 0;
-		virtual bool IsVSync() const = 0;
+		void SetEventCallback(const EventCallbackFn& callback) { m_Data.EventCallback = callback; }
 
-		virtual void* GetNativeWindow() const = 0;
-		virtual void MakeContextCurrent() const = 0;
+		GLFWwindow* GetGLFWWindow() const { return m_Window; }
+	private:
+		GLFWwindow* m_Window;
+		GraphicsContext* m_Context;
 
-		static Scope<Window> Create(const WindowProps& props = WindowProps());
+		struct WindowData
+		{
+			std::string Title;
+			uint32_t Width = 1600, Height = 900;
+			std::filesystem::path IconPath;
+
+			EventCallbackFn EventCallback;
+		};
+
+		WindowData m_Data;
 	};
 } 

@@ -19,7 +19,6 @@ namespace Engine
 		FrameBufferTextureSpecification() = default;
 		FrameBufferTextureSpecification(FrameBufferTextureFormat format) : TextureFormat(format) {}
 
-
 		FrameBufferTextureFormat TextureFormat = FrameBufferTextureFormat::None;
 		//TODO: filtering/wrap
 	};
@@ -44,26 +43,32 @@ namespace Engine
 	class FrameBuffer
 	{
 	public:
-		virtual ~FrameBuffer() = default;
+		FrameBuffer(const FrameBufferSpecification& specification) : m_Specification(specification) {}
+		~FrameBuffer() = default;
 
-		virtual const FrameBufferSpecification& GetSpecification() const = 0;
+		const FrameBufferSpecification& GetSpecification() const { return m_Specification; }
 
-		virtual void Bind() = 0;
-		virtual void Unbind() = 0;
+		void Bind() {}
+		void Unbind() {}
 
-		virtual void Resize(uint32_t width, uint32_t height) = 0;
+		void Resize(uint32_t width, uint32_t height) {}
 
-		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
+		uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const { return m_ColorAttachments[index]; }
 		//virtual uint32_t GetDepthAttachmentRendererID() const = 0;
 
-		virtual uint32_t GetWidth() const = 0;
-		virtual uint32_t GetHeight() const = 0;
+		uint32_t GetWidth() const { return m_Specification.Width; }
+		uint32_t GetHeight() const { return m_Specification.Height; }
 
-		static Ref<FrameBuffer> Create(const FrameBufferSpecification& spec);
 
-		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) = 0;
+		int ReadPixel(uint32_t attachmentIndex, int x, int y);
 
-		virtual void ClearAttachment(uint32_t attachmentIndex, int value) = 0;
+		void ClearAttachment(uint32_t attachmentIndex, int value);
+
+	private:
+		FrameBufferSpecification m_Specification;
+		uint32_t m_RendererID = 0;
+		std::vector<uint32_t> m_ColorAttachments;
+		uint32_t m_DepthAttachment = 0;
 	};
 }
 
