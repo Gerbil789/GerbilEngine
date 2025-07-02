@@ -26,7 +26,7 @@ namespace Engine
 
 		inline static Application& Get() { return *s_Instance; }
 		inline Window& GetWindow() { return *m_Window; }
-		static GraphicsContext* GetContext() { return s_Context; }
+		static GraphicsContext* GetGraphicsContext() { return s_GraphicsContext; }
 
 		void Close();
 
@@ -38,8 +38,8 @@ namespace Engine
 
 	protected:
 		static Application* s_Instance;
+		static GraphicsContext* s_GraphicsContext;
 		Scope<Window> m_Window;
-		static GraphicsContext* s_Context;
 
 		bool m_Running = true;
 		bool m_Minimized = false;

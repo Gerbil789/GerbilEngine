@@ -58,6 +58,4 @@ namespace Editor
 			m_Window->OnUpdate();
 		}
 	}
-
-
 }

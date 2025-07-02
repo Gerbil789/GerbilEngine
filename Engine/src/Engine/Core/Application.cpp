@@ -2,6 +2,7 @@
 #include "Engine/Core/Application.h"
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/Renderer2D.h"
+#include "Engine/Renderer/RenderCommand.h"
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Renderer/Texture.h"
 #include "Engine/Renderer/Material.h"
@@ -14,19 +15,19 @@ namespace Engine
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
 	Application* Application::s_Instance = nullptr;
-	GraphicsContext* Application::s_Context = new GraphicsContext();
+	GraphicsContext* Application::s_GraphicsContext = nullptr;
 
 	Application::Application(const std::string& name)
 	{
 		ENGINE_PROFILE_FUNCTION();
-
 		ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
 		m_Window = CreateScope<Window>(name);
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-		s_Context->Init();
+		s_GraphicsContext = new GraphicsContext();
+		s_GraphicsContext->Init();
 		RenderCommand::Init();
 		Renderer::Init();
 		//Renderer2D::Init();

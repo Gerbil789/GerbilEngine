@@ -3,7 +3,6 @@
 #include "enginepch.h"
 #include "Engine/Core/Core.h"
 #include "Engine/Events/Event.h"
-#include "Engine/Renderer/GraphicsContext.h"
 #include <GLFW/glfw3.h>
 
 namespace Engine
@@ -20,20 +19,22 @@ namespace Engine
 
 		uint32_t GetWidth() const { return m_Data.Width; }
 		uint32_t GetHeight() const { return m_Data.Height; }
+		GLFWwindow* GetGLFWWindow() const { return m_Window; }
 
 		void SetEventCallback(const EventCallbackFn& callback) { m_Data.EventCallback = callback; }
 
-		GLFWwindow* GetGLFWWindow() const { return m_Window; }
+	private:
+		void SetEventCallbacks();
+
 	private:
 		GLFWwindow* m_Window;
-		GraphicsContext* m_Context;
+
+		std::string m_Title;
+		std::filesystem::path m_IconPath;
 
 		struct WindowData
 		{
-			std::string Title;
 			uint32_t Width = 1600, Height = 900;
-			std::filesystem::path IconPath;
-
 			EventCallbackFn EventCallback;
 		};
 

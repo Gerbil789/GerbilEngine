@@ -10,26 +10,24 @@
 
 namespace Engine
 {
-	static void GLFWErrorCallback(int error, const char* description)
-	{
-		LOG_ERROR("GLFW Error ({0}): {1}", error, description);
-	}
-
 	Window::Window(const std::string& title, uint32_t width, uint32_t height, std::filesystem::path iconPath)
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-		m_Data.Title = title;
+		m_Title = title;
 		m_Data.Width = width;
 		m_Data.Height = height;
-		m_Data.IconPath = iconPath;
-		m_Context = Application::Get().GetContext();
-		ASSERT(m_Context, "[WindowsWindow] No rendering context available!");
+		m_IconPath = iconPath;
 
 		LOG_INFO("Creating window {0} ({1}, {2})", title, width, height);
 
-		ASSERT(glfwInit(), "Could not initialize GLFW!");
-		glfwSetErrorCallback(GLFWErrorCallback);
+		bool glfwInitialized = glfwInit();
+		ASSERT(glfwInitialized, "Could not initialize GLFW!");
+
+		glfwSetErrorCallback([](int error, const char* description)
+			{
+				LOG_ERROR("GLFW Error ({0}): {1}", error, description);
+			});
 
 		// Make sure GLFW does not initialize any graphics context.
 		// This needs to be done explicitly later.
@@ -38,17 +36,34 @@ namespace Engine
 		m_Window = glfwCreateWindow((int)width, (int)height, title.c_str(), nullptr, nullptr);
 		ASSERT(m_Window, "Could not create GLFW window!");
 
-		glfwSetWindowUserPointer(m_Window, &m_Data);
-
-		Texture2DFactory textureFactory;
-		auto texture = std::dynamic_pointer_cast<Texture2D>(textureFactory.Load(m_Data.IconPath, 4)); // Force 4 channels (RGBA)
-		GLFWimage images[1];
-		images[0].width = texture->GetWidth();
-		images[0].height = texture->GetHeight();
-		images[0].pixels = texture->GetPixelData();
+		//Texture2DFactory textureFactory;
+		//auto texture = std::dynamic_pointer_cast<Texture2D>(textureFactory.Load(m_IconPath, 4)); // Force 4 channels (RGBA)
+		//GLFWimage images[1];
+		//images[0].width = texture->GetWidth();
+		//images[0].height = texture->GetHeight();
+		//images[0].pixels = texture->GetPixelData();
 		//glfwSetWindowIcon(m_Window, 1, images);
 
-		// Set GLFW callbacks
+		SetEventCallbacks();
+	}
+
+	Window::~Window()
+	{
+		ENGINE_PROFILE_FUNCTION();
+		glfwDestroyWindow(m_Window);
+		glfwTerminate();
+	}
+
+	void Window::OnUpdate()
+	{
+		ENGINE_PROFILE_FUNCTION();
+		glfwPollEvents();
+	}
+
+	void Window::SetEventCallbacks()
+	{
+		glfwSetWindowUserPointer(m_Window, &m_Data);
+
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -93,7 +108,6 @@ namespace Engine
 				}
 			});
 
-
 		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int keycode)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -101,7 +115,6 @@ namespace Engine
 				KeyTypedEvent event(keycode);
 				data.EventCallback(event);
 			});
-
 
 		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
 			{
@@ -124,7 +137,6 @@ namespace Engine
 				}
 			});
 
-
 		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -142,19 +154,4 @@ namespace Engine
 			});
 	}
 
-
-	Window::~Window()
-	{
-		ENGINE_PROFILE_FUNCTION();
-		glfwDestroyWindow(m_Window);
-		glfwTerminate();
-	}
-
-
-	void Window::OnUpdate()
-	{
-		ENGINE_PROFILE_FUNCTION();
-		glfwPollEvents();
-		m_Context->SwapBuffers();
-	}
 }

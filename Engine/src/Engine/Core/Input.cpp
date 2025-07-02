@@ -1,5 +1,5 @@
 #include "enginepch.h"
-#include "Engine/Core/Input.h"
+#include "Input.h"
 #include <GLFW/glfw3.h>
 #include "Engine/Core/Application.h"
 

@@ -40,7 +40,7 @@ namespace Editor
 		ImGui_ImplGlfw_InitForOther(Engine::Application::Get().GetWindow().GetGLFWWindow(), true);
 
 		ImGui_ImplWGPU_InitInfo initInfo;
-		initInfo.Device = Engine::Application::GetContext()->GetDevice();
+		initInfo.Device = Engine::Application::GetGraphicsContext()->GetDevice();
 		initInfo.NumFramesInFlight = 3;
 		initInfo.RenderTargetFormat = WGPUTextureFormat_RGBA8Unorm;
 		initInfo.DepthStencilFormat = WGPUTextureFormat_Undefined;
@@ -77,7 +77,7 @@ namespace Editor
 	void ImGuiLayer::End()
 	{
 		Engine::Application& app = Engine::Application::Get();
-		Engine::GraphicsContext* graphicsContext = app.GetContext();
+		Engine::GraphicsContext* graphicsContext = app.GetGraphicsContext();
 		auto device = graphicsContext->GetDevice();
 
 		ImGuiIO& io = ImGui::GetIO();
@@ -169,10 +169,6 @@ namespace Editor
 
 		wgpuSurfacePresent(graphicsContext->GetSurface());
 		wgpuDeviceTick(device);
-
-
-
-
 	}
 
 	void ImGuiLayer::ResetLayout()
