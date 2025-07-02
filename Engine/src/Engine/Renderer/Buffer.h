@@ -113,30 +113,46 @@ namespace Engine
 	class VertexBuffer
 	{
 	public:
-		virtual ~VertexBuffer() {}
+		VertexBuffer(float* vertices, uint32_t size) {}
+		VertexBuffer(uint32_t size) {}
+		~VertexBuffer() {}
 
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
+		void Bind() const;
+		void Unbind() const;
 
-		virtual void SetLayout(const BufferLayout& layout) = 0;
-		virtual const BufferLayout& GetLayout() const = 0;
+		void SetLayout(const BufferLayout& layout);
+		const BufferLayout& GetLayout() const;
 
-		virtual void SetData(const void* data, uint32_t size) = 0;
+		void SetData(const void* data, uint32_t size);
 
-		static Ref<VertexBuffer> Create(uint32_t size);
-		static Ref<VertexBuffer> Create(float* vertices, uint32_t size);
+	private:
+		BufferLayout m_Layout;
+		uint32_t m_Size = 0; // Size of the buffer in bytes
+		uint32_t m_ID = 0;   // OpenGL buffer ID or similar
+		uint32_t m_Count = 0; // Number of vertices in the buffer
 	};
 
 	class IndexBuffer
 	{
 	public:
-		virtual ~IndexBuffer() {}
+		IndexBuffer(uint32_t* indices, uint32_t count) 
+		{
+			m_Count = count;
+			m_Size = count * sizeof(uint32_t);
+		}
 
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
+		~IndexBuffer() {}
 
-		virtual uint32_t GetCount() const = 0;
+		void Bind() const;
+		void Unbind() const;
 
-		static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count);
+		uint32_t GetCount() const;
+
+	private:
+
+
+		uint32_t m_ID = 0;   // OpenGL buffer ID or similar
+		uint32_t m_Count = 0; // Number of indices in the buffer
+		uint32_t m_Size = 0;  // Size of the buffer in bytes
 	};
 }

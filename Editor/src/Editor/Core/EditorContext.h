@@ -36,8 +36,7 @@ namespace Editor
 		StatisticsWindow* m_StatisticsWindow = nullptr;
 		MeshImportWindow* m_MeshImportWindow = nullptr;
 
-
-		std::vector<EditorWindow*> m_Windows;
+		std::vector<EditorWindow*> m_Windows; // for easy iteration
 	};
 
 

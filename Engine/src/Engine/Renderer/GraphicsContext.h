@@ -1,13 +1,24 @@
 #pragma once
 
+#include <webgpu/webgpu.h>
+
 namespace Engine
 {
 	class GraphicsContext
 	{
 	public:
-		virtual void Init() = 0;
-		virtual void SwapBuffers() = 0;
+		void Init();
+		void Shutdown();
 
-		//static Scope<GraphicsContext> Create(void* window);
+		WGPUDevice GetDevice() const { return m_Device; }
+		WGPUQueue GetQueue() const { return m_Queue; }
+		WGPUSurface GetSurface() const { return m_Surface; }
+
+	private:
+		WGPUInstance m_Instance = nullptr;
+		WGPUAdapter m_Adapter = nullptr;
+		WGPUDevice m_Device = nullptr;
+		WGPUQueue m_Queue = nullptr;
+		WGPUSurface m_Surface = nullptr;
 	};
 }

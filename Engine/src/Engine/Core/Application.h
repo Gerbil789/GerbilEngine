@@ -3,10 +3,13 @@
 #include "Engine/Core/Core.h"
 #include "Engine/Core/Window.h"
 #include "Engine/Events/ApplicationEvent.h"
+#include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Events/KeyEvent.h"
 #include "Engine/Core/LayerStack.h"
 #include "Engine/Core/Input.h"
 #include <chrono>
+
+#include <webgpu/webgpu.h>
 
 namespace Engine
 {
@@ -23,6 +26,7 @@ namespace Engine
 
 		inline static Application& Get() { return *s_Instance; }
 		inline Window& GetWindow() { return *m_Window; }
+		static GraphicsContext* GetGraphicsContext() { return s_GraphicsContext; }
 
 		void Close();
 
@@ -34,13 +38,14 @@ namespace Engine
 
 	protected:
 		static Application* s_Instance;
-		std::unique_ptr<Window> m_Window;
+		static GraphicsContext* s_GraphicsContext;
+		Scope<Window> m_Window;
 
 		bool m_Running = true;
 		bool m_Minimized = false;
 		LayerStack m_LayerStack;
 
-		// FPS Calculation
+		// FPS Calculation TODO: move somewhere else and make it better xd
 		std::chrono::steady_clock::time_point m_LastFrameTime;
 		static constexpr int FrameHistorySize = 30; // Number of frames to average over
 		std::array<float, FrameHistorySize> m_FPSHistory = { 0.0f }; // To store FPS values

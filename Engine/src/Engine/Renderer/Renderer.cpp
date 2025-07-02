@@ -1,5 +1,5 @@
 #include "enginepch.h"
-#include "Engine/Renderer/Renderer.h"
+#include "Renderer.h"
 #include "Engine/Renderer/RenderCommand.h"
 #include "Engine/Renderer/VertexArray.h"
 #include "Engine/Renderer/Shader.h"
@@ -8,6 +8,8 @@
 #include "Engine/Scene/Entity.h"
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Renderer/UniformBuffer.h"
+
+#include <webgpu/webgpu.h>
 
 namespace Engine
 {
@@ -19,7 +21,7 @@ namespace Engine
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-		s_GlobalUniformBuffer = UniformBuffer::Create(sizeof(Renderer::GlobalUniform), 0);
+		s_GlobalUniformBuffer = CreateRef<UniformBuffer>(sizeof(Renderer::GlobalUniform), 0);
 	}
 
 	void Renderer::Shutdown()
@@ -150,15 +152,16 @@ namespace Engine
 			}
 		}
 
-		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertexCount * shaderInputLayout.size());
+		//Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertexCount * shaderInputLayout.size());
+		Ref<VertexBuffer> vertexBuffer = CreateRef<VertexBuffer>(vertexCount * shaderInputLayout.size());
 		vertexBuffer->SetLayout(shaderInputLayout);		
 		vertexBuffer->SetData(vertexBufferData.data(), (uint32_t)vertexBufferData.size());
 
-		Ref<IndexBuffer> IndexBuffer = IndexBuffer::Create(indices.data(), indicesCount);
-
-		Ref<VertexArray> vertexArray = VertexArray::Create();
+		//Ref<IndexBuffer> IndexBuffer = IndexBuffer::Create(indices.data(), indicesCount);
+		//Ref<IndexBuffer> IndexBuffer = CreateRef<IndexBuffer>(indices.data(), indicesCount);
+		Ref<VertexArray> vertexArray = CreateRef<VertexArray>();
 		vertexArray->AddVertexBuffer(vertexBuffer);
-		vertexArray->SetIndexBuffer(IndexBuffer);
+		//vertexArray->SetIndexBuffer(IndexBuffer);
 
 
 

@@ -1,18 +1,13 @@
 #include "enginepch.h"
 #include "Engine/Renderer/FrameBuffer.h"
 #include "Engine/Renderer/Renderer.h"
-#include "Platform/OpenGL/OpenGLFrameBuffer.h"
-
 
 namespace Engine {
-
-	Ref<FrameBuffer> FrameBuffer::Create(const FrameBufferSpecification& spec)
+	int FrameBuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
 	{
-		switch (Renderer::GetAPI())
-		{
-			case RendererAPI::API::None:   ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-			case RendererAPI::API::OpenGL: return CreateRef<OpenGLFrameBuffer>(spec);
-			default: ASSERT(false, "Unknown RendererAPI!"); return nullptr;
-		}
+		return 0;
+	}
+	void FrameBuffer::ClearAttachment(uint32_t attachmentIndex, int value)
+	{
 	}
 }

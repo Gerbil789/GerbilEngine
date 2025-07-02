@@ -26,9 +26,12 @@ namespace Editor
 		editorFrameBufferSpecification.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::DEPTH24STENCIL8 };
 		editorFrameBufferSpecification.Width = 1280;
 		editorFrameBufferSpecification.Height = 720;
-		m_EditorFrameBuffer = FrameBuffer::Create(editorFrameBufferSpecification);
+		//m_EditorFrameBuffer = FrameBuffer::Create(editorFrameBufferSpecification);
+		m_EditorFrameBuffer = CreateRef<FrameBuffer>(editorFrameBufferSpecification);
 
 		m_EditorCamera = CreateRef<EditorCamera>(30.0f, 1.778f, 0.1f, 1000.0f); //TODO: what are these values? must it be there?
+
+
 	}
 
 	ViewportWindow::~ViewportWindow()
@@ -68,22 +71,22 @@ namespace Editor
 
 
 		//get mouse position
-		auto [mx, my] = ImGui::GetMousePos();
+		//auto [mx, my] = ImGui::GetMousePos();
 
-		//convert to viewport space
-		mx -= m_ViewportBounds[0].x;
-		my -= m_ViewportBounds[0].y;
-		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
-		my = viewportSize.y - my;
+		////convert to viewport space
+		//mx -= m_ViewportBounds[0].x;
+		//my -= m_ViewportBounds[0].y;
+		//glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+		//my = viewportSize.y - my;
 
-		int mouseX = (int)mx;
-		int mouseY = (int)my;
+		//int mouseX = (int)mx;
+		//int mouseY = (int)my;
 
-		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
-		{
-			int pixelData = m_EditorFrameBuffer->ReadPixel(1, mouseX, mouseY);
-			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_Scene.get() };
-		}
+		//if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
+		//{
+		//	int pixelData = m_EditorFrameBuffer->ReadPixel(1, mouseX, mouseY);
+		//	m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_Scene.get() };
+		//}
 
 		//unbind frame buffer
 		m_EditorFrameBuffer->Unbind();
@@ -94,82 +97,82 @@ namespace Editor
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
 		ImGui::Begin("Viewport");
 
-		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
-		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-		auto viewportOffset = ImGui::GetWindowPos();
+		//auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+		//auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+		//auto viewportOffset = ImGui::GetWindowPos();
 
-		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+		//m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+		//m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
-		m_ViewportFocused = ImGui::IsWindowFocused();
-		m_ViewportHovered = ImGui::IsWindowHovered();
+		//m_ViewportFocused = ImGui::IsWindowFocused();
+		//m_ViewportHovered = ImGui::IsWindowHovered();
 
-		auto editorApp = static_cast<EditorApp*>(&Engine::Application::Get()); //TODO: dont get it every cycle, store it somewhere
-		editorApp->GetImGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
+		//auto editorApp = static_cast<EditorApp*>(&Engine::Application::Get()); //TODO: dont get it every cycle, store it somewhere
+		//editorApp->GetImGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
 
-		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
-		m_ViewportSize = { viewportSize.x, viewportSize.y };
-		uint32_t textureID = m_EditorFrameBuffer->GetColorAttachmentRendererID();
-		ImGui::Image((void*)textureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		//ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+		//m_ViewportSize = { viewportSize.x, viewportSize.y };
+		//uint32_t textureID = m_EditorFrameBuffer->GetColorAttachmentRendererID();
+		//ImGui::Image((void*)textureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-			{
-				const wchar_t* droppedPath = (const wchar_t*)payload->Data;
-				std::filesystem::path path(droppedPath);
+		//if (ImGui::BeginDragDropTarget())
+		//{
+		//	if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		//	{
+		//		const wchar_t* droppedPath = (const wchar_t*)payload->Data;
+		//		std::filesystem::path path(droppedPath);
 
-				LOG_INFO("Dropped file: {0}", path);
+		//		LOG_INFO("Dropped file: {0}", path);
 
-				//open scene
-				if (path.extension() == ".scene")
-				{
-					SceneManager::LoadScene(path);
-				}
-			}
-			ImGui::EndDragDropTarget();
-		}
+		//		//open scene
+		//		if (path.extension() == ".scene")
+		//		{
+		//			SceneManager::LoadScene(path);
+		//		}
+		//	}
+		//	ImGui::EndDragDropTarget();
+		//}
 
 
-		//gizmo
-		Entity selectedEntity = m_SceneController->GetSelectedEntity();
+		////gizmo
+		//Entity selectedEntity = m_SceneController->GetSelectedEntity();
 
-		if (selectedEntity && m_GizmoType != -1)
-		{
-			ImGuizmo::SetOrthographic(false);
-			ImGuizmo::SetDrawlist();
+		//if (selectedEntity && m_GizmoType != -1)
+		//{
+		//	ImGuizmo::SetOrthographic(false);
+		//	ImGuizmo::SetDrawlist();
 
-			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
+		//	ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
-			const glm::mat4& cameraProjection = m_EditorCamera->GetProjection();
-			glm::mat4 cameraView = m_EditorCamera->GetViewMatrix();
+		//	const glm::mat4& cameraProjection = m_EditorCamera->GetProjection();
+		//	glm::mat4 cameraView = m_EditorCamera->GetViewMatrix();
 
-			auto& tc = selectedEntity.GetComponent<TransformComponent>();
-			glm::mat4 transform = tc.GetTransform();
+		//	auto& tc = selectedEntity.GetComponent<TransformComponent>();
+		//	glm::mat4 transform = tc.GetTransform();
 
-			bool snap = Input::IsKeyPressed(Key::LeftControl);
-			float snapValue = 0.5f; // Snap to 0.5m for translation/scale
-			if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
-				snapValue = 45.0f; // Snap to 45 degrees for rotation
+		//	bool snap = Input::IsKeyPressed(Key::LeftControl);
+		//	float snapValue = 0.5f; // Snap to 0.5m for translation/scale
+		//	if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
+		//		snapValue = 45.0f; // Snap to 45 degrees for rotation
 
-			float snapValues[3] = { snapValue, snapValue, snapValue };
+		//	float snapValues[3] = { snapValue, snapValue, snapValue };
 
-			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr);
+		//	ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+		//		(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr);
 
-			if (ImGuizmo::IsUsing())
-			{
-				glm::vec3 translation, rotation, scale;
-				Math::DecomposeTransform(transform, translation, rotation, scale);
+		//	if (ImGuizmo::IsUsing())
+		//	{
+		//		glm::vec3 translation, rotation, scale;
+		//		Math::DecomposeTransform(transform, translation, rotation, scale);
 
-				glm::vec3 originalRotation = tc.Rotation;
-				glm::vec3 deltaRotation = glm::degrees(rotation) - originalRotation;
+		//		glm::vec3 originalRotation = tc.Rotation;
+		//		glm::vec3 deltaRotation = glm::degrees(rotation) - originalRotation;
 
-				tc.Position = translation;
-				tc.Rotation += deltaRotation; // to prevent gimbal lock
-				tc.Scale = scale;
-			}
-		}
+		//		tc.Position = translation;
+		//		tc.Rotation += deltaRotation; // to prevent gimbal lock
+		//		tc.Scale = scale;
+		//	}
+		//}
 
 		ImGui::End();
 		ImGui::PopStyleVar(); // Restore padding

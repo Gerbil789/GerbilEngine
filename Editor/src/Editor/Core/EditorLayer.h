@@ -18,11 +18,11 @@ namespace Editor
 		void OnEvent(Engine::Event& e) override;
 		void OnImGuiRender();
 
-
 		ImGuiLayer* m_ImGuiLayer;
+
 	private:
 		Scope<SceneController> m_SceneController;
-		Ref<EditorContext> m_Context;
+		Ref<EditorContext> m_EditorContext;
 
 	};
 }

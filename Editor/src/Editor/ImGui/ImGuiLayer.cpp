@@ -3,10 +3,11 @@
 #include "Engine/Core/Application.h"
 #include "Engine/Utils/Color.h"
 #include "Engine/Utils/File.h"
+#include "Engine/Renderer/Renderer.h"
 
 #include "imgui.h"
 #include "ImGuizmo.h"
-#include "backends/imgui_impl_opengl3.h"
+#include "backends/imgui_impl_wgpu.h"
 #include "backends/imgui_impl_glfw.h"
 
 namespace Editor
@@ -34,19 +35,21 @@ namespace Editor
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("assets/fonts/roboto/Roboto-Regular.ttf", 18.0f);
 
-		//TODO: make better color palette
-		ImGui::StyleColorsDark();
+		ImGui::StyleColorsDark(); //TODO: make better color palette
 
-		Engine::Application& app = Engine::Application::Get();
-		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
+		ImGui_ImplGlfw_InitForOther(Engine::Application::Get().GetWindow().GetGLFWWindow(), true);
 
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 410");
+		ImGui_ImplWGPU_InitInfo initInfo;
+		initInfo.Device = Engine::Application::GetGraphicsContext()->GetDevice();
+		initInfo.NumFramesInFlight = 3;
+		initInfo.RenderTargetFormat = WGPUTextureFormat_RGBA8Unorm;
+		initInfo.DepthStencilFormat = WGPUTextureFormat_Undefined;
+		ImGui_ImplWGPU_Init(&initInfo);
 	}
 
 	void ImGuiLayer::OnDetach()
 	{
-		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplWGPU_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}
@@ -63,28 +66,109 @@ namespace Editor
 
 	void ImGuiLayer::Begin()
 	{
-		ImGui_ImplOpenGL3_NewFrame();
+
+		ImGui_ImplWGPU_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		ImGuizmo::BeginFrame(); //TODO: must be here?
+
+		//ImGuizmo::BeginFrame(); //TODO: must be here?
 	}
 
 	void ImGuiLayer::End()
 	{
-		ImGuiIO& io = ImGui::GetIO();
 		Engine::Application& app = Engine::Application::Get();
+		Engine::GraphicsContext* graphicsContext = app.GetGraphicsContext();
+		auto device = graphicsContext->GetDevice();
+
+		ImGuiIO& io = ImGui::GetIO();
 		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
 
 		// Rendering
 		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		WGPUSurfaceTexture surfaceTexture;
+		wgpuSurfaceGetCurrentTexture(graphicsContext->GetSurface(), &surfaceTexture);
+		if (surfaceTexture.status != WGPUSurfaceGetCurrentTextureStatus_SuccessOptimal) 
+		{
+			LOG_ERROR("Failed to get current surface texture: {0}", (int)surfaceTexture.status);
+			return;
+		}
+
+		// Create a view for this surface texture
+		WGPUTextureViewDescriptor viewDescriptor;
+		viewDescriptor.nextInChain = nullptr;
+		viewDescriptor.label = { "Surface texture view", strlen("Surface texture view") };
+		viewDescriptor.format = wgpuTextureGetFormat(surfaceTexture.texture);
+		viewDescriptor.dimension = WGPUTextureViewDimension_2D;
+		viewDescriptor.baseMipLevel = 0;
+		viewDescriptor.mipLevelCount = 1;
+		viewDescriptor.baseArrayLayer = 0;
+		viewDescriptor.arrayLayerCount = 1;
+		viewDescriptor.aspect = WGPUTextureAspect_All;
+		viewDescriptor.usage = WGPUTextureUsage_RenderAttachment;
+		WGPUTextureView targetView = wgpuTextureCreateView(surfaceTexture.texture, &viewDescriptor);
+
+		wgpuTextureRelease(surfaceTexture.texture);
+
+		if (!targetView) 
+		{
+			LOG_ERROR("Failed to create texture view for surface texture");
+			return;
+		}
+
+		WGPUCommandEncoderDescriptor encoderDesc = {};
+		encoderDesc.nextInChain = nullptr;
+		encoderDesc.label = { "CommandEncoderDescriptor", strlen("CommandEncoderDescriptor") };
+		WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(device, &encoderDesc);
+
+		// The attachment part of the render pass descriptor describes the target texture of the pass
+		WGPURenderPassColorAttachment renderPassColorAttachment = {};
+		renderPassColorAttachment.view = targetView;
+		renderPassColorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
+		renderPassColorAttachment.resolveTarget = nullptr;
+		renderPassColorAttachment.loadOp = WGPULoadOp_Clear;
+		renderPassColorAttachment.storeOp = WGPUStoreOp_Store;
+		renderPassColorAttachment.clearValue = WGPUColor{ 0.9, 0.1, 0.2, 1.0 };
+
+		WGPURenderPassDescriptor renderPassDesc = {};
+		renderPassDesc.nextInChain = nullptr;
+		renderPassDesc.label = { "RenderPassDescriptor", strlen("RenderPassDescriptor") };
+		renderPassDesc.colorAttachmentCount = 1;
+		renderPassDesc.colorAttachments = &renderPassColorAttachment;
+		renderPassDesc.depthStencilAttachment = nullptr;
+		//renderPassDesc.occlusionQuerySet = nullptr;
+		renderPassDesc.timestampWrites = nullptr;
+
+
+		WGPURenderPassEncoder renderPass = wgpuCommandEncoderBeginRenderPass(encoder, &renderPassDesc);
+
+		ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), renderPass);
+
+		wgpuRenderPassEncoderEnd(renderPass);
+		wgpuRenderPassEncoderRelease(renderPass);
+
+		WGPUCommandBufferDescriptor cmdBufferDescriptor = {};
+		cmdBufferDescriptor.nextInChain = nullptr;
+		cmdBufferDescriptor.label = { "Command buffer", strlen("Command buffer") };
+		WGPUCommandBuffer command = wgpuCommandEncoderFinish(encoder, &cmdBufferDescriptor);
+		wgpuCommandEncoderRelease(encoder);
+
+		wgpuQueueSubmit(graphicsContext->GetQueue(), 1, &command);
+		wgpuCommandBufferRelease(command);
+
+		wgpuDeviceTick(device);
+
+
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) 		//WHAT is this??
 		{
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-			app.GetWindow().MakeContextCurrent();
 		}
+
+		wgpuTextureViewRelease(targetView);
+
+		wgpuSurfacePresent(graphicsContext->GetSurface());
+		wgpuDeviceTick(device);
 	}
 
 	void ImGuiLayer::ResetLayout()

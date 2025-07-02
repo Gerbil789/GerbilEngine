@@ -63,7 +63,7 @@ namespace Editor
 		auto& component = entity.GetComponent<T>();
 		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 4));
-		float lineHeigth = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		float lineHeigth = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 		ImGui::Separator();
 		bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 		ImGui::PopStyleVar();
@@ -393,7 +393,9 @@ namespace Editor
 		style.FramePadding = ImVec2(20, 5);
 		style.FrameRounding = 7.5f;
 
-		float lineHeigth = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+
+
+		float lineHeigth = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 
 		ImVec2 window_size = ImGui::GetWindowSize();
 		ImVec2 button_size = ImVec2{ 200, 30 };

@@ -20,7 +20,7 @@ namespace Editor
 		RenderCommand::SetClearColor({ 0.05f, 0.05f, 0.05f, 1.0f });
 		SceneManager::CreateScene("NewScene");
 
-		m_Context = CreateRef<EditorContext>();
+		m_EditorContext = CreateRef<EditorContext>();
 	}
 
 	void EditorLayer::OnDetach()
@@ -31,14 +31,14 @@ namespace Editor
 	void EditorLayer::OnUpdate(Engine::Timestep ts)
 	{
 		ENGINE_PROFILE_FUNCTION();
-		m_Context->OnUpdate(ts);
+		m_EditorContext->OnUpdate(ts); // update windows
 	}
 
 	void EditorLayer::OnEvent(Engine::Event& e)
 	{
 		ENGINE_PROFILE_FUNCTION();
 		m_SceneController->OnEvent(e);
-		m_Context->OnEvent(e); 
+		m_EditorContext->OnEvent(e); 
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -76,7 +76,7 @@ namespace Editor
 		}
 
 		// draw windows
-		m_Context->OnImGuiRender(); 
+		m_EditorContext->OnImGuiRender(); 
 
 		ImGui::End();
 		m_ImGuiLayer->End();

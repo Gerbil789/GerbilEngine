@@ -24,7 +24,7 @@ namespace Editor
 		m_ImageIcon = AssetManager::GetAsset<Texture2D>("resources/icons/image.png");
 		m_SceneIcon = AssetManager::GetAsset<Texture2D>("resources/icons/landscape.png");
 
-		glfwSetDropCallback((GLFWwindow*)Application::Get().GetWindow().GetNativeWindow(), [](GLFWwindow* window, int count, const char* paths[]) {
+		glfwSetDropCallback(Application::Get().GetWindow().GetGLFWWindow(), [](GLFWwindow* window, int count, const char* paths[]) {
 			for (int i = 0; i < count; i++)
 			{
 				std::filesystem::path path = paths[i];

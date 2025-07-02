@@ -18,24 +18,26 @@ namespace Engine
 	class Texture2D : public Asset
 	{
 	public:
-		virtual ~Texture2D() = default;
+		Texture2D(uint32_t width, uint32_t height) : Asset(""), m_Width(width), m_Height(height) {}
+
+		Texture2D(const std::filesystem::path& path) : Asset(path) {}
+		Texture2D(const std::filesystem::path& path, int format) : Asset(path) {}
+		~Texture2D() = default;
 
 		uint32_t GetWidth() const { return m_Width; }
 		uint32_t GetHeight() const { return m_Height; }
 		uint32_t GetRendererID() const { return m_RendererID; }
 		unsigned char* GetPixelData() const { return m_PixelData; }
 
-		virtual void SetData(void* data, uint32_t size) = 0;
+		void SetData(void* data, uint32_t size) {}
 
-		virtual void Bind(uint32_t slot = 0) const = 0;
+		void Bind(uint32_t slot = 0) const {}
 
-		virtual bool operator == (const Texture2D& other) const { return m_RendererID == other.GetRendererID(); }
+		bool operator == (const Texture2D& other) const { return m_RendererID == other.GetRendererID(); }
 
 	protected:
 		uint32_t m_Width, m_Height;
 		uint32_t m_RendererID;
 		unsigned char* m_PixelData = nullptr;
-
-		Texture2D(const std::filesystem::path& path) : Asset(path) {}
 	};
 }

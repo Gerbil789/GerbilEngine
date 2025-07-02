@@ -1,4 +1,5 @@
 #include "enginepch.h"
+
 #include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Renderer/RenderCommand.h"
 #include "Engine/Renderer/VertexArray.h"
@@ -59,9 +60,10 @@ namespace Engine
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-		s_Data.QuadVertexArray = VertexArray::Create();
+		s_Data.QuadVertexArray = CreateRef<VertexArray>();
 
-		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
+		//s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
+		s_Data.QuadVertexBuffer = CreateRef<VertexBuffer>(s_Data.MaxVertices * sizeof(QuadVertex));
 
 		std::vector<BufferElement> elements = {
 			{ ShaderDataType::Float3, "a_Position" },
@@ -97,7 +99,8 @@ namespace Engine
 			offset += 4;
 		}
 
-		Ref<IndexBuffer> QuadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.MaxIndices);
+		//Ref<IndexBuffer> QuadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.MaxIndices);
+		Ref<IndexBuffer> QuadIndexBuffer = CreateRef<IndexBuffer>(quadIndices, s_Data.MaxIndices);
 		s_Data.QuadVertexArray->SetIndexBuffer(QuadIndexBuffer);
 		delete[] quadIndices;
 

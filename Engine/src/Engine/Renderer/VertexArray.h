@@ -7,17 +7,21 @@ namespace Engine
 	class VertexArray
 	{
 	public:
-		virtual ~VertexArray() {}
+		VertexArray() = default;
+		~VertexArray() {}
 
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
+		void Bind() const;
+		void Unbind() const;
 
-		virtual void AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer) = 0;
-		virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) = 0;
+		void AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer);
+		void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
 
-		virtual const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const = 0;
-		virtual const Ref<IndexBuffer>& GetIndexBuffer() const = 0;
+		const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const;
+		const Ref<IndexBuffer>& GetIndexBuffer() const;
 
-		static Ref<VertexArray> Create();
+	private:
+		uint32_t m_RendererID = 0;
+		std::vector<Ref<VertexBuffer>> m_VertexBuffers;
+		Ref<IndexBuffer> m_IndexBuffer;
 	};
 }

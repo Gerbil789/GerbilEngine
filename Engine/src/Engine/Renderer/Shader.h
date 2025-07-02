@@ -11,15 +11,15 @@ namespace Engine
 	public:
 		Shader(const std::filesystem::path& path) : Asset(path) {}
 
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
+		void Bind() const {}
+		void Unbind() const {}
 
-		virtual void SetInt(const std::string& name, int value) = 0;
-		virtual void SetIntArray(const std::string& name, int* values, uint32_t count) = 0;
-		virtual void SetFloat(const std::string& name, float value) = 0;
-		virtual void SetFloat3(const std::string& name, const glm::vec3& value) = 0;
-		virtual void SetFloat4(const std::string& name, const glm::vec4& value) = 0;
-		virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;
+		void SetInt(const std::string& name, int value);
+		void SetIntArray(const std::string& name, int* values, uint32_t count);
+		void SetFloat(const std::string& name, float value);
+		void SetFloat3(const std::string& name, const glm::vec3& value);
+		void SetFloat4(const std::string& name, const glm::vec4& value);
+		void SetMat4(const std::string& name, const glm::mat4& value);
 
 		const BufferLayout& GetInputBufferLayout() const { return m_InputLayout; }
 		BufferLayout GetMaterialBufferLayout() const { return m_MaterialLayout; }

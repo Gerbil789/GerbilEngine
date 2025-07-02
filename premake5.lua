@@ -6,32 +6,26 @@ workspace "GerbilEngine"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 Includedir = {}
-Includedir["GLFW"] = "Engine/vendor/GLFW/include"
-Includedir["Glad"] = "Engine/vendor/Glad/include"
-Includedir["glm"] = "Engine/vendor/glm"
-Includedir["stb_image"] = "Engine/vendor/stb_image"
-Includedir["entt"] = "Engine/vendor/entt/include"
-Includedir["yaml_cpp"] = "Engine/vendor/yaml-cpp/include"
-Includedir["assimp"] = "Engine/vendor/assimp/include"
-Includedir["SPIRV_Cross"] = "Engine/vendor/SPIRV-Cross/include"
-Includedir["spirv_tools"] = "Engine/vendor/shaderc/third_party/spirv-tools/include"
-Includedir["glslang"] = "Engine/vendor/shaderc/third_party/glslang/glslang/Include"
-Includedir["shaderc"] = "Engine/vendor/shaderc/libshaderc/include"
+-- Engine dependencies
+Includedir["glfw"] = "Engine/vendor/glfw/include" 				-- Windowing library
+Includedir["dawn"] = "Engine/vendor/dawn/include" 				-- WebGPU implementation
+Includedir["glm"] = "Engine/vendor/glm" 									-- Math library
+Includedir["stb_image"] = "Engine/vendor/stb_image" 			-- Image loading library
+Includedir["entt"] = "Engine/vendor/entt/include" 				-- ECS library
+Includedir["yaml_cpp"] = "Engine/vendor/yaml-cpp/include" -- YAML parsing library
+Includedir["assimp"] = "Engine/vendor/assimp/include" 		-- 3D model loading library
 
+-- Editor dependencies
 Includedir["ImGui"] = "Editor/vendor/imgui"
 Includedir["ImGuizmo"] = "Editor/vendor/ImGuizmo"
 
 
 group "Dependencies"
-	include "Engine/vendor/GLFW"
-	include "Engine/vendor/Glad"
+	include "Engine/vendor/glfw"
 	include "Editor/vendor/imgui"
 	include "Engine/vendor/yaml-cpp"
 	include "Engine/vendor/assimp"
 	include "Engine/vendor/assimp/contrib/zlib"
-	include "Engine/vendor/shaderc/third_party/spirv-tools"
-	include "Engine/vendor/shaderc/third_party/glslang"
-	include "Engine/vendor/shaderc"
 group ""
 
 
@@ -58,11 +52,7 @@ project "Engine"
 		"%{prj.name}/vendor/glm/glm/**.inl",
 		"%{prj.name}/vendor/yaml-cpp/include/**.h",
 		"%{prj.name}/vendor/assimp/include/**.h",
-		"%{prj.name}/vendor/assimp/include/**.hpp",
-		"%{prj.name}/vendor/SPIRV-Cross/include/**.h",
-		"%{prj.name}/vendor/SPIRV-Cross/include/**.hpp",
-		"%{prj.name}/vendor/SPIRV-Cross/include/**.c",
-		"%{prj.name}/vendor/SPIRV-Cross/include/**.cpp",
+		"%{prj.name}/vendor/assimp/include/**.hpp"
 	}
 
 	defines
@@ -74,38 +64,34 @@ project "Engine"
 	{
 		"%{prj.name}/src",
 		"%{prj.name}/vendor/spdlog/include",
-		"%{Includedir.GLFW}",
-		"%{Includedir.Glad}",
+		"%{Includedir.glfw}",
+		"%{Includedir.dawn}",
 		"%{Includedir.glm}",
 		"%{Includedir.stb_image}",
 		"%{Includedir.entt}",
 		"%{Includedir.yaml_cpp}",
-		"%{Includedir.assimp}",
-		"%{Includedir.spirv_tools}",
-		"Engine/vendor/shaderc/third_party/spirv-tools/external/spirv-headers/include",
-		"Engine/vendor/shaderc/third_party/spirv-tools/external/spirv-headers/include/spirv/unified1",
-		"%{Includedir.glslang}",
-		"%{Includedir.shaderc}",
-		"%{Includedir.SPIRV_Cross}"
+		"%{Includedir.assimp}"
 	}
 
 
 	links
 	{
-		"GLFW",
-		"Glad",
-		"opengl32.lib",
+		"glfw",
+		"webgpu_dawn",
 		"yaml-cpp",
 		"assimp",
-		"spirv-tools",
-		"shaderc",
 	}
+
+	libdirs 
+	{
+		"Engine/vendor/dawn"
+	}
+
+
+
 
 	-- filter "files:Engine/vendor/ImGuizmo/**.cpp"
 	-- 	flags { "NoPCH" }
-
-	filter { "files:Engine/vendor/SPIRV-Cross/include/**.cpp" }
-    	flags { "NoPCH" }
 
 	filter "system:windows"
 		systemversion "latest"
@@ -142,24 +128,27 @@ project "Editor"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
+    "%{prj.name}/vendor/imgui/backends/imgui_impl_wgpu.cpp",
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
 	}
 
 	includedirs
 	{
-		"Engine/vendor/spdlog/include",
-		"Engine/src",
 		"Editor/src",
-		"Engine/vendor",
 		"Editor/vendor",
-		"%{Includedir.GLFW}",
+
+		"Engine/src",
+		"Engine/vendor",
+		"Engine/vendor/spdlog/include",
+
+		"%{Includedir.glfw}",
 		"%{Includedir.glm}",
 		"%{Includedir.entt}",
 		"%{Includedir.ImGui}",
 		"%{Includedir.ImGuizmo}",
 		"%{Includedir.assimp}",
-		"%{Includedir.glslang}",
+		"%{Includedir.dawn}"       -- For ImGui WebGPU backend
 	}
 
 	links
@@ -168,6 +157,11 @@ project "Editor"
 		"ImGui",
 	}
 
+	postbuildcommands 
+	{
+    -- Copy webgpu_dawn.dll next to the built .exe
+    '{COPY} "../Engine/vendor/dawn/webgpu_dawn.dll" "%{cfg.targetdir}"'
+	}
 
 
 	filter "system:windows"

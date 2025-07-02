@@ -3,7 +3,9 @@
 #include "Engine/Core/Log.h"
 #include "Editor/Core/EditorApp.h"
 
-#ifdef ENGINE_PLATFORM_WINDOWS
+#ifndef ENGINE_PLATFORM_WINDOWS
+#error Engine only supports Windows!
+#else
 
 int main(int argc, char** argv)
 {
@@ -22,6 +24,4 @@ int main(int argc, char** argv)
   ENGINE_PROFILE_END_SESSION();
 }
 
-#else
-#error Engine only supports Windows!
 #endif

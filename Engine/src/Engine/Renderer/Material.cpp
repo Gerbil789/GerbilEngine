@@ -23,7 +23,8 @@ namespace Engine
 	void Material::SetShader(const Ref<Shader>& shader)
 	{
 		m_Shader = shader;
-		m_UniformBuffer = UniformBuffer::Create(shader->GetMaterialBufferLayout().size(), 1);
+		//m_UniformBuffer = UniformBuffer::Create(shader->GetMaterialBufferLayout().size(), 1);
+		m_UniformBuffer = CreateRef<UniformBuffer>(shader->GetMaterialBufferLayout().size(), 1);
 		this->SetProperties();
 	}
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Renderer/RenderCommand.h"
+#include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Renderer/Shader.h"
 #include "Engine/Renderer/EditorCamera.h"
 #include "Engine/Renderer/Mesh.h"
@@ -11,8 +11,6 @@ namespace Engine
 	class Renderer
 	{
 	public:
-		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
-
 		static void Init();
 		static void Shutdown();
 
@@ -22,6 +20,12 @@ namespace Engine
 		static void OnWindowResize(uint32_t width, uint32_t height);
 		static void DrawMesh(const glm::mat4& transform, Ref<Mesh> mesh, Ref<Material> material, int entityID);
 
+
+		//moved from rendererAPI
+		virtual void SetClearColor(const glm::vec4& color) = 0;
+		virtual void Clear() = 0;
+		void DrawIndexed(/*const Ref<VertexArray>& vertexArray,*/ uint32_t indexCount = 0) {}
+		static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {}
 
 		struct GlobalUniform
 		{
@@ -41,5 +45,7 @@ namespace Engine
 
 	private:
 		static void AlignOffset(size_t& currentOffset, size_t alignment);
+
+
 	};
 }
