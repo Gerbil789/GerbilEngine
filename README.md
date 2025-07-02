@@ -1,4 +1,7 @@
-[![Build Project](https://github.com/Gerbil789/GerbilEngine/actions/workflows/wokrflow.yml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/wokrflow.yml)
+[![Debug Build](https://github.com/Gerbil789/GerbilEngine/actions/workflows/wokrflow.yml/badge.svg?job=build-debug)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/wokrflow.yml)
+[![Release Build](https://github.com/Gerbil789/GerbilEngine/actions/workflows/wokrflow.yml/badge.svg?job=build-release)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/wokrflow.yml)
+[![License](https://img.shields.io/badge/License-MIT-blue)](#license "Go to license section")
+[![GH Pages Deploy](https://github.com/MichaelCurrin/badge-generator/workflows/GH%20Pages%20Deploy/badge.svg)](https://github.com/MichaelCurrin/badge-generator/actions/workflows/main.yml "GitHub Actions workflow status")
 
 # GerbilEngine
 WebGPU based engine
