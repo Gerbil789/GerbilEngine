@@ -6,28 +6,23 @@ workspace "GerbilEngine"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 Includedir = {}
--- Engine dependencies
-Includedir["glfw"] = "Engine/vendor/glfw/include" 				-- Windowing library
-Includedir["dawn"] = "Engine/vendor/dawn/include" 				-- WebGPU implementation
-Includedir["glm"] = "Engine/vendor/glm" 									-- Math library
-Includedir["stb_image"] = "Engine/vendor/stb_image" 			-- Image loading library
-Includedir["entt"] = "Engine/vendor/entt/include" 				-- ECS library
-Includedir["yaml_cpp"] = "Engine/vendor/yaml-cpp/include" -- YAML parsing library
-Includedir["assimp"] = "Engine/vendor/assimp/include" 		-- 3D model loading library
-
--- Editor dependencies
-Includedir["ImGui"] = "Editor/vendor/imgui"
-Includedir["ImGuizmo"] = "Editor/vendor/ImGuizmo"
-
+Includedir["glfw"] = "vendor/glfw/include" 					-- Windowing library
+Includedir["dawn"] = "vendor/dawn/include" 					-- WebGPU implementation
+Includedir["glm"] = "vendor/glm" 										-- Math library
+Includedir["stb_image"] = "vendor/stb_image" 				-- Image loading library
+Includedir["entt"] = "vendor/entt/include" 					-- ECS library
+Includedir["yaml_cpp"] = "vendor/yaml-cpp/include" 	-- YAML parsing library
+Includedir["assimp"] = "vendor/assimp/include" 			-- 3D model loading library
+Includedir["ImGui"] = "vendor/imgui" 								-- ImGui library for GUI		
+Includedir["ImGuizmo"] = "vendor/ImGuizmo" 					-- ImGuizmo for 3D manipulation
 
 group "Dependencies"
-	include "Engine/vendor/glfw"
-	include "Editor/vendor/imgui"
-	include "Engine/vendor/yaml-cpp"
-	include "Engine/vendor/assimp"
-	include "Engine/vendor/assimp/contrib/zlib"
+	include "vendor/glfw"
+	include "vendor/imgui"
+	include "vendor/yaml-cpp"
+	include "vendor/assimp"
+	include "vendor/assimp/contrib/zlib"
 group ""
-
 
 project "Engine"
 	location "Engine"
@@ -46,13 +41,13 @@ project "Engine"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
-		"%{prj.name}/vendor/stb_image/**.h",
-		"%{prj.name}/vendor/stb_image/**.cpp",
-		"%{prj.name}/vendor/glm/glm/**.hpp",
-		"%{prj.name}/vendor/glm/glm/**.inl",
-		"%{prj.name}/vendor/yaml-cpp/include/**.h",
-		"%{prj.name}/vendor/assimp/include/**.h",
-		"%{prj.name}/vendor/assimp/include/**.hpp"
+		"vendor/stb_image/**.h",
+		"vendor/stb_image/**.cpp",
+		"vendor/glm/glm/**.hpp",
+		"vendor/glm/glm/**.inl",
+		"vendor/yaml-cpp/include/**.h",
+		"vendor/assimp/include/**.h",
+		"vendor/assimp/include/**.hpp"
 	}
 
 	defines
@@ -63,7 +58,7 @@ project "Engine"
 	includedirs
 	{
 		"%{prj.name}/src",
-		"%{prj.name}/vendor/spdlog/include",
+		"vendor/spdlog/include",
 		"%{Includedir.glfw}",
 		"%{Includedir.dawn}",
 		"%{Includedir.glm}",
@@ -84,11 +79,8 @@ project "Engine"
 
 	libdirs 
 	{
-		"Engine/vendor/dawn"
+		"vendor/dawn"
 	}
-
-
-
 
 	-- filter "files:Engine/vendor/ImGuizmo/**.cpp"
 	-- 	flags { "NoPCH" }
@@ -128,19 +120,19 @@ project "Editor"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
-    "%{prj.name}/vendor/imgui/backends/imgui_impl_wgpu.cpp",
-		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
-		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
+
+    "vendor/imgui/backends/imgui_impl_wgpu.cpp",
+		"vendor/ImGuizmo/ImGuizmo.h",
+		"vendor/ImGuizmo/ImGuizmo.cpp",
 	}
 
 	includedirs
 	{
-		"Editor/src",
-		"Editor/vendor",
+		"%{prj.name}/src",
+		"vendor",
 
 		"Engine/src",
-		"Engine/vendor",
-		"Engine/vendor/spdlog/include",
+		"vendor/spdlog/include",
 
 		"%{Includedir.glfw}",
 		"%{Includedir.glm}",
@@ -160,7 +152,7 @@ project "Editor"
 	postbuildcommands 
 	{
     -- Copy webgpu_dawn.dll next to the built .exe
-    '{COPY} "../Engine/vendor/dawn/webgpu_dawn.dll" "%{cfg.targetdir}"'
+    '{COPY} "%{wks.location}/vendor/dawn/webgpu_dawn.dll" "%{cfg.targetdir}"'
 	}
 
 

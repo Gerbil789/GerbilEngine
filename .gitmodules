@@ -1,19 +1,19 @@
-[submodule "Engine/vendor/spdlog"]
-	path = Engine/vendor/spdlog
+[submodule "vendor/spdlog"]
+	path = vendor/spdlog
 	url = https://github.com/gabime/spdlog
-[submodule "Editor/vendor/imgui"]
-	path = Editor/vendor/imgui
+[submodule "vendor/imgui"]
+	path = vendor/imgui
 	url = https://github.com/Gerbil789/imgui
 	branch = docking
-[submodule "Engine/vendor/glm"]
-	path = Engine/vendor/glm
+[submodule "vendor/glm"]
+	path = vendor/glm
 	url = https://github.com/icaven/glm
-[submodule "Engine/vendor/yaml-cpp"]
-	path = Engine/vendor/yaml-cpp
+[submodule "vendor/yaml-cpp"]
+	path = vendor/yaml-cpp
 	url = https://github.com/Gerbil789/yaml-cpp
-[submodule "Editor/vendor/ImGuizmo"]
-	path = Editor/vendor/ImGuizmo
+[submodule "vendor/ImGuizmo"]
+	path = vendor/ImGuizmo
 	url = https://github.com/Gerbil789/ImGuizmo
-[submodule "Engine/vendor/assimp"]
-	path = Engine/vendor/assimp
+[submodule "vendor/assimp"]
+	path = vendor/assimp
 	url = https://github.com/Gerbil789/assimp
