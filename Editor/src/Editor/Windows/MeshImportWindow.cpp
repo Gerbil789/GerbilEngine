@@ -12,7 +12,7 @@ namespace Editor
 		int materialCount = m_Scene->mNumMaterials;
 
 	}
-	void MeshImportWindow::OnImGuiRender()
+	void MeshImportWindow::OnUpdate(Engine::Timestep ts)
 	{
 		if (!m_IsVisible) { return; }
 		if (!m_Scene) 

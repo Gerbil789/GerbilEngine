@@ -5,7 +5,7 @@
 
 namespace Editor
 {
-	void SettingsWindow::OnImGuiRender()
+	void SettingsWindow::OnUpdate(Engine::Timestep ts)
 	{
 		if(!m_IsVisible) return;
 

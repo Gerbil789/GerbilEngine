@@ -15,13 +15,13 @@ namespace Editor
 	class MeshImportWindow : public EditorWindow
 	{
 	public:
-		MeshImportWindow(EditorContext* context) : EditorWindow(context) {}
+		MeshImportWindow(EditorWindowManager* context) : EditorWindow(context) {}
 		~MeshImportWindow() = default;
 
 		void SetScene(void* scene);
 
 
-		virtual void OnImGuiRender() override;
+		void OnUpdate(Engine::Timestep ts) override;
 
 	private:
 		aiScene* m_Scene = nullptr;

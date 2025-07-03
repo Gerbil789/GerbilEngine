@@ -15,7 +15,7 @@ namespace Editor
 		//m_Icon_Pause = AssetManager::GetAsset<Texture2D>("resources/icons/pause.png");
 		//m_Icon_Next = AssetManager::GetAsset<Texture2D>("resources/icons/skip_next.png");
 	}
-	void MenuBar::OnImGuiRender()
+	void MenuBar::OnUpdate()
 	{
 		if (ImGui::BeginMenuBar())
 		{

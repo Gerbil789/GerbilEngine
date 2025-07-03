@@ -35,13 +35,13 @@ namespace Engine
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
 
-	void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
+	void Renderer::BeginFrame(const Camera& camera, const glm::mat4& transform)
 	{
 		ENGINE_PROFILE_FUNCTION();
 		//TODO: implement
 	}
 
-	void Renderer::BeginScene(const EditorCamera& camera)
+	void Renderer::BeginFrame(const EditorCamera& camera)
 	{
 		ENGINE_PROFILE_FUNCTION();
 		ResetStats();
@@ -51,7 +51,18 @@ namespace Engine
 		s_GlobalUniformBuffer->SetData(&s_GlobalUniform, sizeof(Renderer::GlobalUniform), 0);
 	}
 
-	void Renderer::EndScene()
+	//void Renderer::RenderScene(const Scene& scene, const EditorCamera& camera)
+	//{
+	//	/*auto group = m_Registry.group<MeshRendererComponent>(entt::get<TransformComponent, EnablingComponent>);
+	//	for (auto entity : group)
+	//	{
+	//		if (!group.get<EnablingComponent>(entity).Enabled) { return; }
+	//		auto [transform, mesh] = group.get<TransformComponent, MeshRendererComponent>(entity);
+	//		Renderer::DrawMesh(transform.GetTransform(), mesh.Mesh, mesh.Material, (int)entity);
+	//	}*/
+	//}
+
+	void Renderer::EndFrame()
 	{
 		ENGINE_PROFILE_FUNCTION();
 

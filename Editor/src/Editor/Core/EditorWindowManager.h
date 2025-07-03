@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Editor/Elements/MenuBar.h"
 #include "Editor/Windows/ContentBrowserWindow.h"
 #include "Editor/Windows/InspectorWindow.h"
 #include "Editor/Windows/SceneHierarchyWindow.h"
@@ -9,25 +10,23 @@
 #include "Editor/Windows/MeshImportWindow.h"
 #include "Editor/Windows/ViewportWindow.h"
 #include "Editor/Windows/GameWindow.h"
-#include "Editor/Elements/MenuBar.h"
 
 namespace Editor
 {
-	class EditorContext
+	class EditorWindowManager
 	{
 	public:
-		EditorContext();
+		EditorWindowManager();
 
 		void OnUpdate(Engine::Timestep ts);
-		void OnImGuiRender();
 		void OnEvent(Engine::Event& e);
 
-		ViewportWindow* m_ViewportWindow = nullptr;
-		GameWindow* m_GameWindow = nullptr;
 	private:
 		MenuBar m_MenuBar;
 
 		//Windows
+		ViewportWindow* m_ViewportWindow = nullptr;
+		GameWindow* m_GameWindow = nullptr;
 		ContentBrowserWindow* m_ContentBrowserWindow = nullptr;
 		InspectorWindow* m_InspectorWindow = nullptr;
 		SceneHierarchyWindow* m_SceneHierarchyWindow = nullptr;
@@ -37,7 +36,13 @@ namespace Editor
 		MeshImportWindow* m_MeshImportWindow = nullptr;
 
 		std::vector<EditorWindow*> m_Windows; // for easy iteration
+
+		template<typename T, typename... Args>
+		T* RegisterWindow(Args&&... args)
+		{
+			T* window = new T(this, std::forward<Args>(args)...);
+			m_Windows.push_back(window);
+			return window;
+		}
 	};
-
-
 }

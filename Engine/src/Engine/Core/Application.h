@@ -7,6 +7,7 @@
 #include "Engine/Events/KeyEvent.h"
 #include "Engine/Core/LayerStack.h"
 #include "Engine/Core/Input.h"
+#include "Engine/Utils/FPSCounter.h"
 #include <chrono>
 
 #include <webgpu/webgpu.h>
@@ -26,11 +27,10 @@ namespace Engine
 
 		inline static Application& Get() { return *s_Instance; }
 		inline Window& GetWindow() { return *m_Window; }
+		float GetFPS() const { return m_FPSCounter.GetAverageFPS(); }
 		static GraphicsContext* GetGraphicsContext() { return s_GraphicsContext; }
 
 		void Close();
-
-		float m_AverageFPS = 0.0f; // To store the calculated average FPS
 
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
@@ -45,12 +45,8 @@ namespace Engine
 		bool m_Minimized = false;
 		LayerStack m_LayerStack;
 
-		// FPS Calculation TODO: move somewhere else and make it better xd
+		FPSCounter m_FPSCounter{ 30 };
 		std::chrono::steady_clock::time_point m_LastFrameTime;
-		static constexpr int FrameHistorySize = 30; // Number of frames to average over
-		std::array<float, FrameHistorySize> m_FPSHistory = { 0.0f }; // To store FPS values
-		int m_FPSHistoryIndex = 0; // To track the current position in the array
-		float m_FPSHistorySum = 0.0f; // To keep track of the sum of the FPS values
 	};
 }
 

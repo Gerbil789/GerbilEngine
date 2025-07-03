@@ -1,6 +1,5 @@
 #include "Engine/Core/Application.h"
 #include "Editor/Core/EditorLayer.h"
-#include "Editor/ImGui/ImGuiLayer.h"
 
 namespace Editor
 {
@@ -8,13 +7,9 @@ namespace Editor
 	{
 	public:
 		EditorApp();
-		~EditorApp();
+		~EditorApp() = default;
 
 		void Run() override;
-
-		ImGuiLayer* GetImGuiLayer() { return m_EditorLayer->m_ImGuiLayer; }
-	private:
-		EditorLayer* m_EditorLayer;
 	};
 }
 

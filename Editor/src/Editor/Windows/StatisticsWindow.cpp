@@ -8,10 +8,10 @@ namespace Editor
 {
 	using namespace Engine;
 
-	void StatisticsWindow::OnImGuiRender()
+	void StatisticsWindow::OnUpdate(Engine::Timestep ts)
 	{
 		ImGui::Begin("Statistics");
-		ImGui::Text("FPS: %d", static_cast<int>(Application::Get().m_AverageFPS));
+		ImGui::Text("FPS: %d", static_cast<int>(Application::Get().GetFPS()));
 		ImGui::Separator();
 		auto stats2D = Renderer2D::GetStats();
 		ImGui::Text("2D");

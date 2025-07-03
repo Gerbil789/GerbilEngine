@@ -7,6 +7,7 @@
 #include "Engine/Core/Core.h"
 #include "Editor/Core/EditorApp.h"
 #include "Editor/Services/EditorServiceRegistry.h"
+#include "Editor/ImGui/ScopedStyle.h"
 #include "imgui/imgui.h"
 #include "ImGuizmo/ImGuizmo.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -15,7 +16,7 @@ namespace Editor
 {
 	using namespace Engine;
 
-	ViewportWindow::ViewportWindow(EditorContext* context) : EditorWindow(context)
+	ViewportWindow::ViewportWindow(EditorWindowManager* context) : EditorWindow(context)
 	{
 		SceneManager::RegisterObserver(this);
 
@@ -26,12 +27,9 @@ namespace Editor
 		editorFrameBufferSpecification.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::DEPTH24STENCIL8 };
 		editorFrameBufferSpecification.Width = 1280;
 		editorFrameBufferSpecification.Height = 720;
-		//m_EditorFrameBuffer = FrameBuffer::Create(editorFrameBufferSpecification);
 		m_EditorFrameBuffer = CreateRef<FrameBuffer>(editorFrameBufferSpecification);
 
 		m_EditorCamera = CreateRef<EditorCamera>(30.0f, 1.778f, 0.1f, 1000.0f); //TODO: what are these values? must it be there?
-
-
 	}
 
 	ViewportWindow::~ViewportWindow()
@@ -57,15 +55,15 @@ namespace Editor
 
 
 		//bind frame buffer
-		m_EditorFrameBuffer->Bind();
+		//m_EditorFrameBuffer->Bind();
 
 		//clear frame buffer
-		RenderCommand::Clear();
-		m_EditorFrameBuffer->ClearAttachment(1, -1); //clear ID attachment
+		//RenderCommand::Clear();
+		//m_EditorFrameBuffer->ClearAttachment(1, -1); //clear ID attachment
 
 		//update scene
 		m_EditorCamera->OnUpdate(ts);
-		m_Scene->OnUpdate(ts, *m_EditorCamera);
+		//m_Scene->OnUpdate(ts, *m_EditorCamera);
 
 
 
@@ -89,12 +87,13 @@ namespace Editor
 		//}
 
 		//unbind frame buffer
-		m_EditorFrameBuffer->Unbind();
-	}
+		//m_EditorFrameBuffer->Unbind();
 
-	void ViewportWindow::OnImGuiRender()
-	{
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
+
+		ScopedStyle style({
+			{ ImGuiStyleVar_WindowPadding, { 0, 0 } }
+			});
+
 		ImGui::Begin("Viewport");
 
 		//auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
@@ -175,8 +174,8 @@ namespace Editor
 		//}
 
 		ImGui::End();
-		ImGui::PopStyleVar(); // Restore padding
 	}
+
 
 	void ViewportWindow::OnEvent(Event& e)
 	{

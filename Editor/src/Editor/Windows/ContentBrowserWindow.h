@@ -137,8 +137,8 @@ namespace Editor
 	class ContentBrowserWindow : public EditorWindow
 	{
 	public:
-		ContentBrowserWindow(EditorContext* context);
-		void OnImGuiRender() override;
+		ContentBrowserWindow(EditorWindowManager* context);
+		void OnUpdate(Engine::Timestep ts) override;
 
 	private:
 		void Reload();

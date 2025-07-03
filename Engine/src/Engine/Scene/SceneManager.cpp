@@ -26,7 +26,6 @@ namespace Engine
 	void SceneManager::LoadScene(const std::filesystem::path& path)
 	{
 		Ref<Scene> scene = AssetManager::GetAsset<Scene>(path);
-		s_CurrentScene->OnDestroy();
 		s_CurrentScene = scene;
 		AssetManager::UnloadUnusedAssets();
 		NotifyObservers();

@@ -6,7 +6,7 @@ namespace Editor
 	using namespace Engine;
 
 
-	GameWindow::GameWindow(EditorContext* context) : EditorWindow(context)
+	GameWindow::GameWindow(EditorWindowManager* context) : EditorWindow(context)
 	{
 		//create game frame buffer
 		//FrameBufferSpecification gameFrameBufferSpecification;
@@ -33,9 +33,7 @@ namespace Editor
 		////update scene
 		//m_CurrentScene->OnUpdate(ts);
 		//m_GameFrameBuffer->Unbind();
-	}
-	void GameWindow::OnImGuiRender()
-	{
+
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
 		ImGui::Begin("Game");
 
@@ -48,4 +46,5 @@ namespace Editor
 		ImGui::End();
 		ImGui::PopStyleVar(); // Restore padding
 	}
+
 }

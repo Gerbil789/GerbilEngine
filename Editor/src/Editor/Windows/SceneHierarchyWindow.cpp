@@ -13,7 +13,7 @@ namespace Editor
 {
 	using namespace Engine;
 
-	SceneHierarchyWindow::SceneHierarchyWindow(EditorContext* context) : EditorWindow(context)
+	SceneHierarchyWindow::SceneHierarchyWindow(EditorWindowManager* context) : EditorWindow(context)
 	{
 		SceneManager::RegisterObserver(this);
 		m_SceneController = EditorServiceRegistry::Get<SceneController>();
@@ -29,7 +29,7 @@ namespace Editor
 		m_Scene = newScene;
 	}
 
-	void SceneHierarchyWindow::OnImGuiRender()
+	void SceneHierarchyWindow::OnUpdate(Engine::Timestep ts)
 	{
 		ScopedStyle style({
 			{ ImGuiStyleVar_WindowPadding, { 0, 0 } },

@@ -11,7 +11,7 @@ namespace Editor
 {
 	using namespace Engine;
 
-	MaterialWindow::MaterialWindow(EditorContext* context) : EditorWindow(context)
+	MaterialWindow::MaterialWindow(EditorWindowManager* context) : EditorWindow(context)
 	{
 		std::string path = "resources/shaders";
 
@@ -26,7 +26,7 @@ namespace Editor
 
 	}
 
-	void MaterialWindow::OnImGuiRender() 
+	void MaterialWindow::OnUpdate(Engine::Timestep ts)
 	{
 		auto scene = SceneManager::GetCurrentScene();
 		if (scene) 

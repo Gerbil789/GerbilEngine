@@ -8,9 +8,9 @@ namespace Editor
 	class StatisticsWindow : public EditorWindow
 	{
 	public:
-		StatisticsWindow(EditorContext* context) : EditorWindow(context) {};
+		StatisticsWindow(EditorWindowManager* context) : EditorWindow(context) {};
 		~StatisticsWindow() = default;
 
-		void OnImGuiRender() override;
+		void OnUpdate(Engine::Timestep ts) override;
 	};
 }

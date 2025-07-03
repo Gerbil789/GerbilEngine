@@ -13,7 +13,7 @@ namespace Editor
 {
 	using namespace Engine;
 
-	InspectorWindow::InspectorWindow(EditorContext* context) : EditorWindow(context)
+	InspectorWindow::InspectorWindow(EditorWindowManager* context) : EditorWindow(context)
 	{
 		SceneManager::RegisterObserver(this);
 		m_SceneController = EditorServiceRegistry::Get<SceneController>();
@@ -29,7 +29,7 @@ namespace Editor
 		m_Scene = newScene;
 	}
 
-	void InspectorWindow::OnImGuiRender()
+	void InspectorWindow::OnUpdate(Engine::Timestep ts)
 	{
 
 		ImGui::Begin("Inspector");

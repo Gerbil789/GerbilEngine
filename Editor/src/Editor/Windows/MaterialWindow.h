@@ -9,10 +9,10 @@ namespace Editor
 	class MaterialWindow : public EditorWindow
 	{
 	public:
-		MaterialWindow(EditorContext* context);
+		MaterialWindow(EditorWindowManager* context);
 		~MaterialWindow();
-
-		void OnImGuiRender() override;
+		
+		void OnUpdate(Engine::Timestep ts) override;
 
 		void SetMaterial(Ref<Engine::Material> material) { m_Material = material; }
 	private:

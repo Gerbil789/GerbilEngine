@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Editor/Core/EditorContext.h"
+#include "Editor/Core/EditorWindowManager.h"
 #include "Editor/Services/SceneController.h"
 #include "Editor/Core/Core.h"
-#include "Editor/ImGui/ImGuiLayer.h"
 
 namespace Editor
 {
@@ -14,15 +13,21 @@ namespace Editor
 
 		void OnAttach() override;
 		void OnDetach() override;
-		void OnUpdate(Engine::Timestep ts) override;
 		void OnEvent(Engine::Event& e) override;
-		void OnImGuiRender();
+		void OnUpdate(Engine::Timestep ts) override;
 
-		ImGuiLayer* m_ImGuiLayer;
+		void BlockEvents(bool block) { m_BlockEvents = block; }
+		static void ResetLayout(); // TODO: is this good?
+
+	private:
+		void BeginFrame();
+		void EndFrame();
 
 	private:
 		Scope<SceneController> m_SceneController;
-		Ref<EditorContext> m_EditorContext;
+		Ref<EditorWindowManager> m_WindowManager;
+
+		bool m_BlockEvents = true;
 
 	};
 }

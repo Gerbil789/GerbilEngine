@@ -7,9 +7,9 @@ namespace Editor
 	class SettingsWindow : public EditorWindow
 	{
 	public:
-		SettingsWindow(EditorContext* context) : EditorWindow(context) {}
+		SettingsWindow(EditorWindowManager* context) : EditorWindow(context) {}
 		~SettingsWindow() = default;
 
-		void OnImGuiRender() override;
+		void OnUpdate(Engine::Timestep ts) override;
 	};
 }

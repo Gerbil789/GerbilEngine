@@ -6,16 +6,15 @@
 
 namespace Editor
 {
-	class EditorContext;
+	class EditorWindowManager;
 
 	class EditorWindow
 	{
 	public:
-		EditorWindow(EditorContext* context) : m_Context(context) {};
+		EditorWindow(EditorWindowManager* context) : m_Context(context) {};
 		virtual ~EditorWindow() = default;
 
-		virtual void OnUpdate(Engine::Timestep ts) {}
-		virtual void OnImGuiRender() = 0;
+		virtual void OnUpdate(Engine::Timestep ts) = 0;
 		virtual void OnEvent(Engine::Event& event) {}
 
 		bool IsVisible() const { return m_IsVisible; }
@@ -23,6 +22,6 @@ namespace Editor
 
 	protected:
 		bool m_IsVisible = false;
-		EditorContext* m_Context;
+		EditorWindowManager* m_Context;
 	};
 }

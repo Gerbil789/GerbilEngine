@@ -31,6 +31,7 @@ namespace Engine
 	{
 		//auto view = m_Registry.view<IDComponent>();
 		//LOG_INFO("Destroying scene with {0} entities", view.size());
+		m_Registry.clear();
 	}
 
 	void Scene::RefreshRootEntities()
@@ -106,175 +107,144 @@ namespace Engine
 	}
 
 
-	void Scene::OnUpdate(Timestep ts)
-	{
-		//get scene camera  and its transform from scene
+	//void Scene::OnUpdate(Timestep ts)
+	//{
+	//	//get scene camera  and its transform from scene
 
-		auto view = m_Registry.view<TransformComponent, CameraComponent>();
-		glm::mat4 transform = glm::mat4(1.0f);
-		Camera* camera = nullptr;
+	//	auto view = m_Registry.view<TransformComponent, CameraComponent>();
+	//	glm::mat4 transform = glm::mat4(1.0f);
+	//	Camera* camera = nullptr;
 
-		for (auto entity : view)
-		{
-			auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
-			if (cameraComponent.Main)
-			{
-				camera = &cameraComponent.Camera;
-				transform = transformComponent.GetTransform();
-				break;
-			}
-		}
+	//	for (auto entity : view)
+	//	{
+	//		auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
+	//		if (cameraComponent.Main)
+	//		{
+	//			camera = &cameraComponent.Camera;
+	//			transform = transformComponent.GetTransform();
+	//			break;
+	//		}
+	//	}
 
-		if (!camera) { return; }
+	//	if (!camera) { return; }
 
-		switch (m_SceneState)
-		{
-		case SceneState::Editor:
-			OnUpdateEditor(ts, *camera, transform);
-			break;
-		case SceneState::Runtime:
-			//OnUpdateRuntime(ts);
-			break;
-		}
-	}
+	//	switch (m_SceneState)
+	//	{
+	//	case SceneState::Editor:
+	//		OnUpdateEditor(ts, *camera, transform);
+	//		break;
+	//	case SceneState::Runtime:
+	//		//OnUpdateRuntime(ts);
+	//		break;
+	//	}
+	//}
 
-	void Scene::OnUpdate(Timestep ts, EditorCamera& camera)
-	{
-		switch (m_SceneState)
-		{
-		case SceneState::Editor:
-			OnUpdateEditor(ts, camera);
-			break;
-		case SceneState::Runtime:
-			OnUpdateRuntime(ts);
-			break;
-		}
-	}
+	//void Scene::OnUpdate(Timestep ts, EditorCamera& camera)
+	//{
+	//	switch (m_SceneState)
+	//	{
+	//	case SceneState::Editor:
+	//		OnUpdateEditor(ts, camera);
+	//		break;
+	//	case SceneState::Runtime:
+	//		OnUpdateRuntime(ts);
+	//		break;
+	//	}
+	//}
 
 
-	void Scene::OnPlay()
-	{
-		m_IsPlaying = true;
-	}
+	//void Scene::OnPlay()
+	//{
+	//	m_IsPlaying = true;
+	//}
 
-	void Scene::OnStop()
-	{
-		m_IsPlaying = false;
-	}
+	//void Scene::OnStop()
+	//{
+	//	m_IsPlaying = false;
+	//}
 
-	void Scene::OnPause()
-	{
-		m_IsPaused = true;
-	}
+	//void Scene::OnPause()
+	//{
+	//	m_IsPaused = true;
+	//}
 
-	void Scene::OnResume()
-	{
-		m_IsPaused = false;
-	}
-
-	void Scene::OnNextFrame()
-	{
-		LOG_WARNING("OnNextFrame not implemented yet!");
-	}
+	//void Scene::OnResume()
+	//{
+	//	m_IsPaused = false;
+	//}
 
 
 
-	void Scene::OnUpdateRuntime(Timestep ts)
-	{
-		//scripts
-		//{
-		//	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-		//	{
-		//		//TODO: move this to scene::onplay
-		//		if (!nsc.Instance)
-		//		{
-		//			nsc.Instance = nsc.InstantiateScript();
-		//			nsc.Instance->m_Entity = Entity{ entity, this };
-		//			nsc.Instance->OnCreate();
-		//			
-		//		}
-		//		nsc.Instance->OnUpdate(ts);
-		//	});
-		//}
+	//void Scene::OnUpdateRuntime(Timestep ts)
+	//{
+	//	//scripts
+	//	//{
+	//	//	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+	//	//	{
+	//	//		//TODO: move this to scene::onplay
+	//	//		if (!nsc.Instance)
+	//	//		{
+	//	//			nsc.Instance = nsc.InstantiateScript();
+	//	//			nsc.Instance->m_Entity = Entity{ entity, this };
+	//	//			nsc.Instance->OnCreate();
+	//	//			
+	//	//		}
+	//	//		nsc.Instance->OnUpdate(ts);
+	//	//	});
+	//	//}
 
 
 
-		// Render 2D
-		Camera* mainCamera = nullptr;
-		glm::mat4 cameraTransform;
+	//	// Render 2D
+	//	//Camera* mainCamera = nullptr;
+	//	//glm::mat4 cameraTransform;
 
-		{
-			auto view = m_Registry.view<TransformComponent, CameraComponent>();
-			for (auto entity : view)
-			{
-				auto [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
+	//	//{
+	//	//	auto view = m_Registry.view<TransformComponent, CameraComponent>();
+	//	//	for (auto entity : view)
+	//	//	{
+	//	//		auto [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
 
-				if (camera.Main)
-				{
-					mainCamera = &camera.Camera;
-					cameraTransform = transform.GetTransform();
-					break;
-				}
-			}
-		}
+	//	//		if (camera.Main)
+	//	//		{
+	//	//			mainCamera = &camera.Camera;
+	//	//			cameraTransform = transform.GetTransform();
+	//	//			break;
+	//	//		}
+	//	//	}
+	//	//}
 
-		if (mainCamera == nullptr)
-		{
-			//ENGINE_LOG_WARNING("No main camera entity found!");
-			return;
-		}
+	//	//if (mainCamera == nullptr)
+	//	//{
+	//	//	//ENGINE_LOG_WARNING("No main camera entity found!");
+	//	//	return;
+	//	//}
 
-		Renderer2D::BeginScene(mainCamera->GetProjection(), cameraTransform);
+	//	//Renderer2D::BeginScene(mainCamera->GetProjection(), cameraTransform);
 
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-		for (auto entity : group)
-		{
-			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
-		}
+	//	//auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+	//	//for (auto entity : group)
+	//	//{
+	//	//	auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+	//	//	Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+	//	//}
 
-		Renderer2D::EndScene();
-	}
+	//	//Renderer2D::EndScene();
+	//}
 
-	void Scene::OnUpdateEditor(Timestep ts, EditorCamera& camera)
-	{
-		Renderer::BeginScene(camera);
-		auto group = m_Registry.group<MeshRendererComponent>(entt::get<TransformComponent, EnablingComponent>);
-		for (auto entity : group)
-		{
-			if (!group.get<EnablingComponent>(entity).Enabled) { return; }
-			auto [transform, mesh] = group.get<TransformComponent, MeshRendererComponent>(entity);
-			Renderer::DrawMesh(transform.GetTransform(), mesh.Mesh, mesh.Material, (int)entity);
-		}
-		Renderer::EndScene();
+	//void Scene::OnUpdateEditor(Timestep ts, EditorCamera& camera)
+	//{
+	//	Renderer::BeginFrame(camera);
 
+	//	Renderer::RenderScene(this,camera);
 
-		//TODO: 2D renderer is somehow colliding with 3D renderer -> 3D does not work when it is enabled
-		/*Renderer2D::BeginScene(camera);
-		auto group2D = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent, EnablingComponent>);
-		for (auto entity : group2D)
-		{
-			if (!group2D.get<EnablingComponent>(entity).Enabled) { return; }
-			auto [transform, sprite] = group2D.get<TransformComponent, SpriteRendererComponent>(entity);
-			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
-		}
-		Renderer2D::EndScene();*/
-	}
+	//	Renderer::EndFrame();
+	//}
 
-	void Scene::OnUpdateEditor(Timestep ts, Camera& camera, const glm::mat4& transform)
-	{
-		Renderer2D::BeginScene(camera, transform);
+	//void Scene::OnUpdateEditor(Timestep ts, Camera& camera, const glm::mat4& transform)
+	//{
 
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent, EnablingComponent>);
-		for (auto entity : group)
-		{
-			if (!group.get<EnablingComponent>(entity).Enabled) { return; }
-			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
-		}
-
-		Renderer2D::EndScene();
-	}
+	//}
 
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
@@ -295,10 +265,6 @@ namespace Engine
 
 	}
 
-	void Scene::OnDestroy()
-	{
-		m_Registry.clear();
-	}
 
 	Entity Scene::CreateEntity(const std::string& name)
 	{

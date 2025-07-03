@@ -8,7 +8,7 @@ namespace Editor
 		MenuBar();
 		~MenuBar() = default;
 
-		void OnImGuiRender();
+		void OnUpdate();
 
 	private:
 		//Ref<Texture2D> m_Icon_Play;

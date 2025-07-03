@@ -14,11 +14,11 @@ namespace Editor
 	class SceneHierarchyWindow : public EditorWindow, public Engine::ISceneObserver
 	{
 	public:
-		SceneHierarchyWindow(EditorContext* context);
+		SceneHierarchyWindow(EditorWindowManager* context);
 		~SceneHierarchyWindow();
 
 		void OnSceneChanged(Ref<Engine::Scene> newScene) override;
-		void OnImGuiRender() override;
+		void OnUpdate(Engine::Timestep ts) override;
 
 	private:
 		Ref<Engine::Scene> m_Scene;

@@ -10,11 +10,11 @@ namespace Editor
 	class InspectorWindow : public EditorWindow, public Engine::ISceneObserver
 	{
 	public:
-		InspectorWindow(EditorContext* context);
+		InspectorWindow(EditorWindowManager* context);
 		~InspectorWindow();
 
 		void OnSceneChanged(Ref<Engine::Scene> newScene) override;
-		void OnImGuiRender() override;
+		void OnUpdate(Engine::Timestep ts) override;
 
 	private:
 		Ref<Engine::Scene> m_Scene;

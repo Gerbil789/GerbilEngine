@@ -14,16 +14,17 @@ namespace Engine
 		static void Init();
 		static void Shutdown();
 
-		static void BeginScene(const Camera& camera, const glm::mat4& transform);
-		static void BeginScene(const EditorCamera& camera);
-		static void EndScene();
+		static void BeginFrame(const Camera& camera, const glm::mat4& transform);
+		static void BeginFrame(const EditorCamera& camera);
+		//static void RenderScene(const Scene& scene, const EditorCamera& camera);
+		static void EndFrame();
 		static void OnWindowResize(uint32_t width, uint32_t height);
 		static void DrawMesh(const glm::mat4& transform, Ref<Mesh> mesh, Ref<Material> material, int entityID);
 
 
 		//moved from rendererAPI
-		virtual void SetClearColor(const glm::vec4& color) = 0;
-		virtual void Clear() = 0;
+		void SetClearColor(const glm::vec4& color) {}
+		void Clear() {}
 		void DrawIndexed(/*const Ref<VertexArray>& vertexArray,*/ uint32_t indexCount = 0) {}
 		static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {}
 

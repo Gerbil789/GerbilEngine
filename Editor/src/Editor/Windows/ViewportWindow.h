@@ -13,12 +13,11 @@ namespace Editor
 	class ViewportWindow : public EditorWindow, public Engine::ISceneObserver
 	{
 	public:
-		ViewportWindow(EditorContext* context);
+		ViewportWindow(EditorWindowManager* context);
 		~ViewportWindow();
 
 		void OnSceneChanged(Ref<Engine::Scene> newScene) override;
 		void OnUpdate(Engine::Timestep ts) override;
-		void OnImGuiRender() override;
 		void OnEvent(Engine::Event& e) override;
 
 	private:
@@ -29,7 +28,7 @@ namespace Editor
 		Ref<Engine::Scene> m_Scene;
 
 		Ref<Engine::FrameBuffer> m_EditorFrameBuffer;
-		Ref<Engine::EditorCamera> m_EditorCamera; //TODO: move editor camera to editor project ?
+		Ref<Engine::EditorCamera> m_EditorCamera; //TODO: move editor camera to Editor project ?
 
 		int m_GizmoType = 7; //translate
 
