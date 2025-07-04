@@ -16,7 +16,7 @@ project "Engine"
 		"src/**.cpp",
 		"%{wks.location}/vendor/stb_image/**.h",
 		"%{wks.location}/vendor/stb_image/**.cpp",
-		"%{wks.location}/vendor/glm/glm/**.hpp",
+		-- "%{wks.location}/vendor/glm/glm/**.hpp",
 		"%{wks.location}/vendor/glm/glm/**.inl",
 		"%{wks.location}/vendor/yaml-cpp/include/**.h",
 		"%{wks.location}/vendor/assimp/include/**.h",
@@ -60,11 +60,11 @@ project "Engine"
 		}
 
 	filter "configurations:Debug"
-		defines "SHARED_DEBUG"
+		defines { "DEBUG" }
 		symbols "on"
 		runtime "Debug"
 
 	filter "configurations:Release"
-		defines "SHARED_RELEASE"
+		defines { "RELEASE" }
 		optimize "on"
 		runtime "Release"

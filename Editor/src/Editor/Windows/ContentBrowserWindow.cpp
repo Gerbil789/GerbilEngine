@@ -6,7 +6,7 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Utils/Utilities.h"
 #include "Engine/Core/Application.h"
-
+#include "Editor/Core/EditorApp.h"
 #include <GLFW/glfw3.h>
 
 namespace Editor
@@ -15,8 +15,10 @@ namespace Editor
 
 	ContentBrowserWindow::ContentBrowserWindow(EditorWindowManager* context) : EditorWindow(context)
 	{
-		m_RootDirectory = "assets";
-		m_CurrentDirectory = "assets";
+		EditorApp& app = static_cast<EditorApp&>(Application::Get());
+
+		m_RootDirectory = app.GetProject().GetAssetsPath();
+		m_CurrentDirectory = app.GetProject().GetAssetsPath();
 
 		m_FolderIcon = AssetManager::GetAsset<Texture2D>("resources/icons/folder.png");
 		m_EmptyFolderIcon = AssetManager::GetAsset<Texture2D>("resources/icons/folder_empty.png");

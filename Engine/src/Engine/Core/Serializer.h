@@ -17,7 +17,6 @@ constexpr const char* PROPERTIES_KEY = "Properties";
 
 // scene serialization keys
 //TODO: add scene serialization keys & update scene serialization
-//NOTE: constexpr -> evaluated at compile time.
 
 namespace Engine
 {

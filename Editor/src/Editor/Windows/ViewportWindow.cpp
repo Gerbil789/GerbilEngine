@@ -91,7 +91,7 @@ namespace Editor
 		//m_EditorFrameBuffer->Unbind();
 
 
-		Shared::ScopedStyle style({
+		ScopedStyle style({
 			{ ImGuiStyleVar_WindowPadding, { 0, 0 } }
 			});
 

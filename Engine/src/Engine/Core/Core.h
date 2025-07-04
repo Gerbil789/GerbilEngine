@@ -3,13 +3,11 @@
 #include <memory>
 #include "Engine/Core/Log.h"
 
-#ifdef ENGINE_PLATFORM_WINDOWS
-
-#else
-	#error Engine only supports Windows!
+#ifndef ENGINE_PLATFORM_WINDOWS
+#error Engine only supports Windows!
 #endif
 
-#ifdef ENGINE_DEBUG
+#ifdef DEBUG
 	#define ENGINE_ENABLE_ASSERTS
 #endif
 

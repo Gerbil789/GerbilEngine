@@ -33,7 +33,7 @@ namespace Editor
 
 	void SceneHierarchyWindow::OnUpdate(Engine::Timestep ts)
 	{
-		Shared::ScopedStyle style({
+		ScopedStyle style({
 			{ ImGuiStyleVar_WindowPadding, { 0, 0 } },
 			{ ImGuiStyleVar_ItemSpacing, { 0, 0 } }
 		});

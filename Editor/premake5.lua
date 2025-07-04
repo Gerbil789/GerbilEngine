@@ -51,11 +51,11 @@ project "Editor"
 		defines { "ENGINE_PLATFORM_WINDOWS" }
 
 	filter "configurations:Debug"
-		defines "SHARED_DEBUG"
+		defines { "DEBUG" }
 		symbols "on"
 		runtime "Debug"
 
 	filter "configurations:Release"
-		defines "SHARED_RELEASE"
+		defines { "RELEASE" }
 		optimize "on"
 		runtime "Release"

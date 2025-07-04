@@ -1,10 +1,16 @@
 #include "EditorLayer.h"
 #include "EditorApp.h"
 
+
 namespace Editor
 {
-	EditorApp::EditorApp() : Application("Gerbil Editor")
+	EditorApp::EditorApp(std::filesystem::path projectPath) : Application("Gerbil Editor")
 	{
+		m_Project = Project(projectPath);
+
+		LOG_INFO("Starting Gerbil Editor for project: {0}", m_Project.GetTitle());
+		LOG_INFO("Project path: {0}", m_Project.GetPath().string());
+
 		PushLayer(new EditorLayer());
 		LOG_INFO("--- Initialization complete ---");
 	}
