@@ -1,5 +1,4 @@
 #include "GameWindow.h"
-#include <imgui/imgui.h>
 
 namespace Editor
 {

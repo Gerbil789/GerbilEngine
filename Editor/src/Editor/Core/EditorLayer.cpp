@@ -7,7 +7,7 @@
 #include "Engine/Utils/File.h"
 #include "Engine/Renderer/Renderer.h"
 
-#include "imgui/imgui.h"
+#include "imgui.h"
 #include "ImGuizmo.h"
 #include "backends/imgui_impl_wgpu.h"
 #include "backends/imgui_impl_glfw.h"

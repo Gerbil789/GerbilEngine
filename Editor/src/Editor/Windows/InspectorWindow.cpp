@@ -4,9 +4,9 @@
 #include "Editor/Elements/Elements.h"
 #include "Engine/Core/AssetManager.h"
 #include "Editor/Services/EditorServiceRegistry.h"
-#include <imgui/imgui.h>
+#include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
-#include <imgui/imgui_internal.h>
+#include <imgui_internal.h>
 #include <filesystem>
 
 namespace Editor

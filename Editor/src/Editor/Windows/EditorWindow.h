@@ -3,6 +3,7 @@
 #include "Engine/Core/Timestep.h"
 #include "Engine/Events/Event.h"
 #include "Editor/Services/EditorServiceRegistry.h"
+#include <imgui.h>
 
 namespace Editor
 {

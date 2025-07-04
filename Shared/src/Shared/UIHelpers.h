@@ -1,10 +1,10 @@
 #pragma once
 
-#include <imgui/imgui.h>
+#include <imgui.h>
 #include <initializer_list>
 #include <utility>
 
-namespace Editor
+namespace Shared
 {
 	// Helper class to set style for window scope, and restore it afterwards
 	class ScopedStyle

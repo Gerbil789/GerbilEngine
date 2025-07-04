@@ -3,9 +3,8 @@
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Editor/Elements/Elements.h"
-#include <imgui/imgui.h>
 #include <glm/gtc/type_ptr.hpp>
-#include <imgui/imgui_internal.h>
+#include <imgui_internal.h>
 
 namespace Editor
 {

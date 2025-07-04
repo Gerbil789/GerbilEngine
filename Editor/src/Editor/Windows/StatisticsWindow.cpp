@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "StatisticsWindow.h"
-#include "imgui/imgui.h"
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/Renderer2D.h"
 

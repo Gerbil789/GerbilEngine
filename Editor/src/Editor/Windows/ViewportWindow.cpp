@@ -7,10 +7,11 @@
 #include "Engine/Core/Core.h"
 #include "Editor/Core/EditorApp.h"
 #include "Editor/Services/EditorServiceRegistry.h"
-#include "Editor/ImGui/ScopedStyle.h"
-#include "imgui/imgui.h"
-#include "ImGuizmo/ImGuizmo.h"
+#include "imgui.h"
+#include "ImGuizmo.h"
 #include <glm/gtc/type_ptr.hpp>
+
+#include <Shared/UIHelpers.h>
 
 namespace Editor
 {
@@ -90,7 +91,7 @@ namespace Editor
 		//m_EditorFrameBuffer->Unbind();
 
 
-		ScopedStyle style({
+		Shared::ScopedStyle style({
 			{ ImGuiStyleVar_WindowPadding, { 0, 0 } }
 			});
 

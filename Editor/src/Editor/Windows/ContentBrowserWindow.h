@@ -4,7 +4,7 @@
 #include "Engine/Core/Core.h"
 #include "Engine/Renderer/Texture.h"
 #include <filesystem>
-#include <imgui/imgui.h>
+#include <imgui.h>
 #include "Editor/Core/Core.h"
 
 namespace Editor

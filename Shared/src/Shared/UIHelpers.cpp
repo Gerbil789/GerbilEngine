@@ -1,6 +1,6 @@
-#include "ScopedStyle.h"
+#include "UIHelpers.h"
 
-namespace Editor
+namespace Shared
 {
 	ScopedStyle::ScopedStyle(ImGuiStyleVar var, ImVec2 value)
 	{

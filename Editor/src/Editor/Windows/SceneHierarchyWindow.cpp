@@ -3,11 +3,13 @@
 #include "SceneHierarchyWindow.h"
 #include "Engine/Scene/Components.h"
 #include "Editor/Services/EditorServiceRegistry.h"
-#include "Editor/ImGui/ScopedStyle.h"
-#include <imgui/imgui.h>
+#include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
-#include <imgui/imgui_internal.h>
+#include <imgui_internal.h>
 #include <filesystem>
+
+#include <Shared/UIHelpers.h>
+
 
 namespace Editor
 {
@@ -31,7 +33,7 @@ namespace Editor
 
 	void SceneHierarchyWindow::OnUpdate(Engine::Timestep ts)
 	{
-		ScopedStyle style({
+		Shared::ScopedStyle style({
 			{ ImGuiStyleVar_WindowPadding, { 0, 0 } },
 			{ ImGuiStyleVar_ItemSpacing, { 0, 0 } }
 		});
