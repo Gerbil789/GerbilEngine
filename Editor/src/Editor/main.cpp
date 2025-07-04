@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     std::filesystem::path cwd = std::filesystem::current_path();
     projectPath = cwd / "../Projects/TestProject"; 
     projectPath = std::filesystem::weakly_canonical(projectPath);
-#elif
+#else
 		LOG_ERROR("No project path provided.");
     return -1;
 #endif

@@ -7,47 +7,30 @@ on:
   pull_request:
     branches:
       - main
-
 jobs:
-  build-debug:
-    name: Build Debug
+  build:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        configuration: [Debug, Release] 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: true
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: true
 
-      - name: Set up MSVC
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
+    - name: Set up MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
-      - name: Generate project files
-        run: vendor\bin\premake\premake5.exe vs2022
-
-      - name: Build Debug
-        run: msbuild /p:Configuration=Debug /p:Platform=x64 GerbilEngine.sln
-
-  build-release:
-    name: Build Release
-    runs-on: windows-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Set up MSVC
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-
-      - name: Generate project files
-        run: vendor\bin\premake\premake5.exe vs2022
-
-      - name: Build Release
-        run: msbuild /p:Configuration=Release /p:Platform=x64 GerbilEngine.sln
+    - name: Generate project files
+      run: vendor\bin\premake\premake5.exe vs2022
+      
+    - name: Build project
+      if: steps.cache-build.outputs.cache-hit != 'true'
+      run: |
+        msbuild /p:Configuration=${{ matrix.configuration }} /p:Platform=x64 GerbilEngine.sln
 
   # notify-discord:
   #   runs-on: windows-latest

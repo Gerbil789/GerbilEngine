@@ -1,8 +1,7 @@
-[![Build](https://github.com/Gerbil789/GerbilEngine/actions/workflows/wokrflow.yml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/wokrflow.yml)
-[![License](https://img.shields.io/badge/License-MIT-blue)](#license "Go to license section")
+[![Build](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build.yml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build.yml)
 
 # GerbilEngine
-WebGPU based engine
+My hobby project
 
 #### Prerequisites
  - Windows machine
@@ -19,5 +18,4 @@ WebGPU based engine
 - Find **`Editor`** project in Solution Explorer
 - Right click -> **Build**
 4. **Run**
-- Right click **`Editor`** -> Set as Startup Project
 - Run it
