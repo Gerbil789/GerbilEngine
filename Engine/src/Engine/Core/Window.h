@@ -19,7 +19,7 @@ namespace Engine
 
 		uint32_t GetWidth() const { return m_Data.Width; }
 		uint32_t GetHeight() const { return m_Data.Height; }
-		GLFWwindow* GetGLFWWindow() const { return m_Window; }
+		GLFWwindow* Get() const { return m_Window; }
 
 		void SetEventCallback(const EventCallbackFn& callback) { m_Data.EventCallback = callback; }
 

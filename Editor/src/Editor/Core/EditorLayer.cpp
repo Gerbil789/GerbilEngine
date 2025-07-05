@@ -6,7 +6,6 @@
 #include "Engine/Utils/Color.h"
 #include "Engine/Utils/File.h"
 #include "Engine/Renderer/Renderer.h"
-
 #include "imgui.h"
 #include "ImGuizmo.h"
 #include "backends/imgui_impl_wgpu.h"
@@ -18,17 +17,13 @@ namespace Editor
 
 	EditorLayer::EditorLayer() : Layer("EditorLayer") 
 	{
+		ENGINE_PROFILE_FUNCTION();
 		m_SceneController = CreateScope<SceneController>();
 		EditorServiceRegistry::Register<SceneController>(m_SceneController.get());
-	}
+		m_WindowManager = CreateRef<EditorWindowManager>();
 
-	void EditorLayer::OnAttach()
-	{
-		ENGINE_PROFILE_FUNCTION();
 		RenderCommand::SetClearColor({ 0.05f, 0.05f, 0.05f, 1.0f });
 		SceneManager::CreateScene("NewScene");
-
-		m_WindowManager = CreateRef<EditorWindowManager>();
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -49,7 +44,7 @@ namespace Editor
 
 		ImGui::StyleColorsDark(); //TODO: make better color palette
 
-		ImGui_ImplGlfw_InitForOther(Engine::Application::Get().GetWindow().GetGLFWWindow(), true);
+		ImGui_ImplGlfw_InitForOther(Engine::Application::Get().GetWindow().Get(), true);
 
 		ImGui_ImplWGPU_InitInfo initInfo;
 		initInfo.Device = Engine::Application::GetGraphicsContext()->GetDevice();
@@ -59,7 +54,7 @@ namespace Editor
 		ImGui_ImplWGPU_Init(&initInfo);
 	}
 
-	void EditorLayer::OnDetach()
+	EditorLayer::~EditorLayer()
 	{
 		ENGINE_PROFILE_FUNCTION();
 		ImGui_ImplWGPU_Shutdown();
@@ -86,8 +81,6 @@ namespace Editor
 		ENGINE_PROFILE_FUNCTION();
 		BeginFrame();
 		m_WindowManager->OnUpdate(ts); // draw windows
-
-		ImGui::End(); // End the dockspace window
 		EndFrame();
 	}
 
@@ -96,7 +89,6 @@ namespace Editor
 		ImGui_ImplWGPU_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-
 		//ImGuizmo::BeginFrame(); //TODO: must be here?
 
 		// imgui dockspace setup
@@ -131,6 +123,8 @@ namespace Editor
 
 	void EditorLayer::EndFrame()
 	{
+		ImGui::End(); // End dockspace window
+
 		Engine::Application& app = Engine::Application::Get();
 		Engine::GraphicsContext* graphicsContext = app.GetGraphicsContext();
 		auto device = graphicsContext->GetDevice();

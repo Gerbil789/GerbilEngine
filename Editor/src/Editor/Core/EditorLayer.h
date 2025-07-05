@@ -10,9 +10,8 @@ namespace Editor
 	{
 	public:
 		EditorLayer();
+		~EditorLayer();
 
-		void OnAttach() override;
-		void OnDetach() override;
 		void OnEvent(Engine::Event& e) override;
 		void OnUpdate(Engine::Timestep ts) override;
 

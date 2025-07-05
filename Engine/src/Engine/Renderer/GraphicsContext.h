@@ -1,6 +1,6 @@
 #pragma once
 
-#include <webgpu/webgpu.h>
+#include <webgpu/webgpu.hpp>
 
 namespace Engine
 {
@@ -10,15 +10,13 @@ namespace Engine
 		void Init();
 		void Shutdown();
 
-		WGPUDevice GetDevice() const { return m_Device; }
-		WGPUQueue GetQueue() const { return m_Queue; }
-		WGPUSurface GetSurface() const { return m_Surface; }
+		wgpu::Device GetDevice() const { return m_Device; }
+		wgpu::Queue GetQueue() const { return m_Queue; }
+		wgpu::Surface GetSurface() const { return m_Surface; }
 
 	private:
-		WGPUInstance m_Instance = nullptr;
-		WGPUAdapter m_Adapter = nullptr;
-		WGPUDevice m_Device = nullptr;
-		WGPUQueue m_Queue = nullptr;
-		WGPUSurface m_Surface = nullptr;
+		wgpu::Device m_Device;
+		wgpu::Queue m_Queue;
+		wgpu::Surface m_Surface;
 	};
 }

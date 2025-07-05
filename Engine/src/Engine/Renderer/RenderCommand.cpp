@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "RenderCommand.h"
 #include "Engine/Core/Application.h"
-#include <webgpu/webgpu.h>
+#include <webgpu/webgpu.hpp>
 
 namespace Engine 
 {

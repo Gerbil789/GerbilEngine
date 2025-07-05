@@ -1,7 +1,6 @@
 #include "EditorLayer.h"
 #include "EditorApp.h"
 
-
 namespace Editor
 {
 	EditorApp::EditorApp(std::filesystem::path projectPath) : Application("Gerbil Editor - " + projectPath.lexically_normal().filename().string())

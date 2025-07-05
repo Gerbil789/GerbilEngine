@@ -13,8 +13,6 @@ namespace Engine {
 		Layer(const std::string& name = "Layer") : m_LayerName(name) {}
 		virtual ~Layer() {}
 
-		virtual void OnAttach() {}
-		virtual void OnDetach() {}
 		virtual void OnUpdate(Timestep ts) {}
 		virtual void OnEvent(Event& event) {}
 

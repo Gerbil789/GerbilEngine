@@ -10,23 +10,21 @@
 #include "Engine/Utils/FPSCounter.h"
 #include <chrono>
 
-#include <webgpu/webgpu.h>
-
 namespace Engine
 {
 	class Application
 	{
 	public:
 		Application(const std::string& name = "Gerbil Engine App");
-		virtual ~Application();
+		virtual ~Application() = default;
 
 		virtual void Run() = 0;
 
 		void OnEvent(Event& e);
-		void PushLayer(Layer* layer);
+		void PushLayer(Layer* layer) { m_LayerStack.PushLayer(layer); }
 
-		inline static Application& Get() { return *s_Instance; }
-		inline Window& GetWindow() { return *m_Window; }
+		static Application& Get() { return *s_Instance; }
+		Window& GetWindow() { return *m_Window; }
 		float GetFPS() const { return m_FPSCounter.GetAverageFPS(); }
 		static GraphicsContext* GetGraphicsContext() { return s_GraphicsContext; }
 
@@ -45,7 +43,7 @@ namespace Engine
 		bool m_Minimized = false;
 		LayerStack m_LayerStack;
 
-		FPSCounter m_FPSCounter{ 30 };
+		FPSCounter m_FPSCounter { 30 };
 		std::chrono::steady_clock::time_point m_LastFrameTime;
 	};
 }

@@ -9,7 +9,7 @@
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Renderer/UniformBuffer.h"
 
-#include <webgpu/webgpu.h>
+#include <webgpu/webgpu.hpp>
 
 namespace Engine
 {
