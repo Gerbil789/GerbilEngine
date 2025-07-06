@@ -20,11 +20,15 @@ namespace Editor
 		ImGui::Text("Vertices: %d", stats2D.GetTotalVertexCount());
 		ImGui::Text("Indices: %d", stats2D.GetTotalIndexCount());
 		ImGui::Separator();
-		auto stats = Renderer::GetStats();
+		/*auto stats = Renderer::GetStats();
 		ImGui::Text("3D");
 		ImGui::Text("Draw Calls: %d", stats.DrawCalls);
 		ImGui::Text("Vertices: %d", stats.VertexCount);
-		ImGui::Text("Indices: %d", stats.IndicesCount);
+		ImGui::Text("Indices: %d", stats.IndicesCount);*/
+		ImGui::Text("3D");
+		ImGui::Text("Draw Calls: %s", "undefined");
+		ImGui::Text("Vertices: %s", "undefined");
+		ImGui::Text("Indices: %s", "undefined");
 		ImGui::End();
 	}
 }

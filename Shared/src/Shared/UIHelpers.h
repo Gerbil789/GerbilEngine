@@ -5,16 +5,46 @@
 #include <utility>
 
 
-// Helper class to set style for window scope, and restore it afterwards
+enum class StyleType
+{
+  Var,
+  Color
+};
+
+struct StyleEntry
+{
+  StyleType type;
+  union
+  {
+    ImGuiStyleVar var;
+    ImGuiCol col;
+  };
+  union
+  {
+    ImVec2 varValue;
+    ImVec4 colValue;
+  };
+
+  // Constructors
+  StyleEntry(ImGuiStyleVar v, ImVec2 val)
+    : type(StyleType::Var), var(v), varValue(val) {
+  }
+
+  StyleEntry(ImGuiCol c, ImVec4 val)
+    : type(StyleType::Color), col(c), colValue(val) {
+  }
+};
+
+
 class ScopedStyle
 {
 public:
-	ScopedStyle(ImGuiStyleVar var, ImVec2 value);
-	ScopedStyle(std::initializer_list<std::pair<ImGuiStyleVar, ImVec2>> vars);
-	~ScopedStyle();
+  ScopedStyle(std::initializer_list<StyleEntry> entries);
+  ~ScopedStyle();
 
 private:
-	int count = 0;
+  int varCount = 0;
+  int colCount = 0;
 };
 
 

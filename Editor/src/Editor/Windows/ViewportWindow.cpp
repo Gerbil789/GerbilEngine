@@ -7,11 +7,11 @@
 #include "Engine/Core/Core.h"
 #include "Editor/Core/EditorApp.h"
 #include "Editor/Services/EditorServiceRegistry.h"
-#include "imgui.h"
-#include "ImGuizmo.h"
+#include <imgui.h>
+#include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
-
-#include <Shared/UIHelpers.h>
+//#include <backends/imgui_impl_wgpu.h>
+#include "Shared/UIHelpers.h"
 
 namespace Editor
 {
@@ -20,17 +20,17 @@ namespace Editor
 	ViewportWindow::ViewportWindow(EditorWindowManager* context) : EditorWindow(context)
 	{
 		SceneManager::RegisterObserver(this);
-
+	
 		m_SceneController = EditorServiceRegistry::Get<SceneController>();
 
 		//create editor frame buffer
-		FrameBufferSpecification editorFrameBufferSpecification;
+	/*	FrameBufferSpecification editorFrameBufferSpecification;
 		editorFrameBufferSpecification.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::DEPTH24STENCIL8 };
 		editorFrameBufferSpecification.Width = 1280;
 		editorFrameBufferSpecification.Height = 720;
-		m_EditorFrameBuffer = CreateRef<FrameBuffer>(editorFrameBufferSpecification);
+		m_EditorFrameBuffer = CreateRef<FrameBuffer>(editorFrameBufferSpecification);*/
 
-		m_EditorCamera = CreateRef<EditorCamera>(30.0f, 1.778f, 0.1f, 1000.0f); //TODO: what are these values? must it be there?
+		//m_EditorCamera = CreateRef<EditorCamera>(30.0f, 1.778f, 0.1f, 1000.0f); //TODO: what are these values? must it be there?
 	}
 
 	ViewportWindow::~ViewportWindow()
@@ -45,14 +45,37 @@ namespace Editor
 
 	void ViewportWindow::OnUpdate(Timestep ts)
 	{
-		// resize viewport 
-		m_Scene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y); //TODO: must be called every frame?
-		FrameBufferSpecification spec = m_EditorFrameBuffer->GetSpecification();
-		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
+		ScopedStyle style({
+			{ ImGuiStyleVar_WindowPadding, ImVec2(0, 0) },
+			{ ImGuiCol_WindowBg, ImVec4(0.9f, 0.2f, 1.0f, 1.0f) } // Show ugly pink color if something goes wrong
+		});
+
+		ImGui::Begin("Viewport");
+
+		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail(); // This must be called after ImGui::Begin() to get the correct size
+		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+
+		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
 		{
-			m_EditorFrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_EditorCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+			m_Renderer.Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
+
+		m_Renderer.BeginScene(*m_EditorCamera);
+		m_Renderer.RenderScene();
+		m_Renderer.EndScene();
+
+		ImGui::Image((ImTextureID)(intptr_t)(WGPUTextureView)m_Renderer.GetTextureView(), ImVec2(m_ViewportSize.x, m_ViewportSize.y));
+
+		ImGui::End();
+
+		// resize viewport 
+		//m_Scene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y); //TODO: must be called every frame?
+		//FrameBufferSpecification spec = m_EditorFrameBuffer->GetSpecification();
+		//if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
+		//{
+		//	m_EditorFrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		//	m_EditorCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+		//}
 
 
 		//bind frame buffer
@@ -63,9 +86,8 @@ namespace Editor
 		//m_EditorFrameBuffer->ClearAttachment(1, -1); //clear ID attachment
 
 		//update scene
-		m_EditorCamera->OnUpdate(ts);
+		//m_EditorCamera->OnUpdate(ts);
 		//m_Scene->OnUpdate(ts, *m_EditorCamera);
-
 
 
 
@@ -91,11 +113,7 @@ namespace Editor
 		//m_EditorFrameBuffer->Unbind();
 
 
-		ScopedStyle style({
-			{ ImGuiStyleVar_WindowPadding, { 0, 0 } }
-			});
 
-		ImGui::Begin("Viewport");
 
 		//auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		//auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -174,7 +192,7 @@ namespace Editor
 		//	}
 		//}
 
-		ImGui::End();
+
 	}
 
 

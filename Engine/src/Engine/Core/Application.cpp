@@ -1,14 +1,6 @@
 #include "enginepch.h"
-#include "Engine/Core/Application.h"
-#include "Engine/Renderer/Renderer.h"
-#include "Engine/Renderer/Renderer2D.h"
+#include "Application.h"
 #include "Engine/Renderer/RenderCommand.h"
-#include "Engine/Core/AssetManager.h"
-#include "Engine/Renderer/Texture.h"
-#include "Engine/Renderer/Material.h"
-#include "Engine/Scene/Scene.h"
-#include "Engine/Renderer/Mesh.h"
-#include "Engine/Renderer/Shader.h"
 
 namespace Engine
 {
@@ -23,14 +15,11 @@ namespace Engine
 		ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		m_Window = CreateScope<Window>(name);
+		m_Window = new Window(name);
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 		s_GraphicsContext = new GraphicsContext();
 		s_GraphicsContext->Init();
-		RenderCommand::Init();
-		Renderer::Init();
-		//Renderer2D::Init();
 	}
 
 
@@ -50,7 +39,7 @@ namespace Engine
 		}
 
 		m_Minimized = false;
-		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
+		RenderCommand::SetViewport(0, 0,e.GetWidth(), e.GetHeight());
 
 		return false;
 	}

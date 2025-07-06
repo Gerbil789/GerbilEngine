@@ -44,6 +44,7 @@ namespace Editor
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("resources/fonts/roboto/Roboto-Regular.ttf", 18.0f);
 
 		ImGui::StyleColorsDark(); //TODO: make better color palette
+		//ImGui::StyleColorsLight();
 
 		ImGui_ImplGlfw_InitForOther(Engine::Application::Get().GetWindow().Get(), true);
 
@@ -73,8 +74,10 @@ namespace Editor
 			window->OnUpdate(ts);
 		}
 
-		//bool show_demo_window = true;
-		//ImGui::ShowDemoWindow(&show_demo_window);
+#ifdef DEBUG
+		bool showDemo = true;
+		ImGui::ShowDemoWindow(&showDemo);
+#endif
 
 		EndFrame();
 	}
@@ -137,17 +140,19 @@ namespace Editor
 		ImGui::End(); // End dockspace window
 
 		Engine::Application& app = Engine::Application::Get();
-		Engine::GraphicsContext* graphicsContext = app.GetGraphicsContext();
-		auto device = graphicsContext->GetDevice();
-
+		Engine::Window& window = app.GetWindow();
 		ImGuiIO& io = ImGui::GetIO();
-		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
+		io.DisplaySize = ImVec2((float)window.GetWidth(), (float)window.GetHeight());
 
 		// Rendering
 		ImGui::Render();
 
-		WGPUSurfaceTexture surfaceTexture;
-		wgpuSurfaceGetCurrentTexture(graphicsContext->GetSurface(), &surfaceTexture);
+		auto device = app.GetGraphicsContext()->GetDevice();
+		auto surface = app.GetGraphicsContext()->GetSurface();
+		auto queue = app.GetGraphicsContext()->GetQueue();
+
+		wgpu::SurfaceTexture surfaceTexture;
+		surface.getCurrentTexture(&surfaceTexture);
 		if (surfaceTexture.status != WGPUSurfaceGetCurrentTextureStatus_SuccessOptimal)
 		{
 			LOG_ERROR("Failed to get current surface texture: {0}", (int)surfaceTexture.status);
@@ -155,9 +160,8 @@ namespace Editor
 		}
 
 		// Create a view for this surface texture
-		WGPUTextureViewDescriptor viewDescriptor;
-		viewDescriptor.nextInChain = nullptr;
-		viewDescriptor.label = { "Surface texture view", strlen("Surface texture view") };
+		wgpu::TextureViewDescriptor viewDescriptor;
+		viewDescriptor.label = { "SurfaceTextureViewDescriptor", strlen("SurfaceTextureViewDescriptor") };
 		viewDescriptor.format = wgpuTextureGetFormat(surfaceTexture.texture);
 		viewDescriptor.dimension = WGPUTextureViewDimension_2D;
 		viewDescriptor.baseMipLevel = 0;
@@ -166,8 +170,7 @@ namespace Editor
 		viewDescriptor.arrayLayerCount = 1;
 		viewDescriptor.aspect = WGPUTextureAspect_All;
 		viewDescriptor.usage = WGPUTextureUsage_RenderAttachment;
-		WGPUTextureView targetView = wgpuTextureCreateView(surfaceTexture.texture, &viewDescriptor);
-
+		wgpu::TextureView targetView = wgpuTextureCreateView(surfaceTexture.texture, &viewDescriptor);
 		wgpuTextureRelease(surfaceTexture.texture);
 
 		if (!targetView)
@@ -176,28 +179,22 @@ namespace Editor
 			return;
 		}
 
-		WGPUCommandEncoderDescriptor encoderDesc = {};
-		encoderDesc.nextInChain = nullptr;
+		wgpu::CommandEncoderDescriptor encoderDesc = {};
 		encoderDesc.label = { "CommandEncoderDescriptor", strlen("CommandEncoderDescriptor") };
 		WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(device, &encoderDesc);
 
 		// The attachment part of the render pass descriptor describes the target texture of the pass
-		WGPURenderPassColorAttachment renderPassColorAttachment = {};
+		wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
 		renderPassColorAttachment.view = targetView;
 		renderPassColorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
-		renderPassColorAttachment.resolveTarget = nullptr;
 		renderPassColorAttachment.loadOp = WGPULoadOp_Clear;
 		renderPassColorAttachment.storeOp = WGPUStoreOp_Store;
 		renderPassColorAttachment.clearValue = WGPUColor{ 0.9, 0.1, 0.2, 1.0 };
 
-		WGPURenderPassDescriptor renderPassDesc = {};
-		renderPassDesc.nextInChain = nullptr;
+		wgpu::RenderPassDescriptor renderPassDesc = {};
 		renderPassDesc.label = { "RenderPassDescriptor", strlen("RenderPassDescriptor") };
 		renderPassDesc.colorAttachmentCount = 1;
 		renderPassDesc.colorAttachments = &renderPassColorAttachment;
-		renderPassDesc.depthStencilAttachment = nullptr;
-		//renderPassDesc.occlusionQuerySet = nullptr;
-		renderPassDesc.timestampWrites = nullptr;
 
 
 		WGPURenderPassEncoder renderPass = wgpuCommandEncoderBeginRenderPass(encoder, &renderPassDesc);
@@ -213,7 +210,7 @@ namespace Editor
 		WGPUCommandBuffer command = wgpuCommandEncoderFinish(encoder, &cmdBufferDescriptor);
 		wgpuCommandEncoderRelease(encoder);
 
-		wgpuQueueSubmit(graphicsContext->GetQueue(), 1, &command);
+		wgpuQueueSubmit(queue, 1, &command);
 		wgpuCommandBufferRelease(command);
 
 		wgpuDeviceTick(device);
@@ -227,7 +224,7 @@ namespace Editor
 
 		wgpuTextureViewRelease(targetView);
 
-		wgpuSurfacePresent(graphicsContext->GetSurface());
+		wgpuSurfacePresent(surface);
 		wgpuDeviceTick(device);
 
 

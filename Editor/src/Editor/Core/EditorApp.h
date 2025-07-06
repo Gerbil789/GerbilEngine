@@ -23,4 +23,3 @@ namespace Editor
 		Scope<Editor::EditorWindowManager> m_EditorWindowManager;
 	};
 }
-

@@ -35,7 +35,7 @@ namespace Engine
 	protected:
 		static Application* s_Instance;
 		static GraphicsContext* s_GraphicsContext;
-		Scope<Window> m_Window;
+		Window* m_Window;
 
 		bool m_Running = true;
 		bool m_Minimized = false;

@@ -1,24 +1,26 @@
 #include "UIHelpers.h"
 
-
-ScopedStyle::ScopedStyle(ImGuiStyleVar var, ImVec2 value)
+ScopedStyle::ScopedStyle(std::initializer_list<StyleEntry> entries)
 {
-	ImGui::PushStyleVar(var, value);
-	count = 1;
-}
-
-ScopedStyle::ScopedStyle(std::initializer_list<std::pair<ImGuiStyleVar, ImVec2>> vars)
-{
-	for (auto& [var, val] : vars)
-	{
-		ImGui::PushStyleVar(var, val);
-		count++;
-	}
+  for (const auto& entry : entries)
+  {
+    if (entry.type == StyleType::Var)
+    {
+      ImGui::PushStyleVar(entry.var, entry.varValue);
+      varCount++;
+    }
+    else if (entry.type == StyleType::Color)
+    {
+      ImGui::PushStyleColor(entry.col, entry.colValue);
+      colCount++;
+    }
+  }
 }
 
 ScopedStyle::~ScopedStyle()
 {
-	ImGui::PopStyleVar(count);
+	ImGui::PopStyleVar(varCount);
+	ImGui::PopStyleColor(colCount);
 }
 
 

@@ -16,8 +16,7 @@ namespace Editor
 		EditorServiceRegistry::Register<SceneController>(m_SceneController.get());
 		m_EditorWindowManager = CreateScope<EditorWindowManager>();
 
-		Engine::RenderCommand::SetClearColor({ 0.05f, 0.05f, 0.05f, 1.0f }); //TODO: move seomewhere else
-		Engine::SceneManager::CreateScene("NewScene");
+		Engine::SceneManager::CreateScene("NewScene"); //TODO: load default scene from project if there is one
 
 		LOG_INFO("--- Initialization complete ---");
 	}
