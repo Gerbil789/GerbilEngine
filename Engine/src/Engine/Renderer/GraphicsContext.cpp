@@ -3,22 +3,21 @@
 #include "GraphicsContext.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Core/Application.h"
-
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
 namespace Engine
 {
-	static void HandleDeviceLost(WGPUDevice const* device, WGPUDeviceLostReason reason, WGPUStringView message, void* userdata1, void* userdata2)
+	static constexpr auto OnDeviceLost = [](WGPUDevice const* device, WGPUDeviceLostReason reason, WGPUStringView message, void* userdata1, void* userdata2) 
 	{
 		LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", (int)reason, message);
-	}
+	};
 
-	static void HandleUncapturedError(WGPUDevice const* device, WGPUErrorType type, WGPUStringView message, void* userdata1, void* userdata2)
+	static constexpr auto OnUncapturedError = [](WGPUDevice const* device, WGPUErrorType type, WGPUStringView message, void* userdata1, void* userdata2) 
 	{
-		LOG_ERROR("Uncaptured error: {}", message);
-	}
+		LOG_ERROR("WebGPU Uncaptured error: {}", message);
+	};
 
 	wgpu::Surface glfwGetWGPUSurface(wgpu::Instance instance, GLFWwindow* window)
 	{
@@ -57,10 +56,10 @@ namespace Engine
 		
 		// Request device
 		wgpu::DeviceLostCallbackInfo deviceLostCallbackInfo = {};
-		deviceLostCallbackInfo.callback = HandleDeviceLost;
+		deviceLostCallbackInfo.callback = OnDeviceLost;
 
 		wgpu::UncapturedErrorCallbackInfo uncapturedErrorCallbackInfo = {};
-		uncapturedErrorCallbackInfo.callback = HandleUncapturedError;
+		uncapturedErrorCallbackInfo.callback = OnUncapturedError;
 
 		wgpu::DeviceDescriptor deviceDesc = {};
 		deviceDesc.label = { "MainDevice", strlen("MainDevice") };
@@ -78,7 +77,7 @@ namespace Engine
 		// Configure surface
 		wgpu::SurfaceConfiguration config = {};
 		config.width = window.GetWidth();
-		config.height = window.GetHeight(); //TODO: Handle window resizing
+		config.height = window.GetHeight(); 
 		config.usage = WGPUTextureUsage_RenderAttachment;
 		config.format = WGPUTextureFormat_RGBA8Unorm;
 		config.viewFormatCount = 0;

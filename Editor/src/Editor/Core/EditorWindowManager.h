@@ -17,11 +17,22 @@ namespace Editor
 	{
 	public:
 		EditorWindowManager();
+		~EditorWindowManager();
 
 		void OnUpdate(Engine::Timestep ts);
 		void OnEvent(Engine::Event& e);
 
+		void BlockEvents(bool block) { m_BlockEvents = block; }
+		static void ResetLayout(); // TODO: is this good?
+
 	private:
+		void BeginFrame();
+		void EndFrame();
+
+	private:
+
+		bool m_BlockEvents = true;
+
 		MenuBar m_MenuBar;
 
 		//Windows

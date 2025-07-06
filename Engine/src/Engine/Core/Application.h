@@ -5,7 +5,6 @@
 #include "Engine/Events/ApplicationEvent.h"
 #include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Events/KeyEvent.h"
-#include "Engine/Core/LayerStack.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Utils/FPSCounter.h"
 #include <chrono>
@@ -19,14 +18,13 @@ namespace Engine
 		virtual ~Application() = default;
 
 		virtual void Run() = 0;
-
-		void OnEvent(Event& e);
-		void PushLayer(Layer* layer) { m_LayerStack.PushLayer(layer); }
+		virtual void OnEvent(Event& e);
 
 		static Application& Get() { return *s_Instance; }
+		static GraphicsContext* GetGraphicsContext() { return s_GraphicsContext; }
+
 		Window& GetWindow() { return *m_Window; }
 		float GetFPS() const { return m_FPSCounter.GetAverageFPS(); }
-		static GraphicsContext* GetGraphicsContext() { return s_GraphicsContext; }
 
 		void Close();
 
@@ -41,7 +39,6 @@ namespace Engine
 
 		bool m_Running = true;
 		bool m_Minimized = false;
-		LayerStack m_LayerStack;
 
 		FPSCounter m_FPSCounter { 30 };
 		std::chrono::steady_clock::time_point m_LastFrameTime;
