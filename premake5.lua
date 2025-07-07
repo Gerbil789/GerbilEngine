@@ -9,8 +9,6 @@ group "Dependencies"
 	include "vendor/glfw"
 	include "vendor/imgui"
 	include "vendor/yaml-cpp"
-	include "vendor/assimp"
-	include "vendor/assimp/contrib/zlib"
  	include "Shared"
 group ""
 

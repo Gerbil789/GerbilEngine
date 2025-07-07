@@ -158,6 +158,11 @@ namespace Engine
 		m_IndexBuffer = m_Device.createBuffer(bufferDesc);
 
 		m_Queue.writeBuffer(m_IndexBuffer, 0, indexData.data(), bufferDesc.size);
+
+
+		auto mesh = AssetManager::GetAsset<Mesh>("resources/models/cube.glb");
+		int x = 10;
+
 	}
 
 	Renderer::~Renderer()

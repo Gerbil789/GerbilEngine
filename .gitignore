@@ -9,7 +9,6 @@ bin-int/
 *.vcxproj.filters
 *.user
 *.log
-Game/*.json
 
 Editor/*.json
 Editor/resources/layouts/imgui.ini

@@ -15,14 +15,11 @@ int main(int argc, char** argv)
   }
   else
   {
-#ifdef DEBUG
+
     std::filesystem::path cwd = std::filesystem::current_path();
     projectPath = cwd / "../Projects/TestProject"; 
     projectPath = std::filesystem::weakly_canonical(projectPath);
-#else
-		LOG_ERROR("No project path provided.");
-    return -1;
-#endif
+
   }
 
   ENGINE_PROFILE_BEGIN("Startup", "Profile-Startup.json");

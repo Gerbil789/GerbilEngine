@@ -2,7 +2,7 @@
 
 #include "EditorWindow.h"
 #include "Engine/Core/Core.h"
-#include <assimp/scene.h>
+
 
 namespace Editor
 {
@@ -24,6 +24,6 @@ namespace Editor
 		void OnUpdate(Engine::Timestep ts) override;
 
 	private:
-		aiScene* m_Scene = nullptr;
+		//aiScene* m_Scene = nullptr;
 	};
 }

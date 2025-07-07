@@ -19,8 +19,9 @@ project "Engine"
 		-- "%{wks.location}/vendor/glm/glm/**.hpp",
 		"%{wks.location}/vendor/glm/glm/**.inl",
 		"%{wks.location}/vendor/yaml-cpp/include/**.h",
-		"%{wks.location}/vendor/assimp/include/**.h",
-		"%{wks.location}/vendor/assimp/include/**.hpp"
+		"%{wks.location}/vendor/tinygltf/**.h",
+		"%{wks.location}/vendor/tinygltf/**.hpp",
+		--"%{wks.location}/vendor/tinygltf/**.h",
 	}
 
 	includedirs
@@ -33,15 +34,14 @@ project "Engine"
 		"%{wks.location}/vendor/stb_image",
 		"%{wks.location}/vendor/entt/include",
 		"%{wks.location}/vendor/yaml-cpp/include",
-		"%{wks.location}/vendor/assimp/include"
+		"%{wks.location}/vendor/tinygltf"
 	}
 
 	links
 	{
 		"glfw",
 		"webgpu_dawn",
-		"yaml-cpp",
-		"assimp",
+		"yaml-cpp"
 	}
 
 	libdirs 

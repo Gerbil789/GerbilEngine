@@ -3,91 +3,98 @@
 #include "Engine/Events/WindowEvent.h"
 #include "Engine/Core/Application.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+// #define TINYGLTF_NOEXCEPTION // optional. disable exception handling.
+
+#include <tiny_gltf.h>
 
 namespace Engine
 {
 	Ref<Asset> MeshFactory::Load(const std::filesystem::path& path, const std::any& data)
 	{
-		Assimp::Importer importer;
+		tinygltf::Model model;
+		tinygltf::TinyGLTF loader;
+		std::string err;
+		std::string warn;
 
-		const aiScene* scene = importer.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+		//bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, path.string());
+		bool ret = loader.LoadBinaryFromFile(&model, &err, &warn, path.string()); // for binary glTF(.glb)
 
-        //WindowOpenEvent windowOpenEvent("ImportMeshWindow", (void*)scene);
-		//Application::Get().OnEvent(windowOpenEvent);
+		if (!warn.empty()) {
+			printf("Warn: %s\n", warn.c_str());
+		}
+
+		if (!err.empty()) {
+			printf("Err: %s\n", err.c_str());
+		}
+
+		if (!ret) {
+			printf("Failed to parse glTF\n");
+			return nullptr;
+		}
+
+		const tinygltf::Mesh& mesh = model.meshes[0];
+		const tinygltf::Primitive& primitive = mesh.primitives[0];
+
+		// === VERTEX POSITIONS ===
+		int posAccessorIndex = primitive.attributes.at("POSITION");
+		const tinygltf::Accessor& posAccessor = model.accessors[posAccessorIndex];
+		const tinygltf::BufferView& posView = model.bufferViews[posAccessor.bufferView];
+		const tinygltf::Buffer& posBuffer = model.buffers[posView.buffer];
+
+		const size_t vertexCount = posAccessor.count;
+		const size_t stride = tinygltf::GetComponentSizeInBytes(posAccessor.componentType) * tinygltf::GetNumComponentsInType(posAccessor.type);
+
+		std::vector<glm::vec3> positions;
+		positions.reserve(vertexCount);
+
+		const unsigned char* posData = posBuffer.data.data() + posView.byteOffset + posAccessor.byteOffset;
+
+		for (size_t i = 0; i < vertexCount; ++i) {
+			float* pos = (float*)(posData + i * stride);
+			positions.emplace_back(pos[0], pos[1], pos[2]);
+		}
 
 
-        if (!scene || !scene->mRootNode)
-        {
-            LOG_ERROR("Failed to load FBX file: " + path.string() + " (" + importer.GetErrorString() + ")");
-            return nullptr;
-        }
+		std::vector<uint32_t> indices;
 
-        // Assume we only want to process the first mesh
-        aiMesh* mesh = scene->mMeshes[0];
-        if (!mesh)
-        {
-            //ENGINE_LOG_ERROR("No meshes found in FBX file: " + path.string());
-            return nullptr;
-        }
+		if (primitive.indices >= 0) {
+			const tinygltf::Accessor& indexAccessor = model.accessors[primitive.indices];
+			const tinygltf::BufferView& indexView = model.bufferViews[indexAccessor.bufferView];
+			const tinygltf::Buffer& indexBuffer = model.buffers[indexView.buffer];
 
-        // Create a new Mesh object
-        Ref<Mesh> newMesh = CreateRef<Mesh>(path);
+			const unsigned char* indexData = indexBuffer.data.data() + indexView.byteOffset + indexAccessor.byteOffset;
+			const size_t indexCount = indexAccessor.count;
 
-        // Process vertices
-        newMesh->m_VertexCount = mesh->mNumVertices;
-        newMesh->m_Vertices.reserve(newMesh->m_VertexCount);
-        for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
-        {
-            aiVector3D pos = mesh->mVertices[i];
-            newMesh->m_Vertices.emplace_back(pos.x, pos.y, pos.z);
-        }
+			indices.reserve(indexCount);
 
-        // Process normals
-        newMesh->m_Normals.reserve(mesh->mNumVertices);
-        if (mesh->HasNormals())
-        {
-            for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
-            {
-                aiVector3D normal = mesh->mNormals[i];
-                newMesh->m_Normals.emplace_back(normal.x, normal.y, normal.z);
-            }
-        }
+			switch (indexAccessor.componentType) {
+			case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: {
+				const uint16_t* src = reinterpret_cast<const uint16_t*>(indexData);
+				for (size_t i = 0; i < indexCount; ++i)
+					indices.push_back(static_cast<uint32_t>(src[i]));
+				break;
+			}
+			case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: {
+				const uint32_t* src = reinterpret_cast<const uint32_t*>(indexData);
+				indices.assign(src, src + indexCount);
+				break;
+			}
+			case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE: {
+				const uint8_t* src = reinterpret_cast<const uint8_t*>(indexData);
+				for (size_t i = 0; i < indexCount; ++i)
+					indices.push_back(static_cast<uint32_t>(src[i]));
+				break;
+			}
+			default:
+				// Unsupported index type
+				break;
+			}
+		}
 
-        // Process UVs
-        newMesh->m_UVs.reserve(mesh->mNumVertices);
-        if (mesh->HasTextureCoords(0))
-        {
-            for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
-            {
-                aiVector3D uv = mesh->mTextureCoords[0][i];
-                newMesh->m_UVs.emplace_back(uv.x, uv.y);
-            }
-        }
 
-        // Process indices
-        newMesh->m_Indices.reserve(mesh->mNumFaces * 3);
-        for (unsigned int i = 0; i < mesh->mNumFaces; ++i)
-        {
-            const aiFace& face = mesh->mFaces[i];
-            if (face.mNumIndices == 3)
-            {
-                newMesh->m_Indices.push_back(face.mIndices[0]);
-                newMesh->m_Indices.push_back(face.mIndices[1]);
-                newMesh->m_Indices.push_back(face.mIndices[2]);
-            }
-            else
-            {
-                LOG_WARNING("Face with more than 3 indices detected, which is not handled.");
-            }
-        }
-
-        // Set polygon count
-        newMesh->m_PolygonCount = mesh->mNumFaces;
-
-        // Return the Mesh as an Asset
-        return newMesh;
+		return CreateRef<Mesh>(path);
 	}
 }
