@@ -4,7 +4,6 @@
 #include "EditorWindow.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
-#include "Engine/Renderer/FrameBuffer.h"
 #include "Engine/Renderer/Renderer.h"
 #include "Editor/Services/SceneController.h"
 #include "Editor/Core/Core.h"
@@ -27,11 +26,10 @@ namespace Editor
 
 	private:
 		Ref<Engine::Scene> m_Scene;
+		Engine::Renderer m_Renderer;
+		SceneController* m_SceneController;
 
-		Ref<Engine::FrameBuffer> m_EditorFrameBuffer;
 		Ref<Engine::EditorCamera> m_EditorCamera; //TODO: move editor camera to Editor project ?
-
-		Engine::Renderer m_Renderer; 
 
 		int m_GizmoType = 7; //translate
 
@@ -42,8 +40,5 @@ namespace Editor
 
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
-
-
-		SceneController* m_SceneController;
 	};
 }

@@ -25,15 +25,15 @@ int main(int argc, char** argv)
 #endif
   }
 
-  ENGINE_PROFILE_BEGIN("Startup", "GerbilProfile-Startup.json");
+  ENGINE_PROFILE_BEGIN("Startup", "Profile-Startup.json");
   auto app = new Editor::EditorApp(projectPath);
   ENGINE_PROFILE_END();
 
-  ENGINE_PROFILE_BEGIN("Runtime", "GerbilProfile-Runtime.json");
+  ENGINE_PROFILE_BEGIN("Runtime", "Profile-Runtime.json");
   app->Run();
   ENGINE_PROFILE_END();
 
-  ENGINE_PROFILE_BEGIN("Shutdown", "GerbilProfile-Shutdown.json");
+  ENGINE_PROFILE_BEGIN("Shutdown", "Profile-Shutdown.json");
   delete app;
   ENGINE_PROFILE_END();
 }

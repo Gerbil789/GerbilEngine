@@ -2,7 +2,6 @@
 #include "Engine/Core/Application.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
-#include "Engine/Renderer/RenderCommand.h"
 #include "Engine/Math/Math.h"
 #include "Engine/Core/Core.h"
 #include "Editor/Core/EditorApp.h"
@@ -53,11 +52,15 @@ namespace Editor
 		ImGui::Begin("Viewport");
 
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail(); // This must be called after ImGui::Begin() to get the correct size
-		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
-		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
+		if(viewportPanelSize.x != m_ViewportSize.x || viewportPanelSize.y != m_ViewportSize.y)
 		{
-			m_Renderer.Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+
+			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
+			{
+				m_Renderer.Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			}
 		}
 
 		m_Renderer.BeginScene(*m_EditorCamera);

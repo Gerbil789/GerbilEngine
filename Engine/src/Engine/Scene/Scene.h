@@ -5,6 +5,7 @@
 #include "Engine/Renderer/EditorCamera.h"
 #include "Engine/Core/UUID.h"
 #include "Engine/Core/Asset.h"
+#include "Engine/Scene/Components.h"
 #include "Engine/Renderer/Material.h"
 
 namespace Engine 
@@ -24,7 +25,7 @@ namespace Engine
 		//enum class SceneState { Editor = 0, Runtime = 1 };
 
 	public:
-		Scene(const std::filesystem::path& path) : Asset(path) {}
+		Scene(const std::filesystem::path& path);
 		~Scene();
 		void RefreshRootEntities(); //TODO: move to SceneController?
 
@@ -45,9 +46,18 @@ namespace Engine
 		Entity CreateEntity(UUID uuid, const std::string& name = "");
 		void DestroyEntity(Entity entity);
 
+		template<typename... Components>
+		std::vector<Entity> GetEntities()
+		{
+			std::vector<Entity> entities;
 
-		std::vector<Entity> GetLightEntities();
-		std::vector<Entity> GetEntities();
+			auto view = m_Registry.view<IDComponent, Components...>();
+			for (auto entity : view)
+			{
+				entities.push_back(Entity{ entity, &m_Registry });
+			}
+			return entities;
+		}
 
 		std::vector<entt::entity>& GetRootEntities() { return m_RootEntities; }
 		const std::vector<entt::entity>& GetRootEntities() const { return m_RootEntities; }

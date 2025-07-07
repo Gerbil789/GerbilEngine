@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Scene/Scene.h"
 #include <glm/glm.hpp>
-#include "Engine/Scene/Components.h"
+
 #include "Engine/Scene/ScriptableEntity.h"
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/Renderer2D.h"
@@ -25,6 +25,13 @@ namespace Engine
 	Ref<Asset> SceneFactory::Create(const std::filesystem::path& path, const std::any& data)
 	{
 		return CreateRef<Scene>(path);
+	}
+
+	Scene::Scene(const std::filesystem::path& path) : Asset(path)
+	{
+		//m_Registry.storage<IDComponent>();
+		//m_Registry.storage<TransformComponent>();
+		//m_Registry.storage<MeshComponent>();
 	}
 
 	Scene::~Scene()
@@ -289,30 +296,6 @@ namespace Engine
 	void Scene::DestroyEntity(Entity entity)
 	{
 		m_Registry.destroy(entity);
-	}
-
-	std::vector<Entity> Scene::GetLightEntities()
-	{
-		std::vector<Entity> lightEntities;
-
-		auto view = m_Registry.view<LightComponent>();
-		for (auto entity : view)
-		{
-			lightEntities.push_back(Entity{ entity, &m_Registry });
-		}
-		return lightEntities;
-	}
-
-	std::vector<Entity> Scene::GetEntities()
-	{
-		std::vector<Entity> entities;
-
-		auto view = m_Registry.view<IDComponent>();
-		for (auto entity : view)
-		{
-			entities.push_back(Entity{ entity, &m_Registry });
-		}
-		return entities;
 	}
 
 	void Scene::AddRootEntity(entt::entity entity)

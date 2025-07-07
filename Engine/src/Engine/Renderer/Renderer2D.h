@@ -34,15 +34,6 @@ namespace Engine
 		static void DrawQuad(const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f), int entityId = -1);
 		static void DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, glm::vec2 tilingFactor = { 1.0f, 1.0f }, const glm::vec4& color = glm::vec4(1.0f), int entityId = -1);
 
-
-		static void DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const glm::vec4& color);
-		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const glm::vec4& color);
-		static void DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, glm::vec2 tilingFactor = { 1.0f, 1.0f }, const glm::vec4& color = glm::vec4(1.0f));
-		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, glm::vec2 tilingFactor = { 1.0f, 1.0f }, const glm::vec4& color = glm::vec4(1.0f));
-		static void DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<SubTexture2D>& subtexture, glm::vec2 tilingFactor = { 1.0f, 1.0f }, const glm::vec4& color = glm::vec4(1.0f));
-		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<SubTexture2D>& subtexture, glm::vec2 tilingFactor = { 1.0f, 1.0f }, const glm::vec4& color = glm::vec4(1.0f));
-
-
 		struct Statistics
 		{
 			uint32_t DrawCalls = 0;

@@ -23,7 +23,7 @@ namespace Editor
 		void OnEvent(Engine::Event& e);
 
 		void BlockEvents(bool block) { m_BlockEvents = block; }
-		static void ResetLayout(); // TODO: is this good?
+		static void ResetLayout(); // TODO: is this good? i dont like static here
 
 	private:
 		void BeginFrame();

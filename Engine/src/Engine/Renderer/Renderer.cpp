@@ -1,71 +1,61 @@
 #include "enginepch.h"
 #include "Renderer.h"
-#include "Engine/Renderer/RenderCommand.h"
-#include "Engine/Renderer/VertexArray.h"
-#include "Engine/Renderer/Shader.h"
+//#include "Engine/Renderer/RenderCommand.h"
+//#include "Engine/Renderer/VertexArray.h"
+//#include "Engine/Renderer/Shader.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Engine/Scene/Components.h"
+//#include "Engine/Scene/Components.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Core/Application.h"
-#include "Engine/Renderer/UniformBuffer.h"
+//#include "Engine/Renderer/UniformBuffer.h"
+#include "Engine/Utils/File.h"
 
 namespace Engine
 {
-
-	const char* shaderSource = R"(
-@vertex
-fn vs_main(@builtin(vertex_index) in_vertex_index: u32) -> @builtin(position) vec4f {
-	var p = vec2f(0.0, 0.0);
-	if (in_vertex_index == 0u) {
-		p = vec2f(-0.5, -0.5);
-	} else if (in_vertex_index == 1u) {
-		p = vec2f(0.5, -0.5);
-	} else {
-		p = vec2f(0.0, 0.5);
-	}
-	return vec4f(p, 0.0, 1.0);
-}
-
-@fragment
-fn fs_main() -> @location(0) vec4f {
-	return vec4f(0.0, 0.4, 1.0, 1.0);
-}
-)";
-
-
 	Renderer::Renderer()
 	{
 		ENGINE_PROFILE_FUNCTION();
-
+		SceneManager::RegisterObserver(this);
 		m_Device = Application::Get().GetGraphicsContext()->GetDevice();
+		m_Queue = Application::Get().GetGraphicsContext()->GetQueue();
 		Resize(m_Width, m_Height);
 
-
 		//initialize pipeline
-		wgpu::ShaderModuleDescriptor shaderDesc;
-
-		wgpu::ShaderModuleWGSLDescriptor shaderCodeDesc;
-		// Set the chained struct's header
-		shaderCodeDesc.chain.next = nullptr;
-		shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
-		// Connect the chain
-		shaderDesc.nextInChain = &shaderCodeDesc.chain;
-		shaderCodeDesc.code = { shaderSource, strlen(shaderSource)};
-		wgpu::ShaderModule shaderModule = m_Device.createShaderModule(shaderDesc);
+		wgpu::ShaderModule shaderModule = LoadShader("resources/shaders/testshader.wgsl");
 
 		// Create the render pipeline
 		wgpu::RenderPipelineDescriptor pipelineDesc;
 
-		// We do not use any vertex buffer for this first simplistic example
-		pipelineDesc.vertex.bufferCount = 0;
-		pipelineDesc.vertex.buffers = nullptr;
+
+		wgpu::VertexBufferLayout vertexBufferLayout;
+		std::vector<wgpu::VertexAttribute> vertexAttribs(2);
+
+		// Describe the position attribute
+		vertexAttribs[0].shaderLocation = 0; // @location(0)
+		vertexAttribs[0].format = wgpu::VertexFormat::Float32x2;
+		vertexAttribs[0].offset = 0;
+
+		// Describe the color attribute
+		vertexAttribs[1].shaderLocation = 1; // @location(1)
+		vertexAttribs[1].format = wgpu::VertexFormat::Float32x3;
+		vertexAttribs[1].offset = 2 * sizeof(float); // non null offset!
+
+		vertexBufferLayout.attributeCount = static_cast<uint32_t>(vertexAttribs.size());
+		vertexBufferLayout.attributes = vertexAttribs.data();
+
+		vertexBufferLayout.arrayStride = 5 * sizeof(float);
+		vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
+
+
+		pipelineDesc.vertex.bufferCount = 1;
+		pipelineDesc.vertex.buffers = &vertexBufferLayout;
 
 		// NB: We define the 'shaderModule' in the second part of this chapter.
 		// Here we tell that the programmable vertex shader stage is described
 		// by the function called 'vs_main' in that module.
 		pipelineDesc.vertex.module = shaderModule;
-		pipelineDesc.vertex.entryPoint = { "vs_main", strlen("vs_main")};
+		pipelineDesc.vertex.entryPoint = { "vs_main", strlen("vs_main") };
 		pipelineDesc.vertex.constantCount = 0;
 		pipelineDesc.vertex.constants = nullptr;
 
@@ -90,7 +80,7 @@ fn fs_main() -> @location(0) vec4f {
 		// by the function called 'fs_main' in the shader module.
 		wgpu::FragmentState fragmentState;
 		fragmentState.module = shaderModule;
-		fragmentState.entryPoint = { "fs_main", strlen("fs_main")};
+		fragmentState.entryPoint = { "fs_main", strlen("fs_main") };
 		fragmentState.constantCount = 0;
 		fragmentState.constants = nullptr;
 
@@ -131,12 +121,49 @@ fn fs_main() -> @location(0) vec4f {
 		// We no longer need to access the shader module
 		shaderModule.release();
 
+
+
+		//initialize buffers
+		std::vector<float> pointData = {
+			// x,   y,     r,   g,   b
+			-0.5, -0.5,   1.0, 0.0, 0.0, // Point #0
+			+0.5, -0.5,   0.0, 1.0, 0.0, // Point #1
+			+0.5, +0.5,   0.0, 0.0, 1.0, // Point #2
+			-0.5, +0.5,   1.0, 1.0, 0.0  // Point #3
+		};
+
+		std::vector<uint16_t> indexData = {
+			0, 1, 2, // Triangle #0 connects points #0, #1 and #2
+			0, 2, 3  // Triangle #1 connects points #0, #2 and #3
+		};
+
+
+		m_IndexCount = static_cast<uint32_t>(indexData.size());
+
+		// Create vertex buffer
+		wgpu::BufferDescriptor bufferDesc;
+		bufferDesc.size = pointData.size() * sizeof(float);
+		bufferDesc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Vertex; // Vertex usage here!
+		bufferDesc.mappedAtCreation = false;
+		m_PointBuffer = m_Device.createBuffer(bufferDesc);
+
+		// Upload geometry data to the buffer
+		m_Queue.writeBuffer(m_PointBuffer, 0, pointData.data(), bufferDesc.size);
+
+		// Create index buffer
+		// (we reuse the bufferDesc initialized for the pointBuffer)
+		bufferDesc.size = indexData.size() * sizeof(uint16_t);
+		bufferDesc.size = (bufferDesc.size + 3) & ~3; // round up to the next multiple of 4
+		bufferDesc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Index;
+		m_IndexBuffer = m_Device.createBuffer(bufferDesc);
+
+		m_Queue.writeBuffer(m_IndexBuffer, 0, indexData.data(), bufferDesc.size);
 	}
 
 	Renderer::~Renderer()
 	{
 		ENGINE_PROFILE_FUNCTION();
-
+		SceneManager::UnregisterObserver(this);
 	}
 
 	void Renderer::Resize(uint32_t width, uint32_t height)
@@ -147,7 +174,7 @@ fn fs_main() -> @location(0) vec4f {
 		m_Height = height;
 
 		wgpu::TextureDescriptor desc{};
-		desc.label = { "RendererTexture", strlen("RendererTexture") };
+		desc.label = { "RendererTexture", WGPU_STRLEN };
 		desc.dimension = WGPUTextureDimension_2D;
 		desc.format = WGPUTextureFormat_RGBA8Unorm;
 		desc.size = { width, height, 1 };
@@ -157,7 +184,7 @@ fn fs_main() -> @location(0) vec4f {
 		m_OutputTexture = m_Device.createTexture(desc);
 
 		wgpu::TextureViewDescriptor viewDesc{};
-		viewDesc.label = { "RendererTextureView", strlen("RendererTextureView") };
+		viewDesc.label = { "RendererTextureView", WGPU_STRLEN };
 		viewDesc.dimension = WGPUTextureViewDimension_2D;
 		viewDesc.format = desc.format;
 		viewDesc.baseMipLevel = 0;
@@ -171,32 +198,51 @@ fn fs_main() -> @location(0) vec4f {
 	{
 		ENGINE_PROFILE_FUNCTION();
 
+		//TODO: setup camera stuff here
+
+		//TODO: set uniform buffers here
 	}
 
 	void Renderer::RenderScene()
 	{
 		ENGINE_PROFILE_FUNCTION();
 
+		std::vector<Engine::Entity> entities = m_Scene->GetEntities<TransformComponent, MeshComponent>();
+		for (auto entity : entities)
+		{
+			auto transform = entity.GetComponent<TransformComponent>();
+			auto mesh = entity.GetComponent<MeshComponent>();
+
+			//TODO: draw mesh
+			//Renderer::DrawMesh(transform.GetTransform(), mesh, (int)entity);
+
+			
+		}
+
+
+
 		wgpu::RenderPassColorAttachment colorAttachment{};
 		colorAttachment.view = m_OutputView;
 		colorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 		colorAttachment.loadOp = WGPULoadOp_Clear;
 		colorAttachment.storeOp = WGPUStoreOp_Store;
-		colorAttachment.clearValue = WGPUColor{ 0.9, 0.8, 0.2, 1.0 };
+		colorAttachment.clearValue = m_ClearColor;
 
 		wgpu::RenderPassDescriptor renderPassDesc{};
-		renderPassDesc.label = { "RenderPassDescriptor" ,strlen("RenderPassDescriptor") };
+		renderPassDesc.label = { "RenderPassDescriptor", WGPU_STRLEN };
 		renderPassDesc.colorAttachmentCount = 1;
 		renderPassDesc.colorAttachments = &colorAttachment;
 
 		wgpu::CommandEncoderDescriptor encoderDesc = {};
-		encoderDesc.label = { "RendererCommandEncoderDescriptor", strlen("RendererCommandEncoderDescriptor") };
+		encoderDesc.label = { "RendererCommandEncoderDescriptor", WGPU_STRLEN };
 		m_CommandEncoder = m_Device.createCommandEncoder(encoderDesc);
 
 		m_RenderPass = m_CommandEncoder.beginRenderPass(renderPassDesc);
 		m_RenderPass.setPipeline(m_Pipeline);
-		m_RenderPass.draw(3, 1, 0, 0);
-		m_RenderPass.end(); // just clear
+		m_RenderPass.setVertexBuffer(0, m_PointBuffer, 0, m_PointBuffer.getSize());
+		m_RenderPass.setIndexBuffer(m_IndexBuffer, wgpu::IndexFormat::Uint16, 0, m_IndexBuffer.getSize());
+		m_RenderPass.drawIndexed(m_IndexCount, 1, 0, 0, 0);
+		m_RenderPass.end();
 		m_RenderPass.release();
 
 		wgpu::CommandBuffer commandBuffer = m_CommandEncoder.finish();
@@ -208,6 +254,27 @@ fn fs_main() -> @location(0) vec4f {
 	{
 		ENGINE_PROFILE_FUNCTION();
 
+	}
+
+	wgpu::ShaderModule Renderer::LoadShader(const std::string& path)
+	{
+		auto content = Engine::ReadFile(path);
+		if (!content)
+		{
+			LOG_ERROR("Failed to load test shader");
+			return nullptr;
+		}
+
+		const char* shaderSource = content.value().c_str();
+
+		wgpu::ShaderModuleDescriptor shaderDesc;
+		wgpu::ShaderModuleWGSLDescriptor shaderCodeDesc;
+		shaderCodeDesc.chain.next = nullptr;
+		shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
+		shaderDesc.nextInChain = &shaderCodeDesc.chain;
+		shaderCodeDesc.code = { shaderSource, strlen(shaderSource) };
+
+		return m_Device.createShaderModule(shaderDesc);
 	}
 
 	//void Renderer::DrawMesh(const glm::mat4& transform, Ref<Mesh> mesh, Ref<Material> material, int entityID)

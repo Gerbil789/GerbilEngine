@@ -9,14 +9,14 @@ namespace Engine
 	{
 	public:
 		virtual ~Asset() = default;
-		const std::filesystem::path& GetFilePath() const { return path; }
-		void SetFilePath(const std::filesystem::path& path) { this->path = path; }
-		void SetModified(bool modified) { this->modified = modified; } //TODO: i dont like this
-		bool IsModified() const { return modified; }
+		const std::filesystem::path& GetFilePath() const { return m_Path; }
+		void SetFilePath(const std::filesystem::path& path) { this->m_Path = path; }
+		void SetModified(bool modified) { this->m_Modified = modified; } //TODO: i dont like this
+		bool IsModified() const { return m_Modified; }
 	protected:
-		Asset(const std::filesystem::path& path) : path(path) {}
-		std::filesystem::path path;
-		bool modified = false;
+		Asset(const std::filesystem::path& path) : m_Path(path) {}
+		std::filesystem::path m_Path;
+		bool m_Modified = false;
 	};
 
 	class IAssetFactory {

@@ -28,7 +28,7 @@ namespace Engine
 
 		wgpu::SurfaceDescriptor surfaceDesc = {};
 		surfaceDesc.nextInChain = &hwndDesc.chain;
-		surfaceDesc.label = { "MainSurface", strlen("MainSurface") };
+		surfaceDesc.label = { "MainSurface", WGPU_STRLEN };
 
 		return instance.createSurface(surfaceDesc);
 	}
@@ -62,9 +62,9 @@ namespace Engine
 		uncapturedErrorCallbackInfo.callback = OnUncapturedError;
 
 		wgpu::DeviceDescriptor deviceDesc = {};
-		deviceDesc.label = { "MainDevice", strlen("MainDevice") };
+		deviceDesc.label = { "MainDevice", WGPU_STRLEN };
 		deviceDesc.requiredFeatureCount = 0;
-		deviceDesc.defaultQueue.label = { "DefaultQueue", strlen("DefaultQueue") };
+		deviceDesc.defaultQueue.label = { "DefaultQueue", WGPU_STRLEN };
 		deviceDesc.deviceLostCallbackInfo = deviceLostCallbackInfo;
 		deviceDesc.uncapturedErrorCallbackInfo = uncapturedErrorCallbackInfo;
 		m_Device = adapter.requestDevice(deviceDesc);
@@ -103,4 +103,24 @@ namespace Engine
 
 		LOG_INFO("WGPU GraphicsContext shutdown");
 	}
+
+	void GraphicsContext::SetViewport(uint32_t width, uint32_t height)
+	{
+		WGPUSurfaceConfiguration config = {};
+		config.nextInChain = nullptr;
+		config.device = Application::Get().GetGraphicsContext()->GetDevice();
+		config.format = WGPUTextureFormat_RGBA8Unorm;
+		config.usage = WGPUTextureUsage_RenderAttachment;
+		config.width = width;
+		config.height = height;
+		config.presentMode = WGPUPresentMode_Fifo;
+		config.alphaMode = WGPUCompositeAlphaMode_Opaque;
+		config.viewFormatCount = 0;
+		config.viewFormats = nullptr;
+
+		wgpuSurfaceConfigure(m_Surface, &config);
+	}
+
+
+
 }

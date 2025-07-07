@@ -1,7 +1,6 @@
 #include "EditorWindowManager.h"
 #include "enginepch.h"
 #include "Editor/Services/EditorServiceRegistry.h"
-#include "Engine/Renderer/RenderCommand.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Utils/Color.h"
 #include "Engine/Utils/File.h"
@@ -161,7 +160,7 @@ namespace Editor
 
 		// Create a view for this surface texture
 		wgpu::TextureViewDescriptor viewDescriptor;
-		viewDescriptor.label = { "SurfaceTextureViewDescriptor", strlen("SurfaceTextureViewDescriptor") };
+		viewDescriptor.label = { "SurfaceTextureViewDescriptor", WGPU_STRLEN };
 		viewDescriptor.format = wgpuTextureGetFormat(surfaceTexture.texture);
 		viewDescriptor.dimension = WGPUTextureViewDimension_2D;
 		viewDescriptor.baseMipLevel = 0;
@@ -180,7 +179,7 @@ namespace Editor
 		}
 
 		wgpu::CommandEncoderDescriptor encoderDesc = {};
-		encoderDesc.label = { "CommandEncoderDescriptor", strlen("CommandEncoderDescriptor") };
+		encoderDesc.label = { "CommandEncoderDescriptor", WGPU_STRLEN };
 		WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(device, &encoderDesc);
 
 		// The attachment part of the render pass descriptor describes the target texture of the pass
@@ -192,7 +191,7 @@ namespace Editor
 		renderPassColorAttachment.clearValue = WGPUColor{ 0.9, 0.1, 0.2, 1.0 };
 
 		wgpu::RenderPassDescriptor renderPassDesc = {};
-		renderPassDesc.label = { "RenderPassDescriptor", strlen("RenderPassDescriptor") };
+		renderPassDesc.label = { "RenderPassDescriptor", WGPU_STRLEN };
 		renderPassDesc.colorAttachmentCount = 1;
 		renderPassDesc.colorAttachments = &renderPassColorAttachment;
 
@@ -206,7 +205,7 @@ namespace Editor
 
 		WGPUCommandBufferDescriptor cmdBufferDescriptor = {};
 		cmdBufferDescriptor.nextInChain = nullptr;
-		cmdBufferDescriptor.label = { "Command buffer", strlen("Command buffer") };
+		cmdBufferDescriptor.label = { "Command buffer", WGPU_STRLEN };
 		WGPUCommandBuffer command = wgpuCommandEncoderFinish(encoder, &cmdBufferDescriptor);
 		wgpuCommandEncoderRelease(encoder);
 

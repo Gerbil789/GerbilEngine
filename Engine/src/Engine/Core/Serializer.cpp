@@ -267,11 +267,11 @@ namespace Engine
 		}
 
 		// Mesh Renderer Component
-		if (entity.HasComponent<MeshRendererComponent>())
+		if (entity.HasComponent<MeshComponent>())
 		{
 			out << YAML::Key << "MeshRendererComponent";
 			out << YAML::BeginMap;
-			auto& mrc = entity.GetComponent<MeshRendererComponent>();
+			auto& mrc = entity.GetComponent<MeshComponent>();
 			out << YAML::Key << "Mesh" << YAML::Value << (mrc.Mesh ? mrc.Mesh->GetFilePath().string() : "null");
 			out << YAML::Key << "Material" << YAML::Value << (mrc.Material ? mrc.Material->GetFilePath().string() : "null");
 			out << YAML::EndMap;
@@ -288,7 +288,7 @@ namespace Engine
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene" << YAML::Value << scene->GetFilePath().filename().string();
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
-		std::vector<Entity> entites = scene->GetEntities();
+		std::vector<Entity> entites = scene->GetEntities<>();
 		for(const Entity& entity : entites)
 		{
 			SerializeEntity(out, entity);
@@ -403,7 +403,7 @@ namespace Engine
 			auto meshRendererComponent = entity["MeshRendererComponent"];
 			if (meshRendererComponent)
 			{
-				auto& mrc = deserializedEntity.AddComponent<MeshRendererComponent>();
+				auto& mrc = deserializedEntity.AddComponent<MeshComponent>();
 				std::string meshPath = meshRendererComponent["Mesh"].as<std::string>();
 				if (meshPath != "null") mrc.Mesh = AssetManager::GetAsset<Mesh>(meshPath);
 

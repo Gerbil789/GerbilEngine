@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "Application.h"
-#include "Engine/Renderer/RenderCommand.h"
 
 namespace Engine
 {
@@ -39,7 +38,7 @@ namespace Engine
 		}
 
 		m_Minimized = false;
-		RenderCommand::SetViewport(0, 0,e.GetWidth(), e.GetHeight());
+		s_GraphicsContext->SetViewport(e.GetWidth(), e.GetHeight());
 
 		return false;
 	}

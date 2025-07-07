@@ -6,6 +6,6 @@ namespace Engine
 {
 	Ref<Asset> ShaderFactory::Load(const std::filesystem::path& path, const std::any& data)
 	{
-		return std::make_shared<Shader>(path);
+		return CreateRef<Shader>(path);
 	}
 }

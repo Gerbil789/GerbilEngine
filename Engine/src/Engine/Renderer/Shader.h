@@ -2,7 +2,6 @@
 
 #include "Engine/Core/Asset.h"
 #include "Engine/Renderer/Buffer.h"
-#include "Engine/Renderer/DynamicVertex.h"
 
 namespace Engine 
 {
@@ -24,12 +23,12 @@ namespace Engine
 		const BufferLayout& GetInputBufferLayout() const { return m_InputLayout; }
 		BufferLayout GetMaterialBufferLayout() const { return m_MaterialLayout; }
 
-		const DynamicVertex& GetVertex() const { return m_Vertex; }
+		//const DynamicVertex& GetVertex() const { return m_Vertex; }
 
 	protected:
 		BufferLayout m_InputLayout = BufferLayout();		//shader inputs
 		BufferLayout m_MaterialLayout = BufferLayout(); //shader material uniforms
-		DynamicVertex m_Vertex;													//vertex data
+		//DynamicVertex m_Vertex;													//vertex data
 	};
 
 	class ShaderFactory : public IAssetFactory

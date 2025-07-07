@@ -329,7 +329,7 @@ namespace Editor
 				ImGui::Columns(1);
 			});
 
-		DrawComponent<MeshRendererComponent>("MeshRenderer", entity, [](auto& component)
+		DrawComponent<MeshComponent>("MeshRenderer", entity, [](auto& component)
 			{
 				float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 100, 100.0f);
 				ImGui::Columns(2, "light_body", false);
@@ -443,7 +443,7 @@ namespace Editor
 
 			if (ImGui::MenuItem("MeshRenderer"))
 			{
-				auto component = entity.AddComponent<MeshRendererComponent>();
+				auto component = entity.AddComponent<MeshComponent>();
 				//component.Material = AssetManager::GetAsset<Material>("resources/materials/default.material");
 				ImGui::CloseCurrentPopup();
 			}

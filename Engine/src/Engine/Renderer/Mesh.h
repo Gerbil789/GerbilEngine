@@ -3,6 +3,7 @@
 #include "Engine/Core/Asset.h"
 
 #include <glm/glm.hpp>
+#include <webgpu/webgpu.hpp>
 
 namespace Engine
 {
@@ -22,6 +23,10 @@ namespace Engine
 	private:
 		int m_VertexCount = 0;
 		int m_PolygonCount = 0;
+
+		wgpu::Buffer m_VertexBuffer;
+		wgpu::Buffer m_IndexBuffer;
+
 
 		std::vector<glm::vec3> m_Vertices;
 		std::vector<uint32_t> m_Indices;

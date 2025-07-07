@@ -44,20 +44,6 @@ namespace Engine
 		operator const std::string& () const { return Name; }
 	};
 
-	//struct ParentComponent 
-	//{
-	//	entt::entity parent = entt::null;
-
-	//	ParentComponent() = default;
-	//};
-
-	//struct ChildrenComponent 
-	//{
-	//	std::vector<entt::entity> children;
-
-	//	ChildrenComponent() = default;
-	//};
-
 	struct HierarchyComponent {
 		entt::entity Parent = entt::null;
 		entt::entity FirstChild = entt::null;
@@ -82,6 +68,13 @@ namespace Engine
 		}
 	};
 
+	struct MeshComponent
+	{
+		Ref<Material> Material = nullptr;
+		Ref<Mesh> Mesh = nullptr;
+
+		MeshComponent() = default;
+	};
 
 	struct SpriteRendererComponent
 	{
@@ -129,13 +122,7 @@ namespace Engine
 		LightComponent() = default;
 	};
 
-	struct MeshRendererComponent
-	{
-		Ref<Material> Material = nullptr;
-		Ref<Mesh> Mesh = nullptr;
 
-		MeshRendererComponent() = default;
-	};
 
 	//class ScriptableEntity; //forward declaration
 

@@ -1,5 +1,4 @@
 #pragma once
-
 #include <webgpu/webgpu.hpp>
 
 namespace Engine
@@ -9,6 +8,7 @@ namespace Engine
 	public:
 		void Init();
 		void Shutdown();
+		void SetViewport(uint32_t width, uint32_t height);
 
 		wgpu::Device GetDevice() const { return m_Device; }
 		wgpu::Queue GetQueue() const { return m_Queue; }

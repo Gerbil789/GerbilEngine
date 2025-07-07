@@ -1,7 +1,6 @@
 #include "enginepch.h"
 #include "EditorApp.h"
 #include "Editor/Services/EditorServiceRegistry.h"
-#include "Engine/Renderer/RenderCommand.h"
 
 namespace Editor
 {
