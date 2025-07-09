@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Engine/Core/Asset.h"
-#include "Engine/Renderer/Buffer.h"
 #include <webgpu/webgpu.hpp>
 
 namespace Engine 
