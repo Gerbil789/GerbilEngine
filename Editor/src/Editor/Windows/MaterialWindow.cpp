@@ -78,7 +78,7 @@ namespace Editor
 
 		ImGui::NextColumn();*/
 
-		ImGui::Separator();
+		/*ImGui::Separator();
 
 		Ref<Shader> shader = m_Material->GetShader();
 		auto properties = shader->GetMaterialBufferLayout();
@@ -146,7 +146,7 @@ namespace Editor
 			ImGui::NextColumn();
 		}
 		
-		ImGui::Columns(1);
+		ImGui::Columns(1);*/
 		ImGui::End();
 	}
 	bool MaterialWindow::IsColorProperty(const std::string& name)

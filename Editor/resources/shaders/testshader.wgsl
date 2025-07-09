@@ -1,6 +1,7 @@
 struct VertexInput {
 	@location(0) position: vec2f,
-	@location(1) color: vec3f,
+	@location(1) normal: vec3f,
+	@location(2) uv: vec3f,
 };
 
 struct VertexOutput {
@@ -14,7 +15,7 @@ fn vs_main(in: VertexInput) -> VertexOutput {
 	var out: VertexOutput; 
 	let ratio = 640.0 / 480.0; 
 	out.position = vec4f(in.position.x, in.position.y * ratio, 0.0, 1.0);
-	out.color = in.color;
+	out.color = vec3f(in.uv.x, in.uv.y, 0);
 	return out;
 }
 

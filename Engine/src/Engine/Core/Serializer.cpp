@@ -144,53 +144,51 @@ namespace Engine
 		auto shader = AssetManager::GetAsset<Shader>(data[SHADER_KEY].as<std::string>());
 		material->SetShader(shader);
 
-		auto materialProperties = shader->GetMaterialBufferLayout();
+		//auto materialProperties = shader->GetMaterialBufferLayout();
 
 		//auto shaderProperties = shader->GetUniformBuffers(); //TODO: check if properties of material and shader match
 		//auto materialProperties = data[PROPERTIES_KEY];
 
-		for (auto& property : materialProperties)
-		{
-			std::string name = property.Name;
-			auto type = property.Type;
+		//for (auto& property : materialProperties)
+		//{
+		//	std::string name = property.Name;
+		//	auto type = property.Type;
 
-			if (!data[PROPERTIES_KEY][name].IsDefined())
-			{
-				continue;
-			}
+		//	if (!data[PROPERTIES_KEY][name].IsDefined())
+		//	{
+		//		continue;
+		//	}
 
-			if (type == ShaderDataType::Float4)
-			{
-				material->SetProperty(name, ReadVec4(data[PROPERTIES_KEY], name));
-			}
-			else if (type == ShaderDataType::Float3)
-			{
-				material->SetProperty(name, ReadVec3(data[PROPERTIES_KEY], name));
-			}
-			else if (type == ShaderDataType::Float2)
-			{
-				material->SetProperty(name, ReadVec2(data[PROPERTIES_KEY], name));
-			}
-			else if (type == ShaderDataType::Float)
-			{
-				material->SetProperty(name, ReadFloat(data[PROPERTIES_KEY], name));
-			}
-			else if (type == ShaderDataType::Int)
-			{
-				material->SetProperty(name, ReadInt(data[PROPERTIES_KEY], name));
-			}
-			//else if (type == ShaderDataType::Texture2D)
-			//{
-			//	//writeAssetPath(name, material->GetProperty<Ref<Texture2D>>(name));
-			//}
-			else
-			{
-				LOG_ERROR("Unknown material property type!");
-			}
-			
-		}
-
-
+		//	if (type == ShaderDataType::Float4)
+		//	{
+		//		material->SetProperty(name, ReadVec4(data[PROPERTIES_KEY], name));
+		//	}
+		//	else if (type == ShaderDataType::Float3)
+		//	{
+		//		material->SetProperty(name, ReadVec3(data[PROPERTIES_KEY], name));
+		//	}
+		//	else if (type == ShaderDataType::Float2)
+		//	{
+		//		material->SetProperty(name, ReadVec2(data[PROPERTIES_KEY], name));
+		//	}
+		//	else if (type == ShaderDataType::Float)
+		//	{
+		//		material->SetProperty(name, ReadFloat(data[PROPERTIES_KEY], name));
+		//	}
+		//	else if (type == ShaderDataType::Int)
+		//	{
+		//		material->SetProperty(name, ReadInt(data[PROPERTIES_KEY], name));
+		//	}
+		//	//else if (type == ShaderDataType::Texture2D)
+		//	//{
+		//	//	//writeAssetPath(name, material->GetProperty<Ref<Texture2D>>(name));
+		//	//}
+		//	else
+		//	{
+		//		LOG_ERROR("Unknown material property type!");
+		//	}
+		//	
+		//}
 
 		material->SetModified(false);
 		return true;

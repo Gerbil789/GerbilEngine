@@ -10,7 +10,7 @@ namespace Engine
 	public:
 		static bool IsKeyPressed(KeyCode key);
 		static bool IsMouseButtonPressed(MouseCode button);
-		static std::pair<float, float> GetMousePosition();
+		static std::pair<float, float> GetMousePosition(); //TODO: Change to glm::vec2?
 		static float GetMouseX();
 		static float GetMouseY();
 	};

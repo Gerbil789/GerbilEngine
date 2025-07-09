@@ -20,7 +20,7 @@ namespace Editor
 		m_MaterialWindow = RegisterWindow<MaterialWindow>();
 		// m_SettingsWindow = RegisterWindow<SettingsWindow>();
 		m_StatisticsWindow = RegisterWindow<StatisticsWindow>();
-		m_MeshImportWindow = RegisterWindow<MeshImportWindow>();
+		//m_MeshImportWindow = RegisterWindow<MeshImportWindow>();
 		m_ViewportWindow = RegisterWindow<ViewportWindow>();
 		m_GameWindow = RegisterWindow<GameWindow>();
 

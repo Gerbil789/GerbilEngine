@@ -1,5 +1,4 @@
 #include "enginepch.h"
-#include "Engine/Core/Application.h"
 #include "Engine/Core/Log.h"
 #include "Editor/Core/EditorApp.h"
 
@@ -15,11 +14,9 @@ int main(int argc, char** argv)
   }
   else
   {
-
     std::filesystem::path cwd = std::filesystem::current_path();
     projectPath = cwd / "../Projects/TestProject"; 
     projectPath = std::filesystem::weakly_canonical(projectPath);
-
   }
 
   ENGINE_PROFILE_BEGIN("Startup", "Profile-Startup.json");

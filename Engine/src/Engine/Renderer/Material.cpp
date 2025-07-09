@@ -15,7 +15,7 @@ namespace Engine
 	Ref<Asset> MaterialFactory::Create(const std::filesystem::path& path, const std::any& data)
 	{
 		Ref<Material> material = CreateRef<Material>(path);
-		material->SetShader(AssetManager::GetAsset<Shader>("resources/shaders/flatColor.shader"));
+		material->SetShader(AssetManager::GetAsset<Shader>("resources/shaders/testshader.wgsl")); //TODO: use diffrent default shader
 		Serializer::Serialize(material);
 		return material;
 	}
@@ -23,12 +23,11 @@ namespace Engine
 	void Material::SetShader(const Ref<Shader>& shader)
 	{
 		m_Shader = shader;
-		//m_UniformBuffer = UniformBuffer::Create(shader->GetMaterialBufferLayout().size(), 1);
-		m_UniformBuffer = CreateRef<UniformBuffer>(shader->GetMaterialBufferLayout().size(), 1);
-		this->SetProperties();
+		//m_UniformBuffer = CreateRef<UniformBuffer>(shader->GetMaterialBufferLayout().size(), 1);
+		//this->SetProperties();
 	}
 
-	void Material::SetProperties()
+	/*void Material::SetProperties()
 	{
 		this->ClearProperties();
 
@@ -59,5 +58,5 @@ namespace Engine
 			}
 
 		}
-	}
+	}*/
 }

@@ -12,7 +12,7 @@ namespace Editor
 		LOG_TRACE("Starting Gerbil Editor for project: {0}", m_Project.GetTitle());
 
 		m_SceneController = CreateScope<SceneController>();
-		EditorServiceRegistry::Register<SceneController>(m_SceneController.get());
+		EditorServiceRegistry::Register<SceneController>(m_SceneController.get()); //TODO: not sure about this registry approach
 		m_EditorWindowManager = CreateScope<EditorWindowManager>();
 
 		Engine::SceneManager::CreateScene("NewScene"); //TODO: load default scene from project if there is one
@@ -27,13 +27,14 @@ namespace Editor
 		{
 			ENGINE_PROFILE_SCOPE("RunLoop");
 
-			//TODO: pack fps counter into something
+			//TODO: pack this fps counter into something, dont bloat main loop with it
+			// -----------------------------------
 			auto now = std::chrono::steady_clock::now();
 			float deltaTime = std::chrono::duration<float>(now - m_LastFrameTime).count();
 			m_LastFrameTime = now;
 			m_FPSCounter.Update(deltaTime);
-
 			Engine::Timestep ts(deltaTime); 
+			// -----------------------------------
 
 			if (m_Minimized) continue;
 

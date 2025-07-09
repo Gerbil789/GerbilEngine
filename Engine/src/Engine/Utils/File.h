@@ -5,6 +5,6 @@
 
 namespace Engine 
 {
-	std::optional<std::string> ReadFile(const std::filesystem::path& path);
+	std::optional<std::string> ReadFile(const std::filesystem::path& path); //TODO: investigate if there is a better way to read files
 
 }

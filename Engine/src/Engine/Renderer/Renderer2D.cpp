@@ -27,7 +27,7 @@ namespace Engine
 		static const uint32_t MaxIndices = MaxQuads * 6;
 		static const uint32_t MaxTextureSlots = 32;
 
-		Ref<VertexBuffer> QuadVertexBuffer;
+		//Ref<VertexBuffer> QuadVertexBuffer;
 		Ref<Shader> TextureShader;
 		Ref<Texture2D> WhiteTexture;
 

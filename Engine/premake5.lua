@@ -14,8 +14,8 @@ project "Engine"
 	{
 		"src/**.h",
 		"src/**.cpp",
-		"%{wks.location}/vendor/stb_image/**.h",
-		"%{wks.location}/vendor/stb_image/**.cpp",
+		-- "%{wks.location}/vendor/stb_image/**.h",
+		-- "%{wks.location}/vendor/stb_image/**.cpp",
 		-- "%{wks.location}/vendor/glm/glm/**.hpp",
 		"%{wks.location}/vendor/glm/glm/**.inl",
 		"%{wks.location}/vendor/yaml-cpp/include/**.h",
@@ -31,7 +31,7 @@ project "Engine"
 		"%{wks.location}/vendor/glfw/include",
 		"%{wks.location}/vendor/dawn/include",
 		"%{wks.location}/vendor/glm",
-		"%{wks.location}/vendor/stb_image",
+		-- "%{wks.location}/vendor/stb_image",
 		"%{wks.location}/vendor/entt/include",
 		"%{wks.location}/vendor/yaml-cpp/include",
 		"%{wks.location}/vendor/tinygltf"

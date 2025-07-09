@@ -2,7 +2,6 @@
 #include <filesystem>
 #include <any>
 
-
 namespace Engine
 {
 	class Asset
