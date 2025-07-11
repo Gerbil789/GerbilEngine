@@ -1,7 +1,3 @@
-#ifndef ENGINE_PLATFORM_WINDOWS
-#error Launcher only supports Windows!
-#endif
-
 #include <iostream>
 #include <imgui.h>
 

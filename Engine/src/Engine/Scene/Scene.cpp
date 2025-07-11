@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "Scene.h"
-#include "Engine/Scene/ScriptableEntity.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Core/Serializer.h"
 
@@ -23,12 +22,7 @@ namespace Engine
 		return CreateRef<Scene>(path);
 	}
 
-	Scene::Scene(const std::filesystem::path& path) : Asset(path)
-	{
-		//m_Registry.storage<IDComponent>();
-		//m_Registry.storage<TransformComponent>();
-		//m_Registry.storage<MeshComponent>();
-	}
+	Scene::Scene(const std::filesystem::path& path) : Asset(path) {}
 
 	Scene::~Scene()
 	{
@@ -104,56 +98,10 @@ namespace Engine
 		CopyComponent<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<SpriteComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		//CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return newScene;
 	}
 
-
-	//void Scene::OnUpdate(Timestep ts)
-	//{
-	//	//get scene camera  and its transform from scene
-
-	//	auto view = m_Registry.view<TransformComponent, CameraComponent>();
-	//	glm::mat4 transform = glm::mat4(1.0f);
-	//	Camera* camera = nullptr;
-
-	//	for (auto entity : view)
-	//	{
-	//		auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(entity);
-	//		if (cameraComponent.Main)
-	//		{
-	//			camera = &cameraComponent.Camera;
-	//			transform = transformComponent.GetTransform();
-	//			break;
-	//		}
-	//	}
-
-	//	if (!camera) { return; }
-
-	//	switch (m_SceneState)
-	//	{
-	//	case SceneState::Editor:
-	//		OnUpdateEditor(ts, *camera, transform);
-	//		break;
-	//	case SceneState::Runtime:
-	//		//OnUpdateRuntime(ts);
-	//		break;
-	//	}
-	//}
-
-	//void Scene::OnUpdate(Timestep ts, EditorCamera& camera)
-	//{
-	//	switch (m_SceneState)
-	//	{
-	//	case SceneState::Editor:
-	//		OnUpdateEditor(ts, camera);
-	//		break;
-	//	case SceneState::Runtime:
-	//		OnUpdateRuntime(ts);
-	//		break;
-	//	}
-	//}
 
 
 	//void Scene::OnPlay()
@@ -178,46 +126,12 @@ namespace Engine
 
 
 
-	//void Scene::OnUpdateRuntime(Timestep ts)
-	//{
-	//	//scripts
-	//	//{
-	//	//	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-	//	//	{
-	//	//		//TODO: move this to scene::onplay
-	//	//		if (!nsc.Instance)
-	//	//		{
-	//	//			nsc.Instance = nsc.InstantiateScript();
-	//	//			nsc.Instance->m_Entity = Entity{ entity, this };
-	//	//			nsc.Instance->OnCreate();
-	//	//			
-	//	//		}
-	//	//		nsc.Instance->OnUpdate(ts);
-	//	//	});
-	//	//}
-
-
-	//void Scene::OnUpdateEditor(Timestep ts, EditorCamera& camera)
-	//{
-	//	Renderer::BeginFrame(camera);
-
-	//	Renderer::RenderScene(this,camera);
-
-	//	Renderer::EndFrame();
-	//}
-
-	//void Scene::OnUpdateEditor(Timestep ts, Camera& camera, const glm::mat4& transform)
-	//{
-
-	//}
-
-
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 
-		auto view = m_Registry.view<CameraComponent>();
+	/*	auto view = m_Registry.view<CameraComponent>();
 
 		for (auto entity : view)
 		{
@@ -227,7 +141,7 @@ namespace Engine
 				Engine::Camera& camera = cameraComponent.Camera;
 				camera.SetViewportSize(width, height);
 			}
-		}
+		}*/
 
 	}
 

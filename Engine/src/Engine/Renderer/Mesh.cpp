@@ -43,7 +43,7 @@ namespace Engine
 
 		auto readVec3Array = [&](const std::string& attr) -> std::vector<glm::vec3> {
 			std::vector<glm::vec3> result;
-
+	
 			if (attributes.count(attr)) {
 				int accessorIndex = attributes.at(attr);
 				const auto& accessor = model.accessors[accessorIndex];
@@ -138,6 +138,19 @@ namespace Engine
 				break;
 			}
 		}
+
+		for(int i = 0; i < vertices.size(); i++)
+		{
+			auto vertex = vertices[i];
+			LOG_TRACE("Vertex {0}: [{1},{2},{3}]", i, vertex.position.x, vertex.position.y, vertex.position.z);
+		}
+
+		for (int i = 0; i < indices.size(); i++)
+		{
+			auto index = indices[i];
+			LOG_TRACE("Index {0}: [{1}]", i, index);
+		}
+
 
 		// === Upload to GPU ===
 

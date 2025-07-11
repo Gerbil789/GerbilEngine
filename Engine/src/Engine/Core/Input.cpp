@@ -1,41 +1,53 @@
 #include "enginepch.h"
 #include "Input.h"
-#include <GLFW/glfw3.h>
 #include "Engine/Core/Application.h"
+#include <GLFW/glfw3.h>
 
-namespace Engine 
+namespace Engine::Input
 {
-	bool Input::IsKeyPressed(KeyCode key)
+	static GLFWwindow* s_Window = nullptr;
+
+	void Init()
 	{
-		auto window = Application::Get().GetWindow().Get();
-		auto state = glfwGetKey(window, static_cast<int32_t>(key));
+		s_Window = Application::Get().GetWindow().Get();
+	}
+
+	bool IsKeyPressed(KeyCode key)
+	{
+		auto state = glfwGetKey(s_Window, static_cast<int32_t>(key));
 		return state == GLFW_PRESS || state == GLFW_REPEAT;
 	}
 
-	bool Input::IsMouseButtonPressed(MouseCode button)
+	bool IsKeyPressed(std::initializer_list<KeyCode> keys)
 	{
-		auto window = Application::Get().GetWindow().Get();
-		auto state = glfwGetMouseButton(window, button);
+		for (KeyCode key : keys)
+		{
+			if (IsKeyPressed(key))
+				return true;
+		}
+		return false;
+	}
+
+	bool IsMouseButtonPressed(MouseCode button)
+	{
+		auto state = glfwGetMouseButton(s_Window, button);
 		return state == GLFW_PRESS;
 	}
 
-	std::pair<float, float> Input::GetMousePosition()
+	glm::vec2 GetMousePosition()
 	{
-		auto window = Application::Get().GetWindow().Get();
 		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
+		glfwGetCursorPos(s_Window, &xpos, &ypos);
 		return { (float)xpos, (float)ypos };
 	}
 
-	float Input::GetMouseX()
+	float GetMouseX()
 	{
-		auto [x, y] = GetMousePosition();
-		return x;
+		return GetMousePosition().x;
 	}
 
-	float Input::GetMouseY()
+	float GetMouseY()
 	{
-		auto [x, y] = GetMousePosition();
-		return y;
+		return GetMousePosition().y;
 	}
 }

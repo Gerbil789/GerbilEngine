@@ -3,10 +3,6 @@
 #include <memory>
 #include "Engine/Core/Log.h"
 
-#ifndef ENGINE_PLATFORM_WINDOWS
-#error Engine only supports Windows!
-#endif
-
 #ifdef DEBUG
 	#define ENGINE_ENABLE_ASSERTS
 #endif

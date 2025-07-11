@@ -5,13 +5,41 @@ namespace Editor
 {
 	using namespace Engine;
 
+	void EditorCameraController::SetViewportSize(glm::vec2 size)
+	{
+		m_ViewportSize = size;
+		m_Camera.SetViewportSize(size);
+	}
+
 	void EditorCameraController::OnUpdate(Timestep ts)
+	{
+		m_Mode = Input::IsKeyPressed(Key::LeftShift) ? ControlMode::FreeFly : ControlMode::Orbit;
+
+		UpdateFreeFly(ts);
+
+		//if(m_Mode == ControlMode::FreeFly)
+		//{
+		//	UpdateFreeFly(ts);
+		//}
+		//else
+		//{
+		//	UpdateOrbit(ts);
+		//}
+	}
+
+	void EditorCameraController::OnEvent(Event& e)
+	{
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<MouseScrolledEvent>(ENGINE_BIND_EVENT_FN(OnMouseScroll));
+	}
+
+	void EditorCameraController::UpdateOrbit(Engine::Timestep ts)
 	{
 		if (Input::IsKeyPressed(Key::LeftAlt))
 		{
 			const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
-			glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
-			m_InitialMousePosition = mouse;
+			glm::vec2 delta = (mouse - m_LastMousePosition) * 0.003f;
+			m_LastMousePosition = mouse;
 
 			if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
 				MousePan(delta);
@@ -20,14 +48,34 @@ namespace Editor
 			else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 				MouseZoom(delta.y);
 		}
-
-		//m_Camera->RecalculateView();
 	}
 
-	void EditorCameraController::OnEvent(Event& e)
+	void EditorCameraController::UpdateFreeFly(Engine::Timestep ts)
 	{
-		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<MouseScrolledEvent>(ENGINE_BIND_EVENT_FN(OnMouseScroll));
+		glm::vec2 mousePos = Input::GetMousePosition();
+		glm::vec2 delta = (mousePos - m_LastMousePosition) * m_RotationSpeed;
+		m_LastMousePosition = mousePos;
+
+		if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+		{
+			float pitch = m_Camera.GetPitch() + delta.y;
+			float yaw = m_Camera.GetYaw() + delta.x;
+			m_Camera.SetRotation(pitch, yaw);
+		}
+
+		glm::vec3 position = m_Camera.GetPosition();
+		glm::vec3 forward = m_Camera.GetForwardDirection();
+		glm::vec3 right = m_Camera.GetRightDirection();
+		glm::vec3 up = m_Camera.GetUpDirection();
+
+		if (Input::IsKeyPressed({ Key::W, Key::Up })) position += forward * m_MoveSpeed * (float)ts;
+		if (Input::IsKeyPressed({ Key::S, Key::Down })) position -= forward * m_MoveSpeed * (float)ts;
+		if (Input::IsKeyPressed({ Key::A, Key::Left })) position -= right * m_MoveSpeed * (float)ts;
+		if (Input::IsKeyPressed({ Key::D, Key::Right })) position += right * m_MoveSpeed * (float)ts;
+		if (Input::IsKeyPressed(Key::Q)) position -= up * m_MoveSpeed * (float)ts;
+		if (Input::IsKeyPressed(Key::E)) position += up * m_MoveSpeed * (float)ts;
+
+		m_Camera.SetPosition(position);
 	}
 
 	bool EditorCameraController::OnMouseScroll(MouseScrolledEvent& e)
@@ -42,12 +90,12 @@ namespace Editor
 
 	void EditorCameraController::MouseZoom(float delta)
 	{
-		m_Distance -= delta * ZoomSpeed();
+		/*m_Distance -= delta * ZoomSpeed();
 		if (m_Distance < 1.0f)
 		{
 			m_FocalPoint += m_Camera->GetForwardDirection();
 			m_Distance = 1.0f;
-		}
+		}*/
 	}
 
 	float EditorCameraController::ZoomSpeed() const
@@ -72,21 +120,17 @@ namespace Editor
 		return { xFactor, yFactor };
 	}
 
-	float EditorCameraController::RotationSpeed() const
-	{
-		return 0.8f;
-	}
 
 	void EditorCameraController::MousePan(const glm::vec2& delta)
 	{
-		auto [xSpeed, ySpeed] = PanSpeed();
-		m_FocalPoint += -m_Camera->GetRightDirection() * delta.x * xSpeed * m_Distance;
-		m_FocalPoint += m_Camera->GetUpDirection() * delta.y * ySpeed * m_Distance;
+		//auto [xSpeed, ySpeed] = PanSpeed();
+		//m_FocalPoint += -m_Camera->GetRightDirection() * delta.x * xSpeed * m_Distance;
+		//m_FocalPoint += m_Camera->GetUpDirection() * delta.y * ySpeed * m_Distance;
 	}
 
 	void EditorCameraController::MouseRotate(const glm::vec2& delta)
 	{
-		float yawSign = m_Camera->GetUpDirection().y < 0 ? -1.0f : 1.0f;
+		//float yawSign = m_Camera->GetUpDirection().y < 0 ? -1.0f : 1.0f;
 		//m_Camera->GetYaw() += yawSign * delta.x * RotationSpeed();
 		//m_Camera->GetPitch() += delta.y * RotationSpeed();
 	}

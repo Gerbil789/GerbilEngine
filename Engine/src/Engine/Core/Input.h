@@ -1,17 +1,15 @@
 #pragma once
 
-#include "Engine/Core/Core.h"
 #include "Engine/Core/KeyCodes.h"
+#include <glm/glm.hpp>
 
-namespace Engine 
+namespace Engine::Input
 {
-	class Input
-	{
-	public:
-		static bool IsKeyPressed(KeyCode key);
-		static bool IsMouseButtonPressed(MouseCode button);
-		static std::pair<float, float> GetMousePosition(); //TODO: Change to glm::vec2?
-		static float GetMouseX();
-		static float GetMouseY();
-	};
+	void Init();
+	bool IsKeyPressed(KeyCode key);
+	bool IsKeyPressed(std::initializer_list<KeyCode> keys);
+	bool IsMouseButtonPressed(MouseCode button);
+	glm::vec2 GetMousePosition();
+	float GetMouseX();
+	float GetMouseY();
 }

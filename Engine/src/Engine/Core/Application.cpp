@@ -1,5 +1,6 @@
 #include "enginepch.h"
 #include "Application.h"
+#include "Engine/Core/Input.h"
 
 namespace Engine
 {
@@ -16,6 +17,8 @@ namespace Engine
 
 		m_Window = new Window(name);
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+
+		Input::Init();
 
 		s_GraphicsContext = new GraphicsContext();
 		s_GraphicsContext->Init();

@@ -40,7 +40,6 @@ project "Editor"
 
 	postbuildcommands 
 	{
-    -- Copy webgpu_dawn.dll next to the built .exe
     '{COPY} "%{wks.location}/vendor/dawn/webgpu_dawn.dll" "%{cfg.targetdir}"'
 	}
 

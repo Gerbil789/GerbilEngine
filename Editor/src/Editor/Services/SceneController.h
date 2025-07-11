@@ -7,6 +7,7 @@
 
 namespace Editor
 {
+	//TODO: delete this class? move it into scenemanager in engine, or scene itself?
 	class SceneController : public Engine::ISceneObserver
 	{
 	public:

@@ -4,19 +4,19 @@
 
 namespace Engine
 {
-	std::optional<std::string> ReadFile(const std::filesystem::path& path)
+	bool ReadFile(const std::filesystem::path& path, std::string& outData)
 	{
 		ENGINE_PROFILE_FUNCTION();
 
 		std::ifstream in(path, std::ios::in | std::ios::binary);
 		if (!in)
 		{
-			LOG_ERROR("Could not open file '{0}'", path);
-			return std::optional<std::string>();
+			LOG_ERROR("Could not open file '{}'", path);
+			return false;
 		}
 
-		std::string result((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-		return result;
+		outData.assign((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+		return true;
 	}
 
 	std::string OpenFile(const char* filter)

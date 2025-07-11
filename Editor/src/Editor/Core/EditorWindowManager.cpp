@@ -231,17 +231,13 @@ namespace Editor
 
 	void EditorWindowManager::ResetLayout()
 	{
-		const std::string default_ini = "resources/layouts/default.ini";
+		const std::string default_iniPath = "resources/layouts/default.ini";
+		std::string defaultLayoutContent;
 
-		auto defaultLayoutContent = Engine::ReadFile(default_ini);
-		if (!defaultLayoutContent)
-		{
-			LOG_ERROR("Failed to load default ImGui layout");
-			return;
-		}
+		if(!Engine::ReadFile(default_iniPath, defaultLayoutContent)) return;
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		ImGui::LoadIniSettingsFromMemory(defaultLayoutContent.value().c_str());
+		ImGui::LoadIniSettingsFromMemory(defaultLayoutContent.c_str());
 		LOG_INFO("ImGui layout reset to default");
 	}
 }

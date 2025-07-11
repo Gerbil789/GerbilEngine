@@ -6,7 +6,7 @@
 
 namespace Engine 
 {
-	std::optional<std::string> ReadFile(const std::filesystem::path& path); //TODO: investigate if there is a better way to read files
+	bool ReadFile(const std::filesystem::path& path, std::string& outData);
 
 	std::string OpenFile(const char* filter); 
 	std::string SaveFile(const char* filter); 

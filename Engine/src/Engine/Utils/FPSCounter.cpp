@@ -29,5 +29,4 @@ namespace Engine {
   {
     return m_AverageFPS;
   }
-
 }

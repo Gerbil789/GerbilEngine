@@ -18,8 +18,10 @@ constexpr const char* PROPERTIES_KEY = "Properties";
 // scene serialization keys
 //TODO: add scene serialization keys & update scene serialization
 
+
 namespace Engine
 {
+	//TODO: delete class, make serailizer namespace, everything here is static anyway
 	class Serializer
 	{
 	public:

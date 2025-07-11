@@ -1,17 +1,14 @@
 #include "ViewportWindow.h"
-#include "Engine/Core/Application.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
-#include "Engine/Math/Math.h"
 #include "Engine/Core/Core.h"
-#include "Editor/Core/EditorApp.h"
+#include "Engine/Core/Input.h"
 #include "Editor/Services/EditorServiceRegistry.h"
 #include "Engine/Events/MouseEvent.h"
+#include "Shared/UIHelpers.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
-//#include <backends/imgui_impl_wgpu.h>
-#include "Shared/UIHelpers.h"
 
 namespace Editor
 {
@@ -20,10 +17,8 @@ namespace Editor
 	ViewportWindow::ViewportWindow(EditorWindowManager* context) : EditorWindow(context)
 	{
 		SceneManager::RegisterObserver(this);
-	
-		m_SceneController = EditorServiceRegistry::Get<SceneController>();
 
-		m_EditorCamera = CreateRef<Camera>(); 
+		m_SceneController = EditorServiceRegistry::Get<SceneController>();
 	}
 
 	ViewportWindow::~ViewportWindow()
@@ -38,97 +33,38 @@ namespace Editor
 
 	void ViewportWindow::OnUpdate(Timestep ts)
 	{
+		m_CameraController.OnUpdate(ts);
+
 		ScopedStyle style({
 			{ ImGuiStyleVar_WindowPadding, ImVec2(0, 0) },
-			{ ImGuiCol_WindowBg, ImVec4(0.9f, 0.2f, 1.0f, 1.0f) } // Show ugly pink color if something goes wrong
-		});
+			{ ImGuiCol_WindowBg, ImVec4(0.9f, 0.2f, 1.0f, 1.0f) }
+			});
 
 		ImGui::Begin("Viewport");
 
-		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail(); // This must be called after ImGui::Begin() to get the correct size
+		UpdateViewportSize();
 
-		if(viewportPanelSize.x != m_ViewportSize.x || viewportPanelSize.y != m_ViewportSize.y)
+		ImVec2 mousePos = ImGui::GetMousePos();
+		float mx = mousePos.x - m_ViewportBounds[0].x;
+		float my = m_ViewportSize.y - (mousePos.y - m_ViewportBounds[0].y);
+
+		if (mx >= 0 && my >= 0 && mx < (int)m_ViewportSize.x && my < (int)m_ViewportSize.y)
 		{
-			m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
-
-			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
-			{
-				m_Renderer.Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			}
+			//int pixelData = m_EditorFrameBuffer->ReadPixel(1, mouseX, mouseY);
+			//m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_Scene.get() };
 		}
 
-		m_Renderer.BeginScene(*m_EditorCamera);
+		m_ViewportHovered = ImGui::IsWindowHovered();
+		m_ViewportFocused = ImGui::IsWindowFocused();
+
+		// Render scene
+		m_Renderer.BeginScene(m_CameraController.GetCamera());
 		m_Renderer.RenderScene();
 		m_Renderer.EndScene();
 
-		ImGui::Image((ImTextureID)(intptr_t)(WGPUTextureView)m_Renderer.GetTextureView(), ImVec2(m_ViewportSize.x, m_ViewportSize.y));
+		// Draw scene
+		ImGui::Image((ImTextureID)(intptr_t)(WGPUTextureView)m_Renderer.GetTextureView(), ImVec2(m_ViewportSize.x, m_ViewportSize.y)); //TODO: tripple cast? rly? investigate!
 
-		ImGui::End();
-
-		// resize viewport 
-		//m_Scene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y); //TODO: must be called every frame?
-		//FrameBufferSpecification spec = m_EditorFrameBuffer->GetSpecification();
-		//if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
-		//{
-		//	m_EditorFrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		//	m_EditorCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-		//}
-
-
-		//bind frame buffer
-		//m_EditorFrameBuffer->Bind();
-
-		//clear frame buffer
-		//RenderCommand::Clear();
-		//m_EditorFrameBuffer->ClearAttachment(1, -1); //clear ID attachment
-
-		//update scene
-		//m_EditorCamera->OnUpdate(ts);
-		//m_Scene->OnUpdate(ts, *m_EditorCamera);
-
-
-
-		//get mouse position
-		//auto [mx, my] = ImGui::GetMousePos();
-
-		////convert to viewport space
-		//mx -= m_ViewportBounds[0].x;
-		//my -= m_ViewportBounds[0].y;
-		//glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
-		//my = viewportSize.y - my;
-
-		//int mouseX = (int)mx;
-		//int mouseY = (int)my;
-
-		//if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
-		//{
-		//	int pixelData = m_EditorFrameBuffer->ReadPixel(1, mouseX, mouseY);
-		//	m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_Scene.get() };
-		//}
-
-		//unbind frame buffer
-		//m_EditorFrameBuffer->Unbind();
-
-
-
-
-		//auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
-		//auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-		//auto viewportOffset = ImGui::GetWindowPos();
-
-		//m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-		//m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
-
-		//m_ViewportFocused = ImGui::IsWindowFocused();
-		//m_ViewportHovered = ImGui::IsWindowHovered();
-
-		//auto editorApp = static_cast<EditorApp*>(&Engine::Application::Get()); //TODO: dont get it every cycle, store it somewhere
-		//editorApp->GetImGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
-
-		//ImVec2 viewportSize = ImGui::GetContentRegionAvail();
-		//m_ViewportSize = { viewportSize.x, viewportSize.y };
-		//uint32_t textureID = m_EditorFrameBuffer->GetColorAttachmentRendererID();
-		//ImGui::Image((void*)textureID, ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		//if (ImGui::BeginDragDropTarget())
 		//{
@@ -190,15 +126,16 @@ namespace Editor
 		//}
 
 
+		ImGui::End();
 	}
 
 
 	void ViewportWindow::OnEvent(Event& e)
 	{
-		//if (m_ViewportFocused || m_ViewportHovered)
-		//{
-		//	m_EditorCamera->OnEvent(e);
-		//}
+		if (m_ViewportFocused || m_ViewportHovered)
+		{
+			m_CameraController.OnEvent(e);
+		}
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(ENGINE_BIND_EVENT_FN(ViewportWindow::OnKeyPressed));
@@ -207,31 +144,21 @@ namespace Editor
 
 	bool ViewportWindow::OnKeyPressed(KeyPressedEvent& e)
 	{
-		if (e.GetRepeatCount() > 0)
-			return false;
+		if (e.GetRepeatCount() > 0) return false;
 
-		bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-		bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+		//bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+		//bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
 		switch (e.GetKeyCode())
 		{
-		case Key::Q:
-			m_GizmoType = -1; // Disable gizmo
-			break;
-
-		case Key::W:
-			m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
-			break;
-
-		case Key::E:
-			m_GizmoType = ImGuizmo::OPERATION::ROTATE;
-			break;
-
-		case Key::R:
-			m_GizmoType = ImGuizmo::OPERATION::SCALE;
-			break;
+		case Key::Q: m_GizmoType = -1; break; // Disable gizmo
+		case Key::W: m_GizmoType = ImGuizmo::OPERATION::TRANSLATE; break;
+		case Key::E: m_GizmoType = ImGuizmo::OPERATION::ROTATE; break;
+		case Key::R: m_GizmoType = ImGuizmo::OPERATION::SCALE; break;
 		}
 	}
+
+
 
 	bool ViewportWindow::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
@@ -246,4 +173,28 @@ namespace Editor
 		}
 		return false;
 	}
+
+	void ViewportWindow::UpdateViewportSize()
+	{
+		ImVec2 newSize = ImGui::GetContentRegionAvail();
+
+		if (newSize.x != m_ViewportSize.x || newSize.y != m_ViewportSize.y)
+		{
+			m_ViewportSize = { newSize.x, newSize.y };
+			m_CameraController.SetViewportSize(m_ViewportSize);
+
+			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
+			{
+				m_Renderer.Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			}
+		}
+
+		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+		auto viewportOffset = ImGui::GetWindowPos();
+
+		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+	}
+
 }

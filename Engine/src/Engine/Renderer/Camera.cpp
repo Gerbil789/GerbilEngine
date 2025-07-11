@@ -5,10 +5,9 @@
 
 namespace Engine
 {
-	void Camera::SetViewportSize(uint32_t width, uint32_t height)
+	void Camera::SetViewportSize(glm::vec2 size)
 	{
-		ASSERT(height != 0, "[Camera - SetViewportSize] Viewport height must not be zero!");
-		m_AspectRatio = static_cast<float>(width) / static_cast<float>(height);
+		m_AspectRatio = size.x / size.y;
 		RecalculateProjection();
 	}
 

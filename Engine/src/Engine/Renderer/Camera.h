@@ -14,8 +14,8 @@ namespace Engine
 
 			struct Perspective
 			{
-				float FOV = glm::radians(45.0f);
-				float Near = 0.01f;
+				float FOV = 45.0f;
+				float Near = 0.1f;
 				float Far = 1000.0f;
 
 				bool operator==(const Perspective& other) const = default;
@@ -36,7 +36,7 @@ namespace Engine
 	public:
 		Camera() = default;
 
-		void SetViewportSize(uint32_t width, uint32_t height);
+		void SetViewportSize(glm::vec2 size);
 
 		void SetProjectionData(const ProjectionData& data);
 		const ProjectionData& GetProjectionData() const { return m_ProjectionData; }
@@ -47,10 +47,10 @@ namespace Engine
 
 		const glm::vec3& GetPosition() const { return m_Position; }
 		void SetPosition(const glm::vec3& position);
+		void SetRotation(float pitch, float yaw);
 
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
-		void SetRotation(float pitch, float yaw);
 
 		const glm::vec3 GetUpDirection() const;
 		const glm::vec3 GetRightDirection() const;

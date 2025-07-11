@@ -39,7 +39,6 @@ project "glfw"
 			"src/posix_module.c",
 			"src/posix_time.c",
 			"src/posix_thread.c",
-			"src/posix_module.c",
 			"src/glx_context.c",
 			"src/egl_context.c",
 			"src/osmesa_context.c",

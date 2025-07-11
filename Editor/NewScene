@@ -1,0 +1,12 @@
+Scene: NewScene
+Entities:
+  - Entity: 15788573054135133634
+    Name: Empty Entity
+    Enabled: true
+    Transform:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshRendererComponent:
+      Mesh: "null"
+      Material: "null"

@@ -6,16 +6,6 @@
 
 namespace Engine 
 {
-	struct MyUniforms
-	{
-		glm::mat4x4 projectionMatrix;
-		glm::mat4x4 viewMatrix;
-		glm::mat4x4 modelMatrix;
-	};
-
-	static_assert(sizeof(MyUniforms) % 16 == 0); // Have the compiler check byte alignment
-
-
 	Shader::Shader(const std::filesystem::path& path) : Asset(path)
 	{
 		auto device = Application::Get().GetGraphicsContext()->GetDevice();
@@ -106,18 +96,19 @@ namespace Engine
 		m_RenderPipeline = device.createRenderPipeline(pipelineDesc);
 		shaderModule.release();
 	}
+
 	wgpu::ShaderModule Shader::LoadShader(const std::filesystem::path& path)
 	{
 		auto device = Application::Get().GetGraphicsContext()->GetDevice();
 
-		auto content = Engine::ReadFile(path);
-		if (!content)
+		std::string content;
+		if (!Engine::ReadFile(path, content))
 		{
 			LOG_ERROR("Failed to load shader. %s", path.string());
 			return nullptr;
 		}
 
-		const char* shaderSource = content.value().c_str();
+		const char* shaderSource = content.c_str();
 
 		wgpu::ShaderModuleDescriptor shaderDesc;
 		wgpu::ShaderModuleWGSLDescriptor shaderCodeDesc;
