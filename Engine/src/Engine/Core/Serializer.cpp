@@ -196,12 +196,12 @@ namespace Engine
 
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
-		ASSERT(entity.HasComponent<IDComponent>(), "Entity has no IdComponent!");
+		ASSERT(entity.HasComponent<IdentityComponent>(), "Entity has no IdComponent!");
 
 		out << YAML::BeginMap;
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 		out << YAML::Key << "Name" << YAML::Value << entity.GetComponent<NameComponent>().Name;
-		out << YAML::Key << "Enabled" << YAML::Value << entity.GetComponent<EnablingComponent>().Enabled;
+		out << YAML::Key << "Enabled" << YAML::Value << entity.GetComponent<IdentityComponent>().Enabled;
 		out << YAML::Key << "Transform";
 
 		out << YAML::BeginMap;
@@ -219,15 +219,17 @@ namespace Engine
 			auto& cc = entity.GetComponent<CameraComponent>();
 			auto& camera = cc.Camera;
 
+			const Engine::Camera::ProjectionData& projectionData = camera.GetProjectionData();
+	
 			out << YAML::Key << "Camera" << YAML::Value;
 			out << YAML::BeginMap;
-			out << YAML::Key << "ProjectionType" << YAML::Value << (int)camera.GetProjectionType();
-			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveVerticalFOV();
-			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
-			out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.GetPerspectiveFarClip();
-			out << YAML::Key << "OrthographicSize" << YAML::Value << camera.GetOrthographicSize();
-			out << YAML::Key << "OrthographicNear" << YAML::Value << camera.GetOrthographicNearClip();
-			out << YAML::Key << "OrthographicFar" << YAML::Value << camera.GetOrthographicFarClip();
+			out << YAML::Key << "ProjectionType" << YAML::Value << (int)projectionData.Type;
+			out << YAML::Key << "PerspectiveFOV" << YAML::Value << projectionData.Perspective.FOV;
+			out << YAML::Key << "PerspectiveNear" << YAML::Value << projectionData.Perspective.Near;
+			out << YAML::Key << "PerspectiveFar" << YAML::Value << projectionData.Perspective.Far;
+			out << YAML::Key << "OrthographicSize" << YAML::Value << projectionData.Orthographic.Size;
+			out << YAML::Key << "OrthographicNear" << YAML::Value << projectionData.Orthographic.Near;
+			out << YAML::Key << "OrthographicFar" << YAML::Value << projectionData.Orthographic.Far;
 			out << YAML::EndMap;
 
 			out << YAML::Key << "Main" << YAML::Value << cc.Main;
@@ -236,11 +238,11 @@ namespace Engine
 		}
 
 		// Sprite Renderer Component
-		if (entity.HasComponent<SpriteRendererComponent>()) 
+		if (entity.HasComponent<SpriteComponent>()) 
 		{
 			out << YAML::Key << "SpriteRendererComponent";
 			out << YAML::BeginMap;
-			auto& src = entity.GetComponent<SpriteRendererComponent>();
+			auto& src = entity.GetComponent<SpriteComponent>();
 			out << YAML::Key << "Material" << YAML::Value << (src.Material ? src.Material->GetFilePath().string() : "null");
 			out << YAML::Key << "Texture" << YAML::Value << (src.Texture ? src.Texture->GetFilePath().string() : "null");
 			out << YAML::Key << "Color" << YAML::Flow << YAML::BeginSeq << src.Color.r << src.Color.g << src.Color.b << src.Color.a << YAML::EndSeq;
@@ -352,10 +354,10 @@ namespace Engine
 			auto cameraComponent = entity["CameraComponent"];
 			if (cameraComponent)
 			{
-				auto& cc = deserializedEntity.AddComponent<CameraComponent>();
+				/*auto& cc = deserializedEntity.AddComponent<CameraComponent>();
 
 				auto cameraProps = cameraComponent["Camera"];
-				cc.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
+				cc.Camera.SetProjectionType((Camera::ProjectionType)cameraProps["ProjectionType"].as<int>());
 
 				cc.Camera.SetPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());
 				cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
@@ -366,13 +368,13 @@ namespace Engine
 				cc.Camera.SetOrthographicFarClip(cameraProps["OrthographicFar"].as<float>());
 
 				cc.Main = cameraComponent["Main"].as<bool>();
-				cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
+				cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();*/
 			}
 
 			auto spriteRendererComponent = entity["SpriteRendererComponent"];
 			if (spriteRendererComponent)
 			{
-				auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
+				auto& src = deserializedEntity.AddComponent<SpriteComponent>();
 				std::string materialPath = spriteRendererComponent["Material"].as<std::string>();
 				if (materialPath != "null") src.Material = AssetManager::GetAsset<Material>(materialPath);
 

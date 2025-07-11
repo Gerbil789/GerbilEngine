@@ -8,7 +8,7 @@ namespace Engine
 	{
 	public:
 		UUID();
-		UUID(uint64_t uuid);
+		UUID(uint64_t uuid) : m_UUID(uuid) {}
 		UUID(const UUID& other) = default;
 
 		operator uint64_t() const { return m_UUID; }

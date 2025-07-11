@@ -3,7 +3,7 @@
 #include "Engine/Renderer/Camera.h"
 #include "Engine/Renderer/Texture.h"
 #include "Engine/Renderer/SubTexture2D.h"
-#include "Engine/Renderer/EditorCamera.h"
+#include "Engine/Renderer/Camera.h"
 #include "Engine/Scene/Components.h"
 
 namespace Engine
@@ -15,12 +15,12 @@ namespace Engine
 		static void Shutdown();
 
 		static void BeginScene(const Camera& camera, const glm::mat4& transform);
-		static void BeginScene(const EditorCamera& camera);
+		//static void BeginScene(const EditorCamera& camera);
 		static void EndScene();
 		static void Flush();
 
 
-		static void DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID);
+		static void DrawSprite(const glm::mat4& transform, SpriteComponent& src, int entityID);
 
 
 		static void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);

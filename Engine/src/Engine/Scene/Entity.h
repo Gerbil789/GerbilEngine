@@ -44,10 +44,10 @@ namespace Engine
 		void SetName(const std::string& name) { GetComponent<NameComponent>() = name; }
 		const std::string& GetName() { return GetComponent<NameComponent>().Name; }
 
-		void SetActive(bool active) { GetComponent<EnablingComponent>().Enabled = active; }
-		bool IsActive() { return GetComponent<EnablingComponent>().Enabled; }
+		void SetActive(bool active) { GetComponent<IdentityComponent>().Enabled = active; }
+		bool IsActive() { return GetComponent<IdentityComponent>().Enabled; }
 
-		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
+		UUID GetUUID() { return GetComponent<IdentityComponent>().ID; }
 
 		//void SetParent(Entity newParent);
 		//void AddChild(Entity child);

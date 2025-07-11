@@ -128,7 +128,7 @@ namespace Editor
 
 		Entity newEntity = m_Scene->CreateEntity(entity.GetName());
 
-		CopyComponents<TransformComponent, SpriteRendererComponent, MeshComponent, LightComponent, NameComponent, EnablingComponent, HierarchyComponent>(
+		CopyComponents<TransformComponent, SpriteComponent, MeshComponent, LightComponent, NameComponent, HierarchyComponent>(
 			m_Scene->m_Registry, entity, newEntity
 		);
 

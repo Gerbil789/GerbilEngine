@@ -4,6 +4,7 @@
 #include "Editor/Elements/Elements.h"
 #include "Engine/Core/AssetManager.h"
 #include "Editor/Services/EditorServiceRegistry.h"
+#include "Engine/Renderer/RenderUtils.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
@@ -107,7 +108,8 @@ namespace Editor
 			strcpy_s(buffer, sizeof(buffer), name.c_str());
 
 			ImGui::PushItemWidth(-1);
-			ImGui::Checkbox("##Enabled", &entity.GetComponent<EnablingComponent>().Enabled);
+			bool tmp = true;
+			ImGui::Checkbox("##Enabled", &tmp /*&entity.GetComponent<EnablingComponent>().Enabled*/);
 			ImGui::SameLine();
 			if (ImGui::InputText("##Name", buffer, sizeof(buffer))) { name = std::string(buffer); }
 		}
@@ -136,7 +138,7 @@ namespace Editor
 				ImGui::Columns(1);
 			});
 
-		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
+		DrawComponent<SpriteComponent>("Sprite Renderer", entity, [](auto& component)
 			{
 				ImGui::Button("Material", ImVec2(100.0f, 0.0f));
 				if (ImGui::BeginDragDropTarget())
@@ -204,7 +206,7 @@ namespace Editor
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 			{
-				auto& camera = component.Camera;
+				Camera& camera = component.Camera;
 
 				//UI::BoolControl("Primary", component.Main);
 				//UI::BoolControl("Fixed Aspect Ratio", component.FixedAspectRatio);
@@ -214,18 +216,20 @@ namespace Editor
 
 				//const char* currentProjectionTypeString = projectionTypeString[(int)camera.GetProjectionType()];
 
-				SceneCamera::ProjectionType projectionType = camera.GetProjectionType();
+		/*		Camera::ProjectionType projectionType = camera.GetProjectionType();
 				if (UI::EnumField("Projection", (int&)projectionType, projectionTypes))
 				{
-					camera.SetProjectionType((SceneCamera::ProjectionType)projectionType);
+					camera.SetProjectionType((Camera::ProjectionType)projectionType);
 				}
 
-				if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+				if (camera.GetProjectionType() == Camera::ProjectionType::Perspective)
 				{
-					float perspectiveVerticalFOV = glm::degrees(camera.GetPerspectiveVerticalFOV());
-					if (UI::FloatField("Vertical FOV", perspectiveVerticalFOV))
+					Engine::PerspectiveSettings& perspective = camera.GetPerspectiveSettings();
+
+					float FOV = glm::degrees(perspective.FOV);
+					if (UI::FloatField("Vertical FOV", FOV))
 					{
-						camera.SetPerspectiveVerticalFOV(glm::radians(perspectiveVerticalFOV));
+						perspective.FOV(glm::radians(FOV));
 					}
 
 					float perspectiveNearClip = camera.GetPerspectiveNearClip();
@@ -241,7 +245,7 @@ namespace Editor
 					}
 				}
 
-				if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
+				if (camera.GetProjectionType() == Camera::ProjectionType::Orthographic)
 				{
 					float orthographicSize = camera.GetOrthographicSize();
 					if (UI::FloatField("Size", orthographicSize))
@@ -260,7 +264,7 @@ namespace Editor
 					{
 						camera.SetOrthographicFarClip(orthographicFarClip);
 					}
-				}
+				}*/
 			});
 
 		DrawComponent<LightComponent>("Light", entity, [](auto& component)
@@ -431,7 +435,7 @@ namespace Editor
 
 			if (ImGui::MenuItem("Sprite Renderer"))
 			{
-				entity.AddComponent<SpriteRendererComponent>();
+				entity.AddComponent<SpriteComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -443,8 +447,10 @@ namespace Editor
 
 			if (ImGui::MenuItem("MeshRenderer"))
 			{
-				auto component = entity.AddComponent<MeshComponent>();
-				//component.Material = AssetManager::GetAsset<Material>("resources/materials/default.material");
+				auto& component = entity.AddComponent<MeshComponent>();
+				component.ModelBuffer = RenderUtils::CreateModelBuffer();
+				component.ModelBindGroup = RenderUtils::CreateModelBindGroup(component.ModelBuffer);
+
 				ImGui::CloseCurrentPopup();
 			}
 

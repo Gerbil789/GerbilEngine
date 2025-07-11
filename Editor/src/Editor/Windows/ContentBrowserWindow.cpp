@@ -4,7 +4,6 @@
 #include "Engine/Renderer/Material.h"
 #include "Engine/Core/Serializer.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Engine/Utils/Utilities.h"
 #include "Engine/Core/Application.h"
 #include "Editor/Core/EditorApp.h"
 #include <GLFW/glfw3.h>
@@ -385,7 +384,8 @@ namespace Editor
 
 				if (ImGui::MenuItem("Scene"))
 				{
-					std::string path = Utilities::EnsureFileNameUniqueness("newScene", m_CurrentDirectory.string());
+					//std::string path = Utilities::EnsureFileNameUniqueness("newScene", m_CurrentDirectory.string());
+					std::string path = m_CurrentDirectory.string();
 					Ref<Scene> newScene = AssetManager::CreateAsset<Scene>(path);
 					if (newScene)
 					{
@@ -397,7 +397,8 @@ namespace Editor
 				if (ImGui::MenuItem("Material"))
 				{
 					//TODO: make better unique name check
-					std::string path = Utilities::EnsureFileNameUniqueness("material", m_CurrentDirectory.string());
+					//std::string path = Utilities::EnsureFileNameUniqueness("material", m_CurrentDirectory.string());
+					std::string path = m_CurrentDirectory.string();
 					Ref<Material> material = AssetManager::CreateAsset<Material>(path);
 					if (material)
 					{

@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	class ScriptableEntity
+	class ScriptableEntity //TODO: rework this
 	{
 	public:
 		virtual ~ScriptableEntity() = default;

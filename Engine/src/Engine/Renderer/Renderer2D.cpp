@@ -137,54 +137,54 @@ namespace Engine
 		s_Data.TextureSlotIndex = 1;*/
 	}
 
-	void Renderer2D::BeginScene(const EditorCamera& camera)
-	{
-		//ENGINE_PROFILE_FUNCTION();
-		//Renderer2D::ResetStats();
-		//s_Data.TextureShader->Bind();
-		//s_Data.TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
-		//s_Data.TextureShader->SetFloat3("u_CameraPosition", camera.GetPosition());
+	//void Renderer2D::BeginScene(const Camera& camera)
+	//{
+	//	//ENGINE_PROFILE_FUNCTION();
+	//	//Renderer2D::ResetStats();
+	//	//s_Data.TextureShader->Bind();
+	//	//s_Data.TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
+	//	//s_Data.TextureShader->SetFloat3("u_CameraPosition", camera.GetPosition());
 
 
-		//Ref<Scene> scene = SceneManager::GetCurrentScene(); //TODO: use observer pattern
-		//std::vector<Entity> lights = scene->GetEntities<LightComponent>(); //TODO: filter by enabled
+	//	//Ref<Scene> scene = SceneManager::GetCurrentScene(); //TODO: use observer pattern
+	//	//std::vector<Entity> lights = scene->GetEntities<LightComponent>(); //TODO: filter by enabled
 
-		//s_Data.TextureShader->SetInt("u_NumLights", lights.size());
+	//	//s_Data.TextureShader->SetInt("u_NumLights", lights.size());
 
-		//for(uint32_t i = 0; i < lights.size(); i++)
-		//{
-		//	auto& lightComponent = lights[i].GetComponent<LightComponent>();
-		//	auto& transfromComponent = lights[i].GetComponent<TransformComponent>();
+	//	//for(uint32_t i = 0; i < lights.size(); i++)
+	//	//{
+	//	//	auto& lightComponent = lights[i].GetComponent<LightComponent>();
+	//	//	auto& transfromComponent = lights[i].GetComponent<TransformComponent>();
 
-		//	std::string lightName = "u_Lights[" + std::to_string(i) + "].";
-		//	s_Data.TextureShader->SetInt(lightName + "type", (int)lightComponent.Type);
-		//	s_Data.TextureShader->SetFloat3(lightName + "position", transfromComponent.Position);
-		//	s_Data.TextureShader->SetFloat3(lightName + "color", lightComponent.Color);
-		//	s_Data.TextureShader->SetFloat(lightName + "intensity", lightComponent.Intensity);
+	//	//	std::string lightName = "u_Lights[" + std::to_string(i) + "].";
+	//	//	s_Data.TextureShader->SetInt(lightName + "type", (int)lightComponent.Type);
+	//	//	s_Data.TextureShader->SetFloat3(lightName + "position", transfromComponent.Position);
+	//	//	s_Data.TextureShader->SetFloat3(lightName + "color", lightComponent.Color);
+	//	//	s_Data.TextureShader->SetFloat(lightName + "intensity", lightComponent.Intensity);
 
-		//	switch (lightComponent.Type)
-		//	{
-		//		case LightType::Point:
-		//			s_Data.TextureShader->SetFloat(lightName + "range", lightComponent.Range);
-		//			s_Data.TextureShader->SetFloat3(lightName + "attenuation", lightComponent.Attenuation);
-		//			break;
+	//	//	switch (lightComponent.Type)
+	//	//	{
+	//	//		case LightType::Point:
+	//	//			s_Data.TextureShader->SetFloat(lightName + "range", lightComponent.Range);
+	//	//			s_Data.TextureShader->SetFloat3(lightName + "attenuation", lightComponent.Attenuation);
+	//	//			break;
 
-		//		case LightType::Directional:
-		//			s_Data.TextureShader->SetFloat3(lightName + "direction", transfromComponent.Rotation);
-		//			break;
+	//	//		case LightType::Directional:
+	//	//			s_Data.TextureShader->SetFloat3(lightName + "direction", transfromComponent.Rotation);
+	//	//			break;
 
-		//		case LightType::Spot:
-		//			s_Data.TextureShader->SetFloat3(lightName + "direction", transfromComponent.Rotation);
-		//			s_Data.TextureShader->SetFloat(lightName + "innerAngle", lightComponent.InnerAngle);
-		//			s_Data.TextureShader->SetFloat(lightName + "outerAngle", lightComponent.OuterAngle);
-		//			break;
-		//	}
-		//}
+	//	//		case LightType::Spot:
+	//	//			s_Data.TextureShader->SetFloat3(lightName + "direction", transfromComponent.Rotation);
+	//	//			s_Data.TextureShader->SetFloat(lightName + "innerAngle", lightComponent.InnerAngle);
+	//	//			s_Data.TextureShader->SetFloat(lightName + "outerAngle", lightComponent.OuterAngle);
+	//	//			break;
+	//	//	}
+	//	//}
 
-		//s_Data.QuadIndexCount = 0;
-		//s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-		//s_Data.TextureSlotIndex = 1;
-	}
+	//	//s_Data.QuadIndexCount = 0;
+	//	//s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+	//	//s_Data.TextureSlotIndex = 1;
+	//}
 
 	void Renderer2D::EndScene()
 	{
@@ -213,7 +213,7 @@ namespace Engine
 
 	}
 
-	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID)
+	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteComponent& src, int entityID)
 	{
 		//ENGINE_PROFILE_FUNCTION();
 		////tmp

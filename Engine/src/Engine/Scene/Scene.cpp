@@ -1,10 +1,6 @@
 #include "enginepch.h"
-#include "Engine/Scene/Scene.h"
-#include <glm/glm.hpp>
-
+#include "Scene.h"
 #include "Engine/Scene/ScriptableEntity.h"
-#include "Engine/Renderer/Renderer.h"
-#include "Engine/Renderer/Renderer2D.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Core/Serializer.h"
 
@@ -60,7 +56,7 @@ namespace Engine
 		auto view = srcRegistry.view<Component>();
 		for (auto srcEntity : view)
 		{
-			UUID uuid = srcRegistry.get<IDComponent>(srcEntity).ID;
+			UUID uuid = srcRegistry.get<IdentityComponent>(srcEntity).ID;
 			ASSERT(enttMap.find(uuid) != enttMap.end(), "Entity not found in map!");
 			entt::entity dstEnttId = enttMap.at(uuid);
 
@@ -94,11 +90,11 @@ namespace Engine
 		auto& srcSceneRegistry = other->m_Registry;
 		auto& dstSceneRegistry = newScene->m_Registry;
 
-		auto IdView = srcSceneRegistry.view<IDComponent>();
+		auto IdView = srcSceneRegistry.view<IdentityComponent>();
 
 		for (auto entity : IdView)
 		{
-			UUID uuid = IdView.get<IDComponent>(entity).ID;
+			UUID uuid = IdView.get<IdentityComponent>(entity).ID;
 			const auto& name = srcSceneRegistry.get<NameComponent>(entity).Name;
 			Entity newEntity = newScene->CreateEntity(uuid, name);
 			enttMap[uuid] = (entt::entity)newEntity;
@@ -106,7 +102,7 @@ namespace Engine
 		}
 
 		CopyComponent<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<SpriteRendererComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponent<SpriteComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponent<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		//CopyComponent<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
@@ -201,44 +197,6 @@ namespace Engine
 	//	//}
 
 
-
-	//	// Render 2D
-	//	//Camera* mainCamera = nullptr;
-	//	//glm::mat4 cameraTransform;
-
-	//	//{
-	//	//	auto view = m_Registry.view<TransformComponent, CameraComponent>();
-	//	//	for (auto entity : view)
-	//	//	{
-	//	//		auto [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
-
-	//	//		if (camera.Main)
-	//	//		{
-	//	//			mainCamera = &camera.Camera;
-	//	//			cameraTransform = transform.GetTransform();
-	//	//			break;
-	//	//		}
-	//	//	}
-	//	//}
-
-	//	//if (mainCamera == nullptr)
-	//	//{
-	//	//	//ENGINE_LOG_WARNING("No main camera entity found!");
-	//	//	return;
-	//	//}
-
-	//	//Renderer2D::BeginScene(mainCamera->GetProjection(), cameraTransform);
-
-	//	//auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-	//	//for (auto entity : group)
-	//	//{
-	//	//	auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-	//	//	Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
-	//	//}
-
-	//	//Renderer2D::EndScene();
-	//}
-
 	//void Scene::OnUpdateEditor(Timestep ts, EditorCamera& camera)
 	//{
 	//	Renderer::BeginFrame(camera);
@@ -266,7 +224,8 @@ namespace Engine
 			auto& cameraComponent = view.get<CameraComponent>(entity);
 			if (!cameraComponent.FixedAspectRatio)
 			{
-				cameraComponent.Camera.SetViewportSize(width, height);
+				Engine::Camera& camera = cameraComponent.Camera;
+				camera.SetViewportSize(width, height);
 			}
 		}
 
@@ -281,8 +240,7 @@ namespace Engine
 	Entity Scene::CreateEntity(UUID uuid, const std::string& name)
 	{
 		Entity entity = { m_Registry.create(), &m_Registry };
-		entity.AddComponent<IDComponent>(uuid);
-		entity.AddComponent<EnablingComponent>(true);
+		entity.AddComponent<IdentityComponent>(uuid);
 		entity.AddComponent<NameComponent>(name);
 		entity.AddComponent<HierarchyComponent>();
 		entity.AddComponent<TransformComponent>();

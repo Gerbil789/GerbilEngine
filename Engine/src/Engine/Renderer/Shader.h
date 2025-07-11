@@ -17,6 +17,7 @@ namespace Engine
 
 	private:
 		wgpu::RenderPipeline m_RenderPipeline;
+
 	};
 
 	class ShaderFactory : public IAssetFactory

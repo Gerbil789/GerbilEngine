@@ -6,6 +6,7 @@
 #include "Engine/Core/Core.h"
 #include "Editor/Core/EditorApp.h"
 #include "Editor/Services/EditorServiceRegistry.h"
+#include "Engine/Events/MouseEvent.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -22,14 +23,7 @@ namespace Editor
 	
 		m_SceneController = EditorServiceRegistry::Get<SceneController>();
 
-		//create editor frame buffer
-	/*	FrameBufferSpecification editorFrameBufferSpecification;
-		editorFrameBufferSpecification.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::DEPTH24STENCIL8 };
-		editorFrameBufferSpecification.Width = 1280;
-		editorFrameBufferSpecification.Height = 720;
-		m_EditorFrameBuffer = CreateRef<FrameBuffer>(editorFrameBufferSpecification);*/
-
-		//m_EditorCamera = CreateRef<EditorCamera>(30.0f, 1.778f, 0.1f, 1000.0f); //TODO: what are these values? must it be there?
+		m_EditorCamera = CreateRef<Camera>(); 
 	}
 
 	ViewportWindow::~ViewportWindow()
@@ -201,10 +195,10 @@ namespace Editor
 
 	void ViewportWindow::OnEvent(Event& e)
 	{
-		if (m_ViewportFocused || m_ViewportHovered)
-		{
-			m_EditorCamera->OnEvent(e);
-		}
+		//if (m_ViewportFocused || m_ViewportHovered)
+		//{
+		//	m_EditorCamera->OnEvent(e);
+		//}
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(ENGINE_BIND_EVENT_FN(ViewportWindow::OnKeyPressed));

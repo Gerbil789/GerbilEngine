@@ -2,7 +2,7 @@
 
 #include "entt.hpp"
 #include "Engine/Core/Timestep.h"
-#include "Engine/Renderer/EditorCamera.h"
+#include "Engine/Renderer/Camera.h"
 #include "Engine/Core/UUID.h"
 #include "Engine/Core/Asset.h"
 #include "Engine/Scene/Components.h"
@@ -51,7 +51,7 @@ namespace Engine
 		{
 			std::vector<Entity> entities;
 
-			auto view = m_Registry.view<IDComponent, Components...>();
+			auto view = m_Registry.view<IdentityComponent, Components...>();
 			for (auto entity : view)
 			{
 				entities.push_back(Entity{ entity, &m_Registry });

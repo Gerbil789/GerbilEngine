@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Core/Serializer.h"
-#include "Engine/Utils/PlatformUtils.h"
+#include "Engine/Utils/File.h"
 #include "Engine/Core/AssetManager.h"
 
 namespace Engine
@@ -18,7 +18,7 @@ namespace Engine
 
 	void SceneManager::LoadScene()
 	{
-		std::string filePath = FileDialogs::OpenFile("Scene (*.scene)\0*.scene\0");
+		std::string filePath = OpenFile("Scene (*.scene)\0*.scene\0");
 		if (filePath.empty()) { LOG_ERROR("Failed to open file {0}", filePath); return; }
 		LoadScene(filePath);
 	}
@@ -41,7 +41,7 @@ namespace Engine
 
 	void SceneManager::SaveSceneAs()
 	{
-		std::string path = FileDialogs::SaveFile("Scene (*.scene)\0*.scene\0");
+		std::string path = SaveFile("Scene (*.scene)\0*.scene\0");
 		if (!path.empty())
 		{
 			s_CurrentScene->SetFilePath(path);

@@ -1,37 +1,27 @@
 #pragma once
-#include "Engine/Scene/SceneCamera.h"
+
+#include "Engine/Core/UUID.h"
+#include "Engine/Renderer/Camera.h"
 #include "Engine/Renderer/Texture.h"
 #include "Engine/Renderer/Mesh.h"
-#include "Engine/Core/UUID.h"
 #include "Engine/Renderer/Material.h"
-#include "Engine/Core/AssetManager.h"
 
+#include <entt.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
-#include <entt.hpp>
-
 namespace Engine
 {
-	struct IDComponent
+	struct IdentityComponent
 	{
 		UUID ID;
-
-		IDComponent() : ID(UUID()) {}
-		IDComponent(UUID uuid) : ID(uuid) {}
-	};
-
-	struct EnablingComponent
-	{
 		bool Enabled = true;
 
-		EnablingComponent() = default;
-		EnablingComponent(bool enabled) : Enabled(enabled) {}
+		IdentityComponent() : ID(UUID()) {}
+		IdentityComponent(UUID uuid, bool enabled = true) : ID(uuid), Enabled(enabled) {}
 	};
-
 
 	struct NameComponent
 	{
@@ -44,7 +34,8 @@ namespace Engine
 		operator const std::string& () const { return Name; }
 	};
 
-	struct HierarchyComponent {
+	struct HierarchyComponent 
+	{
 		entt::entity Parent = entt::null;
 		entt::entity FirstChild = entt::null;
 		entt::entity NextSibling = entt::null;
@@ -73,10 +64,13 @@ namespace Engine
 		Ref<Material> Material = nullptr;
 		Ref<Mesh> Mesh = nullptr;
 
+		wgpu::Buffer ModelBuffer;
+		wgpu::BindGroup ModelBindGroup;
+
 		MeshComponent() = default;
 	};
 
-	struct SpriteRendererComponent
+	struct SpriteComponent //TODO: rework whole 2D renderer system
 	{
 		Ref<Material> Material = nullptr;
 
@@ -84,8 +78,8 @@ namespace Engine
 		Ref<Texture2D> Texture = nullptr;
 		glm::vec2 TilingFactor = { 1.0f, 1.0f };
 
-		SpriteRendererComponent() = default;
-		SpriteRendererComponent(const glm::vec4& color) : Color(color) {}
+		SpriteComponent() = default;
+		SpriteComponent(const glm::vec4& color) : Color(color) {}
 
 		operator glm::vec4& () { return Color; }
 		operator const glm::vec4& () const { return Color; }
@@ -94,7 +88,7 @@ namespace Engine
 
 	struct CameraComponent
 	{
-		SceneCamera Camera;
+		Camera Camera; //TODO: use Ref<Camera> instead?
 		bool Main = true; // TODO: Move to Scene
 		bool FixedAspectRatio = false;
 
@@ -102,7 +96,7 @@ namespace Engine
 	};
 
 
-	enum class LightType
+	enum class LightType //TODO: move to some light file
 	{
 		Point = 0,
 		Directional = 1,

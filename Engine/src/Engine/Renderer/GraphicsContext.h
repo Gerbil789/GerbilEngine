@@ -18,5 +18,7 @@ namespace Engine
 		wgpu::Device m_Device;
 		wgpu::Queue m_Queue;
 		wgpu::Surface m_Surface;
+
+		//TODO: add system requirements for the graphics context, to prevent "It works on my machine..."
 	};
 }

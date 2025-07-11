@@ -5,6 +5,8 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Renderer/Renderer.h"
+#include "Engine/Renderer/Camera.h"
+#include "Engine/Events/MouseEvent.h"
 #include "Editor/Services/SceneController.h"
 #include "Editor/Core/Core.h"
 
@@ -29,7 +31,7 @@ namespace Editor
 		Engine::Renderer m_Renderer;
 		SceneController* m_SceneController;
 
-		Ref<Engine::EditorCamera> m_EditorCamera; //TODO: move editor camera to Editor project ?
+		Ref<Engine::Camera> m_EditorCamera;
 
 		int m_GizmoType = 7; //translate
 

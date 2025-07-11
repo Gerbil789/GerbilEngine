@@ -35,11 +35,8 @@ namespace Engine
 		wgpu::RenderPassEncoder m_RenderPass;
 		wgpu::Color m_ClearColor = { 0.05f, 0.05f, 0.05f, 1.0f };
 
-		//struct GlobalUniform
-		//{
-		//	glm::mat4 ViewProjection = glm::mat4(1.0f);
-		//};
 
+		//TODO: decouple statistic meassurement from the renderer
 		//struct RendererStatistics
 		//{
 		//	uint32_t DrawCalls = 0;
