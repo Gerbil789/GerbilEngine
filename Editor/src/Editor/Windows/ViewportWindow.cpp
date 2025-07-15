@@ -33,8 +33,6 @@ namespace Editor
 
 	void ViewportWindow::OnUpdate(Timestep ts)
 	{
-		m_CameraController.OnUpdate(ts);
-
 		ScopedStyle style({
 			{ ImGuiStyleVar_WindowPadding, ImVec2(0, 0) },
 			{ ImGuiCol_WindowBg, ImVec4(0.9f, 0.2f, 1.0f, 1.0f) }
@@ -146,9 +144,6 @@ namespace Editor
 	{
 		if (e.GetRepeatCount() > 0) return false;
 
-		//bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-		//bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
-
 		switch (e.GetKeyCode())
 		{
 		case Key::Q: m_GizmoType = -1; break; // Disable gizmo
@@ -173,6 +168,8 @@ namespace Editor
 		}
 		return false;
 	}
+
+
 
 	void ViewportWindow::UpdateViewportSize()
 	{

@@ -8,80 +8,54 @@ namespace Engine
 	void Camera::SetViewportSize(glm::vec2 size)
 	{
 		m_AspectRatio = size.x / size.y;
-		RecalculateProjection();
-	}
-
-	void Camera::SetProjectionData(const ProjectionData& data)
-	{
-		if (data != m_ProjectionData)
-		{
-			m_ProjectionData = data;
-			RecalculateProjection();
-		}
+		UpdateProjectionMatrix();
 	}
 
 	void Camera::SetPosition(const glm::vec3& position)
 	{
 		m_Position = position;
-		RecalculateView();
 	}
 
 	void Camera::SetRotation(float pitch, float yaw)
 	{
 		m_Pitch = pitch;
 		m_Yaw = yaw;
-		RecalculateView();
 	}
 
-	const glm::vec3 Camera::GetUpDirection() const
+	void Camera::UpdateViewMatrix()
 	{
-		return glm::rotate(GetOrientation(), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::quat orientation = glm::quat(glm::vec3(m_Pitch, m_Yaw, 0.0f));
+		glm::vec3 forward = orientation * glm::vec3(0.0f, 0.0f, -1.0f);
+		glm::vec3 up = orientation * glm::vec3(0.0f, 1.0f, 0.0f);
+
+		glm::vec3 zoomedPosition = m_Position - forward * m_Zoom;
+
+		m_ViewMatrix = glm::lookAt(zoomedPosition, zoomedPosition + forward, up);
 	}
 
-	const glm::vec3 Camera::GetRightDirection() const
-	{
-		return glm::rotate(GetOrientation(), glm::vec3(1.0f, 0.0f, 0.0f));
-	}
-
-	const glm::vec3 Camera::GetForwardDirection() const
-	{
-		return glm::rotate(GetOrientation(), glm::vec3(0.0f, 0.0f, -1.0f));
-	}
-
-	const glm::quat Camera::GetOrientation() const
-	{
-		return glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f));
-	}
-
-
-	void Camera::RecalculateView()
-	{
-		glm::quat orientation = GetOrientation();
-		m_ViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(orientation);
-		m_ViewMatrix = glm::inverse(m_ViewMatrix);
-	}
-
-	void Camera::RecalculateProjection()
+	void Camera::UpdateProjectionMatrix()
 	{
 		switch (m_ProjectionData.Type)
 		{
 		case ProjectionType::Perspective:
-			m_ProjectionMatrix = glm::perspective(m_ProjectionData.Perspective.FOV, m_AspectRatio, m_ProjectionData.Perspective.Near, m_ProjectionData.Perspective.Far);
+		{
+			float perspFov = m_ProjectionData.Perspective.FOV;
+			float perspNear = m_ProjectionData.Perspective.Near;
+			float perspFar = m_ProjectionData.Perspective.Far;
+			m_ProjectionMatrix = glm::perspective(perspFov, m_AspectRatio, perspNear, perspFar);
 			break;
-
+		}
 		case ProjectionType::Orthographic:
 		{
 			float orthoLeft = -m_ProjectionData.Orthographic.Size * m_AspectRatio * 0.5f;
 			float orthoRight = m_ProjectionData.Orthographic.Size * m_AspectRatio * 0.5f;
 			float orthoBottom = -m_ProjectionData.Orthographic.Size * 0.5f;
 			float orthoTop = m_ProjectionData.Orthographic.Size * 0.5f;
-
-			m_ProjectionMatrix = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, m_ProjectionData.Orthographic.Near, m_ProjectionData.Orthographic.Far);
+			float orthoNear = m_ProjectionData.Orthographic.Near;
+			float orthoFar = m_ProjectionData.Orthographic.Far;
+			m_ProjectionMatrix = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, orthoNear, orthoFar);
 			break;
 		}
-
-		default:
-			ASSERT(false, "Unknown projection type!");
 		}
 	}
 }

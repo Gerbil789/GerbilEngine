@@ -2,6 +2,10 @@
 #include "EditorApp.h"
 #include "Editor/Services/EditorServiceRegistry.h"
 
+//tmp
+#include "Engine/Scene/Components.h"
+#include "Engine/Core/AssetManager.h"
+#include "Engine/Renderer/RenderUtils.h"
 namespace Editor
 {
 	EditorApp::EditorApp(std::filesystem::path projectPath) : Application("Gerbil Editor - " + projectPath.lexically_normal().filename().string())
@@ -16,6 +20,21 @@ namespace Editor
 		m_EditorWindowManager = CreateScope<EditorWindowManager>();
 
 		Engine::SceneManager::CreateScene("NewScene"); //TODO: load default scene from project if there is one
+
+		auto scene = Engine::SceneManager::GetCurrentScene();
+
+		auto cube = scene->CreateEntity("Cube");
+
+		auto mesh = Engine::AssetManager::GetAsset<Engine::Mesh>("resources/models/cube.glb");
+		auto material = Engine::AssetManager::GetAsset<Engine::Material>("resources/materials/default.mat");
+
+		auto& component = cube.AddComponent<Engine::MeshComponent>();
+		component.Material = material;
+		component.Mesh = mesh;
+		component.ModelBuffer = Engine::RenderUtils::CreateModelBuffer();
+		component.ModelBindGroup = Engine::RenderUtils::CreateModelBindGroup(component.ModelBuffer);
+
+		cube.GetComponent<Engine::TransformComponent>().Position = { 0.0f, 0.0f, -6.0f };
 
 		LOG_INFO("--- Initialization complete ---");
 	}

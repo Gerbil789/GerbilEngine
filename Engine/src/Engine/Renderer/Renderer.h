@@ -20,31 +20,17 @@ namespace Engine
 		void RenderScene();
 		void EndScene();
 
-		wgpu::TextureView GetTextureView() const { return m_OutputView; }
+		wgpu::TextureView GetTextureView() const { return m_TextureView; }
 
 	private:
 		Ref<Scene> m_Scene;
 
-		uint32_t m_Width = 1280;
-		uint32_t m_Height = 720;
-
 		wgpu::Device m_Device;
 		wgpu::Queue m_Queue;
-		wgpu::TextureView m_OutputView;
+		wgpu::TextureView m_TextureView;
+		wgpu::TextureView m_DepthView;
 		wgpu::CommandEncoder m_CommandEncoder;
 		wgpu::RenderPassEncoder m_RenderPass;
 		wgpu::Color m_ClearColor = { 0.05f, 0.05f, 0.05f, 1.0f };
-
-
-		//TODO: decouple statistic meassurement from the renderer
-		//struct RendererStatistics
-		//{
-		//	uint32_t DrawCalls = 0;
-		//	uint32_t VertexCount = 0;
-		//	uint32_t IndicesCount = 0;
-		//};
-
-		//static RendererStatistics GetStats();
-		//static void ResetStats();
 	};
 }

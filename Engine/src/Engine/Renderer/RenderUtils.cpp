@@ -6,8 +6,8 @@
 namespace Engine::RenderUtils
 {
   wgpu::Device s_Device;
-  wgpu::BindGroupLayout s_ModelBindGroupLayout;
-	wgpu::BindGroupLayout s_FrameBindGroupLayout;
+  wgpu::BindGroupLayout s_ModelBindGroupLayout; // model matrix
+	wgpu::BindGroupLayout s_FrameBindGroupLayout; // view, projection, camera position
 
   void Initialize(wgpu::Device device)
   {

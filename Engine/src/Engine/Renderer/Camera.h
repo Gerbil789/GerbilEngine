@@ -9,12 +9,13 @@ namespace Engine
 	public:
 		enum class ProjectionType { Perspective = 0, Orthographic = 1 };
 
-		struct ProjectionData {
+		struct ProjectionData 
+		{
 			ProjectionType Type = ProjectionType::Perspective;
 
 			struct Perspective
 			{
-				float FOV = 45.0f;
+				float FOV = glm::radians(45.0f);
 				float Near = 0.1f;
 				float Far = 1000.0f;
 
@@ -38,7 +39,6 @@ namespace Engine
 
 		void SetViewportSize(glm::vec2 size);
 
-		void SetProjectionData(const ProjectionData& data);
 		const ProjectionData& GetProjectionData() const { return m_ProjectionData; }
 
 		const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
@@ -51,15 +51,11 @@ namespace Engine
 
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
+		float GetZoom() { return m_Zoom; }
+		float SetZoom(float zoom) { return m_Zoom = zoom; }
 
-		const glm::vec3 GetUpDirection() const;
-		const glm::vec3 GetRightDirection() const;
-		const glm::vec3 GetForwardDirection() const;
-		const glm::quat GetOrientation() const;
-
-	private:
-		void RecalculateProjection();
-		void RecalculateView();
+		void UpdateProjectionMatrix();
+		void UpdateViewMatrix();
 
 	private:
 		ProjectionData m_ProjectionData;
@@ -68,6 +64,7 @@ namespace Engine
 		glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
 		glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
 		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
+		float m_Zoom = 0.0f;
 		float m_Pitch = 0.0f;
 		float m_Yaw = 0.0f;
 	};

@@ -39,7 +39,7 @@ namespace Engine
 		vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
 
 		wgpu::RenderPipelineDescriptor pipelineDesc;
-
+		pipelineDesc.label = { "ShaderPipeline", WGPU_STRLEN };
 		pipelineDesc.vertex.bufferCount = 1;
 		pipelineDesc.vertex.buffers = &vertexBufferLayout;
 
@@ -76,7 +76,15 @@ namespace Engine
 		fragmentState.targets = &colorTarget;
 		pipelineDesc.fragment = &fragmentState;
 
-		pipelineDesc.depthStencil = nullptr;
+		wgpu::DepthStencilState depthStencilState = wgpu::Default;
+		depthStencilState.depthCompare = wgpu::CompareFunction::Less;
+		depthStencilState.depthWriteEnabled = wgpu::OptionalBool::True;
+		depthStencilState.format = wgpu::TextureFormat::Depth24Plus;
+		depthStencilState.stencilReadMask = 0;
+		depthStencilState.stencilWriteMask = 0;
+
+		pipelineDesc.depthStencil = &depthStencilState;
+
 		pipelineDesc.multisample.count = 1;
 		pipelineDesc.multisample.mask = ~0u; // Default value for the mask, meaning "all bits on"
 		pipelineDesc.multisample.alphaToCoverageEnabled = false;

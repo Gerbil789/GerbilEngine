@@ -6,7 +6,6 @@
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-// #define TINYGLTF_NOEXCEPTION // optional. disable exception handling.
 
 #include <tiny_gltf.h>
 
@@ -104,7 +103,7 @@ namespace Engine
 		}
 
 		// === Index data ===
-		std::vector<uint32_t> indices;
+		std::vector<uint16_t> indices;
 
 		if (primitive.indices >= 0) {
 			const auto& accessor = model.accessors[primitive.indices];
@@ -118,12 +117,6 @@ namespace Engine
 			switch (accessor.componentType) {
 			case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: {
 				const uint16_t* src = reinterpret_cast<const uint16_t*>(data);
-				for (size_t i = 0; i < count; ++i)
-					indices.push_back(static_cast<uint32_t>(src[i]));
-				break;
-			}
-			case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: {
-				const uint32_t* src = reinterpret_cast<const uint32_t*>(data);
 				indices.assign(src, src + count);
 				break;
 			}
@@ -139,6 +132,7 @@ namespace Engine
 			}
 		}
 
+		// debug log
 		for(int i = 0; i < vertices.size(); i++)
 		{
 			auto vertex = vertices[i];
@@ -168,7 +162,7 @@ namespace Engine
 		// Index buffer
 		wgpu::BufferDescriptor indexBufferdesc{};
 		indexBufferdesc.usage = wgpu::BufferUsage::Index | wgpu::BufferUsage::CopyDst;
-		indexBufferdesc.size = indices.size() * sizeof(uint32_t);
+		indexBufferdesc.size = indices.size() * sizeof(uint16_t);
 		indexBufferdesc.mappedAtCreation = false;
 
 		wgpu::Buffer indexBuffer = device.createBuffer(indexBufferdesc);

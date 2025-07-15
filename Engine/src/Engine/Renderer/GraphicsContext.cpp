@@ -9,6 +9,7 @@
 
 namespace Engine
 {
+	//TODP: make these lambdas 
 	static constexpr auto OnDeviceLost = [](WGPUDevice const* device, WGPUDeviceLostReason reason, WGPUStringView message, void* userdata1, void* userdata2) 
 	{
 		LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", (int)reason, message);

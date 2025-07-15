@@ -17,7 +17,7 @@ struct FrameUniforms {
 	projection: mat4x4f,
 	view: mat4x4f,
 	cameraPosition: vec3f,	
-	_padding: f32, // for std140 alignment (vec3 needs padding)
+	_padding: f32,
 };
 
 struct MaterialUniforms {
@@ -26,7 +26,7 @@ struct MaterialUniforms {
 
 @group(0) @binding(0) var<uniform> uModelUniforms: ModelUniforms;
 @group(1) @binding(0) var<uniform> uFrameUniforms: FrameUniforms;
-@group(2) @binding(0) var<uniform> uMaterialUniforms: FrameUniforms;
+@group(2) @binding(0) var<uniform> uMaterialUniforms: MaterialUniforms;
 
 @vertex
 fn vs_main(in: VertexInput) -> VertexOutput {

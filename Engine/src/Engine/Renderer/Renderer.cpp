@@ -15,7 +15,7 @@ namespace Engine
 		m_Device = Application::Get().GetGraphicsContext()->GetDevice();
 		m_Queue = Application::Get().GetGraphicsContext()->GetQueue();
 		RenderUtils::Initialize(m_Device);
-		Resize(m_Width, m_Height);
+		Resize(640, 640);
 	}
 
 	Renderer::~Renderer()
@@ -28,28 +28,49 @@ namespace Engine
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-		m_Width = width;
-		m_Height = height;
-
-		wgpu::TextureDescriptor desc{};
-		desc.label = { "RendererTexture", WGPU_STRLEN };
-		desc.dimension = WGPUTextureDimension_2D;
-		desc.format = WGPUTextureFormat_RGBA8Unorm;
-		desc.size = { width, height, 1 };
-		desc.mipLevelCount = 1;
-		desc.sampleCount = 1;
-		desc.usage = WGPUTextureUsage_RenderAttachment | WGPUTextureUsage_TextureBinding;
-		wgpu::Texture texture = m_Device.createTexture(desc);
+		// Color texture
+		wgpu::TextureDescriptor colorTextureDesc{};
+		colorTextureDesc.label = { "RendererColorTexture", WGPU_STRLEN };
+		colorTextureDesc.dimension = wgpu::TextureDimension::_2D;
+		colorTextureDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+		colorTextureDesc.size = { width, height, 1 };
+		colorTextureDesc.mipLevelCount = 1;
+		colorTextureDesc.sampleCount = 1;
+		colorTextureDesc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
+		wgpu::Texture colorTexture = m_Device.createTexture(colorTextureDesc);
 
 		wgpu::TextureViewDescriptor viewDesc{};
 		viewDesc.label = { "RendererTextureView", WGPU_STRLEN };
 		viewDesc.dimension = WGPUTextureViewDimension_2D;
-		viewDesc.format = desc.format;
+		viewDesc.format = colorTextureDesc.format;
 		viewDesc.baseMipLevel = 0;
 		viewDesc.mipLevelCount = 1;
 		viewDesc.baseArrayLayer = 0;
 		viewDesc.arrayLayerCount = 1;
-		m_OutputView = texture.createView(viewDesc);
+		m_TextureView = colorTexture.createView(viewDesc);
+
+		// Depth texture
+		wgpu::TextureDescriptor depthTextureDesc;
+		colorTextureDesc.label = { "RendererDepthTexture", WGPU_STRLEN };
+		depthTextureDesc.dimension = wgpu::TextureDimension::_2D;
+		depthTextureDesc.format = wgpu::TextureFormat::Depth24Plus;
+		depthTextureDesc.mipLevelCount = 1;
+		depthTextureDesc.sampleCount = 1;
+		depthTextureDesc.size = { width, height, 1 };
+		depthTextureDesc.usage = wgpu::TextureUsage::RenderAttachment;
+		depthTextureDesc.viewFormatCount = 1;
+		depthTextureDesc.viewFormats = (WGPUTextureFormat*)&wgpu::TextureFormat::Depth24Plus;
+		wgpu::Texture depthTexture = m_Device.createTexture(depthTextureDesc);
+
+		wgpu::TextureViewDescriptor depthTextureViewDesc;
+		depthTextureViewDesc.aspect = wgpu::TextureAspect::DepthOnly;
+		depthTextureViewDesc.baseArrayLayer = 0;
+		depthTextureViewDesc.arrayLayerCount = 1;
+		depthTextureViewDesc.baseMipLevel = 0;
+		depthTextureViewDesc.mipLevelCount = 1;
+		depthTextureViewDesc.dimension = wgpu::TextureViewDimension::_2D;
+		depthTextureViewDesc.format = wgpu::TextureFormat::Depth24Plus;
+		m_DepthView = depthTexture.createView(depthTextureViewDesc);
 	}
 
 	void Renderer::BeginScene(const Camera& camera)
@@ -57,16 +78,28 @@ namespace Engine
 		ENGINE_PROFILE_FUNCTION();
 
 		wgpu::RenderPassColorAttachment colorAttachment{};
-		colorAttachment.view = m_OutputView;
+		colorAttachment.view = m_TextureView;
 		colorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
-		colorAttachment.loadOp = WGPULoadOp_Clear;
-		colorAttachment.storeOp = WGPUStoreOp_Store;
+		colorAttachment.loadOp = wgpu::LoadOp::Clear;
+		colorAttachment.storeOp = wgpu::StoreOp::Store;
 		colorAttachment.clearValue = m_ClearColor;
+
+		wgpu::RenderPassDepthStencilAttachment depthStencilAttachment{};
+		depthStencilAttachment.view = m_DepthView;
+		depthStencilAttachment.depthClearValue = 1.0f;
+		depthStencilAttachment.depthLoadOp = wgpu::LoadOp::Clear;
+		depthStencilAttachment.depthStoreOp = wgpu::StoreOp::Store;
+		depthStencilAttachment.depthReadOnly = false;
+		depthStencilAttachment.stencilClearValue = 0;
+		depthStencilAttachment.stencilLoadOp = wgpu::LoadOp::Undefined;
+		depthStencilAttachment.stencilStoreOp = wgpu::StoreOp::Undefined;
+		depthStencilAttachment.stencilReadOnly = true;
 
 		wgpu::RenderPassDescriptor renderPassDesc{};
 		renderPassDesc.label = { "RenderPassDescriptor", WGPU_STRLEN };
 		renderPassDesc.colorAttachmentCount = 1;
 		renderPassDesc.colorAttachments = &colorAttachment;
+		renderPassDesc.depthStencilAttachment = &depthStencilAttachment;
 
 		wgpu::CommandEncoderDescriptor encoderDesc = {};
 		encoderDesc.label = { "RendererCommandEncoderDescriptor", WGPU_STRLEN };
@@ -96,22 +129,20 @@ namespace Engine
 			auto meshComponent = entity.GetComponent<MeshComponent>();
 
 			glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetModelMatrix();
-			//auto mesh = entity.GetComponent<MeshComponent>().Mesh;
-			//auto material = entity.GetComponent<MeshComponent>().Material;
-			auto mesh = AssetManager::GetAsset<Mesh>("resources/models/cube.glb");
-			auto material = AssetManager::GetAsset<Material>("resources/materials/default.mat");
+
+			auto mesh = meshComponent.Mesh;
+			auto material = meshComponent.Material;
 			auto shader = material->GetShader();
 
-			auto modelUniformBuffer = entity.GetComponent<MeshComponent>().ModelBuffer;
-			auto modelBindGroup = entity.GetComponent<MeshComponent>().ModelBindGroup;
-			m_Queue.writeBuffer(modelUniformBuffer, 0, &modelMatrix, sizeof(modelMatrix));
+			auto modelUniformBuffer = meshComponent.ModelBuffer;
+			auto modelBindGroup = meshComponent.ModelBindGroup;
 
+			m_Queue.writeBuffer(modelUniformBuffer, 0, &modelMatrix, sizeof(modelMatrix));
+			m_RenderPass.setBindGroup(0, modelBindGroup, 0, nullptr);
 
 			m_RenderPass.setPipeline(shader->GetRenderPipeline());
 			m_RenderPass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
 			m_RenderPass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, mesh->GetIndexBuffer().getSize());
-
-			m_RenderPass.setBindGroup(0, modelBindGroup, 0, nullptr);
 
 			m_RenderPass.drawIndexed(mesh->GetIndexCount(), 1, 0, 0, 0);
 		}
@@ -129,22 +160,4 @@ namespace Engine
 		m_Queue.submit(1, &commandBuffer);
 	}
 
-	//Renderer::RendererStatistics Renderer::GetStats()
-	//{
-	//	return s_Stats;
-	//}
-
-	//void Renderer::ResetStats()
-	//{
-	//	memset(&s_Stats, 0, sizeof(RendererStatistics));
-	//}
-
-	//void Renderer::AlignOffset(size_t& currentOffset, size_t alignment)
-	//{
-	//	size_t padding = currentOffset % alignment;
-	//	if (padding != 0)
-	//	{
-	//		currentOffset += (alignment - padding);
-	//	}
-	//}
 }
