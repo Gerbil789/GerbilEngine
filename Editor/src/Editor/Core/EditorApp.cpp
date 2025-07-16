@@ -6,6 +6,7 @@
 #include "Engine/Scene/Components.h"
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Renderer/RenderUtils.h"
+
 namespace Editor
 {
 	EditorApp::EditorApp(std::filesystem::path projectPath) : Application("Gerbil Editor - " + projectPath.lexically_normal().filename().string())
@@ -21,7 +22,10 @@ namespace Editor
 
 		Engine::SceneManager::CreateScene("NewScene"); //TODO: load default scene from project if there is one
 
-		auto scene = Engine::SceneManager::GetCurrentScene();
+
+		// Test scene setup, remove later
+		{
+		auto scene = Engine::SceneManager::GetActiveScene();
 
 		auto cube = scene->CreateEntity("Cube");
 
@@ -34,9 +38,9 @@ namespace Editor
 		component.ModelBuffer = Engine::RenderUtils::CreateModelBuffer();
 		component.ModelBindGroup = Engine::RenderUtils::CreateModelBindGroup(component.ModelBuffer);
 
-		cube.GetComponent<Engine::TransformComponent>().Position = { 0.0f, 0.0f, -6.0f };
-
-		LOG_INFO("--- Initialization complete ---");
+		cube.GetComponent<Engine::TransformComponent>().Position = { 0.0f, 0.0f, -10.0f };
+		cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
+		}
 	}
 
 	void EditorApp::Run()

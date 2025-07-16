@@ -4,6 +4,7 @@
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
+#include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Renderer/RenderUtils.h"
 
 namespace Engine
@@ -11,17 +12,10 @@ namespace Engine
 	Renderer::Renderer()
 	{
 		ENGINE_PROFILE_FUNCTION();
-		SceneManager::RegisterObserver(this);
-		m_Device = Application::Get().GetGraphicsContext()->GetDevice();
-		m_Queue = Application::Get().GetGraphicsContext()->GetQueue();
-		RenderUtils::Initialize(m_Device);
+		m_Scene = SceneManager::GetActiveScene();
+		m_Device = GraphicsContext::GetDevice();
+		m_Queue = GraphicsContext::GetQueue();
 		Resize(640, 640);
-	}
-
-	Renderer::~Renderer()
-	{
-		ENGINE_PROFILE_FUNCTION();
-		SceneManager::UnregisterObserver(this);
 	}
 
 	void Renderer::Resize(uint32_t width, uint32_t height)

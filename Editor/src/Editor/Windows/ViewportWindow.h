@@ -13,13 +13,11 @@
 
 namespace Editor
 {
-	class ViewportWindow : public EditorWindow, public Engine::ISceneObserver
+	class ViewportWindow : public EditorWindow
 	{
 	public:
 		ViewportWindow(EditorWindowManager* context);
-		~ViewportWindow();
 
-		void OnSceneChanged(Ref<Engine::Scene> newScene) override;
 		void OnUpdate(Engine::Timestep ts) override;
 		void OnEvent(Engine::Event& e) override;
 
@@ -29,7 +27,7 @@ namespace Editor
 		void UpdateViewportSize();
 
 	private:
-		Ref<Engine::Scene> m_Scene;
+		Engine::Scene* m_Scene;
 		Engine::Renderer m_Renderer;
 		EditorCameraController m_CameraController;
 		SceneController* m_SceneController;

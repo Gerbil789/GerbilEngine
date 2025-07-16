@@ -5,7 +5,7 @@
 
 namespace Engine::Input
 {
-	void Init();
+	void Initialize();
 	bool IsKeyPressed(KeyCode key);
 	bool IsKeyPressed(std::initializer_list<KeyCode> keys);
 	bool IsMouseButtonPressed(MouseCode button);

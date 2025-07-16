@@ -7,17 +7,15 @@
 
 namespace Editor
 {
-	class InspectorWindow : public EditorWindow, public Engine::ISceneObserver
+	class InspectorWindow : public EditorWindow
 	{
 	public:
 		InspectorWindow(EditorWindowManager* context);
-		~InspectorWindow();
 
-		void OnSceneChanged(Ref<Engine::Scene> newScene) override;
 		void OnUpdate(Engine::Timestep ts) override;
 
 	private:
-		Ref<Engine::Scene> m_Scene;
+		Engine::Scene* m_Scene;
 
 		void DrawComponents(Engine::Entity entity);
 		void DrawAddComponentButton(Engine::Entity entity);

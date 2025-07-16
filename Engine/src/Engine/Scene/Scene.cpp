@@ -26,8 +26,6 @@ namespace Engine
 
 	Scene::~Scene()
 	{
-		//auto view = m_Registry.view<IDComponent>();
-		//LOG_INFO("Destroying scene with {0} entities", view.size());
 		m_Registry.clear();
 	}
 
@@ -43,108 +41,6 @@ namespace Engine
 				m_RootEntities.push_back(entity);
 		}
 	}
-
-	template<typename Component>
-	static void CopyComponent(entt::registry& dstRegistry, entt::registry& srcRegistry, const std::unordered_map<UUID, entt::entity>& enttMap)
-	{
-		auto view = srcRegistry.view<Component>();
-		for (auto srcEntity : view)
-		{
-			UUID uuid = srcRegistry.get<IdentityComponent>(srcEntity).ID;
-			ASSERT(enttMap.find(uuid) != enttMap.end(), "Entity not found in map!");
-			entt::entity dstEnttId = enttMap.at(uuid);
-
-			auto& srcComponent = srcRegistry.get<Component>(srcEntity);
-			dstRegistry.emplace_or_replace<Component>(dstEnttId, srcComponent);
-
-		}
-	}
-
-	//template<typename Component>
-	//static void CopyComponentIfExists(Entity src, Entity dst)
-	//{
-	//	if(src.HasComponent<Component>())
-	//	{
-	//		auto& srcComponent = src.GetComponent<Component>();
-	//		dst.AddOrReplaceComponent<Component>(srcComponent);
-	//	}
-	//	
-	//}
-
-	Ref<Scene> Scene::Copy(const Ref<Scene>& other)
-	{
-		Ref<Scene> newScene = CreateRef<Scene>(other->GetFilePath());
-
-		newScene->m_ViewportWidth = other->m_ViewportWidth;
-		newScene->m_ViewportHeight = other->m_ViewportHeight;
-
-		std::unordered_map<UUID, entt::entity> enttMap;
-
-		// Copy entities
-		auto& srcSceneRegistry = other->m_Registry;
-		auto& dstSceneRegistry = newScene->m_Registry;
-
-		auto IdView = srcSceneRegistry.view<IdentityComponent>();
-
-		for (auto entity : IdView)
-		{
-			UUID uuid = IdView.get<IdentityComponent>(entity).ID;
-			const auto& name = srcSceneRegistry.get<NameComponent>(entity).Name;
-			Entity newEntity = newScene->CreateEntity(uuid, name);
-			enttMap[uuid] = (entt::entity)newEntity;
-
-		}
-
-		CopyComponent<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<SpriteComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponent<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-
-		return newScene;
-	}
-
-
-
-	//void Scene::OnPlay()
-	//{
-	//	m_IsPlaying = true;
-	//}
-
-	//void Scene::OnStop()
-	//{
-	//	m_IsPlaying = false;
-	//}
-
-	//void Scene::OnPause()
-	//{
-	//	m_IsPaused = true;
-	//}
-
-	//void Scene::OnResume()
-	//{
-	//	m_IsPaused = false;
-	//}
-
-
-
-	void Scene::OnViewportResize(uint32_t width, uint32_t height)
-	{
-		m_ViewportWidth = width;
-		m_ViewportHeight = height;
-
-	/*	auto view = m_Registry.view<CameraComponent>();
-
-		for (auto entity : view)
-		{
-			auto& cameraComponent = view.get<CameraComponent>(entity);
-			if (!cameraComponent.FixedAspectRatio)
-			{
-				Engine::Camera& camera = cameraComponent.Camera;
-				camera.SetViewportSize(width, height);
-			}
-		}*/
-
-	}
-
 
 	Entity Scene::CreateEntity(const std::string& name)
 	{
@@ -195,9 +91,6 @@ namespace Engine
 		else
 			roots.insert(roots.begin() + newIndex, entity);
 	}
-
-
-
 
 	void Scene::SetParent(entt::entity child, entt::entity newParent)
 	{
@@ -251,4 +144,69 @@ namespace Engine
 
 		return false;
 	}
+
+	void Scene::CopyFrom(const Scene& other)
+	{
+		m_Registry.clear();
+		m_RootEntities.clear();
+
+		std::unordered_map<UUID, entt::entity> uuidToEntityMap;
+
+		// Step 1: Create all entities with UUIDs
+		auto view = other.m_Registry.view<IdentityComponent>();
+		for (auto e : view)
+		{
+			const auto& id = view.get<IdentityComponent>(e).ID;
+			Entity newEntity = CreateEntity(id);
+			uuidToEntityMap[id] = (entt::entity)newEntity;
+		}
+
+		// Step 2: Copy all components (except IdentityComponent and HierarchyComponent)
+		auto CopyComponent = [&](auto typeHolder)
+			{
+				using T = decltype(typeHolder);
+				auto view = other.m_Registry.view<T>();
+				for (auto e : view)
+				{
+					UUID uuid = other.m_Registry.get<IdentityComponent>(e).ID;
+					entt::entity dst = uuidToEntityMap.at(uuid);
+					const T& srcComponent = view.get<T>(e);
+					m_Registry.emplace_or_replace<T>(dst, srcComponent);
+				}
+			};
+
+		CopyComponent(TransformComponent{});
+		CopyComponent(NameComponent{});
+		CopyComponent(MeshComponent{});
+		CopyComponent(SpriteComponent{});
+		CopyComponent(CameraComponent{});
+		CopyComponent(LightComponent{});
+
+
+		// Step 3: Copy hierarchy
+		{
+			auto view = other.m_Registry.view<HierarchyComponent>();
+			for (auto e : view)
+			{
+				UUID uuid = other.m_Registry.get<IdentityComponent>(e).ID;
+				entt::entity dst = uuidToEntityMap.at(uuid);
+				const auto& src = view.get<HierarchyComponent>(e);
+
+				auto& dstHC = m_Registry.emplace_or_replace<HierarchyComponent>(dst);
+				dstHC.Parent = src.Parent != entt::null ? uuidToEntityMap.at(other.m_Registry.get<IdentityComponent>(src.Parent).ID) : entt::null;
+				dstHC.FirstChild = src.FirstChild != entt::null ? uuidToEntityMap.at(other.m_Registry.get<IdentityComponent>(src.FirstChild).ID) : entt::null;
+				dstHC.NextSibling = src.NextSibling != entt::null ? uuidToEntityMap.at(other.m_Registry.get<IdentityComponent>(src.NextSibling).ID) : entt::null;
+				dstHC.PrevSibling = src.PrevSibling != entt::null ? uuidToEntityMap.at(other.m_Registry.get<IdentityComponent>(src.PrevSibling).ID) : entt::null;
+			}
+		}
+
+		// Step 4: Copy root entity list
+		for (auto e : other.m_RootEntities)
+		{
+			const UUID& uuid = other.m_Registry.get<IdentityComponent>(e).ID;
+			entt::entity dst = uuidToEntityMap.at(uuid);
+			m_RootEntities.push_back(dst);
+		}
+	}
+
 }

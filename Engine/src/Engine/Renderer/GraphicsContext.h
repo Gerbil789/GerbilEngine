@@ -1,24 +1,19 @@
 #pragma once
 #include <webgpu/webgpu.hpp>
 
-namespace Engine
+namespace Engine::GraphicsContext
 {
-	class GraphicsContext
-	{
-	public:
-		void Init();
-		void Shutdown();
-		void SetViewport(uint32_t width, uint32_t height);
+	extern wgpu::Device s_Device;
+	extern wgpu::Queue s_Queue;
+	extern wgpu::Surface s_Surface;
 
-		wgpu::Device GetDevice() const { return m_Device; }
-		wgpu::Queue GetQueue() const { return m_Queue; }
-		wgpu::Surface GetSurface() const { return m_Surface; }
+	void Initialize();
+	void Shutdown();
+	void SetViewport(uint32_t width, uint32_t height);
 
-	private:
-		wgpu::Device m_Device;
-		wgpu::Queue m_Queue;
-		wgpu::Surface m_Surface;
+	inline wgpu::Device GetDevice() { return s_Device; }
+	inline wgpu::Queue GetQueue() { return s_Queue; }
+	inline wgpu::Surface GetSurface() { return s_Surface; }
 
-		//TODO: add system requirements for the graphics context, to prevent "It works on my machine..."
-	};
+	//TODO: add system requirements for the graphics context, to prevent "It works on my machine..."
 }

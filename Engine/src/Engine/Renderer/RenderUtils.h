@@ -21,7 +21,7 @@ namespace Engine::RenderUtils
 
 	static_assert(sizeof(ModelUniforms) % 16 == 0);
 
-	void Initialize(wgpu::Device device);
+	void Initialize();
 
 	extern wgpu::Device s_Device;
 

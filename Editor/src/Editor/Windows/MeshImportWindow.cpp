@@ -5,10 +5,6 @@ namespace Editor
 {
 	void MeshImportWindow::SetScene(void* scene)
 	{
-	/*	m_Scene = (aiScene*)scene;
-
-		int meshCount = m_Scene->mNumMeshes;
-		int materialCount = m_Scene->mNumMaterials;*/
 
 	}
 	void MeshImportWindow::OnUpdate(Engine::Timestep ts)

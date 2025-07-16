@@ -1,13 +1,14 @@
 #include "enginepch.h"
 #include "Application.h"
 #include "Engine/Core/Input.h"
+#include "Engine/Renderer/GraphicsContext.h"
+#include "Engine/Renderer/RenderUtils.h"
 
 namespace Engine
 {
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
 	Application* Application::s_Instance = nullptr;
-	GraphicsContext* Application::s_GraphicsContext = nullptr;
 
 	Application::Application(const std::string& name)
 	{
@@ -18,10 +19,9 @@ namespace Engine
 		m_Window = new Window(name);
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-		Input::Init();
-
-		s_GraphicsContext = new GraphicsContext();
-		s_GraphicsContext->Init();
+		Input::Initialize();
+		GraphicsContext::Initialize();
+		RenderUtils::Initialize();
 	}
 
 
@@ -41,7 +41,7 @@ namespace Engine
 		}
 
 		m_Minimized = false;
-		s_GraphicsContext->SetViewport(e.GetWidth(), e.GetHeight());
+		GraphicsContext::SetViewport(e.GetWidth(), e.GetHeight());
 
 		return false;
 	}

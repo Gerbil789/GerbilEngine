@@ -8,17 +8,7 @@ namespace Editor
 
 	SceneController::SceneController()
 	{
-		SceneManager::RegisterObserver(this);
-	}
-
-	SceneController::~SceneController()
-	{
-		SceneManager::UnregisterObserver(this);
-	}
-
-	void SceneController::OnSceneChanged(Ref<Scene> newScene)
-	{
-		m_Scene = newScene;
+		m_Scene = SceneManager::GetActiveScene();
 	}
 
 	void SceneController::OnEvent(Event& e)

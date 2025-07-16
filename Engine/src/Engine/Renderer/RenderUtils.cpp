@@ -1,7 +1,8 @@
 #include "enginepch.h"
 #include "RenderUtils.h"
-#include <glm/glm.hpp>
 #include "Engine/Core/Application.h"
+#include "Engine/Renderer/GraphicsContext.h"
+#include <glm/glm.hpp>
 
 namespace Engine::RenderUtils
 {
@@ -9,9 +10,9 @@ namespace Engine::RenderUtils
   wgpu::BindGroupLayout s_ModelBindGroupLayout; // model matrix
 	wgpu::BindGroupLayout s_FrameBindGroupLayout; // view, projection, camera position
 
-  void Initialize(wgpu::Device device)
+  void Initialize()
   {
-    s_Device = device;
+		s_Device = GraphicsContext::GetDevice();
 
     // Model BindGroupLayout
     {

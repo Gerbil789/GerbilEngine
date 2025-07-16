@@ -3,7 +3,6 @@
 #include "Engine/Core/Core.h"
 #include "Engine/Core/Window.h"
 #include "Engine/Events/ApplicationEvent.h"
-#include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Events/KeyEvent.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Utils/FPSCounter.h"
@@ -21,7 +20,6 @@ namespace Engine
 		virtual void OnEvent(Event& e);
 
 		static Application& Get() { return *s_Instance; }
-		static GraphicsContext* GetGraphicsContext() { return s_GraphicsContext; }
 
 		Window& GetWindow() { return *m_Window; }
 		float GetFPS() const { return m_FPSCounter.GetAverageFPS(); }
@@ -34,7 +32,6 @@ namespace Engine
 
 	protected:
 		static Application* s_Instance;
-		static GraphicsContext* s_GraphicsContext;
 		Window* m_Window;
 
 		bool m_Running = true;

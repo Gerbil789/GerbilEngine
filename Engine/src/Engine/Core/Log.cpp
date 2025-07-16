@@ -8,7 +8,7 @@ namespace Engine
 {
 	std::shared_ptr<spdlog::logger> Log::s_CoreLogger;
 
-	void Log::Init()
+	void Log::Initialize()
 	{
 		std::vector<spdlog::sink_ptr> logSinks;
 		logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());

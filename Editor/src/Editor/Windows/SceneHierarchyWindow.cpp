@@ -1,15 +1,13 @@
 #include "enginepch.h"
-#include "Editor/Elements/Elements.h"
 #include "SceneHierarchyWindow.h"
+#include "Editor/Elements/Elements.h"
 #include "Engine/Scene/Components.h"
 #include "Editor/Services/EditorServiceRegistry.h"
+#include "Shared/UIHelpers.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
 #include <filesystem>
-
-#include <Shared/UIHelpers.h>
-
 
 namespace Editor
 {
@@ -17,18 +15,8 @@ namespace Editor
 
 	SceneHierarchyWindow::SceneHierarchyWindow(EditorWindowManager* context) : EditorWindow(context)
 	{
-		SceneManager::RegisterObserver(this);
+		m_Scene = SceneManager::GetActiveScene();
 		m_SceneController = EditorServiceRegistry::Get<SceneController>();
-	}
-
-	SceneHierarchyWindow::~SceneHierarchyWindow()
-	{
-		SceneManager::UnregisterObserver(this);
-	}
-
-	void SceneHierarchyWindow::OnSceneChanged(Ref<Scene> newScene)
-	{
-		m_Scene = newScene;
 	}
 
 	void SceneHierarchyWindow::OnUpdate(Engine::Timestep ts)

@@ -7,7 +7,7 @@ namespace Engine::Input
 {
 	static GLFWwindow* s_Window = nullptr;
 
-	void Init()
+	void Initialize()
 	{
 		s_Window = Application::Get().GetWindow().Get();
 	}

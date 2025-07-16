@@ -6,6 +6,7 @@
 
 namespace Editor
 {
+	//TODO: fix this whole window, it is a mess right now
 	struct ImportSettings 
 	{
 		bool ImportMaterials = true;
@@ -22,8 +23,5 @@ namespace Editor
 
 
 		void OnUpdate(Engine::Timestep ts) override;
-
-	private:
-		//aiScene* m_Scene = nullptr;
 	};
 }

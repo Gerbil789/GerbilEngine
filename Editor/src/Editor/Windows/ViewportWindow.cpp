@@ -16,20 +16,10 @@ namespace Editor
 
 	ViewportWindow::ViewportWindow(EditorWindowManager* context) : EditorWindow(context)
 	{
-		SceneManager::RegisterObserver(this);
-
+		m_Scene = SceneManager::GetActiveScene();
 		m_SceneController = EditorServiceRegistry::Get<SceneController>();
 	}
 
-	ViewportWindow::~ViewportWindow()
-	{
-		SceneManager::UnregisterObserver(this);
-	}
-
-	void ViewportWindow::OnSceneChanged(Ref<Scene> newScene)
-	{
-		m_Scene = newScene;
-	}
 
 	void ViewportWindow::OnUpdate(Timestep ts)
 	{

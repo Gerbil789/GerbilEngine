@@ -8,13 +8,11 @@
 namespace Editor
 {
 	//TODO: delete this class? move it into scenemanager in engine, or scene itself?
-	class SceneController : public Engine::ISceneObserver
+	class SceneController
 	{
 	public:
 		SceneController();
-		~SceneController();
 
-		void OnSceneChanged(Ref<Engine::Scene> newScene) override;
 		void OnEvent(Engine::Event& e);
 
 		// Entity management functions
@@ -33,7 +31,7 @@ namespace Editor
 		void OnScenePlay();
 		void OnSceneStop();
 
-		Ref<Engine::Scene> m_Scene;
+		Engine::Scene* m_Scene;
 		Engine::UUID m_CopiedEntityUUID = 0;
 		entt::entity m_SelectedEntity = entt::null;
 	};

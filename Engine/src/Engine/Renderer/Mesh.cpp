@@ -1,5 +1,6 @@
 #include "enginepch.h"
-#include "Engine/Renderer/Mesh.h"
+#include "Mesh.h"
+#include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Events/WindowEvent.h"
 #include "Engine/Core/Application.h"
 
@@ -148,7 +149,7 @@ namespace Engine
 
 		// === Upload to GPU ===
 
-		auto device = Application::Get().GetGraphicsContext()->GetDevice(); // Assuming you expose wgpu::Device
+		auto device = GraphicsContext::GetDevice(); 
 
 		// Vertex buffer
 		wgpu::BufferDescriptor vertexBufferdesc{};
@@ -157,7 +158,7 @@ namespace Engine
 		vertexBufferdesc.mappedAtCreation = false;
 
 		wgpu::Buffer vertexBuffer = device.createBuffer(vertexBufferdesc);
-		Application::Get().GetGraphicsContext()->GetQueue().writeBuffer(vertexBuffer, 0, vertices.data(), vertexBufferdesc.size);
+		GraphicsContext::GetQueue().writeBuffer(vertexBuffer, 0, vertices.data(), vertexBufferdesc.size);
 
 		// Index buffer
 		wgpu::BufferDescriptor indexBufferdesc{};
@@ -166,7 +167,7 @@ namespace Engine
 		indexBufferdesc.mappedAtCreation = false;
 
 		wgpu::Buffer indexBuffer = device.createBuffer(indexBufferdesc);
-		Application::Get().GetGraphicsContext()->GetQueue().writeBuffer(indexBuffer, 0, indices.data(), indexBufferdesc.size);
+		GraphicsContext::GetQueue().writeBuffer(indexBuffer, 0, indices.data(), indexBufferdesc.size);
 
 		return CreateRef<Mesh>(path, vertexBuffer, indexBuffer, indices.size());
 	}

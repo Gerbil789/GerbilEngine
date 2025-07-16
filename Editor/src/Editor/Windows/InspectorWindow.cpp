@@ -16,19 +16,10 @@ namespace Editor
 
 	InspectorWindow::InspectorWindow(EditorWindowManager* context) : EditorWindow(context)
 	{
-		SceneManager::RegisterObserver(this);
+		m_Scene = SceneManager::GetActiveScene();
 		m_SceneController = EditorServiceRegistry::Get<SceneController>();
 	}
 
-	InspectorWindow::~InspectorWindow()
-	{
-		SceneManager::UnregisterObserver(this);
-	}
-
-	void InspectorWindow::OnSceneChanged(Ref<Scene> newScene)
-	{
-		m_Scene = newScene;
-	}
 
 	void InspectorWindow::OnUpdate(Engine::Timestep ts)
 	{

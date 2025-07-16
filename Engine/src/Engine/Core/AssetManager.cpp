@@ -1,5 +1,5 @@
 #include "enginepch.h"
-#include "Engine/Core/AssetManager.h"
+#include "AssetManager.h"
 #include "Engine/Renderer/Texture.h"
 #include "Engine/Renderer/Material.h"
 #include "Engine/Scene/Scene.h"

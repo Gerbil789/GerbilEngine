@@ -1,12 +1,9 @@
 #pragma once
 
-#include "entt.hpp"
-#include "Engine/Core/Timestep.h"
-#include "Engine/Renderer/Camera.h"
 #include "Engine/Core/UUID.h"
 #include "Engine/Core/Asset.h"
 #include "Engine/Scene/Components.h"
-#include "Engine/Renderer/Material.h"
+#include <entt.hpp>
 
 namespace Engine 
 {
@@ -22,25 +19,9 @@ namespace Engine
 	class Scene : public Asset
 	{
 	public:
-		//enum class SceneState { Editor = 0, Runtime = 1 };
-
-	public:
 		Scene(const std::filesystem::path& path);
 		~Scene();
 		void RefreshRootEntities(); //TODO: move to SceneController?
-
-		static Ref<Scene> Copy(const Ref<Scene>& other);
-		//SceneState GetSceneState() const { return m_SceneState; }
-		//bool IsPlaying() const { return m_IsPlaying; } //TODO: move to SceneController?
-		//bool IsPaused() const { return m_IsPaused; }   //TODO: move to SceneController?
-		//void OnUpdate(Timestep ts);											
-		//void OnUpdate(Timestep ts, EditorCamera& camera);
-
-		//void OnPlay();						//TODO: move to SceneController?
-		//void OnStop();						//TODO: move to SceneController?
-		//void OnPause();						//TODO: move to SceneController?
-		//void OnResume();					//TODO: move to SceneController?	
-		void OnViewportResize(uint32_t width, uint32_t height);
 
 		Entity CreateEntity(const std::string& name = "");
 		Entity CreateEntity(UUID uuid, const std::string& name = "");
@@ -69,22 +50,12 @@ namespace Engine
 		void SetParent(entt::entity child, entt::entity newParent);
 		bool IsDescendant(entt::entity parent, entt::entity child);
 
+		void CopyFrom(const Scene& other);
+
 		entt::registry m_Registry;
-	//private:
-	//	void OnUpdateRuntime(Timestep ts);
-	//	void OnUpdateEditor(Timestep ts, EditorCamera& camera);
-	//	void OnUpdateEditor(Timestep ts, Camera& camera, const glm::mat4& transform);
 
 	private:
 		std::vector<entt::entity> m_RootEntities;
-
-
-		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
-
-		//bool m_IsPlaying = false;
-		//bool m_IsPaused = false;
-
-		//SceneState m_SceneState = SceneState::Editor;
 
 		friend class SceneController;
 		friend class Entity;

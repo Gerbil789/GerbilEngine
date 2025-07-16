@@ -1,14 +1,15 @@
-#include "EditorWindowManager.h"
 #include "enginepch.h"
+#include "EditorWindowManager.h"
 #include "Editor/Services/EditorServiceRegistry.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Utils/Color.h"
 #include "Engine/Utils/File.h"
 #include "Engine/Renderer/Renderer.h"
-#include "imgui.h"
-#include "ImGuizmo.h"
-#include "backends/imgui_impl_wgpu.h"
-#include "backends/imgui_impl_glfw.h"
+#include "Engine/Renderer/GraphicsContext.h"
+#include <imgui.h>
+#include <ImGuizmo.h>
+#include <backends/imgui_impl_wgpu.h>
+#include <backends/imgui_impl_glfw.h>
 
 namespace Editor
 {
@@ -48,7 +49,7 @@ namespace Editor
 		ImGui_ImplGlfw_InitForOther(Engine::Application::Get().GetWindow().Get(), true);
 
 		ImGui_ImplWGPU_InitInfo initInfo;
-		initInfo.Device = Engine::Application::GetGraphicsContext()->GetDevice();
+		initInfo.Device = Engine::GraphicsContext::GetDevice();
 		initInfo.NumFramesInFlight = 3;
 		initInfo.RenderTargetFormat = WGPUTextureFormat_RGBA8Unorm;
 		initInfo.DepthStencilFormat = WGPUTextureFormat_Undefined;
@@ -146,9 +147,9 @@ namespace Editor
 		// Rendering
 		ImGui::Render();
 
-		auto device = app.GetGraphicsContext()->GetDevice();
-		auto surface = app.GetGraphicsContext()->GetSurface();
-		auto queue = app.GetGraphicsContext()->GetQueue();
+		auto device = Engine::GraphicsContext::GetDevice();
+		auto surface = Engine::GraphicsContext::GetSurface();
+		auto queue = Engine::GraphicsContext::GetQueue();
 
 		wgpu::SurfaceTexture surfaceTexture;
 		surface.getCurrentTexture(&surfaceTexture);

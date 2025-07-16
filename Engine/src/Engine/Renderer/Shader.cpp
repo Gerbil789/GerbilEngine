@@ -2,14 +2,15 @@
 #include "Shader.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Utils/File.h"
+#include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Renderer/RenderUtils.h"
 
 namespace Engine 
 {
 	Shader::Shader(const std::filesystem::path& path) : Asset(path)
 	{
-		auto device = Application::Get().GetGraphicsContext()->GetDevice();
-		auto queue = Application::Get().GetGraphicsContext()->GetQueue();
+		auto device = GraphicsContext::GetDevice();
+		auto queue = GraphicsContext::GetQueue();
 
 		wgpu::ShaderModule shaderModule = LoadShader("resources/shaders/testshader.wgsl");
 
@@ -107,7 +108,7 @@ namespace Engine
 
 	wgpu::ShaderModule Shader::LoadShader(const std::filesystem::path& path)
 	{
-		auto device = Application::Get().GetGraphicsContext()->GetDevice();
+		auto device = GraphicsContext::GetDevice();
 
 		std::string content;
 		if (!Engine::ReadFile(path, content))

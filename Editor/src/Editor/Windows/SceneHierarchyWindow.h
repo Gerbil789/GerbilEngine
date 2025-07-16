@@ -11,21 +11,18 @@
 
 namespace Editor
 {
-	class SceneHierarchyWindow : public EditorWindow, public Engine::ISceneObserver
+	class SceneHierarchyWindow : public EditorWindow
 	{
 	public:
 		SceneHierarchyWindow(EditorWindowManager* context);
-		~SceneHierarchyWindow();
 
-		void OnSceneChanged(Ref<Engine::Scene> newScene) override;
 		void OnUpdate(Engine::Timestep ts) override;
 
 	private:
-		Ref<Engine::Scene> m_Scene;
+		Engine::Scene* m_Scene;
+		SceneController* m_SceneController;
 
 		void DrawEntityNode(entt::entity);
 		void DrawReorderDropTarget(entt::entity parent, size_t index);
-
-		SceneController* m_SceneController;
 	};
 }

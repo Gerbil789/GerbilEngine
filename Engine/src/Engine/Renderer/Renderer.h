@@ -6,12 +6,10 @@
 
 namespace Engine
 {
-	class Renderer : public ISceneObserver
+	class Renderer
 	{
 	public:
 		Renderer();
-		~Renderer();
-		void OnSceneChanged(Ref<Engine::Scene> newScene) override { m_Scene = newScene; }
 
 		void SetClearColor(const glm::vec4& color) { m_ClearColor = { color.r, color.g, color.b, color.a }; }
 		void Resize(uint32_t width, uint32_t height);
@@ -23,7 +21,7 @@ namespace Engine
 		wgpu::TextureView GetTextureView() const { return m_TextureView; }
 
 	private:
-		Ref<Scene> m_Scene;
+		Scene* m_Scene;
 
 		wgpu::Device m_Device;
 		wgpu::Queue m_Queue;

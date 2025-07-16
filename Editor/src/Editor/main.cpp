@@ -1,10 +1,9 @@
-#include "enginepch.h"
 #include "Engine/Core/Log.h"
 #include "Editor/Core/EditorApp.h"
 
 int main(int argc, char** argv)
 {
-  Engine::Log::Init();
+  Engine::Log::Initialize();
 
   std::filesystem::path projectPath;
 
@@ -22,6 +21,8 @@ int main(int argc, char** argv)
   ENGINE_PROFILE_BEGIN("Startup", "Profile-Startup.json");
   auto app = new Editor::EditorApp(projectPath);
   ENGINE_PROFILE_END();
+
+  LOG_INFO("--- Initialization complete ---");
 
   ENGINE_PROFILE_BEGIN("Runtime", "Profile-Runtime.json");
   app->Run();

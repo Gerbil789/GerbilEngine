@@ -7,9 +7,13 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
-namespace Engine
+namespace Engine::GraphicsContext
 {
-	//TODP: make these lambdas 
+	wgpu::Device s_Device;
+	wgpu::Queue s_Queue;
+	wgpu::Surface s_Surface;
+
+	//TODO: make these lambdas 
 	static constexpr auto OnDeviceLost = [](WGPUDevice const* device, WGPUDeviceLostReason reason, WGPUStringView message, void* userdata1, void* userdata2) 
 	{
 		LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", (int)reason, message);
@@ -34,7 +38,7 @@ namespace Engine
 		return instance.createSurface(surfaceDesc);
 	}
 
-	void GraphicsContext::Init()
+	void Initialize()
 	{
 		Engine::Window& window = Engine::Application::Get().GetWindow();
 
@@ -45,12 +49,12 @@ namespace Engine
 		ASSERT(instance, "Failed to create WGPU instance");
 
 		// Create WGPU surface
-		m_Surface = glfwGetWGPUSurface(instance, window.Get());
-		ASSERT(m_Surface, "Failed to create WebGPU surface");
+		s_Surface = glfwGetWGPUSurface(instance, window.Get());
+		ASSERT(s_Surface, "Failed to create WebGPU surface");
 
 		// Request adapter
 		wgpu::RequestAdapterOptions adapterOpts = {};
-		adapterOpts.compatibleSurface = m_Surface;
+		adapterOpts.compatibleSurface = s_Surface;
 		wgpu::Adapter adapter = instance.requestAdapter(adapterOpts);
 		ASSERT(adapter, "Failed to request WGPU adapter");
 		instance.release();
@@ -68,12 +72,12 @@ namespace Engine
 		deviceDesc.defaultQueue.label = { "DefaultQueue", WGPU_STRLEN };
 		deviceDesc.deviceLostCallbackInfo = deviceLostCallbackInfo;
 		deviceDesc.uncapturedErrorCallbackInfo = uncapturedErrorCallbackInfo;
-		m_Device = adapter.requestDevice(deviceDesc);
-		ASSERT(m_Device, "Failed to request WebGPU device");
+		s_Device = adapter.requestDevice(deviceDesc);
+		ASSERT(s_Device, "Failed to request WebGPU device");
 
 		// Get queue
-		m_Queue = m_Device.getQueue();
-		ASSERT(m_Queue, "Failed to get WGPU queue");
+		s_Queue = s_Device.getQueue();
+		ASSERT(s_Queue, "Failed to get WGPU queue");
 
 		// Configure surface
 		wgpu::SurfaceConfiguration config = {};
@@ -83,24 +87,24 @@ namespace Engine
 		config.format = WGPUTextureFormat_RGBA8Unorm;
 		config.viewFormatCount = 0;
 		config.viewFormats = nullptr;
-		config.device = m_Device;
+		config.device = s_Device;
 		config.presentMode = WGPUPresentMode_Fifo;
 		config.alphaMode = WGPUCompositeAlphaMode_Opaque;
-		m_Surface.configure(config);
+		s_Surface.configure(config);
 
 		adapter.release();
 	}
 
 	void GraphicsContext::Shutdown()
 	{
-		if (m_Surface) m_Surface.unconfigure();
-		if (m_Queue) m_Queue.release();
-		if (m_Surface) m_Surface.release();
-		if (m_Device) m_Device.release();
+		if (s_Surface) s_Surface.unconfigure();
+		if (s_Queue) s_Queue.release();
+		if (s_Surface) s_Surface.release();
+		if (s_Device) s_Device.release();
 
-		m_Device = nullptr;
-		m_Queue = nullptr;
-		m_Surface = nullptr;
+		s_Device = nullptr;
+		s_Queue = nullptr;
+		s_Surface = nullptr;
 
 		LOG_INFO("WGPU GraphicsContext shutdown");
 	}
@@ -109,7 +113,7 @@ namespace Engine
 	{
 		WGPUSurfaceConfiguration config = {};
 		config.nextInChain = nullptr;
-		config.device = Application::Get().GetGraphicsContext()->GetDevice();
+		config.device = GraphicsContext::GetDevice();
 		config.format = WGPUTextureFormat_RGBA8Unorm;
 		config.usage = WGPUTextureUsage_RenderAttachment;
 		config.width = width;
@@ -119,7 +123,7 @@ namespace Engine
 		config.viewFormatCount = 0;
 		config.viewFormats = nullptr;
 
-		wgpuSurfaceConfigure(m_Surface, &config);
+		wgpuSurfaceConfigure(s_Surface, &config);
 	}
 
 
