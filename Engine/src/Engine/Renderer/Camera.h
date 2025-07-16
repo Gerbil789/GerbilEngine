@@ -1,6 +1,8 @@
 #pragma once
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace Engine
 {
@@ -37,13 +39,18 @@ namespace Engine
 	public:
 		Camera() = default;
 
-		void SetViewportSize(glm::vec2 size);
+		void SetViewportSize(const glm::vec2& size);
 
-		const ProjectionData& GetProjectionData() const { return m_ProjectionData; }
+		const ProjectionData& GetProjectionData() const { return m_ProjectionData; } //TODO: remove? make serializer a friend class instead?
 
 		const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 		const glm::mat4& GetViewProjectionMatrix() const { return m_ProjectionMatrix * m_ViewMatrix; }
+
+		const glm::quat GetOrientation() const { return glm::quat(glm::radians(glm::vec3(m_Pitch, m_Yaw, 0.0f))); }
+		const glm::vec3 GetForward() const { return GetOrientation() * glm::vec3(0.0f, 0.0f, -1.0f); }
+		const glm::vec3 GetRight() const { return GetOrientation() * glm::vec3(1.0f, 0.0f, 0.0f); }
+		const glm::vec3 GetUp() const { return GetOrientation() * glm::vec3(0.0f, 1.0f, 0.0f); }
 
 		const glm::vec3& GetPosition() const { return m_Position; }
 		void SetPosition(const glm::vec3& position);
@@ -51,20 +58,17 @@ namespace Engine
 
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
-		float GetZoom() { return m_Zoom; }
-		float SetZoom(float zoom) { return m_Zoom = zoom; }
 
+	private:
 		void UpdateProjectionMatrix();
 		void UpdateViewMatrix();
 
 	private:
 		ProjectionData m_ProjectionData;
-
 		float m_AspectRatio = 16.0f / 9.0f;
 		glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
 		glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
 		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
-		float m_Zoom = 0.0f;
 		float m_Pitch = 0.0f;
 		float m_Yaw = 0.0f;
 	};

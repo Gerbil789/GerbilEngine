@@ -5,10 +5,9 @@ namespace Editor
 {
 	using namespace Engine;
 
-	void EditorCameraController::SetViewportSize(glm::vec2 size)
+	void EditorCameraController::SetViewportSize(const glm::vec2& size)
 	{
-		m_ViewportSize = size;
-		m_Camera.SetViewportSize(size);
+		m_Camera.SetViewportSize(size); // Update aspect ratio
 	}
 
 	void EditorCameraController::OnEvent(Event& e)
@@ -24,56 +23,21 @@ namespace Editor
 
 	bool EditorCameraController::OnKeyPressed(KeyPressedEvent& e)
 	{
-		if(e.GetKeyCode() == Key::LeftShift) // Move down
+		glm::vec3 position = m_Camera.GetPosition();
+
+		switch (e.GetKey())
 		{
-			m_Camera.SetPosition(m_Camera.GetPosition() + glm::vec3(0.0f, -0.1f, 0.0f));
-			m_Camera.UpdateViewMatrix();
+		case Key::W: position += m_Camera.GetForward() * m_MoveSpeed; break;									// Move forward (camera forward)
+		case Key::S: position -= m_Camera.GetForward() * m_MoveSpeed; break;									// Move backward (camera backward)
+		case Key::A: position -= m_Camera.GetRight() * m_MoveSpeed; break;										// Move left (camera left)
+		case Key::D: position += m_Camera.GetRight() * m_MoveSpeed; break;										// Move right (camera right)
+		case Key::LeftShift: position -= glm::vec3(0.0f, 1.0f, 0.0f) * m_MoveSpeed; break;		// Move down (world down)
+		case Key::Space: position += glm::vec3(0.0f, 1.0f, 0.0f) * m_MoveSpeed; break;				// Move up (world up)
+		default: return false; 
 		}
 
-		if (e.GetKeyCode() == Key::LeftControl) // Move up
-		{
-			m_Camera.SetPosition(m_Camera.GetPosition() + glm::vec3(0.0f, 0.1f, 0.0f));
-			m_Camera.UpdateViewMatrix();
-		}
-
-		if (e.GetKeyCode() == Key::A) // Move left
-		{
-			m_Camera.SetPosition(m_Camera.GetPosition() + glm::vec3(-0.1f, 0.0f, 0.0f));
-			m_Camera.UpdateViewMatrix();
-		}
-
-		if (e.GetKeyCode() == Key::D) // Move right
-		{
-			m_Camera.SetPosition(m_Camera.GetPosition() + glm::vec3(0.1f, 0.0f, 0.0f));
-			m_Camera.UpdateViewMatrix();
-		}
-
-		if (e.GetKeyCode() == Key::W) // Move forward
-		{
-			m_Camera.SetPosition(m_Camera.GetPosition() + glm::vec3(0.0f, 0.0f, 0.1f));
-			m_Camera.UpdateViewMatrix();
-		}
-
-		if (e.GetKeyCode() == Key::S) // Move backward
-		{
-			m_Camera.SetPosition(m_Camera.GetPosition() + glm::vec3(0.0f, 0.0f, -0.1f));
-			m_Camera.UpdateViewMatrix();
-		}
-
-		if (e.GetKeyCode() == Key::Q) // Zoom in
-		{
-			m_Camera.SetZoom(m_Camera.GetZoom() + 0.1f);
-			m_Camera.UpdateViewMatrix();
-			LOG_INFO("Zoom: {0}", m_Camera.GetZoom());
-		}
-
-		if (e.GetKeyCode() == Key::E) // Zoom out
-		{
-			m_Camera.SetZoom(m_Camera.GetZoom() - 0.1f);
-			m_Camera.UpdateViewMatrix();
-			LOG_INFO("Zoom: {0}", m_Camera.GetZoom());
-		}
-
+		m_Camera.SetPosition(position);
+		LOG_INFO("Camera Position: {0}, {1}, {2}", position.x, position.y, position.z);
 		return false;
 	}
 
@@ -85,11 +49,8 @@ namespace Editor
 	bool EditorCameraController::OnMouseScroll(MouseScrolledEvent& e)
 	{
 		float delta = e.GetYOffset() * m_ScrollSensitivity;
-		float zoom = m_Camera.GetZoom() + delta;
-		zoom = glm::clamp(zoom, -2.0f, 2.0f);
-		m_Camera.SetZoom(zoom);
-		m_Camera.UpdateViewMatrix();
-
+		glm::vec3 position = m_Camera.GetPosition();
+		m_Camera.SetPosition(position + m_Camera.GetForward() * delta * m_ScrollSensitivity);
 		return false;
 	}
 
@@ -97,7 +58,12 @@ namespace Editor
 	{
 		if(e.GetMouseButton() == Mouse::ButtonRight)
 		{
-			m_Dragging = true;
+			m_RotateDragging = true;
+			m_StartMousePosition = Input::GetMousePosition();
+		}
+		else if (e.GetMouseButton() == Mouse::ButtonMiddle)
+		{
+			m_PanDragging = true;
 			m_StartMousePosition = Input::GetMousePosition();
 		}
 		return false;
@@ -107,23 +73,39 @@ namespace Editor
 	{
 		if (e.GetMouseButton() == Mouse::ButtonRight)
 		{
-			m_Dragging = false;
+			m_RotateDragging = false;
+		}
+		else if (e.GetMouseButton() == Mouse::ButtonMiddle)
+		{
+			m_PanDragging = false;
 		}
 		return false;
 	}
 
 	bool EditorCameraController::OnMouseMoved(MouseMovedEvent& e)
 	{
-		if (!m_Dragging) return false;
+		if (!m_RotateDragging && !m_PanDragging) return false;
 
 		glm::vec2 mouse = { e.GetX(), e.GetY() };
 		glm::vec2 delta = (mouse - m_StartMousePosition) * m_MouseSensitivity;
 		m_StartMousePosition = mouse;
 
-		float yaw = m_Camera.GetYaw() + delta.x;
-		float pitch = m_Camera.GetPitch() - delta.y;
-		m_Camera.SetRotation(pitch, yaw);
-		m_Camera.UpdateViewMatrix();
+		if (m_RotateDragging)
+		{
+			float yaw = m_Camera.GetYaw() - delta.x;
+			float pitch = m_Camera.GetPitch() - delta.y;
+			m_Camera.SetRotation(pitch, yaw);
+
+		}
+		else if (m_PanDragging)
+		{
+			glm::vec3 position = m_Camera.GetPosition();
+			glm::vec3 right = m_Camera.GetRight();
+			glm::vec3 up = m_Camera.GetUp();
+			position -= right * delta.x * m_PanSpeed;
+			position += up * delta.y * m_PanSpeed;
+			m_Camera.SetPosition(position);
+		}
 		return false;
 	}
 

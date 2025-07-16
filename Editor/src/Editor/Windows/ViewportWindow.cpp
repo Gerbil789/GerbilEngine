@@ -144,7 +144,7 @@ namespace Editor
 	{
 		if (e.GetRepeatCount() > 0) return false;
 
-		switch (e.GetKeyCode())
+		switch (e.GetKey())
 		{
 		case Key::Q: m_GizmoType = -1; break; // Disable gizmo
 		case Key::W: m_GizmoType = ImGuizmo::OPERATION::TRANSLATE; break;

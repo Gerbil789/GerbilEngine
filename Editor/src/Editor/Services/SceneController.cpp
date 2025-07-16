@@ -35,7 +35,7 @@ namespace Editor
 		bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
 		bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
 
-		switch (e.GetKeyCode())
+		switch (e.GetKey())
 		{
 		case Key::N:
 		{

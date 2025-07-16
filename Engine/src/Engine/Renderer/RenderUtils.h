@@ -7,7 +7,8 @@ namespace Engine::RenderUtils
 	struct alignas(16) FrameUniforms {
 		glm::mat4 view;
 		glm::mat4 projection;
-		alignas(16) glm::vec3 cameraPosition;
+		glm::vec3 cameraPosition;
+		float padding;
 	};
 
 	static_assert(sizeof(FrameUniforms) % 16 == 0);

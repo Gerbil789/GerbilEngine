@@ -76,12 +76,12 @@ namespace Engine
 		fragmentState.targets = &colorTarget;
 		pipelineDesc.fragment = &fragmentState;
 
-		wgpu::DepthStencilState depthStencilState = wgpu::Default;
+		wgpu::DepthStencilState depthStencilState {};
 		depthStencilState.depthCompare = wgpu::CompareFunction::Less;
 		depthStencilState.depthWriteEnabled = wgpu::OptionalBool::True;
 		depthStencilState.format = wgpu::TextureFormat::Depth24Plus;
-		depthStencilState.stencilReadMask = 0;
-		depthStencilState.stencilWriteMask = 0;
+		depthStencilState.stencilReadMask = 0xFFFFFFFF;
+		depthStencilState.stencilWriteMask = 0xFFFFFFFF;
 
 		pipelineDesc.depthStencil = &depthStencilState;
 

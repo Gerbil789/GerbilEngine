@@ -14,8 +14,8 @@ struct ModelUniforms {
 };
 
 struct FrameUniforms {
-	projection: mat4x4f,
 	view: mat4x4f,
+	projection: mat4x4f,
 	cameraPosition: vec3f,	
 	_padding: f32,
 };

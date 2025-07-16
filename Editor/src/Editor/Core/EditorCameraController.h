@@ -11,7 +11,7 @@ namespace Editor
 	public:
 		EditorCameraController() = default;
 
-		void SetViewportSize(glm::vec2 size);
+		void SetViewportSize(const glm::vec2& size);
 		void OnEvent(Engine::Event& e);
 
 		Engine::Camera& GetCamera() { return m_Camera; }
@@ -27,13 +27,15 @@ namespace Editor
 	private:
 		Engine::Camera m_Camera;
 
-		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 		glm::vec2 m_StartMousePosition = { 0.0f, 0.0f };
-		glm::vec3 m_FocalPoint = glm::vec3(0.0f);
 
-		bool m_Dragging = false;
+		bool m_RotateDragging = false;
+		bool m_PanDragging = false;
 
-		float m_MouseSensitivity = 0.01f;
-		float m_ScrollSensitivity = 0.01f;
+		//TODO: Expose these in editor settings
+		float m_MouseSensitivity = 0.08f;
+		float m_ScrollSensitivity = 1.0f;
+		float m_MoveSpeed = 0.1f;
+		float m_PanSpeed = 0.1f;
 	};
 }
