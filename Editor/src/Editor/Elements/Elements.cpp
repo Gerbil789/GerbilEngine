@@ -23,10 +23,10 @@ namespace Editor::UI
 		}
 		else 
 		{
-			ImTextureID tex_id = (ImTextureID)(intptr_t)texture->GetRendererID();
-			ImTextureRef textureRef = ImTextureRef(tex_id);
+			//ImTextureID tex_id = (ImTextureID)(intptr_t)texture->GetRendererID();
+			//ImTextureRef textureRef = ImTextureRef(tex_id);
 
-			ImGui::ImageButton((char*)(intptr_t)texture->GetRendererID(), textureRef, buttonSize, ImVec2(0, 1), ImVec2(1, 0));
+			//ImGui::ImageButton((char*)(intptr_t)texture->GetRendererID(), textureRef, buttonSize, ImVec2(0, 1), ImVec2(1, 0));
 
 		}
 

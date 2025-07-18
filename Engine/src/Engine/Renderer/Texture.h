@@ -2,6 +2,7 @@
 
 #include "Engine/Core/Core.h"
 #include "Engine/Core/Asset.h"
+#include <webgpu/webgpu.hpp>
 
 namespace Engine
 {
@@ -9,35 +10,29 @@ namespace Engine
 	{
 	public:
 		virtual Ref<Asset> Load(const std::filesystem::path& path, const std::any& data = std::any()) override;
-		virtual Ref<Asset> Create(const std::filesystem::path& path, const std::any& data = std::any()) override;
-
-		Ref<Asset> CreateTexture(uint32_t width, uint32_t height, uint32_t data);
-		Ref<Asset> CreateSolidColorTexture(uint32_t color); //ABGR
+		virtual Ref<Asset> Create(const std::filesystem::path& path, const std::any& data = std::any()) override { return nullptr; }
 	};
 
 	class Texture2D : public Asset
 	{
 	public:
-		Texture2D(uint32_t width, uint32_t height) : Asset(""), m_Width(width), m_Height(height) {}
-
-		Texture2D(const std::filesystem::path& path) : Asset(path) {}
-		Texture2D(const std::filesystem::path& path, int format) : Asset(path) {}
+		Texture2D(const std::filesystem::path& path);
+		Texture2D() = default;
 		~Texture2D() = default;
 
 		uint32_t GetWidth() const { return m_Width; }
 		uint32_t GetHeight() const { return m_Height; }
-		uint32_t GetRendererID() const { return m_RendererID; }
-		unsigned char* GetPixelData() const { return m_PixelData; }
 
-		void SetData(void* data, uint32_t size) {}
-
-		void Bind(uint32_t slot = 0) const {}
-
-		bool operator == (const Texture2D& other) const { return m_RendererID == other.GetRendererID(); }
+		wgpu::TextureView GetTextureView() const { return m_TextureView; }
 
 	protected:
-		uint32_t m_Width, m_Height;
-		uint32_t m_RendererID;
-		unsigned char* m_PixelData = nullptr;
+		int m_Channels;
+		uint32_t m_Width = 0;
+		uint32_t m_Height = 0;
+
+		wgpu::Texture m_Texture;
+		wgpu::TextureView m_TextureView;
+		wgpu::TextureFormat m_TextureFormat;
+
 	};
 }

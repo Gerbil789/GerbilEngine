@@ -17,6 +17,7 @@ namespace Editor
 	ViewportWindow::ViewportWindow(EditorWindowManager* context) : EditorWindow(context)
 	{
 		m_Scene = SceneManager::GetActiveScene();
+		m_Renderer.SetScene(m_Scene);
 		m_SceneController = EditorServiceRegistry::Get<SceneController>();
 	}
 

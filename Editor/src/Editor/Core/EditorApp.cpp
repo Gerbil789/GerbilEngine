@@ -5,7 +5,8 @@
 //tmp
 #include "Engine/Scene/Components.h"
 #include "Engine/Core/AssetManager.h"
-#include "Engine/Renderer/RenderUtils.h"
+#include "Engine/Renderer/Shaders/PhongShader.h"
+#include "Engine/Renderer/Shaders/FlatColorShader.h"
 
 namespace Editor
 {
@@ -22,24 +23,43 @@ namespace Editor
 
 		Engine::SceneManager::CreateScene("NewScene"); //TODO: load default scene from project if there is one
 
-
 		// Test scene setup, remove later
 		{
-		auto scene = Engine::SceneManager::GetActiveScene();
+			auto scene = Engine::SceneManager::GetActiveScene();
 
-		auto cube = scene->CreateEntity("Cube");
+			auto texture = Engine::AssetManager::GetAsset<Engine::Texture2D>("resources/icons/skull.png");
 
-		auto mesh = Engine::AssetManager::GetAsset<Engine::Mesh>("resources/models/cube.glb");
-		auto material = Engine::AssetManager::GetAsset<Engine::Material>("resources/materials/default.mat");
+			// Entity 1
+			{
+				auto cube = scene->CreateEntity("RedCube");
+				auto mesh = Engine::AssetManager::GetAsset<Engine::Mesh>("resources/models/cube.glb");
+				auto material = Engine::AssetManager::CreateAsset<Engine::Material>("resources/materials/red.mat");
+				material->SetTexture("AlbedoTexture", texture);
+				material->SetShader(CreateRef<Engine::PhongShader>());
+				material->SetValue("Color", glm::vec4(0.8f, 0.1f, 0.2f, 1.0f));
 
-		auto& component = cube.AddComponent<Engine::MeshComponent>();
-		component.Material = material;
-		component.Mesh = mesh;
-		component.ModelBuffer = Engine::RenderUtils::CreateModelBuffer();
-		component.ModelBindGroup = Engine::RenderUtils::CreateModelBindGroup(component.ModelBuffer);
+				auto& component = cube.AddComponent<Engine::MeshComponent>();
+				component.Material = material;
+				component.Mesh = mesh;
 
-		cube.GetComponent<Engine::TransformComponent>().Position = { 0.0f, 0.0f, -10.0f };
-		cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
+				cube.GetComponent<Engine::TransformComponent>().Position = { 2.0f, 0.0f, -10.0f };
+				cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
+			}
+
+			// Entity 2
+			{
+				auto cube = scene->CreateEntity("BlueCube");
+				auto mesh = Engine::AssetManager::GetAsset<Engine::Mesh>("resources/models/cube.glb");
+				auto material = Engine::AssetManager::CreateAsset<Engine::Material>("resources/materials/blue.mat");
+				material->SetShader(CreateRef<Engine::FlatColorShader>());
+				material->SetValue("Color", glm::vec4(0.2f, 0.1f, 0.8f, 1.0f));
+				auto& component = cube.AddComponent<Engine::MeshComponent>();
+				component.Material = material;
+				component.Mesh = mesh;
+
+				cube.GetComponent<Engine::TransformComponent>().Position = { -2.0f, 0.0f, -10.0f };
+				cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
+			}
 		}
 	}
 
@@ -56,7 +76,7 @@ namespace Editor
 			float deltaTime = std::chrono::duration<float>(now - m_LastFrameTime).count();
 			m_LastFrameTime = now;
 			m_FPSCounter.Update(deltaTime);
-			Engine::Timestep ts(deltaTime); 
+			Engine::Timestep ts(deltaTime);
 			// -----------------------------------
 
 			if (m_Minimized) continue;
@@ -71,6 +91,6 @@ namespace Editor
 		ENGINE_PROFILE_FUNCTION();
 		Application::OnEvent(e);
 		m_SceneController->OnEvent(e);
-		m_EditorWindowManager->OnEvent(e); 
+		m_EditorWindowManager->OnEvent(e);
 	}
 }

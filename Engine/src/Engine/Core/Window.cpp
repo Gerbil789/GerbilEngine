@@ -7,6 +7,7 @@
 #include "Engine/Core/Application.h"
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Renderer/Texture.h"
+#include <stb_image.h>
 
 namespace Engine
 {
@@ -43,6 +44,25 @@ namespace Engine
 		//images[0].height = texture->GetHeight();
 		//images[0].pixels = texture->GetPixelData();
 		//glfwSetWindowIcon(m_Window, 1, images);
+
+		int iconWidth, iconHeight, channels;
+		unsigned char* iconPixels = stbi_load(iconPath.string().c_str(), &iconWidth, &iconHeight, &channels, 4);
+
+		if (!iconPixels) 
+		{
+			LOG_ERROR("Failed to load icon from path: {0}", iconPath.string());
+		}
+		else 
+		{
+			GLFWimage icon;
+			icon.width = iconWidth;
+			icon.height = iconHeight;
+			icon.pixels = iconPixels;
+
+			glfwSetWindowIcon(m_Window, 1, &icon);
+
+			stbi_image_free(iconPixels); // Free the image data after setting
+		}
 
 		SetEventCallbacks();
 	}

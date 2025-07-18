@@ -21,8 +21,8 @@ namespace Engine
 
 		out << YAML::BeginMap;
 
-		auto shader = material->GetShader();
-		WriteString(out, SHADER_KEY, (shader ? shader->GetFilePath().string() : ""));
+		//auto shader = material->GetShader();
+		//WriteString(out, SHADER_KEY, (shader ? shader->GetFilePath().string() : ""));
 
 		out << YAML::Key << PROPERTIES_KEY << YAML::Value << YAML::BeginMap;
 
@@ -141,8 +141,9 @@ namespace Engine
 			return AssetManager::GetAsset<Texture2D>(data[key].as<std::string>());
 			};
 
-		auto shader = AssetManager::GetAsset<Shader>(data[SHADER_KEY].as<std::string>());
-		material->SetShader(shader);
+		//auto shader = AssetManager::GetAsset<Shader>(data[SHADER_KEY].as<std::string>());
+		//auto shader = CreateRef<Shader>();
+		//material->SetShader(shader);
 
 		//auto materialProperties = shader->GetMaterialBufferLayout();
 

@@ -64,9 +64,6 @@ namespace Engine
 		Ref<Material> Material = nullptr;
 		Ref<Mesh> Mesh = nullptr;
 
-		wgpu::Buffer ModelBuffer;
-		wgpu::BindGroup ModelBindGroup;
-
 		MeshComponent() = default;
 	};
 

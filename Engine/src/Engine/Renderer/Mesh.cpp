@@ -133,19 +133,17 @@ namespace Engine
 			}
 		}
 
-		// debug log
-		for(int i = 0; i < vertices.size(); i++)
-		{
-			auto vertex = vertices[i];
-			LOG_TRACE("Vertex {0}: [{1},{2},{3}]", i, vertex.position.x, vertex.position.y, vertex.position.z);
-		}
+		//for(int i = 0; i < vertices.size(); i++)
+		//{
+		//	auto vertex = vertices[i];
+		//	LOG_TRACE("Vertex {0}: [{1},{2},{3}]", i, vertex.position.x, vertex.position.y, vertex.position.z);
+		//}
 
-		for (int i = 0; i < indices.size(); i++)
-		{
-			auto index = indices[i];
-			LOG_TRACE("Index {0}: [{1}]", i, index);
-		}
-
+		//for (int i = 0; i < indices.size(); i++)
+		//{
+		//	auto index = indices[i];
+		//	LOG_TRACE("Index {0}: [{1}]", i, index);
+		//}
 
 		// === Upload to GPU ===
 

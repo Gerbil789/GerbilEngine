@@ -2,7 +2,7 @@
 #include "Application.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Renderer/GraphicsContext.h"
-#include "Engine/Renderer/RenderUtils.h"
+#include "Engine/Renderer/Renderer.h"
 
 namespace Engine
 {
@@ -21,9 +21,8 @@ namespace Engine
 
 		Input::Initialize();
 		GraphicsContext::Initialize();
-		RenderUtils::Initialize();
+		Renderer::Initialize();
 	}
-
 
 	void Application::OnEvent(Event& e)
 	{
@@ -57,5 +56,4 @@ namespace Engine
 		Close();
 		return true;
 	}
-
 }

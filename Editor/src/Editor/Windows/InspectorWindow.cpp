@@ -4,7 +4,6 @@
 #include "Editor/Elements/Elements.h"
 #include "Engine/Core/AssetManager.h"
 #include "Editor/Services/EditorServiceRegistry.h"
-#include "Engine/Renderer/RenderUtils.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
@@ -439,8 +438,6 @@ namespace Editor
 			if (ImGui::MenuItem("MeshRenderer"))
 			{
 				auto& component = entity.AddComponent<MeshComponent>();
-				component.ModelBuffer = RenderUtils::CreateModelBuffer();
-				component.ModelBindGroup = RenderUtils::CreateModelBindGroup(component.ModelBuffer);
 
 				ImGui::CloseCurrentPopup();
 			}
