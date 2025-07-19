@@ -8,12 +8,12 @@ namespace Engine
 	{
 	public:
 		UUID();
-		UUID(uint64_t uuid) : m_UUID(uuid) {}
+		UUID(uint32_t uuid) : m_UUID(uuid) {}
 		UUID(const UUID& other) = default;
 
-		operator uint64_t() const { return m_UUID; }
+		operator uint32_t() const { return m_UUID; }
 	private:
-		uint64_t m_UUID;
+		uint32_t m_UUID;
 	};
 }
 
@@ -24,7 +24,7 @@ namespace std
 	{
 		size_t operator()(const Engine::UUID& uuid) const
 		{
-			return hash<uint64_t>()((uint64_t)uuid);
+			return hash<uint32_t>()((uint32_t)uuid);
 		}
 	};
 }

@@ -147,7 +147,7 @@ namespace Editor
 		// Rendering
 		ImGui::Render();
 
-		auto device = Engine::GraphicsContext::GetDevice();
+		auto device = Engine::GraphicsContext::GetDevice(); //TODO: store this in a member variable?
 		auto surface = Engine::GraphicsContext::GetSurface();
 		auto queue = Engine::GraphicsContext::GetQueue();
 
@@ -216,7 +216,7 @@ namespace Editor
 		wgpuDeviceTick(device);
 
 
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) 		//WHAT is this??
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) //TODO: WHAT is this??
 		{
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
@@ -226,8 +226,6 @@ namespace Editor
 
 		wgpuSurfacePresent(surface);
 		wgpuDeviceTick(device);
-
-
 	}
 
 	void EditorWindowManager::ResetLayout()

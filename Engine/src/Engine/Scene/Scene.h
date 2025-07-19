@@ -40,6 +40,8 @@ namespace Engine
 			return entities;
 		}
 
+		Entity GetEntityByUUID(UUID uuid);
+
 		std::vector<entt::entity>& GetRootEntities() { return m_RootEntities; }
 		const std::vector<entt::entity>& GetRootEntities() const { return m_RootEntities; }
 

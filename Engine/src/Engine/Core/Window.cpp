@@ -5,8 +5,6 @@
 #include "Engine/Events/KeyEvent.h"
 #include "Engine/Core/Core.h"
 #include "Engine/Core/Application.h"
-#include "Engine/Core/AssetManager.h"
-#include "Engine/Renderer/Texture.h"
 #include <stb_image.h>
 
 namespace Engine
@@ -36,14 +34,6 @@ namespace Engine
 
 		m_Window = glfwCreateWindow((int)width, (int)height, title.c_str(), nullptr, nullptr);
 		ASSERT(m_Window, "Could not create GLFW window!");
-
-		//Texture2DFactory textureFactory;
-		//auto texture = std::dynamic_pointer_cast<Texture2D>(textureFactory.Load(m_IconPath, 4)); // Force 4 channels (RGBA)
-		//GLFWimage images[1];
-		//images[0].width = texture->GetWidth();
-		//images[0].height = texture->GetHeight();
-		//images[0].pixels = texture->GetPixelData();
-		//glfwSetWindowIcon(m_Window, 1, images);
 
 		int iconWidth, iconHeight, channels;
 		unsigned char* iconPixels = stbi_load(iconPath.string().c_str(), &iconWidth, &iconHeight, &channels, 4);

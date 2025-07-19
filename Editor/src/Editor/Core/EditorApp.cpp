@@ -31,7 +31,7 @@ namespace Editor
 
 			// Entity 1
 			{
-				auto cube = scene->CreateEntity("RedCube");
+				auto cube = scene->CreateEntity("TextureCube");
 				auto mesh = Engine::AssetManager::GetAsset<Engine::Mesh>("resources/models/cube.glb");
 				auto material = Engine::AssetManager::CreateAsset<Engine::Material>("resources/materials/red.mat");
 				material->SetTexture("AlbedoTexture", texture);
@@ -44,6 +44,8 @@ namespace Editor
 
 				cube.GetComponent<Engine::TransformComponent>().Position = { 2.0f, 0.0f, -10.0f };
 				cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
+
+				LOG_WARNING("Created entity '{0}' with ID: {1}", cube.GetName(), (uint32_t)cube.GetUUID());
 			}
 
 			// Entity 2
@@ -59,6 +61,8 @@ namespace Editor
 
 				cube.GetComponent<Engine::TransformComponent>().Position = { -2.0f, 0.0f, -10.0f };
 				cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
+
+				LOG_WARNING("Created entity '{0}' with ID: {1}", cube.GetName(), (uint32_t)cube.GetUUID());
 			}
 		}
 	}

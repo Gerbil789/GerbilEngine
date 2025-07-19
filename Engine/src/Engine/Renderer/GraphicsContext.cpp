@@ -9,6 +9,7 @@
 
 namespace Engine::GraphicsContext
 {
+	wgpu::Instance s_Instance;
 	wgpu::Device s_Device;
 	wgpu::Queue s_Queue;
 	wgpu::Surface s_Surface;
@@ -45,19 +46,20 @@ namespace Engine::GraphicsContext
 		// Initialize WGPU instance
 		wgpu::InstanceDescriptor desc;
 		desc.setDefault();
-		wgpu::Instance instance = wgpu::createInstance(desc);
-		ASSERT(instance, "Failed to create WGPU instance");
+		desc.capabilities.timedWaitAnyEnable = true;
+		s_Instance = wgpu::createInstance(desc);
+		ASSERT(s_Instance, "Failed to create WGPU instance");
 
 		// Create WGPU surface
-		s_Surface = glfwGetWGPUSurface(instance, window.Get());
+		s_Surface = glfwGetWGPUSurface(s_Instance, window.Get());
 		ASSERT(s_Surface, "Failed to create WebGPU surface");
 
 		// Request adapter
 		wgpu::RequestAdapterOptions adapterOpts = {};
 		adapterOpts.compatibleSurface = s_Surface;
-		wgpu::Adapter adapter = instance.requestAdapter(adapterOpts);
+		wgpu::Adapter adapter = s_Instance.requestAdapter(adapterOpts);
 		ASSERT(adapter, "Failed to request WGPU adapter");
-		instance.release();
+		//s_Instance.release();
 		
 		// Request device
 		wgpu::DeviceLostCallbackInfo deviceLostCallbackInfo = {};
@@ -101,7 +103,9 @@ namespace Engine::GraphicsContext
 		if (s_Queue) s_Queue.release();
 		if (s_Surface) s_Surface.release();
 		if (s_Device) s_Device.release();
+		if (s_Instance) s_Instance.release();
 
+		s_Instance = nullptr;
 		s_Device = nullptr;
 		s_Queue = nullptr;
 		s_Surface = nullptr;

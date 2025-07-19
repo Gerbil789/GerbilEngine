@@ -24,7 +24,8 @@ namespace Engine
 		template<typename T>
 		T& GetComponent()
 		{
-			ASSERT(HasComponent<T>(), "Entity does not have component!");
+			const char* typeName = typeid(T).name();
+			ASSERT(HasComponent<T>(), fmt::format("Entity does not have component of type {}", typeName).c_str());
 			return m_Registry->get<T>(m_EntityHandle);
 		}
 

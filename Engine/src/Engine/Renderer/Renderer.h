@@ -11,7 +11,7 @@ namespace Engine
 	{
 	public:
 		static void Initialize();
-		Renderer();
+		Renderer(uint32_t width, uint32_t height);
 
 		void SetScene(Scene* scene) { m_Scene = scene; }
 		void SetClearColor(const glm::vec4& color) { m_ClearColor = { color.r, color.g, color.b, color.a }; }
@@ -25,6 +25,14 @@ namespace Engine
 
 		static wgpu::BindGroupLayout GetModelBindGroupLayout() { return s_ModelBindGroupLayout; }
 		static wgpu::BindGroupLayout GetFrameBindGroupLayout() { return s_FrameBindGroupLayout; }
+
+		static wgpu::BindGroup GetModelBindGroup() { return s_ModelBindGroup; }
+		static wgpu::BindGroup GetFrameBindGroup() { return s_FrameBindGroup; }
+
+		static wgpu::Buffer GetModelUniformBuffer() { return s_ModelUniformBuffer; }
+		static wgpu::Buffer GetFrameUniformBuffer() { return s_FrameUniformBuffer; }
+
+		static uint32_t GetModelUniformStride() { return s_ModelUniformStride; }
 
 		// Global sampler
 		static wgpu::Sampler s_Sampler; //TODO: move into shader or material class

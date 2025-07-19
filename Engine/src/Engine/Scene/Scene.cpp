@@ -66,6 +66,17 @@ namespace Engine
 		m_Registry.destroy(entity);
 	}
 
+	Entity Scene::GetEntityByUUID(UUID uuid)
+	{
+		auto view = m_Registry.view<IdentityComponent>();
+		for (auto entity : view)
+		{
+			if (view.get<IdentityComponent>(entity).ID == uuid)
+				return Entity{ entity, &m_Registry };
+		}
+		return Entity();
+	}
+
 	void Scene::AddRootEntity(entt::entity entity)
 	{
 		auto& hc = m_Registry.get_or_emplace<HierarchyComponent>(entity);

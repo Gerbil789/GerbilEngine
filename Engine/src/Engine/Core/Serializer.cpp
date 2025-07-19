@@ -337,7 +337,7 @@ namespace Engine
 
 		for (auto entity : entities)
 		{
-			uint64_t uuid = entity["Entity"].as<uint64_t>();
+			uint32_t uuid = entity["Entity"].as<uint32_t>();
 			std::string name = entity["Name"].as<std::string>();
 			LOG_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 

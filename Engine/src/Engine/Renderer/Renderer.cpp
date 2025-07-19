@@ -90,25 +90,6 @@ namespace Engine
 			bindGroupDesc.entryCount = 1;
 			bindGroupDesc.entries = &bindGroupEntry;
 			s_ModelBindGroup = s_Device.createBindGroup(bindGroupDesc);
-
-
-			wgpu::SamplerDescriptor samplerDesc = {};
-			samplerDesc.label = { "GlobalSampler", WGPU_STRLEN };
-			samplerDesc.addressModeU = wgpu::AddressMode::Repeat;
-			samplerDesc.addressModeV = wgpu::AddressMode::Repeat;
-			samplerDesc.addressModeW = wgpu::AddressMode::ClampToEdge;
-			samplerDesc.magFilter = wgpu::FilterMode::Linear;
-			samplerDesc.minFilter = wgpu::FilterMode::Linear;
-			samplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
-			samplerDesc.lodMinClamp = 0.0f;
-			samplerDesc.lodMaxClamp = 1.0f;
-			samplerDesc.compare = wgpu::CompareFunction::Undefined;
-			samplerDesc.maxAnisotropy = 1;
-			s_Sampler = s_Device.createSampler(samplerDesc);
-
-
-
-
 		}
 		
 		// Frame 
@@ -145,12 +126,25 @@ namespace Engine
 			bindGroupDesc.entries = &bindGroupEntry;
 			s_FrameBindGroup = s_Device.createBindGroup(bindGroupDesc);
 		}
+
+		wgpu::SamplerDescriptor samplerDesc = {};
+		samplerDesc.label = { "GlobalSampler", WGPU_STRLEN };
+		samplerDesc.addressModeU = wgpu::AddressMode::Repeat;
+		samplerDesc.addressModeV = wgpu::AddressMode::Repeat;
+		samplerDesc.addressModeW = wgpu::AddressMode::ClampToEdge;
+		samplerDesc.magFilter = wgpu::FilterMode::Linear;
+		samplerDesc.minFilter = wgpu::FilterMode::Linear;
+		samplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
+		samplerDesc.lodMinClamp = 0.0f;
+		samplerDesc.lodMaxClamp = 1.0f;
+		samplerDesc.compare = wgpu::CompareFunction::Undefined;
+		samplerDesc.maxAnisotropy = 1;
+		s_Sampler = s_Device.createSampler(samplerDesc);
 	}
 
-	Renderer::Renderer()
+	Renderer::Renderer(uint32_t width, uint32_t height)
 	{
-		ENGINE_PROFILE_FUNCTION();
-		Resize(640, 640);
+		Resize(width, height);
 	}
 
 	void Renderer::Resize(uint32_t width, uint32_t height)

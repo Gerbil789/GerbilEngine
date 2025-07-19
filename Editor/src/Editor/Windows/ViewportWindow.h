@@ -4,6 +4,7 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Renderer/Renderer.h"
+#include "Engine/Renderer/EntityIdRenderer.h"
 #include "Engine/Renderer/Camera.h"
 #include "Engine/Events/MouseEvent.h"
 #include "Editor/Services/SceneController.h"
@@ -26,9 +27,12 @@ namespace Editor
 		bool OnMouseButtonPressed(Engine::MouseButtonPressedEvent& e);
 		void UpdateViewportSize();
 
+		void DrawGizmos();
+
 	private:
 		Engine::Scene* m_Scene;
-		Engine::Renderer m_Renderer;
+		Engine::Renderer m_Renderer = Engine::Renderer(640, 640);
+		Engine::EntityIdRenderer m_EntityIdRenderer = Engine::EntityIdRenderer(640, 640);
 		EditorCameraController m_CameraController;
 		SceneController* m_SceneController;
 
