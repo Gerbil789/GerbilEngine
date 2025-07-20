@@ -34,16 +34,16 @@ namespace Editor
 				if (ImGui::MenuItem("Save", "ctrl + S"))
 				{
 					SceneManager::SaveScene();
-					auto assets = AssetManager::GetLoadedAssets();
-					for (auto asset : assets)
-					{
-						if (asset->IsModified())
-						{
-							//TODO: save asset
-							LOG_INFO("Asset '{0}' is modified", asset->GetFilePath());
-						}
+					//auto assets = AssetManager::GetLoadedAssets();
+					//for (auto asset : assets)
+					//{
+					//	if (asset->IsModified())
+					//	{
+					//		//TODO: save asset
+					//		LOG_INFO("Asset '{0}' is modified", asset->GetFilePath());
+					//	}
 
-					}
+					//}
 
 
 				}

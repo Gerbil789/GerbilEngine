@@ -1,13 +1,10 @@
 #include "enginepch.h"
 #include "Mesh.h"
 #include "Engine/Renderer/GraphicsContext.h"
-#include "Engine/Events/WindowEvent.h"
-#include "Engine/Core/Application.h"
-
+#include <glm/glm.hpp>
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-
 #include <tiny_gltf.h>
 
 namespace Engine
@@ -18,7 +15,7 @@ namespace Engine
 		glm::vec2 uv;
 	};
 
-	Ref<Asset> MeshFactory::Load(const std::filesystem::path& path, const std::any& data)
+	Mesh::Mesh(const std::filesystem::path& path) : Asset(path)
 	{
 		tinygltf::Model model;
 		tinygltf::TinyGLTF loader;
@@ -33,7 +30,7 @@ namespace Engine
 		if (!ret)
 		{
 			LOG_ERROR("MeshFactory", "Failed to load mesh from file: %s", path);
-			return nullptr;
+			return;
 		}
 
 		const tinygltf::Mesh& mesh = model.meshes[0];
@@ -43,7 +40,7 @@ namespace Engine
 
 		auto readVec3Array = [&](const std::string& attr) -> std::vector<glm::vec3> {
 			std::vector<glm::vec3> result;
-	
+
 			if (attributes.count(attr)) {
 				int accessorIndex = attributes.at(attr);
 				const auto& accessor = model.accessors[accessorIndex];
@@ -145,9 +142,11 @@ namespace Engine
 		//	LOG_TRACE("Index {0}: [{1}]", i, index);
 		//}
 
+		m_IndexCount = indices.size();
+
 		// === Upload to GPU ===
 
-		auto device = GraphicsContext::GetDevice(); 
+		auto device = GraphicsContext::GetDevice();
 
 		// Vertex buffer
 		wgpu::BufferDescriptor vertexBufferdesc{};
@@ -155,18 +154,16 @@ namespace Engine
 		vertexBufferdesc.size = vertices.size() * sizeof(Vertex);
 		vertexBufferdesc.mappedAtCreation = false;
 
-		wgpu::Buffer vertexBuffer = device.createBuffer(vertexBufferdesc);
-		GraphicsContext::GetQueue().writeBuffer(vertexBuffer, 0, vertices.data(), vertexBufferdesc.size);
+		m_VertexBuffer = device.createBuffer(vertexBufferdesc);
+		GraphicsContext::GetQueue().writeBuffer(m_VertexBuffer, 0, vertices.data(), vertexBufferdesc.size);
 
 		// Index buffer
 		wgpu::BufferDescriptor indexBufferdesc{};
 		indexBufferdesc.usage = wgpu::BufferUsage::Index | wgpu::BufferUsage::CopyDst;
-		indexBufferdesc.size = indices.size() * sizeof(uint16_t);
+		indexBufferdesc.size = m_IndexCount * sizeof(uint16_t);
 		indexBufferdesc.mappedAtCreation = false;
 
-		wgpu::Buffer indexBuffer = device.createBuffer(indexBufferdesc);
-		GraphicsContext::GetQueue().writeBuffer(indexBuffer, 0, indices.data(), indexBufferdesc.size);
-
-		return CreateRef<Mesh>(path, vertexBuffer, indexBuffer, indices.size());
+		m_IndexBuffer = device.createBuffer(indexBufferdesc);
+		GraphicsContext::GetQueue().writeBuffer(m_IndexBuffer, 0, indices.data(), indexBufferdesc.size);
 	}
 }

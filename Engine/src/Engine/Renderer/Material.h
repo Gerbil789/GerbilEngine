@@ -8,19 +8,12 @@
 
 namespace Engine 
 {
-	class MaterialFactory : public IAssetFactory
-	{
-	public:
-		Ref<Asset> Load(const std::filesystem::path& path, const std::any& data = std::any()) override;
-		Ref<Asset> Create(const std::filesystem::path& path, const std::any& data = std::any()) override;
-	};
-
 	using MaterialValue = std::variant<float, glm::vec3, glm::vec4>;
 
 	class Material : public Asset
 	{
 	public:
-		Material(const std::filesystem::path& path);
+		Material(const std::filesystem::path& path) : Asset(path) {}
 
 		void SetValue(const std::string& name, MaterialValue value) 
 		{

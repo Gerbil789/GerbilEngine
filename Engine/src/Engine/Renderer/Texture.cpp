@@ -6,11 +6,6 @@
 
 namespace Engine
 {
-	Ref<Asset> Texture2DFactory::Load(const std::filesystem::path& path, const std::any& data)
-	{
-		return CreateRef<Texture2D>(path);
-	}
-
 	Texture2D::Texture2D(const std::filesystem::path& path) : Asset(path)
 	{
 		int width, height;

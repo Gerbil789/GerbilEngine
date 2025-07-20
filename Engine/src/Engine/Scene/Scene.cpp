@@ -5,23 +5,6 @@
 
 namespace Engine
 {
-	Ref<Asset> SceneFactory::Load(const std::filesystem::path& path, const std::any& data)
-	{
-		Ref<Scene> scene = CreateRef<Scene>(path);
-		if (!Serializer::Deserialize(scene))
-		{
-			LOG_ERROR("Failed to load scene from file {0}", path.string());
-		}
-		scene->RefreshRootEntities();
-
-		return scene;
-	}
-
-	Ref<Asset> SceneFactory::Create(const std::filesystem::path& path, const std::any& data)
-	{
-		return CreateRef<Scene>(path);
-	}
-
 	Scene::Scene(const std::filesystem::path& path) : Asset(path) {}
 
 	Scene::~Scene()

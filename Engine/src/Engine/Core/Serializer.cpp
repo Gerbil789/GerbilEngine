@@ -138,7 +138,7 @@ namespace Engine
 
 		auto loadTexture = [&](const std::string& key) -> Ref<Texture2D> {
 			if (data[key].IsNull()) { return nullptr; }
-			return AssetManager::GetAsset<Texture2D>(data[key].as<std::string>());
+			return AssetManager::Get<Texture2D>(data[key].as<std::string>());
 			};
 
 		//auto shader = AssetManager::GetAsset<Shader>(data[SHADER_KEY].as<std::string>());
@@ -377,10 +377,10 @@ namespace Engine
 			{
 				auto& src = deserializedEntity.AddComponent<SpriteComponent>();
 				std::string materialPath = spriteRendererComponent["Material"].as<std::string>();
-				if (materialPath != "null") src.Material = AssetManager::GetAsset<Material>(materialPath);
+				if (materialPath != "null") src.Material = AssetManager::Get<Material>(materialPath);
 
 				std::string texturePath = spriteRendererComponent["Texture"].as<std::string>();
-				if (texturePath != "null") src.Texture = AssetManager::GetAsset<Texture2D>(texturePath);
+				if (texturePath != "null") src.Texture = AssetManager::Get<Texture2D>(texturePath);
 				
 				src.Color = { spriteRendererComponent["Color"][0].as<float>(), spriteRendererComponent["Color"][1].as<float>(), spriteRendererComponent["Color"][2].as<float>(), spriteRendererComponent["Color"][3].as<float>() };
 				src.TilingFactor = { spriteRendererComponent["TilingFactor"][0].as<float>(), spriteRendererComponent["TilingFactor"][1].as<float>() };
@@ -406,10 +406,10 @@ namespace Engine
 			{
 				auto& mrc = deserializedEntity.AddComponent<MeshComponent>();
 				std::string meshPath = meshRendererComponent["Mesh"].as<std::string>();
-				if (meshPath != "null") mrc.Mesh = AssetManager::GetAsset<Mesh>(meshPath);
+				if (meshPath != "null") mrc.Mesh = AssetManager::Get<Mesh>(meshPath);
 
 				std::string materialPath = meshRendererComponent["Material"].as<std::string>();
-				if (materialPath != "null") mrc.Material = AssetManager::GetAsset<Material>(materialPath);
+				if (materialPath != "null") mrc.Material = AssetManager::Get<Material>(materialPath);
 			}
 		}
 

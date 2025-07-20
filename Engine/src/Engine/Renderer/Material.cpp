@@ -9,27 +9,6 @@
 
 namespace Engine
 {
-	Ref<Asset> MaterialFactory::Load(const std::filesystem::path& path, const std::any& data)
-	{
-		Ref<Material> material = CreateRef<Material>(path);
-		//Serializer::Deserialize(material);
-		return material;
-	}
-
-	Ref<Asset> MaterialFactory::Create(const std::filesystem::path& path, const std::any& data)
-	{
-		Ref<Material> material = CreateRef<Material>(path);
-		//Ref<Shader> defaultShader = CreateRef<Shader>();
-		//material->SetShader(defaultShader); //TODO: use diffrent default shader
-		//Serializer::Serialize(material);
-		return material;
-	}
-
-	Material::Material(const std::filesystem::path& path)	: Asset(path)
-	{
-
-	}
-
 	void Material::SetShader(const Ref<Shader>& shader)
 	{
 		m_Shader = shader;

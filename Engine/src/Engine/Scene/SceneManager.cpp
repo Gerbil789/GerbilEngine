@@ -17,7 +17,7 @@ namespace Engine::SceneManager
 
 	void CreateScene(const std::filesystem::path& path)
 	{
-		Ref<Scene> shared = AssetManager::CreateAsset<Scene>(path);
+		Ref<Scene> shared = AssetManager::Create<Scene>(path);
 		SetActiveScene(shared);
 	}
 
@@ -30,7 +30,7 @@ namespace Engine::SceneManager
 
 	void LoadScene(const std::filesystem::path& path)
 	{
-		Ref<Scene> scene = AssetManager::GetAsset<Scene>(path);
+		Ref<Scene> scene = AssetManager::Get<Scene>(path);
 		//s_ActiveScene = scene;
 		//AssetManager::UnloadUnusedAssets();
 

@@ -40,7 +40,7 @@ namespace Editor::UI
 
 				if (path.extension() == ".png" || path.extension() == ".jpg" || path.extension() == ".bmp")
 				{
-					texture = AssetManager::GetAsset<Texture2D>(path);
+					texture = AssetManager::Get<Texture2D>(path);
 					modified = true;
 				}
 			}

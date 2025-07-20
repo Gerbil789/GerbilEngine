@@ -2,7 +2,6 @@
 
 #include <Engine/Core/Core.h>
 #include <filesystem>
-#include <any>
 
 namespace Engine
 {
@@ -18,12 +17,5 @@ namespace Engine
 		Asset(const std::filesystem::path& path) : m_Path(path) {}
 		std::filesystem::path m_Path;
 		bool m_Modified = false;
-	};
-
-	class IAssetFactory {
-	public:
-		virtual ~IAssetFactory() = default;
-		virtual Ref<Asset> Load(const std::filesystem::path& path, const std::any& data = std::any()) = 0;
-		virtual Ref<Asset> Create(const std::filesystem::path& path, const std::any& data = std::any()) = 0;
 	};
 }

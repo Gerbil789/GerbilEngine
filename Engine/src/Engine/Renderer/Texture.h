@@ -6,13 +6,6 @@
 
 namespace Engine
 {
-	class Texture2DFactory : public IAssetFactory
-	{
-	public:
-		virtual Ref<Asset> Load(const std::filesystem::path& path, const std::any& data = std::any()) override;
-		virtual Ref<Asset> Create(const std::filesystem::path& path, const std::any& data = std::any()) override { return nullptr; }
-	};
-
 	class Texture2D : public Asset
 	{
 	public:

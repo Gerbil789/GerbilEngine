@@ -145,7 +145,7 @@ namespace Editor
 							std::filesystem::path path(droppedPath);
 							if (path.extension() == ".material")
 							{
-								component.Material = AssetManager::GetAsset<Material>(path);
+								component.Material = AssetManager::Get<Material>(path);
 							}
 							else
 							{
@@ -169,7 +169,7 @@ namespace Editor
 						std::filesystem::path path(droppedPath);
 						if (path.extension() == ".png" || path.extension() == ".jpg")
 						{
-							component.Texture = AssetManager::GetAsset<Texture2D>(path);
+							component.Texture = AssetManager::Get<Texture2D>(path);
 						}
 						else {
 							LOG_WARNING("Failed to load texture!");
@@ -344,7 +344,7 @@ namespace Editor
 						std::filesystem::path path(droppedPath);
 						if (path.extension() == ".fbx")
 						{
-							component.Mesh = AssetManager::GetAsset<Mesh>(path);
+							component.Mesh = AssetManager::Get<Mesh>(path);
 						}
 						else
 						{
@@ -367,7 +367,7 @@ namespace Editor
 						std::filesystem::path path(droppedPath);
 						if (path.extension() == ".material")
 						{
-							component.Material = AssetManager::GetAsset<Material>(path);
+							component.Material = AssetManager::Get<Material>(path);
 						}
 						else
 						{

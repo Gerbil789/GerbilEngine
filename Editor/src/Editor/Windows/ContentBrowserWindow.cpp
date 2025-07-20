@@ -19,11 +19,11 @@ namespace Editor
 		m_RootDirectory = app.GetProject().GetAssetsPath();
 		m_CurrentDirectory = app.GetProject().GetAssetsPath();
 
-		m_FolderIcon = AssetManager::GetAsset<Texture2D>("resources/icons/folder.png");
-		m_EmptyFolderIcon = AssetManager::GetAsset<Texture2D>("resources/icons/folder_empty.png");
-		m_FileIcon = AssetManager::GetAsset<Texture2D>("resources/icons/file.png");
-		m_ImageIcon = AssetManager::GetAsset<Texture2D>("resources/icons/image.png");
-		m_SceneIcon = AssetManager::GetAsset<Texture2D>("resources/icons/landscape.png");
+		m_FolderIcon = AssetManager::Get<Texture2D>("resources/icons/folder.png");
+		m_EmptyFolderIcon = AssetManager::Get<Texture2D>("resources/icons/folder_empty.png");
+		m_FileIcon = AssetManager::Get<Texture2D>("resources/icons/file.png");
+		m_ImageIcon = AssetManager::Get<Texture2D>("resources/icons/image.png");
+		m_SceneIcon = AssetManager::Get<Texture2D>("resources/icons/landscape.png");
 
 		glfwSetDropCallback(Application::Get().GetWindow().Get(), [](GLFWwindow* window, int count, const char* paths[]) {
 			for (int i = 0; i < count; i++)
@@ -386,7 +386,7 @@ namespace Editor
 				{
 					//std::string path = Utilities::EnsureFileNameUniqueness("newScene", m_CurrentDirectory.string());
 					std::string path = m_CurrentDirectory.string();
-					Ref<Scene> newScene = AssetManager::CreateAsset<Scene>(path);
+					Ref<Scene> newScene = AssetManager::Create<Scene>(path);
 					if (newScene)
 					{
 						Serializer::Serialize(newScene);
@@ -399,7 +399,7 @@ namespace Editor
 					//TODO: make better unique name check
 					//std::string path = Utilities::EnsureFileNameUniqueness("material", m_CurrentDirectory.string());
 					std::string path = m_CurrentDirectory.string();
-					Ref<Material> material = AssetManager::CreateAsset<Material>(path);
+					Ref<Material> material = AssetManager::Create<Material>(path);
 					if (material)
 					{
 						Items.push_back(ContentBrowserItem(ItemType::File, path));

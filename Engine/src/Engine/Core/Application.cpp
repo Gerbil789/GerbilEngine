@@ -1,6 +1,7 @@
 #include "enginepch.h"
 #include "Application.h"
 #include "Engine/Core/Input.h"
+#include "Engine/Core/AssetManager.h"
 #include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Renderer/Renderer.h"
 
@@ -22,6 +23,7 @@ namespace Engine
 		Input::Initialize();
 		GraphicsContext::Initialize();
 		Renderer::Initialize();
+		AssetManager::Initialize();
 	}
 
 	void Application::OnEvent(Event& e)

@@ -1,19 +1,30 @@
 #include "enginepch.h"
 #include "AssetManager.h"
+#include "Engine/Scene/Scene.h"
 #include "Engine/Renderer/Texture.h"
 #include "Engine/Renderer/Material.h"
-#include "Engine/Scene/Scene.h"
 #include "Engine/Renderer/Mesh.h"
 
-namespace Engine
+namespace Engine::AssetManager
 {
-	std::unordered_map<std::string, Ref<IAssetFactory>> AssetManager::factories
+	void Initialize()
 	{
-		{ typeid(Texture2D).name(),std::make_unique<Texture2DFactory>() },
-		{ typeid(Material).name(),std::make_unique<MaterialFactory>() },
-		{ typeid(Scene).name(),std::make_unique<SceneFactory>() },
-		{ typeid(Mesh).name(),std::make_unique<MeshFactory>() }
-	};
-	
-	std::unordered_map<std::filesystem::path, Ref<Asset>> AssetManager::assets;
+		RegisterAssetType<Texture2D>(
+			[](const std::filesystem::path& path) { return std::make_shared<Texture2D>(path); },
+			[](const std::filesystem::path& path) { return std::make_shared<Texture2D>(path); }
+		);
+		RegisterAssetType<Material>(
+			[](const std::filesystem::path& path) { return std::make_shared<Material>(path); },
+			[](const std::filesystem::path& path) { return std::make_shared<Material>(path); }
+		);
+		RegisterAssetType<Scene>(
+			[](const std::filesystem::path& path) { return std::make_shared<Scene>(path); },
+			[](const std::filesystem::path& path) { return std::make_shared<Scene>(path); }
+		);
+		RegisterAssetType<Mesh>(
+			[](const std::filesystem::path& path) { return std::make_shared<Mesh>(path); },
+			[](const std::filesystem::path& path) { return std::make_shared<Mesh>(path); }
+		);
+	}
+
 }
