@@ -14,12 +14,10 @@ project "Engine"
 	{
 		"src/**.h",
 		"src/**.cpp",
-		-- "%{wks.location}/vendor/glm/glm/**.hpp",
 		"%{wks.location}/vendor/glm/glm/**.inl",
 		"%{wks.location}/vendor/yaml-cpp/include/**.h",
 		"%{wks.location}/vendor/tinygltf/**.h",
 		"%{wks.location}/vendor/tinygltf/**.hpp",
-		--"%{wks.location}/vendor/tinygltf/**.h",
 	}
 
 	includedirs
@@ -29,7 +27,6 @@ project "Engine"
 		"%{wks.location}/vendor/glfw/include",
 		"%{wks.location}/vendor/dawn/include",
 		"%{wks.location}/vendor/glm",
-		-- "%{wks.location}/vendor/stb_image",
 		"%{wks.location}/vendor/entt/include",
 		"%{wks.location}/vendor/yaml-cpp/include",
 		"%{wks.location}/vendor/tinygltf",

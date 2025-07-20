@@ -1,11 +1,10 @@
 #pragma once
 
 #include "EditorWindow.h"
-#include "Engine/Core/Core.h"
+#include "Editor/Core/Core.h"
 #include "Engine/Renderer/Texture.h"
 #include <filesystem>
 #include <imgui.h>
-#include "Editor/Core/Core.h"
 
 namespace Editor
 {
@@ -146,10 +145,12 @@ namespace Editor
 		void RenderPath();
 		void ContentBrowserContextMenu();
 		void ItemContextMenu();
+		void NavigationBar();
+		void MainContent();
 
 	private:
 		std::filesystem::path m_CurrentDirectory;
-		std::filesystem::path m_RootDirectory;
+		std::filesystem::path m_AssetsDirectory;
 		std::filesystem::path m_NewDirectory = ""; // handle for switching directories
 
 		char m_SearchBuffer[256] = { 0 };

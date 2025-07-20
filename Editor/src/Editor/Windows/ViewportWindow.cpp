@@ -6,7 +6,7 @@
 #include "Editor/Services/EditorServiceRegistry.h"
 #include "Engine/Events/MouseEvent.h"
 #include "Engine/Math/Math.h"
-#include "Shared/UIHelpers.h"
+#include "Editor/Elements/Style.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>

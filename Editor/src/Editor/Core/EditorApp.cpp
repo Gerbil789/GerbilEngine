@@ -13,7 +13,7 @@ namespace Editor
 	EditorApp::EditorApp(std::filesystem::path projectPath) : Application("Gerbil Editor - " + projectPath.lexically_normal().filename().string())
 	{
 		ENGINE_PROFILE_FUNCTION();
-		m_Project = Project(projectPath);
+		m_Project = Engine::Project(projectPath);
 
 		LOG_TRACE("Starting Gerbil Editor for project: {0}", m_Project.GetTitle());
 

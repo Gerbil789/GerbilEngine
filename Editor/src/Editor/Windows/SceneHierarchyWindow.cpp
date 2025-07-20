@@ -3,7 +3,7 @@
 #include "Editor/Elements/Elements.h"
 #include "Engine/Scene/Components.h"
 #include "Editor/Services/EditorServiceRegistry.h"
-#include "Shared/UIHelpers.h"
+#include "Editor/Elements/Style.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>

@@ -21,7 +21,6 @@ project "Editor"
 	{
 		"src",
 		"%{wks.location}/Engine/src",
-		"%{wks.location}/Shared/src",
 		"%{wks.location}/vendor/spdlog/include",
 		"%{wks.location}/vendor/glfw/include",
 		"%{wks.location}/vendor/glm",
@@ -35,7 +34,6 @@ project "Editor"
 	{
 		"Engine",
 		"ImGui",
-		"Shared"
 	}
 
 	postbuildcommands 
