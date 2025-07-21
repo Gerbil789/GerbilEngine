@@ -1,11 +1,12 @@
 #include "GameWindow.h"
+#include <imgui.h>
 
 namespace Editor
 {
 	using namespace Engine;
 
 
-	GameWindow::GameWindow(EditorWindowManager* context) : EditorWindow(context)
+	GameWindow::GameWindow()
 	{
 		//create game frame buffer
 		//FrameBufferSpecification gameFrameBufferSpecification;

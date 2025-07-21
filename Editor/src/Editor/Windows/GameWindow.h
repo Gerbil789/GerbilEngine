@@ -7,7 +7,7 @@ namespace Editor
 	class GameWindow : public EditorWindow
 	{
 	public:
-		GameWindow(EditorWindowManager* context);
+		GameWindow();
 		~GameWindow() = default;
 
 		void OnUpdate(Engine::Timestep ts) override;

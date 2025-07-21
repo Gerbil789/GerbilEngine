@@ -1,23 +1,27 @@
-#include "SceneController.h"
+#include "EditorSceneController.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Scene/Entity.h"
 
-namespace Editor
+namespace Editor::EditorSceneController
 {
 	using namespace Engine;
 
-	SceneController::SceneController()
+	Engine::Scene* m_Scene = nullptr;
+	Engine::UUID m_CopiedEntityUUID = 0;
+	entt::entity m_SelectedEntity = entt::null;
+
+	void Initialize()
 	{
 		m_Scene = SceneManager::GetActiveScene();
 	}
 
-	void SceneController::OnEvent(Event& e)
+	void OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<KeyPressedEvent>(ENGINE_BIND_EVENT_FN(SceneController::OnKeyPressed));
+		dispatcher.Dispatch<KeyPressedEvent>(OnKeyPressed);
 	}
 
-	bool SceneController::OnKeyPressed(KeyPressedEvent& e)
+	bool OnKeyPressed(KeyPressedEvent& e)
 	{
 		if (e.GetRepeatCount() > 0)
 			return false;
@@ -83,23 +87,7 @@ namespace Editor
 		}
 	}
 
-	void SceneController::OnScenePlay()
-	{
-		/*m_SceneState = Scene::SceneState::Play;
-		m_ActiveScene = Scene::Copy(m_EditorScene);
-		m_ActiveScene->OnRuntimeStart();
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-		m_InspectorPanel.SetContext(m_ActiveScene);*/
-	}
 
-	void SceneController::OnSceneStop()
-	{
-		/* m_ActiveScene->OnRuntimeStop();
-		 m_SceneState = Scene::SceneState::Edit;
-		 m_ActiveScene = m_EditorScene;
-		 m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-		 m_InspectorPanel.SetContext(m_ActiveScene);*/
-	}
 
 	template<typename... Components>
 	void CopyComponents(entt::registry& registry, entt::entity src, entt::entity dst) {
@@ -112,7 +100,7 @@ namespace Editor
 	}
 
 
-	void SceneController::DuplicateEntity(Entity entity)
+	void DuplicateEntity(Entity entity)
 	{
 		if (!entity) { return; }
 
@@ -145,22 +133,22 @@ namespace Editor
 		}
 	}*/
 
-	void SceneController::SelectEntity(Entity entity)
+	void SelectEntity(Entity entity)
 	{
 		m_SelectedEntity = entity;
 	}
 
-	void SceneController::DeselectEntity()
+	void DeselectEntity()
 	{
 		m_SelectedEntity = entt::null;
 	}
 
-	bool SceneController::IsEntitySelected(Entity entity) const
+	bool IsEntitySelected(Entity entity)
 	{
 		return m_SelectedEntity == entity;
 	}
 
-	Entity SceneController::GetSelectedEntity()
+	Entity GetSelectedEntity()
 	{
 		return { m_SelectedEntity, &m_Scene->m_Registry };
 	}

@@ -174,7 +174,7 @@ namespace Engine
 		wgpu::Future future = readbackBuffer.mapAsync(wgpu::MapMode::Read, 0, sizeof(uint32_t), callbackInfo);
 		wgpu::FutureWaitInfo waitInfo;
 		waitInfo.future = future;
-		wgpuInstanceWaitAny(GraphicsContext::GetInstance(), 1, &waitInfo, 100000000); // 100000000ns = 0.1s
+		wgpuInstanceWaitAny(GraphicsContext::GetInstance(), 1, &waitInfo, 100000000); // 100000000ns = 0.01s
 
 		const uint8_t* mapped = static_cast<const uint8_t*>(readbackBuffer.getConstMappedRange(0, sizeof(uint32_t)));
 		uint32_t id = *reinterpret_cast<const uint32_t*>(mapped);

@@ -2,17 +2,12 @@
 
 #include "Engine/Core/Timestep.h"
 #include "Engine/Events/Event.h"
-#include "Editor/Services/EditorServiceRegistry.h"
-#include <imgui.h>
 
 namespace Editor
 {
-	class EditorWindowManager;
-
 	class EditorWindow
 	{
 	public:
-		EditorWindow(EditorWindowManager* context) : m_Context(context) {};
 		virtual ~EditorWindow() = default;
 
 		virtual void OnUpdate(Engine::Timestep ts) = 0;
@@ -23,6 +18,6 @@ namespace Editor
 
 	protected:
 		bool m_IsVisible = false;
-		EditorWindowManager* m_Context;
+
 	};
 }

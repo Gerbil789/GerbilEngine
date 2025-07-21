@@ -37,7 +37,7 @@ namespace Engine
 		};
 
 	public:
-		Camera() = default;
+		Camera();
 
 		void SetViewportSize(const glm::vec2& size);
 
@@ -68,7 +68,7 @@ namespace Engine
 		float m_AspectRatio = 16.0f / 9.0f;
 		glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
 		glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
-		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 m_Position = { 0.0f, 0.0f, 10.0f };
 		float m_Pitch = 0.0f;
 		float m_Yaw = 0.0f;
 	};

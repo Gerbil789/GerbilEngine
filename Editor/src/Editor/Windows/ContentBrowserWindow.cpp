@@ -13,7 +13,7 @@ namespace Editor
 {
 	using namespace Engine;
 
-	ContentBrowserWindow::ContentBrowserWindow(EditorWindowManager* context) : EditorWindow(context)
+	ContentBrowserWindow::ContentBrowserWindow()
 	{
 		EditorApp& app = static_cast<EditorApp&>(Application::Get());
 

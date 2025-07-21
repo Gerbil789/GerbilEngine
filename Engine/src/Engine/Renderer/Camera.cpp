@@ -3,6 +3,11 @@
 
 namespace Engine
 {
+	Camera::Camera()
+	{
+		UpdateViewMatrix();
+	}
+
 	void Camera::SetViewportSize(const glm::vec2& size)
 	{
 		m_AspectRatio = size.x / size.y;

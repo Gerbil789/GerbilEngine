@@ -136,7 +136,7 @@ namespace Editor
 	class ContentBrowserWindow : public EditorWindow
 	{
 	public:
-		ContentBrowserWindow(EditorWindowManager* context);
+		ContentBrowserWindow();
 		void OnUpdate(Engine::Timestep ts) override;
 
 	private:

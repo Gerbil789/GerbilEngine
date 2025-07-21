@@ -1,6 +1,7 @@
 #include "enginepch.h"
 #include "StatisticsWindow.h"
 #include "Engine/Renderer/Renderer.h"
+#include <imgui.h>
 
 namespace Editor
 {

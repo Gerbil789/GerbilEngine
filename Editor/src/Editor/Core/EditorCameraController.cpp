@@ -1,5 +1,7 @@
 #include "EditorCameraController.h"
 #include "Engine/Core/Input.h"
+#include "Engine/Scene/Entity.h"
+#include "Editor/Core/EditorSceneController.h"
 
 namespace Editor
 {
@@ -14,7 +16,6 @@ namespace Editor
 	{
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(ENGINE_BIND_EVENT_FN(OnKeyPressed));
-		dispatcher.Dispatch<KeyReleasedEvent>(ENGINE_BIND_EVENT_FN(OnKeyReleased));
 		dispatcher.Dispatch<MouseScrolledEvent>(ENGINE_BIND_EVENT_FN(OnMouseScroll));
 		dispatcher.Dispatch<MouseButtonPressedEvent>(ENGINE_BIND_EVENT_FN(OnMouseButtonPressed));
 		dispatcher.Dispatch<MouseButtonReleasedEvent>(ENGINE_BIND_EVENT_FN(OnMouseButtonReleased));
@@ -23,28 +24,19 @@ namespace Editor
 
 	bool EditorCameraController::OnKeyPressed(KeyPressedEvent& e)
 	{
-		glm::vec3 position = m_Camera.GetPosition();
-
-		switch (e.GetKey())
+		if(e.GetKey() == Key::F) //Focus
 		{
-		case Key::W: position += m_Camera.GetForward() * m_MoveSpeed; break;									// Move forward (camera forward)
-		case Key::S: position -= m_Camera.GetForward() * m_MoveSpeed; break;									// Move backward (camera backward)
-		case Key::A: position -= m_Camera.GetRight() * m_MoveSpeed; break;										// Move left (camera left)
-		case Key::D: position += m_Camera.GetRight() * m_MoveSpeed; break;										// Move right (camera right)
-		case Key::LeftShift: position -= glm::vec3(0.0f, 1.0f, 0.0f) * m_MoveSpeed; break;		// Move down (world down)
-		case Key::Space: position += glm::vec3(0.0f, 1.0f, 0.0f) * m_MoveSpeed; break;				// Move up (world up)
-		default: return false; 
+			auto entity = EditorSceneController::GetSelectedEntity();
+			if (!entity) return false;
+
+			glm::vec3 focusPoint = entity.GetComponent<TransformComponent>().Position;
+			FocusOnPoint(focusPoint);
 		}
 
-		m_Camera.SetPosition(position);
-		LOG_INFO("Camera Position: {0}, {1}, {2}", position.x, position.y, position.z);
 		return false;
 	}
 
-	bool EditorCameraController::OnKeyReleased(KeyReleasedEvent& e)
-	{
-		return false;
-	}
+
 
 	bool EditorCameraController::OnMouseScroll(MouseScrolledEvent& e)
 	{
@@ -107,6 +99,12 @@ namespace Editor
 			m_Camera.SetPosition(position);
 		}
 		return false;
+	}
+
+	void EditorCameraController::FocusOnPoint(const glm::vec3& point, float distance)
+	{
+		glm::vec3 position = point - m_Camera.GetForward() * distance;
+		m_Camera.SetPosition(position);
 	}
 
 }

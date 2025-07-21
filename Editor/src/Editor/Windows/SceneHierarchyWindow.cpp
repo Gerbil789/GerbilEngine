@@ -2,8 +2,8 @@
 #include "SceneHierarchyWindow.h"
 #include "Editor/Elements/Elements.h"
 #include "Engine/Scene/Components.h"
-#include "Editor/Services/EditorServiceRegistry.h"
 #include "Editor/Elements/Style.h"
+#include "Editor/Core/EditorSceneController.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
@@ -13,10 +13,9 @@ namespace Editor
 {
 	using namespace Engine;
 
-	SceneHierarchyWindow::SceneHierarchyWindow(EditorWindowManager* context) : EditorWindow(context)
+	SceneHierarchyWindow::SceneHierarchyWindow()
 	{
 		m_Scene = SceneManager::GetActiveScene();
-		m_SceneController = EditorServiceRegistry::Get<SceneController>();
 	}
 
 	void SceneHierarchyWindow::OnUpdate(Engine::Timestep ts)
@@ -49,7 +48,7 @@ namespace Editor
 		// Handle mouse click to deselect entity
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 		{
-			m_SceneController->DeselectEntity();
+			EditorSceneController::DeselectEntity();
 		}
 
 		if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
@@ -57,7 +56,7 @@ namespace Editor
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
 				Entity entity = m_Scene->CreateEntity("Empty Entity");
-				m_SceneController->SelectEntity(entity);
+				EditorSceneController::SelectEntity(entity);
 			}
 			ImGui::EndPopup();
 		}
@@ -100,7 +99,7 @@ namespace Editor
 		// Handle selection
 		if (ImGui::IsItemClicked())
 		{
-			m_SceneController->SelectEntity(wrapper);
+			EditorSceneController::SelectEntity(wrapper);
 		}
 
 		// Drag source

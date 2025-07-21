@@ -1,8 +1,10 @@
 #include "enginepch.h"
 #include "EditorApp.h"
-#include "Editor/Services/EditorServiceRegistry.h"
+#include "Editor/Core/EditorSceneController.h"
+#include "Editor/Core/EditorWindowManager.h"
 
 //tmp
+#include "Engine/Scene/Entity.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Renderer/Shaders/PhongShader.h"
@@ -17,9 +19,8 @@ namespace Editor
 
 		LOG_TRACE("Starting Gerbil Editor for project: {0}", m_Project.GetTitle());
 
-		m_SceneController = CreateScope<SceneController>();
-		EditorServiceRegistry::Register<SceneController>(m_SceneController.get()); //TODO: not sure about this registry approach
-		m_EditorWindowManager = CreateScope<EditorWindowManager>();
+		EditorSceneController::Initialize();
+		EditorWindowManager::Initialize();
 
 		Engine::SceneManager::CreateScene("NewScene"); //TODO: load default scene from project if there is one
 
@@ -42,7 +43,7 @@ namespace Editor
 				component.Material = material;
 				component.Mesh = mesh;
 
-				cube.GetComponent<Engine::TransformComponent>().Position = { 2.0f, 0.0f, -10.0f };
+				cube.GetComponent<Engine::TransformComponent>().Position = { 2.0f, 0.0f, 0.0f };
 				cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
 
 				LOG_WARNING("Created entity '{0}' with ID: {1}", cube.GetName(), (uint32_t)cube.GetUUID());
@@ -59,12 +60,18 @@ namespace Editor
 				component.Material = material;
 				component.Mesh = mesh;
 
-				cube.GetComponent<Engine::TransformComponent>().Position = { -2.0f, 0.0f, -10.0f };
+				cube.GetComponent<Engine::TransformComponent>().Position = { -2.0f, 0.0f, 0.0f };
 				cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
 
 				LOG_WARNING("Created entity '{0}' with ID: {1}", cube.GetName(), (uint32_t)cube.GetUUID());
 			}
 		}
+	}
+
+	EditorApp::~EditorApp()
+	{
+		ENGINE_PROFILE_FUNCTION();
+		EditorWindowManager::Shutdown();
 	}
 
 	void EditorApp::Run()
@@ -85,7 +92,7 @@ namespace Editor
 
 			if (m_Minimized) continue;
 
-			m_EditorWindowManager->OnUpdate(ts);
+			EditorWindowManager::OnUpdate(ts);
 			m_Window->OnUpdate();
 		}
 	}
@@ -94,7 +101,7 @@ namespace Editor
 	{
 		ENGINE_PROFILE_FUNCTION();
 		Application::OnEvent(e);
-		m_SceneController->OnEvent(e);
-		m_EditorWindowManager->OnEvent(e);
+		EditorSceneController::OnEvent(e);
+		EditorWindowManager::OnEvent(e);
 	}
 }

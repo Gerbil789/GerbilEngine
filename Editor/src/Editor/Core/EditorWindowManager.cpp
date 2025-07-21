@@ -1,29 +1,74 @@
 #include "enginepch.h"
 #include "EditorWindowManager.h"
-#include "Editor/Services/EditorServiceRegistry.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Utils/Color.h"
 #include "Engine/Utils/File.h"
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/GraphicsContext.h"
+#include "Editor/Elements/MenuBar.h"
+#include "Editor/Windows/ContentBrowserWindow.h"
+#include "Editor/Windows/InspectorWindow.h"
+#include "Editor/Windows/SceneHierarchyWindow.h"
+#include "Editor/Windows/MaterialWindow.h"
+#include "Editor/Windows/SettingsWindow.h"
+#include "Editor/Windows/StatisticsWindow.h"
+#include "Editor/Windows/MeshImportWindow.h"
+#include "Editor/Windows/ViewportWindow.h"
+#include "Editor/Windows/GameWindow.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <backends/imgui_impl_wgpu.h>
 #include <backends/imgui_impl_glfw.h>
 
-namespace Editor
+namespace Editor::EditorWindowManager
 {
-	EditorWindowManager::EditorWindowManager()
+	MenuBar m_MenuBar;
+
+	ViewportWindow* m_ViewportWindow = nullptr;
+	GameWindow* m_GameWindow = nullptr;
+	ContentBrowserWindow* m_ContentBrowserWindow = nullptr;
+	InspectorWindow* m_InspectorWindow = nullptr;
+	SceneHierarchyWindow* m_SceneHierarchyWindow = nullptr;
+	MaterialWindow* m_MaterialWindow = nullptr;
+	StatisticsWindow* m_StatisticsWindow = nullptr;
+	//SettingsWindow* m_SettingsWindow = nullptr;
+	//MeshImportWindow* m_MeshImportWindow = nullptr;
+
+	template<>ViewportWindow* GetWindow<ViewportWindow>() { return m_ViewportWindow; }
+	template<>GameWindow* GetWindow<GameWindow>() { return m_GameWindow; }
+	template<>ContentBrowserWindow* GetWindow<ContentBrowserWindow>() { return m_ContentBrowserWindow; }
+	template<>InspectorWindow* GetWindow<InspectorWindow>() { return m_InspectorWindow; }
+	template<>SceneHierarchyWindow* GetWindow<SceneHierarchyWindow>() { return m_SceneHierarchyWindow; }
+	template<> MaterialWindow* GetWindow<MaterialWindow>() { return m_MaterialWindow; }
+	template<> StatisticsWindow* GetWindow<StatisticsWindow>() { return m_StatisticsWindow; }
+	//template<>SettingsWindow* GetWindow<SettingsWindow>() { return m_SettingsWindow; }
+	//template<>MeshImportWindow* GetWindow<MeshImportWindow>() { return m_MeshImportWindow; }
+
+	std::vector<EditorWindow*> m_Windows; // For easy iteration
+
+	void Initialize()
 	{
-		m_ContentBrowserWindow = RegisterWindow<ContentBrowserWindow>();
-		m_InspectorWindow = RegisterWindow<InspectorWindow>();
-		m_SceneHierarchyWindow = RegisterWindow<SceneHierarchyWindow>();
-		m_MaterialWindow = RegisterWindow<MaterialWindow>();
-		// m_SettingsWindow = RegisterWindow<SettingsWindow>();
-		m_StatisticsWindow = RegisterWindow<StatisticsWindow>();
-		//m_MeshImportWindow = RegisterWindow<MeshImportWindow>();
-		m_ViewportWindow = RegisterWindow<ViewportWindow>();
-		m_GameWindow = RegisterWindow<GameWindow>();
+		m_ContentBrowserWindow = new ContentBrowserWindow();
+		m_InspectorWindow = new InspectorWindow();
+		m_SceneHierarchyWindow = new SceneHierarchyWindow();
+		m_MaterialWindow = new MaterialWindow();
+		m_StatisticsWindow = new StatisticsWindow();
+		m_ViewportWindow = new ViewportWindow();
+		m_GameWindow = new GameWindow();
+		//m_SettingsWindow = new SettingsWindow();
+		//m_MeshImportWindow = new MeshImportWindow();
+
+		m_Windows = {
+			m_ContentBrowserWindow,
+			m_InspectorWindow,
+			m_SceneHierarchyWindow,
+			m_MaterialWindow,
+			m_StatisticsWindow,
+			m_ViewportWindow,
+			m_GameWindow,
+			//m_SettingsWindow,
+			//m_MeshImportWindow
+		};
 
 		//initialize imgui
 		IMGUI_CHECKVERSION();
@@ -56,49 +101,19 @@ namespace Editor
 		ImGui_ImplWGPU_Init(&initInfo);
 	}
 
-	EditorWindowManager::~EditorWindowManager()
+	void Shutdown()
 	{
+		for (auto* window : m_Windows)
+			delete window;
+
+		m_Windows.clear();
+
 		ImGui_ImplWGPU_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}
 
-	void EditorWindowManager::OnUpdate(Engine::Timestep ts)
-	{
-		ENGINE_PROFILE_FUNCTION();
-		BeginFrame();
-
-		m_MenuBar.OnUpdate();
-		for (auto& window : m_Windows)
-		{
-			window->OnUpdate(ts);
-		}
-
-#ifdef DEBUG
-		bool showDemo = true;
-		ImGui::ShowDemoWindow(&showDemo);
-#endif
-
-		EndFrame();
-	}
-
-	void EditorWindowManager::OnEvent(Engine::Event& e)
-	{
-		ENGINE_PROFILE_FUNCTION();
-		for (auto& window : m_Windows)
-		{
-			window->OnEvent(e);
-		}
-
-		if (m_BlockEvents)
-		{
-			ImGuiIO& io = ImGui::GetIO();
-			e.Handled |= e.IsInCategory(Engine::EventCategoryMouse) & io.WantCaptureMouse;
-			e.Handled |= e.IsInCategory(Engine::EventCategoryKeyboard) & io.WantCaptureKeyboard;
-		}
-	}
-
-	void EditorWindowManager::BeginFrame()
+	void BeginFrame()
 	{
 		ImGui_ImplWGPU_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -135,16 +150,16 @@ namespace Editor
 		}
 	}
 
-	void EditorWindowManager::EndFrame()
+	void EndFrame()
 	{
 		ImGui::End(); // End dockspace window
 
 		Engine::Application& app = Engine::Application::Get();
-		Engine::Window& window = app.GetWindow();
+		Engine::Window& window = app.GetWindow(); //TODO: store this in a member variable?
 		ImGuiIO& io = ImGui::GetIO();
 		io.DisplaySize = ImVec2((float)window.GetWidth(), (float)window.GetHeight());
 
-		// Rendering
+		// Draw everything
 		ImGui::Render();
 
 		auto device = Engine::GraphicsContext::GetDevice(); //TODO: store this in a member variable?
@@ -228,7 +243,33 @@ namespace Editor
 		wgpuDeviceTick(device);
 	}
 
-	void EditorWindowManager::ResetLayout()
+	void OnUpdate(Engine::Timestep ts)
+	{
+		ENGINE_PROFILE_FUNCTION();
+		BeginFrame();
+
+		m_MenuBar.OnUpdate();
+		for (auto& window : m_Windows)
+		{
+			window->OnUpdate(ts);
+		}
+
+		bool showDemo = true;
+		ImGui::ShowDemoWindow(&showDemo);
+
+		EndFrame();
+	}
+
+	void OnEvent(Engine::Event& e)
+	{
+		ENGINE_PROFILE_FUNCTION();
+		for (auto& window : m_Windows)
+		{
+			window->OnEvent(e);
+		}
+	}
+
+	void ResetLayout()
 	{
 		const std::string default_iniPath = "resources/layouts/default.ini";
 		std::string defaultLayoutContent;

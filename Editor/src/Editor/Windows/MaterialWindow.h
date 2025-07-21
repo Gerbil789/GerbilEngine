@@ -9,7 +9,7 @@ namespace Editor
 	class MaterialWindow : public EditorWindow
 	{
 	public:
-		MaterialWindow(EditorWindowManager* context);
+		MaterialWindow();
 		~MaterialWindow();
 		
 		void OnUpdate(Engine::Timestep ts) override;

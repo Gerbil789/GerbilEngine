@@ -16,7 +16,6 @@ namespace Editor
 	class MeshImportWindow : public EditorWindow
 	{
 	public:
-		MeshImportWindow(EditorWindowManager* context) : EditorWindow(context) {}
 		~MeshImportWindow() = default;
 
 		void SetScene(void* scene);

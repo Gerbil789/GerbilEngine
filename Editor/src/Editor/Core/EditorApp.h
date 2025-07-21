@@ -1,6 +1,4 @@
 #include "Engine/Core/Application.h"
-#include "Editor/Core/EditorWindowManager.h"
-#include "Editor/Services/SceneController.h"
 #include "Engine/Core/Project.h"
 
 namespace Editor
@@ -9,7 +7,7 @@ namespace Editor
 	{
 	public:
 		EditorApp(std::filesystem::path projectPath);
-		~EditorApp() = default;
+		~EditorApp();
 
 		void Run() override;
 		void OnEvent(Engine::Event& e) override;
@@ -18,8 +16,5 @@ namespace Editor
 
 	private:
 		Engine::Project m_Project;
-
-		Scope<Editor::SceneController> m_SceneController;
-		Scope<Editor::EditorWindowManager> m_EditorWindowManager;
 	};
 }

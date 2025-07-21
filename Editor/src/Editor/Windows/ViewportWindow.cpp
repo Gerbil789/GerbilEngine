@@ -3,7 +3,7 @@
 #include "Engine/Scene/Entity.h"
 #include "Engine/Core/Core.h"
 #include "Engine/Core/Input.h"
-#include "Editor/Services/EditorServiceRegistry.h"
+#include "Editor/Core/EditorSceneController.h"
 #include "Engine/Events/MouseEvent.h"
 #include "Engine/Math/Math.h"
 #include "Editor/Elements/Style.h"
@@ -15,19 +15,19 @@ namespace Editor
 {
 	using namespace Engine;
 
-	ViewportWindow::ViewportWindow(EditorWindowManager* context) : EditorWindow(context)
+	ViewportWindow::ViewportWindow()
 	{
 		m_Scene = SceneManager::GetActiveScene();
 		m_Renderer.SetScene(m_Scene);
 		m_EntityIdRenderer.SetScene(m_Scene);
-		m_SceneController = EditorServiceRegistry::Get<SceneController>();
 	}
 
 	void ViewportWindow::OnUpdate(Timestep ts)
 	{
 		ScopedStyle style({
 			{ ImGuiStyleVar_WindowPadding, ImVec2(0, 0) },
-			{ ImGuiCol_WindowBg, ImVec4(0.9f, 0.2f, 1.0f, 1.0f) }
+			{ ImGuiCol_WindowBg, ImVec4(0.9f, 0.2f, 1.0f, 1.0f) },
+			{ ImGuiStyleVar_WindowBorderSize, 0.0f }
 			});
 
 		ImGui::Begin("Viewport");
@@ -43,11 +43,11 @@ namespace Editor
 		m_Renderer.EndScene();
 
 		// Render entity IDs
-		m_EntityIdRenderer.Render();
+		m_EntityIdRenderer.Render(); 
 
 		ImVec2 mousePos = ImGui::GetMousePos();
 		float mx = mousePos.x - m_ViewportBounds[0].x;
-		float my = m_ViewportSize.y - (mousePos.y - m_ViewportBounds[0].y);
+		float my = mousePos.y - m_ViewportBounds[0].y;
 
 		if (mx >= 0 && my >= 0 && mx < (int)m_ViewportSize.x && my < (int)m_ViewportSize.y)
 		{
@@ -115,7 +115,7 @@ namespace Editor
 
 			if (m_ViewportHovered && !ImGuizmo::IsOver())
 			{
-				m_SceneController->SelectEntity(m_HoveredEntity);
+				EditorSceneController::SelectEntity(m_HoveredEntity);
 			}
 		}
 		return false;
@@ -147,7 +147,7 @@ namespace Editor
 
 	void ViewportWindow::DrawGizmos()
 	{
-		Entity selectedEntity = m_SceneController->GetSelectedEntity();
+		Entity selectedEntity = EditorSceneController::GetSelectedEntity();
 
 		if (selectedEntity && m_GizmoType != -1)
 		{
