@@ -14,15 +14,17 @@ namespace Engine
 			m_Path = std::filesystem::absolute(path);
 			m_Title = m_Path.lexically_normal().filename().string();
 			std::filesystem::create_directories(m_Path / "Assets");	// Ensure Assets directory exists
+			m_AssetsPath = m_Path / "Assets";
 		}
 
 		std::string GetTitle() const { return m_Title; }
 		std::filesystem::path GetPath() const { return m_Path; }
-		std::filesystem::path GetAssetsPath() const { return m_Path / "Assets"; }
+		std::filesystem::path GetAssetsPath() const { return m_AssetsPath; }
 
 	private:
 		std::string m_Title;
 		std::filesystem::path m_Path;
+		std::filesystem::path m_AssetsPath;
 
 	};
 }

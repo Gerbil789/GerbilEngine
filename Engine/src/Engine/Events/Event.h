@@ -3,7 +3,7 @@
 
 namespace Engine
 {
-	enum class EventType
+	enum class EventType //TODO: remove unused event types
 	{
 		None = 0,
 		WindowOpen, WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
@@ -14,7 +14,7 @@ namespace Engine
 
 	enum EventCategory
 	{
-		None = 0,
+		None = 0,														// 0	(00000)
 		EventCategoryApplication = BIT(0),	// 1	(00001)
 		EventCategoryInput = BIT(1),				// 2	(00010)
 		EventCategoryKeyboard = BIT(2),			// 4	(00100)

@@ -13,8 +13,6 @@ namespace Editor
 	class SceneHierarchyWindow : public EditorWindow
 	{
 	public:
-		SceneHierarchyWindow();
-
 		void OnUpdate(Engine::Timestep ts) override;
 
 	private:

@@ -15,7 +15,6 @@ project "Engine"
 		"src/**.h",
 		"src/**.cpp",
 		"%{wks.location}/vendor/glm/glm/**.inl",
-		"%{wks.location}/vendor/yaml-cpp/include/**.h",
 		"%{wks.location}/vendor/tinygltf/**.h",
 		"%{wks.location}/vendor/tinygltf/**.hpp",
 	}
@@ -28,7 +27,6 @@ project "Engine"
 		"%{wks.location}/vendor/dawn/include",
 		"%{wks.location}/vendor/glm",
 		"%{wks.location}/vendor/entt/include",
-		"%{wks.location}/vendor/yaml-cpp/include",
 		"%{wks.location}/vendor/tinygltf",
 		"%{wks.location}/vendor/portable-file-dialogs"
 	}
@@ -36,8 +34,7 @@ project "Engine"
 	links
 	{
 		"glfw",
-		"webgpu_dawn",
-		"yaml-cpp"
+		"webgpu_dawn"
 	}
 
 	libdirs 

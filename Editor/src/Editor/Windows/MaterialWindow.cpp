@@ -27,14 +27,6 @@ namespace Editor
 
 	void MaterialWindow::OnUpdate(Engine::Timestep ts)
 	{
-		auto scene = SceneManager::GetActiveScene();
-		if (scene) 
-		{
-			//TODO: hold selected material reference
-			//m_Material = scene->GetSelectedMaterial();
-		}
-		
-
 		ImGui::Begin("Material");
 		
 		if(!m_Material)

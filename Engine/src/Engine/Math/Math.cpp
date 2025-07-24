@@ -1,9 +1,8 @@
 #include "enginepch.h"
-#include "Engine/Math/Math.h"
+#include "Math.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
-#include <glm/gtx/matrix_cross_product.hpp>
 
 namespace Engine::Math
 {
@@ -58,14 +57,6 @@ namespace Engine::Math
 			rotation.z = 0;
 		}
 
-
 		return true;
 	}
-
-	glm::mat4 CreateTransform(const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale)
-	{
-		return glm::mat4();
-	}
-
 }
-

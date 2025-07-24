@@ -15,15 +15,16 @@ namespace Editor
 {
 	using namespace Engine;
 
-	ViewportWindow::ViewportWindow()
-	{
-		m_Scene = SceneManager::GetActiveScene();
-		m_Renderer.SetScene(m_Scene);
-		m_EntityIdRenderer.SetScene(m_Scene);
-	}
-
 	void ViewportWindow::OnUpdate(Timestep ts)
 	{
+		Scene* scene = SceneManager::GetActiveScene();
+		if(scene != m_Scene)
+		{
+			m_Scene = scene;
+			m_Renderer.SetScene(m_Scene);
+			m_EntityIdRenderer.SetScene(m_Scene);
+		}
+
 		ScopedStyle style({
 			{ ImGuiStyleVar_WindowPadding, ImVec2(0, 0) },
 			{ ImGuiCol_WindowBg, ImVec4(0.9f, 0.2f, 1.0f, 1.0f) },
@@ -164,8 +165,7 @@ namespace Editor
 
 			bool snap = Input::IsKeyPressed(Key::LeftControl);
 			float snapValue = 0.5f; // Snap to 0.5m for translation/scale
-			if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
-				snapValue = 45.0f; // Snap to 45 degrees for rotation
+			if (m_GizmoType == ImGuizmo::OPERATION::ROTATE) snapValue = 45.0f; // Snap to 45 degrees for rotation
 
 			float snapValues[3] = { snapValue, snapValue, snapValue };
 
@@ -175,13 +175,10 @@ namespace Editor
 			if (ImGuizmo::IsUsing())
 			{
 				glm::vec3 translation, rotation, scale;
-				Math::DecomposeTransform(transform, translation, rotation, scale); //TODO: use position, rotation and scale directly from the transform component
-
-				glm::vec3 originalRotation = tc.Rotation;
-				glm::vec3 deltaRotation = glm::degrees(rotation) - originalRotation;
+				Math::DecomposeTransform(transform, translation, rotation, scale); 
 
 				tc.Position = translation;
-				tc.Rotation += deltaRotation;
+				tc.Rotation = glm::degrees(rotation);
 				tc.Scale = scale;
 			}
 		}

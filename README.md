@@ -19,3 +19,17 @@ My hobby project
 - Right click -> **Build**
 4. **Run**
 - Run it
+
+#### Used Libraries
+
+| Library                                                                          | Purpose                          |
+| -------------------------------------------------------------------------------- | -------------------------------- |
+| **[Dawn](https://dawn.googlesource.com/dawn)**                                   | WebGPU implementation            |
+| **[EnTT](https://github.com/skypjack/entt)**                                     | Entity Component System (ECS)    |
+| **[GLFW](https://www.glfw.org/)**                                                | Windowing and input handling     |
+| **[GLM](https://github.com/g-truc/glm)**                                         | Mathematics (vectors, matrices)  |
+| **[ImGui](https://github.com/ocornut/imgui)**                                    | Immediate-mode GUI               |
+| **[ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo)**                      | 3D transform gizmo for ImGui     |
+| **[portable-file-dialogs](https://github.com/samhocevar/portable-file-dialogs)** | Native file dialogs              |
+| **[spdlog](https://github.com/gabime/spdlog)**                                   | Fast C++ logging library         |
+| **[tinygltf](https://github.com/syoyo/tinygltf)**                                | glTF mesh loading and processing |

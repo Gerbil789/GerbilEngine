@@ -6,14 +6,8 @@ namespace Editor::EditorSceneController
 {
 	using namespace Engine;
 
-	Engine::Scene* m_Scene = nullptr;
 	Engine::UUID m_CopiedEntityUUID = 0;
 	entt::entity m_SelectedEntity = entt::null;
-
-	void Initialize()
-	{
-		m_Scene = SceneManager::GetActiveScene();
-	}
 
 	void OnEvent(Event& e)
 	{
@@ -34,7 +28,7 @@ namespace Editor::EditorSceneController
 		case Key::N:
 		{
 			if (control)
-				SceneManager::CreateScene("New Scene");
+				SceneManager::CreateScene("NewScene");
 			break;
 		}
 		case Key::O:
@@ -104,10 +98,10 @@ namespace Editor::EditorSceneController
 	{
 		if (!entity) { return; }
 
-		Entity newEntity = m_Scene->CreateEntity(entity.GetName());
+		Entity newEntity = SceneManager::GetActiveScene()->CreateEntity(entity.GetName());
 
-		CopyComponents<TransformComponent, SpriteComponent, MeshComponent, LightComponent, NameComponent, HierarchyComponent>(
-			m_Scene->m_Registry, entity, newEntity
+		CopyComponents<TransformComponent, MeshComponent, LightComponent, NameComponent, HierarchyComponent>(
+			SceneManager::GetActiveScene()->m_Registry, entity, newEntity
 		);
 
 		SelectEntity(newEntity);
@@ -150,6 +144,6 @@ namespace Editor::EditorSceneController
 
 	Entity GetSelectedEntity()
 	{
-		return { m_SelectedEntity, &m_Scene->m_Registry };
+		return { m_SelectedEntity, &SceneManager::GetActiveScene()->m_Registry };
 	}
 }

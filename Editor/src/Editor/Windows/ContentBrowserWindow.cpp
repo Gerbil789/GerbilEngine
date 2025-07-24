@@ -3,6 +3,7 @@
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Renderer/Material.h"
 #include "Engine/Core/Serializer.h"
+#include "Engine/Scene/Scene.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Core/Application.h"
 #include "Editor/Core/EditorApp.h"
@@ -145,7 +146,7 @@ namespace Editor
 					Ref<Scene> newScene = AssetManager::Create<Scene>(path);
 					if (newScene)
 					{
-						Serializer::Serialize(newScene);
+						//Serializer::Serialize(newScene);
 						Items.push_back(ContentBrowserItem(ItemType::File, path));
 					}
 				}

@@ -3,7 +3,7 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Core/UUID.h"
 #include "Engine/Scene/Components.h"
-#include "entt.hpp"
+#include <entt.hpp>
 
 namespace Engine
 {
@@ -16,13 +16,21 @@ namespace Engine
 		Entity(const Entity& other) = default;
 
 		template<typename T>
-		bool HasComponent()
+		bool HasComponent() const
 		{
 			return m_Registry->any_of<T>(m_EntityHandle);
 		}
 
 		template<typename T>
 		T& GetComponent()
+		{
+			const char* typeName = typeid(T).name();
+			ASSERT(HasComponent<T>(), fmt::format("Entity does not have component of type {}", typeName).c_str());
+			return m_Registry->get<T>(m_EntityHandle);
+		}
+
+		template<typename T>
+		const T& GetComponent() const
 		{
 			const char* typeName = typeid(T).name();
 			ASSERT(HasComponent<T>(), fmt::format("Entity does not have component of type {}", typeName).c_str());

@@ -16,8 +16,6 @@ namespace Editor
 	class ViewportWindow : public EditorWindow
 	{
 	public:
-		ViewportWindow();
-
 		void OnUpdate(Engine::Timestep ts) override;
 		void OnEvent(Engine::Event& e) override;
 

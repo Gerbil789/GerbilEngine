@@ -67,20 +67,20 @@ namespace Engine
 		MeshComponent() = default;
 	};
 
-	struct SpriteComponent //TODO: rework whole 2D renderer system
-	{
-		Ref<Material> Material = nullptr;
+	//struct SpriteComponent //TODO: rework whole 2D renderer system
+	//{
+	//	Ref<Material> Material = nullptr;
 
-		glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		Ref<Texture2D> Texture = nullptr;
-		glm::vec2 TilingFactor = { 1.0f, 1.0f };
+	//	glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	//	Ref<Texture2D> Texture = nullptr;
+	//	glm::vec2 TilingFactor = { 1.0f, 1.0f };
 
-		SpriteComponent() = default;
-		SpriteComponent(const glm::vec4& color) : Color(color) {}
+	//	SpriteComponent() = default;
+	//	SpriteComponent(const glm::vec4& color) : Color(color) {}
 
-		operator glm::vec4& () { return Color; }
-		operator const glm::vec4& () const { return Color; }
-	};
+	//	operator glm::vec4& () { return Color; }
+	//	operator const glm::vec4& () const { return Color; }
+	//};
 
 
 	struct CameraComponent

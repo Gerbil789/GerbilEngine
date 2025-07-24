@@ -4,7 +4,7 @@
 
 namespace Engine 
 {
-	class UUID 
+	class UUID //TODO: use uint64_t
 	{
 	public:
 		UUID();

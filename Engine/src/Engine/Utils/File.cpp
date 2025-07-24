@@ -19,13 +19,13 @@ namespace Engine
 		return true;
 	}
 
-	std::string OpenFile(const char* filter)
+	std::string OpenFile()
 	{
 		auto result = pfd::open_file("Open File", ".", { "All Files", "*" }).result();
 		return !result.empty() ? result[0] : "";
 	}
 
-	std::string SaveFile(const char* filter)
+	std::string SaveFile()
 	{
 		auto result = pfd::save_file("Save File", ".", { "All Files", "*" }).result();
 		return result;

@@ -23,7 +23,7 @@ namespace Editor
 			{
 				if (ImGui::MenuItem("New", "ctrl + N"))
 				{
-					SceneManager::CreateScene("New Scene");
+					SceneManager::CreateScene("NewScene");
 				}
 
 				if (ImGui::MenuItem("Open", "ctrl + O"))

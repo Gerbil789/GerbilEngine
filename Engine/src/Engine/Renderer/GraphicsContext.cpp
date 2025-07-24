@@ -14,17 +14,6 @@ namespace Engine::GraphicsContext
 	wgpu::Queue s_Queue;
 	wgpu::Surface s_Surface;
 
-	//TODO: make these lambdas 
-	static constexpr auto OnDeviceLost = [](WGPUDevice const* device, WGPUDeviceLostReason reason, WGPUStringView message, void* userdata1, void* userdata2) 
-	{
-		LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", (int)reason, message);
-	};
-
-	static constexpr auto OnUncapturedError = [](WGPUDevice const* device, WGPUErrorType type, WGPUStringView message, void* userdata1, void* userdata2) 
-	{
-		LOG_ERROR("WebGPU Uncaptured error: {}", message);
-	};
-
 	wgpu::Surface glfwGetWGPUSurface(wgpu::Instance instance, GLFWwindow* window)
 	{
 		wgpu::SurfaceSourceWindowsHWND hwndDesc;
@@ -59,14 +48,17 @@ namespace Engine::GraphicsContext
 		adapterOpts.compatibleSurface = s_Surface;
 		wgpu::Adapter adapter = s_Instance.requestAdapter(adapterOpts);
 		ASSERT(adapter, "Failed to request WGPU adapter");
-		//s_Instance.release();
-		
+
 		// Request device
 		wgpu::DeviceLostCallbackInfo deviceLostCallbackInfo = {};
-		deviceLostCallbackInfo.callback = OnDeviceLost;
+		deviceLostCallbackInfo.callback = [](WGPUDevice const* device, WGPUDeviceLostReason reason, WGPUStringView message, void* userdata1, void* userdata2){
+			LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", (int)reason, message);
+		};
 
 		wgpu::UncapturedErrorCallbackInfo uncapturedErrorCallbackInfo = {};
-		uncapturedErrorCallbackInfo.callback = OnUncapturedError;
+		uncapturedErrorCallbackInfo.callback = [](WGPUDevice const* device, WGPUErrorType type, WGPUStringView message, void* userdata1, void* userdata2){
+			LOG_ERROR("WebGPU Uncaptured error: {}", message);
+		};
 
 		wgpu::DeviceDescriptor deviceDesc = {};
 		deviceDesc.label = { "MainDevice", WGPU_STRLEN };
@@ -129,7 +121,4 @@ namespace Engine::GraphicsContext
 
 		wgpuSurfaceConfigure(s_Surface, &config);
 	}
-
-
-
 }

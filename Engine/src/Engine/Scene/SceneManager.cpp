@@ -1,29 +1,36 @@
 #include "enginepch.h"
 #include "SceneManager.h"
+#include "Engine/Scene/Scene.h"
 #include "Engine/Core/Serializer.h"
 #include "Engine/Utils/File.h"
 #include "Engine/Core/AssetManager.h"
 
 namespace Engine::SceneManager
 {
-	Ref<Scene> s_ActiveSceneRef = nullptr;
-	Scene* s_ActiveScene = new Scene("NewScene");
+	Scene* s_ActiveScene = nullptr;
 
-	void SceneManager::SetActiveScene(const Ref<Scene>& scene)
+	void SetActiveScene(Scene* scene)
 	{
-		s_ActiveSceneRef = scene;
-		s_ActiveScene->CopyFrom(*scene);
+		if (scene == nullptr) { LOG_ERROR("Setting active scene failed. Scene is null"); return; }
+		s_ActiveScene = scene;
+		LOG_INFO("Active scene set to {0}", s_ActiveScene->GetFilePath());
+	}
+
+	Scene* GetActiveScene()
+	{
+		if (s_ActiveScene == nullptr) { LOG_ERROR("Getting active scene failed. Current scene is null"); return nullptr; }
+		return s_ActiveScene;
 	}
 
 	void CreateScene(const std::filesystem::path& path)
 	{
 		Ref<Scene> shared = AssetManager::Create<Scene>(path);
-		SetActiveScene(shared);
+		SetActiveScene(shared.get());
 	}
 
 	void LoadScene()
 	{
-		std::string filePath = OpenFile("Scene (*.scene)\0*.scene\0");
+		std::string filePath = OpenFile();
 		if (filePath.empty()) { LOG_ERROR("Failed to open file {0}", filePath); return; }
 		LoadScene(filePath);
 	}
@@ -40,17 +47,17 @@ namespace Engine::SceneManager
 	{
 		if(s_ActiveScene == nullptr) { LOG_ERROR("Saving scene failed. Current scene is null"); return; }
 		if (s_ActiveScene->GetFilePath().empty()) { SaveSceneAs(); return; }
-		Serializer::Serialize(s_ActiveSceneRef);
+		Serializer::Serialize(s_ActiveScene);
 		LOG_INFO("Scene saved to file {0}", s_ActiveScene->GetFilePath());
 	}
 
 	void SaveSceneAs()
 	{
-		std::string path = SaveFile("Scene (*.scene)\0*.scene\0");
+		std::string path = SaveFile();
 		if (!path.empty())
 		{
 			s_ActiveScene->SetFilePath(path);
-			Serializer::Serialize(s_ActiveSceneRef);
+			Serializer::Serialize(s_ActiveScene);
 			LOG_INFO("Save as {0}", path);
 		}
 	}

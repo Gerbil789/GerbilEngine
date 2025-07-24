@@ -19,13 +19,13 @@ namespace Editor
 
 		LOG_TRACE("Starting Gerbil Editor for project: {0}", m_Project.GetTitle());
 
-		EditorSceneController::Initialize();
 		EditorWindowManager::Initialize();
 
-		Engine::SceneManager::CreateScene("NewScene"); //TODO: load default scene from project if there is one
+		Engine::SceneManager::CreateScene("MyScene"); //TODO: load default scene from project if there is one
 
 		// Test scene setup, remove later
 		{
+			//Engine::SceneManager::CreateScene("BRUH");
 			auto scene = Engine::SceneManager::GetActiveScene();
 
 			auto texture = Engine::AssetManager::Get<Engine::Texture2D>("resources/icons/skull.png");

@@ -13,11 +13,6 @@ namespace Editor
 {
 	using namespace Engine;
 
-	SceneHierarchyWindow::SceneHierarchyWindow()
-	{
-		m_Scene = SceneManager::GetActiveScene();
-	}
-
 	void SceneHierarchyWindow::OnUpdate(Engine::Timestep ts)
 	{
 		ScopedStyle style({
@@ -27,6 +22,8 @@ namespace Editor
 
 
 		ImGui::Begin("Scene Hierarchy");
+
+		m_Scene = SceneManager::GetActiveScene();
 		if (!m_Scene)
 		{
 			ImGui::End();

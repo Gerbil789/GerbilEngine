@@ -13,21 +13,10 @@ namespace Editor
 {
 	using namespace Engine;
 
-	InspectorWindow::InspectorWindow()
-	{
-		m_Scene = SceneManager::GetActiveScene();
-	}
-
-
 	void InspectorWindow::OnUpdate(Engine::Timestep ts)
 	{
 
 		ImGui::Begin("Inspector");
-		if (!m_Scene)
-		{
-			ImGui::End();
-			return;
-		}
 
 		Entity entity = EditorSceneController::GetSelectedEntity();
 		if (!entity)
@@ -127,71 +116,71 @@ namespace Editor
 				ImGui::Columns(1);
 			});
 
-		DrawComponent<SpriteComponent>("Sprite Renderer", entity, [](auto& component)
-			{
-				ImGui::Button("Material", ImVec2(100.0f, 0.0f));
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-					{
-						if (payload->DataSize == 0)
-						{
-							LOG_WARNING("Failed to load material! (DataSize == 0)");
-						}
-						else
-						{
-							const wchar_t* droppedPath = (const wchar_t*)payload->Data;
-							std::filesystem::path path(droppedPath);
-							if (path.extension() == ".material")
-							{
-								component.Material = AssetManager::Get<Material>(path);
-							}
-							else
-							{
-								LOG_WARNING("Failed to load material!");
-							}
-						}
+		//DrawComponent<SpriteComponent>("Sprite Renderer", entity, [](auto& component)
+		//	{
+		//		ImGui::Button("Material", ImVec2(100.0f, 0.0f));
+		//		if (ImGui::BeginDragDropTarget())
+		//		{
+		//			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		//			{
+		//				if (payload->DataSize == 0)
+		//				{
+		//					LOG_WARNING("Failed to load material! (DataSize == 0)");
+		//				}
+		//				else
+		//				{
+		//					const wchar_t* droppedPath = (const wchar_t*)payload->Data;
+		//					std::filesystem::path path(droppedPath);
+		//					if (path.extension() == ".material")
+		//					{
+		//						component.Material = AssetManager::Get<Material>(path);
+		//					}
+		//					else
+		//					{
+		//						LOG_WARNING("Failed to load material!");
+		//					}
+		//				}
 
 
-					}
-					ImGui::EndDragDropTarget();
-				}
+		//			}
+		//			ImGui::EndDragDropTarget();
+		//		}
 
-				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+		//		ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 
-				ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-					{
-						const wchar_t* droppedPath = (const wchar_t*)payload->Data;
-						std::filesystem::path path(droppedPath);
-						if (path.extension() == ".png" || path.extension() == ".jpg")
-						{
-							component.Texture = AssetManager::Get<Texture2D>(path);
-						}
-						else {
-							LOG_WARNING("Failed to load texture!");
-						}
-					}
-					ImGui::EndDragDropTarget();
-				}
+		//		ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
+		//		if (ImGui::BeginDragDropTarget())
+		//		{
+		//			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		//			{
+		//				const wchar_t* droppedPath = (const wchar_t*)payload->Data;
+		//				std::filesystem::path path(droppedPath);
+		//				if (path.extension() == ".png" || path.extension() == ".jpg")
+		//				{
+		//					component.Texture = AssetManager::Get<Texture2D>(path);
+		//				}
+		//				else {
+		//					LOG_WARNING("Failed to load texture!");
+		//				}
+		//			}
+		//			ImGui::EndDragDropTarget();
+		//		}
 
-				// Set the width of the window or column you are working within
-				ImGui::PushItemWidth(-1);
+		//		// Set the width of the window or column you are working within
+		//		ImGui::PushItemWidth(-1);
 
-				ImGui::Text("Tiling");
-				ImGui::SameLine();
-				ImGui::PushItemWidth(50);
-				ImGui::DragFloat("x", &component.TilingFactor.x, 0.1f, 0.0f, 0.0f, "%.2f");
+		//		ImGui::Text("Tiling");
+		//		ImGui::SameLine();
+		//		ImGui::PushItemWidth(50);
+		//		ImGui::DragFloat("x", &component.TilingFactor.x, 0.1f, 0.0f, 0.0f, "%.2f");
 
-				ImGui::SameLine();
-				ImGui::PushItemWidth(50);
-				ImGui::DragFloat("y", &component.TilingFactor.y, 0.1f, 0.0f, 0.0f, "%.2f");
+		//		ImGui::SameLine();
+		//		ImGui::PushItemWidth(50);
+		//		ImGui::DragFloat("y", &component.TilingFactor.y, 0.1f, 0.0f, 0.0f, "%.2f");
 
-				ImGui::PopItemWidth();
-				ImGui::PopItemWidth();
-			});
+		//		ImGui::PopItemWidth();
+		//		ImGui::PopItemWidth();
+		//	});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 			{
@@ -422,11 +411,11 @@ namespace Editor
 				ImGui::CloseCurrentPopup();
 			}
 
-			if (ImGui::MenuItem("Sprite Renderer"))
-			{
-				entity.AddComponent<SpriteComponent>();
-				ImGui::CloseCurrentPopup();
-			}
+			//if (ImGui::MenuItem("Sprite Renderer"))
+			//{
+			//	entity.AddComponent<SpriteComponent>();
+			//	ImGui::CloseCurrentPopup();
+			//}
 
 			if (ImGui::MenuItem("Light"))
 			{

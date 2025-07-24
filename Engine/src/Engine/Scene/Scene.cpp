@@ -174,7 +174,7 @@ namespace Engine
 		CopyComponent(TransformComponent{});
 		CopyComponent(NameComponent{});
 		CopyComponent(MeshComponent{});
-		CopyComponent(SpriteComponent{});
+		//CopyComponent(SpriteComponent{});
 		CopyComponent(CameraComponent{});
 		CopyComponent(LightComponent{});
 
