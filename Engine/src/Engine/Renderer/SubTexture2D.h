@@ -6,7 +6,7 @@
 
 namespace Engine 
 {
-	class SubTexture2D
+	class SubTexture2D //TODO: This is currently not being used, revisit it later
 	{
 	public:
 		SubTexture2D(const Ref<Texture2D>& texture, const glm::vec2& min, const glm::vec2& max);

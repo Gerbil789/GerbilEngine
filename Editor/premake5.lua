@@ -10,11 +10,7 @@ project "Editor"
 	files
 	{
 		"src/**.h",
-		"src/**.cpp",
-		"%{wks.location}/vendor/imgui/backends/imgui_impl_wgpu.cpp",
-		"%{wks.location}/vendor/imgui/backends/imgui_impl_glfw.cpp",
-		"%{wks.location}/vendor/ImGuizmo/ImGuizmo.h",
-		"%{wks.location}/vendor/ImGuizmo/ImGuizmo.cpp",
+		"src/**.cpp"
 	}
 
 	includedirs

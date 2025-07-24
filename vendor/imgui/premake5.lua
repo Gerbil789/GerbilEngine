@@ -19,7 +19,18 @@ project "ImGui"
 		"imstb_rectpack.h",
 		"imstb_textedit.h",
 		"imstb_truetype.h",
-		"imgui_demo.cpp"
+		"imgui_demo.cpp",
+		"backends/imgui_impl_wgpu.cpp",
+		"backends/imgui_impl_glfw.cpp",
+		"%{wks.location}/vendor/ImGuizmo/ImGuizmo.cpp"
+	}
+
+	includedirs
+	{
+		"%{wks.location}/vendor/glfw/include",
+		"%{wks.location}/vendor/imgui",
+		"%{wks.location}/vendor/dawn/include",
+		"%{wks.location}/vendor/ImGuizmo"
 	}
 
 	filter "system:windows"

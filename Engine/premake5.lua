@@ -13,10 +13,7 @@ project "Engine"
 	files
 	{
 		"src/**.h",
-		"src/**.cpp",
-		"%{wks.location}/vendor/glm/glm/**.inl",
-		"%{wks.location}/vendor/tinygltf/**.h",
-		"%{wks.location}/vendor/tinygltf/**.hpp",
+		"src/**.cpp"
 	}
 
 	includedirs
@@ -28,7 +25,8 @@ project "Engine"
 		"%{wks.location}/vendor/glm",
 		"%{wks.location}/vendor/entt/include",
 		"%{wks.location}/vendor/tinygltf",
-		"%{wks.location}/vendor/portable-file-dialogs"
+		"%{wks.location}/vendor/portable-file-dialogs",
+		"%{wks.location}/vendor/tinygltf"
 	}
 
 	links
