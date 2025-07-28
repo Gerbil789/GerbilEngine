@@ -322,7 +322,7 @@ namespace Editor
 				ImGui::Text("Mesh");
 				ImGui::NextColumn();
 				Ref<Mesh> mesh = component.Mesh;
-				std::string meshButtonText = mesh != nullptr ? mesh->GetFilePath().filename().string() : "##Mesh";
+				std::string meshButtonText = mesh != nullptr ? mesh->GetPath().filename().string() : "##Mesh";
 				ImGui::Button(meshButtonText.c_str(), ImVec2(availWidth, 0.0f));
 				if (ImGui::BeginDragDropTarget())
 				{
@@ -345,7 +345,7 @@ namespace Editor
 
 				ImGui::Text("Material");
 				ImGui::NextColumn();
-				std::string materialButtonText = component.Material ? component.Material->GetFilePath().filename().string() : "##Material";
+				std::string materialButtonText = component.Material ? component.Material->GetPath().filename().string() : "##Material";
 				ImGui::Button(materialButtonText.c_str(), ImVec2(availWidth, 0.0f));
 				if (ImGui::BeginDragDropTarget())
 				{

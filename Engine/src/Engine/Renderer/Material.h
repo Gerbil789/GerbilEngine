@@ -10,10 +10,10 @@ namespace Engine
 {
 	using MaterialValue = std::variant<float, glm::vec3, glm::vec4>;
 
-	class Material : public Asset
+	class Material : public IAsset
 	{
 	public:
-		Material(const std::filesystem::path& path) : Asset(path) {}
+		Material(const std::filesystem::path& path) : IAsset(path) {}
 
 		void SetValue(const std::string& name, MaterialValue value) 
 		{

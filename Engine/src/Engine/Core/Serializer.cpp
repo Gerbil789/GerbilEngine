@@ -1,17 +1,17 @@
 #include "enginepch.h"
 #include "Serializer.h"
-#include "Engine/Utils/YAMLSerializer.h"
 #include "Engine/Core/AssetManager.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Renderer/Material.h"
+#include <regex>
+#include <json.hpp>
+
+using json = nlohmann::ordered_json;
 
 namespace Engine::Serializer
 {
-	constexpr const char* SHADER_KEY = "Shader";
-	constexpr const char* PROPERTIES_KEY = "Properties";
-
 	void Serialize(const Ref<Material>& material)
 	{
 		if (!material)
@@ -123,7 +123,7 @@ namespace Engine::Serializer
 
 	bool Serializer::Deserialize(Ref<Material>& material)
 	{
-		std::filesystem::path path = material->GetFilePath();
+		std::filesystem::path path = material->GetPath();
 		std::ifstream stream(path);
 		if (!stream.is_open())
 		{
@@ -193,119 +193,61 @@ namespace Engine::Serializer
 		//	
 		//}
 
-		material->SetModified(false);
+		//material->SetModified(false);
 		return true;
 	}
 
-	//void SerializeTransformComponent(YAML::Emitter& out, const TransformComponent& tc)
-	//{
-	//	out << YAML::Key << "Transform";
-	//	out << YAML::BeginMap;
-	//	out << YAML::Key << "Position" << YAML::Flow << YAML::BeginSeq << tc.Position.x << tc.Position.y << tc.Position.z << YAML::EndSeq;
-	//	out << YAML::Key << "Rotation" << YAML::Flow << YAML::BeginSeq << tc.Rotation.x << tc.Rotation.y << tc.Rotation.z << YAML::EndSeq;
-	//	out << YAML::Key << "Scale" << YAML::Flow << YAML::BeginSeq << tc.Scale.x << tc.Scale.y << tc.Scale.z << YAML::EndSeq;
-	//	out << YAML::EndMap;
-	//}
-
-	//void SerializeMeshComponent(YAML::Emitter& out, const MeshComponent& mc)
-	//{
-	//	out << YAML::Key << "MeshComponent";
-	//	out << YAML::BeginMap;
-	//	out << YAML::Key << "Mesh" << YAML::Value << (mc.Mesh ? mc.Mesh->GetFilePath().string() : "null");
-	//	out << YAML::Key << "Material" << YAML::Value << (mc.Material ? mc.Material->GetFilePath().string() : "null");
-	//	out << YAML::EndMap;
-	//}
-
-	//void SerializeHierarchyComponent(YAML::Emitter& out, const HierarchyComponent& hc)
-	//{
-	//	//out << YAML::Key << "HierarchyComponent";
-	//	//out << YAML::BeginMap;
-	//	//out << YAML::Key << "Parent" << YAML::Value << (hc.Parent != entt::null ? std::to_string(hc.Parent) : "null");
-	//	//out << YAML::Key << "FirstChild" << YAML::Value << (hc.FirstChild != entt::null ? std::to_string(hc.FirstChild) : "null");
-	//	//out << YAML::Key << "NextSibling" << YAML::Value << (hc.NextSibling != entt::null ? std::to_string(hc.NextSibling) : "null");
-	//	//out << YAML::Key << "PrevSibling" << YAML::Value << (hc.PrevSibling != entt::null ? std::to_string(hc.PrevSibling) : "null");
-	//	//out << YAML::EndMap;
-	//}
-
-	//void SerializeCameraComponent(YAML::Emitter& out, const CameraComponent& cc)
-	//{
-	//	//out << YAML::Key << "CameraComponent";
-	//	//out << YAML::BeginMap;
-	//	//out << YAML::Key << "Main" << YAML::Value << cc.Main;
-	//	//out << YAML::Key << "FixedAspectRatio" << YAML::Value << cc.FixedAspectRatio;
-	//	//const auto& projectionData = cc.Camera.GetProjectionData();
-	//	//out << YAML::Key << "ProjectionType" << YAML::Value << (int)projectionData.Type;
-	//	//out << YAML::Key << "PerspectiveFOV" << YAML::Value << projectionData.Perspective.FOV;
-	//	//out << YAML::Key << "PerspectiveNear" << YAML::Value << projectionData.Perspective.Near;
-	//	//out << YAML::Key << "PerspectiveFar" << YAML::Value << projectionData.Perspective.Far;
-	//	//out << YAML::Key << "OrthographicSize" << YAML::Value << projectionData.Orthographic.Size;
-	//	//out << YAML::Key << "OrthographicNear" << YAML::Value << projectionData.Orthographic.Near;
-	//	//out << YAML::Key << "OrthographicFar" << YAML::Value << projectionData.Orthographic.Far;
-	//	//out << YAML::EndMap;
-	//}
-
-	//void SerializeLightComponent(YAML::Emitter& out, const LightComponent& lc)
-	//{
-	//	//out << YAML::Key << "LightComponent";
-	//	//out << YAML::BeginMap;
-	//	//out << YAML::Key << "Type" << YAML::Value << (int)lc.Type;
-	//	//out << YAML::Key << "Color" << YAML::Flow << YAML::BeginSeq << lc.Color.r << lc.Color.g << lc.Color.b << YAML::EndSeq;
-	//	//out << YAML::Key << "Intensity" << YAML::Value << lc.Intensity;
-	//	//out << YAML::Key << "Range" << YAML::Value << lc.Range;
-	//	//out << YAML::Key << "Attenuation" << YAML::Flow << YAML::BeginSeq 
-	//	//	<< lc.Attenuation.x << lc.Attenuation.y << lc.Attenuation.z 
-	//	//	<< YAML::EndSeq;
-	//	//out << YAML::Key << "InnerAngle" << YAML::Value << lc.InnerAngle;
-	//	//out << YAML::Key << "OuterAngle" << YAML::Value << lc.OuterAngle;
-	//	//out << YAML::EndMap;
-	//}
-
-	//void SerializeEntity(YAML::Emitter& out, const Entity& entity)
-	//{
-
-
 	void Serializer::Serialize(Scene* scene)
 	{
-		YamlSerializer yaml;
-		yaml.BeginMap();
-		yaml.Write("Scene", scene->GetFilePath().string());
+		json j;
 
-		// Entities
-		yaml.BeginSequence("Entities");
+		j["Scene"] = scene->GetPath().string();
+		j["Entities"] = json::array();
+
 		for (const Entity& entity : scene->GetEntities())
 		{
-			yaml.BeginMap();
-			yaml.Write("Entity", entity.GetComponent<NameComponent>().Name);
-			yaml.Write("ID", fmt::format("{:08X}", (uint32_t)entity.GetComponent<IdentityComponent>().ID)); //Hexadecimal format for UUID
-			yaml.Write("Enabled", entity.GetComponent<IdentityComponent>().Enabled);
+			json entityJson;
+			entityJson["Entity"] = entity.GetComponent<NameComponent>().Name;
+			entityJson["ID"] = (uint32_t)entity.GetComponent<IdentityComponent>().ID;
+			entityJson["Enabled"] = entity.GetComponent<IdentityComponent>().Enabled;
 
-			yaml.BeginMap("Transform");
+			json transformJson;
 			const auto& transform = entity.GetComponent<TransformComponent>();
-			yaml.Write("Position", transform.Position);
-			yaml.Write("Rotation", transform.Rotation);
-			yaml.Write("Scale", transform.Scale);
-			yaml.EndMap();
+			transformJson["Position"] = { transform.Position.x, transform.Position.y, transform.Position.z };
+			transformJson["Rotation"] = { transform.Rotation.x, transform.Rotation.y, transform.Rotation.z };
+			transformJson["Scale"] = { transform.Scale.x, transform.Scale.y, transform.Scale.z };
+			entityJson["Transform"] = transformJson;
 
-			yaml.BeginSequence("Components");
+			// Components
+			json componentsJson = json::array();
 
 			// MeshComponent
-			yaml.BeginMap("MeshComponent");
-			const auto& meshComponent = entity.GetComponent<MeshComponent>();
-			yaml.Write("Mesh", meshComponent.Mesh ? meshComponent.Mesh->GetFilePath().string() : "null");
-			yaml.Write("Material", meshComponent.Material ? meshComponent.Material->GetFilePath().string() : "null");
-			yaml.EndMap(); 
+			if(auto* component = entity.TryGetComponent<MeshComponent>())
+			{
+				json data;
+				data["Mesh"] = component->Mesh ? component->Mesh->GetPath() : "";
+				data["Material"] = component->Material ? component->Material->GetPath() : "";
+				componentsJson.push_back({ { "MeshComponent", data } });
+			}
 
-			yaml.EndSequence(); // Components
-			yaml.EndMap(); // Entity
+			// Other components here...
+
+
+			entityJson["Components"] = componentsJson;
+			j["Entities"].push_back(entityJson);
 		}
 
-		yaml.EndSequence(); // Entities
+		std::ofstream outFile(scene->GetPath());
+		if (!outFile.is_open())
+		{
+			LOG_ERROR("Failed to open file for serialization: {0}", scene->GetPath());
+			return;
+		}
 
-		yaml.EndMap();
-		yaml.SaveToFile(scene->GetFilePath());
+		std::string output = j.dump(2);
+		output = std::regex_replace(output, std::regex(R"(\[\s+(-?\d+\.?\d*),\s+(-?\d+\.?\d*),\s+(-?\d+\.?\d*)\s+\])"), "[$1, $2, $3]"); // Post-process: collapse float3 arrays to one line using regex
+		outFile << output;
 	}
-
-
 
 	bool Serializer::Deserialize(Scene* scene)
 	{

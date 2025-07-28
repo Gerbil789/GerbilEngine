@@ -12,12 +12,12 @@ namespace Editor
 
 	MaterialWindow::MaterialWindow() 
 	{
-		std::string path = "resources/shaders";
+		/*std::string path = "resources/shaders";
 
 		for(auto& p: std::filesystem::directory_iterator(path))
 		{
 			m_ShaderPaths.emplace_back(p.path());
-		}
+		}*/
 	}
 
 	MaterialWindow::~MaterialWindow()
@@ -36,7 +36,7 @@ namespace Editor
 			return;
 		}
 
-		ImGui::Text(m_Material->GetFilePath().filename().string().c_str());
+		ImGui::Text(m_Material->GetPath().filename().string().c_str());
 
 
 		float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 32 - 100, 100.0f);

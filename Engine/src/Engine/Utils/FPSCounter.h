@@ -4,7 +4,7 @@
 
 namespace Engine 
 {
-  class FPSCounter
+	class FPSCounter //TODO: make fps counter better overall, and move it into debug directory
   {
   public:
     explicit FPSCounter(size_t historySize = 30);

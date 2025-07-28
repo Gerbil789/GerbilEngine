@@ -4,9 +4,6 @@ project "Engine"
 	cppdialect "C++20"
 	staticruntime "on"
 
-	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-
 	pchheader "enginepch.h"
 	pchsource "src/enginepch.cpp"
 

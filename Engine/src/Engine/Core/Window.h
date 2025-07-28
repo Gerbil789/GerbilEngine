@@ -12,7 +12,7 @@ namespace Engine
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
 
-		Window(const std::string& title = "New Window", uint32_t width = 1600, uint32_t height = 900, std::filesystem::path iconPath = "resources/icons/logo.png");
+		Window(const std::string& title = "New Window", uint32_t width = 1600, uint32_t height = 900, std::filesystem::path iconPath = "");
 		~Window();
 
 		void OnUpdate();

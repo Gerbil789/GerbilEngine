@@ -1,4 +1,5 @@
 #include "Engine/Core/Log.h"
+#include "Editor/Core/Core.h"
 #include "Editor/Core/EditorApp.h"
 
 int main(int argc, char** argv)
@@ -17,6 +18,15 @@ int main(int argc, char** argv)
     projectPath = cwd / "../Projects/TestProject"; 
     projectPath = std::filesystem::weakly_canonical(projectPath);
   }
+
+  // Set working directory to executable dir early
+  //std::filesystem::current_path(GetExecutableDir());
+
+  auto exeDir = GetExecutableDir();
+  auto projectRoot = exeDir.parent_path().parent_path().parent_path();
+  EDITOR_RESOURCES = projectRoot / "Editor" / "resources";
+  ENGINE_RESOURCES = projectRoot / "Engine" / "resources";
+  ASSETS = projectPath / "Assets";
 
   ENGINE_PROFILE_BEGIN("Startup", "Profile-Startup.json");
   auto app = new Editor::EditorApp(projectPath);

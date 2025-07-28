@@ -6,7 +6,7 @@
 
 namespace Engine
 {
-	Texture2D::Texture2D(const std::filesystem::path& path) : Asset(path)
+	Texture2D::Texture2D(const std::filesystem::path& path) : IAsset(path)
 	{
 		int width, height;
 		unsigned char* pixelData = stbi_load(path.string().c_str(), &width, &height, &m_Channels, STBI_rgb_alpha);

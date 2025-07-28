@@ -37,6 +37,18 @@ namespace Engine
 			return m_Registry->get<T>(m_EntityHandle);
 		}
 
+		template<typename T>
+		T* TryGetComponent()
+		{
+			return m_Registry->try_get<T>(m_EntityHandle);
+		}
+
+		template<typename T>
+		const T* TryGetComponent() const
+		{
+			return m_Registry->try_get<T>(m_EntityHandle);
+		}
+
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{

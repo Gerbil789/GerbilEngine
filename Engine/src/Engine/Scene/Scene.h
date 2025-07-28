@@ -9,7 +9,7 @@ namespace Engine
 {
 	class Entity; // Forward declaration
 
-	class Scene : public Asset
+	class Scene : public IAsset
 	{
 	public:
 		Scene(const std::filesystem::path& path);

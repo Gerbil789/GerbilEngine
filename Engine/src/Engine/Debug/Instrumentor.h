@@ -186,16 +186,4 @@ namespace Engine {
 	}
 }
 
-#define ENGINE_PROFILE 1;
 
-#if ENGINE_PROFILE
-#define ENGINE_PROFILE_BEGIN(name, filepath)::Engine::Instrumentor::Get().BeginSession(name, filepath)
-#define ENGINE_PROFILE_END()::Engine::Instrumentor::Get().EndSession()
-#define ENGINE_PROFILE_SCOPE(name)::Engine::InstrumentationTimer timer##__LINE__(name);
-#define ENGINE_PROFILE_FUNCTION() ENGINE_PROFILE_SCOPE(__FUNCSIG__)
-#else
-#define ENGINE_PROFILE_BEGIN(name, filepath)
-#define ENGINE_PROFILE_END()
-#define ENGINE_PROFILE_SCOPE(name)
-#define ENGINE_PROFILE_FUNCTION()
-#endif

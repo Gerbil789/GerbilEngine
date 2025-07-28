@@ -23,18 +23,16 @@ namespace Editor
 
 		Engine::SceneManager::CreateScene("MyScene"); //TODO: load default scene from project if there is one
 
-		// Test scene setup, remove later
 		{
-			//Engine::SceneManager::CreateScene("BRUH");
 			auto scene = Engine::SceneManager::GetActiveScene();
 
-			auto texture = Engine::AssetManager::Get<Engine::Texture2D>("resources/icons/skull.png");
+			auto texture = Engine::AssetManager::Get<Engine::Texture2D>(EDITOR_RESOURCES / "icons/skull.png");
 
 			// Entity 1
 			{
 				auto cube = scene->CreateEntity("TextureCube");
-				auto mesh = Engine::AssetManager::Get<Engine::Mesh>("resources/models/cube.glb");
-				auto material = Engine::AssetManager::Create<Engine::Material>("resources/materials/red.mat");
+				auto mesh = Engine::AssetManager::Get<Engine::Mesh>(ENGINE_RESOURCES / "models/cube.glb");
+				auto material = Engine::AssetManager::Create<Engine::Material>(ENGINE_RESOURCES / "materials/red.material");
 				material->SetTexture("AlbedoTexture", texture);
 				material->SetShader(CreateRef<Engine::PhongShader>());
 				material->SetValue("Color", glm::vec4(0.8f, 0.1f, 0.2f, 1.0f));
@@ -52,8 +50,8 @@ namespace Editor
 			// Entity 2
 			{
 				auto cube = scene->CreateEntity("BlueCube");
-				auto mesh = Engine::AssetManager::Get<Engine::Mesh>("resources/models/cube.glb");
-				auto material = Engine::AssetManager::Create<Engine::Material>("resources/materials/blue.mat");
+				auto mesh = Engine::AssetManager::Get<Engine::Mesh>(ENGINE_RESOURCES / "models/cube.glb");
+				auto material = Engine::AssetManager::Create<Engine::Material>(ENGINE_RESOURCES / "materials/blue.material");
 				material->SetShader(CreateRef<Engine::FlatColorShader>());
 				material->SetValue("Color", glm::vec4(0.2f, 0.1f, 0.8f, 1.0f));
 				auto& component = cube.AddComponent<Engine::MeshComponent>();

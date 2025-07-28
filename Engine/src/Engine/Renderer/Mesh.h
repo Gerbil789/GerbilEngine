@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	class Mesh : public Asset
+	class Mesh : public IAsset
 	{
 	public:
 		Mesh(const std::filesystem::path& path);

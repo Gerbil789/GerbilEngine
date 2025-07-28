@@ -13,7 +13,7 @@ namespace Engine::SceneManager
 	{
 		if (scene == nullptr) { LOG_ERROR("Setting active scene failed. Scene is null"); return; }
 		s_ActiveScene = scene;
-		LOG_INFO("Active scene set to {0}", s_ActiveScene->GetFilePath());
+		LOG_INFO("Active scene set to {0}", s_ActiveScene->GetPath());
 	}
 
 	Scene* GetActiveScene()
@@ -46,9 +46,9 @@ namespace Engine::SceneManager
 	void SaveScene()
 	{
 		if(s_ActiveScene == nullptr) { LOG_ERROR("Saving scene failed. Current scene is null"); return; }
-		if (s_ActiveScene->GetFilePath().empty()) { SaveSceneAs(); return; }
+		if (s_ActiveScene->GetPath().empty()) { SaveSceneAs(); return; }
 		Serializer::Serialize(s_ActiveScene);
-		LOG_INFO("Scene saved to file {0}", s_ActiveScene->GetFilePath());
+		LOG_INFO("Scene saved to file {0}", s_ActiveScene->GetPath());
 	}
 
 	void SaveSceneAs()
@@ -56,7 +56,7 @@ namespace Engine::SceneManager
 		std::string path = SaveFile();
 		if (!path.empty())
 		{
-			s_ActiveScene->SetFilePath(path);
+			//s_ActiveScene->SetFilePath(path);
 			Serializer::Serialize(s_ActiveScene);
 			LOG_INFO("Save as {0}", path);
 		}

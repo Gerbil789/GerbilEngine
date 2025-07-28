@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	Scene::Scene(const std::filesystem::path& path) : Asset(path) {}
+	Scene::Scene(const std::filesystem::path& path) : IAsset(path) {}
 
 	Scene::~Scene()
 	{

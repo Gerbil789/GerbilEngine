@@ -15,7 +15,7 @@ namespace Engine
 		glm::vec2 uv;
 	};
 
-	Mesh::Mesh(const std::filesystem::path& path) : Asset(path)
+	Mesh::Mesh(const std::filesystem::path& path) : IAsset(path)
 	{
 		tinygltf::Model model;
 		tinygltf::TinyGLTF loader;

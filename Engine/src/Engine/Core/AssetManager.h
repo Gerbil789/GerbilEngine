@@ -1,13 +1,14 @@
 #pragma once
 
+#include <Engine/Core/Core.h>
 #include "Engine/Core/Asset.h"
 
-namespace Engine::AssetManager
+namespace Engine::AssetManager //TODO: track modified assets, to save them later (ctrl + s)
 {
-	using AssetLoaderFn = std::function<Ref<Asset>(const std::filesystem::path&)>;
-	using AssetCreatorFn = std::function<Ref<Asset>(const std::filesystem::path&)>;
+	using AssetLoaderFn = std::function<Ref<IAsset>(const std::filesystem::path&)>;
+	using AssetCreatorFn = std::function<Ref<IAsset>(const std::filesystem::path&)>;
 
-	inline std::unordered_map<std::filesystem::path, Ref<Asset>> assets;
+	inline std::unordered_map<std::filesystem::path, Ref<IAsset>> assets;
 	inline std::unordered_map<std::string, AssetLoaderFn> assetLoaders;
 	inline std::unordered_map<std::string, AssetCreatorFn> assetCreators;
 

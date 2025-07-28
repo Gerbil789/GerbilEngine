@@ -6,7 +6,7 @@
 
 namespace Engine
 {
-	class Texture2D : public Asset
+	class Texture2D : public IAsset
 	{
 	public:
 		Texture2D(const std::filesystem::path& path);

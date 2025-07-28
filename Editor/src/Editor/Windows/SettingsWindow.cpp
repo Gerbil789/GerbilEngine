@@ -1,5 +1,6 @@
 #include "enginepch.h"
 #include "SettingsWindow.h"
+#include "Editor/Core/Core.h"
 #include <imgui_internal.h>
 
 namespace Editor
@@ -14,12 +15,12 @@ namespace Editor
 
 		if (ImGui::Button("Reset default editor layout")) 
 		{
-			ImGui::LoadIniSettingsFromDisk("resources/layouts/default.ini");
+			ImGui::LoadIniSettingsFromDisk((EDITOR_RESOURCES / "layouts/default.ini").string().c_str());
 		}
 
 		if (ImGui::Button("Save current layout"))
 		{
-			ImGui::SaveIniSettingsToDisk("resources/layouts/default.ini");
+			ImGui::SaveIniSettingsToDisk((EDITOR_RESOURCES / "layouts/default.ini").string().c_str());
 		}
 
 		ImGui::End();
