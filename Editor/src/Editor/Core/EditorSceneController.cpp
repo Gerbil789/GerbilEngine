@@ -6,7 +6,7 @@ namespace Editor::EditorSceneController
 {
 	using namespace Engine;
 
-	Engine::UUID m_CopiedEntityUUID = 0;
+	//Engine::UUID m_CopiedEntityUUID = 0;
 	entt::entity m_SelectedEntity = entt::null;
 
 	void OnEvent(Event& e)

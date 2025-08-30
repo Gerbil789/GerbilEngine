@@ -17,5 +17,5 @@ namespace Engine::GraphicsContext
 	inline wgpu::Queue GetQueue() { return s_Queue; }
 	inline wgpu::Surface GetSurface() { return s_Surface; }
 
-	//TODO: add system requirements for the graphics context"
+	//TODO: add system requirements for the graphics context
 }

@@ -75,22 +75,22 @@ namespace Editor::EditorWindowManager
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-		const std::string imgui_ini = (EDITOR_RESOURCES / "layouts/imgui.ini").string();
+		const std::string imgui_ini = "Editor/resources/layouts/imgui.ini";
 		if (!std::filesystem::exists(imgui_ini))
 		{
 			ResetLayout();
 			ImGui::SaveIniSettingsToDisk(imgui_ini.c_str());
 		}
 
-		io.IniFilename = "resources/layouts/imgui.ini"; // IMPORTANT: relative to the current working directory TODO: this is an issue, need to fix it
+		io.IniFilename = "Editor/resources/layouts/imgui.ini"; // IMPORTANT: relative to the current working directory TODO: this is an issue, need to fix it
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-		io.FontDefault = io.Fonts->AddFontFromFileTTF(Engine::Resources::Fonts::Roboto::Regular().string().c_str(), 18.0f);
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("Engine/resources/fonts/roboto/Roboto-Regular.ttf", 18.0f);
 		ImGui::StyleColorsDark(); //TODO: make better color palette
 		//ImGui::StyleColorsLight();
 
-		ImGui_ImplGlfw_InitForOther(Engine::Application::Get().GetWindow().Get(), true);
+		ImGui_ImplGlfw_InitForOther(Engine::Application::GetWindow().GetNativeWindow(), true);
 
 		ImGui_ImplWGPU_InitInfo initInfo;
 		initInfo.Device = Engine::GraphicsContext::GetDevice();
@@ -153,8 +153,7 @@ namespace Editor::EditorWindowManager
 	{
 		ImGui::End(); // End dockspace window
 
-		Engine::Application& app = Engine::Application::Get();
-		Engine::Window& window = app.GetWindow(); //TODO: store this in a member variable?
+		Engine::Window& window = Engine::Application::GetWindow(); //TODO: store this in a member variable?
 		ImGuiIO& io = ImGui::GetIO();
 		io.DisplaySize = ImVec2((float)window.GetWidth(), (float)window.GetHeight());
 
@@ -270,7 +269,7 @@ namespace Editor::EditorWindowManager
 
 	void ResetLayout()
 	{
-		const std::filesystem::path default_iniPath = EDITOR_RESOURCES / "layouts/default.ini";
+		const std::filesystem::path default_iniPath = "Editor/resources/layouts/default.ini";
 		std::string defaultLayoutContent;
 
 		if(!Engine::ReadFile(default_iniPath, defaultLayoutContent)) return;

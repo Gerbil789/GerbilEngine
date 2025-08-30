@@ -208,7 +208,7 @@ namespace Engine::Serializer
 		{
 			json entityJson;
 			entityJson["Entity"] = entity.GetComponent<NameComponent>().Name;
-			entityJson["ID"] = (uint32_t)entity.GetComponent<IdentityComponent>().ID;
+			//entityJson["ID"] = (uint32_t)entity.GetComponent<IdentityComponent>().ID;
 			entityJson["Enabled"] = entity.GetComponent<IdentityComponent>().Enabled;
 
 			json transformJson;
@@ -251,7 +251,73 @@ namespace Engine::Serializer
 
 	bool Serializer::Deserialize(Scene* scene)
 	{
-	
+		std::ifstream inFile(scene->GetPath());
+		if (!inFile.is_open())
+		{
+			LOG_ERROR("Failed to open file for deserialization: {0}", scene->GetPath());
+			return false;
+		}
+
+		json j;
+		inFile >> j;
+
+		if (!j.contains("Entities"))
+		{
+			LOG_ERROR("Scene file does not contain any entities: {0}", scene->GetPath());
+			return false;
+		}
+
+		for (const auto& entityJson : j["Entities"])
+		{
+			std::string name = entityJson["Entity"];
+			//Engine::UUID id = entityJson["ID"];
+			Engine::UUID id;
+			bool enabled = entityJson["Enabled"];
+
+			Entity entity = scene->CreateEntity(id, name);
+
+			// IdentityComponent
+			auto& identity = entity.GetComponent<IdentityComponent>();
+			identity.Enabled = enabled;
+
+			// TransformComponent
+			if (entityJson.contains("Transform"))
+			{
+				auto& transform = entity.GetComponent<TransformComponent>();
+				auto transformJson = entityJson["Transform"];
+
+				auto pos = transformJson["Position"];
+				auto rot = transformJson["Rotation"];
+				auto scale = transformJson["Scale"];
+
+				transform.Position = { pos[0], pos[1], pos[2] };
+				transform.Rotation = { rot[0], rot[1], rot[2] };
+				transform.Scale = { scale[0], scale[1], scale[2] };
+			}
+
+			// Other Components
+			if (entityJson.contains("Components"))
+			{
+				for (const auto& comp : entityJson["Components"])
+				{
+					if (comp.contains("MeshComponent"))
+					{
+						const auto& data = comp["MeshComponent"];
+
+						auto& meshComp = entity.AddComponent<MeshComponent>();
+
+						std::string meshPath = data["Mesh"];
+						std::string materialPath = data["Material"];
+
+						// If you have asset loading functions, use them:
+						if (!meshPath.empty()) meshComp.Mesh = AssetManager::Get<Mesh>(meshPath);
+
+						if (!materialPath.empty()) meshComp.Material = AssetManager::Get<Material>(materialPath);
+					}
+				}
+			}
+		}
+
 		return true;
 	}
 }

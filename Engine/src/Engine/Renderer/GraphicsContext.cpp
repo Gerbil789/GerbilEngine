@@ -30,7 +30,7 @@ namespace Engine::GraphicsContext
 
 	void Initialize()
 	{
-		Engine::Window& window = Engine::Application::Get().GetWindow();
+		Engine::Window& window = Engine::Application::GetWindow();
 
 		// Initialize WGPU instance
 		wgpu::InstanceDescriptor desc;
@@ -40,7 +40,7 @@ namespace Engine::GraphicsContext
 		ASSERT(s_Instance, "Failed to create WGPU instance");
 
 		// Create WGPU surface
-		s_Surface = glfwGetWGPUSurface(s_Instance, window.Get());
+		s_Surface = glfwGetWGPUSurface(s_Instance, window.GetNativeWindow());
 		ASSERT(s_Surface, "Failed to create WebGPU surface");
 
 		// Request adapter
@@ -51,6 +51,7 @@ namespace Engine::GraphicsContext
 
 		// Request device
 		wgpu::DeviceLostCallbackInfo deviceLostCallbackInfo = {};
+		deviceLostCallbackInfo.mode = wgpu::CallbackMode::AllowSpontaneous;
 		deviceLostCallbackInfo.callback = [](WGPUDevice const* device, WGPUDeviceLostReason reason, WGPUStringView message, void* userdata1, void* userdata2){
 			LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", (int)reason, message);
 		};

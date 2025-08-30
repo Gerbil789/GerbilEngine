@@ -21,13 +21,13 @@ namespace Editor
 		m_AssetsDirectory = app.GetProject().GetAssetsPath();
 		m_CurrentDirectory = app.GetProject().GetAssetsPath();
 
-		m_FolderIcon = AssetManager::Get<Texture2D>(EDITOR_RESOURCES / "icons/folder.png");
-		m_EmptyFolderIcon = AssetManager::Get<Texture2D>(EDITOR_RESOURCES / "icons/folder_empty.png");
-		m_FileIcon = AssetManager::Get<Texture2D>(EDITOR_RESOURCES / "icons/file.png");
-		m_ImageIcon = AssetManager::Get<Texture2D>(EDITOR_RESOURCES / "icons/image.png");
-		m_SceneIcon = AssetManager::Get<Texture2D>(EDITOR_RESOURCES / "icons/landscape.png");
+		m_FolderIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/folder.png");
+		m_EmptyFolderIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/folder_empty.png");
+		m_FileIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/file.png");
+		m_ImageIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/image.png");
+		m_SceneIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/landscape.png");
 
-		glfwSetDropCallback(Application::Get().GetWindow().Get(), [](GLFWwindow* window, int count, const char* paths[]) {
+		glfwSetDropCallback(Application::GetWindow().GetNativeWindow(), [](GLFWwindow* window, int count, const char* paths[]) {
 			for (int i = 0; i < count; i++)
 			{
 				std::filesystem::path path = paths[i];

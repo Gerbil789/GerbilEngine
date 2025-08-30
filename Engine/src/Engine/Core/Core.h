@@ -44,38 +44,3 @@ constexpr Ref<T> CreateRef(Args&& ... args)
 {
 	return std::make_shared<T>(std::forward<Args>(args)...);
 }
-
-inline std::filesystem::path ENGINE_RESOURCES; // Path to the Engine resources directory
-inline std::filesystem::path ASSETS; // Path to the Assets directory of the current project
-
-namespace Engine::Resources
-{
-	namespace Shaders
-	{
-		inline std::filesystem::path EntityId() { return ENGINE_RESOURCES / "shaders/entityId.wgsl"; }
-		inline std::filesystem::path Flat() { return ENGINE_RESOURCES / "shaders/flatColor.wgsl"; }
-		inline std::filesystem::path Phong() { return ENGINE_RESOURCES / "shaders/phong.wgsl"; }
-	}
-
-	namespace Models
-	{
-		inline std::filesystem::path Cube() { return ENGINE_RESOURCES / "models/cube.glb"; }
-	}
-
-	namespace Materials
-	{
-		inline std::filesystem::path Default() { return ENGINE_RESOURCES / "materials/default.material"; }
-		inline std::filesystem::path PBR() { return ENGINE_RESOURCES / "materials/pbr.material"; }
-		inline std::filesystem::path Unlit() { return ENGINE_RESOURCES / "materials/unlit.material"; }
-	}
-
-	namespace Fonts
-	{
-		namespace Roboto
-		{
-			inline std::filesystem::path Regular() { return ENGINE_RESOURCES / "fonts/roboto/Roboto-Regular.ttf"; }
-			inline std::filesystem::path Bold() { return ENGINE_RESOURCES / "fonts/roboto/Roboto-Bold.ttf"; }
-			inline std::filesystem::path Italic() { return ENGINE_RESOURCES / "fonts/roboto/Roboto-Italic.ttf"; }
-		}
-	}
-}

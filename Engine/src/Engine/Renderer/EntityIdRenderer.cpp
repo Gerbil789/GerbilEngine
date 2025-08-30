@@ -23,7 +23,7 @@ namespace Engine
 		wgpu::TextureDescriptor colorTextureDesc{};
 		colorTextureDesc.label = { "EntityIdRendererColorTexture", WGPU_STRLEN };
 		colorTextureDesc.dimension = wgpu::TextureDimension::_2D;
-		colorTextureDesc.format = wgpu::TextureFormat::R32Uint;
+		colorTextureDesc.format = wgpu::TextureFormat::RGBA32Uint;	// 128bits for uuid (4x32)
 		colorTextureDesc.size = { width, height, 1 };
 		colorTextureDesc.mipLevelCount = 1;
 		colorTextureDesc.sampleCount = 1;
@@ -71,7 +71,7 @@ namespace Engine
 		colorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 		colorAttachment.loadOp = wgpu::LoadOp::Clear;
 		colorAttachment.storeOp = wgpu::StoreOp::Store;
-		colorAttachment.clearValue = { 0.0f, 0.0f, 0.0f, 1.0f };
+		colorAttachment.clearValue = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 		wgpu::RenderPassDepthStencilAttachment depthStencilAttachment{};
 		depthStencilAttachment.view = m_DepthView;
@@ -104,7 +104,7 @@ namespace Engine
 		uint32_t i = 0;
 		for (Entity& entity : entities)
 		{
-			uint32_t id = entity.GetUUID();
+			Engine::UUID uuid = entity.GetUUID();
 
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
 			auto& mesh = meshComponent.Mesh;
@@ -114,10 +114,9 @@ namespace Engine
 			uint32_t dynamicOffset = i * Renderer::GetModelUniformStride();
 			renderPass.setBindGroup(GroupID::Model, Renderer::GetModelBindGroup(), 1, &dynamicOffset);
 
-
-			uint32_t iDdynamicOffset = i * 256;
-			m_Queue.writeBuffer(m_UniformBuffer, iDdynamicOffset, &id, sizeof(id));
-			renderPass.setBindGroup(2, m_BindGroup, 1, &iDdynamicOffset);
+			uint32_t idDynamicOffset = i * 256; // WebGPU requires dynamic offsets to be aligned to 256 bytes
+			m_Queue.writeBuffer(m_UniformBuffer, idDynamicOffset, uuid.ToRGBA32().data(), sizeof(Engine::UUID));
+			renderPass.setBindGroup(2, m_BindGroup, 1, &idDynamicOffset);
 
 			renderPass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
 			renderPass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, mesh->GetIndexBuffer().getSize());
@@ -134,11 +133,11 @@ namespace Engine
 		m_Queue.submit(1, &commandBuffer);
 	}
 
-	uint32_t EntityIdRenderer::ReadPixel(uint32_t x, uint32_t y)
+	Engine::UUID EntityIdRenderer::ReadPixel(uint32_t x, uint32_t y)
 	{
 		wgpu::BufferDescriptor bufferDesc{};
 		bufferDesc.label = { "EntityIdReadbackBuffer", WGPU_STRLEN };
-		bufferDesc.size = sizeof(uint32_t);
+		bufferDesc.size = sizeof(Engine::UUID);
 		bufferDesc.usage = wgpu::BufferUsage::MapRead | wgpu::BufferUsage::CopyDst;
 		wgpu::Buffer readbackBuffer = m_Device.createBuffer(bufferDesc);
 
@@ -171,13 +170,17 @@ namespace Engine
 			}
 		};
 
-		wgpu::Future future = readbackBuffer.mapAsync(wgpu::MapMode::Read, 0, sizeof(uint32_t), callbackInfo);
+		wgpu::Future future = readbackBuffer.mapAsync(wgpu::MapMode::Read, 0, sizeof(Engine::UUID), callbackInfo);
 		wgpu::FutureWaitInfo waitInfo;
 		waitInfo.future = future;
 		wgpuInstanceWaitAny(GraphicsContext::GetInstance(), 1, &waitInfo, 100000000); // 100000000ns = 0.01s
 
-		const uint8_t* mapped = static_cast<const uint8_t*>(readbackBuffer.getConstMappedRange(0, sizeof(uint32_t)));
-		uint32_t id = *reinterpret_cast<const uint32_t*>(mapped);
+		const uint8_t* mapped = static_cast<const uint8_t*>(readbackBuffer.getConstMappedRange(0, sizeof(Engine::UUID)));
+		const uint32_t* pixels = reinterpret_cast<const uint32_t*>(mapped);
+		uint64_t low = (uint64_t)pixels[1] << 32 | pixels[0];
+		uint64_t high = (uint64_t)pixels[3] << 32 | pixels[2];
+		Engine::UUID id(high, low);
+
 		readbackBuffer.release();
 
 		return id;
@@ -189,7 +192,7 @@ namespace Engine
 		entry.binding = 0;
 		entry.visibility = wgpu::ShaderStage::Fragment;
 		entry.buffer.type = wgpu::BufferBindingType::Uniform;
-		entry.buffer.minBindingSize = sizeof(uint32_t);
+		entry.buffer.minBindingSize = sizeof(Engine::UUID);
 		entry.buffer.hasDynamicOffset = true;
 
 		wgpu::BindGroupLayoutDescriptor desc{};
@@ -201,7 +204,7 @@ namespace Engine
 
 		wgpu::BufferDescriptor bufferDesc{};
 		bufferDesc.label = { "EntityIdUniformBuffer", WGPU_STRLEN };;
-		bufferDesc.size = 1024 * sizeof(uint32_t);
+		bufferDesc.size = 1024 * sizeof(Engine::UUID);
 		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 
 		m_UniformBuffer = m_Device.createBuffer(bufferDesc);
@@ -210,7 +213,7 @@ namespace Engine
 		bindGroupEntry.binding = 0;
 		bindGroupEntry.buffer = m_UniformBuffer;
 		bindGroupEntry.offset = 0;
-		bindGroupEntry.size = sizeof(uint32_t);
+		bindGroupEntry.size = sizeof(Engine::UUID);
 
 		wgpu::BindGroupDescriptor bindGroupDesc{};
 		bindGroupDesc.label = { "EntityIdBindGroup", WGPU_STRLEN };
@@ -222,7 +225,7 @@ namespace Engine
 
 	void EntityIdRenderer::CreatePipeline()
 	{
-		wgpu::ShaderModule shaderModule = Shader::LoadShader(Engine::Resources::Shaders::EntityId());
+		wgpu::ShaderModule shaderModule = Shader::LoadShader("Engine/resources/shaders/entityId.wgsl");
 		std::vector<wgpu::VertexAttribute> vertexAttribs(3);
 
 		// Position
@@ -264,7 +267,7 @@ namespace Engine
 		pipelineDesc.primitive.cullMode = wgpu::CullMode::None; //TODO: Add culling later
 
 		wgpu::ColorTargetState colorTarget;
-		colorTarget.format = wgpu::TextureFormat::R32Uint;
+		colorTarget.format = wgpu::TextureFormat::RGBA32Uint;
 		//colorTarget.blend = &blendState;
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 

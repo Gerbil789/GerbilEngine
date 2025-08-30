@@ -5,8 +5,6 @@
 
 namespace Engine
 {
-	Scene::Scene(const std::filesystem::path& path) : IAsset(path) {}
-
 	Scene::~Scene()
 	{
 		m_Registry.clear();
@@ -51,8 +49,6 @@ namespace Engine
 
 	Entity Scene::GetEntityByUUID(UUID uuid)
 	{
-		if(uuid == 0) return Entity();
-
 		auto view = m_Registry.view<IdentityComponent>();
 		for (auto entity : view)
 		{

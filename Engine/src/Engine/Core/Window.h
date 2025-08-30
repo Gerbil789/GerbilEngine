@@ -12,14 +12,14 @@ namespace Engine
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
 
-		Window(const std::string& title = "New Window", uint32_t width = 1600, uint32_t height = 900, std::filesystem::path iconPath = "");
+		Window(const std::string& title = "New Window", uint32_t width = 1600, uint32_t height = 900, const std::filesystem::path& iconPath = "");
 		~Window();
 
 		void OnUpdate();
 
 		uint32_t GetWidth() const { return m_Data.Width; }
 		uint32_t GetHeight() const { return m_Data.Height; }
-		GLFWwindow* Get() const { return m_Window; }
+		GLFWwindow* GetNativeWindow() const { return m_Window; }
 
 		void SetEventCallback(const EventCallbackFn& callback) { m_Data.EventCallback = callback; }
 

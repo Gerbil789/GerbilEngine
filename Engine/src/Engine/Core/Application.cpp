@@ -17,7 +17,7 @@ namespace Engine
 		ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		m_Window = new Window(name, 1600, 900, ENGINE_RESOURCES / "icons/logo.png");
+		m_Window = new Window(name, 1600, 900, "Engine/resources/icons/logo.png");
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 		Input::Initialize();

@@ -9,7 +9,7 @@
 
 namespace Engine
 {
-	Window::Window(const std::string& title, uint32_t width, uint32_t height, std::filesystem::path iconPath)
+	Window::Window(const std::string& title, uint32_t width, uint32_t height, const std::filesystem::path& iconPath)
 	{
 		ENGINE_PROFILE_FUNCTION();
 

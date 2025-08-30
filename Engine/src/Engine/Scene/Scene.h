@@ -12,7 +12,7 @@ namespace Engine
 	class Scene : public IAsset
 	{
 	public:
-		Scene(const std::filesystem::path& path);
+		Scene(const std::filesystem::path& path) : IAsset(path) {}
 		~Scene();
 		void RefreshRootEntities(); //TODO: move to SceneController?
 

@@ -13,7 +13,7 @@ namespace Engine
 	class Application
 	{
 	public:
-		Application(const std::string& name = "Gerbil Engine App");
+		Application(const std::string& title = "Gerbil Engine App");
 		virtual ~Application() = default;
 
 		virtual void Run() = 0;
@@ -21,7 +21,7 @@ namespace Engine
 
 		static Application& Get() { return *s_Instance; }
 
-		Window& GetWindow() { return *m_Window; }
+		static Window& GetWindow() { return *s_Instance->m_Window; }
 		float GetFPS() const { return m_FPSCounter.GetAverageFPS(); }
 
 		void Close();

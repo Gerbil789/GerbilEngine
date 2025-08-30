@@ -15,7 +15,7 @@ namespace Engine
     void Render();
 
     wgpu::TextureView GetTextureView() const { return m_TextureView; }
-		uint32_t ReadPixel(uint32_t x, uint32_t y);
+    Engine::UUID ReadPixel(uint32_t x, uint32_t y);
 
   private:
     void CreateBindGroupLayout();

@@ -22,7 +22,7 @@ struct ModelUniforms {
 
 @group(0) @binding(0) var<uniform> uFrameUniforms: FrameUniforms;
 @group(1) @binding(0) var<uniform> uModelUniforms: ModelUniforms;
-@group(2) @binding(0) var<uniform> u_EntityID : u32;
+@group(2) @binding(0) var<uniform> u_EntityID : vec4<u32>;
 
 @vertex
 fn vs_main(in: VertexInput) -> VertexOutput {
@@ -32,6 +32,6 @@ fn vs_main(in: VertexInput) -> VertexOutput {
 }
 
 @fragment
-fn fs_main(in: VertexOutput) -> @location(0) u32 {
+fn fs_main(in: VertexOutput) -> @location(0) vec4<u32> {
 	return u_EntityID;
 }

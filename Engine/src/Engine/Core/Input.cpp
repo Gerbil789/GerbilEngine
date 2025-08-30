@@ -9,7 +9,7 @@ namespace Engine::Input
 
 	void Initialize()
 	{
-		s_Window = Application::Get().GetWindow().Get();
+		s_Window = Application::GetWindow().GetNativeWindow();
 	}
 
 	bool IsKeyPressed(KeyCode key)
