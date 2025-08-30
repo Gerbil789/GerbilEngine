@@ -177,6 +177,14 @@ namespace Engine
 
 		const uint8_t* mapped = static_cast<const uint8_t*>(readbackBuffer.getConstMappedRange(0, sizeof(Engine::UUID)));
 		const uint32_t* pixels = reinterpret_cast<const uint32_t*>(mapped);
+
+		if (!mapped)
+		{
+			LOG_ERROR("ReadPixel: mapped range is null!");
+			readbackBuffer.release();
+			return Engine::UUID(0,0);
+		}
+
 		uint64_t low = (uint64_t)pixels[1] << 32 | pixels[0];
 		uint64_t high = (uint64_t)pixels[3] << 32 | pixels[2];
 		Engine::UUID id(high, low);

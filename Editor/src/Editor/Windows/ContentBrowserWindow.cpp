@@ -24,7 +24,7 @@ namespace Editor
 		m_FolderIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/folder.png");
 		m_EmptyFolderIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/folder_empty.png");
 		m_FileIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/file.png");
-		m_ImageIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/image.png");
+		//m_ImageIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/image.png");
 		m_SceneIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/landscape.png");
 
 		glfwSetDropCallback(Application::GetWindow().GetNativeWindow(), [](GLFWwindow* window, int count, const char* paths[]) {
