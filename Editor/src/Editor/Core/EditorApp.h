@@ -1,20 +1,25 @@
 #include "Engine/Core/Application.h"
-#include "Engine/Core/Project.h"
+#include "Engine/Utils/Path.h"
 
 namespace Editor
 {
 	class EditorApp : public Engine::Application
 	{
 	public:
-		EditorApp(std::filesystem::path projectPath);
+		EditorApp(const Engine::ApplicationSpecification& specification);
 		~EditorApp();
 
 		void Run() override;
 		void OnEvent(Engine::Event& e) override;
-
-		const Engine::Project& GetProject() const { return m_Project; }
-
-	private:
-		Engine::Project m_Project;
 	};
+
+	inline Engine::Application* CreateApp(Engine::ApplicationCommandLineArgs args)
+	{
+		Engine::ApplicationSpecification spec;
+		spec.title = "Gerbil Editor";
+		spec.workingDirectory = GetExecutableDir().parent_path().parent_path().parent_path();
+		spec.args = args;
+
+		return new EditorApp(spec);
+	}
 }

@@ -1,24 +1,24 @@
 #include "enginepch.h"
 #include "Window.h"
-#include "Engine/Events/ApplicationEvent.h"
-#include "Engine/Events/MouseEvent.h"
-#include "Engine/Events/KeyEvent.h"
+#include "Engine/Event/ApplicationEvent.h"
+#include "Engine/Event/MouseEvent.h"
+#include "Engine/Event/KeyEvent.h"
 #include "Engine/Core/Core.h"
 #include "Engine/Core/Application.h"
 #include <stb_image.h>
 
 namespace Engine
 {
-	Window::Window(const std::string& title, uint32_t width, uint32_t height, const std::filesystem::path& iconPath)
+	Window::Window(const WindowSpecification& specification)
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-		m_Title = title;
-		m_Data.Width = width;
-		m_Data.Height = height;
-		m_IconPath = iconPath;
+		m_Title = specification.title;
+		m_Data.Width = specification.width;
+		m_Data.Height = specification.height;
+		m_IconPath = specification.iconPath;
 
-		LOG_INFO("Creating window {0} ({1}, {2})", title, width, height);
+		LOG_INFO("Creating window {0} ({1}, {2})", m_Title, m_Data.Width, m_Data.Height);
 
 		bool glfwInitialized = glfwInit();
 		ASSERT(glfwInitialized, "Could not initialize GLFW!");
@@ -32,15 +32,19 @@ namespace Engine
 		// This needs to be done explicitly later.
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-		m_Window = glfwCreateWindow((int)width, (int)height, title.c_str(), nullptr, nullptr);
+		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+		m_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Title.c_str(), nullptr, nullptr);
+
 		ASSERT(m_Window, "Could not create GLFW window!");
 
 		int iconWidth, iconHeight, channels;
-		unsigned char* iconPixels = stbi_load(iconPath.string().c_str(), &iconWidth, &iconHeight, &channels, 4);
+		unsigned char* iconPixels = stbi_load(m_IconPath.string().c_str(), &iconWidth, &iconHeight, &channels, 4);
 
 		if (!iconPixels) 
 		{
-			LOG_ERROR("Failed to load icon from path: {0}", iconPath.string());
+			LOG_ERROR("Failed to load icon from path: {0}", m_IconPath.string());
 		}
 		else 
 		{

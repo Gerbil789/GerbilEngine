@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Engine/Renderer/Camera.h"
-#include "Engine/Events/MouseEvent.h"
-#include "Engine/Events/KeyEvent.h"
+#include "Engine/Event/MouseEvent.h"
+#include "Engine/Event/KeyEvent.h"
 
 namespace Editor
 {

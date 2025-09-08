@@ -30,4 +30,10 @@ namespace Engine
 		auto result = pfd::save_file("Save File", ".", { "All Files", "*" }).result();
 		return result;
 	}
+
+	std::string OpenDirectory()
+	{
+		auto result = pfd::select_folder("Select Directory", ".").result();
+		return result.empty() ? "" : result;
+	}
 }

@@ -1,6 +1,6 @@
 #include "Elements.h"
 #include "Engine/Core/Core.h"
-#include "Engine/Core/AssetManager.h"
+#include "Engine/Asset/AssetManager.h"
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -40,7 +40,7 @@ namespace Editor::UI
 
 				if (path.extension() == ".png" || path.extension() == ".jpg" || path.extension() == ".bmp")
 				{
-					texture = AssetManager::Get<Texture2D>(path);
+					//texture = AssetManager::GetAsset<Texture2D>(path);
 					modified = true;
 				}
 			}

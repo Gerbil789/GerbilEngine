@@ -1,8 +1,7 @@
 #include "enginepch.h"
 #include "Material.h"
 #include "Engine/Renderer/GraphicsContext.h"
-#include "Engine/Core/AssetManager.h"
-#include "Engine/Core/Serializer.h"
+
 #include "Engine/Renderer/Shaders/FlatColorShader.h"
 #include "Engine/Renderer/Shaders/PhongShader.h"
 #include "Engine/Renderer/Renderer.h"
@@ -21,7 +20,7 @@ namespace Engine
 	{
 		if (!m_Shader)
 		{
-			LOG_WARNING("Material::Bind - No shader set for material {0}", this->m_Path.string());
+			LOG_WARNING("Material::Bind - No shader set for material {0}", this->id);
 			return;
 		}
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Engine/Asset/EditorAssetManager.h"
 #include <string>
 #include <filesystem>
 
@@ -8,23 +9,28 @@ namespace Engine
 	class Project
 	{
 	public:
-		Project() = default;
-		Project(const std::filesystem::path& path)
+		Ref<EditorAssetManager> GetAssetManager() { return m_AssetManager; }
+
+		static Ref<Project> GetActive() { return s_ActiveProject; }
+		static bool SaveActive(const std::filesystem::path& path);
+
+		inline static std::filesystem::path GetProjectDirectory()
 		{
-			m_Path = std::filesystem::absolute(path);
-			m_Title = m_Path.lexically_normal().filename().string();
-			std::filesystem::create_directories(m_Path / "Assets");	// Ensure Assets directory exists
-			m_AssetsPath = m_Path / "Assets";
+			return s_ActiveProject->m_ProjectDirectory;
 		}
 
-		std::string GetTitle() const { return m_Title; }
-		std::filesystem::path GetPath() const { return m_Path; }
-		std::filesystem::path GetAssetsPath() const { return m_AssetsPath; }
+		inline static std::filesystem::path GetAssetsDirectory()
+		{
+			return s_ActiveProject->m_ProjectDirectory / "Assets";
+		}
+
+		static Ref<Project> New();
+		static Ref<Project> Load(const std::filesystem::path& path);
 
 	private:
-		std::string m_Title;
-		std::filesystem::path m_Path;
-		std::filesystem::path m_AssetsPath;
+		std::filesystem::path m_ProjectDirectory;
+		Ref<EditorAssetManager> m_AssetManager;
 
+		inline static Ref<Project> s_ActiveProject;
 	};
 }

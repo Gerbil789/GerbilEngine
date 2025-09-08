@@ -1,14 +1,27 @@
 #pragma once
 
-#include "Engine/Core/Asset.h"
+#include "Engine/Asset/Asset.h"
 #include <webgpu/webgpu.hpp>
 
 namespace Engine
 {
-	class Mesh : public IAsset
+	struct Vertex 
+	{
+		glm::vec3 position;
+		glm::vec3 normal;
+		glm::vec2 uv;
+	};
+
+	struct MeshSpecification
+	{
+		std::vector<Vertex> vertices;
+		std::vector<uint16_t> indices;
+	};
+
+	class Mesh : public Asset
 	{
 	public:
-		Mesh(const std::filesystem::path& path);
+		Mesh(const MeshSpecification& specification);
 
 		const wgpu::Buffer& GetVertexBuffer() const { return m_VertexBuffer; }
 		const wgpu::Buffer& GetIndexBuffer() const { return m_IndexBuffer; }

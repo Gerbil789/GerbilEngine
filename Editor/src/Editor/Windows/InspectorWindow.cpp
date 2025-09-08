@@ -2,7 +2,7 @@
 #include "InspectorWindow.h"
 #include "Engine/Scene/Components.h"
 #include "Editor/Elements/Elements.h"
-#include "Engine/Core/AssetManager.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Editor/Core/EditorSceneController.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -322,7 +322,8 @@ namespace Editor
 				ImGui::Text("Mesh");
 				ImGui::NextColumn();
 				Ref<Mesh> mesh = component.Mesh;
-				std::string meshButtonText = mesh != nullptr ? mesh->GetPath().filename().string() : "##Mesh";
+				//std::string meshButtonText = mesh != nullptr ? mesh->GetPath().filename().string() : "##Mesh";
+				std::string meshButtonText = "##Mesh";
 				ImGui::Button(meshButtonText.c_str(), ImVec2(availWidth, 0.0f));
 				if (ImGui::BeginDragDropTarget())
 				{
@@ -332,7 +333,7 @@ namespace Editor
 						std::filesystem::path path(droppedPath);
 						if (path.extension() == ".fbx")
 						{
-							component.Mesh = AssetManager::Get<Mesh>(path);
+							//component.Mesh = AssetManager::Get<Mesh>(path);
 						}
 						else
 						{
@@ -345,7 +346,8 @@ namespace Editor
 
 				ImGui::Text("Material");
 				ImGui::NextColumn();
-				std::string materialButtonText = component.Material ? component.Material->GetPath().filename().string() : "##Material";
+				//std::string materialButtonText = component.Material ? component.Material->GetPath().filename().string() : "##Material";
+				std::string materialButtonText = "##Material";
 				ImGui::Button(materialButtonText.c_str(), ImVec2(availWidth, 0.0f));
 				if (ImGui::BeginDragDropTarget())
 				{
@@ -355,7 +357,7 @@ namespace Editor
 						std::filesystem::path path(droppedPath);
 						if (path.extension() == ".material")
 						{
-							component.Material = AssetManager::Get<Material>(path);
+							//component.Material = AssetManager::Get<Material>(path);
 						}
 						else
 						{

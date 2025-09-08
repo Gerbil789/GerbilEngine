@@ -2,17 +2,25 @@
 
 #include "enginepch.h"
 #include "Engine/Core/Core.h"
-#include "Engine/Events/Event.h"
+#include "Engine/Event/Event.h"
 #include <GLFW/glfw3.h>
 
 namespace Engine
 {
+	struct WindowSpecification
+	{
+		std::string title;
+		uint32_t width = 1600;
+		uint32_t height = 900;
+		std::filesystem::path iconPath = "";
+	};
+
 	class Window
 	{
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
 
-		Window(const std::string& title = "New Window", uint32_t width = 1600, uint32_t height = 900, const std::filesystem::path& iconPath = "");
+		Window(const WindowSpecification& specification);
 		~Window();
 
 		void OnUpdate();

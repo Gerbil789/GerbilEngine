@@ -23,13 +23,15 @@ project "Engine"
 		"%{wks.location}/vendor/entt/include",
 		"%{wks.location}/vendor/tinygltf",
 		"%{wks.location}/vendor/portable-file-dialogs",
-		"%{wks.location}/vendor/tinygltf"
+		"%{wks.location}/vendor/tinygltf",
+		"%{wks.location}/vendor/yaml-cpp/include"
 	}
 
 	links
 	{
 		"glfw",
-		"webgpu_dawn"
+		"webgpu_dawn",
+		"yaml-cpp"
 	}
 
 	libdirs 
@@ -44,7 +46,8 @@ project "Engine"
 		{
 			"ENGINE_PLATFORM_WINDOWS",
 			"ENGINE_BUILD_DLL",
-			"GLFW_INCLUDE_NONE"
+			"GLFW_INCLUDE_NONE",
+			"YAML_CPP_STATIC_DEFINE"
 		}
 
 	filter "system:linux"

@@ -10,4 +10,6 @@ namespace Engine
 
 	std::string OpenFile(); 
 	std::string SaveFile(); 
+
+	std::string OpenDirectory();
 }

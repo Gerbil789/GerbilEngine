@@ -1,7 +1,6 @@
 #include "enginepch.h"
 #include "Renderer.h"
 #include "Engine/Core/Application.h"
-#include "Engine/Core/AssetManager.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Renderer/Shaders/Shader.h"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Core/Core.h"
+#include "Engine/Core/UUID.h"
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/string_cast.hpp"
@@ -45,6 +46,15 @@ struct fmt::formatter<WGPUStringView> : fmt::formatter<std::string> {
 	}
 };
 
+template <>
+struct fmt::formatter<Engine::UUID> : fmt::formatter<uint64_t>
+{
+	template <typename FormatContext>
+	auto format(const Engine::UUID& uuid, FormatContext& ctx)
+	{
+		return fmt::formatter<uint64_t>::format(static_cast<uint64_t>(uuid), ctx);
+	}
+};
 
 #define LOG_TRACE(...)		::Engine::Log::GetCoreLogger()->trace(__VA_ARGS__)
 #define LOG_INFO(...)			::Engine::Log::GetCoreLogger()->info(__VA_ARGS__)

@@ -11,6 +11,7 @@ objdir    ("bin-int/" .. outputdir .. "/%{prj.name}")
 group "Dependencies"
 	include "vendor/glfw"
 	include "vendor/imgui"
+	include "vendor/yaml-cpp"
 
 group ""
 	include "Engine"

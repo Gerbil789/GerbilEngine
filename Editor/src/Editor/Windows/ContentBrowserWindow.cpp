@@ -1,13 +1,14 @@
 #include "enginepch.h"
 #include "ContentBrowserWindow.h"
-#include "Engine/Core/AssetManager.h"
+//#include "Engine/Asset/AssetManager.h"
+#include "Engine/Core/Project.h"
 #include "Engine/Renderer/Material.h"
-#include "Engine/Core/Serializer.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Core/Application.h"
 #include "Editor/Core/EditorApp.h"
 #include "Editor/Elements/Style.h"
+#include "Engine/Asset/Importer/TextureImporter.h"
 #include <GLFW/glfw3.h>
 
 namespace Editor
@@ -18,14 +19,16 @@ namespace Editor
 	{
 		EditorApp& app = static_cast<EditorApp&>(Application::Get());
 
-		m_AssetsDirectory = app.GetProject().GetAssetsPath();
-		m_CurrentDirectory = app.GetProject().GetAssetsPath();
+		//auto project = Project::GetActive();
+		m_AssetsDirectory = Project::GetAssetsDirectory();
+		m_CurrentDirectory = Project::GetAssetsDirectory();
 
-		m_FolderIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/folder.png");
-		m_EmptyFolderIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/folder_empty.png");
-		m_FileIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/file.png");
+		m_FolderIcon = TextureImporter::LoadTexture2D("Editor/resources/icons/folder.png");
+		m_FolderIcon = TextureImporter::LoadTexture2D("Editor/resources/icons/folder.png");
+		m_EmptyFolderIcon = TextureImporter::LoadTexture2D("Editor/resources/icons/folder_empty.png");
+		m_FileIcon = TextureImporter::LoadTexture2D("Editor/resources/icons/file.png");
 		//m_ImageIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/image.png");
-		m_SceneIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/landscape.png");
+		m_SceneIcon = TextureImporter::LoadTexture2D("Editor/resources/icons/landscape.png");
 
 		glfwSetDropCallback(Application::GetWindow().GetNativeWindow(), [](GLFWwindow* window, int count, const char* paths[]) {
 			for (int i = 0; i < count; i++)
@@ -33,11 +36,11 @@ namespace Editor
 				std::filesystem::path path = paths[i];
 				if (std::filesystem::is_directory(path))
 				{
-					LOG_INFO("Dropped directory: {0}", path.string());
+					LOG_INFO("Dropped directory: {0}", path);
 				}
 				else
 				{
-					LOG_INFO("Dropped file: {0}", path.string());
+					LOG_INFO("Dropped file: {0}", path);
 				}
 			}
 			});
@@ -139,29 +142,29 @@ namespace Editor
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Scene"))
-				{
-					//std::string path = Utilities::EnsureFileNameUniqueness("newScene", m_CurrentDirectory.string());
-					std::string path = m_CurrentDirectory.string();
-					Ref<Scene> newScene = AssetManager::Create<Scene>(path);
-					if (newScene)
-					{
-						//Serializer::Serialize(newScene);
-						Items.push_back(ContentBrowserItem(ItemType::File, path));
-					}
-				}
+				//if (ImGui::MenuItem("Scene"))
+				//{
+				//	//std::string path = Utilities::EnsureFileNameUniqueness("newScene", m_CurrentDirectory.string());
+				//	std::string path = m_CurrentDirectory.string();
+				//	Ref<Scene> newScene = AssetManager::Create<Scene>(path);
+				//	if (newScene)
+				//	{
+				//		//Serializer::Serialize(newScene);
+				//		Items.push_back(ContentBrowserItem(ItemType::File, path));
+				//	}
+				//}
 
-				if (ImGui::MenuItem("Material"))
-				{
-					//TODO: make better unique name check
-					//std::string path = Utilities::EnsureFileNameUniqueness("material", m_CurrentDirectory.string());
-					std::string path = m_CurrentDirectory.string();
-					Ref<Material> material = AssetManager::Create<Material>(path);
-					if (material)
-					{
-						Items.push_back(ContentBrowserItem(ItemType::File, path));
-					}
-				}
+				//if (ImGui::MenuItem("Material"))
+				//{
+				//	//TODO: make better unique name check
+				//	//std::string path = Utilities::EnsureFileNameUniqueness("material", m_CurrentDirectory.string());
+				//	std::string path = m_CurrentDirectory.string();
+				//	Ref<Material> material = AssetManager::Create<Material>(path);
+				//	if (material)
+				//	{
+				//		Items.push_back(ContentBrowserItem(ItemType::File, path));
+				//	}
+				//}
 
 				ImGui::EndMenu(); // End of "Create" menu
 

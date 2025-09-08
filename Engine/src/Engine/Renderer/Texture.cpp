@@ -6,20 +6,11 @@
 
 namespace Engine
 {
-	Texture2D::Texture2D(const std::filesystem::path& path) : IAsset(path)
+	Texture2D::Texture2D(const TextureSpecification& specification, const void* data)
 	{
-		int width, height;
-		unsigned char* pixelData = stbi_load(path.string().c_str(), &width, &height, &m_Channels, STBI_rgb_alpha);
-
-		if(!pixelData)
-		{
-			LOG_ERROR("Failed to load texture at path: {0}", path.string());
-			return;
-		}
-
-		m_Width = static_cast<uint32_t>(width);
-		m_Height = static_cast<uint32_t>(height);
-		m_TextureFormat = wgpu::TextureFormat::RGBA8Unorm;
+		m_Width = specification.width;
+		m_Height = specification.height;
+		m_TextureFormat = specification.format;
 
 		wgpu::TextureDescriptor textureDesc;
 		textureDesc.dimension = wgpu::TextureDimension::_2D;
@@ -45,9 +36,7 @@ namespace Engine
 
 		wgpu::Extent3D size = { m_Width, m_Height, 1 };
 
-		GraphicsContext::GetQueue().writeTexture(dst, pixelData, m_Width * m_Height * 4, layout, size);
-
-		stbi_image_free(pixelData);
+		GraphicsContext::GetQueue().writeTexture(dst, data, m_Width * m_Height * 4, layout, size);
 
 		wgpu::TextureViewDescriptor viewDesc{};
 		viewDesc.format = m_TextureFormat;

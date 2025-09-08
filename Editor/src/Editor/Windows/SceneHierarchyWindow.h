@@ -13,10 +13,11 @@ namespace Editor
 	class SceneHierarchyWindow : public EditorWindow
 	{
 	public:
+		SceneHierarchyWindow();
 		void OnUpdate(Engine::Timestep ts) override;
 
 	private:
-		Engine::Scene* m_Scene;
+		Engine::Scene* m_Scene = nullptr;
 
 		void DrawEntityNode(entt::entity);
 		void DrawReorderDropTarget(entt::entity parent, size_t index);

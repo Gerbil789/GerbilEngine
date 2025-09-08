@@ -13,6 +13,16 @@ namespace Editor
 {
 	using namespace Engine;
 
+	SceneHierarchyWindow::SceneHierarchyWindow()
+	{
+		SceneManager::RegisterOnSceneChanged(
+			[this](Scene* scene)
+			{
+				m_Scene = scene;
+				LOG_INFO("SceneHierarchyWindow - Scene changed to '{}'", scene->id);
+			});
+	}
+
 	void SceneHierarchyWindow::OnUpdate(Engine::Timestep ts)
 	{
 		ScopedStyle style({
@@ -23,14 +33,13 @@ namespace Editor
 
 		ImGui::Begin("Scene Hierarchy");
 
-		m_Scene = SceneManager::GetActiveScene();
+
 		if (!m_Scene)
 		{
 			ImGui::End();
 			return;
 		}
 
-		auto& registry = m_Scene->m_Registry;
 		auto& roots = m_Scene->GetRootEntities();
 
 		for (size_t i = 0; i < roots.size(); ++i)
@@ -63,8 +72,8 @@ namespace Editor
 
 	void SceneHierarchyWindow::DrawEntityNode(entt::entity entity)
 	{
-		auto& registry = m_Scene->m_Registry;
-		Entity wrapper(entity, &registry);
+
+		Entity wrapper(entity, m_Scene);
 
 		// Save the current style
 		ImGuiStyle& style = ImGui::GetStyle();
@@ -134,16 +143,16 @@ namespace Editor
 
 		if (opened)
 		{
-			entt::entity child = registry.get<HierarchyComponent>(entity).FirstChild;
+		/*	entt::entity child = m_Scene->m_Registry.get<HierarchyComponent>(entity).FirstChild;
 			size_t i = 0;
 
 			while (child != entt::null)
 			{
 				DrawReorderDropTarget(entity, i);
 				DrawEntityNode(child);
-				child = registry.get<HierarchyComponent>(child).NextSibling;
+				child = m_Scene->m_Registry.get<HierarchyComponent>(child).NextSibling;
 				i++;
-			}
+			}*/
 			//DrawReorderDropTarget(entity, i);
 
 			ImGui::TreePop();

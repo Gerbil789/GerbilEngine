@@ -1,29 +1,40 @@
 #include "enginepch.h"
 #include "Application.h"
+#include "Engine/Core/Core.h"
 #include "Engine/Core/Input.h"
-#include "Engine/Core/AssetManager.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Renderer/Renderer.h"
 
 namespace Engine
 {
-#define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1) //TODO: why is this?
-
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const std::string& name)
+	Application::Application(const ApplicationSpecification& specification)
 	{
 		ENGINE_PROFILE_FUNCTION();
+
 		ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		m_Window = new Window(name, 1600, 900, "Engine/resources/icons/logo.png");
-		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+		// Set working directory
+		if (!specification.workingDirectory.empty())
+		{
+			std::filesystem::current_path(specification.workingDirectory);
+		}
+
+		WindowSpecification windowSpec;
+		windowSpec.title = specification.title;
+		windowSpec.width = 1600;
+		windowSpec.height = 900;
+		windowSpec.iconPath = "Engine/resources/icons/logo.png";
+
+		m_Window = new Window(windowSpec);
+		m_Window->SetEventCallback([this](Event& e) {this->OnEvent(e);});
 
 		Input::Initialize();
 		GraphicsContext::Initialize();
 		Renderer::Initialize();
-		AssetManager::Initialize();
 	}
 
 	void Application::OnEvent(Event& e)

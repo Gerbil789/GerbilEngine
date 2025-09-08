@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Core/UUID.h"
-#include "Engine/Core/Asset.h"
+#include "Engine/Asset/Asset.h"
 #include "Engine/Scene/Components.h"
 #include <entt.hpp>
 
@@ -9,10 +9,14 @@ namespace Engine
 {
 	class Entity; // Forward declaration
 
-	class Scene : public IAsset
+	class Scene : public Asset
 	{
+		friend class SceneController;
+		friend class Entity;
+		friend class SceneHierarchyPanel;
+
 	public:
-		Scene(const std::filesystem::path& path) : IAsset(path) {}
+		Scene() = default;
 		~Scene();
 		void RefreshRootEntities(); //TODO: move to SceneController?
 
@@ -28,7 +32,7 @@ namespace Engine
 			auto view = m_Registry.view<IdentityComponent, Components...>();
 			for (auto entity : view)
 			{
-				entities.push_back(Entity{ entity, &m_Registry });
+				entities.push_back(Entity{ entity, this });
 			}
 			return entities;
 		}
@@ -47,14 +51,9 @@ namespace Engine
 
 		void CopyFrom(const Scene& other);
 
-		entt::registry m_Registry;
-
 	private:
+		entt::registry m_Registry;
 		std::vector<entt::entity> m_RootEntities;
-
-		friend class SceneController;
-		friend class Entity;
-		friend class SceneHierarchyPanel;
 	};
 
 }

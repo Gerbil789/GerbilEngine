@@ -4,7 +4,7 @@
 #include "Engine/Core/Core.h"
 #include "Engine/Core/Input.h"
 #include "Editor/Core/EditorSceneController.h"
-#include "Engine/Events/MouseEvent.h"
+#include "Engine/Event/MouseEvent.h"
 #include "Engine/Math/Math.h"
 #include "Editor/Elements/Style.h"
 #include <imgui.h>
@@ -15,16 +15,20 @@ namespace Editor
 {
 	using namespace Engine;
 
+	ViewportWindow::ViewportWindow()
+	{
+		SceneManager::RegisterOnSceneChanged(
+			[this](Scene* scene)
+			{
+				m_Scene = scene;
+				m_Renderer.SetScene(m_Scene);
+				m_EntityIdRenderer.SetScene(m_Scene);
+				LOG_INFO("ViewportWindow - Scene changed to '{}'", scene->id);
+			});
+	}
+
 	void ViewportWindow::OnUpdate(Timestep ts)
 	{
-		Scene* scene = SceneManager::GetActiveScene();
-		if(scene != m_Scene)
-		{
-			m_Scene = scene;
-			m_Renderer.SetScene(m_Scene);
-			m_EntityIdRenderer.SetScene(m_Scene);
-		}
-
 		ScopedStyle style({
 			{ ImGuiStyleVar_WindowPadding, ImVec2(0, 0) },
 			{ ImGuiCol_WindowBg, ImVec4(0.9f, 0.2f, 1.0f, 1.0f) },
@@ -53,7 +57,11 @@ namespace Editor
 		if (mx >= 0 && my >= 0 && mx < (int)m_ViewportSize.x && my < (int)m_ViewportSize.y)
 		{
 			UUID uuid = m_EntityIdRenderer.ReadPixel(mx, my);
-			m_HoveredEntity = m_Scene->GetEntityByUUID(uuid);
+			if(uuid.IsValid())
+			{
+				//LOG_TRACE("Hovered entity ID: {0}", uuid);
+				m_HoveredEntity = m_Scene->GetEntityByUUID(uuid);
+			}
 		}
 
 		// Draw scene
@@ -91,8 +99,8 @@ namespace Editor
 		}
 
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<KeyPressedEvent>(ENGINE_BIND_EVENT_FN(ViewportWindow::OnKeyPressed));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(ENGINE_BIND_EVENT_FN(ViewportWindow::OnMouseButtonPressed));
+		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(ViewportWindow::OnKeyPressed));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_EVENT_FN(ViewportWindow::OnMouseButtonPressed));
 	}
 
 	bool ViewportWindow::OnKeyPressed(KeyPressedEvent& e)

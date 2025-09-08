@@ -1,7 +1,7 @@
 #include "MenuBar.h"
 #include "imgui.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Engine/Core/AssetManager.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/Application.h"
 
 namespace Editor
@@ -23,12 +23,12 @@ namespace Editor
 			{
 				if (ImGui::MenuItem("New", "ctrl + N"))
 				{
-					SceneManager::CreateScene("NewScene");
+					//SceneManager::CreateScene("NewScene");
 				}
 
 				if (ImGui::MenuItem("Open", "ctrl + O"))
 				{
-					SceneManager::LoadScene();
+					//SceneManager::LoadScene();
 				}
 
 				if (ImGui::MenuItem("Save", "ctrl + S"))

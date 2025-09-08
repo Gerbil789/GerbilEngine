@@ -2,37 +2,52 @@
 #include "EditorApp.h"
 #include "Editor/Core/EditorSceneController.h"
 #include "Editor/Core/EditorWindowManager.h"
+#include "Engine/Core/Project.h"
 
+#include "Engine/Asset/Importer/TextureImporter.h"
+#include "Engine/Asset/Importer/MaterialImporter.h"
+#include "Engine/Asset/Importer/MeshImporter.h"
 //tmp
+#include "Engine/Core/UUID.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Scene/Components.h"
-#include "Engine/Core/AssetManager.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Engine/Renderer/Shaders/PhongShader.h"
 #include "Engine/Renderer/Shaders/FlatColorShader.h"
 
 namespace Editor
 {
-	EditorApp::EditorApp(std::filesystem::path projectPath) : Application("Gerbil Editor - " + projectPath.lexically_normal().filename().string())
+	EditorApp::EditorApp(const Engine::ApplicationSpecification& specification) : Application(specification)
 	{
 		ENGINE_PROFILE_FUNCTION();
-		m_Project = Engine::Project(projectPath);
 
-		LOG_TRACE("Starting Gerbil Editor for project: {0}", m_Project.GetTitle());
+		auto commandLineArgs = specification.args;
+		if (commandLineArgs.Count > 1)
+		{
+			auto projectFilePath = commandLineArgs[1];
+			Engine::Project::Load(projectFilePath);
+		}
+		else
+		{
+			Engine::Project::New();
+		}
 
 		EditorWindowManager::Initialize();
 
-		Engine::SceneManager::CreateScene("MyScene"); //TODO: load default scene from project if there is one
+		Engine::SceneManager::CreateScene("MyScene");
 
 		{
-			auto scene = Engine::SceneManager::GetActiveScene();
+			Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
+			LOG_INFO("Active scene: {0}", scene->id);
 
-			auto texture = Engine::AssetManager::Get<Engine::Texture2D>("Editor/resources/icons/skull.png");
+			Ref<Engine::Texture2D> texture = Engine::TextureImporter::LoadTexture2D("Editor/resources/icons/skull.png");
 
 			// Entity 1
 			{
 				auto cube = scene->CreateEntity("TextureCube");
-				auto mesh = Engine::AssetManager::Get<Engine::Mesh>("Engine/resources/models/cube.glb");
-				auto material = Engine::AssetManager::Create<Engine::Material>("Engine/resources/materials/red.material");
+				auto mesh = Engine::MeshImporter::LoadMesh("Engine/resources/models/cube.glb");
+				//auto material = Engine::MaterialImporter::LoadMaterial("Engine/resources/materials/red.material");
+				auto material = Engine::AssetManager::CreateAsset<Engine::Material>("Engine/resources/materials/red.material");
 				material->SetTexture("AlbedoTexture", texture);
 				material->SetShader(CreateRef<Engine::PhongShader>());
 				material->SetValue("Color", glm::vec4(0.8f, 0.1f, 0.2f, 1.0f));
@@ -44,14 +59,17 @@ namespace Editor
 				cube.GetComponent<Engine::TransformComponent>().Position = { 2.0f, 0.0f, 0.0f };
 				cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
 
-				LOG_WARNING("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID().ToString());
+				LOG_WARNING("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
+
+				EditorSceneController::SelectEntity(cube);
 			}
 
+
 			// Entity 2
-			{
+		/*	{
 				auto cube = scene->CreateEntity("BlueCube");
-				auto mesh = Engine::AssetManager::Get<Engine::Mesh>("Engine/resources/models/cube.glb");
-				auto material = Engine::AssetManager::Create<Engine::Material>("Engine/resources/materials/blue.material");
+				auto mesh = Engine::AssetManager::Internal::GetAssetByPath<Engine::Mesh>("Engine/resources/models/cube.glb");
+				auto material = Engine::AssetManager::Internal::GetAssetByPath<Engine::Material>("Engine/resources/materials/blue.material");
 				material->SetShader(CreateRef<Engine::FlatColorShader>());
 				material->SetValue("Color", glm::vec4(0.2f, 0.1f, 0.8f, 1.0f));
 				auto& component = cube.AddComponent<Engine::MeshComponent>();
@@ -61,9 +79,11 @@ namespace Editor
 				cube.GetComponent<Engine::TransformComponent>().Position = { -2.0f, 0.0f, 0.0f };
 				cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
 
-				LOG_WARNING("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID().ToString());
-			}
+				LOG_WARNING("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
+			}*/
 		}
+
+		LOG_INFO("--- Editor initialization complete ---");
 	}
 
 	EditorApp::~EditorApp()

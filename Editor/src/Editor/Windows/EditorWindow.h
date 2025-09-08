@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Core/Timestep.h"
-#include "Engine/Events/Event.h"
+#include "Engine/Event/Event.h"
 
 namespace Editor
 {

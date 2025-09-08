@@ -1,6 +1,6 @@
 #include "enginepch.h"
 #include "MaterialWindow.h"
-#include "Engine/Core/AssetManager.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Editor/Elements/Elements.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -36,7 +36,7 @@ namespace Editor
 			return;
 		}
 
-		ImGui::Text(m_Material->GetPath().filename().string().c_str());
+		//ImGui::Text(m_Material->GetPath().filename().string().c_str());
 
 
 		float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 32 - 100, 100.0f);

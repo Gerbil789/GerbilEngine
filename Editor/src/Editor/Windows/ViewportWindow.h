@@ -6,7 +6,7 @@
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/EntityIdRenderer.h"
 #include "Engine/Renderer/Camera.h"
-#include "Engine/Events/MouseEvent.h"
+#include "Engine/Event/MouseEvent.h"
 #include "Editor/Core/Core.h"
 #include "Editor/Core/EditorCameraController.h"
 #include <glm/glm.hpp>
@@ -16,6 +16,7 @@ namespace Editor
 	class ViewportWindow : public EditorWindow
 	{
 	public:
+		ViewportWindow();
 		void OnUpdate(Engine::Timestep ts) override;
 		void OnEvent(Engine::Event& e) override;
 
@@ -27,7 +28,7 @@ namespace Editor
 		void DrawGizmos();
 
 	private:
-		Engine::Scene* m_Scene;
+		Engine::Scene* m_Scene = nullptr;
 		Engine::Renderer m_Renderer = Engine::Renderer(640, 640);
 		Engine::EntityIdRenderer m_EntityIdRenderer = Engine::EntityIdRenderer(640, 640);
 		EditorCameraController m_CameraController;

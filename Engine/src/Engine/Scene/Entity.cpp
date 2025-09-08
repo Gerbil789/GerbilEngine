@@ -62,11 +62,10 @@ namespace Engine
 	//	return GetComponent<RelationshipComponent>().Parent != entt::null;
 	//}
 
-	bool Entity::HasChildren()
-	{
-		bool hasChildren = m_Registry->all_of<HierarchyComponent>(m_EntityHandle) && m_Registry->get<HierarchyComponent>(m_EntityHandle).FirstChild != entt::null;
-		return hasChildren;
-	}
+	//bool Entity::HasChildren()
+	//{
+
+	//}
 
 	//int Entity::GetChildCount()
 	//{

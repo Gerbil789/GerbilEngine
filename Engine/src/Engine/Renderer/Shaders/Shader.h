@@ -40,6 +40,7 @@ namespace Engine
 			return m_CurrentUniformBufferOffset; 
 		}
 		static wgpu::ShaderModule LoadShader(const std::filesystem::path& path);
+
 	protected:
 		void AddParameter(const std::string& name, uint32_t group, uint32_t binding, ShaderParamType type, size_t size);
 		wgpu::BindGroupLayout CreateMaterialBindGroupLayout();
@@ -48,10 +49,11 @@ namespace Engine
 		{
 			return (offset + alignment - 1) & ~(alignment - 1);
 		}
+
 		size_t m_CurrentUniformBufferOffset = 0;
+
 	protected:
 		std::vector<ShaderParameter> m_Parameters;
-
 		wgpu::RenderPipeline m_RenderPipeline;
 		wgpu::BindGroupLayout m_MaterialBindGroupLayout;
 	};

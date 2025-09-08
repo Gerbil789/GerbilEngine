@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Engine/Events/Event.h"
-#include "Engine/Events/KeyEvent.h"
+#include "Engine/Event/Event.h"
+#include "Engine/Event/KeyEvent.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Editor/Core/Core.h"

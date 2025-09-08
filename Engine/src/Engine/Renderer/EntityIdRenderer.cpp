@@ -23,7 +23,7 @@ namespace Engine
 		wgpu::TextureDescriptor colorTextureDesc{};
 		colorTextureDesc.label = { "EntityIdRendererColorTexture", WGPU_STRLEN };
 		colorTextureDesc.dimension = wgpu::TextureDimension::_2D;
-		colorTextureDesc.format = wgpu::TextureFormat::RGBA32Uint;	// 128bits for uuid (4x32)
+		colorTextureDesc.format = wgpu::TextureFormat::RG32Uint;	// 64bits for uuid (2x32)
 		colorTextureDesc.size = { width, height, 1 };
 		colorTextureDesc.mipLevelCount = 1;
 		colorTextureDesc.sampleCount = 1;
@@ -71,7 +71,7 @@ namespace Engine
 		colorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 		colorAttachment.loadOp = wgpu::LoadOp::Clear;
 		colorAttachment.storeOp = wgpu::StoreOp::Store;
-		colorAttachment.clearValue = { 0.0f, 0.0f, 0.0f, 0.0f };
+		colorAttachment.clearValue = { 0.0f, 0.0f };
 
 		wgpu::RenderPassDepthStencilAttachment depthStencilAttachment{};
 		depthStencilAttachment.view = m_DepthView;
@@ -115,7 +115,8 @@ namespace Engine
 			renderPass.setBindGroup(GroupID::Model, Renderer::GetModelBindGroup(), 1, &dynamicOffset);
 
 			uint32_t idDynamicOffset = i * 256; // WebGPU requires dynamic offsets to be aligned to 256 bytes
-			m_Queue.writeBuffer(m_UniformBuffer, idDynamicOffset, uuid.ToRGBA32().data(), sizeof(Engine::UUID));
+
+			m_Queue.writeBuffer(m_UniformBuffer, idDynamicOffset, &uuid, sizeof(Engine::UUID));
 			renderPass.setBindGroup(2, m_BindGroup, 1, &idDynamicOffset);
 
 			renderPass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
@@ -176,18 +177,15 @@ namespace Engine
 		wgpuInstanceWaitAny(GraphicsContext::GetInstance(), 1, &waitInfo, 100000000); // 100000000ns = 0.01s
 
 		const uint8_t* mapped = static_cast<const uint8_t*>(readbackBuffer.getConstMappedRange(0, sizeof(Engine::UUID)));
-		const uint32_t* pixels = reinterpret_cast<const uint32_t*>(mapped);
 
 		if (!mapped)
 		{
 			LOG_ERROR("ReadPixel: mapped range is null!");
 			readbackBuffer.release();
-			return Engine::UUID(0,0);
+			return Engine::UUID(0);
 		}
-
-		uint64_t low = (uint64_t)pixels[1] << 32 | pixels[0];
-		uint64_t high = (uint64_t)pixels[3] << 32 | pixels[2];
-		Engine::UUID id(high, low);
+		const uint64_t* pixel = reinterpret_cast<const uint64_t*>(mapped);
+		Engine::UUID id(*pixel);
 
 		readbackBuffer.release();
 
@@ -275,7 +273,7 @@ namespace Engine
 		pipelineDesc.primitive.cullMode = wgpu::CullMode::None; //TODO: Add culling later
 
 		wgpu::ColorTargetState colorTarget;
-		colorTarget.format = wgpu::TextureFormat::RGBA32Uint;
+		colorTarget.format = wgpu::TextureFormat::RG32Uint;
 		//colorTarget.blend = &blendState;
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 
@@ -315,6 +313,4 @@ namespace Engine
 		m_Pipeline = m_Device.createRenderPipeline(pipelineDesc);
 		shaderModule.release();
 	}
-
-
 }

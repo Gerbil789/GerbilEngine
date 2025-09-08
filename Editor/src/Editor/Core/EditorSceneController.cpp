@@ -28,14 +28,14 @@ namespace Editor::EditorSceneController
 		case Key::N:
 		{
 			if (control)
-				SceneManager::CreateScene("NewScene");
+				//SceneManager::CreateScene("NewScene");
 			break;
 		}
 		case Key::O:
 		{
 			if (control)
 			{
-				SceneManager::LoadScene();
+				//SceneManager::LoadScene();
 			}
 			break;
 		}
@@ -96,13 +96,17 @@ namespace Editor::EditorSceneController
 
 	void DuplicateEntity(Entity entity)
 	{
-		if (!entity) { return; }
+		if (!entity) 
+		{ 
+			return;
+		}
 
-		Entity newEntity = SceneManager::GetActiveScene()->CreateEntity(entity.GetName());
+		auto scene = Engine::SceneManager::GetActiveScene();
+		Entity newEntity = scene->CreateEntity(entity.GetName());
 
-		CopyComponents<TransformComponent, MeshComponent, LightComponent, NameComponent, HierarchyComponent>(
-			SceneManager::GetActiveScene()->m_Registry, entity, newEntity
-		);
+		/*CopyComponents<TransformComponent, MeshComponent, LightComponent, NameComponent, HierarchyComponent>(
+			scene->m_Registry, entity, newEntity
+		);*/
 
 		SelectEntity(newEntity);
 	}
@@ -144,6 +148,6 @@ namespace Editor::EditorSceneController
 
 	Entity GetSelectedEntity()
 	{
-		return { m_SelectedEntity, &SceneManager::GetActiveScene()->m_Registry };
+		return { m_SelectedEntity, SceneManager::GetActiveScene() };
 	}
 }

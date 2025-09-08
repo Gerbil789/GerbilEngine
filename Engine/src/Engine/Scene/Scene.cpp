@@ -1,7 +1,6 @@
 #include "enginepch.h"
 #include "Scene.h"
 #include "Engine/Scene/Entity.h"
-#include "Engine/Core/Serializer.h"
 
 namespace Engine
 {
@@ -30,7 +29,8 @@ namespace Engine
 
 	Entity Scene::CreateEntity(UUID uuid, const std::string& name)
 	{
-		Entity entity = { m_Registry.create(), &m_Registry };
+		auto tmp = m_Registry.create();
+		Entity entity = { tmp, this };
 		entity.AddComponent<IdentityComponent>(uuid);
 		entity.AddComponent<NameComponent>(name);
 		entity.AddComponent<HierarchyComponent>();
@@ -53,7 +53,7 @@ namespace Engine
 		for (auto entity : view)
 		{
 			if (view.get<IdentityComponent>(entity).ID == uuid)
-				return Entity{ entity, &m_Registry };
+				return Entity{ entity, this };
 		}
 		return Entity();
 	}
