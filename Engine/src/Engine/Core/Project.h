@@ -12,7 +12,7 @@ namespace Engine
 		Ref<EditorAssetManager> GetAssetManager() { return m_AssetManager; }
 
 		static Ref<Project> GetActive() { return s_ActiveProject; }
-		static bool SaveActive(const std::filesystem::path& path);
+
 
 		inline static std::filesystem::path GetProjectDirectory()
 		{
@@ -25,10 +25,13 @@ namespace Engine
 		}
 
 		static Ref<Project> New();
-		static Ref<Project> Load(const std::filesystem::path& path);
+		static Ref<Project> Load(const std::filesystem::path& projectDirectoryPath);
+		static void Save();
 
 	private:
 		std::filesystem::path m_ProjectDirectory;
+		std::string m_Title = "Untitled";
+		UUID m_StartSceneID = UUID(0);
 		Ref<EditorAssetManager> m_AssetManager;
 
 		inline static Ref<Project> s_ActiveProject;

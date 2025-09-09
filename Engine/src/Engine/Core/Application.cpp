@@ -27,7 +27,7 @@ namespace Engine
 		windowSpec.title = specification.title;
 		windowSpec.width = 1600;
 		windowSpec.height = 900;
-		windowSpec.iconPath = "Engine/resources/icons/logo.png";
+		windowSpec.iconPath = "Resources/Engine/icons/logo.png";
 
 		m_Window = new Window(windowSpec);
 		m_Window->SetEventCallback([this](Event& e) {this->OnEvent(e);});

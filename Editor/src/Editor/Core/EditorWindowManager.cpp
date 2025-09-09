@@ -151,18 +151,18 @@ namespace Editor::EditorWindowManager
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-		const std::string imgui_ini = "Editor/resources/layouts/imgui.ini";
+		const std::string imgui_ini = "Resources/Editor/layouts/imgui.ini";
 		if (!std::filesystem::exists(imgui_ini))
 		{
 			ResetLayout();
 			ImGui::SaveIniSettingsToDisk(imgui_ini.c_str());
 		}
 
-		io.IniFilename = "Editor/resources/layouts/imgui.ini"; // IMPORTANT: relative to the current working directory TODO: this is an issue, need to fix it
+		io.IniFilename = "Resources/Editor/layouts/imgui.ini"; // IMPORTANT: relative to the current working directory TODO: this is an issue, need to fix it
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("Engine/resources/fonts/roboto/Roboto-Regular.ttf", 18.0f);
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Engine/fonts/roboto/Roboto-Regular.ttf", 18.0f);
 		//ImGui::StyleColorsDark(); //TODO: make better color palette
 		//ImGui::StyleColorsLight();
 		SetupImGuiStyle();
@@ -347,7 +347,7 @@ namespace Editor::EditorWindowManager
 
 	void ResetLayout()
 	{
-		const std::filesystem::path default_iniPath = "Editor/resources/layouts/default.ini";
+		const std::filesystem::path default_iniPath = "Resources/Editor/layouts/default.ini";
 		std::string defaultLayoutContent;
 
 		if(!Engine::ReadFile(default_iniPath, defaultLayoutContent)) return;

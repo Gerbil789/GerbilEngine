@@ -4,14 +4,14 @@
 #include <filesystem>
 
 #ifdef DEBUG
-	#define ENGINE_ENABLE_ASSERTS
-	#define ENGINE_PROFILE
+#define ENGINE_ENABLE_ASSERTS
+//#define ENGINE_PROFILE
 #endif
 
 #ifdef ENGINE_ENABLE_ASSERTS
-	#define ASSERT(x, ...) { if(!(x)) { LOG_CRITICAL("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
+#define ASSERT(x, ...) { if(!(x)) { LOG_CRITICAL("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
 #else
-	#define ASSERT(x, ...)
+#define ASSERT(x, ...)
 #endif
 
 #ifdef ENGINE_PROFILE
@@ -28,8 +28,6 @@
 #endif
 
 #define BIND_EVENT_FN(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
-
-
 
 template<typename T>
 using Scope = std::unique_ptr<T>;

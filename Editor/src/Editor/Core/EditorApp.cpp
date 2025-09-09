@@ -7,6 +7,7 @@
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/Importer/MaterialImporter.h"
 #include "Engine/Asset/Importer/MeshImporter.h"
+#include "Engine/Utils/File.h"
 //tmp
 #include "Engine/Core/UUID.h"
 #include "Engine/Scene/Entity.h"
@@ -21,33 +22,45 @@ namespace Editor
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-		auto commandLineArgs = specification.args;
-		if (commandLineArgs.Count > 1)
+		auto tmp = GetExecutableDir();
+		LOG_TRACE("Executable dir: {0}", tmp.string());
+
+		auto args = specification.args;
+
+		if (args.Count > 1)
 		{
-			auto projectFilePath = commandLineArgs[1];
+			auto projectFilePath = args[1];
 			Engine::Project::Load(projectFilePath);
 		}
 		else
 		{
-			Engine::Project::New();
+			auto projectDirectoryPath = Engine::OpenDirectory();
+			if (projectDirectoryPath.empty())
+			{
+				LOG_WARNING("Project::New - No path selected for new project.");
+				return;
+			}
+
+			Engine::Project::Load(projectDirectoryPath);
 		}
 
 		EditorWindowManager::Initialize();
 
-		Engine::SceneManager::CreateScene("MyScene");
+
+		Engine::SceneManager::CreateScene("Scenes/MyScene");
 
 		{
 			Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
 			LOG_INFO("Active scene: {0}", scene->id);
 
-			Ref<Engine::Texture2D> texture = Engine::TextureImporter::LoadTexture2D("Editor/resources/icons/skull.png");
+			Ref<Engine::Texture2D> texture = Engine::TextureImporter::LoadTexture2D("Resources/Editor/icons/skull.png");
 
 			// Entity 1
 			{
 				auto cube = scene->CreateEntity("TextureCube");
-				auto mesh = Engine::MeshImporter::LoadMesh("Engine/resources/models/cube.glb");
-				//auto material = Engine::MaterialImporter::LoadMaterial("Engine/resources/materials/red.material");
-				auto material = Engine::AssetManager::CreateAsset<Engine::Material>("Engine/resources/materials/red.material");
+				auto mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/cube.glb");
+				auto material = Engine::MaterialImporter::LoadMaterial("Resources/Engine/materials/red.material");
+				//auto material = Engine::AssetManager::CreateAsset<Engine::Material>("Resources/Engine/materials/red.material");
 				material->SetTexture("AlbedoTexture", texture);
 				material->SetShader(CreateRef<Engine::PhongShader>());
 				material->SetValue("Color", glm::vec4(0.8f, 0.1f, 0.2f, 1.0f));
@@ -66,10 +79,10 @@ namespace Editor
 
 
 			// Entity 2
-		/*	{
+			{
 				auto cube = scene->CreateEntity("BlueCube");
-				auto mesh = Engine::AssetManager::Internal::GetAssetByPath<Engine::Mesh>("Engine/resources/models/cube.glb");
-				auto material = Engine::AssetManager::Internal::GetAssetByPath<Engine::Material>("Engine/resources/materials/blue.material");
+				auto mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/cube.glb");
+				auto material = Engine::AssetManager::CreateAsset<Engine::Material>("Materials/blue.material");
 				material->SetShader(CreateRef<Engine::FlatColorShader>());
 				material->SetValue("Color", glm::vec4(0.2f, 0.1f, 0.8f, 1.0f));
 				auto& component = cube.AddComponent<Engine::MeshComponent>();
@@ -80,7 +93,7 @@ namespace Editor
 				cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
 
 				LOG_WARNING("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
-			}*/
+			}
 		}
 
 		LOG_INFO("--- Editor initialization complete ---");

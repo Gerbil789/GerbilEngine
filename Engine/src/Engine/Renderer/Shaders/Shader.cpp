@@ -7,8 +7,6 @@ namespace Engine
 {
 	wgpu::ShaderModule Shader::LoadShader(const std::filesystem::path& path)
 	{
-		auto device = GraphicsContext::GetDevice();
-
 		std::string content;
 		if (!Engine::ReadFile(path, content))
 		{
@@ -24,7 +22,7 @@ namespace Engine
 		shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
 		shaderDesc.nextInChain = &shaderCodeDesc.chain;
 		shaderCodeDesc.code = { shaderSource, strlen(shaderSource) };
-		return device.createShaderModule(shaderDesc);
+		return GraphicsContext::GetDevice().createShaderModule(shaderDesc);
 	}
 
 	void Shader::AddParameter(const std::string& name, uint32_t group, uint32_t binding, ShaderParamType type, size_t size)

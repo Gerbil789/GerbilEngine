@@ -12,7 +12,7 @@ namespace Engine
 		auto device = GraphicsContext::GetDevice();
 		auto queue = GraphicsContext::GetQueue();
 
-		wgpu::ShaderModule shaderModule = LoadShader("Engine/resources/shaders/flatColor.wgsl");
+		wgpu::ShaderModule shaderModule = LoadShader("Resources/Engine/shaders/flatColor.wgsl");
 
 		std::vector<wgpu::VertexAttribute> vertexAttribs(3);
 

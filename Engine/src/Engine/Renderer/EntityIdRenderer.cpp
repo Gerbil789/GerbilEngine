@@ -231,7 +231,7 @@ namespace Engine
 
 	void EntityIdRenderer::CreatePipeline()
 	{
-		wgpu::ShaderModule shaderModule = Shader::LoadShader("Engine/resources/shaders/entityId.wgsl");
+		wgpu::ShaderModule shaderModule = Shader::LoadShader("Resources/Engine/shaders/entityId.wgsl");
 		std::vector<wgpu::VertexAttribute> vertexAttribs(3);
 
 		// Position

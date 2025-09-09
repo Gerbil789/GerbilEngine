@@ -9,7 +9,7 @@ namespace Engine
 	{
 		if (!std::filesystem::exists(path))
 		{
-			LOG_WARNING("Asset registry file '{}' does not exist.", path.string());
+			LOG_WARNING("Asset registry file '{}' does not exist.", path);
 			return;
 		}
 
@@ -62,7 +62,7 @@ namespace Engine
 		record.id = UUID();
 		record.path = path;
 		m_Records[record.id] = std::move(record);
-		Save(Project::GetAssetsDirectory() / "AssetRegistry.yaml");
+		Save(Project::GetProjectDirectory() / "assetRegistry.yaml");
 		LOG_TRACE("Added asset '{}' to registry.", path);
 		return &m_Records[record.id];
 	}

@@ -32,3 +32,4 @@ My custom WebGPU based game engine
 | **[portable-file-dialogs](https://github.com/samhocevar/portable-file-dialogs)** | Native file dialogs              |
 | **[spdlog](https://github.com/gabime/spdlog)**                                   | Fast C++ logging library         |
 | **[tinygltf](https://github.com/syoyo/tinygltf)**                                | glTF mesh loading and processing |
+| **[yaml-cpp](https://github.com/jbeder/yaml-cpp)**                               | YAML serialization/deserialization |

@@ -1,52 +1,77 @@
 #include "enginepch.h"
 #include "Project.h"
-#include "Engine/Utils/File.h"
+#include <yaml-cpp/yaml.h>
 
 namespace Engine
 {
 	Ref<Project> Project::New()
 	{
-		auto path = Engine::OpenDirectory();
-		if (path.empty())
+		LOG_ERROR("Project::New - Not implemented yet!");
+		return nullptr;
+	}
+
+	Ref<Project> Project::Load(const std::filesystem::path& projectDirectoryPath)
+	{
+		std::filesystem::path configPath = projectDirectoryPath / "project.yaml";
+
+		if (!std::filesystem::exists(configPath))
 		{
-			LOG_WARNING("Project::New - No path selected for new project.");
+			LOG_ERROR("Project::Load - Config file not found at {0}", configPath.string());
+			return nullptr;
+		}
+
+		YAML::Node data;
+		try
+		{
+			data = YAML::LoadFile(configPath.string());
+		}
+		catch (const YAML::ParserException& e)
+		{
+			LOG_ERROR("Project::Load - Failed to parse YAML: {0}", e.what());
 			return nullptr;
 		}
 
 		s_ActiveProject = CreateRef<Project>();
+		s_ActiveProject->m_ProjectDirectory = projectDirectoryPath;
+
+		if (data["Title"])
+		{
+			s_ActiveProject->m_Title = data["Title"].as<std::string>();
+		}
+
+		if (data["StartSceneID"])
+		{
+			uint64_t id = data["StartSceneID"].as<uint64_t>();
+			s_ActiveProject->m_StartSceneID = UUID(id);
+		}
+
+		s_ActiveProject->m_ProjectDirectory = projectDirectoryPath;
 		s_ActiveProject->m_AssetManager = CreateRef<EditorAssetManager>();
 		s_ActiveProject->m_AssetManager->Initialize();
-		s_ActiveProject->m_ProjectDirectory = path;
+
+		LOG_INFO("Loaded project '{0}' from {1}", s_ActiveProject->m_Title, configPath);
 		return s_ActiveProject;
 	}
 
-	Ref<Project> Project::Load(const std::filesystem::path& path)
+	void Project::Save()
 	{
-		Ref<Project> project = CreateRef<Project>();
+		if (!s_ActiveProject)
+		{
+			LOG_ERROR("Project::Save - No active project!");
+			return;
+		}
 
-		//ProjectSerializer serializer(project);
-		//if (serializer.Deserialize(path))
-		//{
-		//	project->m_ProjectDirectory = path.parent_path();
-		//	s_ActiveProject = project;
-		//	std::shared_ptr<EditorAssetManager> editorAssetManager = std::make_shared<EditorAssetManager>();
-		//	s_ActiveProject->m_AssetManager = editorAssetManager;
-		//	editorAssetManager->DeserializeAssetRegistry();
-		//	return s_ActiveProject;
-		//}
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Title" << YAML::Value << s_ActiveProject->m_Title;
+		out << YAML::Key << "StartSceneID" << YAML::Value << (uint64_t)s_ActiveProject->m_StartSceneID;
+		out << YAML::Key << "ProjectDirectory" << YAML::Value << s_ActiveProject->m_ProjectDirectory.string();
+		out << YAML::EndMap;
 
-		return nullptr;
-	}
+		std::filesystem::path savePath = s_ActiveProject->m_ProjectDirectory / "project.yaml";
+		std::ofstream fout(savePath);
+		fout << out.c_str();
 
-	bool Project::SaveActive(const std::filesystem::path& path)
-	{
-		//ProjectSerializer serializer(s_ActiveProject);
-		//if (serializer.Serialize(path))
-		//{
-		//	s_ActiveProject->m_ProjectDirectory = path.parent_path();
-		//	return true;
-		//}
-
-		return false;
+		LOG_INFO("Saved project to {0}", savePath.string());
 	}
 }

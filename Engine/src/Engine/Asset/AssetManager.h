@@ -13,8 +13,8 @@ namespace Engine
 		template<typename T>
 		static Ref<T> GetAsset(UUID id)
 		{
-			Ref<Asset> asset = Project::GetActive()->GetAssetManager()->GetAsset(id);
-			return std::static_pointer_cast<T>(asset);
+			Ref<T> asset = Project::GetActive()->GetAssetManager()->GetAsset<T>(id);
+			return asset;
 		}
 
 		template<typename T>
@@ -34,6 +34,4 @@ namespace Engine
 			return Project::GetActive()->GetAssetManager()->IsAssetLoaded(id);
 		}
 	};
-
-
 }

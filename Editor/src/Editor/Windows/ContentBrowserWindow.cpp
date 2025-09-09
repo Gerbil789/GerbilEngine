@@ -23,12 +23,12 @@ namespace Editor
 		m_AssetsDirectory = Project::GetAssetsDirectory();
 		m_CurrentDirectory = Project::GetAssetsDirectory();
 
-		m_FolderIcon = TextureImporter::LoadTexture2D("Editor/resources/icons/folder.png");
-		m_FolderIcon = TextureImporter::LoadTexture2D("Editor/resources/icons/folder.png");
-		m_EmptyFolderIcon = TextureImporter::LoadTexture2D("Editor/resources/icons/folder_empty.png");
-		m_FileIcon = TextureImporter::LoadTexture2D("Editor/resources/icons/file.png");
-		//m_ImageIcon = AssetManager::Get<Texture2D>("Editor/resources/icons/image.png");
-		m_SceneIcon = TextureImporter::LoadTexture2D("Editor/resources/icons/landscape.png");
+		m_FolderIcon = TextureImporter::LoadTexture2D("Resources/Editor/icons/folder.png");
+		m_FolderIcon = TextureImporter::LoadTexture2D("Resources/Editor/icons/folder.png");
+		m_EmptyFolderIcon = TextureImporter::LoadTexture2D("Resources/Editor/icons/folder_empty.png");
+		m_FileIcon = TextureImporter::LoadTexture2D("Resources/Editor/icons/file.png");
+		//m_ImageIcon = AssetManager::Get<Texture2D>("Resources/Editor/icons/image.png");
+		m_SceneIcon = TextureImporter::LoadTexture2D("Resources/Editor/icons/landscape.png");
 
 		glfwSetDropCallback(Application::GetWindow().GetNativeWindow(), [](GLFWwindow* window, int count, const char* paths[]) {
 			for (int i = 0; i < count; i++)

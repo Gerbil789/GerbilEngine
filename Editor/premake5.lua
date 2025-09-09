@@ -29,10 +29,14 @@ project "Editor"
 		"ImGui",
 	}
 
+
 	postbuildcommands 
 	{
-    '{COPY} "%{wks.location}/vendor/dawn/webgpu_dawn.dll" "%{cfg.targetdir}"'
+    "{COPY} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
+    "{COPY} %{wks.location}/Resources %{cfg.targetdir}/Resources"
 	}
+
+	postbuildmessage "Copying dependencies..."
 
 	filter "system:windows"
 		systemversion "latest"

@@ -17,7 +17,7 @@ namespace Editor
 	{
 		Engine::ApplicationSpecification spec;
 		spec.title = "Gerbil Editor";
-		spec.workingDirectory = GetExecutableDir().parent_path().parent_path().parent_path();
+		spec.workingDirectory = GetExecutableDir();
 		spec.args = args;
 
 		return new EditorApp(spec);
