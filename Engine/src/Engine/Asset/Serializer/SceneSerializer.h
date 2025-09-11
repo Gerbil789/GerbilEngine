@@ -9,6 +9,5 @@ namespace Engine
 	public:
 		static void Serialize(const Ref<Scene>& scene, const std::filesystem::path& path);
 		static Ref<Scene> Deserialize(const std::filesystem::path& path);
-		//static void SaveScene(Ref<Scene> scene, const std::filesystem::path& path);
 	};
 }

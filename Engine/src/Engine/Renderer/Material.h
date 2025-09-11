@@ -40,6 +40,7 @@ namespace Engine
 
 		void Bind(wgpu::RenderPassEncoder pass);
 
+		static Ref<Material> GetDefault();
 	private:
 		void CreateMaterialUniformBuffer();
 		void CreateMaterialBindGroup();

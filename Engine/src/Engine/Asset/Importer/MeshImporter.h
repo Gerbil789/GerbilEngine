@@ -8,7 +8,7 @@ namespace Engine
 	class MeshImporter
 	{
 	public:
-		static Ref<Mesh> ImportMesh(UUID id, const AssetMetadata& metadata);
+		static Ref<Mesh> ImportMesh(const AssetMetadata& metadata);
 		static Ref<Mesh> LoadMesh(const std::filesystem::path& path);
 	};
 }

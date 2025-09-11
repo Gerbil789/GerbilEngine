@@ -1,6 +1,7 @@
 #include "enginepch.h"
 #include "AssetImporter.h"
-#include <Engine/Asset/AssetMetadata.h>
+
+#include "Engine/Core/Project.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/Importer/MeshImporter.h"
 #include "Engine/Asset/Importer/MaterialImporter.h"
@@ -8,7 +9,7 @@
 
 namespace Engine
 {
-	using AssetImportFunction = std::function<Ref<Asset>(UUID, const AssetMetadata&)>;
+	using AssetImportFunction = std::function<Ref<Asset>(const AssetMetadata&)>;
 
 	static std::map<AssetType, AssetImportFunction> s_AssetImportFunctions = {
 		{ AssetType::Texture, TextureImporter::ImportTexture2D },
@@ -17,7 +18,7 @@ namespace Engine
 		{ AssetType::Scene, SceneImporter::ImportScene }
 	};
 
-	Ref<Asset> AssetImporter::ImportAsset(UUID id, const AssetMetadata& metadata)
+	Ref<Asset> AssetImporter::ImportAsset(const AssetMetadata& metadata)
 	{
 		AssetType assetType = metadata.GetType();
 
@@ -27,7 +28,6 @@ namespace Engine
 			return nullptr;
 		}
 
-		return s_AssetImportFunctions.at(assetType)(id, metadata);
+		return s_AssetImportFunctions.at(assetType)(metadata);
 	}
-
 }

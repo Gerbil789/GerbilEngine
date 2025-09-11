@@ -9,10 +9,12 @@ namespace Engine
 	class Project
 	{
 	public:
-		Ref<EditorAssetManager> GetAssetManager() { return m_AssetManager; }
+		static Ref<Project> New();
+		static Ref<Project> Load(const std::filesystem::path& projectDirectoryPath);
+		static void Save();
 
 		static Ref<Project> GetActive() { return s_ActiveProject; }
-
+		Ref<EditorAssetManager> GetAssetManager() { return m_AssetManager; }
 
 		inline static std::filesystem::path GetProjectDirectory()
 		{
@@ -24,9 +26,15 @@ namespace Engine
 			return s_ActiveProject->m_ProjectDirectory / "Assets";
 		}
 
-		static Ref<Project> New();
-		static Ref<Project> Load(const std::filesystem::path& projectDirectoryPath);
-		static void Save();
+		inline static std::string GetTitle()
+		{
+			return s_ActiveProject->m_Title;
+		}
+
+		inline static UUID GetStartSceneID()
+		{
+			return s_ActiveProject->m_StartSceneID;
+		}
 
 	private:
 		std::filesystem::path m_ProjectDirectory;

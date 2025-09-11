@@ -6,7 +6,6 @@
 #include "Engine/Core/Log.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Editor/Core/Core.h"
 
 namespace Editor
 {

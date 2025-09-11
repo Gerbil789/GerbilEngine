@@ -5,6 +5,7 @@
 #include "Engine/Renderer/Shaders/FlatColorShader.h"
 #include "Engine/Renderer/Shaders/PhongShader.h"
 #include "Engine/Renderer/Renderer.h"
+#include "Engine/Asset/AssetManager.h"
 
 namespace Engine
 {
@@ -62,6 +63,19 @@ namespace Engine
 
 		GraphicsContext::GetQueue().writeBuffer(m_MaterialUniformBuffer, 0, m_UniformData.data(), m_UniformData.size());
 		pass.setBindGroup(GroupID::Material, m_MaterialBindGroup, 0, nullptr);
+	}
+
+	Ref<Material> Material::GetDefault()
+	{
+		static Ref<Material> s_DefaultMaterial = []()
+			{
+				auto material = Engine::AssetManager::CreateAsset<Engine::Material>("Materials/blue.material");
+				material->SetShader(CreateRef<Engine::FlatColorShader>());
+				material->SetValue("Color", glm::vec4(0.2f, 0.1f, 0.8f, 1.0f));
+				return material;
+			}();
+
+		return s_DefaultMaterial;
 	}
 
 	

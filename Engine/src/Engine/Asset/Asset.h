@@ -6,6 +6,6 @@ namespace Engine
 	{
 	public:
 		virtual ~Asset() = default;
-		UUID id;
+		UUID id = UUID(0);
 	};
 }

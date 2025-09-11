@@ -4,7 +4,6 @@
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Editor/Core/Core.h"
 
 namespace Editor::EditorSceneController
 {

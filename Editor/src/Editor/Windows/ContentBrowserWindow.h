@@ -1,7 +1,6 @@
 #pragma once
 
 #include "EditorWindow.h"
-#include "Editor/Core/Core.h"
 #include "Engine/Renderer/Texture.h"
 #include <filesystem>
 #include <imgui.h>

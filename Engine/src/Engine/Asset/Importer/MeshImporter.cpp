@@ -9,7 +9,7 @@
 
 namespace Engine
 {
-	Ref<Mesh> MeshImporter::ImportMesh(UUID id, const AssetMetadata& metadata)
+	Ref<Mesh> MeshImporter::ImportMesh(const AssetMetadata& metadata)
 	{
 		return LoadMesh(Project::GetAssetsDirectory() / metadata.path);
 	}

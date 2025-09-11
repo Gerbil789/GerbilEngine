@@ -6,6 +6,7 @@
 #include "Engine/Renderer/Shaders/Shader.h"
 #include "Engine/Renderer/Material.h"
 
+
 namespace Engine
 {
 	wgpu::Device Renderer::s_Device = nullptr;
@@ -249,6 +250,14 @@ namespace Engine
 		{
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
 			Ref<Material> material = meshComponent.Material;
+
+			//if(!material)
+			//{
+			//	material = Material::GetDefault();
+			//}
+
+			material = Material::GetDefault();
+
 			materialGroups[material].push_back(entity);
 		}
 
@@ -263,6 +272,8 @@ namespace Engine
 			{
 				auto& meshComponent = entity.GetComponent<MeshComponent>();
 				auto& mesh = meshComponent.Mesh;
+
+				if (!mesh) continue;
 
 				glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetModelMatrix();
 

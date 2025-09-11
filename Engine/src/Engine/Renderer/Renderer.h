@@ -3,14 +3,12 @@
 #include "Engine/Scene/Scene.h"
 #include <webgpu/webgpu.hpp>
 
-
-
 namespace Engine
 {
-	class Renderer //TODO: move static resources to RenderCore namespace, probably create another file, this is getting bloated
+	class Renderer //TODO: move static resources to RenderCore namespace or smth, probably create another file, this is getting bloated
 	{
 	public:
-		static void Initialize();
+		static void Initialize(); //TODO: why is this static?
 		Renderer(uint32_t width, uint32_t height);
 
 		void SetScene(Scene* scene) { m_Scene = scene; }
@@ -34,7 +32,7 @@ namespace Engine
 
 		static uint32_t GetModelUniformStride() { return s_ModelUniformStride; }
 
-		// Global sampler
+		// Global sampler (tmp)
 		static wgpu::Sampler s_Sampler; //TODO: move into shader or material class
 
 	private:
@@ -58,7 +56,5 @@ namespace Engine
 		static wgpu::BindGroupLayout s_FrameBindGroupLayout;
 		static wgpu::BindGroup s_FrameBindGroup;
 		static wgpu::Buffer s_FrameUniformBuffer;
-
-
 	};
 }

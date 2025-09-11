@@ -104,10 +104,10 @@ namespace Engine
 		uint32_t i = 0;
 		for (Entity& entity : entities)
 		{
-			Engine::UUID uuid = entity.GetUUID();
-
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
 			auto& mesh = meshComponent.Mesh;
+
+			if (!mesh) continue;
 
 			glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetModelMatrix();
 
@@ -116,6 +116,7 @@ namespace Engine
 
 			uint32_t idDynamicOffset = i * 256; // WebGPU requires dynamic offsets to be aligned to 256 bytes
 
+			Engine::UUID uuid = entity.GetUUID();
 			m_Queue.writeBuffer(m_UniformBuffer, idDynamicOffset, &uuid, sizeof(Engine::UUID));
 			renderPass.setBindGroup(2, m_BindGroup, 1, &idDynamicOffset);
 

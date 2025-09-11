@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	Ref<Material> MaterialImporter::ImportMaterial(UUID id, const AssetMetadata& metadata)
+	Ref<Material> MaterialImporter::ImportMaterial(const AssetMetadata& metadata)
 	{
 		return LoadMaterial(Project::GetAssetsDirectory() / metadata.path);
 	}

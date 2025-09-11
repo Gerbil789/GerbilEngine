@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "EditorAssetManager.h"
-
 #include "Engine/Core/Project.h"
 
 namespace Engine
@@ -33,7 +32,7 @@ namespace Engine
 			return m_LoadedAssets.at(metadata->id);
 		}
 
-		Ref<Asset> asset = AssetImporter::ImportAsset(metadata->id, *metadata);
+		Ref<Asset> asset = AssetImporter::ImportAsset(*metadata);
 		if (!asset)
 		{
 			LOG_ERROR("EditorAssetManager::ImportAsset - asset import failed! '{0}'", filepath.string());

@@ -51,7 +51,7 @@ namespace Engine
 
 	protected:
 		static Application* s_Instance;
-		Window* m_Window; //TODO: smart pointer? Scope<>
+		Window* m_Window;
 
 		bool m_Running = true;
 		bool m_Minimized = false;

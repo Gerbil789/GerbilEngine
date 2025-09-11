@@ -8,11 +8,11 @@ namespace Engine
 	{
 		m_IndexCount = specification.indices.size();
 
-		// === Upload to GPU ===
 		auto device = GraphicsContext::GetDevice();
 
 		// Vertex buffer
 		wgpu::BufferDescriptor vertexBufferdesc{};
+		vertexBufferdesc.label = { "VertexBuffer", WGPU_STRLEN };
 		vertexBufferdesc.usage = wgpu::BufferUsage::Vertex | wgpu::BufferUsage::CopyDst;
 		vertexBufferdesc.size = specification.vertices.size() * sizeof(Vertex);
 		vertexBufferdesc.mappedAtCreation = false;
@@ -22,6 +22,7 @@ namespace Engine
 
 		// Index buffer
 		wgpu::BufferDescriptor indexBufferdesc{};
+		indexBufferdesc.label = { "IndexBuffer", WGPU_STRLEN };
 		indexBufferdesc.usage = wgpu::BufferUsage::Index | wgpu::BufferUsage::CopyDst;
 		indexBufferdesc.size = m_IndexCount * sizeof(uint16_t);
 		indexBufferdesc.mappedAtCreation = false;

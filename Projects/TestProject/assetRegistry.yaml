@@ -1,7 +1,5 @@
 Assets:
-  - ID: 7082908545006833318
-    Path: MyScene
-  - ID: 12869134794192299979
+  - ID: 1849822906748225184
+    Path: Scenes/MyScene.scene
+  - ID: 9934295113101365058
     Path: Materials/blue.material
-  - ID: 17842916901232632005
-    Path: Scenes/MyScene

@@ -2,7 +2,6 @@
 #include "Engine/Renderer/Texture.h"
 #include <glm/glm.hpp>
 #include <string>
-#include "Editor/Core/Core.h"
 
 namespace Editor::UI
 {

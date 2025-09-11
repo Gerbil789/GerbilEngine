@@ -32,8 +32,8 @@ project "Editor"
 
 	postbuildcommands 
 	{
-    "{COPY} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
-    "{COPY} %{wks.location}/Resources %{cfg.targetdir}/Resources"
+		"{COPY} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
+		"{COPY} %{wks.location}/Resources %{cfg.targetdir}/Resources"
 	}
 
 	postbuildmessage "Copying dependencies..."

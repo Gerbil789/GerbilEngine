@@ -20,11 +20,18 @@ namespace Engine
 		m_Records.clear();
 		for (const auto& entry : data["Assets"])
 		{
-			AssetMetadata record;
-			record.id = entry["ID"].as<uint64_t>();
-			record.path = entry["Path"].as<std::string>();
+			AssetMetadata metadata;
+			metadata.id = entry["ID"].as<uint64_t>();
+			metadata.path = entry["Path"].as<std::string>();
 
-			m_Records[record.id] = std::move(record);
+			auto type = GetAssetTypeFromExtension(metadata.path.extension().string());
+			if (type == AssetType::Unknown)
+			{
+				LOG_ERROR("Asset '{}' has unknown type, skipping.", metadata.path);
+				continue;
+			}
+
+			m_Records[metadata.id] = std::move(metadata);
 		}
 	}
 
@@ -34,11 +41,11 @@ namespace Engine
 		out << YAML::BeginMap;
 		out << YAML::Key << "Assets" << YAML::Value << YAML::BeginSeq;
 
-		for (const auto& [uuid, record] : m_Records)
+		for (const auto& [uuid, metadata] : m_Records)
 		{
 			out << YAML::BeginMap;
-			out << YAML::Key << "ID" << YAML::Value << (uint64_t)record.id;
-			out << YAML::Key << "Path" << YAML::Value << record.path.string();
+			out << YAML::Key << "ID" << YAML::Value << (uint64_t)metadata.id;
+			out << YAML::Key << "Path" << YAML::Value << metadata.path.string();
 			out << YAML::EndMap;
 		}
 

@@ -3,6 +3,7 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Utils/File.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/Serializer/SceneSerializer.h"
 
 namespace Engine::SceneManager
 {
@@ -64,7 +65,6 @@ namespace Engine::SceneManager
 	{
 		//Ref<Scene> scene = AssetManager::GetAsset<Scene>(path);
 		//s_ActiveScene = scene;
-		//AssetManager::UnloadUnusedAssets();
 
 	}
 
@@ -76,10 +76,20 @@ namespace Engine::SceneManager
 			return; 
 		}
 
-		//if (s_ActiveScene->GetPath().empty()) { SaveSceneAs(); return; }
-		//Serializer::Serialize(s_ActiveScene);
-		//LOG_INFO("Scene saved to file {0}", s_ActiveScene->GetPath());
-		LOG_WARNING("Saving scene failed. NOT IMPLEMENTED!");
+		Ref<Scene> scene = AssetManager::GetAsset<Scene>(s_ActiveScene->id);
+		auto assetPath = Project::GetActive()->GetAssetManager()->GetAssetPath(s_ActiveScene->id);
+
+		if(assetPath.empty())
+		{
+			LOG_ERROR("SceneManager::SaveScene() - Current scene has no path");
+			return;
+		}
+
+		auto path = Project::GetAssetsDirectory() / assetPath;
+
+		SceneSerializer::Serialize(scene, path);
+
+		LOG_INFO("Scene {0} saved to file {1}", s_ActiveScene->id, path);
 	}
 
 	void SaveSceneAs()

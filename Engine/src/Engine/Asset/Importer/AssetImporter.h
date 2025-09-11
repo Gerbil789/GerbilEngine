@@ -8,6 +8,6 @@ namespace Engine
 	class AssetImporter
 	{
 	public:
-		static Ref<Asset> ImportAsset(UUID id, const AssetMetadata& metadata); //TODO: do i need ID as separate param?
+		static Ref<Asset> ImportAsset(const AssetMetadata& metadata);
 	};
 }

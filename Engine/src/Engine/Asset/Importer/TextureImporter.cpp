@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	Ref<Texture2D> TextureImporter::ImportTexture2D(UUID id, const AssetMetadata& metadata)
+	Ref<Texture2D> TextureImporter::ImportTexture2D(const AssetMetadata& metadata)
 	{
 		return LoadTexture2D(Project::GetAssetsDirectory() / metadata.path);
 	}

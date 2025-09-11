@@ -2,7 +2,6 @@
 
 #include "EditorWindow.h"
 #include "Engine/Renderer/Material.h"
-#include "Editor/Core/Core.h"
 
 namespace Editor
 {
