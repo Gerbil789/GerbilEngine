@@ -47,8 +47,8 @@ namespace Engine
 			return std::static_pointer_cast<T>(asset);
 		}
 
-		template<typename T>
-		Ref<T> CreateAsset(std::filesystem::path path)
+		template<typename T, typename... Args>
+		Ref<T> CreateAsset(const std::filesystem::path& path, Args&&... args)
 		{
 			auto metadata = m_AssetRegistry.Add(path);
 			if (!metadata)
@@ -57,7 +57,7 @@ namespace Engine
 				return nullptr;
 			}
 
-			Ref<T> asset = CreateRef<T>();
+			Ref<T> asset = CreateRef<T>(std::forward<Args>(args)...);
 			if (!asset)
 			{
 				LOG_ERROR("EditorAssetManager::CreateAsset - failed to create asset. '{0}'", path);

@@ -13,8 +13,6 @@
 #include "Engine/Scene/Entity.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Renderer/Shaders/PhongShader.h"
-#include "Engine/Renderer/Shaders/FlatColorShader.h"
 
 namespace Editor
 {
@@ -48,7 +46,7 @@ namespace Editor
 		if(!startSceneID.IsValid())
 		{
 			LOG_WARNING("No valid start scene set in project, creating new scene");
-			Engine::SceneManager::CreateScene("Scenes/empty.scene");
+			Engine::SceneManager::CreateScene(Engine::Project::GetAssetsDirectory() / "Scenes/empty.scene");
 		}
 		else
 		{
@@ -56,7 +54,7 @@ namespace Editor
 			if (!scene)
 			{
 				LOG_WARNING("Failed to load start scene with ID: {0}, creating new scene", startSceneID);
-				Engine::SceneManager::CreateScene("Scenes/empty.scene");
+				Engine::SceneManager::CreateScene(Engine::Project::GetAssetsDirectory() / "Scenes/empty.scene");
 			}
 			else
 			{
@@ -77,6 +75,9 @@ namespace Editor
 				LOG_INFO("Entity: '{0}' with ID: {1}", ent.GetName(), ent.GetUUID());
 			}
 
+			auto shader = Engine::AssetManager::GetAsset<Engine::Shader>(Engine::UUID(11488752734390452845));
+			auto material = Engine::AssetManager::CreateAsset<Engine::Material>(Engine::Project::GetAssetsDirectory() / "Materials/Test.material", shader);
+		}
 			//Ref<Engine::Texture2D> texture = Engine::TextureImporter::LoadTexture2D("Resources/Editor/icons/skull.png");
 
 			//// Entity 1
@@ -118,7 +119,7 @@ namespace Editor
 
 			//	LOG_WARNING("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
 			//}
-		}
+
 
 		LOG_INFO("--- Editor initialization complete ---");
 	}

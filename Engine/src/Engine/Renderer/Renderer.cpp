@@ -3,9 +3,7 @@
 #include "Engine/Core/Application.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Renderer/GraphicsContext.h"
-#include "Engine/Renderer/Shaders/Shader.h"
 #include "Engine/Renderer/Material.h"
-
 
 namespace Engine
 {
@@ -48,6 +46,19 @@ namespace Engine
 
 	void Renderer::Initialize()
 	{
+		// Default white texture
+		uint32_t whitePixel = 0xFFFFFFFF; // RGBA(255,255,255,255)
+		TextureSpecification spec;
+		spec.width = spec.height = 1;
+		spec.format = wgpu::TextureFormat::RGBA8Unorm;
+		s_DefaultWhite = CreateRef<Texture2D>(spec, &whitePixel);
+
+		// Invalid material
+		//s_InvalidMaterial = CreateRef<Material>(Shader::GetInvalidShader());
+
+
+
+
 		s_Device = GraphicsContext::GetDevice();
 		s_Queue = GraphicsContext::GetQueue();
 
@@ -251,12 +262,14 @@ namespace Engine
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
 			Ref<Material> material = meshComponent.Material;
 
-			//if(!material)
-			//{
-			//	material = Material::GetDefault();
-			//}
+			if(!material)
+			{
+				LOG_ERROR("Entity '{0}' has no material! Using invalid material!", entity.GetName());
+				//material = s_InvalidMaterial;
+				//material = Material::GetDefault();
+			}
 
-			material = Material::GetDefault();
+
 
 			materialGroups[material].push_back(entity);
 		}

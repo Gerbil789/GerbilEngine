@@ -11,6 +11,9 @@ namespace Engine
 		static void Initialize(); //TODO: why is this static?
 		Renderer(uint32_t width, uint32_t height);
 
+		static Ref<Texture2D> GetDefaultWhiteTexture() { return s_DefaultWhite; }
+		static Ref<Material> GetInvalidMaterial() { return s_InvalidMaterial; }
+
 		void SetScene(Scene* scene) { m_Scene = scene; }
 		void SetClearColor(const glm::vec4& color) { m_ClearColor = { color.r, color.g, color.b, color.a }; }
 		void Resize(uint32_t width, uint32_t height);
@@ -56,5 +59,10 @@ namespace Engine
 		static wgpu::BindGroupLayout s_FrameBindGroupLayout;
 		static wgpu::BindGroup s_FrameBindGroup;
 		static wgpu::Buffer s_FrameUniformBuffer;
+
+		// static resources
+		inline static Ref<Texture2D> s_DefaultWhite = nullptr;
+		inline static Ref<Material>  s_InvalidMaterial = nullptr;
+		inline static wgpu::Sampler  s_DefaultSampler = nullptr;
 	};
 }

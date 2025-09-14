@@ -1,11 +1,28 @@
-bindings:
-  - { group: 0, binding: 0, name: "FrameUniforms",   type: "uniform-buffer", stages: "vertex|fragment" }
-  - { group: 1, binding: 0, name: "ModelUniforms",   type: "uniform-buffer", stages: "vertex" }
-  - { group: 2, binding: 0, name: "MaterialUniforms", type: "uniform-buffer", stages: "fragment" }
-material:
-  parameters:
-    color: vec4f
----
+vertexAttributes:
+  - { location: 0, label: "position", format: "Float32x3" }
+  - { location: 1, label: "normal",   format: "Float32x3" }
+  - { location: 2, label: "uv",       format: "Float32x2" }
+
+bindGroups:
+  - group: 0
+    label: "frame"
+    bindings:
+      - { binding: 0, label: "frameUniforms",   type: "uniform-buffer", stages: "vertex|fragment" }
+
+  - group: 1
+    label: "model"
+    bindings:
+      - { binding: 0, label: "modelUniforms",   type: "uniform-buffer", stages: "vertex" }
+
+  - group: 2
+    label: "material"
+    bindings:
+      - { binding: 0, label: "materialUniforms", type: "uniform-buffer", stages: "fragment" }
+
+vsEntry: "vs_main"
+fsEntry: "fs_main"
+
+#SHADER
 
 struct VertexInput {
 	@location(0) position: vec3f,

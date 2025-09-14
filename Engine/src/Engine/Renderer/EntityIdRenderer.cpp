@@ -2,8 +2,9 @@
 #include "EntityIdRenderer.h"
 #include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Scene/Entity.h"
-#include "Engine/Renderer/Shaders/Shader.h"
+#include "Engine/Renderer/Shader.h"
 #include "Engine/Renderer/Renderer.h"
+#include "Engine/Utils/File.h"
 
 namespace Engine
 {
@@ -170,7 +171,7 @@ namespace Engine
 			if (status != wgpu::MapAsyncStatus::Success) {
 				LOG_ERROR("Readback buffer map callback: status: {0}, message: {1}", (int)status, message);
 			}
-		};
+			};
 
 		wgpu::Future future = readbackBuffer.mapAsync(wgpu::MapMode::Read, 0, sizeof(Engine::UUID), callbackInfo);
 		wgpu::FutureWaitInfo waitInfo;
@@ -232,7 +233,21 @@ namespace Engine
 
 	void EntityIdRenderer::CreatePipeline()
 	{
-		wgpu::ShaderModule shaderModule = Shader::LoadShader("Resources/Engine/shaders/entityId.wgsl");
+		std::string content;
+		auto path = "Resources/Engine/shaders/entityId.wgsl";
+		ASSERT(Engine::ReadFile(path, content), "Failed to load entity id shader.")
+
+		const char* shaderSource = content.c_str();
+
+		wgpu::ShaderModuleDescriptor shaderDesc;
+		wgpu::ShaderModuleWGSLDescriptor shaderCodeDesc;
+		shaderCodeDesc.chain.next = nullptr;
+		shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
+		shaderDesc.nextInChain = &shaderCodeDesc.chain;
+		shaderCodeDesc.code = { shaderSource, strlen(shaderSource) };
+
+		wgpu::ShaderModule shaderModule = m_Device.createShaderModule(shaderDesc);
+		//wgpu::ShaderModule shaderModule = Shader::LoadShader("Resources/Engine/shaders/entityId.wgsl");
 		std::vector<wgpu::VertexAttribute> vertexAttribs(3);
 
 		// Position
@@ -306,7 +321,7 @@ namespace Engine
 		};
 
 		wgpu::PipelineLayoutDescriptor layoutDesc{};
-		layoutDesc.label = { "FlatColorShaderPipelineLayout", WGPU_STRLEN };
+		layoutDesc.label = { "EntityIdShaderPipelineLayout", WGPU_STRLEN };
 		layoutDesc.bindGroupLayoutCount = 3;
 		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayouts;
 		pipelineDesc.layout = m_Device.createPipelineLayout(layoutDesc);

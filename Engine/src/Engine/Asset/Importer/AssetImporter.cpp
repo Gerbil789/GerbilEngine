@@ -4,6 +4,7 @@
 #include "Engine/Core/Project.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/Importer/MeshImporter.h"
+#include "Engine/Asset/Importer/ShaderImporter.h"
 #include "Engine/Asset/Importer/MaterialImporter.h"
 #include "Engine/Asset/Importer/SceneImporter.h"
 
@@ -15,7 +16,8 @@ namespace Engine
 		{ AssetType::Texture, TextureImporter::ImportTexture2D },
 		{ AssetType::Mesh, MeshImporter::ImportMesh },
 		{ AssetType::Material, MaterialImporter::ImportMaterial },
-		{ AssetType::Scene, SceneImporter::ImportScene }
+		{ AssetType::Scene, SceneImporter::ImportScene },
+		{ AssetType::Shader, ShaderImporter::ImportShader  }
 	};
 
 	Ref<Asset> AssetImporter::ImportAsset(const AssetMetadata& metadata)

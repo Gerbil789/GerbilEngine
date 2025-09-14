@@ -1,146 +1,133 @@
 #include "enginepch.h"
 #include "Material.h"
 #include "Engine/Renderer/GraphicsContext.h"
-
-#include "Engine/Renderer/Shaders/FlatColorShader.h"
-#include "Engine/Renderer/Shaders/PhongShader.h"
+#include "Engine/Renderer/WebGPUUtils.h"
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Asset/AssetManager.h"
 
 namespace Engine
 {
-	void Material::SetShader(const Ref<Shader>& shader)
+	Material::Material(const Ref<Shader>& shader)
 	{
-		m_Shader = shader;
+		m_Shader = shader; 
 
-		CreateMaterialUniformBuffer();
-		CreateMaterialBindGroup();
+		m_UniformData.resize(m_Shader->GetUniformBufferSize(), 0);
+		CreateUniformBuffer(m_Shader->GetUniformBufferSize());
+		CreateSampler();
+		CreateBindGroup();
 	}
 
-	void Material::Bind(wgpu::RenderPassEncoder pass)
+	void Material::SetTexture(const std::string& name, Ref<Texture2D> texture)
 	{
-		if (!m_Shader)
+		if (!texture)
 		{
-			LOG_WARNING("Material::Bind - No shader set for material {0}", this->id);
+			LOG_WARNING("Material::SetTexture - Texture is null!");
 			return;
 		}
 
-		const auto& parameters = m_Shader->GetParameters();
-
-		for (const auto& param : parameters)
+		auto materialGroup = m_Shader->GetSpecification().GetBindGroup("Material");
+		if (!materialGroup)
 		{
-			auto it = m_Values.find(param.name);
-			if (it == m_Values.end())
-				continue; 
-
-			const MaterialValue& val = it->second;
-			uint8_t* dst = m_UniformData.data() + param.offset;
-
-			switch (param.type)
-			{
-			case ShaderParamType::Float:
-			{
-				if (auto f = std::get_if<float>(&val))
-					memcpy(dst, f, sizeof(float));
-				break;
-			}
-			case ShaderParamType::Vec3:
-			{
-				if (auto v3 = std::get_if<glm::vec3>(&val))
-					memcpy(dst, v3, sizeof(glm::vec3));
-				break;
-			}
-			case ShaderParamType::Vec4:
-			{
-				if (auto v4 = std::get_if<glm::vec4>(&val))
-					memcpy(dst, v4, sizeof(glm::vec4));
-				break;
-			}
-			default:
-				break;
-			}
+			LOG_ERROR("Material::SetTexture - Shader has no 'Material' bind group!");
+			return;
 		}
 
-		GraphicsContext::GetQueue().writeBuffer(m_MaterialUniformBuffer, 0, m_UniformData.data(), m_UniformData.size());
-		pass.setBindGroup(GroupID::Material, m_MaterialBindGroup, 0, nullptr);
-	}
+		auto binding = materialGroup->GetBinding(name);
 
-	Ref<Material> Material::GetDefault()
-	{
-		static Ref<Material> s_DefaultMaterial = []()
-			{
-				auto material = Engine::AssetManager::CreateAsset<Engine::Material>("Materials/blue.material");
-				material->SetShader(CreateRef<Engine::FlatColorShader>());
-				material->SetValue("Color", glm::vec4(0.2f, 0.1f, 0.8f, 1.0f));
-				return material;
-			}();
-
-		return s_DefaultMaterial;
-	}
-
-	
-	void Material::CreateMaterialUniformBuffer()
-	{
-		const auto& params = m_Shader->GetParameters();
-
-		//filter out parameters that are not uniform types
-		std::vector<ShaderParameter> uniformParams;
-		for (const auto& param : params)
+		if(!binding)
 		{
-			if (param.type == ShaderParamType::Float || param.type == ShaderParamType::Vec3 || param.type == ShaderParamType::Vec4)
-			{
-				uniformParams.push_back(param);
-			}
+			LOG_ERROR("Material::SetTexture - No binding for texture named '{}' in shader!", name);
+			return;
+		}
+		
+		if (binding->type != ShaderSpecification::Binding::Type::Texture)
+		{
+			LOG_WARNING("Material::SetTexture - Parameter '{}' is not a texture!", name);
+			return;
 		}
 
+		m_Textures[name] = texture;
+	}
+
+	void Material::CreateUniformBuffer(size_t size)
+	{
 		wgpu::BufferDescriptor bufferDesc{};
-		bufferDesc.label = { "MaterialUniformBuffer", WGPU_STRLEN };
-		bufferDesc.size = m_Shader->GetUniformBufferSize();
+		bufferDesc.label = { "MaterialUniformBuffer", WGPU_STRLEN }; //TODO: add material name
+		bufferDesc.size = size;
 		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-
-		m_MaterialUniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
-		m_UniformData.resize(m_Shader->GetUniformBufferSize(), 0);
+		m_UniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
 	}
 
-	void Material::CreateMaterialBindGroup()
+	void Material::CreateSampler()
 	{
-		const auto& parameters = m_Shader->GetParameters();
-		std::vector<wgpu::BindGroupEntry> entries;
-		entries.reserve(parameters.size());
+		wgpu::SamplerDescriptor samplerDesc = {};
+		samplerDesc.label = { "MaterialSampler", WGPU_STRLEN }; //TODO: add material name
+		samplerDesc.addressModeU = wgpu::AddressMode::Repeat;
+		samplerDesc.addressModeV = wgpu::AddressMode::Repeat;
+		samplerDesc.addressModeW = wgpu::AddressMode::ClampToEdge;
+		samplerDesc.magFilter = wgpu::FilterMode::Linear;
+		samplerDesc.minFilter = wgpu::FilterMode::Linear;
+		samplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
+		samplerDesc.lodMinClamp = 0.0f;
+		samplerDesc.lodMaxClamp = 1.0f;
+		samplerDesc.compare = wgpu::CompareFunction::Undefined;
+		samplerDesc.maxAnisotropy = 1;
+		m_Sampler = GraphicsContext::GetDevice().createSampler(samplerDesc);
+	}
 
-		for (const auto& param : parameters)
+	void Material::CreateBindGroup()
+	{
+		ASSERT(m_Shader, "Material::CreateMaterialBindGroup - No shader set for material!");
+
+		auto materialGroup = m_Shader->GetSpecification().GetBindGroup("Material");
+		if (!materialGroup)
+		{
+			LOG_ERROR("Material::SetTexture - Shader has no 'Material' bind group!");
+			return;
+		}
+
+		std::vector<wgpu::BindGroupEntry> entries;
+		entries.reserve(materialGroup->bindings.size());
+
+		for (const auto& binding : materialGroup->bindings)
 		{
 			wgpu::BindGroupEntry entry{};
-			entry.binding = param.binding;
+			entry.binding = binding.binding;
 
-			switch (param.type)
+			if (binding.type == ShaderSpecification::Binding::Type::UniformBuffer)
 			{
-			case ShaderParamType::Float:
-			case ShaderParamType::Vec3:
-			case ShaderParamType::Vec4:
-				entry.buffer = m_MaterialUniformBuffer;
-				entry.offset = param.offset; 
-				entry.size = param.size;
-				break;
-			case ShaderParamType::Texture2D:
-				entry.textureView = m_Textures[param.name]->GetTextureView(); 
-				break;
-
-			case ShaderParamType::Sampler:
-				entry.sampler = Renderer::s_Sampler; // Use a shared sampler instance
-				break;
+				entry.buffer = m_UniformBuffer;
+				entry.offset = 0;
+				entry.size = m_UniformData.size();
+			}
+			else if (binding.type == ShaderSpecification::Binding::Type::Texture)
+			{
+				LOG_WARNING("Material::CreateMaterialBindGroup - Texture bindings not implemented yet!");
+				m_Textures[binding.label] = Renderer::GetDefaultWhiteTexture();
+				auto tex = m_Textures[binding.label];
+				entry.textureView = tex->GetTextureView();
+			}
+			else if (binding.type == ShaderSpecification::Binding::Type::Sampler)
+			{
+				entry.sampler = m_Sampler;
 			}
 
 			entries.push_back(entry);
 		}
 
 		wgpu::BindGroupDescriptor bindGroupDesc{};
-		bindGroupDesc.label = { "MaterialBindGroup", WGPU_STRLEN };
+		bindGroupDesc.label = { "MaterialBindGroup", WGPU_STRLEN }; //TODO: add material name
 		bindGroupDesc.layout = m_Shader->GetMaterialBindGroupLayout();
 		bindGroupDesc.entryCount = static_cast<uint32_t>(entries.size());
 		bindGroupDesc.entries = entries.data();
 
-		m_MaterialBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+		m_BindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+	}
+
+	void Material::Bind(wgpu::RenderPassEncoder pass)
+	{
+		GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, 0, m_UniformData.data(), m_UniformData.size());
+		pass.setBindGroup(GroupID::Material, m_BindGroup, 0, nullptr);
 	}
 
 }

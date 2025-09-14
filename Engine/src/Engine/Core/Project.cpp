@@ -39,11 +39,8 @@ namespace Engine
 			s_ActiveProject->m_Title = data["Title"].as<std::string>();
 		}
 
-		if (data["StartSceneID"])
-		{
-			uint64_t id = data["StartSceneID"].as<uint64_t>();
-			s_ActiveProject->m_StartSceneID = UUID(id);
-		}
+		uint64_t id = data["StartSceneID"] ? data["StartSceneID"].as<uint64_t>(0) : 0;
+		s_ActiveProject->m_StartSceneID = UUID(id);
 
 		s_ActiveProject->m_ProjectDirectory = projectDirectoryPath;
 		s_ActiveProject->m_AssetManager = CreateRef<EditorAssetManager>();

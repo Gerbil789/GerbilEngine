@@ -34,20 +34,20 @@ namespace Engine
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 
-		Ref<Shader> shader = material->GetShader();
+		//Ref<Shader> shader = material->GetShader();
 		//out << YAML::Key << "Shader" << YAML::Value << shader->GetParameters().;
 
 		out << YAML::Key << "Properties" << YAML::Value << YAML::BeginMap;
 
-		const auto& values = material->GetValues();
-		for (auto& [name, value] : values)
-		{
-			std::visit([&](auto&& arg) {
-				SerializeValue(out, name, arg);
-				}, value);
-		
-		}
-		out << YAML::EndMap; // End Properties
+		//const auto& values = material->GetValues();
+		//for (auto& [name, value] : values)
+		//{
+		//	std::visit([&](auto&& arg) {
+		//		SerializeValue(out, name, arg);
+		//		}, value);
+		//
+		//}
+		//out << YAML::EndMap; // End Properties
 		out << YAML::EndMap; // End root
 
 		std::ofstream fout(path);
@@ -106,38 +106,38 @@ namespace Engine
 
 		auto material = CreateRef<Material>();
 
-		if (auto props = data["Properties"])
-		{
-			for (auto it = props.begin(); it != props.end(); ++it)
-			{
-				std::string name = it->first.as<std::string>();
-				const YAML::Node& node = it->second;
+		//if (auto props = data["Properties"])
+		//{
+		//	for (auto it = props.begin(); it != props.end(); ++it)
+		//	{
+		//		std::string name = it->first.as<std::string>();
+		//		const YAML::Node& node = it->second;
 
-				// Try float first
-				float f;
-				if (DeserializeValue(node, f))
-				{
-					material->SetValue(name, f);
-					continue;
-				}
+		//		// Try float first
+		//		float f;
+		//		if (DeserializeValue(node, f))
+		//		{
+		//			material->SetValue(name, f);
+		//			continue;
+		//		}
 
-				glm::vec3 v3;
-				if (DeserializeValue(node, v3))
-				{
-					material->SetValue(name, v3);
-					continue;
-				}
+		//		glm::vec3 v3;
+		//		if (DeserializeValue(node, v3))
+		//		{
+		//			material->SetValue(name, v3);
+		//			continue;
+		//		}
 
-				glm::vec4 v4;
-				if (DeserializeValue(node, v4))
-				{
-					material->SetValue(name, v4);
-					continue;
-				}
+		//		glm::vec4 v4;
+		//		if (DeserializeValue(node, v4))
+		//		{
+		//			material->SetValue(name, v4);
+		//			continue;
+		//		}
 
-				LOG_WARNING("Unknown property format for '{}'", name);
-			}
-		}
+		//		LOG_WARNING("Unknown property format for '{}'", name);
+		//	}
+		//}
 
 		return material;
 	}

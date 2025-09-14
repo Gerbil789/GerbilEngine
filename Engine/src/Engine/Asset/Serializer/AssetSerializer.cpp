@@ -10,7 +10,7 @@ namespace Engine
 	using AssetDeserializeFunction = std::function<Ref<Asset>(const std::filesystem::path&)>;
 
 	static std::map<AssetType, AssetSerializeFunction> s_AssetSerializeFunctions = {
-		{ AssetType::Scene, [](const Ref<Asset>& asset, const std::filesystem::path& path) { SceneSerializer::Serialize(std::dynamic_pointer_cast<Scene>(asset), path); }}
+		{ AssetType::Scene, [](const Ref<Asset>& asset, const std::filesystem::path& path) { SceneSerializer::Serialize(std::static_pointer_cast<Scene>(asset), path); }}
 	};
 
 	static std::map<AssetType, AssetDeserializeFunction> s_AssetDeserializeFunctions = {

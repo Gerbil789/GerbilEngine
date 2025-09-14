@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	void AssetRegistry::Load(const std::filesystem::path& path)
+	void AssetRegistry::Load(const std::filesystem::path& path) //TODO: split into functions (load from file, scan directory, ...) and make better logs
 	{
 		if (!std::filesystem::exists(path))
 		{
@@ -17,12 +17,14 @@ namespace Engine
 		if (!data["Assets"])
 			return;
 
+		auto assetsDir = Project::GetAssetsDirectory();
 		m_Records.clear();
 		for (const auto& entry : data["Assets"])
 		{
 			AssetMetadata metadata;
 			metadata.id = entry["ID"].as<uint64_t>();
-			metadata.path = entry["Path"].as<std::string>();
+			std::filesystem::path relativePath = entry["Path"].as<std::string>();
+			metadata.path = assetsDir / relativePath;
 
 			auto type = GetAssetTypeFromExtension(metadata.path.extension().string());
 			if (type == AssetType::Unknown)
@@ -31,8 +33,66 @@ namespace Engine
 				continue;
 			}
 
+			if (type == AssetType::Other)
+			{
+				continue; // Skip 'Other' types like .txt, .md, etc.
+			}
+
+			if (!std::filesystem::exists(metadata.path))
+			{
+				LOG_WARNING("Asset '{}' not found on disk, skipping.", metadata.path);
+				continue;
+			}
+
 			m_Records[metadata.id] = std::move(metadata);
 		}
+
+		for (auto& file : std::filesystem::recursive_directory_iterator(assetsDir))
+		{
+			if (!file.is_regular_file() || file.is_directory())
+			{
+				continue;	// Skip non-regular files (directories, symlinks, etc.)
+			}
+
+			auto ext = file.path().extension().string();
+			if(ext.empty())
+			{
+				continue; // Skip files without extension
+			}
+
+			auto type = GetAssetTypeFromExtension(ext);
+			if (type == AssetType::Unknown)
+			{
+				LOG_WARNING("File '{}' has unknown asset type, skipping.", file.path());
+				continue;
+			}
+
+			if (type == AssetType::Other)
+			{
+				continue; // Skip 'Other' types like .txt, .md, etc.
+			}
+
+			bool found = false;
+			for (auto& [id, meta] : m_Records)
+			{
+				if (meta.path == file.path())
+				{
+					found = true;
+					break;
+				}
+			}
+
+			if (!found)
+			{
+				AssetMetadata metadata;
+				metadata.id = UUID(); // generate new UUID
+				metadata.path = file.path();
+				LOG_INFO("Discovered new asset '{}'", metadata.path);
+				m_Records[metadata.id] = std::move(metadata);
+			}
+		}
+
+		Save(path);
 	}
 
 	void AssetRegistry::Save(const std::filesystem::path& path)
@@ -41,11 +101,21 @@ namespace Engine
 		out << YAML::BeginMap;
 		out << YAML::Key << "Assets" << YAML::Value << YAML::BeginSeq;
 
+		auto assetsDir = Engine::Project::GetAssetsDirectory();
+
 		for (const auto& [uuid, metadata] : m_Records)
 		{
+			std::filesystem::path relativePath = std::filesystem::relative(metadata.path, assetsDir);
+
+			if(relativePath.empty())
+			{
+				LOG_WARNING("Asset '{}' is outside of the assets directory, skipping.", metadata.path);
+				continue;
+			}
+
 			out << YAML::BeginMap;
 			out << YAML::Key << "ID" << YAML::Value << (uint64_t)metadata.id;
-			out << YAML::Key << "Path" << YAML::Value << metadata.path.string();
+			out << YAML::Key << "Path" << YAML::Value << relativePath.string();
 			out << YAML::EndMap;
 		}
 
@@ -66,12 +136,13 @@ namespace Engine
 		}
 
 		AssetMetadata record;
-		record.id = UUID();
+		id = UUID();
+		record.id = id;
 		record.path = path;
-		m_Records[record.id] = std::move(record);
+		m_Records[id] = std::move(record);
 		Save(Project::GetProjectDirectory() / "assetRegistry.yaml");
-		LOG_TRACE("Added asset '{}' to registry.", path);
-		return &m_Records[record.id];
+		LOG_TRACE("Added asset '{}' to registry.", record.path);
+		return &m_Records[id];
 	}
 
 	const UUID& AssetRegistry::GetUUIDFromPath(const std::filesystem::path& path) const

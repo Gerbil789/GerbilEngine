@@ -14,6 +14,8 @@
 #include "spdlog/fmt/ostr.h"
 #pragma warning(pop)
 
+//TODO: replace fmt with std::format ?
+
 namespace Engine
 {
 	class Log

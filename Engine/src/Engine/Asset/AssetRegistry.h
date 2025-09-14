@@ -8,8 +8,8 @@ namespace Engine
 	class AssetRegistry
 	{
 	public:
-		void Load(const std::filesystem::path& path);	// Load registry from YAML file
-		void Save(const std::filesystem::path& path);	// Save registry to YAML file
+		void Load(const std::filesystem::path& path);
+		void Save(const std::filesystem::path& path);
 
 		bool IsUUIDValid(const UUID& id) const { return id.IsValid() && m_Records.find(id) != m_Records.end(); }
 		const AssetMetadata* Add(const std::filesystem::path& path);

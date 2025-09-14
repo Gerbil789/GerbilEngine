@@ -17,10 +17,10 @@ namespace Engine
 			return asset;
 		}
 
-		template<typename T>
-		static Ref<T> CreateAsset(std::filesystem::path path)
+		template<typename T, typename... Args>
+		static Ref<T> CreateAsset(const std::filesystem::path& path, Args&&... args)
 		{
-			Ref<T> asset = Project::GetActive()->GetAssetManager()->CreateAsset<T>(path);
+			Ref<T> asset = Project::GetActive()->GetAssetManager()->CreateAsset<T>(path, std::forward<Args>(args)...);
 			return asset;
 		}
 
