@@ -8,41 +8,35 @@ namespace Engine
 	static inline wgpu::VertexFormat StringToVertexFormat(const std::string& str)
 	{
 		static const std::unordered_map<std::string, wgpu::VertexFormat> formatMap = {
-				{ "Uint8x2",   wgpu::VertexFormat::Uint8x2 },
-				{ "Uint8x4",   wgpu::VertexFormat::Uint8x4 },
-				{ "Sint8x2",   wgpu::VertexFormat::Sint8x2 },
-				{ "Sint8x4",   wgpu::VertexFormat::Sint8x4 },
-				{ "Unorm8x2",  wgpu::VertexFormat::Unorm8x2 },
-				{ "Unorm8x4",  wgpu::VertexFormat::Unorm8x4 },
-				{ "Snorm8x2",  wgpu::VertexFormat::Snorm8x2 },
-				{ "Snorm8x4",  wgpu::VertexFormat::Snorm8x4 },
+			{ "vec1f", wgpu::VertexFormat::Float32 },
+			{ "vec2f", wgpu::VertexFormat::Float32x2 },
+			{ "vec3f", wgpu::VertexFormat::Float32x3 },
+			{ "vec4f", wgpu::VertexFormat::Float32x4 },
 
-				{ "Uint16x2",  wgpu::VertexFormat::Uint16x2 },
-				{ "Uint16x4",  wgpu::VertexFormat::Uint16x4 },
-				{ "Sint16x2",  wgpu::VertexFormat::Sint16x2 },
-				{ "Sint16x4",  wgpu::VertexFormat::Sint16x4 },
-				{ "Unorm16x2", wgpu::VertexFormat::Unorm16x2 },
-				{ "Unorm16x4", wgpu::VertexFormat::Unorm16x4 },
-				{ "Snorm16x2", wgpu::VertexFormat::Snorm16x2 },
-				{ "Snorm16x4", wgpu::VertexFormat::Snorm16x4 },
+			{ "vec2h", wgpu::VertexFormat::Float16x2 },
+			{ "vec4h", wgpu::VertexFormat::Float16x4 },
 
-				{ "Float16x2", wgpu::VertexFormat::Float16x2 },
-				{ "Float16x4", wgpu::VertexFormat::Float16x4 },
+			{ "vec1i", wgpu::VertexFormat::Sint32 },
+			{ "vec2i", wgpu::VertexFormat::Sint32x2 },
+			{ "vec3i", wgpu::VertexFormat::Sint32x3 },
+			{ "vec4i", wgpu::VertexFormat::Sint32x4 },
 
-				{ "Float32",   wgpu::VertexFormat::Float32 },
-				{ "Float32x2", wgpu::VertexFormat::Float32x2 },
-				{ "Float32x3", wgpu::VertexFormat::Float32x3 },
-				{ "Float32x4", wgpu::VertexFormat::Float32x4 },
+			{ "vec1u", wgpu::VertexFormat::Uint32 },
+			{ "vec2u", wgpu::VertexFormat::Uint32x2 },
+			{ "vec3u", wgpu::VertexFormat::Uint32x3 },
+			{ "vec4u", wgpu::VertexFormat::Uint32x4 },
 
-				{ "Uint32",    wgpu::VertexFormat::Uint32 },
-				{ "Uint32x2",  wgpu::VertexFormat::Uint32x2 },
-				{ "Uint32x3",  wgpu::VertexFormat::Uint32x3 },
-				{ "Uint32x4",  wgpu::VertexFormat::Uint32x4 },
+			{ "vec2s", wgpu::VertexFormat::Sint16x2 },
+			{ "vec4s", wgpu::VertexFormat::Sint16x4 },
 
-				{ "Sint32",    wgpu::VertexFormat::Sint32 },
-				{ "Sint32x2",  wgpu::VertexFormat::Sint32x2 },
-				{ "Sint32x3",  wgpu::VertexFormat::Sint32x3 },
-				{ "Sint32x4",  wgpu::VertexFormat::Sint32x4 }
+			{ "vec2us", wgpu::VertexFormat::Uint16x2 },
+			{ "vec4us", wgpu::VertexFormat::Uint16x4 },
+
+			{ "vec2b", wgpu::VertexFormat::Sint8x2 },
+			{ "vec4b", wgpu::VertexFormat::Sint8x4 },
+
+			{ "vec2ub", wgpu::VertexFormat::Uint8x2 },
+			{ "vec4ub", wgpu::VertexFormat::Uint8x4 },
 		};
 
 		auto it = formatMap.find(str);

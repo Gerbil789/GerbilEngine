@@ -50,7 +50,7 @@ namespace Engine
 		template<typename T, typename... Args>
 		Ref<T> CreateAsset(const std::filesystem::path& path, Args&&... args)
 		{
-			auto metadata = m_AssetRegistry.Add(path);
+			auto metadata = m_AssetRegistry.Create(path);
 			if (!metadata)
 			{
 				LOG_ERROR("EditorAssetManager::CreateAsset - Failed to add record in registry '{0}'", path);

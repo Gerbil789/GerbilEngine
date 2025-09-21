@@ -14,23 +14,18 @@ namespace Engine
 		Material() = default; //TODO: remove?
 		Material(const Ref<Shader>& shader);
 
+		void SetFloat(const std::string& paramName, float value);
+		//void SetVec2(const std::string& paramName, const glm::vec2& value);
+		//void SetVec3(const std::string& paramName, const glm::vec3& value);
+		void SetVec4(const std::string& paramName, const glm::vec4& value);
 		void SetTexture(const std::string& name, Ref<Texture2D> texture);
 
 		Ref<Shader> GetShader() const { return m_Shader; }
 
-		template<typename T>
-		void Set(const std::string& name, const T& value)
-		{
-			//const auto* info = m_Shader->GetParamInfo(name);
-			//if (!info) return;
-
-			//memcpy(m_UniformData.data() + info->offset, &value, info->size);
-		}
-
 		void Bind(wgpu::RenderPassEncoder pass);
 	private:
 		void CreateSampler();
-		void CreateUniformBuffer(size_t size);
+		void CreateUniformBuffer();
 		void CreateBindGroup();
 
 	private:

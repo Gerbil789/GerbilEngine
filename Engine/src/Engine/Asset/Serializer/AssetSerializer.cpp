@@ -3,6 +3,7 @@
 
 #include "Engine/Core/Project.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
+#include "Engine/Asset/Serializer/MaterialSerializer.h"
 
 namespace Engine
 {
@@ -10,11 +11,13 @@ namespace Engine
 	using AssetDeserializeFunction = std::function<Ref<Asset>(const std::filesystem::path&)>;
 
 	static std::map<AssetType, AssetSerializeFunction> s_AssetSerializeFunctions = {
-		{ AssetType::Scene, [](const Ref<Asset>& asset, const std::filesystem::path& path) { SceneSerializer::Serialize(std::static_pointer_cast<Scene>(asset), path); }}
+		{ AssetType::Scene, [](const Ref<Asset>& asset, const std::filesystem::path& path) { SceneSerializer::Serialize(std::static_pointer_cast<Scene>(asset), path); }},
+		{ AssetType::Material, [](const Ref<Asset>& asset, const std::filesystem::path& path) { MaterialSerializer::Serialize(std::static_pointer_cast<Material>(asset), path); }}
 	};
 
 	static std::map<AssetType, AssetDeserializeFunction> s_AssetDeserializeFunctions = {
-		{ AssetType::Scene, [](const std::filesystem::path& path) -> Ref<Asset> { return SceneSerializer::Deserialize(path); }}
+		{ AssetType::Scene, [](const std::filesystem::path& path) -> Ref<Asset> { return SceneSerializer::Deserialize(path); }},
+		{ AssetType::Material, [](const std::filesystem::path& path) -> Ref<Asset> { return MaterialSerializer::Deserialize(path); }}
 	};
 
 	void AssetSerializer::SerializeAsset(const Ref<Asset>& asset, const AssetMetadata& metadata)

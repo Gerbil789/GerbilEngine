@@ -1,29 +1,3 @@
-vertexAttributes:
-  - { location: 0, label: "position", format: "Float32x3" }
-  - { location: 1, label: "normal",   format: "Float32x3" }
-  - { location: 2, label: "uv",       format: "Float32x2" }
-
-bindGroups:
-  - group: 0
-    label: "frame"
-    bindings:
-      - { binding: 0, label: "frameUniforms",   type: "uniform-buffer", stages: "vertex|fragment" }
-
-  - group: 1
-    label: "model"
-    bindings:
-      - { binding: 0, label: "modelUniforms",   type: "uniform-buffer", stages: "vertex" }
-
-  - group: 2
-    label: "material"
-    bindings:
-      - { binding: 0, label: "materialUniforms", type: "uniform-buffer", stages: "fragment" }
-
-vsEntry: "vs_main"
-fsEntry: "fs_main"
-
-#SHADER
-
 struct VertexInput {
 	@location(0) position: vec3f,
 	@location(1) normal: vec3f,
@@ -32,6 +6,7 @@ struct VertexInput {
 
 struct VertexOutput {
 	@builtin(position) position: vec4f,
+	@location(0) uv: vec2f,
 };
 
 struct FrameUniforms {
@@ -52,15 +27,21 @@ struct MaterialUniforms {
 @group(0) @binding(0) var<uniform> uFrameUniforms: FrameUniforms;
 @group(1) @binding(0) var<uniform> uModelUniforms: ModelUniforms;
 @group(2) @binding(0) var<uniform> uMaterialUniforms: MaterialUniforms;
+@group(2) @binding(1) var Sampler: sampler;
+@group(2) @binding(2) var albedo: texture_2d<f32>;
 
 @vertex
 fn vs_main(in: VertexInput) -> VertexOutput {
 	var out: VertexOutput; 
 	out.position = uFrameUniforms.projection * uFrameUniforms.view * uModelUniforms.model * vec4f(in.position, 1.0);
+	out.uv = in.uv;
 	return out;
 }
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4f {
-	return uMaterialUniforms.color;
+	let texelCoords = vec2i(in.uv * vec2f(textureDimensions(albedo)));
+  let color = textureLoad(albedo, texelCoords, 0).rgb;
+	let corrected_color = pow(color, vec3f(2.2));
+	return vec4f(corrected_color, 1.0);
 }

@@ -21,7 +21,7 @@ namespace Engine
 
 	Ref<Asset> EditorAssetManager::ImportAsset(const std::filesystem::path& filepath)
 	{
-		auto metadata = m_AssetRegistry.Add(filepath);
+		auto metadata = m_AssetRegistry.Create(filepath);
 		if (!metadata)
 		{
 			return nullptr;

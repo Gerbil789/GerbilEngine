@@ -2,26 +2,26 @@
 #include "Shader.h"
 #include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Renderer/WebGPUUtils.h"
-
 #include "Engine/Renderer/Renderer.h"
+
 namespace Engine
 {
-	Shader::Shader(const ShaderSpecification& specification, const std::string& source)
+	Shader::Shader(const ShaderSpecification& specification, const std::string& source, const std::string& name)
 	{
 		m_Specification = specification;
-		LOG_INFO("Creating shader: {}", specification.name);
+		m_Name = name;
+		LOG_INFO("Creating shader: {}", m_Name);
 
 		auto device = GraphicsContext::GetDevice();
 		auto queue = GraphicsContext::GetQueue();
 
 		wgpu::ShaderModule shaderModule = CreateShaderModule(source);
 
-		// Vertex Attributes
 		auto vertexAttributeCount = specification.vertexAttributes.size();
 
 		LOG_TRACE("Shader Vertex Attribute Count: {}", vertexAttributeCount);
 
-		uint32_t offset = 0;
+		uint64_t offset = 0;
 		std::vector<wgpu::VertexAttribute> vertexAttribs(vertexAttributeCount);
 		for (size_t i = 0; i < vertexAttributeCount; i++)
 		{
@@ -38,17 +38,17 @@ namespace Engine
 		wgpu::VertexBufferLayout vertexBufferLayout;
 		vertexBufferLayout.attributeCount = static_cast<uint32_t>(vertexAttributeCount);
 		vertexBufferLayout.attributes = vertexAttribs.data();
-		vertexBufferLayout.arrayStride = offset * sizeof(float);
+		vertexBufferLayout.arrayStride = offset;
 		vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
 
 		wgpu::RenderPipelineDescriptor pipelineDesc;
-		std::string pipelineLabel = specification.name + "ShaderPipeline";
+		std::string pipelineLabel = m_Name + "ShaderPipeline";
 		pipelineDesc.label = { pipelineLabel.c_str(), WGPU_STRLEN};
 
 		pipelineDesc.vertex.bufferCount = 1;
 		pipelineDesc.vertex.buffers = &vertexBufferLayout;
 		pipelineDesc.vertex.module = shaderModule;
-		pipelineDesc.vertex.entryPoint = { specification.vsEntry.c_str(), WGPU_STRLEN};
+		pipelineDesc.vertex.entryPoint = { m_Specification.vsEntryPoint.c_str(), WGPU_STRLEN};
 		pipelineDesc.vertex.constantCount = 0;
 		pipelineDesc.vertex.constants = nullptr;
 
@@ -72,7 +72,7 @@ namespace Engine
 
 		wgpu::FragmentState fragmentState;
 		fragmentState.module = shaderModule;
-		fragmentState.entryPoint = { specification.fsEntry.c_str(), WGPU_STRLEN };
+		fragmentState.entryPoint = { m_Specification.fsEntryPoint.c_str(), WGPU_STRLEN };
 		fragmentState.constantCount = 0;
 		fragmentState.constants = nullptr;
 		fragmentState.targetCount = 1;
@@ -100,7 +100,7 @@ namespace Engine
 		};
 
 		wgpu::PipelineLayoutDescriptor layoutDesc{};
-		std::string label = specification.name + "ShaderPipelineLayout";
+		std::string label = m_Name + "ShaderPipelineLayout";
 		layoutDesc.label = { label.c_str(), WGPU_STRLEN};
 		layoutDesc.bindGroupLayoutCount = 3;
 		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayouts;
@@ -116,7 +116,7 @@ namespace Engine
 		const char* shaderSource = source.c_str();
 
 		wgpu::ShaderModuleDescriptor shaderDesc;
-		std::string label = m_Specification.name + "ShaderModule";
+		std::string label = m_Name + "ShaderModule";
 		shaderDesc.label = { label.c_str(), WGPU_STRLEN };
 		wgpu::ShaderModuleWGSLDescriptor shaderCodeDesc;
 		shaderCodeDesc.chain.next = nullptr;
@@ -128,40 +128,36 @@ namespace Engine
 
 	wgpu::BindGroupLayout Shader::CreateMaterialBindGroupLayout(const ShaderSpecification& specification)
 	{
-		auto materialSpec = specification.GetBindGroup("material");
-
-		if (!materialSpec)
-		{
-			LOG_ERROR("Shader does not define a bind group labeled 'material'");
-			return nullptr;
-		}
+		auto materialBindings = GetMaterialBindings(specification);
 
 		std::vector<wgpu::BindGroupLayoutEntry> layoutEntries;
-		layoutEntries.reserve(materialSpec->bindings.size());
+		layoutEntries.reserve(materialBindings.size());
 
-		for (const auto& binding : materialSpec->bindings)
+		for (const auto& binding : materialBindings)
 		{
 			wgpu::BindGroupLayoutEntry entry = wgpu::Default;
 			entry.binding = binding.binding;
-			entry.visibility = wgpu::ShaderStage::Fragment;
+			entry.visibility = binding.visibility;
 
 			switch (binding.type)
 			{
-			case ShaderSpecification::Binding::Type::UniformBuffer:
-			case ShaderSpecification::Binding::Type::StorageBuffer:
-				entry.buffer.type = binding.bufferType;
+			case BindingType::UniformBuffer:
+				entry.buffer.type = wgpu::BufferBindingType::Uniform;
 				entry.buffer.hasDynamicOffset = false;
 				entry.buffer.minBindingSize = 0;
+				m_MaterialUniformBufferSize = binding.size; //TODO: handle multiple uniform buffers?
 				break;
 
-			case ShaderSpecification::Binding::Type::Texture:
-				entry.texture.sampleType = binding.textureType;
+			case BindingType::Texture2D:
+				entry.texture.sampleType = binding.textureSample;
 				entry.texture.viewDimension = wgpu::TextureViewDimension::_2D;
 				entry.texture.multisampled = false;
+				entry.visibility = wgpu::ShaderStage::Fragment; // Textures are typically used in fragment shader
 				break;
 
-			case ShaderSpecification::Binding::Type::Sampler:
+			case BindingType::Sampler:
 				entry.sampler.type = binding.samplerType;
+				entry.visibility = wgpu::ShaderStage::Fragment;
 				break;
 			}
 
@@ -169,7 +165,7 @@ namespace Engine
 		}
 
 		wgpu::BindGroupLayoutDescriptor desc{};
-		std::string label = m_Specification.name + "MaterialBindGroupLayout";
+		std::string label = m_Name + "MaterialBindGroupLayout";
 		desc.label = { label.c_str(), WGPU_STRLEN};
 		desc.entryCount = static_cast<uint32_t>(layoutEntries.size());
 		desc.entries = layoutEntries.data();

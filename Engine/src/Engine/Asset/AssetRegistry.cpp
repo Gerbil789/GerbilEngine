@@ -126,7 +126,7 @@ namespace Engine
 		fout << out.c_str();
 	}
 
-	const AssetMetadata* AssetRegistry::Add(const std::filesystem::path& path)
+	const AssetMetadata* AssetRegistry::Create(const std::filesystem::path& path)
 	{
 		auto id = GetUUIDFromPath(path);
 		if (id.IsValid())
@@ -141,7 +141,7 @@ namespace Engine
 		record.path = path;
 		m_Records[id] = std::move(record);
 		Save(Project::GetProjectDirectory() / "assetRegistry.yaml");
-		LOG_TRACE("Added asset '{}' to registry.", record.path);
+		LOG_TRACE("Added asset '{}' to registry.", path);
 		return &m_Records[id];
 	}
 

@@ -31,23 +31,67 @@ namespace Engine
 			return;
 		}
 
+		auto shader = material->GetShader();
+		if(!shader)
+		{
+			LOG_ERROR("Material has no shader, cannot serialize.");
+			return;
+		}
+
+		auto shaderSpec = shader->GetSpecification();
+
+		auto materiaBindings = GetMaterialBindings(shaderSpec);
+
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 
-		//Ref<Shader> shader = material->GetShader();
-		//out << YAML::Key << "Shader" << YAML::Value << shader->GetParameters().;
+		out << YAML::Key << "Shader" << YAML::Value << shader->id;
 
-		out << YAML::Key << "Properties" << YAML::Value << YAML::BeginMap;
+		out << YAML::Key << "Attributes" << YAML::Value << YAML::BeginMap;
 
-		//const auto& values = material->GetValues();
-		//for (auto& [name, value] : values)
+
+		//for (const auto binding : materiaBindings)
 		//{
-		//	std::visit([&](auto&& arg) {
-		//		SerializeValue(out, name, arg);
-		//		}, value);
-		//
+		//	out << YAML::Key << binding->name;
+
+		//	switch (binding->type)
+		//	{
+		//	case BindingType::UniformBuffer:
+		//	{
+		//		auto data = material->GetUniform(binding.label);
+		//		out << YAML::Value << YAML::Flow << data;
+		//		break;
+		//	}
+		//	case BindingType::Texture2D:
+		//	{
+		//		Ref<Texture> tex = material->GetTexture(binding.label);
+		//		if (tex)
+		//			out << YAML::Value << tex->GetAssetID().ToString(); // or path
+		//		else
+		//			out << YAML::Value << "null";
+		//		break;
+		//	}
+		//	case BindingType::Sampler:
+		//	{
+		//		Ref<Sampler> sampler = material->GetSampler(binding.label);
+		//		if (sampler)
+		//			out << YAML::Value << sampler->GetAssetID().ToString();
+		//		else
+		//			out << YAML::Value << "null";
+		//		break;
+		//	}
+		//	case ShaderSpecification::Binding::Type::StorageBuffer:
+		//	{
+		//		// Rare for materials, but you could serialize a path to a buffer asset
+		//		out << YAML::Value << "/* Storage buffer not serialized */";
+		//		break;
+		//	}
+		//	}
 		//}
-		//out << YAML::EndMap; // End Properties
+
+
+
+		out << YAML::EndMap; // End Attributes
 		out << YAML::EndMap; // End root
 
 		std::ofstream fout(path);

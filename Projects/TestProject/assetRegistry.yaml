@@ -1,42 +1,42 @@
 Assets:
-  - ID: 13131320957744878556
-    Path: Materials\red.material
   - ID: 1465253767056153136
     Path: Materials\blue.material
+  - ID: 13131320957744878556
+    Path: Materials\red.material
   - ID: 7811900105672264813
     Path: Materials\pink.material
   - ID: 8982589797183355654
     Path: Meshes\cube.glb
+  - ID: 2306162455903992554
+    Path: Materials\Test.material
   - ID: 5773291836826301117
     Path: Scenes\empty.scene
-  - ID: 12250063124513744072
-    Path: Textures\metal_plates\ambient.png
   - ID: 7796496215400302547
     Path: Textures\bricks_wall\albedo.png
+  - ID: 12250063124513744072
+    Path: Textures\metal_plates\ambient.png
   - ID: 5073552622789407463
     Path: Scenes\MyScene.scene
   - ID: 1362570588462280121
     Path: Textures\background.png
-  - ID: 16789549155580106633
-    Path: Textures\metal_plates\normal.png
   - ID: 7643789161623611460
     Path: Textures\bricks_wall\ambient.png
+  - ID: 16789549155580106633
+    Path: Textures\metal_plates\normal.png
   - ID: 14899039829185301908
     Path: Textures\bricks_wall\height.png
   - ID: 7280531552173679287
     Path: Textures\bricks_wall\normal.png
   - ID: 14689403870797383974
     Path: Textures\bricks_wall\roughness.png
-  - ID: 6401710123764655857
-    Path: Textures\metal_plates\color.png
   - ID: 9663298294828637969
     Path: Textures\concrete_pillar\ambient.png
-  - ID: 11587092385848286148
-    Path: Materials\Test.material
-  - ID: 2853061957645165945
-    Path: Textures\concrete_pillar\roughness.png
+  - ID: 6401710123764655857
+    Path: Textures\metal_plates\color.png
   - ID: 17808716298089464060
     Path: Textures\concrete_pillar\color.png
+  - ID: 2853061957645165945
+    Path: Textures\concrete_pillar\roughness.png
   - ID: 8301645721951659981
     Path: Textures\concrete_pillar\height.png
   - ID: 15783146352431223061
@@ -47,10 +47,10 @@ Assets:
     Path: Textures\metal_plates\height.png
   - ID: 17556434590940161352
     Path: Textures\metal_plates\metallic.png
-  - ID: 699890594733415705
-    Path: Textures\spritesheet.png
   - ID: 16913295600460062190
     Path: Textures\metal_plates\roughness.png
+  - ID: 699890594733415705
+    Path: Textures\spritesheet.png
   - ID: 39304943629783121
     Path: Textures\tile.png
   - ID: 11488752734390452845

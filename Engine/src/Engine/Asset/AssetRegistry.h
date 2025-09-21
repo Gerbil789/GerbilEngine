@@ -12,7 +12,7 @@ namespace Engine
 		void Save(const std::filesystem::path& path);
 
 		bool IsUUIDValid(const UUID& id) const { return id.IsValid() && m_Records.find(id) != m_Records.end(); }
-		const AssetMetadata* Add(const std::filesystem::path& path);
+		const AssetMetadata* Create(const std::filesystem::path& path);
 
 		const UUID& GetUUIDFromPath(const std::filesystem::path& path) const;
 		const AssetMetadata* GetMetadata(const UUID& id) const;
