@@ -1,3 +1,0 @@
-Shader: resources/shaders/flat.shader
-Properties:
-  Color: [1.0, 0.0, 0.9]

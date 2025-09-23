@@ -33,5 +33,11 @@ namespace Engine
 		{
 			return Project::GetActive()->GetAssetManager()->IsAssetLoaded(id);
 		}
+
+		//get metadata
+		static const AssetMetadata* GetAssetMetadata(UUID id)
+		{
+			return Project::GetActive()->GetAssetManager()->GetAssetMetadata(id);
+		}
 	};
 }

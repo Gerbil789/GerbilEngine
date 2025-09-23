@@ -166,4 +166,25 @@ namespace Engine
 		}
 		return nullptr;
 	}
+
+	std::filesystem::path AssetRegistry::GetPath(const UUID& id) const
+	{
+		static std::filesystem::path emptyPath;
+		if (auto it = m_Records.find(id); it != m_Records.end())
+			return it->second.path;
+		return emptyPath;
+
+	}
+
+	std::filesystem::path AssetRegistry::GetRelativePath(const UUID& id) const
+	{
+		static std::filesystem::path emptyPath;
+		if (auto it = m_Records.find(id); it != m_Records.end())
+		{
+			auto assetsDir = Project::GetAssetsDirectory();
+			return std::filesystem::relative(it->second.path, assetsDir);
+		}
+		return emptyPath;
+
+	}
 }

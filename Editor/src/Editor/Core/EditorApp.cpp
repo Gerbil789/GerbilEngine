@@ -14,6 +14,8 @@
 #include "Engine/Scene/Components.h"
 #include "Engine/Asset/AssetManager.h"
 
+#include "Engine/Asset/Serializer/AssetSerializer.h"
+
 namespace Editor
 {
 	EditorApp::EditorApp(const Engine::ApplicationSpecification& specification) : Application(specification)
@@ -37,13 +39,14 @@ namespace Editor
 			}
 
 			Engine::Project::Load(projectDirectoryPath);
-
 		}
 
 		EditorWindowManager::Initialize();
 
+		LOG_INFO("--- Editor initialization complete ---");
+
 		Engine::UUID startSceneID = Engine::Project::GetStartSceneID();
-		if(!startSceneID.IsValid())
+		if (!startSceneID.IsValid())
 		{
 			LOG_WARNING("No valid start scene set in project, creating new scene");
 			Engine::SceneManager::CreateScene(Engine::Project::GetAssetsDirectory() / "Scenes/empty.scene");
@@ -70,65 +73,60 @@ namespace Editor
 			auto entities = scene->GetEntities();
 			LOG_INFO("Scene has {0} entities", entities.size());
 
-			for(auto ent : entities)
+			for (auto ent : entities)
 			{
 				LOG_INFO("Entity: '{0}' with ID: {1}", ent.GetName(), ent.GetUUID());
 			}
-
-
 		}
 
 		Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
 
-		auto shader = Engine::AssetManager::GetAsset<Engine::Shader>(Engine::UUID(11488752734390452845));
-		auto material = Engine::AssetManager::CreateAsset<Engine::Material>(Engine::Project::GetAssetsDirectory() / "Materials/Test.material", shader);
-		material->SetVec4("color", glm::vec4(0.8f, 0.1f, 0.2f, 1.0f));
+		//auto shader = Engine::AssetManager::GetAsset<Engine::Shader>(Engine::UUID(11488752734390452845));
 
-		Ref<Engine::Texture2D> texture = Engine::TextureImporter::LoadTexture2D("Resources/Editor/icons/skull.png");
-		material->SetTexture("albedo", texture);
+		auto material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::UUID(2306162455903992554));
+		//auto material = Engine::AssetManager::CreateAsset<Engine::Material>(Engine::Project::GetAssetsDirectory() / "Materials/Test.material", shader);
+		//material->SetVec4("color", glm::vec4(0.8f, 0.1f, 0.2f, 1.0f));
 
+		//Ref<Engine::Texture2D> texture = Engine::TextureImporter::LoadTexture2D("Resources/Editor/icons/skull.png");
+		//auto smileTexture = Engine::AssetManager::GetAsset<Engine::Texture2D>(Engine::UUID(16704251879842279232));
+		//material->SetTexture("albedoTexture", smileTexture);
 
-			// Entity 1
-			{
-				auto cube = scene->CreateEntity("TextureCube");
-				auto mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/cube.glb");
-				//auto material = Engine::MaterialImporter::LoadMaterial("Resources/Engine/materials/red.material");
-				//auto material = Engine::AssetManager::CreateAsset<Engine::Material>("Resources/Engine/materials/red.material");
-				//material->SetTexture("AlbedoTexture", texture);
-				//material->SetValue("Color", glm::vec4(0.8f, 0.1f, 0.2f, 1.0f));
+		//save material, TODO: make better save function
+		// metadata = Engine::AssetManager::GetAssetMetadata(material->id);
+		//Engine::AssetSerializer::SerializeAsset(material, *metadata);
 
-				auto& component = cube.AddComponent<Engine::MeshComponent>();
-				component.Material = material;
-				component.Mesh = mesh;
+		// Entity 1
+		{
+			auto cube = scene->CreateEntity("FirstCube");
+			auto mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/cube.glb");
 
-				cube.GetComponent<Engine::TransformComponent>().Position = { 2.0f, 0.0f, 0.0f };
-				cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
+			auto& component = cube.AddComponent<Engine::MeshComponent>();
+			component.Material = material;
+			component.Mesh = mesh;
 
-				LOG_INFO("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
+			cube.GetComponent<Engine::TransformComponent>().Position = { 2.0f, 0.0f, 0.0f };
+			cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
 
-				EditorSceneController::SelectEntity(cube);
-			}
+			LOG_INFO("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
 
-
-			//// Entity 2
-			//{
-			//	auto cube = scene->CreateEntity("BlueCube");
-			//	auto mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/cube.glb");
-			//	auto material = Engine::AssetManager::CreateAsset<Engine::Material>("Materials/blue.material");
-			//	material->SetShader(CreateRef<Engine::FlatColorShader>());
-			//	material->SetValue("Color", glm::vec4(0.2f, 0.1f, 0.8f, 1.0f));
-			//	auto& component = cube.AddComponent<Engine::MeshComponent>();
-			//	component.Material = material;
-			//	component.Mesh = mesh;
-
-			//	cube.GetComponent<Engine::TransformComponent>().Position = { -2.0f, 0.0f, 0.0f };
-			//	cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
-
-			//	LOG_WARNING("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
-			//}
+			EditorSceneController::SelectEntity(cube);
+		}
 
 
-		LOG_INFO("--- Editor initialization complete ---");
+		// Entity 2
+		{
+			auto cube = scene->CreateEntity("SecondCube");
+			auto mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/cube.glb");
+
+			auto& component = cube.AddComponent<Engine::MeshComponent>();
+			component.Material = material;
+			component.Mesh = mesh;
+
+			cube.GetComponent<Engine::TransformComponent>().Position = { -2.0f, 0.0f, 0.0f };
+			cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
+
+			LOG_INFO("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
+		}
 	}
 
 	EditorApp::~EditorApp()

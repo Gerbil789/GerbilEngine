@@ -19,6 +19,12 @@ namespace Engine
 		return m_LoadedAssets.find(id) != m_LoadedAssets.end();
 	}
 
+	const AssetMetadata* EditorAssetManager::GetAssetMetadata(UUID id) const
+	{
+		return m_AssetRegistry.GetMetadata(id);
+		
+	}
+
 	Ref<Asset> EditorAssetManager::ImportAsset(const std::filesystem::path& filepath)
 	{
 		auto metadata = m_AssetRegistry.Create(filepath);

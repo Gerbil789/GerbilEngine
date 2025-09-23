@@ -17,6 +17,10 @@ namespace Engine
 		const UUID& GetUUIDFromPath(const std::filesystem::path& path) const;
 		const AssetMetadata* GetMetadata(const UUID& id) const;
 
+		std::filesystem::path GetPath(const UUID& id) const;
+		std::filesystem::path GetRelativePath(const UUID& id) const;
+
+
 		const std::unordered_map<UUID, AssetMetadata>& GetAll() const { return m_Records; }
 
 		void Clear() { m_Records.clear(); }

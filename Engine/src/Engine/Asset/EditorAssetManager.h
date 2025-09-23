@@ -43,7 +43,10 @@ namespace Engine
 			}
 			asset->id = id;
 			m_LoadedAssets[id] = asset;
-			LOG_TRACE("Loaded asset '{0}', '{1}'", id, metadata->path);
+
+			auto relPath = m_AssetRegistry.GetRelativePath(id); // ensure path is relative to assets directory
+			LOG_TRACE("Loaded asset '{0}', '{1}'", id, relPath);
+
 			return std::static_pointer_cast<T>(asset);
 		}
 
@@ -85,6 +88,7 @@ namespace Engine
 
 		bool IsAssetIdValid(UUID id) const;
 		bool IsAssetLoaded(UUID id) const;
+		const AssetMetadata* GetAssetMetadata(UUID id) const;
 
 		Ref<Asset> ImportAsset(const std::filesystem::path& filepath);
 	private:
