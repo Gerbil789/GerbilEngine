@@ -99,8 +99,8 @@ namespace Editor
 		}
 
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(ViewportWindow::OnKeyPressed));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_EVENT_FN(ViewportWindow::OnMouseButtonPressed));
+		dispatcher.Dispatch<KeyPressedEvent>([this](auto e) {OnKeyPressed(e); });
+		dispatcher.Dispatch<MouseButtonPressedEvent>([this](auto e) {OnMouseButtonPressed(e); });
 	}
 
 	bool ViewportWindow::OnKeyPressed(KeyPressedEvent& e)

@@ -173,8 +173,7 @@ namespace Editor
 
 		if(e.GetCategoryFlags() & Engine::EventCategoryFile)
 		{
-			LOG_INFO("File event: {0} ", e.ToString());
-
+			Engine::AssetManager::OnEvent(e);
 		}
 	}
 }

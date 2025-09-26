@@ -6,6 +6,7 @@
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Asset/Importer/AssetImporter.h"
 #include "Engine/Asset/Serializer/AssetSerializer.h"
+#include "Engine/Event/Event.h"
 
 namespace Engine
 {
@@ -91,6 +92,8 @@ namespace Engine
 		const AssetMetadata* GetAssetMetadata(UUID id) const;
 
 		Ref<Asset> ImportAsset(const std::filesystem::path& filepath);
+
+		void OnEvent(Event& e);
 	private:
 		AssetRegistry m_AssetRegistry;
 		std::unordered_map<UUID, Ref<Asset>> m_LoadedAssets;

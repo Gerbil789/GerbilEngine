@@ -46,8 +46,8 @@ namespace Engine
 		void Close();
 
 	private:
-		bool OnWindowClose(WindowCloseEvent& e);
-		bool OnWindowResize(WindowResizeEvent& e);
+		void OnWindowClose(WindowCloseEvent& e);
+		void OnWindowResize(WindowResizeEvent& e);
 
 	protected:
 		static Application* s_Instance;

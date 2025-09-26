@@ -39,5 +39,10 @@ namespace Engine
 		{
 			return Project::GetActive()->GetAssetManager()->GetAssetMetadata(id);
 		}
+
+		static void OnEvent(Event& e)
+		{
+			Project::GetActive()->GetAssetManager()->OnEvent(e);
+		}
 	};
 }

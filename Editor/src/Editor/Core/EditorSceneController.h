@@ -17,7 +17,7 @@ namespace Editor::EditorSceneController
 	bool IsEntitySelected(Engine::Entity entity);
 	Engine::Entity GetSelectedEntity();
 
-	bool OnKeyPressed(Engine::KeyPressedEvent& e);
+	void OnKeyPressed(Engine::KeyPressedEvent& e);
 
 
 }

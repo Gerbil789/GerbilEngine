@@ -40,22 +40,20 @@ namespace Engine
 	void Application::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
-		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
+		dispatcher.Dispatch<WindowCloseEvent>([this](auto e) {Close(); });
+		dispatcher.Dispatch<WindowResizeEvent>([this](auto e) {OnWindowResize(e); });
 	}
 
-	bool Application::OnWindowResize(WindowResizeEvent& e)
+	void Application::OnWindowResize(WindowResizeEvent& e)
 	{
 		if(e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
 			m_Minimized = true;
-			return false;
+			return;
 		}
 
 		m_Minimized = false;
-		GraphicsContext::SetViewport(e.GetWidth(), e.GetHeight());
-
-		return false;
+		GraphicsContext::SetWindowSize(e.GetWidth(), e.GetHeight());
 	}
 
 	void Application::Close()
@@ -64,9 +62,8 @@ namespace Engine
 		LOG_INFO("Application Closed");
 	}
 
-	bool Application::OnWindowClose(WindowCloseEvent& e)
+	void Application::OnWindowClose(WindowCloseEvent& e)
 	{
 		Close();
-		return true;
 	}
 }

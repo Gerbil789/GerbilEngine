@@ -15,11 +15,11 @@ namespace Editor
 	void EditorCameraController::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(OnKeyPressed));
-		dispatcher.Dispatch<MouseScrolledEvent>(BIND_EVENT_FN(OnMouseScroll));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_EVENT_FN(OnMouseButtonPressed));
-		dispatcher.Dispatch<MouseButtonReleasedEvent>(BIND_EVENT_FN(OnMouseButtonReleased));
-		dispatcher.Dispatch<MouseMovedEvent>(BIND_EVENT_FN(OnMouseMoved));
+		dispatcher.Dispatch<KeyPressedEvent>([this](auto e) {OnKeyPressed(e); });
+		dispatcher.Dispatch<MouseScrolledEvent>([this](auto e) {OnMouseScroll(e); });
+		dispatcher.Dispatch<MouseButtonPressedEvent>([this](auto e) {OnMouseButtonPressed(e); });
+		dispatcher.Dispatch<MouseButtonReleasedEvent>([this](auto e) {OnMouseButtonReleased(e); });
+		dispatcher.Dispatch<MouseMovedEvent>([this](auto e) {OnMouseMoved(e); });
 	}
 
 	bool EditorCameraController::OnKeyPressed(KeyPressedEvent& e)

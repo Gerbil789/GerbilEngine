@@ -15,10 +15,10 @@ namespace Editor::EditorSceneController
 		dispatcher.Dispatch<KeyPressedEvent>(OnKeyPressed);
 	}
 
-	bool OnKeyPressed(KeyPressedEvent& e)
+	void OnKeyPressed(KeyPressedEvent& e)
 	{
 		if (e.GetRepeatCount() > 0)
-			return false;
+			return;
 
 		bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
 		bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
