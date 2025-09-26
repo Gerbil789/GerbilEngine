@@ -41,7 +41,7 @@ fn vs_main(in: VertexInput) -> VertexOutput {
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4f {
 	let texelCoords = vec2i(in.uv * vec2f(textureDimensions(albedoTexture)));
-  let color = textureLoad(albedoTexture, texelCoords, 0).rgb;
+  let color = textureLoad(albedoTexture, texelCoords, 0).rgb * uMaterialUniforms.color.rgb;
 	let corrected_color = pow(color, vec3f(2.2));
 	return vec4f(corrected_color, 1.0);
 }

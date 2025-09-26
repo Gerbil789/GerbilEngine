@@ -23,11 +23,13 @@ namespace Engine
 		void SetTexture(const std::string& name, Ref<Texture2D> texture);
 
 		void Bind(wgpu::RenderPassEncoder pass);
-
+		std::vector<uint8_t> GetUniformData() const { return m_UniformData; } //TODO: this should not be public
 	private:
 		void CreateSampler();
 		void CreateUniformBuffer();
 		void CreateBindGroup();
+
+
 
 	private:
 		Ref<Shader> m_Shader;

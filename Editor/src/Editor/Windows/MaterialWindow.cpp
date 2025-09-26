@@ -12,18 +12,23 @@ namespace Editor
 
 	MaterialWindow::MaterialWindow() 
 	{
-		/*std::string path = "resources/shaders";
 
-		for(auto& p: std::filesystem::directory_iterator(path))
-		{
-			m_ShaderPaths.emplace_back(p.path());
-		}*/
 	}
 
 	MaterialWindow::~MaterialWindow()
 	{
 
 	}
+
+	/*bool MaterialWindow::IsColorProperty(const std::string& name)
+{
+	const std::string color = "Color";
+	if (name.find(color) != std::string::npos)
+	{
+		return true;
+	}
+	return false;
+}*/
 
 	void MaterialWindow::OnUpdate(Engine::Timestep ts)
 	{
@@ -36,8 +41,7 @@ namespace Editor
 			return;
 		}
 
-		//ImGui::Text(m_Material->GetPath().filename().string().c_str());
-
+		Ref<Shader> shader = m_Material->GetShader();
 
 		float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 32 - 100, 100.0f);
 		ImGui::Columns(3, "mat_body", false);
@@ -45,54 +49,52 @@ namespace Editor
 		ImGui::SetColumnWidth(1, 100);
 		ImGui::SetColumnWidth(2, availWidth);
 
-		/*ImGui::NextColumn();
+		ImGui::NextColumn();
 		ImGui::Text("Shader");
 		ImGui::NextColumn();
 
-		//TODO: this is temporary shader selection...
-		std::vector<std::filesystem::path> shaders{ "resources/shaders/phong.shader", "resources/shaders/PBR.shader" };
-		auto currentShader = m_Material->GetShader()->GetFilePath();
-		int index = 0;
-		for (int i = 0; i < shaders.size(); i++)
+		ImGui::Text(shader->GetName().c_str());
+		ImGui::NextColumn();
+
+		ImGui::Separator();
+
+		auto shaderSpec = shader->GetSpecification();
+		auto bindings = GetMaterialBindings(shaderSpec);
+
+		for (auto& binding : bindings)
 		{
-			if (shaders[i] == currentShader)
+			if (binding.type == BindingType::UniformBuffer)
 			{
-				index = i;
-				break;
-			}
-		}
-
-		if (UI::EnumField("Shader", index, shaders)) 
-		{
-			m_Material->SetShader(AssetManager::GetAsset<Shader>(shaders[index]));
-			m_Material->SetModified(true);
-		}
-
-		ImGui::NextColumn();*/
-
-		/*ImGui::Separator();
-
-		Ref<Shader> shader = m_Material->GetShader();
-		auto properties = shader->GetMaterialBufferLayout();
-
-		for (auto& prop : properties)
-		{
-			std::string name = prop.Name;
-
-			ImGui::NextColumn();
-			ImGui::Text(name.c_str());
-			ImGui::NextColumn();
-
-			if (prop.Type == ShaderDataType::Float)
-			{
-				float value = m_Material->GetProperty<float>(name);
-				if (UI::FloatField("##float", value))
+				for(auto& param : binding.parameters)
 				{
-					m_Material->SetProperty(prop.Name, value);
-					m_Material->SetModified(true);
+					ImGui::NextColumn();
+					ImGui::Text(param.name.c_str());
+
+					glm::vec4 value;
+					auto data = m_Material->GetUniformData();
+					std::memcpy(&value, data.data() + param.offset, sizeof(glm::vec4));
+
+					if (UI::ColorField(param.name.c_str(), value))
+					{
+						m_Material->SetVec4(param.name, value);
+					}
+
+
 				}
 			}
-			else if (prop.Type == ShaderDataType::Int)
+			if (binding.type == BindingType::Texture2D)
+			{
+				ImGui::NextColumn();
+				ImGui::Text(binding.name.c_str());
+
+				//float value = m_Material->GetProperty<float>(name);
+				//if (UI::FloatField("##float", value))
+				//{
+				//	m_Material->SetProperty(prop.Name, value);
+				//	m_Material->SetModified(true);
+				//}
+			}
+		/*	else if (prop.Type == ShaderDataType::Int)
 			{
 				int value = m_Material->GetProperty<int>(name);
 				if (UI::IntField("##int", value))
@@ -130,26 +132,14 @@ namespace Editor
 						m_Material->SetModified(true);
 					}
 				}
-
-				
-
-
-			}
+			}*/
 			ImGui::NextColumn();
 		}
 		
-		ImGui::Columns(1);*/
+		ImGui::Columns(1);
 		ImGui::End();
 	}
-	bool MaterialWindow::IsColorProperty(const std::string& name)
-	{
-		const std::string color = "Color";
-		if (name.find(color) != std::string::npos)
-		{
-			return true;
-		}
-		return false;
-	}
+
 }
 
 

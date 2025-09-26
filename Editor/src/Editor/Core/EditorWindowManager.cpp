@@ -15,11 +15,13 @@
 #include "Editor/Windows/MeshImportWindow.h"
 #include "Editor/Windows/ViewportWindow.h"
 #include "Editor/Windows/GameWindow.h"
+
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <backends/imgui_impl_wgpu.h>
 #include <backends/imgui_impl_glfw.h>
 
+//TODO: move to style file
 void SetupImGuiStyle()
 {
 	ImGuiStyle& style = ImGui::GetStyle();
@@ -92,9 +94,6 @@ void SetupImGuiStyle()
 	style.ItemSpacing = ImVec2(8, 6);
 	style.PopupBorderSize = 0.f;
 }
-
-
-
 
 namespace Editor::EditorWindowManager
 {

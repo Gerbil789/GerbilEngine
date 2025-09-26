@@ -5,15 +5,23 @@ int main(int argc, char** argv)
 {
   Engine::Log::Initialize();
 
-  ENGINE_PROFILE_BEGIN("Startup", "Profile-Startup.json");
-	auto app = Editor::CreateApp({ argc, argv });
-  ENGINE_PROFILE_END();
+  try
+  {
+    ENGINE_PROFILE_BEGIN("Initialization", "profile_init.json");
+    auto app = Editor::CreateApp({ argc, argv });
+    ENGINE_PROFILE_END();
 
-  ENGINE_PROFILE_BEGIN("Runtime", "Profile-Runtime.json");
-  app->Run();
-  ENGINE_PROFILE_END();
+    ENGINE_PROFILE_BEGIN("Runtime", "profile_runtime.json");
+    app.Run();
+    ENGINE_PROFILE_END();
 
-  ENGINE_PROFILE_BEGIN("Shutdown", "Profile-Shutdown.json");
-  delete app;
-  ENGINE_PROFILE_END();
+    ENGINE_PROFILE_BEGIN("Shutdown", "profile_shutdown.json");
+		app.Shutdown();
+    ENGINE_PROFILE_END();
+  }
+  catch (const std::exception& e)
+  {
+    LOG_CRITICAL("Fatal error: {0}", e.what());
+    return EXIT_FAILURE;
+	}
 }

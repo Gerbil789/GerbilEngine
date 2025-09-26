@@ -330,7 +330,19 @@ namespace Editor
 					// Update our selection state immediately (without waiting for EndMultiSelect() requests)
 					// because we use this to alter the color of our text/icon.
 					if (ImGui::IsItemToggledSelection())
+					{
 						item_is_selected = !item_is_selected;
+
+						//if (item_is_selected)
+						//{
+							
+						//}
+						//else
+						//{
+						//	OnItemDeselected(*item_data);
+						//}
+					}
+
 
 					// Focus (for after deletion)
 					if (item_curr_idx_to_focus == item_idx)

@@ -4,16 +4,16 @@
 #include "Editor/Core/EditorWindowManager.h"
 #include "Engine/Core/Project.h"
 
+//tmp
+#include "Editor/Windows/MaterialWindow.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/Importer/MaterialImporter.h"
 #include "Engine/Asset/Importer/MeshImporter.h"
 #include "Engine/Utils/File.h"
-//tmp
 #include "Engine/Core/UUID.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Asset/AssetManager.h"
-
 #include "Engine/Asset/Serializer/AssetSerializer.h"
 
 namespace Editor
@@ -42,6 +42,9 @@ namespace Editor
 		}
 
 		EditorWindowManager::Initialize();
+
+		m_FileWatcher = CreateScope<Engine::FileWatcher>(Engine::Project::GetAssetsDirectory());
+		m_FileWatcher->SetEventCallback([this](Engine::Event& e) {this->OnEvent(e); });
 
 		LOG_INFO("--- Editor initialization complete ---");
 
@@ -95,6 +98,8 @@ namespace Editor
 		// metadata = Engine::AssetManager::GetAssetMetadata(material->id);
 		//Engine::AssetSerializer::SerializeAsset(material, *metadata);
 
+		EditorWindowManager::GetWindow<MaterialWindow>()->SetMaterial(material);
+
 		// Entity 1
 		{
 			auto cube = scene->CreateEntity("FirstCube");
@@ -129,7 +134,7 @@ namespace Editor
 		}
 	}
 
-	EditorApp::~EditorApp()
+	void EditorApp::Shutdown()
 	{
 		ENGINE_PROFILE_FUNCTION();
 		EditorWindowManager::Shutdown();
@@ -155,6 +160,7 @@ namespace Editor
 
 			EditorWindowManager::OnUpdate(ts);
 			m_Window->OnUpdate();
+			m_FileWatcher->OnUpdate();
 		}
 	}
 
@@ -164,5 +170,11 @@ namespace Editor
 		Application::OnEvent(e);
 		EditorSceneController::OnEvent(e);
 		EditorWindowManager::OnEvent(e);
+
+		if(e.GetCategoryFlags() & Engine::EventCategoryFile)
+		{
+			LOG_INFO("File event: {0} ", e.ToString());
+
+		}
 	}
 }

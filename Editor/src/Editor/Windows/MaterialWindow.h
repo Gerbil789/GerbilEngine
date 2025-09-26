@@ -13,12 +13,8 @@ namespace Editor
 		
 		void OnUpdate(Engine::Timestep ts) override;
 
-		void SetMaterial(Ref<Engine::Material> material) { m_Material = material; }
+		void SetMaterial(const Ref<Engine::Material>& material) { m_Material = material; }
 	private:
 		Ref<Engine::Material> m_Material;
-
-		std::vector<std::filesystem::path> m_ShaderPaths;
-
-		bool IsColorProperty(const std::string& name);
 	};
 }
