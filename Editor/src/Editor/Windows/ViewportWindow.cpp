@@ -1,7 +1,7 @@
 #include "ViewportWindow.h"
+#include "Engine/Core/Core.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
-#include "Engine/Core/Core.h"
 #include "Engine/Core/Input.h"
 #include "Editor/Core/EditorSceneController.h"
 #include "Engine/Event/MouseEvent.h"
@@ -11,19 +11,22 @@
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Engine/Asset/Importer/TextureImporter.h"
+#include "Engine/Asset/AssetManager.h"
+
 namespace Editor
 {
 	using namespace Engine;
 
 	ViewportWindow::ViewportWindow()
 	{
-		SceneManager::RegisterOnSceneChanged(
-			[this](Scene* scene)
+		m_Renderer.SetCamera(&m_CameraController.GetCamera());
+
+		SceneManager::RegisterOnSceneChanged([this](Scene* scene)
 			{
 				m_Scene = scene;
 				m_Renderer.SetScene(m_Scene);
 				m_EntityIdRenderer.SetScene(m_Scene);
-				LOG_INFO("ViewportWindow - Scene changed to '{}'", scene->id);
 			});
 	}
 
@@ -43,7 +46,7 @@ namespace Editor
 		m_ViewportFocused = ImGui::IsWindowFocused();
 
 		// Render scene
-		m_Renderer.BeginScene(m_CameraController.GetCamera());
+		m_Renderer.BeginScene();
 		m_Renderer.RenderScene();
 		m_Renderer.EndScene();
 
@@ -103,9 +106,9 @@ namespace Editor
 		dispatcher.Dispatch<MouseButtonPressedEvent>([this](auto e) {OnMouseButtonPressed(e); });
 	}
 
-	bool ViewportWindow::OnKeyPressed(KeyPressedEvent& e)
+	void ViewportWindow::OnKeyPressed(KeyPressedEvent& e)
 	{
-		if (e.GetRepeatCount() > 0) return false;
+		if (e.GetRepeatCount() > 0) return;
 
 		switch (e.GetKey())
 		{
@@ -116,18 +119,15 @@ namespace Editor
 		}
 	}
 
-	bool ViewportWindow::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+	void ViewportWindow::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		if (e.GetMouseButton() == Mouse::ButtonLeft)
-		{
-			if (!m_HoveredEntity) return false;
+		if (e.GetMouseButton() != Mouse::ButtonLeft) return;
+		if (!m_HoveredEntity) return;
 
-			if (m_ViewportHovered && !ImGuizmo::IsOver())
-			{
-				EditorSceneController::SelectEntity(m_HoveredEntity);
-			}
+		if (m_ViewportHovered && !ImGuizmo::IsOver())
+		{
+			EditorSceneController::SelectEntity(m_HoveredEntity);
 		}
-		return false;
 	}
 
 	void ViewportWindow::UpdateViewportSize()

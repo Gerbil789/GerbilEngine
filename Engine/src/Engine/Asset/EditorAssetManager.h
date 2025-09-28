@@ -95,6 +95,8 @@ namespace Engine
 
 		void OnEvent(Event& e);
 	private:
+		void ReloadAsset(UUID id);
+
 		AssetRegistry m_AssetRegistry;
 		std::unordered_map<UUID, Ref<Asset>> m_LoadedAssets;
 	};

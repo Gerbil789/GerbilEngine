@@ -100,6 +100,9 @@ namespace Editor
 
 		EditorWindowManager::GetWindow<MaterialWindow>()->SetMaterial(material);
 
+		//auto cubeMapTexture = Engine::AssetManager::GetAsset<Engine::CubeMapTexture>(Engine::UUID(6536980455317652148));
+		
+
 		// Entity 1
 		{
 			auto cube = scene->CreateEntity("FirstCube");

@@ -29,8 +29,6 @@ namespace Engine
 		void CreateUniformBuffer();
 		void CreateBindGroup();
 
-
-
 	private:
 		Ref<Shader> m_Shader;
 

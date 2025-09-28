@@ -20,8 +20,8 @@ namespace Editor
 		void OnEvent(Engine::Event& e) override;
 
 	private:
-		bool OnKeyPressed(Engine::KeyPressedEvent& e);
-		bool OnMouseButtonPressed(Engine::MouseButtonPressedEvent& e);
+		void OnKeyPressed(Engine::KeyPressedEvent& e);
+		void OnMouseButtonPressed(Engine::MouseButtonPressedEvent& e);
 		void UpdateViewportSize();
 
 		void DrawGizmos();

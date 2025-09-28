@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Core/Core.h"
 #include "Engine/Asset/Asset.h"
 #include <webgpu/webgpu.hpp>
 
@@ -17,25 +16,28 @@ namespace Engine
 	class Texture : public Asset
 	{
 	public:
-		virtual ~Texture() = default;
+		uint32_t GetWidth() const { return m_Width; }
+		uint32_t GetHeight() const { return m_Height; }
+		wgpu::TextureView GetTextureView() const { return m_TextureView; }
+		wgpu::TextureFormat GetFormat() const { return m_TextureFormat; }
+
+	protected:
+		uint32_t m_Width = 0;
+		uint32_t m_Height = 0;
+		wgpu::Texture m_Texture; //TODO: dont store as variable? check if its useful later
+		wgpu::TextureView m_TextureView;
+		wgpu::TextureFormat m_TextureFormat;
 	};
 
 	class Texture2D : public Texture
 	{
 	public:
 		Texture2D(const TextureSpecification& specification, const void* data);
+	};
 
-		uint32_t GetWidth() const { return m_Width; }
-		uint32_t GetHeight() const { return m_Height; }
-		wgpu::TextureView GetTextureView() const { return m_TextureView; }
-
-	protected:
-		uint32_t m_Width = 0;
-		uint32_t m_Height = 0;
-
-		wgpu::Texture m_Texture;
-		wgpu::TextureView m_TextureView;
-		wgpu::TextureFormat m_TextureFormat;
-
+	class CubeMapTexture : public Texture
+	{
+	public:
+		CubeMapTexture(const TextureSpecification& specification, const std::array<const void*, 6>& data);
 	};
 }

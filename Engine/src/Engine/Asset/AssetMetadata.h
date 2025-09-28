@@ -6,7 +6,7 @@
 
 namespace Engine
 {
-	enum class AssetType { Unknown = 0, Texture, Mesh, Shader, Material, Audio, Scene, Script, Other };
+	enum class AssetType { Unknown = 0, Texture2D, CubeMap, Mesh, Shader, Material, Audio, Scene, Script, Other };
 
 	inline AssetType GetAssetTypeFromExtension(const std::string& extension)
 	{
@@ -14,9 +14,9 @@ namespace Engine
 		std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 
 		static const std::unordered_map<std::string, AssetType> extensionToType = {
-				{ ".png",				AssetType::Texture },
-				{ ".jpg",				AssetType::Texture },
-				{ ".jpeg",			AssetType::Texture },
+				{ ".png",				AssetType::Texture2D },
+				{ ".jpg",				AssetType::Texture2D },
+				{ ".jpeg",			AssetType::Texture2D },
 				{ ".gltf",			AssetType::Mesh },
 				{ ".glb",				AssetType::Mesh },
 				{ ".material",  AssetType::Material },
@@ -24,6 +24,7 @@ namespace Engine
 				{ ".mp3",				AssetType::Audio },
 				{ ".scene",			AssetType::Scene },
 				{ ".shader",		AssetType::Shader},
+				{ ".hdr",				AssetType::CubeMap},
 				{ ".txt",				AssetType::Other}
 		};
 
@@ -39,7 +40,7 @@ namespace Engine
 		switch (type)
 		{
 		case AssetType::Unknown:  return "Unknown";
-		case AssetType::Texture:  return "Texture";
+		case AssetType::Texture2D:  return "Texture";
 		case AssetType::Mesh:     return "Mesh";
 		case AssetType::Shader:   return "Shader";
 		case AssetType::Material: return "Material";
@@ -52,7 +53,7 @@ namespace Engine
 
 	inline AssetType AssetTypeFromString(std::string_view assetType)
 	{
-		if (assetType == "Texture")  return AssetType::Texture;
+		if (assetType == "Texture")  return AssetType::Texture2D;
 		if (assetType == "Mesh")     return AssetType::Mesh;
 		if (assetType == "Shader")   return AssetType::Shader;
 		if (assetType == "Material") return AssetType::Material;

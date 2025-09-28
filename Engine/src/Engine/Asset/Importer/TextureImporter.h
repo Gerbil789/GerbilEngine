@@ -10,5 +10,8 @@ namespace Engine
 	public:
 		static Ref<Texture2D> ImportTexture2D(const AssetMetadata& metadata);
 		static Ref<Texture2D> LoadTexture2D(const std::filesystem::path& path);
+
+		static Ref<CubeMapTexture> ImportCubeMapTexture(const AssetMetadata& metadata);
+		static Ref<CubeMapTexture> LoadCubeMapTexture(const std::filesystem::path& path);
 	};
 }

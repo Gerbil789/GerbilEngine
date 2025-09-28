@@ -13,7 +13,8 @@ namespace Engine
 	using AssetImportFunction = std::function<Ref<Asset>(const AssetMetadata&)>;
 
 	static std::map<AssetType, AssetImportFunction> s_AssetImportFunctions = {
-		{ AssetType::Texture, TextureImporter::ImportTexture2D },
+		{ AssetType::Texture2D, TextureImporter::ImportTexture2D },
+		{ AssetType::CubeMap, TextureImporter::ImportCubeMapTexture },
 		{ AssetType::Mesh, MeshImporter::ImportMesh },
 		{ AssetType::Material, MaterialImporter::ImportMaterial },
 		{ AssetType::Scene, SceneImporter::ImportScene },

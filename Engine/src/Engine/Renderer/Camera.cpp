@@ -34,24 +34,18 @@ namespace Engine
 
 	void Camera::UpdateProjectionMatrix()
 	{
-		switch (m_ProjectionData.Type)
+		switch (m_Type)
 		{
 		case ProjectionType::Perspective:
 		{
-			float fov = m_ProjectionData.Perspective.FOV;
-			float nearZ = m_ProjectionData.Perspective.Near;
-			float farZ = m_ProjectionData.Perspective.Far;
-			m_ProjectionMatrix = glm::perspectiveRH_ZO(fov, m_AspectRatio, nearZ, farZ); //RH_ZO - right-handed, zero to one. WebGPU uses this convention.
+			m_ProjectionMatrix = glm::perspectiveRH_ZO(m_Perspective_FOV, m_AspectRatio, m_Perspective_Near, m_Perspective_Far); //RH_ZO - right-handed, zero to one. WebGPU uses this convention.
 			break;
 		}
 		case ProjectionType::Orthographic:
 		{
-			float size = m_ProjectionData.Orthographic.Size;
-			float nearZ = m_ProjectionData.Orthographic.Near;
-			float farZ = m_ProjectionData.Orthographic.Far;
-			float halfWidth = size * m_AspectRatio * 0.5f;
-			float halfHeight = size * 0.5f;
-			m_ProjectionMatrix = glm::orthoRH_ZO(-halfWidth, halfWidth, -halfHeight, halfHeight, nearZ, farZ);
+			float halfWidth = m_Orthographic_Size * m_AspectRatio * 0.5f;
+			float halfHeight = m_Orthographic_Size * 0.5f;
+			m_ProjectionMatrix = glm::orthoRH_ZO(-halfWidth, halfWidth, -halfHeight, halfHeight, m_Orthographic_Near, m_Orthographic_Far);
 			break;
 		}
 		}

@@ -130,6 +130,11 @@ namespace Engine
 	{
 		auto materialBindings = GetMaterialBindings(specification);
 
+		if(materialBindings.size() == 0)
+		{
+			return nullptr;
+		}
+
 		std::vector<wgpu::BindGroupLayoutEntry> layoutEntries;
 		layoutEntries.reserve(materialBindings.size());
 
@@ -152,7 +157,7 @@ namespace Engine
 				entry.texture.sampleType = binding.textureSample;
 				entry.texture.viewDimension = wgpu::TextureViewDimension::_2D;
 				entry.texture.multisampled = false;
-				entry.visibility = wgpu::ShaderStage::Fragment; // Textures are typically used in fragment shader
+				entry.visibility = wgpu::ShaderStage::Fragment;
 				break;
 
 			case BindingType::Sampler:

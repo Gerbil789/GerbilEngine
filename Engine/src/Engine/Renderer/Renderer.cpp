@@ -5,8 +5,68 @@
 #include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Renderer/Material.h"
 
+
 namespace Engine
 {
+	//static MeshSpecification cubeSpec = {
+	//	// Vertices
+	//	{
+	//		// Front face
+	//		{{-0.5f, -0.5f,  0.5f},
+	//		{{ 0.5f, -0.5f,  0.5f},
+	//		{{ 0.5f,  0.5f,  0.5f},
+	//		{{-0.5f,  0.5f,  0.5f},
+
+	//		// Back face
+	//		{{ 0.5f, -0.5f, -0.5f},
+	//		{{-0.5f, -0.5f, -0.5f},
+	//		{{-0.5f,  0.5f, -0.5f},
+	//		{{ 0.5f,  0.5f, -0.5f},
+
+	//		// Left face
+	//		{{-0.5f, -0.5f, -0.5f},
+	//		{{-0.5f, -0.5f,  0.5f},
+	//		{{-0.5f,  0.5f,  0.5f},
+	//		{{-0.5f,  0.5f, -0.5f},
+
+	//		// Right face
+	//		{{ 0.5f, -0.5f,  0.5f},
+	//		{{ 0.5f, -0.5f, -0.5f},
+	//		{{ 0.5f,  0.5f, -0.5f},
+	//		{{ 0.5f,  0.5f,  0.5f},
+
+	//		// Top face
+	//		{{-0.5f,  0.5f,  0.5f},
+	//		{{ 0.5f,  0.5f,  0.5f},
+	//		{{ 0.5f,  0.5f, -0.5f},
+	//		{{-0.5f,  0.5f, -0.5f},
+
+	//		// Bottom face
+	//		{{-0.5f, -0.5f, -0.5f},
+	//		{{ 0.5f, -0.5f, -0.5f},
+	//		{{ 0.5f, -0.5f,  0.5f},
+	//		{{-0.5f, -0.5f,  0.5f},
+	//},
+
+	//// Indices
+	//{
+	//		0, 1, 2, 2, 3, 0,       // Front
+	//		4, 5, 6, 6, 7, 4,       // Back
+	//		8, 9, 10, 10, 11, 8,    // Left
+	//		12, 13, 14, 14, 15, 12, // Right
+	//		16, 17, 18, 18, 19, 16, // Top
+	//		20, 21, 22, 22, 23, 20  // Bottom
+	//}
+	//};
+
+	//static Ref<Mesh> cubeMesh = nullptr;
+
+
+
+
+
+
+
 	wgpu::Device Renderer::s_Device = nullptr;
 	wgpu::Queue Renderer::s_Queue = nullptr;
 
@@ -46,6 +106,8 @@ namespace Engine
 
 	void Renderer::Initialize()
 	{
+		//cubeMesh = CreateRef<Mesh>(cubeSpec);
+
 		// Default white texture
 		uint32_t whitePixel = 0xFFFFFFFF; // RGBA(255,255,255,255)
 		TextureSpecification spec;
@@ -138,6 +200,7 @@ namespace Engine
 			s_FrameBindGroup = s_Device.createBindGroup(bindGroupDesc);
 		}
 
+		// Global sampler, TODO: remove from here, each material should have its own sampler
 		wgpu::SamplerDescriptor samplerDesc = {};
 		samplerDesc.label = { "GlobalSampler", WGPU_STRLEN };
 		samplerDesc.addressModeU = wgpu::AddressMode::Repeat;
@@ -207,7 +270,7 @@ namespace Engine
 		m_DepthView = depthTexture.createView(depthTextureViewDesc);
 	}
 
-	void Renderer::BeginScene(const Camera& camera)
+	void Renderer::BeginScene()
 	{
 		ENGINE_PROFILE_FUNCTION();
 		wgpu::RenderPassColorAttachment colorAttachment{};
@@ -215,7 +278,8 @@ namespace Engine
 		colorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 		colorAttachment.loadOp = wgpu::LoadOp::Clear;
 		colorAttachment.storeOp = wgpu::StoreOp::Store;
-		colorAttachment.clearValue = m_ClearColor;
+		glm::vec4 col = m_Camera->GetClearColor();
+		colorAttachment.clearValue = wgpu::Color(col.r, col.g, col.b, col.a);
 
 		wgpu::RenderPassDepthStencilAttachment depthStencilAttachment{};
 		depthStencilAttachment.view = m_DepthView;
@@ -241,9 +305,9 @@ namespace Engine
 		m_RenderPass = m_CommandEncoder.beginRenderPass(renderPassDescriptor);
 
 		FrameUniforms frameUniforms;
-		frameUniforms.view = camera.GetViewMatrix();
-		frameUniforms.projection = camera.GetProjectionMatrix();
-		frameUniforms.cameraPosition = camera.GetPosition();
+		frameUniforms.view = m_Camera->GetViewMatrix();
+		frameUniforms.projection = m_Camera->GetProjectionMatrix();
+		frameUniforms.cameraPosition = m_Camera->GetPosition();
 
 		s_Queue.writeBuffer(s_FrameUniformBuffer, 0, &frameUniforms, sizeof(frameUniforms));
 		m_RenderPass.setBindGroup(GroupID::Frame, s_FrameBindGroup, 0, nullptr);
@@ -252,6 +316,13 @@ namespace Engine
 	void Renderer::RenderScene()
 	{
 		ENGINE_PROFILE_FUNCTION();
+
+		auto& skybox = m_Camera->GetSkybox();
+		m_RenderPass.setPipeline(skybox.GetShader().GetRenderPipeline());
+		m_RenderPass.setBindGroup(1, skybox.GetBindGroup(), 0, nullptr);
+		//m_RenderPass.setVertexBuffer(0, cubeMesh->GetVertexBuffer(), 0, cubeMesh->GetVertexBuffer().getSize());
+		//m_RenderPass.setIndexBuffer(cubeMesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, cubeMesh->GetIndexBuffer().getSize());
+		m_RenderPass.draw(36, 1, 0, 0);
 
 		std::vector<Entity> entities = m_Scene->GetEntities<TransformComponent, MeshComponent>();
 		std::unordered_map<Ref<Material>, std::vector<Entity>> materialGroups;
@@ -268,8 +339,6 @@ namespace Engine
 				//material = s_InvalidMaterial;
 				//material = Material::GetDefault();
 			}
-
-
 
 			materialGroups[material].push_back(entity);
 		}

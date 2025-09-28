@@ -10,10 +10,14 @@ namespace Engine
 
 	void FileWatcher::OnUpdate()
 	{
+		//TODO: handle file moves/renames
+
 		for (auto& entry : std::filesystem::recursive_directory_iterator(m_Directory))
 		{
 			if (!entry.is_regular_file())
+			{
 				continue; // skip directories, symlinks, etc.
+			}
 
 			auto lastWrite = std::filesystem::last_write_time(entry);
 			auto it = m_LastWriteTimes.find(entry.path());

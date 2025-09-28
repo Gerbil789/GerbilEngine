@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Scene/Scene.h"
+#include "Engine/Renderer/Camera.h"
 #include <webgpu/webgpu.hpp>
 
 namespace Engine
@@ -15,10 +16,11 @@ namespace Engine
 		static Ref<Material> GetInvalidMaterial() { return s_InvalidMaterial; }
 
 		void SetScene(Scene* scene) { m_Scene = scene; }
-		void SetClearColor(const glm::vec4& color) { m_ClearColor = { color.r, color.g, color.b, color.a }; }
 		void Resize(uint32_t width, uint32_t height);
 
-		void BeginScene(const Camera& camera);
+		void SetCamera(Camera* camera) { m_Camera = camera; }
+
+		void BeginScene();
 		void RenderScene();
 		void EndScene();
 
@@ -40,6 +42,8 @@ namespace Engine
 
 	private:
 		Scene* m_Scene;
+		Camera* m_Camera;
+
 
 		static wgpu::Device s_Device;
 		static wgpu::Queue s_Queue;
@@ -47,7 +51,6 @@ namespace Engine
 		wgpu::TextureView m_DepthView;
 		wgpu::CommandEncoder m_CommandEncoder;
 		wgpu::RenderPassEncoder m_RenderPass;
-		wgpu::Color m_ClearColor = { 0.05f, 0.05f, 0.05f, 1.0f };
 
 		// Model bind group
 		static wgpu::BindGroupLayout s_ModelBindGroupLayout;

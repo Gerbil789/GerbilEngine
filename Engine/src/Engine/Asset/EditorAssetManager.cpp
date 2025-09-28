@@ -58,19 +58,21 @@ namespace Engine
 		{
 			auto& event = static_cast<FileAddedEvent&>(e);
 			LOG_INFO("File added: {0}", event.GetPath());
-			//ImportAsset(event.GetFilePath());
+			ImportAsset(event.GetPath());
 			break;
 		}
 		case EventType::FileRemoved:
 		{
 			auto& event = static_cast<FileRemovedEvent&>(e);
 			LOG_INFO("File removed: {0}", event.GetPath());
+			//TODO: handle file removal (unload asset, remove from registry, etc...)
 			break;
 		}
 		case EventType::FileModified:
 		{
 			auto& event = static_cast<FileModifiedEvent&>(e);
 			LOG_INFO("File modified: {0}", event.GetPath());
+			//TODO: handle file modification (reload asset, etc...)
 			break;
 		}
 		default:
@@ -81,4 +83,5 @@ namespace Engine
 
 		}
 	}
+
 }

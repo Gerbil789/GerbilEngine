@@ -19,7 +19,6 @@ namespace Editor
 			[this](Scene* scene)
 			{
 				m_Scene = scene;
-				LOG_INFO("SceneHierarchyWindow - Scene changed to '{}'", scene->id);
 			});
 	}
 
