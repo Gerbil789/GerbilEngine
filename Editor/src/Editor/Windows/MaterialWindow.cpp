@@ -2,7 +2,7 @@
 #include "MaterialWindow.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Editor/Elements/Elements.h"
+#include "Editor/Components/Components.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
 

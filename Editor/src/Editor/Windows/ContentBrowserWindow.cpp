@@ -1,13 +1,12 @@
 #include "enginepch.h"
 #include "ContentBrowserWindow.h"
-//#include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/Project.h"
 #include "Engine/Renderer/Material.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Core/Application.h"
 #include "Editor/Core/EditorApp.h"
-#include "Editor/Elements/Style.h"
+#include "Editor/Components/ScopedStyle.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include <GLFW/glfw3.h>
 

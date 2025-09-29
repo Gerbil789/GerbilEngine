@@ -6,7 +6,7 @@
 #include "Editor/Core/EditorSceneController.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Math/Math.h"
-#include "Editor/Elements/Style.h"
+#include "Editor/Components/ScopedStyle.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>

@@ -1,10 +1,9 @@
 #include "enginepch.h"
 #include "Window.h"
+#include "Engine/Core/Application.h"
 #include "Engine/Event/ApplicationEvent.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Event/KeyEvent.h"
-#include "Engine/Core/Core.h"
-#include "Engine/Core/Application.h"
 #include <stb_image.h>
 
 namespace Engine
@@ -13,52 +12,37 @@ namespace Engine
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-		m_Title = specification.title;
 		m_Data.Width = specification.width;
 		m_Data.Height = specification.height;
-		m_IconPath = specification.iconPath;
 
-		LOG_INFO("Creating window {0} ({1}, {2})", m_Title, m_Data.Width, m_Data.Height);
+		LOG_TRACE("Creating window {0} ({1}, {2})", specification.title, m_Data.Width, m_Data.Height);
 
 		bool glfwInitialized = glfwInit();
 		ASSERT(glfwInitialized, "Could not initialize GLFW!");
 
-		glfwSetErrorCallback([](int error, const char* description)
-			{
-				LOG_ERROR("GLFW Error ({0}): {1}", error, description);
-			});
-
-		// Make sure GLFW does not initialize any graphics context.
-		// This needs to be done explicitly later.
+		glfwSetErrorCallback([](int error, const char* description) { LOG_ERROR("GLFW Error ({0}): {1}", error, description); });
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-
-		m_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Title.c_str(), nullptr, nullptr);
+		m_Window = glfwCreateWindow(static_cast<int>(m_Data.Width), static_cast<int>(m_Data.Height), specification.title.c_str(), nullptr, nullptr);
 
 		ASSERT(m_Window, "Could not create GLFW window!");
 
-		int iconWidth, iconHeight, channels;
-		unsigned char* iconPixels = stbi_load(m_IconPath.string().c_str(), &iconWidth, &iconHeight, &channels, 4);
-
-		if (!iconPixels) 
-		{
-			LOG_ERROR("Failed to load icon from path: {0}", m_IconPath.string());
-		}
-		else 
-		{
-			GLFWimage icon;
-			icon.width = iconWidth;
-			icon.height = iconHeight;
-			icon.pixels = iconPixels;
-
-			glfwSetWindowIcon(m_Window, 1, &icon);
-
-			stbi_image_free(iconPixels); // Free the image data after setting
-		}
-
 		SetEventCallbacks();
+
+		int iconWidth, iconHeight, channels;
+		unsigned char* iconPixels = stbi_load(specification.iconPath.string().c_str(), &iconWidth, &iconHeight, &channels, STBI_rgb_alpha);
+		if (!iconPixels)
+		{
+			LOG_ERROR("Failed to load icon from path: {0}", specification.iconPath);
+			return;
+		}
+
+		GLFWimage icon;
+		icon.width = iconWidth;
+		icon.height = iconHeight;
+		icon.pixels = iconPixels;
+		glfwSetWindowIcon(m_Window, 1, &icon);
+		stbi_image_free(iconPixels);
 	}
 
 	Window::~Window()

@@ -9,7 +9,7 @@ namespace Engine
 {
 	struct WindowSpecification
 	{
-		std::string title;
+		std::string title = "untitled window";
 		uint32_t width = 1600;
 		uint32_t height = 900;
 		std::filesystem::path iconPath = "";
@@ -35,17 +35,12 @@ namespace Engine
 		void SetEventCallbacks();
 
 	private:
-		GLFWwindow* m_Window;
-
-		std::string m_Title;
-		std::filesystem::path m_IconPath;
+		GLFWwindow* m_Window = nullptr;
 
 		struct WindowData
 		{
 			uint32_t Width = 1600, Height = 900;
 			EventCallbackFn EventCallback;
-		};
-
-		WindowData m_Data;
+		} m_Data;
 	};
 } 

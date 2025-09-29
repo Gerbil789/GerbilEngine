@@ -5,7 +5,7 @@
 #include "Engine/Utils/File.h"
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/GraphicsContext.h"
-#include "Editor/Elements/MenuBar.h"
+#include "Editor/Components/MenuBar.h"
 #include "Editor/Windows/ContentBrowserWindow.h"
 #include "Editor/Windows/InspectorWindow.h"
 #include "Editor/Windows/SceneHierarchyWindow.h"
@@ -15,7 +15,7 @@
 #include "Editor/Windows/MeshImportWindow.h"
 #include "Editor/Windows/ViewportWindow.h"
 #include "Editor/Windows/GameWindow.h"
-
+#include "Editor/Components/ScopedStyle.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <backends/imgui_impl_wgpu.h>
@@ -27,6 +27,7 @@ void SetupImGuiStyle()
 	ImGuiStyle& style = ImGui::GetStyle();
 	ImVec4* colors = style.Colors;
 	style.WindowMenuButtonPosition = ImGuiDir_None;
+
 	// Primary background
 	colors[ImGuiCol_WindowBg] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);  // #131318
 	colors[ImGuiCol_MenuBarBg] = ImVec4(0.12f, 0.12f, 0.15f, 1.00f); // #131318
@@ -100,7 +101,7 @@ namespace Editor::EditorWindowManager
 	MenuBar m_MenuBar;
 
 	ViewportWindow* m_ViewportWindow = nullptr;
-	GameWindow* m_GameWindow = nullptr;
+	//GameWindow* m_GameWindow = nullptr;
 	ContentBrowserWindow* m_ContentBrowserWindow = nullptr;
 	InspectorWindow* m_InspectorWindow = nullptr;
 	SceneHierarchyWindow* m_SceneHierarchyWindow = nullptr;
@@ -110,7 +111,7 @@ namespace Editor::EditorWindowManager
 	//MeshImportWindow* m_MeshImportWindow = nullptr;
 
 	template<>ViewportWindow* GetWindow<ViewportWindow>() { return m_ViewportWindow; }
-	template<>GameWindow* GetWindow<GameWindow>() { return m_GameWindow; }
+	//template<>GameWindow* GetWindow<GameWindow>() { return m_GameWindow; }
 	template<>ContentBrowserWindow* GetWindow<ContentBrowserWindow>() { return m_ContentBrowserWindow; }
 	template<>InspectorWindow* GetWindow<InspectorWindow>() { return m_InspectorWindow; }
 	template<>SceneHierarchyWindow* GetWindow<SceneHierarchyWindow>() { return m_SceneHierarchyWindow; }
@@ -129,7 +130,7 @@ namespace Editor::EditorWindowManager
 		m_MaterialWindow = new MaterialWindow();
 		m_StatisticsWindow = new StatisticsWindow();
 		m_ViewportWindow = new ViewportWindow();
-		m_GameWindow = new GameWindow();
+		//m_GameWindow = new GameWindow();
 		//m_SettingsWindow = new SettingsWindow();
 		//m_MeshImportWindow = new MeshImportWindow();
 
@@ -140,7 +141,7 @@ namespace Editor::EditorWindowManager
 			m_MaterialWindow,
 			m_StatisticsWindow,
 			m_ViewportWindow,
-			m_GameWindow,
+			//m_GameWindow,
 			//m_SettingsWindow,
 			//m_MeshImportWindow
 		};
@@ -157,15 +158,12 @@ namespace Editor::EditorWindowManager
 			ImGui::SaveIniSettingsToDisk(imgui_ini.c_str());
 		}
 
-		io.IniFilename = "Resources/Editor/layouts/imgui.ini"; // IMPORTANT: relative to the current working directory TODO: this is an issue, need to fix it
+		io.IniFilename = "Resources/Editor/layouts/imgui.ini";
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows //TODO: this is not working correctly
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Engine/fonts/roboto/Roboto-Regular.ttf", 18.0f);
-		//ImGui::StyleColorsDark(); //TODO: make better color palette
-		//ImGui::StyleColorsLight();
 		SetupImGuiStyle();
-
 
 		ImGui_ImplGlfw_InitForOther(Engine::Application::GetWindow().GetNativeWindow(), true);
 
@@ -195,47 +193,38 @@ namespace Editor::EditorWindowManager
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		// imgui dockspace setup
-		static bool dockspaceOpen = true;
-		static bool opt_fullscreen = true;
-		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+		ScopedStyle style({
+			{ ImGuiStyleVar_WindowRounding, 0.0f },
+			{ ImGuiStyleVar_WindowBorderSize, 0.0f },
+			{ ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f)}
+		});
 
+		// react to window resize
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(viewport->WorkPos);
 		ImGui::SetNextWindowSize(viewport->WorkSize);
 		ImGui::SetNextWindowViewport(viewport->ID);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+		// main docking window
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-			window_flags |= ImGuiWindowFlags_NoBackground;
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		ImGui::Begin("DockSpace", &dockspaceOpen, window_flags);
-		ImGui::PopStyleVar();
-
-		if (opt_fullscreen) { ImGui::PopStyleVar(2); }
-
-		ImGuiIO& io = ImGui::GetIO();
-		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-		{
-			ImGui::DockSpace(ImGui::GetID("MyDockSpace"), ImVec2(0.0f, 0.0f), dockspace_flags);
-		}
+		ImGui::Begin("DockSpace", nullptr, window_flags);
+		ImGui::DockSpace(ImGui::GetID("MyDockSpace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 	}
 
 	void EndFrame()
 	{
-		ImGui::End(); // End dockspace window
+		ImGui::End(); // end dockspace window
 
 		Engine::Window& window = Engine::Application::GetWindow(); //TODO: store this in a member variable?
 		ImGuiIO& io = ImGui::GetIO();
 		io.DisplaySize = ImVec2((float)window.GetWidth(), (float)window.GetHeight());
 
-		// Draw everything
 		ImGui::Render();
+
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
 
 		auto device = Engine::GraphicsContext::GetDevice(); //TODO: store this in a member variable?
 		auto surface = Engine::GraphicsContext::GetSurface();
@@ -251,7 +240,7 @@ namespace Editor::EditorWindowManager
 
 		// Create a view for this surface texture
 		wgpu::TextureViewDescriptor viewDescriptor;
-		viewDescriptor.label = { "SurfaceTextureViewDescriptor", WGPU_STRLEN };
+		viewDescriptor.label = { "ImGuiSurfaceTextureViewDescriptor", WGPU_STRLEN };
 		viewDescriptor.format = wgpuTextureGetFormat(surfaceTexture.texture);
 		viewDescriptor.dimension = WGPUTextureViewDimension_2D;
 		viewDescriptor.baseMipLevel = 0;
@@ -270,7 +259,7 @@ namespace Editor::EditorWindowManager
 		}
 
 		wgpu::CommandEncoderDescriptor encoderDesc = {};
-		encoderDesc.label = { "CommandEncoderDescriptor", WGPU_STRLEN };
+		encoderDesc.label = { "ImGuiCommandEncoderDescriptor", WGPU_STRLEN };
 		WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(device, &encoderDesc);
 
 		// The attachment part of the render pass descriptor describes the target texture of the pass
@@ -282,7 +271,7 @@ namespace Editor::EditorWindowManager
 		renderPassColorAttachment.clearValue = WGPUColor{ 0.9, 0.1, 0.2, 1.0 };
 
 		wgpu::RenderPassDescriptor renderPassDesc = {};
-		renderPassDesc.label = { "RenderPassDescriptor", WGPU_STRLEN };
+		renderPassDesc.label = { "ImGuiRenderPassDescriptor", WGPU_STRLEN };
 		renderPassDesc.colorAttachmentCount = 1;
 		renderPassDesc.colorAttachments = &renderPassColorAttachment;
 
@@ -296,7 +285,7 @@ namespace Editor::EditorWindowManager
 
 		WGPUCommandBufferDescriptor cmdBufferDescriptor = {};
 		cmdBufferDescriptor.nextInChain = nullptr;
-		cmdBufferDescriptor.label = { "Command buffer", WGPU_STRLEN };
+		cmdBufferDescriptor.label = { "ImGuiCommandBuffer", WGPU_STRLEN };
 		WGPUCommandBuffer command = wgpuCommandEncoderFinish(encoder, &cmdBufferDescriptor);
 		wgpuCommandEncoderRelease(encoder);
 
@@ -304,13 +293,6 @@ namespace Editor::EditorWindowManager
 		wgpuCommandBufferRelease(command);
 
 		wgpuDeviceTick(device);
-
-
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) //TODO: WHAT is this??
-		{
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-		}
 
 		wgpuTextureViewRelease(targetView);
 

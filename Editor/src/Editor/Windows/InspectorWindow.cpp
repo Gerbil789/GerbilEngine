@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "InspectorWindow.h"
 #include "Engine/Scene/Components.h"
-#include "Editor/Elements/Elements.h"
+#include "Editor/Components/Components.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Editor/Core/EditorSceneController.h"
 #include <imgui.h>

@@ -1,8 +1,8 @@
 #include "enginepch.h"
 #include "SceneHierarchyWindow.h"
-#include "Editor/Elements/Elements.h"
+#include "Editor/Components/Components.h"
 #include "Engine/Scene/Components.h"
-#include "Editor/Elements/Style.h"
+#include "Editor/Components/ScopedStyle.h"
 #include "Editor/Core/EditorSceneController.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
