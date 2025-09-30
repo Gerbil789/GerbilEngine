@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "EditorApp.h"
-#include "Editor/Core/EditorSceneController.h"
 #include "Editor/Core/EditorWindowManager.h"
 #include "Engine/Core/Project.h"
 
@@ -15,6 +14,7 @@
 #include "Engine/Scene/Components.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Serializer/AssetSerializer.h"
+#include "Editor/Session/EditorSessionManager.h"
 
 namespace Editor
 {
@@ -117,7 +117,10 @@ namespace Editor
 
 			LOG_INFO("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
 
-			EditorSceneController::SelectEntity(cube);
+
+
+			auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
+			session->SelectEntity(cube);
 		}
 
 
@@ -162,7 +165,7 @@ namespace Editor
 			if (m_Minimized) continue;
 
 			EditorWindowManager::OnUpdate(ts);
-			m_Window->OnUpdate();
+			m_Window->OnUpdate(); // This triggers events, which are handled in OnEvent()
 			m_FileWatcher->OnUpdate();
 		}
 	}
@@ -171,8 +174,9 @@ namespace Editor
 	{
 		ENGINE_PROFILE_FUNCTION();
 		Application::OnEvent(e);
-		EditorSceneController::OnEvent(e);
+		m_SessionManager->OnEvent(e);
 		EditorWindowManager::OnEvent(e);
+
 
 		if(e.GetCategoryFlags() & Engine::EventCategoryFile)
 		{

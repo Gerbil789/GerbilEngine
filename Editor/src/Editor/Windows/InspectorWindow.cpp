@@ -3,11 +3,11 @@
 #include "Engine/Scene/Components.h"
 #include "Editor/Components/Components.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Editor/Core/EditorSceneController.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
 #include <filesystem>
+#include "Editor/Session/EditorSessionManager.h"
 
 namespace Editor
 {
@@ -15,10 +15,12 @@ namespace Editor
 
 	void InspectorWindow::OnUpdate(Engine::Timestep ts)
 	{
-
 		ImGui::Begin("Inspector");
 
-		Entity entity = EditorSceneController::GetSelectedEntity();
+		auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
+		Entity entity = session->GetSelectedEntity();
+
+		//Entity entity = EditorSceneController::GetSelectedEntity();
 		if (!entity)
 		{
 			ImGui::End();

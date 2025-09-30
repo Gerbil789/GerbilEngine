@@ -1,7 +1,7 @@
 #include "EditorCameraController.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Scene/Entity.h"
-#include "Editor/Core/EditorSceneController.h"
+#include "Editor/Session/EditorSessionManager.h"
 
 namespace Editor
 {
@@ -26,7 +26,8 @@ namespace Editor
 	{
 		if(e.GetKey() == Key::F) //Focus
 		{
-			auto entity = EditorSceneController::GetSelectedEntity();
+			auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
+			auto entity = session->GetSelectedEntity();
 			if (!entity) return false;
 
 			glm::vec3 focusPoint = entity.GetComponent<TransformComponent>().Position;

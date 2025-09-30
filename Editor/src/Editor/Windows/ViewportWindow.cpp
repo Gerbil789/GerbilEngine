@@ -3,7 +3,6 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Core/Input.h"
-#include "Editor/Core/EditorSceneController.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Math/Math.h"
 #include "Editor/Components/ScopedStyle.h"
@@ -13,6 +12,8 @@
 
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/AssetManager.h"
+
+#include "Editor/Session/EditorSessionManager.h"
 
 namespace Editor
 {
@@ -126,7 +127,9 @@ namespace Editor
 
 		if (m_ViewportHovered && !ImGuizmo::IsOver())
 		{
-			EditorSceneController::SelectEntity(m_HoveredEntity);
+			auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
+			session->SelectEntity(m_HoveredEntity);
+			//EditorSceneController::SelectEntity(m_HoveredEntity);
 		}
 	}
 
@@ -156,7 +159,8 @@ namespace Editor
 
 	void ViewportWindow::DrawGizmos()
 	{
-		Entity selectedEntity = EditorSceneController::GetSelectedEntity();
+		auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
+		Entity selectedEntity = session->GetSelectedEntity();
 
 		if (selectedEntity && m_GizmoType != -1)
 		{

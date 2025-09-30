@@ -3,11 +3,12 @@
 #include "Editor/Components/Components.h"
 #include "Engine/Scene/Components.h"
 #include "Editor/Components/ScopedStyle.h"
-#include "Editor/Core/EditorSceneController.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
 #include <filesystem>
+#include "Editor/Session/EditorSessionManager.h"
+#include "Editor/Command/SceneCommands.h"
 
 namespace Editor
 {
@@ -15,11 +16,7 @@ namespace Editor
 
 	SceneHierarchyWindow::SceneHierarchyWindow()
 	{
-		SceneManager::RegisterOnSceneChanged(
-			[this](Scene* scene)
-			{
-				m_Scene = scene;
-			});
+		SceneManager::RegisterOnSceneChanged([this](Scene* scene) {m_Scene = scene; });
 	}
 
 	void SceneHierarchyWindow::OnUpdate(Engine::Timestep ts)
@@ -27,7 +24,7 @@ namespace Editor
 		ScopedStyle style({
 			{ ImGuiStyleVar_WindowPadding, { 0, 0 } },
 			{ ImGuiStyleVar_ItemSpacing, { 0, 0 } }
-		});
+			});
 
 
 		ImGui::Begin("Scene Hierarchy");
@@ -38,6 +35,8 @@ namespace Editor
 			ImGui::End();
 			return;
 		}
+
+		auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
 
 		auto& roots = m_Scene->GetRootEntities();
 
@@ -53,15 +52,20 @@ namespace Editor
 		// Handle mouse click to deselect entity
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 		{
-			EditorSceneController::DeselectEntity();
+			session->DeselectEntity();
+			//EditorSceneController::DeselectEntity();
 		}
 
 		if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
-				Entity entity = m_Scene->CreateEntity("Empty Entity");
-				EditorSceneController::SelectEntity(entity);
+				//Entity entity = session->GetCommandManager().ExecuteCommand(CreateScope<CreateEntityCommand>());
+				//Entity entity = m_Scene->CreateEntity("Empty Entity");
+				//session->SelectEntity(entity);
+				//EditorSceneController::SelectEntity(entity);
+
+				session->CreateEntity("HelloThere");
 			}
 			ImGui::EndPopup();
 		}
@@ -99,12 +103,13 @@ namespace Editor
 		style.FramePadding = oldPadding;
 		style.ItemSpacing = oldItemSpacing;
 
-
+		auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
 
 		// Handle selection
 		if (ImGui::IsItemClicked())
 		{
-			EditorSceneController::SelectEntity(wrapper);
+			session->SelectEntity(wrapper);
+			//EditorSceneController::SelectEntity(wrapper);
 		}
 
 		// Drag source
@@ -142,17 +147,17 @@ namespace Editor
 
 		if (opened)
 		{
-		/*	entt::entity child = m_Scene->m_Registry.get<HierarchyComponent>(entity).FirstChild;
-			size_t i = 0;
+			/*	entt::entity child = m_Scene->m_Registry.get<HierarchyComponent>(entity).FirstChild;
+				size_t i = 0;
 
-			while (child != entt::null)
-			{
-				DrawReorderDropTarget(entity, i);
-				DrawEntityNode(child);
-				child = m_Scene->m_Registry.get<HierarchyComponent>(child).NextSibling;
-				i++;
-			}*/
-			//DrawReorderDropTarget(entity, i);
+				while (child != entt::null)
+				{
+					DrawReorderDropTarget(entity, i);
+					DrawEntityNode(child);
+					child = m_Scene->m_Registry.get<HierarchyComponent>(child).NextSibling;
+					i++;
+				}*/
+				//DrawReorderDropTarget(entity, i);
 
 			ImGui::TreePop();
 		}

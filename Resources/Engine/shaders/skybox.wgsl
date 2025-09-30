@@ -14,7 +14,7 @@ struct VertexOutput {
 	@location(0) dir: vec3f,
 };
 
-var<private> cubeVertices: array<vec3f, 36> = array<vec3f, 36>(
+const cubeVertices: array<vec3f, 36> = array<vec3f, 36>(
     vec3f(-1,-1,-1), vec3f( 1,-1,-1), vec3f( 1, 1,-1),
     vec3f(-1,-1,-1), vec3f( 1, 1,-1), vec3f(-1, 1,-1),
 

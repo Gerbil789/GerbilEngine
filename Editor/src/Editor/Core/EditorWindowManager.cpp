@@ -1,9 +1,7 @@
 #include "enginepch.h"
 #include "EditorWindowManager.h"
 #include "Engine/Core/Application.h"
-#include "Engine/Utils/Color.h"
 #include "Engine/Utils/File.h"
-#include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/GraphicsContext.h"
 #include "Editor/Components/MenuBar.h"
 #include "Editor/Windows/ContentBrowserWindow.h"
@@ -14,7 +12,6 @@
 #include "Editor/Windows/StatisticsWindow.h"
 #include "Editor/Windows/MeshImportWindow.h"
 #include "Editor/Windows/ViewportWindow.h"
-#include "Editor/Windows/GameWindow.h"
 #include "Editor/Components/ScopedStyle.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -101,7 +98,6 @@ namespace Editor::EditorWindowManager
 	MenuBar m_MenuBar;
 
 	ViewportWindow* m_ViewportWindow = nullptr;
-	//GameWindow* m_GameWindow = nullptr;
 	ContentBrowserWindow* m_ContentBrowserWindow = nullptr;
 	InspectorWindow* m_InspectorWindow = nullptr;
 	SceneHierarchyWindow* m_SceneHierarchyWindow = nullptr;
@@ -111,7 +107,6 @@ namespace Editor::EditorWindowManager
 	//MeshImportWindow* m_MeshImportWindow = nullptr;
 
 	template<>ViewportWindow* GetWindow<ViewportWindow>() { return m_ViewportWindow; }
-	//template<>GameWindow* GetWindow<GameWindow>() { return m_GameWindow; }
 	template<>ContentBrowserWindow* GetWindow<ContentBrowserWindow>() { return m_ContentBrowserWindow; }
 	template<>InspectorWindow* GetWindow<InspectorWindow>() { return m_InspectorWindow; }
 	template<>SceneHierarchyWindow* GetWindow<SceneHierarchyWindow>() { return m_SceneHierarchyWindow; }
@@ -130,7 +125,6 @@ namespace Editor::EditorWindowManager
 		m_MaterialWindow = new MaterialWindow();
 		m_StatisticsWindow = new StatisticsWindow();
 		m_ViewportWindow = new ViewportWindow();
-		//m_GameWindow = new GameWindow();
 		//m_SettingsWindow = new SettingsWindow();
 		//m_MeshImportWindow = new MeshImportWindow();
 
@@ -338,5 +332,4 @@ namespace Editor::EditorWindowManager
 		LOG_INFO("ImGui layout reset to default");
 	}
 
-	
 }

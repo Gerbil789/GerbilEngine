@@ -45,6 +45,7 @@ namespace Engine
 	void Scene::DestroyEntity(Entity entity)
 	{
 		m_Registry.destroy(entity);
+		RemoveRootEntity(entity);
 	}
 
 	Entity Scene::GetEntityByUUID(UUID uuid)
