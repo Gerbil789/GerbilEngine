@@ -4,16 +4,14 @@
 #include "Engine/Scene/Entity.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Event/MouseEvent.h"
-#include "Engine/Math/Math.h"
 #include "Editor/Components/ScopedStyle.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
-
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/AssetManager.h"
-
 #include "Editor/Session/EditorSessionManager.h"
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace Editor
 {
@@ -64,7 +62,7 @@ namespace Editor
 			if(uuid.IsValid())
 			{
 				//LOG_TRACE("Hovered entity ID: {0}", uuid);
-				m_HoveredEntity = m_Scene->GetEntityByUUID(uuid);
+				m_HoveredEntity = m_Scene->GetEntity(uuid);
 			}
 		}
 
@@ -173,7 +171,7 @@ namespace Editor
 			glm::mat4 cameraView = m_CameraController.GetCamera().GetViewMatrix();
 
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
-			glm::mat4 transform = tc.GetModelMatrix();
+			glm::mat4 transform = tc.GetLocalMatrix(); //TODO: world matrix?
 
 			bool snap = Input::IsKeyPressed(Key::LeftControl);
 			float snapValue = 0.5f; // Snap to 0.5m for translation/scale
@@ -186,11 +184,14 @@ namespace Editor
 
 			if (ImGuizmo::IsUsing())
 			{
-				glm::vec3 translation, rotation, scale;
-				Math::DecomposeTransform(transform, translation, rotation, scale); 
+				glm::vec3 skew;
+				glm::vec4 perspective;
+				glm::quat rot;
+				glm::vec3 trans, scale;
+				glm::decompose(transform, scale, rot, trans, skew, perspective);
 
-				tc.Position = translation;
-				tc.Rotation = glm::degrees(rotation);
+				tc.Position = trans;
+				tc.Rotation = glm::degrees(glm::eulerAngles(rot));
 				tc.Scale = scale;
 			}
 		}

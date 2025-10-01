@@ -7,6 +7,7 @@ namespace Engine
 	class Entity
 	{
 	public:
+		static Entity Null() { return Entity(entt::null, nullptr); }
 		Entity() = default;
 		Entity(entt::entity handle, Scene* scene) : m_EntityHandle(handle), m_Scene(scene) {}
 		Entity(const Entity& other) = default;
@@ -59,41 +60,78 @@ namespace Engine
 		}
 
 		void SetName(const std::string& name) { GetComponent<NameComponent>() = name; }
-		const std::string& GetName() { return GetComponent<NameComponent>().Name; }
+		const std::string& GetName() const { return GetComponent<NameComponent>().Name; }
 
 		void SetActive(bool active) { GetComponent<IdentityComponent>().Enabled = active; }
-		bool IsActive() { return GetComponent<IdentityComponent>().Enabled; }
+		const bool IsActive() const { return GetComponent<IdentityComponent>().Enabled; }
 
 		UUID GetUUID() { return GetComponent<IdentityComponent>().ID; }
 
-		//void SetParent(Entity newParent);
-		//void AddChild(Entity child);
-		//void RemoveChild(Entity child);
-		//void RemoveParent();
+		void SetParent(Entity newParent, bool keepWorld = true);
+		void RemoveParent(bool keepWorld = true);
+		void AddChild(Entity child, bool keepWorld = true);
+		void RemoveChild(Entity child);
+		std::vector<Entity> GetChildren() const;
+		Entity GetParent() const;
+		void Destroy();
 
-		//bool HasParent();
-		bool HasChildren()
-		{
-			//bool hasChildren = m_Scene->m_Registry->all_of<HierarchyComponent>(m_EntityHandle) && m_Scene->m_Registry->get<HierarchyComponent>(m_EntityHandle).FirstChild != entt::null;
-			//return hasChildren;
-
-			return false;
-		}
-		//int GetChildCount();
-
-		//Entity GetParent();
-		//std::vector<Entity> GetChildren();
-		//Entity GetRoot();
-
-		//bool IsDescendant(entt::entity parent, entt::entity potentialChild); // Check if this entity is a descendant of the given entity
-		//void ReorderChild(entt::entity child, size_t newIndex);
-
-		operator bool() const { return m_EntityHandle != entt::null; }
+		operator bool() const { return m_EntityHandle != entt::null && m_Scene->m_Registry.valid(m_EntityHandle); }
 		operator entt::entity() const { return m_EntityHandle; }
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; } // entity id
 
 		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
 		bool operator!=(const Entity& other) const { return !(*this == other); }
+
+		const std::string GetInfo() const
+		{
+			if (!(*this) || !m_Scene)
+				return "Entity[null]";
+
+			std::ostringstream ss;
+			ss << "Entity Info\n";
+			ss << "-----------\n";
+			ss << "Handle: " << (uint32_t)m_EntityHandle << "\n";
+
+			if (HasComponent<IdentityComponent>())
+			{
+				const auto& idc = GetComponent<IdentityComponent>();
+				ss << "UUID: " << idc.ID << "\n";
+				ss << "Active: " << (idc.Enabled ? "true" : "false") << "\n";
+			}
+
+			if (HasComponent<NameComponent>())
+			{
+				ss << "Name: " << GetComponent<NameComponent>().Name << "\n";
+			}
+
+			// Hierarchy
+			if (HasComponent<TransformComponent>())
+			{
+				const auto& tc = GetComponent<TransformComponent>();
+				if (tc.Parent != entt::null)
+				{
+					Entity parent(tc.Parent, m_Scene);
+					ss << "Parent: "
+						<< (parent.HasComponent<NameComponent>() ? parent.GetName() : std::to_string((uint32_t)tc.Parent))
+						<< "\n";
+				}
+				else
+				{
+					ss << "Parent: [none]\n";
+				}
+				const auto& children = GetChildren();
+
+				ss << "Children: " << children.size() << "\n";
+				for (auto child : children)
+				{
+					Entity c(child, m_Scene);
+					ss << " - "
+						<< (c.HasComponent<NameComponent>() ? c.GetName() : std::to_string((uint32_t)child))
+						<< "\n";
+				}
+			}
+			return ss.str();
+		}
 
 	private:
 		entt::entity m_EntityHandle { entt::null };

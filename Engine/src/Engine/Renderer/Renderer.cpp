@@ -357,7 +357,7 @@ namespace Engine
 
 				if (!mesh) continue;
 
-				glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetModelMatrix();
+				glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetLocalMatrix(); // TODO: world matrix?
 
 				uint32_t dynamicOffset = i * s_ModelUniformStride;
 				s_Queue.writeBuffer(s_ModelUniformBuffer, dynamicOffset, &modelMatrix, sizeof(modelMatrix));

@@ -17,13 +17,15 @@ namespace Editor
 			Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
       m_Entity = scene->CreateEntity(m_Name);
     }
+
     void Undo() override 
     {
       if (m_Entity)
       {
-        Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
-        scene->DestroyEntity(m_Entity);
-				//TODP: deselct entity if selected
+        m_Entity.Destroy();
+        //Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
+        //scene->DestroyEntity(m_Entity);
+				//TODO: deselct entity if selected
       }
     }
 

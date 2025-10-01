@@ -97,10 +97,11 @@ namespace Editor::EditorWindowManager
 {
 	MenuBar m_MenuBar;
 
+	SceneHierarchyWindow* m_SceneHierarchyWindow = nullptr;
 	ViewportWindow* m_ViewportWindow = nullptr;
 	ContentBrowserWindow* m_ContentBrowserWindow = nullptr;
 	InspectorWindow* m_InspectorWindow = nullptr;
-	SceneHierarchyWindow* m_SceneHierarchyWindow = nullptr;
+
 	MaterialWindow* m_MaterialWindow = nullptr;
 	StatisticsWindow* m_StatisticsWindow = nullptr;
 	//SettingsWindow* m_SettingsWindow = nullptr;
@@ -130,12 +131,11 @@ namespace Editor::EditorWindowManager
 
 		m_Windows = {
 			m_ContentBrowserWindow,
-			m_InspectorWindow,
-			m_SceneHierarchyWindow,
 			m_MaterialWindow,
-			m_StatisticsWindow,
+			m_InspectorWindow,
 			m_ViewportWindow,
-			//m_GameWindow,
+			m_SceneHierarchyWindow,
+			m_StatisticsWindow,
 			//m_SettingsWindow,
 			//m_MeshImportWindow
 		};

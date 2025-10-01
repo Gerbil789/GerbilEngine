@@ -10,9 +10,13 @@ namespace Editor
   {
   public:
     void SelectEntity(Engine::Entity entity) { m_SelectedEntity = entity; }
-    void DeselectEntity() { m_SelectedEntity = entt::null; }
+    void DeselectEntity() { m_SelectedEntity = Engine::Entity::Null(); }
 
-    Engine::Entity GetSelectedEntity() const { return { m_SelectedEntity, m_Scene }; }
+    Engine::Entity GetSelectedEntity() const 
+    {
+      return m_SelectedEntity;
+    }
+
     bool IsEntitySelected(Engine::Entity entity) const { return m_SelectedEntity == entity; }
 
     Engine::Entity CreateEntity(const std::string& name = "Empty Entity")
@@ -22,18 +26,17 @@ namespace Editor
       m_CommandManager.ExecuteCommand(std::move(command));
 
 			// select the newly created entity
-      Engine::Entity newEntity = raw->GetEntity();
-			m_SelectedEntity = newEntity;
-			return newEntity;
+			m_SelectedEntity = raw->GetEntity();
+			return m_SelectedEntity;
 		}
 
   protected:
     void OnSceneChanged() override
     {
-      m_SelectedEntity = entt::null;
+      m_SelectedEntity = Engine::Entity::Null();
     }
 
   private:
-    entt::entity m_SelectedEntity = entt::null;
+    Engine::Entity m_SelectedEntity = Engine::Entity::Null();
   };
 }

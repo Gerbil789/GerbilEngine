@@ -110,7 +110,7 @@ namespace Engine
 
 			if (!mesh) continue;
 
-			glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetModelMatrix();
+			glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetLocalMatrix(); //TODO: world matrix?
 
 			uint32_t dynamicOffset = i * Renderer::GetModelUniformStride();
 			renderPass.setBindGroup(GroupID::Model, Renderer::GetModelBindGroup(), 1, &dynamicOffset);

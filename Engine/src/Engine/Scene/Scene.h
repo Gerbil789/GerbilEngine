@@ -5,24 +5,17 @@
 #include "Engine/Scene/Components.h"
 #include <entt.hpp>
 
-namespace Engine 
+namespace Engine
 {
-	class Entity; // Forward declaration
+	class Entity;
 
 	class Scene : public Asset
 	{
-		friend class SceneController;
 		friend class Entity;
-		friend class SceneHierarchyPanel;
 
 	public:
 		Scene() = default;
 		~Scene();
-		void RefreshRootEntities(); //TODO: move to SceneController?
-
-		Entity CreateEntity(const std::string& name = "");
-		Entity CreateEntity(UUID uuid, const std::string& name = "");
-		void DestroyEntity(Entity entity);
 
 		template<typename... Components>
 		std::vector<Entity> GetEntities()
@@ -37,23 +30,13 @@ namespace Engine
 			return entities;
 		}
 
-		Entity GetEntityByUUID(UUID uuid);
+		Entity GetEntity(UUID uuid);
 
-		std::vector<entt::entity>& GetRootEntities() { return m_RootEntities; }
-		const std::vector<entt::entity>& GetRootEntities() const { return m_RootEntities; }
-
-		void AddRootEntity(entt::entity entity);
-		void RemoveRootEntity(entt::entity entity);
-		void ReorderRootEntity(entt::entity entity, size_t newIndex);
-
-		void SetParent(entt::entity child, entt::entity newParent);
-		bool IsDescendant(entt::entity parent, entt::entity child);
-
-		void CopyFrom(const Scene& other);
+		Entity CreateEntity(const std::string& name = "new entity", const glm::vec3& position = glm::vec3{ 0.0f, 0.0f, 0.0f });
+		Entity CreateEntity(UUID uuid, const std::string& name = "new entity", const glm::vec3& position = glm::vec3{ 0.0f, 0.0f, 0.0f });
 
 	private:
 		entt::registry m_Registry;
-		std::vector<entt::entity> m_RootEntities;
 	};
 
 }

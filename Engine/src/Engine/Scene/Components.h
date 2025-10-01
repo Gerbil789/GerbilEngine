@@ -12,7 +12,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
-namespace Engine
+namespace Engine //TODO: remove all default constructors later, now its needed for something...
 {
 	struct IdentityComponent
 	{
@@ -34,28 +34,35 @@ namespace Engine
 		operator const std::string& () const { return Name; }
 	};
 
-	struct HierarchyComponent 
-	{
-		entt::entity Parent = entt::null;
-		entt::entity FirstChild = entt::null;
-		entt::entity NextSibling = entt::null;
-		entt::entity PrevSibling = entt::null;
-	};
-
 	struct TransformComponent
 	{
 		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f }; 
 		glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
 
+		entt::entity Parent = entt::null;
+		entt::entity FirstChild = entt::null;
+		entt::entity NextSibling = entt::null;
+		entt::entity PrevSibling = entt::null;
 
 		TransformComponent() = default;
 		TransformComponent(const glm::vec3& position) : Position(position) {}
 
-		glm::mat4 GetModelMatrix() const
+		glm::mat4 GetLocalMatrix() const
 		{
 			glm::mat4 rotation = glm::toMat4(glm::quat(glm::radians(Rotation)));
 			return glm::translate(glm::mat4(1.0f), Position) * rotation * glm::scale(glm::mat4(1.0f), Scale);
+		}
+
+		glm::mat4 GetWorldMatrix(const entt::registry& registry) const
+		{
+			glm::mat4 local = GetLocalMatrix();
+			if (Parent != entt::null)
+			{
+				const auto& parentTransform = registry.get<TransformComponent>(Parent);
+				return parentTransform.GetWorldMatrix(registry) * local;
+			}
+			return local;
 		}
 	};
 
@@ -66,21 +73,6 @@ namespace Engine
 
 		MeshComponent() = default;
 	};
-
-	//struct SpriteComponent //TODO: rework whole 2D renderer system
-	//{
-	//	Ref<Material> Material = nullptr;
-
-	//	glm::vec4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	//	Ref<Texture2D> Texture = nullptr;
-	//	glm::vec2 TilingFactor = { 1.0f, 1.0f };
-
-	//	SpriteComponent() = default;
-	//	SpriteComponent(const glm::vec4& color) : Color(color) {}
-
-	//	operator glm::vec4& () { return Color; }
-	//	operator const glm::vec4& () const { return Color; }
-	//};
 
 
 	struct CameraComponent
@@ -93,7 +85,7 @@ namespace Engine
 	};
 
 
-	enum class LightType //TODO: move to some light file
+	enum class LightType
 	{
 		Point = 0,
 		Directional = 1,
