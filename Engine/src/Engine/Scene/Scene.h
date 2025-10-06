@@ -35,6 +35,8 @@ namespace Engine
 		Entity CreateEntity(const std::string& name = "new entity", const glm::vec3& position = glm::vec3{ 0.0f, 0.0f, 0.0f });
 		Entity CreateEntity(UUID uuid, const std::string& name = "new entity", const glm::vec3& position = glm::vec3{ 0.0f, 0.0f, 0.0f });
 
+		entt::registry& GetRegistry() { return m_Registry; }
+
 	private:
 		entt::registry m_Registry;
 	};

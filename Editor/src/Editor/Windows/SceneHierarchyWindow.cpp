@@ -8,6 +8,7 @@
 #include <imgui_internal.h>
 #include "Editor/Session/EditorSessionManager.h"
 #include "Editor/Command/SceneCommands.h"
+#include "Engine/Core/Input.h"
 
 namespace Editor
 {
@@ -27,6 +28,9 @@ namespace Editor
 
 		ImGui::Begin("Scene Hierarchy");
 
+		ImGuiMultiSelectFlags selectFlags = ImGuiMultiSelectFlags_None;
+		ImGui::BeginMultiSelect(selectFlags);
+
 		if (!m_Scene)
 		{
 			ImGui::End();
@@ -35,26 +39,26 @@ namespace Editor
 
 		auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
 
+		const auto& entities = m_Scene->GetEntities();
 
-		const auto& roots = m_Scene->GetEntities<NameComponent, TransformComponent>();
-
-		for(size_t i = 0; i < roots.size(); ++i)
+		for(size_t i = 0; i < entities.size(); ++i)
 		{
-			Entity entity = roots[i];
+			Entity entity = entities[i];
 			if(entity.GetComponent<TransformComponent>().Parent == entt::null)
 			{
 				DrawReorderDropTarget(Engine::Entity::Null(), i);
 				DrawEntityNode(entity);
 			}
 		}
-		DrawReorderDropTarget(Engine::Entity::Null(), roots.size());
+		DrawReorderDropTarget(Engine::Entity::Null(), entities.size());
 
-		// Handle mouse click to deselect entity
+		// Deselect on empty space click
 		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
 		{
-			session->DeselectEntity();
+			session->ClearSelection();
 		}
 
+		// Right-click context menu
 		if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
@@ -64,6 +68,7 @@ namespace Editor
 			ImGui::EndPopup();
 		}
 
+		ImGui::EndMultiSelect();
 		ImGui::End();
 	}
 
@@ -77,6 +82,14 @@ namespace Editor
 			flags |= ImGuiTreeNodeFlags_Leaf;
 		}
 
+		auto session = EditorSessionManager::Get().GetSceneSession(); // TODO: store session
+		bool selected = session->IsEntitySelected(entity);
+
+		if (selected)
+		{
+			flags |= ImGuiTreeNodeFlags_Selected;
+		}
+
 		ImGui::PushID((uint32_t)entity);
 
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetName().c_str());
@@ -84,8 +97,8 @@ namespace Editor
 		// Handle selection
 		if (ImGui::IsItemClicked())
 		{
-			auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
-			session->SelectEntity(entity);
+			bool additive = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::LeftShift);
+			session->SelectEntity(entity, additive);
 		}
 
 		// Drag source
@@ -102,16 +115,7 @@ namespace Editor
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY"))
 			{
 				Engine::Entity dropped = *(Engine::Entity*)payload->Data;
-				if (dropped != entity)
-				{
-					LOG_TRACE("Set parent: (child){0} -> (parent){1}", dropped.GetName(), entity.GetName());
-					LOG_TRACE("parent: {0}", entity.GetInfo());
-					LOG_TRACE("child: {0}", dropped.GetInfo());
-
-					dropped.SetParent(entity);
-					LOG_TRACE("parent: {0}", entity.GetInfo());
-					LOG_TRACE("child: {0}", dropped.GetInfo());
-				}
+				dropped.SetParent(entity);
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -134,7 +138,6 @@ namespace Editor
 			while (child != entt::null)
 			{
 				Engine::Entity childEntity = { child, m_Scene };
-				//LOG_TRACE("child: {0}", childEntity.GetInfo());
 				DrawReorderDropTarget(entity, i);
 				DrawEntityNode(childEntity);
 				child = childEntity.GetComponent<TransformComponent>().NextSibling;
@@ -145,13 +148,14 @@ namespace Editor
 			ImGui::TreePop();
 		}
 
-		if(entityDeleted)
+		if (entityDeleted) //TODO: is delayed deletion necessary?
 		{
 			entity.Destroy();
 		}
 
 		ImGui::PopID();
 	}
+
 	void SceneHierarchyWindow::DrawReorderDropTarget(Engine::Entity parent, size_t index)
 	{
 		ImGui::PushID((int)index);

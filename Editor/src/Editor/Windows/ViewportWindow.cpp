@@ -39,7 +39,7 @@ namespace Editor
 
 		ImGui::Begin("Viewport");
 
-		UpdateViewportSize();
+		UpdateViewportSize(); //TODO: dont call every frame
 		
 		m_ViewportHovered = ImGui::IsWindowHovered();
 		m_ViewportFocused = ImGui::IsWindowFocused();
@@ -58,7 +58,7 @@ namespace Editor
 
 		if (mx >= 0 && my >= 0 && mx < (int)m_ViewportSize.x && my < (int)m_ViewportSize.y)
 		{
-			UUID uuid = m_EntityIdRenderer.ReadPixel(mx, my);
+			UUID uuid = m_EntityIdRenderer.ReadPixel((uint32_t)mx, (uint32_t)my);
 			if(uuid.IsValid())
 			{
 				//LOG_TRACE("Hovered entity ID: {0}", uuid);
@@ -67,7 +67,7 @@ namespace Editor
 		}
 
 		// Draw scene
-		ImGui::Image((ImTextureID)(intptr_t)(WGPUTextureView)m_Renderer.GetTextureView(), ImVec2(m_ViewportSize.x, m_ViewportSize.y));
+		ImGui::Image((ImTextureID)(intptr_t)(WGPUTextureView)m_Renderer.GetTextureView(), ImVec2(m_ViewportSize.x, m_ViewportSize.y)); //TODO: too many casts?
 
 
 		//if (ImGui::BeginDragDropTarget())
@@ -158,7 +158,7 @@ namespace Editor
 	void ViewportWindow::DrawGizmos()
 	{
 		auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
-		Entity selectedEntity = session->GetSelectedEntity();
+		Entity selectedEntity = session->GetActiveEntity();
 
 		if (selectedEntity && m_GizmoType != -1)
 		{
@@ -171,7 +171,7 @@ namespace Editor
 			glm::mat4 cameraView = m_CameraController.GetCamera().GetViewMatrix();
 
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
-			glm::mat4 transform = tc.GetLocalMatrix(); //TODO: world matrix?
+			glm::mat4 transform = tc.GetWorldMatrix(m_Scene->GetRegistry());
 
 			bool snap = Input::IsKeyPressed(Key::LeftControl);
 			float snapValue = 0.5f; // Snap to 0.5m for translation/scale

@@ -4,9 +4,6 @@ project "yaml-cpp"
 	cppdialect "C++23"
 	staticruntime "on"
 
-	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-
 	files
 	{
 		"include/**.h",
@@ -22,7 +19,6 @@ project "yaml-cpp"
 
 	filter "system:windows"
 		systemversion "latest"
-
 
 	filter "configurations:Debug"
 		runtime "Debug"

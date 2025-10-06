@@ -9,15 +9,46 @@ namespace Editor
   class SceneEditorSession : public EditorSession
   {
   public:
-    void SelectEntity(Engine::Entity entity) { m_SelectedEntity = entity; }
-    void DeselectEntity() { m_SelectedEntity = Engine::Entity::Null(); }
-
-    Engine::Entity GetSelectedEntity() const 
+    void SelectEntity(Engine::Entity entity, bool additive = false)
     {
-      return m_SelectedEntity;
+      if (!additive)
+        m_SelectedEntities.clear();
+
+      if (!IsEntitySelected(entity))
+      {
+        m_SelectedEntities.push_back(entity);
+      }
+
+			LOG_TRACE("Selected entities: {0}", m_SelectedEntities.size());
     }
 
-    bool IsEntitySelected(Engine::Entity entity) const { return m_SelectedEntity == entity; }
+    void DeselectEntity(Engine::Entity entity)
+    {
+      m_SelectedEntities.erase(
+        std::remove(m_SelectedEntities.begin(), m_SelectedEntities.end(), entity),
+        m_SelectedEntities.end()
+      );
+    }
+
+    void ClearSelection()
+    {
+      m_SelectedEntities.clear();
+    }
+
+    const std::vector<Engine::Entity>& GetSelectedEntities() const
+    {
+      return m_SelectedEntities;
+    }
+
+    bool IsEntitySelected(Engine::Entity entity) const
+    {
+      return std::find(m_SelectedEntities.begin(), m_SelectedEntities.end(), entity) != m_SelectedEntities.end();
+    }
+
+    Engine::Entity GetActiveEntity() const
+    {
+      return m_SelectedEntities.empty() ? Engine::Entity::Null() : m_SelectedEntities.front();
+    }
 
     Engine::Entity CreateEntity(const std::string& name = "Empty Entity")
     {
@@ -26,17 +57,18 @@ namespace Editor
       m_CommandManager.ExecuteCommand(std::move(command));
 
 			// select the newly created entity
-			m_SelectedEntity = raw->GetEntity();
-			return m_SelectedEntity;
+			Engine::Entity newEntity = raw->GetEntity();
+			SelectEntity(newEntity);
+			return newEntity;
 		}
 
   protected:
     void OnSceneChanged() override
     {
-      m_SelectedEntity = Engine::Entity::Null();
+      ClearSelection();
     }
 
   private:
-    Engine::Entity m_SelectedEntity = Engine::Entity::Null();
+		std::vector<Engine::Entity> m_SelectedEntities;
   };
 }

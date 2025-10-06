@@ -50,16 +50,6 @@ project "Engine"
 			"YAML_CPP_STATIC_DEFINE"
 		}
 
-	filter "system:linux"
-    systemversion "latest"
-    defines {
-        "ENGINE_PLATFORM_LINUX",
-        "GLFW_INCLUDE_NONE"
-    }
-    links {
-        "pthread", "dl", "m", "X11", "Xrandr", "Xi", "Xcursor", "Xinerama", "GL", "udev"
-    }
-
 	filter "configurations:Debug"
 		defines { "DEBUG" }
 		symbols "on"

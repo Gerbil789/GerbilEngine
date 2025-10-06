@@ -13,7 +13,6 @@ namespace Engine
 		Renderer(uint32_t width, uint32_t height);
 
 		static Ref<Texture2D> GetDefaultWhiteTexture() { return s_DefaultWhite; }
-		static Ref<Material> GetInvalidMaterial() { return s_InvalidMaterial; }
 
 		void SetScene(Scene* scene) { m_Scene = scene; }
 		void Resize(uint32_t width, uint32_t height);
@@ -37,35 +36,32 @@ namespace Engine
 
 		static uint32_t GetModelUniformStride() { return s_ModelUniformStride; }
 
-		// Global sampler (tmp)
-		static wgpu::Sampler s_Sampler; //TODO: move into shader or material class
+		inline static wgpu::Sampler s_Sampler = nullptr; //TODO: move into shader or material class
 
 	private:
 		Scene* m_Scene;
 		Camera* m_Camera;
 
-
-		static wgpu::Device s_Device;
-		static wgpu::Queue s_Queue;
 		wgpu::TextureView m_TextureView;
 		wgpu::TextureView m_DepthView;
 		wgpu::CommandEncoder m_CommandEncoder;
 		wgpu::RenderPassEncoder m_RenderPass;
 
+		inline static wgpu::Device s_Device = nullptr;
+		inline static wgpu::Queue s_Queue = nullptr;
+
 		// Model bind group
-		static wgpu::BindGroupLayout s_ModelBindGroupLayout;
-		static wgpu::BindGroup s_ModelBindGroup;
-		static wgpu::Buffer s_ModelUniformBuffer;
-		static uint32_t s_ModelUniformStride;
+		inline static wgpu::BindGroupLayout s_ModelBindGroupLayout = nullptr;
+		inline static wgpu::BindGroup s_ModelBindGroup = nullptr;
+		inline static wgpu::Buffer s_ModelUniformBuffer = nullptr;
+		inline static uint32_t s_ModelUniformStride = 0;
 
 		// Frame bind group
-		static wgpu::BindGroupLayout s_FrameBindGroupLayout;
-		static wgpu::BindGroup s_FrameBindGroup;
-		static wgpu::Buffer s_FrameUniformBuffer;
+		inline static wgpu::BindGroupLayout s_FrameBindGroupLayout = nullptr;
+		inline static wgpu::BindGroup s_FrameBindGroup = nullptr;
+		inline static wgpu::Buffer s_FrameUniformBuffer = nullptr;
 
-		// static resources
+		// Static resources
 		inline static Ref<Texture2D> s_DefaultWhite = nullptr;
-		inline static Ref<Material>  s_InvalidMaterial = nullptr;
-		inline static wgpu::Sampler  s_DefaultSampler = nullptr;
 	};
 }

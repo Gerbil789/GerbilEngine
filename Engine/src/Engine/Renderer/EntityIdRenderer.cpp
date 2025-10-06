@@ -233,9 +233,10 @@ namespace Engine
 
 	void EntityIdRenderer::CreatePipeline()
 	{
-		std::string content;
-		auto path = "Resources/Engine/shaders/entityId.wgsl";
-		ASSERT(Engine::ReadFile(path, content), "Failed to load entity id shader.")
+		std::string content;;
+		std::filesystem::path path = "Resources/Engine/shaders/entityId.wgsl";
+		bool ok = Engine::ReadFile(path, content);
+		ASSERT(ok, "Failed to load entity id shader");
 
 		const char* shaderSource = content.c_str();
 

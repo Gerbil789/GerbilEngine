@@ -27,7 +27,7 @@ namespace Editor
 		if(e.GetKey() == Key::F) //Focus
 		{
 			auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
-			auto entity = session->GetSelectedEntity();
+			auto entity = session->GetActiveEntity();
 			if (!entity) return false;
 
 			glm::vec3 focusPoint = entity.GetComponent<TransformComponent>().Position;

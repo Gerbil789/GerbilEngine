@@ -113,7 +113,7 @@ namespace Editor
 			component.Mesh = mesh;
 
 			cube.GetComponent<Engine::TransformComponent>().Position = { 2.0f, 0.0f, 0.0f };
-			cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
+			//cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
 
 			LOG_INFO("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
 
@@ -133,8 +133,8 @@ namespace Editor
 			component.Material = material;
 			component.Mesh = mesh;
 
-			cube.GetComponent<Engine::TransformComponent>().Position = { -2.0f, 0.0f, 0.0f };
-			cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
+			cube.GetComponent<Engine::TransformComponent>().Position = { 0.0f, 0.0f, 0.0f };
+			//cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
 
 			LOG_INFO("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
 		}

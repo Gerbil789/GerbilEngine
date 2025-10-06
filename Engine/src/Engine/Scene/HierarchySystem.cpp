@@ -73,20 +73,9 @@ namespace Engine
 
 	void HierarchySystem::SetParent(entt::registry& registry, entt::entity child, entt::entity newParent, bool keepWorld)
 	{
-    if (child == newParent)
-    {
-      return;
-    }
-
     if (IsDescendant(registry, child, newParent))
     {
-      return;
-    }
-
-    glm::mat4 worldMatrix;
-    if (keepWorld)
-    {
-      worldMatrix = registry.get<TransformComponent>(child).GetWorldMatrix(registry);
+			return; // prevent cycles
     }
 
     Detach(registry, child);
@@ -97,6 +86,8 @@ namespace Engine
 
     if (keepWorld)
     {
+      glm::mat4 worldMatrix = registry.get<TransformComponent>(child).GetWorldMatrix(registry);
+
       // Recalculate local transform so world stays same
       auto& childTransform = registry.get<TransformComponent>(child);
       glm::mat4 parentWorld = glm::mat4(1.0f);

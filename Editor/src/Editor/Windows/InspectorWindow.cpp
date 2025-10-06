@@ -18,9 +18,8 @@ namespace Editor
 		ImGui::Begin("Inspector");
 
 		auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
-		Entity entity = session->GetSelectedEntity();
+		Entity entity = session->GetActiveEntity();
 
-		//Entity entity = EditorSceneController::GetSelectedEntity();
 		if (!entity)
 		{
 			ImGui::End();

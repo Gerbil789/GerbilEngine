@@ -5,84 +5,8 @@
 #include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Renderer/Material.h"
 
-
 namespace Engine
 {
-	//static MeshSpecification cubeSpec = {
-	//	// Vertices
-	//	{
-	//		// Front face
-	//		{{-0.5f, -0.5f,  0.5f},
-	//		{{ 0.5f, -0.5f,  0.5f},
-	//		{{ 0.5f,  0.5f,  0.5f},
-	//		{{-0.5f,  0.5f,  0.5f},
-
-	//		// Back face
-	//		{{ 0.5f, -0.5f, -0.5f},
-	//		{{-0.5f, -0.5f, -0.5f},
-	//		{{-0.5f,  0.5f, -0.5f},
-	//		{{ 0.5f,  0.5f, -0.5f},
-
-	//		// Left face
-	//		{{-0.5f, -0.5f, -0.5f},
-	//		{{-0.5f, -0.5f,  0.5f},
-	//		{{-0.5f,  0.5f,  0.5f},
-	//		{{-0.5f,  0.5f, -0.5f},
-
-	//		// Right face
-	//		{{ 0.5f, -0.5f,  0.5f},
-	//		{{ 0.5f, -0.5f, -0.5f},
-	//		{{ 0.5f,  0.5f, -0.5f},
-	//		{{ 0.5f,  0.5f,  0.5f},
-
-	//		// Top face
-	//		{{-0.5f,  0.5f,  0.5f},
-	//		{{ 0.5f,  0.5f,  0.5f},
-	//		{{ 0.5f,  0.5f, -0.5f},
-	//		{{-0.5f,  0.5f, -0.5f},
-
-	//		// Bottom face
-	//		{{-0.5f, -0.5f, -0.5f},
-	//		{{ 0.5f, -0.5f, -0.5f},
-	//		{{ 0.5f, -0.5f,  0.5f},
-	//		{{-0.5f, -0.5f,  0.5f},
-	//},
-
-	//// Indices
-	//{
-	//		0, 1, 2, 2, 3, 0,       // Front
-	//		4, 5, 6, 6, 7, 4,       // Back
-	//		8, 9, 10, 10, 11, 8,    // Left
-	//		12, 13, 14, 14, 15, 12, // Right
-	//		16, 17, 18, 18, 19, 16, // Top
-	//		20, 21, 22, 22, 23, 20  // Bottom
-	//}
-	//};
-
-	//static Ref<Mesh> cubeMesh = nullptr;
-
-
-
-
-
-
-
-	wgpu::Device Renderer::s_Device = nullptr;
-	wgpu::Queue Renderer::s_Queue = nullptr;
-
-	// Model bind group
-	wgpu::BindGroupLayout Renderer::s_ModelBindGroupLayout = nullptr;
-	wgpu::BindGroup Renderer::s_ModelBindGroup = nullptr;
-	wgpu::Buffer Renderer::s_ModelUniformBuffer = nullptr;
-	uint32_t Renderer::s_ModelUniformStride;
-
-	// Frame bind group
-	wgpu::BindGroupLayout Renderer::s_FrameBindGroupLayout = nullptr;
-	wgpu::BindGroup Renderer::s_FrameBindGroup = nullptr;
-	wgpu::Buffer Renderer::s_FrameUniformBuffer = nullptr;
-
-	wgpu::Sampler Renderer::s_Sampler = nullptr;
-
 	//TODO: move these structs somewhere...
 	struct alignas(16) FrameUniforms {
 		glm::mat4 view;
@@ -99,27 +23,19 @@ namespace Engine
 	};
 	static_assert(sizeof(ModelUniforms) % 16 == 0);
 
-	uint32_t ceilToNextMultiple(uint32_t value, uint32_t step) {
+	uint32_t CeilToNextMultiple(uint32_t value, uint32_t step) {
 		uint32_t divide_and_ceil = value / step + (value % step == 0 ? 0 : 1);
 		return step * divide_and_ceil;
 	}
 
 	void Renderer::Initialize()
 	{
-		//cubeMesh = CreateRef<Mesh>(cubeSpec);
-
 		// Default white texture
 		uint32_t whitePixel = 0xFFFFFFFF; // RGBA(255,255,255,255)
 		TextureSpecification spec;
 		spec.width = spec.height = 1;
 		spec.format = wgpu::TextureFormat::RGBA8Unorm;
 		s_DefaultWhite = CreateRef<Texture2D>(spec, &whitePixel);
-
-		// Invalid material
-		//s_InvalidMaterial = CreateRef<Material>(Shader::GetInvalidShader());
-
-
-
 
 		s_Device = GraphicsContext::GetDevice();
 		s_Queue = GraphicsContext::GetQueue();
@@ -128,7 +44,7 @@ namespace Engine
 		{
 			wgpu::Limits limits;
 			s_Device.getLimits(&limits);
-			s_ModelUniformStride = ceilToNextMultiple((uint32_t)sizeof(ModelUniforms), (uint32_t)limits.minUniformBufferOffsetAlignment);
+			s_ModelUniformStride = CeilToNextMultiple((uint32_t)sizeof(ModelUniforms), (uint32_t)limits.minUniformBufferOffsetAlignment);
 
 			constexpr size_t BufferSize = 1024 * sizeof(ModelUniforms); // max 1024 unique transforms per frame
 
@@ -317,13 +233,13 @@ namespace Engine
 	{
 		ENGINE_PROFILE_FUNCTION();
 
+		// Skybox
 		auto& skybox = m_Camera->GetSkybox();
 		m_RenderPass.setPipeline(skybox.GetShader().GetRenderPipeline());
 		m_RenderPass.setBindGroup(1, skybox.GetBindGroup(), 0, nullptr);
-		//m_RenderPass.setVertexBuffer(0, cubeMesh->GetVertexBuffer(), 0, cubeMesh->GetVertexBuffer().getSize());
-		//m_RenderPass.setIndexBuffer(cubeMesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, cubeMesh->GetIndexBuffer().getSize());
 		m_RenderPass.draw(36, 1, 0, 0);
 
+		// Entities
 		std::vector<Entity> entities = m_Scene->GetEntities<TransformComponent, MeshComponent>();
 		std::unordered_map<Ref<Material>, std::vector<Entity>> materialGroups;
 
@@ -357,7 +273,7 @@ namespace Engine
 
 				if (!mesh) continue;
 
-				glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetLocalMatrix(); // TODO: world matrix?
+				glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetWorldMatrix(m_Scene->GetRegistry());
 
 				uint32_t dynamicOffset = i * s_ModelUniformStride;
 				s_Queue.writeBuffer(s_ModelUniformBuffer, dynamicOffset, &modelMatrix, sizeof(modelMatrix));

@@ -7,7 +7,7 @@
 
 namespace Engine::SceneManager
 {
-	//The scene is owned by asset manager, we don't use Ref<> here to avoid circular reference
+	// The scene is owned by asset manager, we don't use Ref<> here to avoid circular reference
 	Scene* s_ActiveScene = nullptr;
 	static std::vector<SceneChangedCallback> s_Callbacks;
 

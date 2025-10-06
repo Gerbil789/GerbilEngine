@@ -29,7 +29,6 @@ project "Editor"
 		"ImGui",
 	}
 
-
 	postbuildcommands 
 	{
 		"{COPY} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
