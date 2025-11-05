@@ -4,14 +4,15 @@
 My custom WebGPU based game engine
 
 #### Prerequisites
- - Windows machine
+ - Windows 10/11 machine 
  - Visual Studio 2022
+   - C++ 23
 
 #### Setup
 1. **Clone the Project**
    - ```git clone https://github.com/Gerbil789/GerbilEngine.git```
 2. **Generate project files**
-   - Navigate to the **Scripts** Folder
+   - Navigate to the **Scripts** directory
    - Run `Win-GenerateProjects.bat` 
 3. **Build project in Visual Studio**
    - Open solution in VS (`GerbilEngine.sln`)

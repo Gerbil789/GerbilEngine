@@ -19,33 +19,26 @@ namespace Editor
 
 	struct StyleEntry
 	{
-		StyleType type;
+		StyleType type = StyleType::Var;
 
 		// For Var
-		ImGuiStyleVar var;
-		StyleVarType varType;
+		ImGuiStyleVar var = (ImGuiStyleVar)0;
+		StyleVarType varType = StyleVarType::Float;
 		union
 		{
-			float varFloat = 0.0f;
+			float varFloat;
 			ImVec2 varVec2;
 		};
 
 		// For Color
-		ImGuiCol col;
-		ImVec4 colValue;
+		ImGuiCol col = (ImGuiCol)0;
+		ImVec4 colValue = ImVec4(0, 0, 0, 0);
 
-		// Constructors
-		StyleEntry(ImGuiStyleVar v, float val)
-			: type(StyleType::Var), var(v), varType(StyleVarType::Float), varFloat(val) {
-		}
-
-		StyleEntry(ImGuiStyleVar v, ImVec2 val)
-			: type(StyleType::Var), var(v), varType(StyleVarType::Vec2), varVec2(val) {
-		}
-
-		StyleEntry(ImGuiCol c, ImVec4 val)
-			: type(StyleType::Color), col(c), colValue(val) {
-		}
+		// Default constructor ensures safe initialization
+		StyleEntry() : varFloat(0.0f) {}
+		StyleEntry(ImGuiStyleVar v, float val) : type(StyleType::Var), var(v), varType(StyleVarType::Float), varFloat(val), col((ImGuiCol)0), colValue(0, 0, 0, 0) {}
+		StyleEntry(ImGuiStyleVar v, ImVec2 val) : type(StyleType::Var), var(v), varType(StyleVarType::Vec2), varVec2(val), col((ImGuiCol)0), colValue(0, 0, 0, 0) {}
+		StyleEntry(ImGuiCol c, ImVec4 val) : type(StyleType::Color), var((ImGuiStyleVar)0), varType(StyleVarType::Float), varFloat(0.0f), col(c), colValue(val) {}
 	};
 
 	class ScopedStyle

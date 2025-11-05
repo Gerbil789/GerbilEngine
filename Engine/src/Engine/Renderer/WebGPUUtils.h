@@ -44,6 +44,7 @@ namespace Engine
 			return it->second;
 
 		ASSERT(false, "Unknown vertex attribute format: {}", str);
+		return wgpu::VertexFormat::Force32;
 	}
 
 	static inline uint32_t GetVertexFormatSize(wgpu::VertexFormat format)

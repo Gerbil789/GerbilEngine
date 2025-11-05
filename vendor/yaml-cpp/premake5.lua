@@ -3,6 +3,7 @@ project "yaml-cpp"
 	language "C++"
 	cppdialect "C++23"
 	staticruntime "on"
+	warnings "Off"
 
 	files
 	{
@@ -10,7 +11,7 @@ project "yaml-cpp"
     "src/**.cpp"
 	}
 
-	includedirs
+	externalincludedirs
   {
     "include"
   }

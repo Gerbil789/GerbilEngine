@@ -35,6 +35,7 @@ namespace Engine
 		Texture2D(const TextureSpecification& specification, const void* data);
 	};
 
+	//TODO: move to its own file
 	class CubeMapTexture : public Texture
 	{
 	public:

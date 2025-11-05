@@ -6,7 +6,7 @@ namespace Engine
 {
 	Mesh::Mesh(const MeshSpecification& specification)
 	{
-		m_IndexCount = specification.indices.size();
+		m_IndexCount = static_cast<uint32_t>(specification.indices.size());
 
 		auto device = GraphicsContext::GetDevice();
 

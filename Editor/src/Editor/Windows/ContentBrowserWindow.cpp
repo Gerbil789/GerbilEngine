@@ -6,6 +6,7 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Core/Application.h"
 #include "Editor/Core/EditorApp.h"
+#include "Editor/Core/EditorIcons.h"
 #include "Editor/Components/ScopedStyle.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include <GLFW/glfw3.h>
@@ -16,18 +17,14 @@ namespace Editor
 
 	ContentBrowserWindow::ContentBrowserWindow()
 	{
-		EditorApp& app = static_cast<EditorApp&>(Application::Get());
-
-		//auto project = Project::GetActive();
 		m_AssetsDirectory = Project::GetAssetsDirectory();
 		m_CurrentDirectory = Project::GetAssetsDirectory();
 
-		m_FolderIcon = TextureImporter::LoadTexture2D("Resources/Editor/icons/folder.png");
-		m_FolderIcon = TextureImporter::LoadTexture2D("Resources/Editor/icons/folder.png");
-		m_EmptyFolderIcon = TextureImporter::LoadTexture2D("Resources/Editor/icons/folder_empty.png");
-		m_FileIcon = TextureImporter::LoadTexture2D("Resources/Editor/icons/file.png");
-		//m_ImageIcon = AssetManager::Get<Texture2D>("Resources/Editor/icons/image.png");
-		m_SceneIcon = TextureImporter::LoadTexture2D("Resources/Editor/icons/landscape.png");
+		m_EmptyFolderIcon = EditorIcons::GetIcon("EmptyFolder");
+		m_FolderIcon = EditorIcons::GetIcon("Folder");
+		m_FileIcon = EditorIcons::GetIcon("File");
+		m_ImageIcon = EditorIcons::GetIcon("Image");
+		m_SceneIcon = EditorIcons::GetIcon("Scene");
 
 		glfwSetDropCallback(Application::GetWindow().GetNativeWindow(), [](GLFWwindow* window, int count, const char* paths[]) {
 			for (int i = 0; i < count; i++)
@@ -53,7 +50,7 @@ namespace Editor
 
 		LayoutItemSize = ImVec2(floorf(IconSize), floorf(IconSize) + 20.0f);
 		LayoutColumnCount = std::max((int)(avail_width / (LayoutItemSize.x + LayoutItemSpacing)), 1);
-		LayoutLineCount = (Items.Size + LayoutColumnCount - 1) / LayoutColumnCount;
+		LayoutLineCount = (m_Items.Size + LayoutColumnCount - 1) / LayoutColumnCount;
 
 		LayoutItemStep = ImVec2(LayoutItemSize.x + LayoutItemSpacing, LayoutItemSize.y + LayoutItemSpacing);
 		LayoutSelectableSpacing = std::max(floorf(LayoutItemSpacing) - IconHitSpacing, 0.0f);
@@ -104,7 +101,7 @@ namespace Editor
 
 	void ContentBrowserWindow::Reload()
 	{
-		Items.clear();
+		m_Items.clear();
 
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
@@ -112,16 +109,14 @@ namespace Editor
 
 			if (directoryEntry.is_directory())
 			{
-				Items.push_back(ContentBrowserItem(ItemType::Directory, path));
+				m_Items.push_back(ContentBrowserItem(ItemType::Directory, path));
 			}
 			else
 			{
-				Items.push_back(ContentBrowserItem(ItemType::File, path));
+				m_Items.push_back(ContentBrowserItem(ItemType::File, path));
 			}
 		}
 	}
-
-
 
 
 	void ContentBrowserWindow::ContentBrowserContextMenu()
@@ -178,19 +173,19 @@ namespace Editor
 	{
 		if (ImGui::BeginPopupContextItem("ItemContextMenu"))
 		{
-			if (ImGui::MenuItem("Delete", "Del", false, Selection.Size > 0))
+			if (ImGui::MenuItem("Delete", "Del", false, m_Selection.Size > 0))
 			{
 				RequestDelete = true;
 			}
 
-			if (ImGui::MenuItem("Rename", 0, false, Selection.Size == 1))
+			if (ImGui::MenuItem("Rename", 0, false, m_Selection.Size == 1))
 			{
 				//get the selected item
 				void* it = NULL;
 				ImGuiID id = 0;
-				Selection.GetNextSelectedItem(&it, &id);
-				auto item = std::find_if(Items.begin(), Items.end(), [id](const ContentBrowserItem& item) { return item.ID == id; });
-				if (item == Items.end())
+				m_Selection.GetNextSelectedItem(&it, &id);
+				auto item = std::find_if(m_Items.begin(), m_Items.end(), [id](const ContentBrowserItem& item) { return item.ID == id; });
+				if (item == m_Items.end())
 				{
 					LOG_WARNING("Item not found in the items list");
 					return;
@@ -234,7 +229,7 @@ namespace Editor
 		{
 			if (m_SearchBuffer[0] != '\0')
 			{
-				Items.clear();
+				m_Items.clear();
 				for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 				{
 					const auto& path = directoryEntry.path();
@@ -243,11 +238,11 @@ namespace Editor
 					{
 						if (directoryEntry.is_directory())
 						{
-							Items.push_back(ContentBrowserItem(ItemType::Directory, path));
+							m_Items.push_back(ContentBrowserItem(ItemType::Directory, path));
 						}
 						else
 						{
-							Items.push_back(ContentBrowserItem(ItemType::File, path));
+							m_Items.push_back(ContentBrowserItem(ItemType::File, path));
 						}
 					}
 				}
@@ -277,16 +272,16 @@ namespace Editor
 
 		ImGuiMultiSelectFlags ms_flags = ImGuiMultiSelectFlags_ClearOnEscape | ImGuiMultiSelectFlags_ClearOnClickVoid;
 		ms_flags |= ImGuiMultiSelectFlags_BoxSelect2d;
-		ms_flags |= ImGuiMultiSelectFlags_SelectOnClickRelease;  // - This feature allows dragging an unselected item without selecting it (rarely used)
-		ImGuiMultiSelectIO* ms_io = ImGui::BeginMultiSelect(ms_flags, Selection.Size, Items.Size);
+		ms_flags |= ImGuiMultiSelectFlags_SelectOnClickRelease;
+		ImGuiMultiSelectIO* ms_io = ImGui::BeginMultiSelect(ms_flags, m_Selection.Size, m_Items.Size);
 
 		// Use custom selection adapter: store ID in selection (recommended)
-		Selection.UserData = this;
-		Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { ContentBrowserWindow* self = (ContentBrowserWindow*)self_->UserData; return self->Items[idx].ID; };
-		Selection.ApplyRequests(ms_io);
+		m_Selection.UserData = this;
+		m_Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { ContentBrowserWindow* self = (ContentBrowserWindow*)self_->UserData; return self->m_Items[idx].ID; };
+		m_Selection.ApplyRequests(ms_io);
 
-		const bool want_delete = (ImGui::Shortcut(ImGuiKey_Delete, ImGuiInputFlags_Repeat) && (Selection.Size > 0)) || RequestDelete;
-		const int item_curr_idx_to_focus = want_delete ? Selection.ApplyDeletionPreLoop(ms_io, Items.Size) : -1;
+		const bool want_delete = (ImGui::Shortcut(ImGuiKey_Delete, ImGuiInputFlags_Repeat) && (m_Selection.Size > 0)) || RequestDelete;
+		const int item_curr_idx_to_focus = want_delete ? m_Selection.ApplyDeletionPreLoop(ms_io, m_Items.Size) : -1;
 		RequestDelete = false;
 
 
@@ -311,10 +306,10 @@ namespace Editor
 			for (int line_idx = clipper.DisplayStart; line_idx < clipper.DisplayEnd; line_idx++)
 			{
 				const int item_min_idx_for_current_line = line_idx * column_count;
-				const int item_max_idx_for_current_line = std::min((line_idx + 1) * column_count, Items.Size);
+				const int item_max_idx_for_current_line = std::min((line_idx + 1) * column_count, m_Items.Size);
 				for (int item_idx = item_min_idx_for_current_line; item_idx < item_max_idx_for_current_line; ++item_idx)
 				{
-					ContentBrowserItem* item_data = &Items[item_idx];
+					ContentBrowserItem* item_data = &m_Items[item_idx];
 					ImGui::PushID((int)item_data->ID);
 
 					// Position item
@@ -322,7 +317,7 @@ namespace Editor
 					ImGui::SetCursorScreenPos(pos);
 
 					ImGui::SetNextItemSelectionUserData(item_idx);
-					bool item_is_selected = Selection.Contains((ImGuiID)item_data->ID);
+					bool item_is_selected = m_Selection.Contains((ImGuiID)item_data->ID);
 					bool item_is_visible = ImGui::IsRectVisible(LayoutItemSize);
 					ImGui::Selectable("##unique_id", item_is_selected, ImGuiSelectableFlags_None, ImVec2(LayoutItemSize.x, LayoutItemSize.y));
 
@@ -382,11 +377,23 @@ namespace Editor
 
 						if (std::filesystem::is_empty(m_CurrentDirectory / item_data->Label))
 						{
-							draw_list->AddImage((ImTextureID)(intptr_t)(WGPUTextureView)m_EmptyFolderIcon->GetTextureView(), box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x));
+							//draw_list->AddImage((ImTextureID)(intptr_t)(WGPUTextureView)m_EmptyFolderIcon->GetTextureView(), box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x));
+
+							draw_list->AddImage(
+								(ImTextureID)(intptr_t)(WGPUTextureView)m_EmptyFolderIcon->GetTexture()->GetTextureView(),
+								box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
+								ToImVec2(m_EmptyFolderIcon->GetTexCoords()[0]),
+								ToImVec2(m_EmptyFolderIcon->GetTexCoords()[2]) 
+							);
 						}
 						else
 						{
-							draw_list->AddImage((ImTextureID)(intptr_t)(WGPUTextureView)m_EmptyFolderIcon->GetTextureView(), box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x));
+							draw_list->AddImage(
+								(ImTextureID)(intptr_t)(WGPUTextureView)m_FolderIcon->GetTexture()->GetTextureView(),
+								box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
+								ToImVec2(m_FolderIcon->GetTexCoords()[0]),
+								ToImVec2(m_FolderIcon->GetTexCoords()[2])
+							);
 						}
 
 						draw_list->AddText(ImVec2(box_min.x + LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data->Label).x / 2, box_max.y - ImGui::GetFontSize() + 10), label_col, item_data->Label);
@@ -397,7 +404,14 @@ namespace Editor
 						break;
 
 					case ItemType::File:
-						draw_list->AddImage((ImTextureID)(intptr_t)(WGPUTextureView)m_EmptyFolderIcon->GetTextureView(), box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x));
+						draw_list->AddImage(
+							(ImTextureID)(intptr_t)(WGPUTextureView)m_FileIcon->GetTexture()->GetTextureView(),
+							box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
+							ToImVec2(m_FileIcon->GetTexCoords()[0]),
+							ToImVec2(m_FileIcon->GetTexCoords()[2])
+						);
+
+
 						draw_list->PushClipRect(box_min, ImVec2(box_max.x, box_max.y + ImGui::GetFontSize() + 10), !item_is_selected);
 						draw_list->AddText(ImVec2(box_min.x + LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data->Label).x / 2, box_max.y - ImGui::GetFontSize() + 10), label_col, item_data->Label);
 						draw_list->PopClipRect();
@@ -431,11 +445,11 @@ namespace Editor
 		ImGui::PopStyleVar(); // ImGuiStyleVar_ItemSpacing
 
 		ms_io = ImGui::EndMultiSelect();
-		Selection.ApplyRequests(ms_io);
+		m_Selection.ApplyRequests(ms_io);
 		if (want_delete)
 		{
 			//TODO: unload assets & delete files
-			Selection.ApplyDeletionPostLoop(ms_io, Items, item_curr_idx_to_focus);
+			m_Selection.ApplyDeletionPostLoop(ms_io, m_Items, item_curr_idx_to_focus);
 		}
 
 

@@ -2,7 +2,7 @@
 #include "EditorApp.h"
 #include "Editor/Core/EditorWindowManager.h"
 #include "Engine/Core/Project.h"
-
+#include "Editor/Core/EditorIcons.h"
 //tmp
 #include "Editor/Windows/MaterialWindow.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
@@ -40,6 +40,8 @@ namespace Editor
 
 			Engine::Project::Load(projectDirectoryPath);
 		}
+
+		EditorIcons::Init(Engine::TextureImporter::LoadTexture2D("Resources/Editor/icons/icons.png"), { 64, 64 });
 
 		EditorWindowManager::Initialize();
 

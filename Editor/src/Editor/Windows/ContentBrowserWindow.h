@@ -4,7 +4,7 @@
 #include "Engine/Renderer/Texture.h"
 #include <filesystem>
 #include <imgui.h>
-
+#include "Engine/Renderer/SubTexture2D.h"
 namespace Editor
 {
 	enum class ItemType
@@ -138,8 +138,9 @@ namespace Editor
 		ContentBrowserWindow();
 		void OnUpdate(Engine::Timestep ts) override;
 
-	private:
 		void Reload();
+
+	private:
 		void UpdateLayoutSizes(float avail_width);
 		void RenderPath();
 		void ContentBrowserContextMenu();
@@ -154,14 +155,14 @@ namespace Editor
 
 		char m_SearchBuffer[256] = { 0 };
 
-		Ref<Engine::Texture2D> m_FolderIcon;
-		Ref<Engine::Texture2D> m_EmptyFolderIcon;
-		Ref<Engine::Texture2D> m_FileIcon;
-		Ref<Engine::Texture2D> m_ImageIcon;
-		Ref<Engine::Texture2D> m_SceneIcon;
+		Ref<Engine::SubTexture2D> m_FolderIcon;
+		Ref<Engine::SubTexture2D> m_EmptyFolderIcon;
+		Ref<Engine::SubTexture2D> m_FileIcon;
+		Ref<Engine::SubTexture2D> m_ImageIcon;
+		Ref<Engine::SubTexture2D> m_SceneIcon;
 
-		ImVector<ContentBrowserItem> Items;
-		SelectionWithDeletion Selection;
+		ImVector<ContentBrowserItem> m_Items;
+		SelectionWithDeletion m_Selection;
 
 		const float m_TopBarHeight = 24.0f;
 		const int IconHitSpacing = 4;
@@ -177,6 +178,10 @@ namespace Editor
 		float ZoomWheelAccum = 0.0f;
 		bool RequestDelete = false;
 
-		std::vector<std::string> droppedFiles;
+		std::vector<std::string> m_DroppedFiles;
+
+
+		inline ImVec2 ToImVec2(const glm::vec2& v) { return ImVec2(v.x, v.y); }
+
 	};
 }
