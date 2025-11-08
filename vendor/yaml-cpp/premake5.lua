@@ -11,7 +11,7 @@ project "yaml-cpp"
     "src/**.cpp"
 	}
 
-	externalincludedirs
+	includedirs
   {
     "include"
   }

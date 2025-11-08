@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Renderer/SubTexture2D.h"
+#include "Engine/Renderer/Texture.h"
 #include <unordered_map>
 #include <string>
 
@@ -21,6 +21,8 @@ namespace Editor
       AddIcon("Scene", { 4, 0 });
     }
 
+		//TODO: return default icon if not found
+		//TODO: use enums for faster lookup
     static Ref<Engine::SubTexture2D> GetIcon(const std::string& name)
     {
       auto it = s_Icons.find(name);

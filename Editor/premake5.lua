@@ -3,7 +3,8 @@ project "Editor"
 	language "C++"
 	cppdialect "C++23"
 	staticruntime "on"
-
+	externalwarnings "Off"
+	
 	files
 	{
 		"src/**.h",
@@ -14,13 +15,17 @@ project "Editor"
 	{
 		"src",
 		"%{wks.location}/Engine/src",
+		"%{wks.location}/vendor/dawn/include" 
+	}
+
+	externalincludedirs
+	{
 		"%{wks.location}/vendor/spdlog/include",
 		"%{wks.location}/vendor/glfw/include",
 		"%{wks.location}/vendor/glm",
 		"%{wks.location}/vendor/entt/include",
 		"%{wks.location}/vendor/imgui",
-		"%{wks.location}/vendor/ImGuizmo",
-		"%{wks.location}/vendor/dawn/include" 
+		"%{wks.location}/vendor/ImGuizmo"
 	}
 
 	links

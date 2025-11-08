@@ -129,7 +129,7 @@ namespace Editor
 		// Entity 2
 		{
 			auto cube = scene->CreateEntity("SecondCube");
-			auto mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/cube.glb");
+			auto mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/sphere.glb");
 
 			auto& component = cube.AddComponent<Engine::MeshComponent>();
 			component.Material = material;

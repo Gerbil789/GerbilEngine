@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Engine/Asset/Asset.h"
+#include "Engine/Core/Core.h"
 #include <webgpu/webgpu.hpp>
+#include <glm/glm.hpp>
 
 namespace Engine
 {
@@ -24,7 +26,6 @@ namespace Engine
 	protected:
 		uint32_t m_Width = 0;
 		uint32_t m_Height = 0;
-		wgpu::Texture m_Texture; //TODO: dont store as variable? check if its useful later
 		wgpu::TextureView m_TextureView;
 		wgpu::TextureFormat m_TextureFormat;
 	};
@@ -35,10 +36,28 @@ namespace Engine
 		Texture2D(const TextureSpecification& specification, const void* data);
 	};
 
-	//TODO: move to its own file
+	class SubTexture2D
+	{
+	public:
+		SubTexture2D(const Ref<Texture2D>& texture, const glm::vec2& min, const glm::vec2& max);
+
+		const Ref<Texture2D>& GetTexture() const { return m_Texture; }
+		const glm::vec2& GetUVMin() const { return m_UVMin; }
+		const glm::vec2& GetUVMax() const { return m_UVMax; }
+
+		static Ref<SubTexture2D> CreateFromGrid(const Ref<Texture2D>& texture, const glm::ivec2& cellCoords, const glm::ivec2& cellSize, const glm::ivec2& spriteSize = { 1,1 });
+
+	private:
+		Ref<Texture2D> m_Texture;
+		glm::vec2 m_UVMin;
+		glm::vec2 m_UVMax;
+	};
+
 	class CubeMapTexture : public Texture
 	{
 	public:
 		CubeMapTexture(const TextureSpecification& specification, const std::array<const void*, 6>& data);
 	};
+
+
 }

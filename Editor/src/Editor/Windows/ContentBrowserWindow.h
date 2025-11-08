@@ -4,28 +4,17 @@
 #include "Engine/Renderer/Texture.h"
 #include <filesystem>
 #include <imgui.h>
-#include "Engine/Renderer/SubTexture2D.h"
+
 namespace Editor
 {
-	enum class ItemType
-	{
-		Directory = 0,
-		File = 1
-	};
-
 	struct SelectionWithDeletion : ImGuiSelectionBasicStorage
 	{
-		// Find which item should be Focused after deletion.
-		// Call _before_ item submission. Retunr an index in the before-deletion item list, your item loop should call SetKeyboardFocusHere() on it.
-		// The subsequent ApplyDeletionPostLoop() code will use it to apply Selection.
-		// - We cannot provide this logic in core Dear ImGui because we don't have access to selection data.
-		// - We don't actually manipulate the ImVector<> here, only in ApplyDeletionPostLoop(), but using similar API for consistency and flexibility.
-		// - Important: Deletion only works if the underlying ImGuiID for your items are stable: aka not depend on their index, but on e.g. item id/ptr.
-		// FIXME-MULTISELECT: Doesn't take account of the possibility focus target will be moved during deletion. Need refocus or scroll offset.
 		int ApplyDeletionPreLoop(ImGuiMultiSelectIO* ms_io, int items_count)
 		{
 			if (Size == 0)
+			{
 				return -1;
+			}
 
 			// If focused item is not selected...
 			const int focused_idx = (int)ms_io->NavIdItem;  // Index of currently focused item
@@ -37,97 +26,43 @@ namespace Editor
 
 			// If focused item is selected: land on first unselected item after focused item.
 			for (int idx = focused_idx + 1; idx < items_count; idx++)
+			{
 				if (!Contains(GetStorageIdFromIndex(idx)))
+				{
 					return idx;
+				}
+
+			}
 
 			// If focused item is selected: otherwise return last unselected item before focused item.
 			for (int idx = std::min(focused_idx, items_count) - 1; idx >= 0; idx--)
+			{
 				if (!Contains(GetStorageIdFromIndex(idx)))
+				{
 					return idx;
+				}
+			}
 
 			return -1;
-		}
-
-		// Rewrite item list (delete items) + update selection.
-		// - Call after EndMultiSelect()
-		template<typename ITEM_TYPE>
-		void ApplyDeletionPostLoop(ImGuiMultiSelectIO* ms_io, ImVector<ITEM_TYPE>& items, int item_curr_idx_to_select)
-		{
-			ImVector<ITEM_TYPE> new_items;
-			new_items.reserve(items.Size - Size);
-			int item_next_idx_to_select = -1;
-			for (int idx = 0; idx < items.Size; idx++)
-			{
-				if (!Contains(GetStorageIdFromIndex(idx))) 
-				{
-					new_items.push_back(items[idx]);
-				}
-				else 
-				{
-					//TODO:: unload asset if it is loaded
-
-					if (items[idx].Type == ItemType::Directory)
-					{
-						std::filesystem::remove_all(items[idx].Path);
-					}
-					else if (items[idx].Type == ItemType::File)
-					{
-						std::filesystem::remove(items[idx].Path);
-					}
-				}
-					
-				if (item_curr_idx_to_select == idx)
-					item_next_idx_to_select = new_items.Size - 1;
-			}
-			items.swap(new_items);
-
-			// Update selection
-			Clear();
-			if (item_next_idx_to_select != -1 && ms_io->NavIdSelected)
-				SetItemSelected(GetStorageIdFromIndex(item_next_idx_to_select), true);
 		}
 	};
 
 
-	struct ContentBrowserItem
+	struct AssetItem
 	{
-		ImGuiID ID;
-		ItemType Type;
-		char Path[256];
-		char Label[32];
-		char Extension[8];
+		ImGuiID ID; //TODO: use asset id?
 
-		ContentBrowserItem(ItemType type, std::filesystem::path path)
+		std::filesystem::path Path;
+		std::string Name;
+		bool IsDirectory = false;
+
+		Ref<Engine::Texture2D> Thumbnail;
+
+		std::vector<AssetItem> Children; // only for directories
+
+		AssetItem(const std::filesystem::path& path) : Path(path), Name(path.filename().string()), IsDirectory(std::filesystem::is_directory(path)) 
 		{
-			Type = type;
-			std::size_t hash = std::hash<std::string>{}(path.string());
-			ID = static_cast<ImGuiID>(hash);
-
-			strncpy(Path, path.string().c_str(), sizeof(Path) - 1);
-			Path[sizeof(Path) - 1] = '\0'; // Ensure null-termination
-
-			strncpy(Label, path.filename().string().c_str(), sizeof(Label) - 1);
-			Label[sizeof(Label) - 1] = '\0'; // Ensure null-termination
-
-			strncpy(Extension, path.extension().string().c_str(), sizeof(Extension) - 1);
-			Extension[sizeof(Extension) - 1] = '\0'; // Ensure null-termination
-		}
-
-		void Rename(std::filesystem::path path)
-		{
-			std::filesystem::rename(Path, path);
-
-			std::size_t hash = std::hash<std::string>{}(path.string());
-			ID = static_cast<ImGuiID>(hash);
-
-			strncpy(Path, path.string().c_str(), sizeof(Path) - 1);
-			Path[sizeof(Path) - 1] = '\0'; // Ensure null-termination
-
-			strncpy(Label, path.filename().string().c_str(), sizeof(Label) - 1);
-			Label[sizeof(Label) - 1] = '\0'; // Ensure null-termination
-
-			strncpy(Extension, path.extension().string().c_str(), sizeof(Extension) - 1);
-			Extension[sizeof(Extension) - 1] = '\0'; // Ensure null-termination
+			ID = static_cast<ImGuiID>(std::hash<std::string>{}(path.string()));
 		}
 	};
 
@@ -137,20 +72,21 @@ namespace Editor
 	public:
 		ContentBrowserWindow();
 		void OnUpdate(Engine::Timestep ts) override;
-
 		void Reload();
+
+		void FilterItems();
 
 	private:
 		void UpdateLayoutSizes(float avail_width);
-		void RenderPath();
+		void DrawPath();
 		void ContentBrowserContextMenu();
 		void ItemContextMenu();
-		void NavigationBar();
-		void MainContent();
+		void DrawNavigationBar();
+		void DrawMainContent();
 
 	private:
 		std::filesystem::path m_CurrentDirectory;
-		std::filesystem::path m_AssetsDirectory;
+		//std::filesystem::path m_AssetsDirectory;
 		std::filesystem::path m_NewDirectory = ""; // handle for switching directories
 
 		char m_SearchBuffer[256] = { 0 };
@@ -161,27 +97,25 @@ namespace Editor
 		Ref<Engine::SubTexture2D> m_ImageIcon;
 		Ref<Engine::SubTexture2D> m_SceneIcon;
 
-		ImVector<ContentBrowserItem> m_Items;
+		std::vector<AssetItem> m_AllItems; // cache
+		std::vector<AssetItem> m_Items;
 		SelectionWithDeletion m_Selection;
 
 		const float m_TopBarHeight = 24.0f;
 		const int IconHitSpacing = 4;
 		const int IconSpacing = 10;
 		float IconSize = 64.0f;
-		ImVec2 LayoutItemSize;
-		ImVec2 LayoutItemStep;
+		ImVec2 m_LayoutItemSize;
+		ImVec2 m_LayoutItemStep;
 		float LayoutItemSpacing = 0.0f;
 		float LayoutSelectableSpacing = 0.0f;
 		float LayoutOuterPadding = 0.0f;
-		int LayoutColumnCount = 0;
+		int m_LayoutColumnCount = 0;
 		int LayoutLineCount = 0;
 		float ZoomWheelAccum = 0.0f;
 		bool RequestDelete = false;
 
 		std::vector<std::string> m_DroppedFiles;
-
-
-		inline ImVec2 ToImVec2(const glm::vec2& v) { return ImVec2(v.x, v.y); }
 
 	};
 }

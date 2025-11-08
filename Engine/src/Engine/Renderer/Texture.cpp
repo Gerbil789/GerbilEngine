@@ -19,10 +19,10 @@ namespace Engine
 		textureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
 		textureDesc.viewFormatCount = 0;
 		textureDesc.viewFormats = nullptr;
-		m_Texture = GraphicsContext::GetDevice().createTexture(textureDesc);
+		wgpu::Texture texture = GraphicsContext::GetDevice().createTexture(textureDesc);
 
 		wgpu::TexelCopyTextureInfo dst{};
-		dst.texture = m_Texture;
+		dst.texture = texture;
 		dst.mipLevel = 0;
 		dst.origin = { 0, 0, 0 };
 		dst.aspect = wgpu::TextureAspect::All;
@@ -44,7 +44,28 @@ namespace Engine
 		viewDesc.baseArrayLayer = 0;
 		viewDesc.arrayLayerCount = 1;
 		viewDesc.aspect = wgpu::TextureAspect::All;
-		m_TextureView = m_Texture.createView(viewDesc);
+		m_TextureView = texture.createView(viewDesc);
+	}
+
+	SubTexture2D::SubTexture2D(const Ref<Texture2D>& texture, const glm::vec2& min, const glm::vec2& max) : m_Texture(texture), m_UVMin(min), m_UVMax(max) {}
+
+	Ref<SubTexture2D> SubTexture2D::CreateFromGrid(const Ref<Texture2D>& texture, const glm::ivec2& cellCoords, const glm::ivec2& cellSize, const glm::ivec2& spriteSize)
+	{
+		glm::vec2 texSize = { (float)texture->GetWidth(), (float)texture->GetHeight() };
+
+		glm::vec2 min
+		{
+				(cellCoords.x * cellSize.x) / texSize.x,
+				(cellCoords.y * cellSize.y) / texSize.y
+		};
+
+		glm::vec2 max
+		{
+				((cellCoords.x + spriteSize.x) * cellSize.x) / texSize.x,
+				((cellCoords.y + spriteSize.y) * cellSize.y) / texSize.y
+		};
+
+		return CreateRef<SubTexture2D>(texture, min, max);
 	}
 
 	CubeMapTexture::CubeMapTexture(const TextureSpecification& specification, const std::array<const void*, 6>& data)
@@ -62,13 +83,13 @@ namespace Engine
     textureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
     textureDesc.viewFormatCount = 0;
     textureDesc.viewFormats = nullptr;
-    m_Texture = GraphicsContext::GetDevice().createTexture(textureDesc);
+		wgpu::Texture texture = GraphicsContext::GetDevice().createTexture(textureDesc);
 
 
     for (uint32_t layer = 0; layer < 6; ++layer)
     {
       wgpu::TexelCopyTextureInfo dst{};
-      dst.texture = m_Texture;
+      dst.texture = texture;
       dst.mipLevel = 0;
       dst.origin = { 0, 0, layer };
       dst.aspect = wgpu::TextureAspect::All;
@@ -91,6 +112,6 @@ namespace Engine
     viewDesc.arrayLayerCount = 6;
     viewDesc.aspect = wgpu::TextureAspect::All;
 
-    m_TextureView = m_Texture.createView(viewDesc);
+    m_TextureView = texture.createView(viewDesc);
 	}
 }

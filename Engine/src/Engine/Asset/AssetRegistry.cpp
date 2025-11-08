@@ -15,7 +15,9 @@ namespace Engine
 
 		YAML::Node data = YAML::LoadFile(path.string());
 		if (!data["Assets"])
+		{
 			return;
+		}
 
 		auto assetsDir = Project::GetAssetsDirectory();
 		m_Records.clear();

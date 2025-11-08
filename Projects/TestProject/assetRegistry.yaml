@@ -19,6 +19,8 @@ Assets:
     Path: Textures\bricks_wall\ambient.png
   - ID: 16789549155580106633
     Path: Textures\metal_plates\normal.png
+  - ID: 6538048173471328587
+    Path: Meshes\sphere.glb
   - ID: 14899039829185301908
     Path: Textures\bricks_wall\height.png
   - ID: 7280531552173679287
