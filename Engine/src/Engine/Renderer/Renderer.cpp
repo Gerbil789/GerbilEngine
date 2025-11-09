@@ -233,11 +233,14 @@ namespace Engine
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-		// Skybox
-		auto& skybox = m_Camera->GetSkybox();
-		m_RenderPass.setPipeline(skybox.GetShader().GetRenderPipeline());
-		m_RenderPass.setBindGroup(1, skybox.GetBindGroup(), 0, nullptr);
-		m_RenderPass.draw(36, 1, 0, 0);
+		if(m_Camera->GetBackgroundType() == Camera::BackgroundType::Skybox)
+		{
+			// Skybox
+			auto& skybox = m_Camera->GetSkybox();
+			m_RenderPass.setPipeline(skybox.GetShader().GetRenderPipeline());
+			m_RenderPass.setBindGroup(1, skybox.GetBindGroup(), 0, nullptr);
+			m_RenderPass.draw(36, 1, 0, 0);
+		}
 
 		// Entities
 		std::vector<Entity> entities = m_Scene->GetEntities<TransformComponent, MeshComponent>();

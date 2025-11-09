@@ -77,7 +77,7 @@ namespace Engine::SceneManager
 		}
 
 		Ref<Scene> scene = AssetManager::GetAsset<Scene>(s_ActiveScene->id);
-		auto assetPath = Project::GetActive()->GetAssetManager()->GetAssetPath(s_ActiveScene->id);
+		auto assetPath = AssetManager::GetAssetPath(s_ActiveScene->id);
 
 		if(assetPath.empty())
 		{

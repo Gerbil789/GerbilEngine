@@ -3,6 +3,7 @@
 #include "Editor/Core/EditorWindowManager.h"
 #include "Engine/Core/Project.h"
 #include "Editor/Core/EditorIcons.h"
+
 //tmp
 #include "Editor/Windows/MaterialWindow.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
@@ -24,6 +25,8 @@ namespace Editor
 
 		auto args = specification.args;
 
+
+
 		if (args.Count > 1)
 		{
 			auto projectFilePath = args[1];
@@ -41,7 +44,9 @@ namespace Editor
 			Engine::Project::Load(projectDirectoryPath);
 		}
 
-		EditorIcons::Init(Engine::TextureImporter::LoadTexture2D("Resources/Editor/icons/icons.png"), { 64, 64 });
+		Engine::AssetManager::Initialize();
+		EditorIcons::Load(Engine::TextureImporter::LoadTexture2D("Resources/Editor/icons/icons.png"));
+
 
 		EditorWindowManager::Initialize();
 
@@ -121,8 +126,8 @@ namespace Editor
 
 
 
-			auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
-			session->SelectEntity(cube);
+
+
 		}
 
 
@@ -139,6 +144,21 @@ namespace Editor
 			//cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
 
 			LOG_INFO("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
+		}
+
+		// Camera Entity
+		{
+			auto cam = scene->CreateEntity("camera");
+
+			auto& component = cam.AddComponent<Engine::CameraComponent>();
+			scene->SetActiveCamera(cam);
+
+			cam.GetComponent<Engine::TransformComponent>().Position = { 0.0f, 0.0f, 10.0f };
+
+			LOG_INFO("Created entity '{0}' with ID: {1}", cam.GetName(), cam.GetUUID());
+
+			auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
+			session->SelectEntity(cam);
 		}
 	}
 

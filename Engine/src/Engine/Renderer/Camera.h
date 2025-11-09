@@ -40,6 +40,7 @@ namespace Engine
 		float GetYaw() const { return m_Yaw; }
 
 		void SetBackgroundType(BackgroundType type) { m_BackgroundType = type; }
+		const BackgroundType GetBackgroundType() const { return m_BackgroundType; }
 		glm::vec4 GetClearColor() const { return m_ClearColor; }
 		void SetClearColor(const glm::vec4& color) { m_ClearColor = color; }
 		//void SetSkyboxTexture(const Ref<CubeMapTexture>& texture) { m_Skybox = skybox; }

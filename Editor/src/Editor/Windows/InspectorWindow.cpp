@@ -185,7 +185,7 @@ namespace Editor
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 			{
-				Camera& camera = component.Camera;
+				Ref<Camera> camera = component.Camera;
 
 				//UI::BoolControl("Primary", component.Main);
 				//UI::BoolControl("Fixed Aspect Ratio", component.FixedAspectRatio);

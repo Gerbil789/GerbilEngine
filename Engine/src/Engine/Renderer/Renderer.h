@@ -25,6 +25,7 @@ namespace Engine
 
 		wgpu::TextureView GetTextureView() const { return m_TextureView; }
 
+
 		static wgpu::BindGroupLayout GetModelBindGroupLayout() { return s_ModelBindGroupLayout; }
 		static wgpu::BindGroupLayout GetFrameBindGroupLayout() { return s_FrameBindGroupLayout; }
 

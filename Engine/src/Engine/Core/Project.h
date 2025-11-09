@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Asset/EditorAssetManager.h"
 #include <string>
 #include <filesystem>
 
@@ -14,7 +13,6 @@ namespace Engine
 		static void Save();
 
 		static Ref<Project> GetActive() { return s_ActiveProject; }
-		Ref<EditorAssetManager> GetAssetManager() { return m_AssetManager; }
 
 		inline static std::filesystem::path GetProjectDirectory()
 		{
@@ -40,7 +38,6 @@ namespace Engine
 		std::filesystem::path m_ProjectDirectory;
 		std::string m_Title = "Untitled";
 		UUID m_StartSceneID = UUID(0);
-		Ref<EditorAssetManager> m_AssetManager;
 
 		inline static Ref<Project> s_ActiveProject;
 	};

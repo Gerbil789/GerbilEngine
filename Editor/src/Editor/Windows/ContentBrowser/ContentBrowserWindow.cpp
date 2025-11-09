@@ -3,10 +3,8 @@
 #include "Engine/Core/Project.h"
 #include "Engine/Renderer/Material.h"
 #include "Engine/Scene/Scene.h"
-#include "Engine/Scene/SceneManager.h"
 #include "Engine/Core/Application.h"
-#include "Editor/Core/EditorApp.h"
-#include "Editor/Core/EditorIcons.h"
+
 #include "Editor/Components/ScopedStyle.h"
 #include <GLFW/glfw3.h>
 
@@ -17,12 +15,6 @@ namespace Editor
 	ContentBrowserWindow::ContentBrowserWindow()
 	{
 		m_CurrentDirectory = Engine::Project::GetAssetsDirectory();
-
-		m_EmptyFolderIcon = EditorIcons::GetIcon("EmptyFolder");
-		m_FolderIcon = EditorIcons::GetIcon("Folder");
-		m_FileIcon = EditorIcons::GetIcon("File");
-		m_ImageIcon = EditorIcons::GetIcon("Image");
-		m_SceneIcon = EditorIcons::GetIcon("Scene");
 
 		glfwSetDropCallback(Engine::Application::GetWindow().GetNativeWindow(), [](GLFWwindow* window, int count, const char* paths[])
 			{
@@ -40,10 +32,7 @@ namespace Editor
 				}
 			});
 
-
-		//Engine::AssetManager
-
-		Reload();
+		OpenDirectory(m_CurrentDirectory);
 	}
 
 	void ContentBrowserWindow::OnUpdate(Engine::Timestep ts)
@@ -52,61 +41,59 @@ namespace Editor
 		DrawNavigationBar();
 		DrawMainContent();
 		ImGui::End();
+
+		if (directoryToOpenIndex != -1)
+		{
+			auto& item = m_Items[directoryToOpenIndex];
+			OpenDirectory(item.Path);
+			directoryToOpenIndex = -1;
+		}
 	}
 
-	AssetItem LoadDirectory(const std::filesystem::path& dir)
+	void ContentBrowserWindow::OpenDirectory(const std::filesystem::path& path)
 	{
-		AssetItem node(dir);
+		m_CurrentDirectory = path;
+		RefreshDirectory();
+	}
 
-		for (auto& entry : std::filesystem::directory_iterator(dir))
+	void ContentBrowserWindow::RefreshDirectory()
+	{
+		m_Items.clear();
+
+		// find directories first
+		for (auto& entry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
+			auto path = entry.path();
 			if (entry.is_directory())
 			{
-				node.Children.push_back(LoadDirectory(entry.path()));
-			}
-			else
-			{
-				AssetItem file(entry.path());
-				node.Children.push_back(file);
+				m_Items.emplace_back(Engine::UUID(), path); // UUID optional for folder
 			}
 		}
 
-		return node;
-	}
+		// then find files
+		for (const auto& asset : Engine::AssetManager::m_AssetRegistry.GetAll())
+		{
+			Engine::UUID id = asset.first;
+			std::filesystem::path path = asset.second.path;
 
-
-	void ContentBrowserWindow::Reload()
-	{
-		m_Items.clear();
-		AssetItem root = LoadDirectory(m_CurrentDirectory);
-		m_Items = root.Children;
-	}
-
-	void ContentBrowserWindow::FilterItems()
-	{
-	}
-
-
-	void FilterAssetTree(const AssetItem& node, const std::string& search, std::vector<const AssetItem*>& outItems)
-	{
-		if (!node.IsDirectory && node.Name.find(search) != std::string::npos)
-			outItems.push_back(&node);
-
-		for (const auto& child : node.Children)
-			FilterAssetTree(child, search, outItems);
+			if (path.parent_path() == m_CurrentDirectory)
+			{
+				m_Items.emplace_back(id, path);
+			}
+		}
 	}
 
 	void ContentBrowserWindow::UpdateLayoutSizes(float avail_width)
 	{
-		LayoutItemSpacing = (float)IconSpacing;
+		const float itemSpacing = 10.0f;
 
 		m_LayoutItemSize = ImVec2(floorf(IconSize), floorf(IconSize) + 20.0f);
-		m_LayoutColumnCount = std::max((int)(avail_width / (m_LayoutItemSize.x + LayoutItemSpacing)), 1);
+		m_LayoutColumnCount = std::max((int)(avail_width / (m_LayoutItemSize.x + itemSpacing)), 1);
 		LayoutLineCount = (static_cast<int>(m_Items.size()) + m_LayoutColumnCount - 1) / m_LayoutColumnCount;
 
-		m_LayoutItemStep = ImVec2(m_LayoutItemSize.x + LayoutItemSpacing, m_LayoutItemSize.y + LayoutItemSpacing);
-		LayoutSelectableSpacing = std::max(floorf(LayoutItemSpacing) - IconHitSpacing, 0.0f);
-		LayoutOuterPadding = floorf(LayoutItemSpacing * 0.5f);
+		m_LayoutItemStep = ImVec2(m_LayoutItemSize.x + itemSpacing, m_LayoutItemSize.y + itemSpacing);
+		LayoutSelectableSpacing = std::max(floorf(itemSpacing) - 4, 0.0f);
+		LayoutOuterPadding = floorf(itemSpacing * 0.5f);
 	}
 
 	void ContentBrowserWindow::DrawNavigationBar()
@@ -115,34 +102,20 @@ namespace Editor
 			{ ImGuiStyleVar_FramePadding, ImVec2(4, 4) }
 			});
 
-		ImGui::BeginChild("TopBar", ImVec2(0, m_TopBarHeight), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		ImGui::BeginChild("NavBar", ImVec2(0, 24), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-		ImGui::PushItemWidth(100.0f);
-
-		if (ImGui::InputText("##Search", m_SearchBuffer, IM_ARRAYSIZE(m_SearchBuffer)))
-		{
-			FilterItems();
-		}
-		ImGui::SameLine();
-
-		DrawPath();
-		ImGui::EndChild();
-	}
-
-	void ContentBrowserWindow::DrawPath()
-	{
 		auto relativePath = std::filesystem::relative(m_CurrentDirectory, Engine::Project::GetAssetsDirectory());
 
 		std::filesystem::path pathSoFar = Engine::Project::GetAssetsDirectory();
 
 		if (ImGui::Button("Assets"))
 		{
-			m_CurrentDirectory = Engine::Project::GetAssetsDirectory();
-			Reload();
+			OpenDirectory(Engine::Project::GetAssetsDirectory());
 		}
 
 		if (m_CurrentDirectory == Engine::Project::GetAssetsDirectory())
 		{
+			ImGui::EndChild();
 			return;
 		}
 
@@ -157,13 +130,12 @@ namespace Editor
 
 			if (ImGui::Button(component.string().c_str()))
 			{
-				m_CurrentDirectory = pathSoFar;
-				Reload();
+				OpenDirectory(pathSoFar);
 			}
 		}
+
+		ImGui::EndChild();
 	}
-
-
 
 	void ContentBrowserWindow::ContentBrowserContextMenu()
 	{
@@ -171,21 +143,13 @@ namespace Editor
 		{
 			if (ImGui::BeginMenu("Create"))
 			{
-				if (ImGui::MenuItem("Folder"))
+				if (ImGui::MenuItem("Directory"))
 				{
-					//create a new folder
-					std::string folderName = "newFolder";
-					std::filesystem::path newFolderPath = m_CurrentDirectory / folderName;
-					std::filesystem::create_directory(newFolderPath);
-					Reload();
+					std::filesystem::create_directory(m_CurrentDirectory / "newDirectory");
+					RefreshDirectory();
 				}
-
-				ImGui::Separator();
-
-				ImGui::EndMenu(); // End of "Create" menu
-
+				ImGui::EndMenu();
 			}
-
 			ImGui::EndPopup();
 		}
 	}
@@ -203,12 +167,10 @@ namespace Editor
 		}
 	}
 
-	
-
 	void ContentBrowserWindow::DrawMainContent()
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		ImGui::BeginChild("MainContent", ImVec2(0, ImGui::GetContentRegionAvail().y - m_TopBarHeight), false);
+		ImGui::BeginChild("MainContent", ImVec2(0, ImGui::GetContentRegionAvail().y), false);
 
 		UpdateLayoutSizes(ImGui::GetContentRegionAvail().x);
 
@@ -222,7 +184,7 @@ namespace Editor
 
 		// Use custom selection adapter: store ID in selection (recommended)
 		m_Selection.UserData = this;
-		m_Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { ContentBrowserWindow* self = (ContentBrowserWindow*)self_->UserData; return self->m_Items[idx].ID; };
+		m_Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { ContentBrowserWindow* self = (ContentBrowserWindow*)self_->UserData; return (unsigned int)self->m_Items[idx].UUID; };
 		m_Selection.ApplyRequests(ms_io);
 
 		const bool want_delete = (ImGui::Shortcut(ImGuiKey_Delete, ImGuiInputFlags_Repeat) && (m_Selection.Size > 0)) || RequestDelete;
@@ -252,14 +214,14 @@ namespace Editor
 				for (int item_idx = item_min_idx_for_current_line; item_idx < item_max_idx_for_current_line; ++item_idx)
 				{
 					AssetItem* item_data = &m_Items[item_idx];
-					ImGui::PushID((int)item_data->ID);
+					ImGui::PushID((unsigned int)item_data->UUID);
 
 					// Position item
 					ImVec2 pos = ImVec2(start_pos.x + (item_idx % column_count) * m_LayoutItemStep.x, start_pos.y + line_idx * m_LayoutItemStep.y);
 					ImGui::SetCursorScreenPos(pos);
 
 					ImGui::SetNextItemSelectionUserData(item_idx);
-					bool item_is_selected = m_Selection.Contains(item_data->ID);
+					bool item_is_selected = m_Selection.Contains((unsigned int)item_data->UUID);
 					bool item_is_visible = ImGui::IsRectVisible(m_LayoutItemSize);
 					ImGui::Selectable("##unique_id", item_is_selected, ImGuiSelectableFlags_None, ImVec2(m_LayoutItemSize.x, m_LayoutItemSize.y));
 
@@ -274,22 +236,21 @@ namespace Editor
 
 					if (ImGui::BeginDragDropSource())
 					{
-						ImGui::SetDragDropPayload("ASSET_ITEM", item_data->Path.c_str(), sizeof(item_data->Path.string().c_str()));
-						ImGui::Text("Dragging %s", item_data->Path.string().c_str());
+						Engine::UUID uuid = item_data->UUID;
+						ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
+						ImGui::Text("%s", item_data->Path.string().c_str());
 						ImGui::EndDragDropSource();
 					}
 
 					if (ImGui::BeginDragDropTarget()) 
 					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_ITEM")) 
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID")) 
 						{
-							auto size = payload->DataSize;
+							Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
 
+							auto path = Engine::AssetManager::m_AssetRegistry.GetPath(droppedUUID);
 
-							const char* droppedFilePath = static_cast<const char*>(payload->Data);
-
-							LOG_INFO("Dropped file path: {0}", droppedFilePath);
-							//LoadFile(droppedFilePath); // Implement LoadFile to handle the dropped file
+							LOG_INFO("Dropped file path: {0}", path);
 						}
 						ImGui::EndDragDropTarget();
 					}
@@ -305,41 +266,35 @@ namespace Editor
 					ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
 
 
-					auto icon = m_FolderIcon;
-					if (item_data->IsDirectory && std::filesystem::is_empty(item_data->Path))
+					if(item_data->Thumbnail != nullptr)
 					{
-						icon = m_EmptyFolderIcon;
+						// thumbnail
+						draw_list->AddImage(
+							(ImTextureID)(intptr_t)(WGPUTextureView)item_data->Thumbnail,
+							box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
+							ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f)
+						);
 					}
-					else if(!item_data->IsDirectory)
+					else
 					{
-						icon = m_FileIcon;
+						// icon
+						draw_list->AddImage(
+							(ImTextureID)(intptr_t)(WGPUTextureView)item_data->Icon->GetTexture()->GetTextureView(),
+							box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
+							ImVec2(item_data->Icon->GetUVMin().x, item_data->Icon->GetUVMin().y),
+							ImVec2(item_data->Icon->GetUVMax().x, item_data->Icon->GetUVMax().y)
+						);
 					}
 
-					draw_list->AddImage(
-						(ImTextureID)(intptr_t)(WGPUTextureView)icon->GetTexture()->GetTextureView(),
-						box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
-						ImVec2(icon->GetUVMin().x, icon->GetUVMin().y),
-						ImVec2(icon->GetUVMax().x, icon->GetUVMax().y)
-					);
-
-
+					// label
 					draw_list->AddText(ImVec2(box_min.x + m_LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data->Name.c_str()).x / 2, box_max.y - ImGui::GetFontSize() + 10), label_col, item_data->Name.c_str());
-					if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-					{
-						m_NewDirectory = item_data->Path;
-					}
-
 					
-
-
-					//draw_list->PushClipRect(box_min, ImVec2(box_max.x, box_max.y + ImGui::GetFontSize() + 10), !item_is_selected);
-					//draw_list->AddText(ImVec2(box_min.x + LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data->Label).x / 2, box_max.y - ImGui::GetFontSize() + 10), label_col, item_data->Label);
-					//draw_list->PopClipRect();
-
+					if (item_data->IsDirectory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+					{
+						directoryToOpenIndex = item_idx;
+					}
 
 					ItemContextMenu();
-
-
 
 					ImGui::PopID();
 				}
@@ -368,8 +323,8 @@ namespace Editor
 			{
 				// Calculate hovered item index from mouse location
 				// FIXME: Locking aiming on 'hovered_item_idx' (with a cool-down timer) would ensure zoom keeps on it.
-				const float hovered_item_nx = (io.MousePos.x - start_pos.x + LayoutItemSpacing * 0.5f) / m_LayoutItemStep.x;
-				const float hovered_item_ny = (io.MousePos.y - start_pos.y + LayoutItemSpacing * 0.5f) / m_LayoutItemStep.y;
+				const float hovered_item_nx = (io.MousePos.x - start_pos.x + 10.0f * 0.5f) / m_LayoutItemStep.x;
+				const float hovered_item_ny = (io.MousePos.y - start_pos.y + 10.0f * 0.5f) / m_LayoutItemStep.y;
 				const int hovered_item_idx = ((int)hovered_item_ny * m_LayoutColumnCount) + (int)hovered_item_nx;
 				//ImGui::SetTooltip("%f,%f -> item %d", hovered_item_nx, hovered_item_ny, hovered_item_idx); // Move those 4 lines in block above for easy debugging
 
@@ -387,13 +342,6 @@ namespace Editor
 				float mouse_local_y = io.MousePos.y - ImGui::GetWindowPos().y;
 				ImGui::SetScrollY(hovered_item_rel_pos_y - mouse_local_y);
 			}
-		}
-
-		if (!m_NewDirectory.empty())
-		{
-			m_CurrentDirectory = m_NewDirectory;
-			m_NewDirectory.clear();
-			Reload();
 		}
 
 		ImGui::EndChild(); // end Main Content

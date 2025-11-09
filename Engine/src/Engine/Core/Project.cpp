@@ -43,8 +43,6 @@ namespace Engine
 		s_ActiveProject->m_StartSceneID = UUID(id);
 
 		s_ActiveProject->m_ProjectDirectory = projectDirectoryPath;
-		s_ActiveProject->m_AssetManager = CreateRef<EditorAssetManager>();
-		s_ActiveProject->m_AssetManager->Initialize();
 
 		LOG_INFO("Loaded project '{0}' from {1}", s_ActiveProject->m_Title, configPath);
 		return s_ActiveProject;

@@ -4,7 +4,7 @@
 #include "Engine/Utils/File.h"
 #include "Engine/Renderer/GraphicsContext.h"
 #include "Editor/Components/MenuBar.h"
-#include "Editor/Windows/ContentBrowserWindow.h"
+#include "Editor/Windows/ContentBrowser/ContentBrowserWindow.h"
 #include "Editor/Windows/InspectorWindow.h"
 #include "Editor/Windows/SceneHierarchyWindow.h"
 #include "Editor/Windows/MaterialWindow.h"

@@ -77,9 +77,7 @@ namespace Engine //TODO: remove all default constructors later, now its needed f
 
 	struct CameraComponent
 	{
-		Camera Camera; //TODO: use Ref<Camera> instead?
-		bool Main = true; // TODO: Move to Scene
-		bool FixedAspectRatio = false;
+		Ref<Camera> Camera = nullptr;
 
 		CameraComponent() = default;
 	};

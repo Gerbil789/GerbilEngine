@@ -19,7 +19,9 @@ namespace Editor
 
 	ViewportWindow::ViewportWindow()
 	{
-		m_Renderer.SetCamera(&m_CameraController.GetCamera());
+		auto camera = &m_CameraController.GetCamera();
+		camera->SetBackgroundType(Camera::BackgroundType::Skybox);
+		m_Renderer.SetCamera(camera);
 
 		SceneManager::RegisterOnSceneChanged([this](Scene* scene)
 			{

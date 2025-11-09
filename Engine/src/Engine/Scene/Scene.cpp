@@ -24,6 +24,27 @@ namespace Engine
 		return entity;
 	}
 
+	Entity Scene::GetActiveCamera()
+	{
+		if (m_ActiveCamera == entt::null)
+		{
+			return {}; // Return null entity wrapper
+		}
+
+		return Entity{ m_ActiveCamera, this };
+	}
+
+	void Scene::SetActiveCamera(Entity entity)
+	{
+		if (!entity.HasComponent<CameraComponent>())
+		{
+			LOG_WARNING("Setting active camera to entity without CameraComponent!");
+			return;
+		}
+
+		m_ActiveCamera = entity;
+	}
+
 	Entity Scene::GetEntity(UUID uuid)
 	{
 		auto view = m_Registry.view<IdentityComponent>();

@@ -1,48 +1,53 @@
 #pragma once
 
 #include "Engine/Renderer/Texture.h"
-#include <unordered_map>
-#include <string>
 
 namespace Editor
 {
+  enum class Icon
+  {
+    EmptyFolder,
+    Folder,
+    File,
+    EmptyFile,
+    AudioFile,
+    Landscape,
+    Image,
+    Mesh
+  };
+
+
   class EditorIcons
   {
   public:
-    static void Init(const Ref<Engine::Texture2D>& iconSheet, const glm::ivec2& cellSize)
+    static void Load(const Ref<Engine::Texture2D> textureAtlas)
     {
-      s_IconSheet = iconSheet;
-      s_CellSize = cellSize;
+      s_TextureAtlas = textureAtlas;
 
-      AddIcon("EmptyFolder", { 0, 0 });
-      AddIcon("Folder", { 1, 0 });
-      AddIcon("File", { 2, 0 });
-      AddIcon("Image", { 3, 0 });
-      AddIcon("Scene", { 4, 0 });
+      AddIcon(Icon::EmptyFolder, { 0, 0 });
+      AddIcon(Icon::Folder, { 1, 0 });
+      AddIcon(Icon::File, { 2, 0 });
+      AddIcon(Icon::EmptyFile, { 3, 0 });
+      AddIcon(Icon::AudioFile, { 4, 0 });
+      AddIcon(Icon::Landscape, { 5, 0 });
+      AddIcon(Icon::Image, { 6, 0 });
+      AddIcon(Icon::Mesh, { 7, 0 });
     }
 
-		//TODO: return default icon if not found
-		//TODO: use enums for faster lookup
-    static Ref<Engine::SubTexture2D> GetIcon(const std::string& name)
+    static Ref<Engine::SubTexture2D> GetIcon(Icon icon)
     {
-      auto it = s_Icons.find(name);
-      if (it != s_Icons.end())
-      {
-        return it->second;
-      }
-
-      return nullptr;
+      return s_Icons[(size_t)icon];
     }
 
   private:
-    static void AddIcon(const std::string& name, const glm::ivec2& coords)
+    static void AddIcon(Icon icon, const glm::ivec2& coords)
     {
-      s_Icons[name] = Engine::SubTexture2D::CreateFromGrid(s_IconSheet, coords, s_CellSize);
+      s_Icons[(size_t)icon] = Engine::SubTexture2D::CreateFromGrid(s_TextureAtlas, coords, s_CellSize);
     }
 
   private:
-    inline static Ref<Engine::Texture2D> s_IconSheet;
-    inline static glm::ivec2 s_CellSize;
-    inline static std::unordered_map<std::string, Ref<Engine::SubTexture2D>> s_Icons;
+    inline static Ref<Engine::Texture2D> s_TextureAtlas;
+		inline static glm::ivec2 s_CellSize{ 64, 64 };
+    inline static std::array<Ref<Engine::SubTexture2D>, 8> s_Icons;
   };
 }
