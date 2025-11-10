@@ -14,14 +14,23 @@ namespace Engine
 		bool IsUUIDValid(const UUID& id) const { return id.IsValid() && m_Records.find(id) != m_Records.end(); }
 		const AssetMetadata* Create(const std::filesystem::path& path);
 
-		const UUID& GetUUIDFromPath(const std::filesystem::path& path) const;
+		const UUID GetUUIDFromPath(const std::filesystem::path& path) const;
 		const AssetMetadata* GetMetadata(const UUID& id) const;
 
 		std::filesystem::path GetPath(const UUID& id) const;
 		std::filesystem::path GetRelativePath(const UUID& id) const;
 
+		std::vector<const AssetMetadata*> GetAllRecords() const
+		{
+			std::vector<const AssetMetadata*> records;
+			records.reserve(m_Records.size());
+			for (const auto& [id, metadata] : m_Records)
+			{
+				records.push_back(&metadata);
+			}
 
-		const std::unordered_map<UUID, AssetMetadata>& GetAll() const { return m_Records; }
+			return records;
+		}
 
 		void Clear() { m_Records.clear(); }
 

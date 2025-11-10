@@ -23,6 +23,7 @@ namespace Editor
 		void ItemContextMenu();
 		void DrawNavigationBar();
 		void DrawMainContent();
+		void DrawItem(const AssetItem& item_data, int item_idx, ImDrawList* draw_list, const ImVec2& pos, const ImU32 label_col);
 
 	private:
 		std::filesystem::path m_CurrentDirectory;
@@ -40,6 +41,6 @@ namespace Editor
 		int m_LayoutColumnCount = 0;
 		int LayoutLineCount = 0;
 		float ZoomWheelAccum = 0.0f;
-		bool RequestDelete = false;
+		bool m_RequestDelete = false;
 	};
 }

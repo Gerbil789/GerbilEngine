@@ -147,7 +147,7 @@ namespace Engine
 		return &m_Records[id];
 	}
 
-	const UUID& AssetRegistry::GetUUIDFromPath(const std::filesystem::path& path) const
+	const UUID AssetRegistry::GetUUIDFromPath(const std::filesystem::path& path) const
 	{
 		for (const auto& [uuid, record] : m_Records)
 		{
@@ -173,9 +173,12 @@ namespace Engine
 	{
 		static std::filesystem::path emptyPath;
 		if (auto it = m_Records.find(id); it != m_Records.end())
+		{
 			return it->second.path;
-		return emptyPath;
+		}
 
+		LOG_ERROR("AssetRegistry::GetPath - UUID '{}' not found in registry.", id);
+		return emptyPath;
 	}
 
 	std::filesystem::path AssetRegistry::GetRelativePath(const UUID& id) const

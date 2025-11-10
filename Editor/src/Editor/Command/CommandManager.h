@@ -2,6 +2,7 @@
 
 #include "Engine/Core/Core.h"
 #include "Editor/Command/ICommand.h"
+#include "Engine/Event/KeyEvent.h"
 #include <stack>
 
 namespace Editor
@@ -9,43 +10,67 @@ namespace Editor
   class CommandManager 
   {
   public:
-    void ExecuteCommand(Scope<ICommand> command) 
+		template <typename T, typename... Args>
+    static void ExecuteCommand(Args&&... args)
     {
+      auto command = CreateScope<T>(std::forward<Args>(args)...);
       command->Execute();
-      m_UndoStack.push(std::move(command));
-      while (!m_RedoStack.empty()) m_RedoStack.pop(); // clear redo
+      s_UndoStack.push(std::move(command));
+
+      // clear redo stack
+      std::stack<Scope<ICommand>> empty;
+      s_RedoStack.swap(empty);
     }
 
-    void Undo() 
+    static void Undo()
     {
-      if (m_UndoStack.empty())
+      if (s_UndoStack.empty())
       {
-				LOG_TRACE("Undo stack is empty, cannot undo.");
         return;
       }
         
-      auto command = std::move(m_UndoStack.top());
-      m_UndoStack.pop();
+      auto command = std::move(s_UndoStack.top());
+      s_UndoStack.pop();
       command->Undo();
-      m_RedoStack.push(std::move(command));
+      s_RedoStack.push(std::move(command));
     }
 
-    void Redo() 
+    static void Redo()
     {
-      if (m_RedoStack.empty())
+      if (s_RedoStack.empty())
       {
-        LOG_TRACE("Redo stack is empty, cannot redo.");
 				return;
       }
 
-      auto command = std::move(m_RedoStack.top());
-      m_RedoStack.pop();
+      auto command = std::move(s_RedoStack.top());
+      s_RedoStack.pop();
       command->Execute();
-      m_UndoStack.push(std::move(command));
+      s_UndoStack.push(std::move(command));
+    }
+
+    static void OnEvent(Engine::Event& e)
+    {
+      if (e.GetEventType() == Engine::EventType::KeyPressed)
+      {
+        auto& event = static_cast<Engine::KeyPressedEvent&>(e);
+        if ((event.GetKey() == Engine::Key::Z || event.GetKey() == Engine::Key::Y) && Engine::Input::IsKeyPressed(Engine::Key::LeftControl))
+        {
+          if (!Engine::Input::IsKeyPressed(Engine::Key::LeftShift))
+          {
+            Undo();
+          }
+          else
+          {
+            Redo();
+          }
+        }
+      }
     }
 
   private:
-    std::stack<Scope<ICommand>> m_UndoStack;
-    std::stack<Scope<ICommand>> m_RedoStack;
+		//const static int s_MaxUndoSteps = 128; //TODO: limit undo steps
+
+    inline static std::stack<Scope<ICommand>> s_UndoStack;
+    inline static std::stack<Scope<ICommand>> s_RedoStack;
   };
 }

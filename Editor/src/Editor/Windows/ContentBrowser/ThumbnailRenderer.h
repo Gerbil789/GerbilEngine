@@ -17,7 +17,7 @@ public:
 		Engine::Camera* camera = new Engine::Camera();
 		camera->SetBackgroundType(Engine::Camera::BackgroundType::Color);
 		camera->SetViewportSize({ 64.0f, 64.0f });
-		camera->SetPosition({ 0.0f, 0.0f, 4.0f });
+		camera->SetPosition({ 0.0f, 0.0f, 3.0f });
 		camera->SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
 
 		m_PreviewMesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/sphere.glb");

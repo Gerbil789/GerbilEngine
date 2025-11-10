@@ -7,7 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
 #include <filesystem>
-#include "Editor/Session/EditorSessionManager.h"
+#include "Editor/Core/EditorContext.h"
 
 namespace Editor
 {
@@ -17,8 +17,8 @@ namespace Editor
 	{
 		ImGui::Begin("Inspector");
 
-		auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
-		Entity entity = session->GetActiveEntity();
+
+		Entity entity = EditorContext::GetActiveEntity();
 
 		if (!entity)
 		{
@@ -117,71 +117,6 @@ namespace Editor
 				ImGui::Columns(1);
 			});
 
-		//DrawComponent<SpriteComponent>("Sprite Renderer", entity, [](auto& component)
-		//	{
-		//		ImGui::Button("Material", ImVec2(100.0f, 0.0f));
-		//		if (ImGui::BeginDragDropTarget())
-		//		{
-		//			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-		//			{
-		//				if (payload->DataSize == 0)
-		//				{
-		//					LOG_WARNING("Failed to load material! (DataSize == 0)");
-		//				}
-		//				else
-		//				{
-		//					const wchar_t* droppedPath = (const wchar_t*)payload->Data;
-		//					std::filesystem::path path(droppedPath);
-		//					if (path.extension() == ".material")
-		//					{
-		//						component.Material = AssetManager::Get<Material>(path);
-		//					}
-		//					else
-		//					{
-		//						LOG_WARNING("Failed to load material!");
-		//					}
-		//				}
-
-
-		//			}
-		//			ImGui::EndDragDropTarget();
-		//		}
-
-		//		ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-
-		//		ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
-		//		if (ImGui::BeginDragDropTarget())
-		//		{
-		//			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-		//			{
-		//				const wchar_t* droppedPath = (const wchar_t*)payload->Data;
-		//				std::filesystem::path path(droppedPath);
-		//				if (path.extension() == ".png" || path.extension() == ".jpg")
-		//				{
-		//					component.Texture = AssetManager::Get<Texture2D>(path);
-		//				}
-		//				else {
-		//					LOG_WARNING("Failed to load texture!");
-		//				}
-		//			}
-		//			ImGui::EndDragDropTarget();
-		//		}
-
-		//		// Set the width of the window or column you are working within
-		//		ImGui::PushItemWidth(-1);
-
-		//		ImGui::Text("Tiling");
-		//		ImGui::SameLine();
-		//		ImGui::PushItemWidth(50);
-		//		ImGui::DragFloat("x", &component.TilingFactor.x, 0.1f, 0.0f, 0.0f, "%.2f");
-
-		//		ImGui::SameLine();
-		//		ImGui::PushItemWidth(50);
-		//		ImGui::DragFloat("y", &component.TilingFactor.y, 0.1f, 0.0f, 0.0f, "%.2f");
-
-		//		ImGui::PopItemWidth();
-		//		ImGui::PopItemWidth();
-		//	});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 			{
@@ -322,48 +257,33 @@ namespace Editor
 
 				ImGui::Text("Mesh");
 				ImGui::NextColumn();
-				Ref<Mesh> mesh = component.Mesh;
-				//std::string meshButtonText = mesh != nullptr ? mesh->GetPath().filename().string() : "##Mesh";
-				std::string meshButtonText = "##Mesh";
+
+				std::string meshButtonText = component.Mesh != nullptr ? std::to_string((uint64_t)component.Mesh->id) : "##Mesh";
 				ImGui::Button(meshButtonText.c_str(), ImVec2(availWidth, 0.0f));
+
 				if (ImGui::BeginDragDropTarget())
 				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 					{
-						const wchar_t* droppedPath = (const wchar_t*)payload->Data;
-						std::filesystem::path path(droppedPath);
-						if (path.extension() == ".fbx")
-						{
-							//component.Mesh = AssetManager::Get<Mesh>(path);
-						}
-						else
-						{
-							LOG_WARNING("Failed to load mesh!");
-						}
+						Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
+						component.Mesh = AssetManager::GetAsset<Mesh>(droppedUUID);
 					}
 					ImGui::EndDragDropTarget();
 				}
+
 				ImGui::NextColumn();
 
 				ImGui::Text("Material");
 				ImGui::NextColumn();
-				//std::string materialButtonText = component.Material ? component.Material->GetPath().filename().string() : "##Material";
-				std::string materialButtonText = "##Material";
+				std::string materialButtonText = component.Material != nullptr ? std::to_string((uint64_t)component.Material->id) : "##Material";
 				ImGui::Button(materialButtonText.c_str(), ImVec2(availWidth, 0.0f));
+
 				if (ImGui::BeginDragDropTarget())
 				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 					{
-						const wchar_t* droppedPath = (const wchar_t*)payload->Data;
-						std::filesystem::path path(droppedPath);
-						if (path.extension() == ".material")
-						{
-							//component.Material = AssetManager::Get<Material>(path);
-						}
-						else
-						{
-							LOG_WARNING("Failed to load material!");
-						}
+						Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
+						component.Material = AssetManager::GetAsset<Material>(droppedUUID);
 					}
 					ImGui::EndDragDropTarget();
 				}
@@ -413,12 +333,6 @@ namespace Editor
 				entity.AddComponent<CameraComponent>();
 				ImGui::CloseCurrentPopup();
 			}
-
-			//if (ImGui::MenuItem("Sprite Renderer"))
-			//{
-			//	entity.AddComponent<SpriteComponent>();
-			//	ImGui::CloseCurrentPopup();
-			//}
 
 			if (ImGui::MenuItem("Light"))
 			{

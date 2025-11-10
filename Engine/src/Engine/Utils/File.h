@@ -12,4 +12,6 @@ namespace Engine
 	std::string SaveFile(); 
 
 	std::string OpenDirectory();
+
+	void OpenFileExplorer(const std::filesystem::path& path);
 }

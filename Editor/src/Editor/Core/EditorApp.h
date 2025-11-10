@@ -1,7 +1,6 @@
 #include "Engine/Core/Application.h"
 #include "Engine/Utils/Path.h"
 #include "Engine/Utils/FileWatcher.h"
-#include "Editor/Session/EditorSessionManager.h"
 
 namespace Editor
 {
@@ -16,7 +15,7 @@ namespace Editor
 
 	private:
 		Scope<Engine::FileWatcher> m_FileWatcher;
-		EditorSessionManager* m_SessionManager = &EditorSessionManager::Get();
+
 	};
 
 	inline EditorApp CreateApp(Engine::ApplicationCommandLineArgs args)

@@ -19,7 +19,7 @@
 #include <backends/imgui_impl_glfw.h>
 
 //TODO: move to style file
-void SetupImGuiStyle()
+static void SetupImGuiStyle()
 {
 	ImGuiStyle& style = ImGui::GetStyle();
 	ImVec4* colors = style.Colors;

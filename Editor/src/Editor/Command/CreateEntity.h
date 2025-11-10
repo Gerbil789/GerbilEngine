@@ -2,8 +2,7 @@
 
 #include "Editor/Command/ICommand.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Engine/Scene/Scene.h"
-#include "Engine/Scene/Entity.h"
+#include "Editor/Core/EditorContext.h"
 
 namespace Editor
 {
@@ -14,22 +13,18 @@ namespace Editor
 
     void Execute() override 
     {
-			Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
-      m_Entity = scene->CreateEntity(m_Name);
+      m_Entity = Engine::SceneManager::GetActiveScene()->CreateEntity(m_Name);
+			EditorContext::SelectEntity(m_Entity);
     }
 
     void Undo() override 
     {
       if (m_Entity)
       {
+				EditorContext::DeselectEntity(m_Entity);
         m_Entity.Destroy();
-        //Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
-        //scene->DestroyEntity(m_Entity);
-				//TODO: deselct entity if selected
       }
     }
-
-    Engine::Entity GetEntity() const { return m_Entity; }
 
   private:
     std::string m_Name;

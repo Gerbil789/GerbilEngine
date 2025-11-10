@@ -10,7 +10,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Editor/Session/EditorSessionManager.h"
+#include "Editor/Core/EditorContext.h"
 #include <glm/gtx/matrix_decompose.hpp>
 
 namespace Editor
@@ -127,8 +127,7 @@ namespace Editor
 
 		if (m_ViewportHovered && !ImGuizmo::IsOver())
 		{
-			auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
-			session->SelectEntity(m_HoveredEntity);
+			EditorContext::SelectEntity(m_HoveredEntity);
 			//EditorSceneController::SelectEntity(m_HoveredEntity);
 		}
 	}
@@ -159,8 +158,8 @@ namespace Editor
 
 	void ViewportWindow::DrawGizmos()
 	{
-		auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
-		Entity selectedEntity = session->GetActiveEntity();
+
+		Entity selectedEntity = EditorContext::GetActiveEntity();
 
 		if (selectedEntity && m_GizmoType != -1)
 		{

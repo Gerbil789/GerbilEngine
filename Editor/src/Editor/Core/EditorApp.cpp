@@ -15,7 +15,9 @@
 #include "Engine/Scene/Components.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Serializer/AssetSerializer.h"
-#include "Editor/Session/EditorSessionManager.h"
+#include "Editor/Core/EditorContext.h"
+#include "Engine/Scene/SceneManager.h"
+#include "Editor/Command/CommandManager.h"
 
 namespace Editor
 {
@@ -157,8 +159,8 @@ namespace Editor
 
 			LOG_INFO("Created entity '{0}' with ID: {1}", cam.GetName(), cam.GetUUID());
 
-			auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
-			session->SelectEntity(cam);
+
+			EditorContext::SelectEntity(cam);
 		}
 	}
 
@@ -196,7 +198,7 @@ namespace Editor
 	{
 		ENGINE_PROFILE_FUNCTION();
 		Application::OnEvent(e);
-		m_SessionManager->OnEvent(e);
+		CommandManager::OnEvent(e);
 		EditorWindowManager::OnEvent(e);
 
 

@@ -33,7 +33,7 @@ namespace Editor
 		wgpu::TextureView Thumbnail;
 		Ref<Engine::SubTexture2D> Icon;
 
-		AssetItem(const Engine::UUID uuid, const std::filesystem::path& path) : UUID(uuid), Path(path), Name(path.filename().string()), IsDirectory(std::filesystem::is_directory(path))
+		AssetItem(const Engine::UUID uuid, const std::filesystem::path& path) : UUID(uuid), Path(path), Name(path.filename().stem().string()), IsDirectory(std::filesystem::is_directory(path))
 		{
 			if (IsDirectory)
 			{

@@ -9,6 +9,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Utils/File.h"
 
 namespace Editor
 {
@@ -59,11 +60,12 @@ namespace Editor
 	void ContentBrowserWindow::RefreshDirectory()
 	{
 		m_Items.clear();
+		m_Selection.Clear();
 
 		// find directories first
 		for (auto& entry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
-			auto path = entry.path();
+			auto& path = entry.path();
 			if (entry.is_directory())
 			{
 				m_Items.emplace_back(Engine::UUID(), path); // UUID optional for folder
@@ -71,14 +73,11 @@ namespace Editor
 		}
 
 		// then find files
-		for (const auto& asset : Engine::AssetManager::m_AssetRegistry.GetAll())
+		for (auto& meta : Engine::AssetManager::GetAllAssetMetadata())
 		{
-			Engine::UUID id = asset.first;
-			std::filesystem::path path = asset.second.path;
-
-			if (path.parent_path() == m_CurrentDirectory)
+			if (meta->path.parent_path() == m_CurrentDirectory)
 			{
-				m_Items.emplace_back(id, path);
+				m_Items.emplace_back(meta->id, meta->path);
 			}
 		}
 	}
@@ -113,26 +112,33 @@ namespace Editor
 			OpenDirectory(Engine::Project::GetAssetsDirectory());
 		}
 
-		if (m_CurrentDirectory == Engine::Project::GetAssetsDirectory())
+		if (m_CurrentDirectory != Engine::Project::GetAssetsDirectory())
 		{
-			ImGui::EndChild();
-			return;
-		}
-
-		// Draw remaining path components
-		for (const auto& component : relativePath)
-		{
-			ImGui::SameLine();
-			ImGui::Text("/");
-			ImGui::SameLine();
-
-			pathSoFar /= component;
-
-			if (ImGui::Button(component.string().c_str()))
+			for (const auto& component : relativePath)
 			{
-				OpenDirectory(pathSoFar);
+				ImGui::SameLine();
+				ImGui::Text("/");
+				ImGui::SameLine();
+
+				pathSoFar /= component;
+
+				if (ImGui::Button(component.string().c_str()))
+				{
+					OpenDirectory(pathSoFar);
+				}
 			}
 		}
+
+		ImGui::SameLine();
+		char buffer[64];
+		snprintf(buffer, sizeof(buffer), "Selected: %d/%d items", m_Selection.Size, (int)m_Items.size());
+
+		float textWidth = ImGui::CalcTextSize(buffer).x;
+		float regionMaxX = ImGui::GetContentRegionMax().x;
+		float pos = regionMaxX - textWidth;
+
+		ImGui::SameLine(pos);
+		ImGui::TextUnformatted(buffer);
 
 		ImGui::EndChild();
 	}
@@ -148,9 +154,30 @@ namespace Editor
 					std::filesystem::create_directory(m_CurrentDirectory / "newDirectory");
 					RefreshDirectory();
 				}
-				ImGui::EndMenu();
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Scene"))
+				{
+					RefreshDirectory();
+				}
+
+				if (ImGui::MenuItem("Material"))
+				{
+					RefreshDirectory();
+				}
+
+				ImGui::EndMenu();// End Create Menu
 			}
-			ImGui::EndPopup();
+
+			ImGui::Separator();
+
+			if (ImGui::MenuItem("Open in file explorer"))
+			{
+				Engine::OpenFileExplorer(m_CurrentDirectory);
+			}
+
+			ImGui::EndPopup(); 
 		}
 	}
 
@@ -160,7 +187,13 @@ namespace Editor
 		{
 			if (ImGui::MenuItem("Delete", "Del", false, m_Selection.Size > 0))
 			{
-				RequestDelete = true;
+				m_RequestDelete = true;
+			}
+			ImGui::Separator();
+
+			if (ImGui::MenuItem("Open in file explorer"))
+			{
+				Engine::OpenFileExplorer(m_CurrentDirectory);
 			}
 
 			ImGui::EndPopup();
@@ -187,11 +220,9 @@ namespace Editor
 		m_Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { ContentBrowserWindow* self = (ContentBrowserWindow*)self_->UserData; return (unsigned int)self->m_Items[idx].UUID; };
 		m_Selection.ApplyRequests(ms_io);
 
-		const bool want_delete = (ImGui::Shortcut(ImGuiKey_Delete, ImGuiInputFlags_Repeat) && (m_Selection.Size > 0)) || RequestDelete;
+		const bool want_delete = (ImGui::Shortcut(ImGuiKey_Delete, ImGuiInputFlags_Repeat) && (m_Selection.Size > 0)) || m_RequestDelete;
 		const int item_curr_idx_to_focus = want_delete ? m_Selection.ApplyDeletionPreLoop(ms_io, static_cast<int>(m_Items.size())) : -1;
-		RequestDelete = false;
-
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(LayoutSelectableSpacing, LayoutSelectableSpacing));
+		m_RequestDelete = false;
 
 		const int column_count = m_LayoutColumnCount;
 		ImGuiListClipper clipper;
@@ -202,7 +233,7 @@ namespace Editor
 		}
 		if (ms_io->RangeSrcItem != -1)
 		{
-			clipper.IncludeItemByIndex((int)ms_io->RangeSrcItem / column_count); // Ensure RangeSrc item line is not clipped.
+			clipper.IncludeItemByIndex(static_cast<int>(ms_io->RangeSrcItem) / column_count); // Ensure RangeSrc item line is not clipped.
 		}
 			
 		while (clipper.Step())
@@ -211,6 +242,7 @@ namespace Editor
 			{
 				const int item_min_idx_for_current_line = line_idx * column_count;
 				const int item_max_idx_for_current_line = std::min((line_idx + 1) * column_count, static_cast<int>(m_Items.size()));
+
 				for (int item_idx = item_min_idx_for_current_line; item_idx < item_max_idx_for_current_line; ++item_idx)
 				{
 					AssetItem* item_data = &m_Items[item_idx];
@@ -223,16 +255,17 @@ namespace Editor
 					ImGui::SetNextItemSelectionUserData(item_idx);
 					bool item_is_selected = m_Selection.Contains((unsigned int)item_data->UUID);
 					bool item_is_visible = ImGui::IsRectVisible(m_LayoutItemSize);
-					ImGui::Selectable("##unique_id", item_is_selected, ImGuiSelectableFlags_None, ImVec2(m_LayoutItemSize.x, m_LayoutItemSize.y));
+					ImGui::Selectable("##unique_id", item_is_selected, ImGuiSelectableFlags_None, m_LayoutItemSize);
 
 					if (ImGui::IsItemToggledSelection())
 					{
 						item_is_selected = !item_is_selected;
 					}
 
-					// Focus (for after deletion)
 					if (item_curr_idx_to_focus == item_idx)
+					{
 						ImGui::SetKeyboardFocusHere(-1);
+					}
 
 					if (ImGui::BeginDragDropSource())
 					{
@@ -247,86 +280,48 @@ namespace Editor
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID")) 
 						{
 							Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
-
-							auto path = Engine::AssetManager::m_AssetRegistry.GetPath(droppedUUID);
-
+							auto path = Engine::AssetManager::GetAssetPath(droppedUUID);
 							LOG_INFO("Dropped file path: {0}", path);
 						}
 						ImGui::EndDragDropTarget();
 					}
 
-					if (!item_is_visible)
+					if (item_is_visible)
 					{
-						ImGui::PopID();
-						break;
+						ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
+						DrawItem(*item_data, item_idx, draw_list, pos, label_col);
 					}
-
-					ImVec2 box_min(pos.x - 1, pos.y - 1);
-					ImVec2 box_max(box_min.x + m_LayoutItemSize.x + 2, box_min.y + m_LayoutItemSize.y + 2);
-					ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
-
-
-					if(item_data->Thumbnail != nullptr)
-					{
-						// thumbnail
-						draw_list->AddImage(
-							(ImTextureID)(intptr_t)(WGPUTextureView)item_data->Thumbnail,
-							box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
-							ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f)
-						);
-					}
-					else
-					{
-						// icon
-						draw_list->AddImage(
-							(ImTextureID)(intptr_t)(WGPUTextureView)item_data->Icon->GetTexture()->GetTextureView(),
-							box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
-							ImVec2(item_data->Icon->GetUVMin().x, item_data->Icon->GetUVMin().y),
-							ImVec2(item_data->Icon->GetUVMax().x, item_data->Icon->GetUVMax().y)
-						);
-					}
-
-					// label
-					draw_list->AddText(ImVec2(box_min.x + m_LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data->Name.c_str()).x / 2, box_max.y - ImGui::GetFontSize() + 10), label_col, item_data->Name.c_str());
-					
-					if (item_data->IsDirectory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-					{
-						directoryToOpenIndex = item_idx;
-					}
-
-					ItemContextMenu();
 
 					ImGui::PopID();
 				}
-				ContentBrowserContextMenu();
+
 			}
 		}
 		clipper.End();
-		ImGui::PopStyleVar(); // ImGuiStyleVar_ItemSpacing
+		ContentBrowserContextMenu();
 
 		ms_io = ImGui::EndMultiSelect();
 		m_Selection.ApplyRequests(ms_io);
 		if (want_delete)
 		{
-			//TODO: unload assets & delete files
-			//m_Selection.ApplyDeletionPostLoop(ms_io, m_Items, item_curr_idx_to_focus);
+			m_Selection.ApplyDeletionPostLoop(ms_io, m_Items, item_curr_idx_to_focus);
+			//TODO: actually delete files from disk
 		}
-
 
 		// Zooming with CTRL+Wheel
 		if (ImGui::IsWindowAppearing())
+		{
 			ZoomWheelAccum = 0.0f;
+		}
+
 		if (ImGui::IsWindowHovered() && io.MouseWheel != 0.0f && ImGui::IsKeyDown(ImGuiMod_Ctrl) && ImGui::IsAnyItemActive() == false)
 		{
 			ZoomWheelAccum += io.MouseWheel;
 			if (fabsf(ZoomWheelAccum) >= 1.0f)
 			{
-				// Calculate hovered item index from mouse location
-				// FIXME: Locking aiming on 'hovered_item_idx' (with a cool-down timer) would ensure zoom keeps on it.
 				const float hovered_item_nx = (io.MousePos.x - start_pos.x + 10.0f * 0.5f) / m_LayoutItemStep.x;
 				const float hovered_item_ny = (io.MousePos.y - start_pos.y + 10.0f * 0.5f) / m_LayoutItemStep.y;
 				const int hovered_item_idx = ((int)hovered_item_ny * m_LayoutColumnCount) + (int)hovered_item_nx;
-				//ImGui::SetTooltip("%f,%f -> item %d", hovered_item_nx, hovered_item_ny, hovered_item_idx); // Move those 4 lines in block above for easy debugging
 
 				// Zoom
 				IconSize *= powf(1.1f, (float)(int)ZoomWheelAccum);
@@ -334,9 +329,6 @@ namespace Editor
 				ZoomWheelAccum -= (int)ZoomWheelAccum;
 				UpdateLayoutSizes(ImGui::GetContentRegionAvail().x);
 
-				// Manipulate scroll to that we will land at the same Y location of currently hovered item.
-				// - Calculate next frame position of item under mouse
-				// - Set new scroll position to be used in next ImGui::BeginChild() call.
 				float hovered_item_rel_pos_y = ((float)(hovered_item_idx / m_LayoutColumnCount) + fmodf(hovered_item_ny, 1.0f)) * m_LayoutItemStep.y;
 				hovered_item_rel_pos_y += ImGui::GetStyle().WindowPadding.y;
 				float mouse_local_y = io.MousePos.y - ImGui::GetWindowPos().y;
@@ -345,6 +337,42 @@ namespace Editor
 		}
 
 		ImGui::EndChild(); // end Main Content
+	}
+
+	void ContentBrowserWindow::DrawItem(const AssetItem& item_data, int item_idx, ImDrawList* draw_list, const ImVec2& pos, const ImU32 label_col)
+	{
+		ImVec2 box_min(pos.x - 1, pos.y - 1);
+		ImVec2 box_max(box_min.x + m_LayoutItemSize.x + 2, box_min.y + m_LayoutItemSize.y + 2);
+
+		if (item_data.Thumbnail != nullptr)
+		{
+			// thumbnail
+			draw_list->AddImage(
+				(ImTextureID)(intptr_t)(WGPUTextureView)item_data.Thumbnail,
+				box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
+				ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f)
+			);
+		}
+		else
+		{
+			// icon
+			draw_list->AddImage(
+				(ImTextureID)(intptr_t)(WGPUTextureView)item_data.Icon->GetTexture()->GetTextureView(),
+				box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
+				ImVec2(item_data.Icon->GetUVMin().x, item_data.Icon->GetUVMin().y),
+				ImVec2(item_data.Icon->GetUVMax().x, item_data.Icon->GetUVMax().y)
+			);
+		}
+
+		// label
+		draw_list->AddText(ImVec2(box_min.x + m_LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data.Name.c_str()).x / 2, box_max.y - ImGui::GetFontSize() + 10), label_col, item_data.Name.c_str());
+
+		if (item_data.IsDirectory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+		{
+			directoryToOpenIndex = item_idx;
+		}
+
+		ItemContextMenu();
 	}
 
 }

@@ -3,12 +3,15 @@
 #include "Editor/Components/Components.h"
 #include "Engine/Scene/Components.h"
 #include "Editor/Components/ScopedStyle.h"
+#include "Engine/Core/Input.h"
+#include "Editor/Core/EditorContext.h"
+#include "Editor/Command/CommandManager.h"
+#include "Editor/Command/CreateEntity.h"
+#include "Editor/Command/DeleteEntity.h"
+#include "Editor/Command/RenameEntity.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
-#include "Editor/Session/EditorSessionManager.h"
-#include "Editor/Command/SceneCommands.h"
-#include "Engine/Core/Input.h"
 
 namespace Editor
 {
@@ -37,7 +40,6 @@ namespace Editor
 			return;
 		}
 
-		auto session = EditorSessionManager::Get().GetSceneSession(); //TODO: store session
 
 		const auto& entities = m_Scene->GetEntities();
 
@@ -55,7 +57,7 @@ namespace Editor
 		// Deselect on empty space click
 		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
 		{
-			session->ClearSelection();
+			EditorContext::ClearSelection();
 		}
 
 		// Right-click context menu
@@ -63,7 +65,7 @@ namespace Editor
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
-				session->CreateEntity("Empty");
+				CommandManager::ExecuteCommand<CreateEntityCommand>("Empty");
 			}
 			ImGui::EndPopup();
 		}
@@ -82,8 +84,7 @@ namespace Editor
 			flags |= ImGuiTreeNodeFlags_Leaf;
 		}
 
-		auto session = EditorSessionManager::Get().GetSceneSession(); // TODO: store session
-		bool selected = session->IsEntitySelected(entity);
+		bool selected = EditorContext::IsEntitySelected(entity);
 
 		if (selected)
 		{
@@ -98,7 +99,7 @@ namespace Editor
 		if (ImGui::IsItemClicked())
 		{
 			bool additive = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::LeftShift);
-			session->SelectEntity(entity, additive);
+			EditorContext::SelectEntity(entity, additive);
 		}
 
 		// Drag source
@@ -123,9 +124,14 @@ namespace Editor
 		bool entityDeleted = false;
 		if(ImGui::BeginPopupContextItem())
 		{
-			if(ImGui::MenuItem("Delete Entity"))
+			if(ImGui::MenuItem("Delete"))
 			{
 				entityDeleted = true;
+			}
+
+			if (ImGui::MenuItem("Rename"))
+			{
+				CommandManager::ExecuteCommand<RenameEntityCommand>(entity, "BRUH");
 			}
 			ImGui::EndPopup();
 		}
@@ -150,7 +156,7 @@ namespace Editor
 
 		if (entityDeleted) //TODO: is delayed deletion necessary?
 		{
-			entity.Destroy();
+			CommandManager::ExecuteCommand<DeleteEntityCommand>(entity);
 		}
 
 		ImGui::PopID();

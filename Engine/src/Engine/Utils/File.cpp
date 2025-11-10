@@ -36,4 +36,21 @@ namespace Engine
 		auto result = pfd::select_folder("Select Directory", ".").result();
 		return result.empty() ? "" : result;
 	}
+
+	void OpenFileExplorer(const std::filesystem::path& path)
+	{
+		std::string p = path.string();
+
+		// Run in background so UI doesn't freeze
+		std::thread([p]() {
+#if defined(_WIN32)
+			std::string winPath = p;
+			std::replace(winPath.begin(), winPath.end(), '/', '\\');
+			ShellExecuteA(nullptr, "open", winPath.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+#else
+			std::string cmd = "xdg-open \"" + p + "\"";
+			system(cmd.c_str());
+#endif
+			}).detach();
+	}
 }

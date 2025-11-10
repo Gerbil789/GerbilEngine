@@ -4,15 +4,12 @@
 #include "Engine/Core/UUID.h"
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
-#include "glm/gtx/string_cast.hpp"
+#include <glm/gtx/string_cast.hpp>
 #include <filesystem>
 #include <string>
 #include <webgpu/webgpu.h>
-// This ignores all warnings raised inside External headers
-#pragma warning(push, 0)
-#include "spdlog/spdlog.h"
-#include "spdlog/fmt/ostr.h"
-#pragma warning(pop)
+#include <spdlog/spdlog.h>
+#include <spdlog/fmt/ostr.h>
 
 //TODO: replace fmt with std::format ?
 

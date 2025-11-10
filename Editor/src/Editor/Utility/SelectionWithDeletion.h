@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Editor/Windows/ContentBrowser/AssetItem.h"
 #include <imgui.h>
 
 namespace Editor
@@ -40,6 +41,36 @@ namespace Editor
 			}
 
 			return -1;
+		}
+
+		void ApplyDeletionPostLoop(ImGuiMultiSelectIO* ms_io, std::vector<AssetItem>& items, int item_curr_idx_to_select)
+		{
+			// Rewrite item list (delete items) + convert old selection index (before deletion) to new selection index (after selection).
+			// If NavId was not part of selection, we will stay on same item.
+			std::vector<AssetItem> new_items;
+			new_items.reserve(items.size() - Size);
+			int item_next_idx_to_select = -1;
+			for (int idx = 0; idx < items.size(); idx++)
+			{
+				if (!Contains(GetStorageIdFromIndex(idx)))
+				{
+					new_items.push_back(items[idx]);
+				}
+
+				if (item_curr_idx_to_select == idx)
+				{
+					item_next_idx_to_select = static_cast<int>(new_items.size()) - 1;
+				}
+			}
+			items.swap(new_items);
+
+			// Update selection
+			Clear();
+			if (item_next_idx_to_select != -1 && ms_io->NavIdSelected)
+			{
+				SetItemSelected(GetStorageIdFromIndex(item_next_idx_to_select), true);
+			}
+
 		}
 	};
 }

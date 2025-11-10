@@ -30,7 +30,8 @@ namespace Engine
 			LOG_ERROR("No importer available for asset type: {}", AssetTypeToString(assetType));
 			return nullptr;
 		}
-
-		return s_AssetImportFunctions.at(assetType)(metadata);
+		auto asset = s_AssetImportFunctions.at(assetType)(metadata);
+		asset->id = metadata.id;
+		return asset;
 	}
 }
