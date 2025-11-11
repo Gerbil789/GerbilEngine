@@ -47,6 +47,22 @@ namespace Engine
 		m_TextureView = texture.createView(viewDesc);
 	}
 
+	Ref<Texture2D> Texture2D::GetDefault()
+	{
+		if(!s_DefaultWhiteTexture)
+		{
+			TextureSpecification spec{};
+			spec.width = 1;
+			spec.height = 1;
+			spec.format = wgpu::TextureFormat::RGBA8Unorm;
+			uint32_t whitePixel = 0xFFFFFFFF;
+
+			s_DefaultWhiteTexture = CreateRef<Texture2D>(spec, &whitePixel);
+		}
+
+		return s_DefaultWhiteTexture;
+	}
+
 	SubTexture2D::SubTexture2D(const Ref<Texture2D>& texture, const glm::vec2& min, const glm::vec2& max) : m_Texture(texture), m_UVMin(min), m_UVMax(max) {}
 
 	Ref<SubTexture2D> SubTexture2D::CreateFromGrid(const Ref<Texture2D>& texture, const glm::ivec2& cellCoords, const glm::ivec2& cellSize, const glm::ivec2& spriteSize)

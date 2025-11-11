@@ -59,7 +59,7 @@ namespace Engine
 		for (const auto& binding : spec.bindings)
 		{
 			if (binding.group == groupIndex)
-				result.push_back(binding); // NOTE: copy, but ok for now
+				result.push_back(binding); // NOTE: copy, but ok for now | TODO: optimize later
 		}
 		return result;
 	}

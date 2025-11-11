@@ -4,7 +4,7 @@
 #include "Engine/Renderer/WebGPUUtils.h"
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Asset/AssetManager.h"
-
+#include "Engine/Asset/Importer/ShaderImporter.h"
 namespace Engine
 {
 	Material::Material(const Ref<Shader>& shader)
@@ -131,7 +131,7 @@ namespace Engine
 				// check if texture is set for this binding
 				if (m_Textures.find(binding.name) == m_Textures.end())
 				{
-					m_Textures[binding.name] = Renderer::GetDefaultWhiteTexture();
+					m_Textures[binding.name] = Texture2D::GetDefault();
 				}
 
 				auto tex = m_Textures[binding.name];
@@ -158,6 +158,19 @@ namespace Engine
 	{
 		GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, 0, m_UniformData.data(), m_UniformData.size());
 		pass.setBindGroup(GroupID::Material, m_BindGroup, 0, nullptr);
+	}
+
+
+	Ref<Material> Material::GetDefault()
+	{
+		if (!s_DefaultMaterial)
+		{
+			Ref<Shader> shader = ShaderImporter::LoadShader("Resources/Engine/Shaders/unlit.shader");
+			s_DefaultMaterial = CreateRef<Material>(shader);
+			s_DefaultMaterial->SetVec4("color", glm::vec4(1.0f));
+		}
+
+		return s_DefaultMaterial;
 	}
 
 }

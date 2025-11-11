@@ -19,8 +19,6 @@ Assets:
     Path: Textures\bricks_wall\ambient.png
   - ID: 16789549155580106633
     Path: Textures\metal_plates\normal.png
-  - ID: 14218229710826386275
-    Path: Materials\ddd.material
   - ID: 6538048173471328587
     Path: Meshes\sphere.glb
   - ID: 14899039829185301908
@@ -41,6 +39,8 @@ Assets:
     Path: Textures\concrete_pillar\height.png
   - ID: 15783146352431223061
     Path: Textures\concrete_pillar\normal.png
+  - ID: 2430232742964632950
+    Path: Materials\cone.material
   - ID: 9021856193546548807
     Path: Textures\gerbil.jpg
   - ID: 12130483913259218786
@@ -67,3 +67,7 @@ Assets:
     Path: Materials\jddf.material
   - ID: 7605953735010229493
     Path: Materials\jjzzt.material
+  - ID: 6023610084586369645
+    Path: Meshes\cone.glb
+  - ID: 9864571265207132016
+    Path: Textures\cone_tex.png

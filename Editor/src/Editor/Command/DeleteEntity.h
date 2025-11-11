@@ -16,6 +16,8 @@ namespace Editor
       if (m_Entity)
       {
         EditorContext::DeselectEntity(m_Entity);
+
+
         m_Entity.Destroy();
       }
 
@@ -30,6 +32,8 @@ namespace Editor
   private:
     std::string m_Name;
     Engine::Entity m_Entity;
+
+
 
   };
 }

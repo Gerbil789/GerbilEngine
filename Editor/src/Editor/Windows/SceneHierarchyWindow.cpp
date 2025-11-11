@@ -31,15 +31,13 @@ namespace Editor
 
 		ImGui::Begin("Scene Hierarchy");
 
-		ImGuiMultiSelectFlags selectFlags = ImGuiMultiSelectFlags_None;
-		ImGui::BeginMultiSelect(selectFlags);
-
 		if (!m_Scene)
 		{
 			ImGui::End();
 			return;
 		}
 
+		ImGui::BeginMultiSelect(ImGuiMultiSelectFlags_None);
 
 		const auto& entities = m_Scene->GetEntities();
 
@@ -54,13 +52,13 @@ namespace Editor
 		}
 		DrawReorderDropTarget(Engine::Entity::Null(), entities.size());
 
-		// Deselect on empty space click
+		// deselect on empty space click
 		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
 		{
 			EditorContext::ClearSelection();
 		}
 
-		// Right-click context menu
+		// right-click context menu
 		if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))

@@ -4,7 +4,7 @@
 My custom WebGPU based game engine
 
 #### Prerequisites
- - Windows 10/11 machine 
+ - Windows machine (linux support is comming)
  - Visual Studio 2022
    - C++ 23
 
@@ -25,12 +25,12 @@ My custom WebGPU based game engine
 | Library                                                                          | Purpose                          |
 | -------------------------------------------------------------------------------- | -------------------------------- |
 | **[Dawn](https://dawn.googlesource.com/dawn)**                                   | WebGPU implementation            |
-| **[EnTT](https://github.com/skypjack/entt)**                                     | Entity Component System (ECS)    |
+| **[EnTT](https://github.com/skypjack/entt)**                                     | Entity Component System          |
 | **[GLFW](https://www.glfw.org/)**                                                | Windowing and input handling     |
 | **[GLM](https://github.com/g-truc/glm)**                                         | Mathematics (vectors, matrices)  |
-| **[ImGui](https://github.com/ocornut/imgui)**                                    | Immediate-mode GUI               |
+| **[ImGui](https://github.com/ocornut/imgui)**                                    | Immediate-mode UI                |
 | **[ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo)**                      | 3D transform gizmo for ImGui     |
 | **[portable-file-dialogs](https://github.com/samhocevar/portable-file-dialogs)** | Native file dialogs              |
-| **[spdlog](https://github.com/gabime/spdlog)**                                   | Fast C++ logging library         |
+| **[spdlog](https://github.com/gabime/spdlog)**                                   | Fast logging library             |
 | **[tinygltf](https://github.com/syoyo/tinygltf)**                                | glTF mesh loading and processing |
 | **[yaml-cpp](https://github.com/jbeder/yaml-cpp)**                               | YAML serialization/deserialization |

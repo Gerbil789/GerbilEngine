@@ -12,12 +12,9 @@ namespace Engine
 		static void Initialize(); //TODO: why is this static?
 		Renderer(uint32_t width, uint32_t height);
 
-		static Ref<Texture2D> GetDefaultWhiteTexture() { return s_DefaultWhite; }
-
 		void SetScene(Scene* scene) { m_Scene = scene; }
-		void Resize(uint32_t width, uint32_t height);
-
 		void SetCamera(Camera* camera) { m_Camera = camera; }
+		void Resize(uint32_t width, uint32_t height);
 
 		void BeginScene();
 		void RenderScene();
@@ -36,8 +33,6 @@ namespace Engine
 		static wgpu::Buffer GetFrameUniformBuffer() { return s_FrameUniformBuffer; }
 
 		static uint32_t GetModelUniformStride() { return s_ModelUniformStride; }
-
-		inline static wgpu::Sampler s_Sampler = nullptr; //TODO: move into shader or material class
 
 	private:
 		Scene* m_Scene;
@@ -61,8 +56,5 @@ namespace Engine
 		inline static wgpu::BindGroupLayout s_FrameBindGroupLayout = nullptr;
 		inline static wgpu::BindGroup s_FrameBindGroup = nullptr;
 		inline static wgpu::Buffer s_FrameUniformBuffer = nullptr;
-
-		// Static resources
-		inline static Ref<Texture2D> s_DefaultWhite = nullptr;
 	};
 }

@@ -30,13 +30,6 @@ namespace Engine
 
 	void Renderer::Initialize()
 	{
-		// Default white texture
-		uint32_t whitePixel = 0xFFFFFFFF; // RGBA(255,255,255,255)
-		TextureSpecification spec;
-		spec.width = spec.height = 1;
-		spec.format = wgpu::TextureFormat::RGBA8Unorm;
-		s_DefaultWhite = CreateRef<Texture2D>(spec, &whitePixel);
-
 		s_Device = GraphicsContext::GetDevice();
 		s_Queue = GraphicsContext::GetQueue();
 
@@ -115,21 +108,6 @@ namespace Engine
 			bindGroupDesc.entries = &bindGroupEntry;
 			s_FrameBindGroup = s_Device.createBindGroup(bindGroupDesc);
 		}
-
-		// Global sampler, TODO: remove from here, each material should have its own sampler
-		wgpu::SamplerDescriptor samplerDesc = {};
-		samplerDesc.label = { "GlobalSampler", WGPU_STRLEN };
-		samplerDesc.addressModeU = wgpu::AddressMode::Repeat;
-		samplerDesc.addressModeV = wgpu::AddressMode::Repeat;
-		samplerDesc.addressModeW = wgpu::AddressMode::ClampToEdge;
-		samplerDesc.magFilter = wgpu::FilterMode::Linear;
-		samplerDesc.minFilter = wgpu::FilterMode::Linear;
-		samplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
-		samplerDesc.lodMinClamp = 0.0f;
-		samplerDesc.lodMaxClamp = 1.0f;
-		samplerDesc.compare = wgpu::CompareFunction::Undefined;
-		samplerDesc.maxAnisotropy = 1;
-		s_Sampler = s_Device.createSampler(samplerDesc);
 	}
 
 	Renderer::Renderer(uint32_t width, uint32_t height)
@@ -250,13 +228,16 @@ namespace Engine
 		for (auto entity : entities)
 		{
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
+			if(meshComponent.Mesh == nullptr)
+			{
+				continue;
+			}
+
 			Ref<Material> material = meshComponent.Material;
 
-			if(!material)
+			if(material == nullptr)
 			{
-				LOG_ERROR("Entity '{0}' has no material! Using invalid material!", entity.GetName());
-				//material = s_InvalidMaterial;
-				//material = Material::GetDefault();
+				material = Material::GetDefault();
 			}
 
 			materialGroups[material].push_back(entity);

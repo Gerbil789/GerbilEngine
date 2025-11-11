@@ -3,11 +3,12 @@
 #include "Engine/Scene/Components.h"
 #include "Editor/Components/Components.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Editor/Core/EditorContext.h"
+#include "Editor/Command/CommandManager.h"
+#include "Editor/Command/TransformEntity.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
-#include <filesystem>
-#include "Editor/Core/EditorContext.h"
 
 namespace Editor
 {
@@ -16,7 +17,6 @@ namespace Editor
 	void InspectorWindow::OnUpdate(Engine::Timestep ts)
 	{
 		ImGui::Begin("Inspector");
-
 
 		Entity entity = EditorContext::GetActiveEntity();
 
@@ -95,6 +95,7 @@ namespace Editor
 
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
 			{
+				//TODO: Use command for transform changes
 				float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 100, 100.0f);
 				ImGui::Columns(2, "transform", false);
 				ImGui::SetColumnWidth(0, 100);
@@ -266,7 +267,11 @@ namespace Editor
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 					{
 						Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
-						component.Mesh = AssetManager::GetAsset<Mesh>(droppedUUID);
+						if(AssetManager::GetAssetType(droppedUUID) == AssetType::Mesh)
+						{
+							component.Mesh = AssetManager::GetAsset<Mesh>(droppedUUID);
+						}
+						
 					}
 					ImGui::EndDragDropTarget();
 				}
@@ -283,7 +288,10 @@ namespace Editor
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 					{
 						Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
-						component.Material = AssetManager::GetAsset<Material>(droppedUUID);
+						if (AssetManager::GetAssetType(droppedUUID) == AssetType::Material)
+						{
+							component.Material = AssetManager::GetAsset<Material>(droppedUUID);
+						}
 					}
 					ImGui::EndDragDropTarget();
 				}

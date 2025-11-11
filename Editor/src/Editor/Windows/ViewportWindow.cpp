@@ -5,17 +5,21 @@
 #include "Engine/Core/Input.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Editor/Components/ScopedStyle.h"
-#include <imgui.h>
-#include <ImGuizmo.h>
-#include <glm/gtc/type_ptr.hpp>
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Editor/Core/EditorContext.h"
+#include "Editor/Command/CommandManager.h"
+#include "Editor/Command/TransformEntity.h"
+#include <imgui.h>
+#include <ImGuizmo.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
 namespace Editor
 {
 	using namespace Engine;
+
+	static ImGuizmo::OPERATION gizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
 	ViewportWindow::ViewportWindow()
 	{
@@ -41,7 +45,7 @@ namespace Editor
 
 		ImGui::Begin("Viewport");
 
-		UpdateViewportSize(); //TODO: dont call every frame
+		UpdateViewportSize(); //TODO: dont call every frame?
 		
 		m_ViewportHovered = ImGui::IsWindowHovered();
 		m_ViewportFocused = ImGui::IsWindowFocused();
@@ -63,7 +67,6 @@ namespace Editor
 			UUID uuid = m_EntityIdRenderer.ReadPixel((uint32_t)mx, (uint32_t)my);
 			if(uuid.IsValid())
 			{
-				//LOG_TRACE("Hovered entity ID: {0}", uuid);
 				m_HoveredEntity = m_Scene->GetEntity(uuid);
 			}
 		}
@@ -71,22 +74,8 @@ namespace Editor
 		// Draw scene
 		ImGui::Image((ImTextureID)(intptr_t)(WGPUTextureView)m_Renderer.GetTextureView(), ImVec2(m_ViewportSize.x, m_ViewportSize.y)); //TODO: too many casts?
 
-
 		//if (ImGui::BeginDragDropTarget())
 		//{
-		//	if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-		//	{
-		//		const wchar_t* droppedPath = (const wchar_t*)payload->Data;
-		//		std::filesystem::path path(droppedPath);
-
-		//		LOG_INFO("Dropped file: {0}", path);
-
-		//		//open scene
-		//		if (path.extension() == ".scene")
-		//		{
-		//			SceneManager::LoadScene(path);
-		//		}
-		//	}
 		//	ImGui::EndDragDropTarget();
 		//}
 
@@ -113,10 +102,10 @@ namespace Editor
 
 		switch (e.GetKey())
 		{
-		case Key::Q: m_GizmoType = -1; break; // Disable gizmo
-		case Key::W: m_GizmoType = ImGuizmo::OPERATION::TRANSLATE; break;
-		case Key::E: m_GizmoType = ImGuizmo::OPERATION::ROTATE; break;
-		case Key::R: m_GizmoType = ImGuizmo::OPERATION::SCALE; break;
+		case Key::Q: gizmoType = (ImGuizmo::OPERATION)0; break;
+		case Key::W: gizmoType = ImGuizmo::OPERATION::TRANSLATE; break;
+		case Key::E: gizmoType = ImGuizmo::OPERATION::ROTATE; break;
+		case Key::R: gizmoType = ImGuizmo::OPERATION::SCALE; break;
 		}
 	}
 
@@ -128,7 +117,6 @@ namespace Editor
 		if (m_ViewportHovered && !ImGuizmo::IsOver())
 		{
 			EditorContext::SelectEntity(m_HoveredEntity);
-			//EditorSceneController::SelectEntity(m_HoveredEntity);
 		}
 	}
 
@@ -158,44 +146,91 @@ namespace Editor
 
 	void ViewportWindow::DrawGizmos()
 	{
+		if(!gizmoType)
+		{
+			return;
+		}
 
 		Entity selectedEntity = EditorContext::GetActiveEntity();
 
-		if (selectedEntity && m_GizmoType != -1)
+		if (!selectedEntity)
 		{
-			ImGuizmo::SetOrthographic(false);
-			ImGuizmo::SetDrawlist();
+			return;
+		}
 
-			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
+		ImGuizmo::SetDrawlist();
 
-			const glm::mat4& cameraProjection = m_CameraController.GetCamera().GetProjectionMatrix();
-			glm::mat4 cameraView = m_CameraController.GetCamera().GetViewMatrix();
+		ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
-			auto& tc = selectedEntity.GetComponent<TransformComponent>();
-			glm::mat4 transform = tc.GetWorldMatrix(m_Scene->GetRegistry());
+		const glm::mat4& cameraProjection = m_CameraController.GetCamera().GetProjectionMatrix();
+		glm::mat4 cameraView = m_CameraController.GetCamera().GetViewMatrix();
 
-			bool snap = Input::IsKeyPressed(Key::LeftControl);
-			float snapValue = 0.5f; // Snap to 0.5m for translation/scale
-			if (m_GizmoType == ImGuizmo::OPERATION::ROTATE) snapValue = 45.0f; // Snap to 45 degrees for rotation
+		auto& tc = selectedEntity.GetComponent<TransformComponent>();
+		glm::mat4 worldTransform = tc.GetWorldMatrix(m_Scene->GetRegistry());
 
-			float snapValues[3] = { snapValue, snapValue, snapValue };
+		float* snapValue = nullptr;
+		if(Input::IsKeyPressed(Key::LeftControl))
+		{
+			static float snapTranslateScale[3] = { 0.5f, 0.5f, 0.5f };
+			static float snapRotate[3] = { 45.0f, 45.0f, 45.0f };
 
-			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr);
-
-			if (ImGuizmo::IsUsing())
+			if (gizmoType == ImGuizmo::OPERATION::ROTATE)
 			{
-				glm::vec3 skew;
-				glm::vec4 perspective;
-				glm::quat rot;
-				glm::vec3 trans, scale;
-				glm::decompose(transform, scale, rot, trans, skew, perspective);
-
-				tc.Position = trans;
-				tc.Rotation = glm::degrees(glm::eulerAngles(rot));
-				tc.Scale = scale;
+				snapValue = snapRotate;
+			}
+			else
+			{
+				snapValue = snapTranslateScale;
 			}
 		}
+
+		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), gizmoType, ImGuizmo::MODE::LOCAL, glm::value_ptr(worldTransform), nullptr, snapValue);
+
+		bool isUsing = ImGuizmo::IsUsing();
+
+		if (isUsing && !m_GizmoPreviouslyUsed)
+		{
+			// Store initial state for undo
+			m_InitialPos = tc.Position;
+			m_InitialRot = tc.Rotation;
+			m_InitialScale = tc.Scale;
+		}
+
+		if (isUsing)
+		{
+			glm::mat4 newWorld = worldTransform;
+
+			glm::mat4 parentWorld = glm::mat4(1.0f);
+
+			if (selectedEntity.GetComponent<TransformComponent>().Parent != entt::null)
+			{
+				Entity parent = { selectedEntity.GetComponent<TransformComponent>().Parent, m_Scene };
+				parentWorld = parent.GetComponent<TransformComponent>().GetWorldMatrix(m_Scene->GetRegistry());
+			}
+
+			glm::mat4 newLocal = glm::inverse(parentWorld) * newWorld;
+
+			glm::vec3 skew;
+			glm::vec4 perspective;
+			glm::quat rot;
+			glm::vec3 trans, scale;
+			glm::decompose(newLocal, scale, rot, trans, skew, perspective);
+
+			tc.Position = trans;
+			tc.Rotation = glm::degrees(glm::eulerAngles(rot));
+			tc.Scale = scale;
+		}
+
+		if (!isUsing && m_GizmoPreviouslyUsed)
+		{
+			CommandManager::ExecuteCommand<TransformEntityCommand>(
+				selectedEntity,
+				m_InitialPos, m_InitialRot, m_InitialScale,
+				tc.Position, tc.Rotation, tc.Scale
+			);
+		}
+
+		m_GizmoPreviouslyUsed = isUsing;
 	}
 
 }

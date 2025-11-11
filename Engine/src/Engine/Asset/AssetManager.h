@@ -113,6 +113,16 @@ namespace Engine
 			return m_AssetRegistry.GetMetadata(id);
 		}
 
+		static const AssetType GetAssetType(UUID id)
+		{
+			auto metadata = m_AssetRegistry.GetMetadata(id);
+			if (!metadata)
+			{
+				return AssetType::Unknown;
+			}
+			return metadata->GetType();
+		}
+
 		static Ref<Asset> CreateAsset(const std::filesystem::path& filepath)
 		{
 			auto metadata = m_AssetRegistry.Create(filepath);

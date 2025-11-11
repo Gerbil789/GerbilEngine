@@ -24,6 +24,9 @@ namespace Engine
 
 		void Bind(wgpu::RenderPassEncoder pass);
 		std::vector<uint8_t> GetUniformData() const { return m_UniformData; } //TODO: this should not be public
+
+		static Ref<Material> GetDefault();
+
 	private:
 		void CreateSampler();
 		void CreateUniformBuffer();
@@ -37,5 +40,9 @@ namespace Engine
 		wgpu::Sampler m_Sampler;
 		wgpu::BindGroup m_BindGroup;
 		wgpu::Buffer m_UniformBuffer; 
+
+
+		inline static Ref<Material> s_DefaultMaterial;
+
 	};
 }
