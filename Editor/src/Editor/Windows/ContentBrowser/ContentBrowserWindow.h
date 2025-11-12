@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Editor/Windows/EditorWindow.h"
+#include "Editor/Windows/IEditorWindow.h"
 #include "AssetItem.h"
 #include "ThumbnailRenderer.h"
 #include "Editor/Utility/SelectionWithDeletion.h"
@@ -9,7 +9,7 @@
 
 namespace Editor
 {
-	class ContentBrowserWindow : public EditorWindow
+	class ContentBrowserWindow : public IEditorWindow
 	{
 	public:
 		ContentBrowserWindow();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EditorWindow.h"
+#include "IEditorWindow.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Renderer/Renderer.h"
@@ -13,7 +13,7 @@
 
 namespace Editor
 {
-	class ViewportWindow : public EditorWindow
+	class ViewportWindow : public IEditorWindow
 	{
 	public:
 		ViewportWindow();

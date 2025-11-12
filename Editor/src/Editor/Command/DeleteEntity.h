@@ -15,9 +15,7 @@ namespace Editor
     {
       if (m_Entity)
       {
-        EditorContext::DeselectEntity(m_Entity);
-
-
+				EditorContext::ClearSelection();
         m_Entity.Destroy();
       }
 

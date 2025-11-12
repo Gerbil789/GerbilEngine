@@ -135,7 +135,7 @@ namespace Engine
 		out << YAML::Key << "Scene" << YAML::Value << title;
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
-		auto entities = scene->GetEntities();
+		auto entities = scene->GetEntities(true);
 		for(auto ent : entities)
 		{
 			SerializeEntity(out, ent);

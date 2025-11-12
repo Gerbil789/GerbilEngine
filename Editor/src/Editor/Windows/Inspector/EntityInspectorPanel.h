@@ -1,19 +1,16 @@
 #pragma once
 
-#include "EditorWindow.h"
 #include "Engine/Scene/Entity.h"
-#include "Engine/Scene/SceneManager.h"
 
 namespace Editor
 {
-	class InspectorWindow : public EditorWindow
+	class EntityInspectorPanel
 	{
 	public:
-		void OnUpdate(Engine::Timestep ts) override;
+		void Draw(Engine::Entity entity);
 
 	private:
 		void DrawComponents(Engine::Entity entity);
 		void DrawAddComponentButton(Engine::Entity entity);
-
 	};
 }

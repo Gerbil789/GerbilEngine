@@ -3,6 +3,7 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/Application.h"
 #include "Editor/Command/CommandManager.h"
+#include "Editor/Core/EditorWindowManager.h"
 #include <imgui.h>
 
 namespace Editor
@@ -66,6 +67,7 @@ namespace Editor
 
 				ImGui::EndMenu();
 			}
+			
 
 			ImGui::EndMenuBar();
 		}

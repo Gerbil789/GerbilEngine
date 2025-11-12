@@ -151,7 +151,7 @@ namespace Editor
 			return;
 		}
 
-		Entity selectedEntity = EditorContext::GetActiveEntity();
+		Entity selectedEntity = EditorContext::GetActiveSelection().Type == SelectionType::Entity ? EditorContext::GetActiveSelection().Entity : Entity{};
 
 		if (!selectedEntity)
 		{

@@ -4,64 +4,55 @@
 
 namespace Editor
 {
+  enum class SelectionType
+  {
+    None,
+    Entity,
+    Asset
+  };
+
+  struct Selection
+  {
+    SelectionType Type = SelectionType::None;
+    Engine::Entity Entity = Engine::Entity::Null();
+    Engine::UUID AssetID = 0; // or use Ref<Asset> if you prefer
+  };
+
   class EditorContext
   {
   public:
     static void SelectEntity(Engine::Entity entity, bool additive = false)
     {
       if (!additive)
-        m_SelectedEntities.clear();
-
-      if (!IsEntitySelected(entity))
       {
-        m_SelectedEntities.push_back(entity);
+        m_Selection.clear();
       }
 
-			LOG_TRACE("Selected entities: {0}", m_SelectedEntities.size());
+      m_Selection.push_back({ SelectionType::Entity, entity, 0 });
+
+			//LOG_TRACE("Selected entities: {0}", m_Selection.size());
     }
 
-    static void DeselectEntity(Engine::Entity entity)
+   
+    static void SelectAsset(Engine::UUID id)
     {
-      m_SelectedEntities.erase(
-        std::remove(m_SelectedEntities.begin(), m_SelectedEntities.end(), entity),
-        m_SelectedEntities.end()
-      );
+      m_Selection.clear();
+      m_Selection.push_back({ SelectionType::Asset, Engine::Entity::Null(), id });
     }
 
     static void ClearSelection()
     {
-      m_SelectedEntities.clear();
+      m_Selection.clear();
     }
 
-    static const std::vector<Engine::Entity>& GetSelectedEntities()
+    static const std::vector<Selection>& GetSelection() { return m_Selection; }
+
+    static Selection GetActiveSelection()
     {
-      return m_SelectedEntities;
+      return m_Selection.empty() ? Selection{} : m_Selection.front();
     }
-
-    static bool IsEntitySelected(Engine::Entity entity)
-    {
-      return std::find(m_SelectedEntities.begin(), m_SelectedEntities.end(), entity) != m_SelectedEntities.end();
-    }
-
-    static Engine::Entity GetActiveEntity()
-    {
-      return m_SelectedEntities.empty() ? Engine::Entity::Null() : m_SelectedEntities.front();
-    }
-
-  //  static Engine::Entity CreateEntity(const std::string& name = "Empty Entity")
-  //  {
-  //    auto command = CreateScope<Editor::CreateEntityCommand>(name);
-  //    auto* raw = command.get();
-  //    CommandManager::ExecuteCommand(std::move(command));
-
-		//	// select the newly created entity
-		//	Engine::Entity newEntity = raw->GetEntity();
-		//	SelectEntity(newEntity);
-		//	return newEntity;
-		//}
-
 
   private:
-    inline static std::vector<Engine::Entity> m_SelectedEntities;
+    inline static std::vector<Selection> m_Selection;
   };
 }

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "EditorWindow.h"
+#include "IEditorWindow.h"
 #include "Engine/Core/Application.h"
 
 namespace Editor
 {
-	class StatisticsWindow : public EditorWindow
+	class StatisticsWindow : public IEditorWindow
 	{
 	public:
 		~StatisticsWindow() = default;

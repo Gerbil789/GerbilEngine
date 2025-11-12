@@ -4,12 +4,12 @@
 #include "Engine/Renderer/Material.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Core/Application.h"
-
 #include "Editor/Components/ScopedStyle.h"
-#include <GLFW/glfw3.h>
-
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Utils/File.h"
+#include "Editor/Core/EditorContext.h"
+
+#include <GLFW/glfw3.h>
 
 namespace Editor
 {
@@ -260,6 +260,12 @@ namespace Editor
 					if (ImGui::IsItemToggledSelection())
 					{
 						item_is_selected = !item_is_selected;
+
+						if (item_is_selected && !item_data->IsDirectory)
+						{
+							// User selected this asset
+							EditorContext::SelectAsset(item_data->UUID);
+						}
 					}
 
 					if (item_curr_idx_to_focus == item_idx)

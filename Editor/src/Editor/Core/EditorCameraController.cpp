@@ -26,11 +26,11 @@ namespace Editor
 	{
 		if(e.GetKey() == Key::F) //Focus
 		{
-			auto entity = EditorContext::GetActiveEntity();
-			if (!entity) return false;
+			auto entity = EditorContext::GetActiveSelection().Entity;
+			if (!entity) return false; //TODO: must return bool?
 
 			glm::vec3 focusPoint = entity.GetComponent<TransformComponent>().Position;
-			FocusOnPoint(focusPoint);
+			FocusOnPoint(focusPoint); //TODO: does this even work? xd
 		}
 
 		return false;

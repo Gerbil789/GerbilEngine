@@ -39,7 +39,7 @@ namespace Editor
 
 		ImGui::BeginMultiSelect(ImGuiMultiSelectFlags_None);
 
-		const auto& entities = m_Scene->GetEntities();
+		const auto& entities = m_Scene->GetEntities(true);
 
 		for(size_t i = 0; i < entities.size(); ++i)
 		{
@@ -82,7 +82,7 @@ namespace Editor
 			flags |= ImGuiTreeNodeFlags_Leaf;
 		}
 
-		bool selected = EditorContext::IsEntitySelected(entity);
+		bool selected = EditorContext::GetActiveSelection().Entity == entity;
 
 		if (selected)
 		{

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "EditorWindow.h"
+#include "IEditorWindow.h"
 #include "Engine/Scene/Entity.h"
 
 namespace Editor
 {
-	class SceneHierarchyWindow : public EditorWindow
+	class SceneHierarchyWindow : public IEditorWindow
 	{
 	public:
 		SceneHierarchyWindow();

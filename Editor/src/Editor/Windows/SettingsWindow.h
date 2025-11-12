@@ -1,10 +1,10 @@
 #pragma once
 
-#include "EditorWindow.h"
+#include "IEditorWindow.h"
 
 namespace Editor
 {
-	class SettingsWindow : public EditorWindow
+	class SettingsWindow : public IEditorWindow
 	{
 	public:
 		~SettingsWindow() = default;

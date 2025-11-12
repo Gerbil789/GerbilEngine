@@ -5,12 +5,10 @@
 #include "Engine/Renderer/GraphicsContext.h"
 #include "Editor/Components/MenuBar.h"
 #include "Editor/Windows/ContentBrowser/ContentBrowserWindow.h"
-#include "Editor/Windows/InspectorWindow.h"
+#include "Editor/Windows/Inspector/InspectorWindow.h"
 #include "Editor/Windows/SceneHierarchyWindow.h"
-#include "Editor/Windows/MaterialWindow.h"
 #include "Editor/Windows/SettingsWindow.h"
 #include "Editor/Windows/StatisticsWindow.h"
-#include "Editor/Windows/MeshImportWindow.h"
 #include "Editor/Windows/ViewportWindow.h"
 #include "Editor/Components/ScopedStyle.h"
 #include <imgui.h>
@@ -101,43 +99,34 @@ namespace Editor::EditorWindowManager
 	ViewportWindow* m_ViewportWindow = nullptr;
 	ContentBrowserWindow* m_ContentBrowserWindow = nullptr;
 	InspectorWindow* m_InspectorWindow = nullptr;
-
-	MaterialWindow* m_MaterialWindow = nullptr;
 	StatisticsWindow* m_StatisticsWindow = nullptr;
 	//SettingsWindow* m_SettingsWindow = nullptr;
-	//MeshImportWindow* m_MeshImportWindow = nullptr;
 
 	template<>ViewportWindow* GetWindow<ViewportWindow>() { return m_ViewportWindow; }
 	template<>ContentBrowserWindow* GetWindow<ContentBrowserWindow>() { return m_ContentBrowserWindow; }
 	template<>InspectorWindow* GetWindow<InspectorWindow>() { return m_InspectorWindow; }
 	template<>SceneHierarchyWindow* GetWindow<SceneHierarchyWindow>() { return m_SceneHierarchyWindow; }
-	template<> MaterialWindow* GetWindow<MaterialWindow>() { return m_MaterialWindow; }
 	template<> StatisticsWindow* GetWindow<StatisticsWindow>() { return m_StatisticsWindow; }
 	//template<>SettingsWindow* GetWindow<SettingsWindow>() { return m_SettingsWindow; }
-	//template<>MeshImportWindow* GetWindow<MeshImportWindow>() { return m_MeshImportWindow; }
 
-	std::vector<EditorWindow*> m_Windows; // For easy iteration
+	std::vector<IEditorWindow*> m_Windows; // For easy iteration
 
 	void Initialize()
 	{
 		m_ContentBrowserWindow = new ContentBrowserWindow();
 		m_InspectorWindow = new InspectorWindow();
 		m_SceneHierarchyWindow = new SceneHierarchyWindow();
-		m_MaterialWindow = new MaterialWindow();
 		m_StatisticsWindow = new StatisticsWindow();
 		m_ViewportWindow = new ViewportWindow();
 		//m_SettingsWindow = new SettingsWindow();
-		//m_MeshImportWindow = new MeshImportWindow();
 
 		m_Windows = {
 			m_ContentBrowserWindow,
-			m_MaterialWindow,
 			m_InspectorWindow,
 			m_ViewportWindow,
 			m_SceneHierarchyWindow,
 			m_StatisticsWindow,
 			//m_SettingsWindow,
-			//m_MeshImportWindow
 		};
 
 		//initialize imgui
@@ -305,8 +294,8 @@ namespace Editor::EditorWindowManager
 			window->OnUpdate(ts);
 		}
 
-		bool showDemo = true;
-		ImGui::ShowDemoWindow(&showDemo);
+		//bool showDemoWindow = false;
+		//ImGui::ShowDemoWindow(&showDemoWindow);
 
 		EndFrame();
 	}

@@ -5,10 +5,10 @@
 
 namespace Editor
 {
-	class EditorWindow
+	class IEditorWindow
 	{
 	public:
-		virtual ~EditorWindow() = default;
+		virtual ~IEditorWindow() = default;
 
 		virtual void OnUpdate(Engine::Timestep ts) = 0;
 		virtual void OnEvent(Engine::Event& event) {}

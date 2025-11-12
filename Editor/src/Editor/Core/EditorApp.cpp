@@ -5,7 +5,6 @@
 #include "Editor/Core/EditorIcons.h"
 
 //tmp
-#include "Editor/Windows/MaterialWindow.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/Importer/MaterialImporter.h"
 #include "Engine/Asset/Importer/MeshImporter.h"
@@ -82,7 +81,7 @@ namespace Editor
 			Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
 			LOG_INFO("Active scene: {0}", scene->id);
 
-			auto entities = scene->GetEntities();
+			auto entities = scene->GetEntities(true);
 			LOG_INFO("Scene has {0} entities", entities.size());
 
 			for (auto ent : entities)
@@ -106,8 +105,6 @@ namespace Editor
 		//save material, TODO: make better save function
 		// metadata = Engine::AssetManager::GetAssetMetadata(material->id);
 		//Engine::AssetSerializer::SerializeAsset(material, *metadata);
-
-		EditorWindowManager::GetWindow<MaterialWindow>()->SetMaterial(material);
 
 		//auto cubeMapTexture = Engine::AssetManager::GetAsset<Engine::CubeMapTexture>(Engine::UUID(6536980455317652148));
 		

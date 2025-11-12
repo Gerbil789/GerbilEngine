@@ -1,11 +1,14 @@
-#include "enginepch.h"
-#include "InspectorWindow.h"
+#include "EntityInspectorPanel.h"
+
+
+
 #include "Engine/Scene/Components.h"
 #include "Editor/Components/Components.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Editor/Core/EditorContext.h"
+
 #include "Editor/Command/CommandManager.h"
 #include "Editor/Command/TransformEntity.h"
+
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
@@ -14,15 +17,10 @@ namespace Editor
 {
 	using namespace Engine;
 
-	void InspectorWindow::OnUpdate(Engine::Timestep ts)
+	void EntityInspectorPanel::Draw(Engine::Entity entity)
 	{
-		ImGui::Begin("Inspector");
-
-		Entity entity = EditorContext::GetActiveEntity();
-
 		if (!entity)
 		{
-			ImGui::End();
 			return;
 		}
 
@@ -30,11 +28,10 @@ namespace Editor
 		ImGui::Separator();
 		DrawAddComponentButton(entity);
 
-		ImGui::End();
 	}
 
 	template<typename T, typename UIFunction>
-	static void DrawComponent(const std::string& name, Entity entity, UIFunction function)
+	static void DrawComponent(const std::string& name, Engine::Entity entity, UIFunction function)
 	{
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
@@ -76,11 +73,11 @@ namespace Editor
 
 	}
 
-	void InspectorWindow::DrawComponents(Entity entity)
+	void EntityInspectorPanel::DrawComponents(Entity entity)
 	{
 		if (entity.HasComponent<NameComponent>())
 		{
-			auto& name = entity.GetComponent<NameComponent>().Name;
+			std::string& name = entity.GetComponent<NameComponent>().Name;
 
 			char buffer[64];
 			memset(buffer, 0, sizeof(buffer));
@@ -88,7 +85,7 @@ namespace Editor
 
 			ImGui::PushItemWidth(-1);
 			bool tmp = true;
-			ImGui::Checkbox("##Enabled", &tmp /*&entity.GetComponent<EnablingComponent>().Enabled*/);
+			ImGui::Checkbox("##Enabled", &entity.GetComponent<IdentityComponent>().Enabled);
 			ImGui::SameLine();
 			if (ImGui::InputText("##Name", buffer, sizeof(buffer))) { name = std::string(buffer); }
 		}
@@ -267,11 +264,11 @@ namespace Editor
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 					{
 						Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
-						if(AssetManager::GetAssetType(droppedUUID) == AssetType::Mesh)
+						if (AssetManager::GetAssetType(droppedUUID) == AssetType::Mesh)
 						{
 							component.Mesh = AssetManager::GetAsset<Mesh>(droppedUUID);
 						}
-						
+
 					}
 					ImGui::EndDragDropTarget();
 				}
@@ -300,7 +297,7 @@ namespace Editor
 			});
 	}
 
-	void InspectorWindow::DrawAddComponentButton(Entity entity)
+	void EntityInspectorPanel::DrawAddComponentButton(Entity entity)
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.FramePadding = ImVec2(20, 5);

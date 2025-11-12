@@ -18,13 +18,17 @@ namespace Engine
 		~Scene();
 
 		template<typename... Components>
-		std::vector<Entity> GetEntities()
+		std::vector<Entity> GetEntities(bool includeDisabled = false)
 		{
 			std::vector<Entity> entities;
 
 			auto view = m_Registry.view<IdentityComponent, Components...>();
 			for (auto entity : view)
 			{
+				if(!includeDisabled && !m_Registry.get<IdentityComponent>(entity).Enabled)
+				{
+					continue;
+				}
 				entities.push_back(Entity{ entity, this });
 			}
 			return entities;
