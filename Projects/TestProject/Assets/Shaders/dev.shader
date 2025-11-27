@@ -11,6 +11,9 @@ struct ModelUniforms {
 
 struct MaterialUniforms {
 	color: vec4f,
+	metalic: f32,
+	roughness: u32,
+	_padding: vec2f,
 };
 
 @group(0) @binding(0) var<uniform> uFrameUniforms: FrameUniforms;
@@ -18,6 +21,7 @@ struct MaterialUniforms {
 @group(2) @binding(0) var<uniform> uMaterialUniforms: MaterialUniforms;
 @group(2) @binding(1) var Sampler: sampler;
 @group(2) @binding(2) var albedoTexture: texture_2d<f32>;
+@group(2) @binding(3) var ambientTexture: texture_2d<f32>;
 
 struct VertexInput {
 	@location(0) position: vec3f,

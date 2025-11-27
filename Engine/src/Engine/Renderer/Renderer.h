@@ -56,5 +56,6 @@ namespace Engine
 		inline static wgpu::BindGroupLayout s_FrameBindGroupLayout = nullptr;
 		inline static wgpu::BindGroup s_FrameBindGroup = nullptr;
 		inline static wgpu::Buffer s_FrameUniformBuffer = nullptr;
+
 	};
 }

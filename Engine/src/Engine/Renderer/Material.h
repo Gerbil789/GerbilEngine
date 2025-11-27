@@ -20,7 +20,17 @@ namespace Engine
 		//void SetVec2(const std::string& paramName, const glm::vec2& value);
 		//void SetVec3(const std::string& paramName, const glm::vec3& value);
 		void SetVec4(const std::string& paramName, const glm::vec4& value);
+
 		void SetTexture(const std::string& name, Ref<Texture2D> texture);
+		Ref<Texture2D> GetTexture(const std::string& name) const
+		{
+			auto it = m_Textures.find(name);
+			if (it != m_Textures.end())
+			{
+				return it->second;
+			}
+			return nullptr;
+		}
 
 		void Bind(wgpu::RenderPassEncoder pass);
 		std::vector<uint8_t> GetUniformData() const { return m_UniformData; } //TODO: this should not be public

@@ -5,6 +5,7 @@
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Importer/ShaderImporter.h"
+
 namespace Engine
 {
 	Material::Material(const Ref<Shader>& shader)
@@ -63,7 +64,7 @@ namespace Engine
 		if (!texture)
 		{
 			LOG_WARNING("Material::SetTexture - Texture is null!");
-			return;
+			texture = Texture2D::GetDefault();
 		}
 
 		const auto materialBindings = GetMaterialBindings(m_Shader->GetSpecification());

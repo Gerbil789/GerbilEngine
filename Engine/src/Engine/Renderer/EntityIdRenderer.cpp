@@ -212,7 +212,7 @@ namespace Engine
 
 		wgpu::BufferDescriptor bufferDesc{};
 		bufferDesc.label = { "EntityIdUniformBuffer", WGPU_STRLEN };;
-		bufferDesc.size = 1024 * sizeof(Engine::UUID);
+		bufferDesc.size = 1024 * 256 * sizeof(Engine::UUID); //1024 max entities, 256 bytes alignment
 		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 
 		m_UniformBuffer = m_Device.createBuffer(bufferDesc);

@@ -13,36 +13,43 @@ namespace Editor::UI
 	bool TextureField(const char* label, Ref<Texture2D>& texture)
 	{
 		bool modified = false;
-		const ImVec2 buttonSize = ImVec2(24, 24);
+		const ImVec2 buttonSize = ImVec2(64, 64);
 
 		ImGui::PushID(label);
 
 		if (texture == nullptr) 
 		{
-			ImGui::Button("", buttonSize);
+			ImGui::Button("empty", buttonSize);
 		}
 		else 
 		{
-			//ImTextureID tex_id = (ImTextureID)(intptr_t)texture->GetRendererID();
-			//ImTextureRef textureRef = ImTextureRef(tex_id);
-
-			//ImGui::ImageButton((char*)(intptr_t)texture->GetRendererID(), textureRef, buttonSize, ImVec2(0, 1), ImVec2(1, 0));
-
+			ImGui::ImageButton(label, (ImTextureID)(intptr_t)(WGPUTextureView)texture->GetTextureView(), buttonSize);
 		}
+
+		if(texture)
+		{
+			if (ImGui::BeginDragDropSource())
+			{
+				Engine::UUID uuid = texture->id;
+				ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
+				ImGui::Text("%llu", texture->id);
+				ImGui::EndDragDropSource();
+			}
+		}
+
 
 
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
-				const wchar_t* droppedPath = (const wchar_t*)payload->Data;
-				std::filesystem::path path(droppedPath);
-
-				if (path.extension() == ".png" || path.extension() == ".jpg" || path.extension() == ".bmp")
+				Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
+				if (AssetManager::GetAssetType(droppedUUID) == AssetType::Texture2D)
 				{
-					//texture = AssetManager::GetAsset<Texture2D>(path);
+					texture = AssetManager::GetAsset<Texture2D>(droppedUUID);
 					modified = true;
 				}
+
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -83,7 +90,7 @@ namespace Editor::UI
 		ImGui::PushID(label);
 
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-		if (ImGui::DragFloat("##input", &value, 0.05f, 0.0f, 0.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
+		if (ImGui::DragFloat(label, &value, 0.05f, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
 		{
 			valueChanged = true;
 		}
@@ -315,7 +322,4 @@ namespace Editor::UI
 
 		return valueChanged;
 	}
-
-	
-
 }

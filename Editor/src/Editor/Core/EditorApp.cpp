@@ -109,56 +109,68 @@ namespace Editor
 		//auto cubeMapTexture = Engine::AssetManager::GetAsset<Engine::CubeMapTexture>(Engine::UUID(6536980455317652148));
 		
 
-		// Entity 1
+		for(int x = 0; x < 10; x++)
 		{
-			auto cube = scene->CreateEntity("FirstCube");
-			auto mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/cube.glb");
+			for(int y = 0; y < 10; y++)
+			{
+				for(int z = 0; z < 1; z++)
+				{
+					auto cube = scene->CreateEntity("GridCube");
+					Ref<Engine::Mesh> mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::UUID(8982589797183355654));
+					auto& component = cube.AddComponent<Engine::MeshComponent>();
+					component.Material = material;
+					component.Mesh = mesh;
+					cube.GetComponent<Engine::TransformComponent>().Position = { (float)x * 3.0f - (15), (float)y * 3.0f, (float)z * 3.0f - 30};
+				}
 
-			auto& component = cube.AddComponent<Engine::MeshComponent>();
-			component.Material = material;
-			component.Mesh = mesh;
-
-			cube.GetComponent<Engine::TransformComponent>().Position = { 2.0f, 0.0f, 0.0f };
-			//cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
-
-			LOG_INFO("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
-
-
-
-
-
+			}
 		}
 
+		//// Entity 1
+		//{
+		//	auto cube = scene->CreateEntity("FirstCube");
+		//	auto mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/cube.glb");
 
-		// Entity 2
-		{
-			auto cube = scene->CreateEntity("SecondCube");
-			auto mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/sphere.glb");
+		//	auto& component = cube.AddComponent<Engine::MeshComponent>();
+		//	component.Material = material;
+		//	component.Mesh = mesh;
 
-			auto& component = cube.AddComponent<Engine::MeshComponent>();
-			component.Material = material;
-			component.Mesh = mesh;
+		//	cube.GetComponent<Engine::TransformComponent>().Position = { 2.0f, 0.0f, 0.0f };
+		//	//cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
 
-			cube.GetComponent<Engine::TransformComponent>().Position = { 0.0f, 0.0f, 0.0f };
-			//cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
-
-			LOG_INFO("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
-		}
-
-		// Camera Entity
-		{
-			auto cam = scene->CreateEntity("camera");
-
-			auto& component = cam.AddComponent<Engine::CameraComponent>();
-			scene->SetActiveCamera(cam);
-
-			cam.GetComponent<Engine::TransformComponent>().Position = { 0.0f, 0.0f, 10.0f };
-
-			LOG_INFO("Created entity '{0}' with ID: {1}", cam.GetName(), cam.GetUUID());
+		//	LOG_INFO("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
+		//}
 
 
-			EditorContext::SelectEntity(cam);
-		}
+		//// Entity 2
+		//{
+		//	auto cube = scene->CreateEntity("SecondCube");
+		//	auto mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/sphere.glb");
+
+		//	auto& component = cube.AddComponent<Engine::MeshComponent>();
+		//	component.Material = material;
+		//	component.Mesh = mesh;
+
+		//	cube.GetComponent<Engine::TransformComponent>().Position = { 0.0f, 0.0f, 0.0f };
+		//	//cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
+
+		//	LOG_INFO("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
+		//}
+
+		//// Camera Entity
+		//{
+		//	auto cam = scene->CreateEntity("camera");
+
+		//	auto& component = cam.AddComponent<Engine::CameraComponent>();
+		//	scene->SetActiveCamera(cam);
+
+		//	cam.GetComponent<Engine::TransformComponent>().Position = { 0.0f, 0.0f, 10.0f };
+
+		//	LOG_INFO("Created entity '{0}' with ID: {1}", cam.GetName(), cam.GetUUID());
+
+
+		//	EditorContext::SelectEntity(cam);
+		//}
 	}
 
 	void EditorApp::Shutdown()

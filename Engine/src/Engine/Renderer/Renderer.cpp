@@ -23,7 +23,8 @@ namespace Engine
 	};
 	static_assert(sizeof(ModelUniforms) % 16 == 0);
 
-	uint32_t CeilToNextMultiple(uint32_t value, uint32_t step) {
+	uint32_t CeilToNextMultiple(uint32_t value, uint32_t step) 
+	{
 		uint32_t divide_and_ceil = value / step + (value % step == 0 ? 0 : 1);
 		return step * divide_and_ceil;
 	}
@@ -39,7 +40,9 @@ namespace Engine
 			s_Device.getLimits(&limits);
 			s_ModelUniformStride = CeilToNextMultiple((uint32_t)sizeof(ModelUniforms), (uint32_t)limits.minUniformBufferOffsetAlignment);
 
-			constexpr size_t BufferSize = 1024 * sizeof(ModelUniforms); // max 1024 unique transforms per frame
+			// stride is probably 256 on most hardware, but could be different on some
+
+			const size_t BufferSize = 1024 * s_ModelUniformStride; // max 1024 unique transforms per frame
 
 			wgpu::BindGroupLayoutEntry bindGroupLayoutEntry = wgpu::Default;
 			bindGroupLayoutEntry.binding = 0;
@@ -221,7 +224,7 @@ namespace Engine
 		}
 
 		// Entities
-		std::vector<Entity> entities = m_Scene->GetEntities<TransformComponent, MeshComponent>();
+		const std::vector<Entity>& entities = m_Scene->GetEntities<TransformComponent, MeshComponent>();
 		std::unordered_map<Ref<Material>, std::vector<Entity>> materialGroups;
 
 		// Group entities by material
