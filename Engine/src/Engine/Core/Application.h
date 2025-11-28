@@ -33,6 +33,7 @@ namespace Engine
 	{
 	public:
 		Application(const ApplicationSpecification& specification);
+		virtual ~Application();
 
 		virtual void Run() = 0;
 		virtual void OnEvent(Event& e);

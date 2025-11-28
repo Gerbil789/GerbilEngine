@@ -108,4 +108,42 @@ namespace Engine
 		ASSERT(result != 0, "Unknown shader stage: {}", stage);
 		return wgpu::ShaderStage(result);
 	}
+
+	static inline std::string VertexFormatToString(wgpu::VertexFormat format)
+	{
+		switch (format)
+		{
+		case wgpu::VertexFormat::Uint8x2:    return "Uint8x2";
+		case wgpu::VertexFormat::Uint8x4:    return "Uint8x4";
+		case wgpu::VertexFormat::Sint8x2:    return "Sint8x2";
+		case wgpu::VertexFormat::Sint8x4:    return "Sint8x4";
+		case wgpu::VertexFormat::Unorm8x2:   return "Unorm8x2";
+		case wgpu::VertexFormat::Unorm8x4:   return "Unorm8x4";
+		case wgpu::VertexFormat::Snorm8x2:   return "Snorm8x2";
+		case wgpu::VertexFormat::Snorm8x4:   return "Snorm8x4";
+		case wgpu::VertexFormat::Uint16x2:   return "Uint16x2";
+		case wgpu::VertexFormat::Uint16x4:   return "Uint16x4";
+		case wgpu::VertexFormat::Sint16x2:   return "Sint16x2";
+		case wgpu::VertexFormat::Sint16x4:   return "Sint16x4";
+		case wgpu::VertexFormat::Unorm16x2:  return "Unorm16x2";
+		case wgpu::VertexFormat::Unorm16x4:  return "Unorm16x4";
+		case wgpu::VertexFormat::Snorm16x2:  return "Snorm16x2";
+		case wgpu::VertexFormat::Snorm16x4:  return "Snorm16x4";
+		case wgpu::VertexFormat::Float16x2:  return "Float16x2";
+		case wgpu::VertexFormat::Float16x4:  return "Float16x4";
+		case wgpu::VertexFormat::Float32:    return "Float32";
+		case wgpu::VertexFormat::Float32x2:  return "Float32x2";
+		case wgpu::VertexFormat::Float32x3:  return "Float32x3";
+		case wgpu::VertexFormat::Float32x4:  return "Float32x4";
+		case wgpu::VertexFormat::Uint32:     return "Uint32";
+		case wgpu::VertexFormat::Uint32x2:   return "Uint32x2";
+		case wgpu::VertexFormat::Uint32x3:   return "Uint32x3";
+		case wgpu::VertexFormat::Uint32x4:   return "Uint32x4";
+		case wgpu::VertexFormat::Sint32:     return "Sint32";
+		case wgpu::VertexFormat::Sint32x2:   return "Sint32x2";
+		case wgpu::VertexFormat::Sint32x3:   return "Sint32x3";
+		case wgpu::VertexFormat::Sint32x4:   return "Sint32x4";
+		default: return "Unknown";
+		}
+	}
 }

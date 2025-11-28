@@ -4,6 +4,7 @@
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Asset/Importer/ShaderImporter.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
+#include "Engine/Renderer/SamplerPool.h"
 
 namespace Engine
 {
@@ -15,29 +16,12 @@ namespace Engine
 
   void Skybox::CreateBindGroup()
   {
-		{
-			// create sampler
-			wgpu::SamplerDescriptor samplerDesc = {};
-			samplerDesc.label = { "SkyboxSampler", WGPU_STRLEN };
-			samplerDesc.addressModeU = wgpu::AddressMode::Repeat;
-			samplerDesc.addressModeV = wgpu::AddressMode::Repeat;
-			samplerDesc.addressModeW = wgpu::AddressMode::ClampToEdge;
-			samplerDesc.magFilter = wgpu::FilterMode::Linear;
-			samplerDesc.minFilter = wgpu::FilterMode::Linear;
-			samplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
-			samplerDesc.lodMinClamp = 0.0f;
-			samplerDesc.lodMaxClamp = 1.0f;
-			samplerDesc.compare = wgpu::CompareFunction::Undefined;
-			samplerDesc.maxAnisotropy = 1;
-			m_Sampler = GraphicsContext::GetDevice().createSampler(samplerDesc);
-		}
-
 		std::array<wgpu::BindGroupEntry, 2> entries;
 		
 		{
 			wgpu::BindGroupEntry entry{};
 			entry.binding = 0;
-			entry.sampler = m_Sampler;
+			entry.sampler = SamplerPool::GetSampler(TextureFilter::Bilinear, TextureWrap::Clamp);
 			entries[0] = entry;
 		}
 

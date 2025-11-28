@@ -18,7 +18,7 @@ namespace Editor
 		Ref<Engine::Shader> shader = material->GetShader();
 		auto shaderSpec = shader->GetSpecification();
 		auto bindings = GetMaterialBindings(shaderSpec);
-
+		bool hasTextures = false;
 
 
 		static std::vector<Ref<Engine::Shader>> s_AllShaders;
@@ -119,6 +119,8 @@ namespace Editor
 
 				if (binding.type == Engine::BindingType::Texture2D)
 				{
+					hasTextures = true;
+
 					ImGui::TableNextRow();
 					ImGui::TableSetColumnIndex(0);
 					ImGui::TextUnformatted(binding.name.c_str());
@@ -130,6 +132,36 @@ namespace Editor
 						material->SetTexture(binding.name, texture);
 				}
 			}
+
+			if(hasTextures)
+			{
+				ImGui::Separator();
+
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+
+				ImGui::TextUnformatted("Texture Filter");
+				ImGui::TableSetColumnIndex(1);
+				const char* filterOptions[] = { "Nearest", "Bilinear", "Trilinear" };
+				int currentFilter = static_cast<int>(material->GetTextureFilter());
+				if (ImGui::Combo("##TextureFilter", &currentFilter, filterOptions, IM_ARRAYSIZE(filterOptions)))
+				{
+					material->SetTextureFilter(static_cast<Engine::TextureFilter>(currentFilter));
+				}
+
+
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				ImGui::TextUnformatted("Texture Wrap");
+				ImGui::TableSetColumnIndex(1);
+				const char* wrapOptions[] = { "Repeat", "Clamp", "Mirror" };
+				int currentWrap = static_cast<int>(material->GetTextureWrap());
+				if (ImGui::Combo("##TextureWrap", &currentWrap, wrapOptions, IM_ARRAYSIZE(wrapOptions)))
+				{
+					material->SetTextureWrap(static_cast<Engine::TextureWrap>(currentWrap));
+				}
+			}
+
 
 			ImGui::EndTable();
 		}

@@ -22,19 +22,9 @@ namespace Editor
 
 		case SelectionType::Asset:
 		{
-			auto type = Engine::AssetManager::GetAssetType(selection.AssetID);
-
-			if (type == Engine::AssetType::Material)
-			{
-				m_MaterialInspector.Draw(Engine::AssetManager::GetAsset<Engine::Material>(selection.AssetID));
-			}
-			else
-			{
-				ImGui::Text("Asset selected");
-			}
+			DrawAssetPanel(selection.AssetID);
 			break;
 		}
-
 
 		default:
 			ImGui::Text("Nothing selected");
@@ -42,5 +32,37 @@ namespace Editor
 		}
 
 		ImGui::End();
+	}
+
+	void InspectorWindow::DrawAssetPanel(Engine::UUID assetID)
+	{
+		auto type = Engine::AssetManager::GetAssetType(assetID);
+
+		switch (type)
+		{
+		case Engine::AssetType::Texture2D:
+		{
+			ImGui::Text("Texture2D selected");
+			break;
+		}
+
+		case Engine::AssetType::Shader:
+		{
+			m_ShaderInspector.Draw(Engine::AssetManager::GetAsset<Engine::Shader>(assetID));
+			break;
+		}
+
+		case Engine::AssetType::Material:
+		{
+			m_MaterialInspector.Draw(Engine::AssetManager::GetAsset<Engine::Material>(assetID));
+			break;
+		}
+
+
+		default:
+		{
+			ImGui::Text("Unsupported asset type selected");
+		}
+		}
 	}
 }

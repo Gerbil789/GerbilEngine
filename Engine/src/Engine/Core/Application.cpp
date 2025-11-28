@@ -5,6 +5,7 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Renderer/Renderer.h"
+#include "Engine/Renderer/SamplerPool.h"
 
 namespace Engine
 {
@@ -34,7 +35,14 @@ namespace Engine
 
 		Input::Initialize();
 		GraphicsContext::Initialize();
+		SamplerPool::Initialize();
 		Renderer::Initialize();
+	}
+
+	Application::~Application()
+	{
+		SamplerPool::Shutdown();
+		GraphicsContext::Shutdown();
 	}
 
 	void Application::OnEvent(Event& e)

@@ -19,9 +19,7 @@ namespace Engine
 	private:
 		Ref<CubeMapTexture> m_CubemapTexture;
 		SkyboxShader m_SkyboxShader = SkyboxShader("Resources/Engine/shaders/skybox.wgsl");
-
 		wgpu::BindGroup m_BindGroup;
-		wgpu::Sampler m_Sampler;
 	};
 
 }

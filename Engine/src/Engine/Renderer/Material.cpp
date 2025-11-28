@@ -14,7 +14,6 @@ namespace Engine
 
 		m_UniformData.resize(m_Shader->GetMaterialUniformBufferSize(), 0);
 		CreateUniformBuffer();
-		CreateSampler();
 		CreateBindGroup();
 	}
 
@@ -24,7 +23,6 @@ namespace Engine
 
 		m_UniformData.resize(m_Shader->GetMaterialUniformBufferSize(), 0);
 		CreateUniformBuffer();
-		CreateSampler();
 		CreateBindGroup();
 	}
 
@@ -100,23 +98,6 @@ namespace Engine
 		m_UniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
 	}
 
-	void Material::CreateSampler()
-	{
-		wgpu::SamplerDescriptor samplerDesc = {};
-		samplerDesc.label = { "MaterialSampler", WGPU_STRLEN }; //TODO: add material name
-		samplerDesc.addressModeU = wgpu::AddressMode::Repeat;
-		samplerDesc.addressModeV = wgpu::AddressMode::Repeat;
-		samplerDesc.addressModeW = wgpu::AddressMode::ClampToEdge;
-		samplerDesc.magFilter = wgpu::FilterMode::Linear;
-		samplerDesc.minFilter = wgpu::FilterMode::Linear;
-		samplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
-		samplerDesc.lodMinClamp = 0.0f;
-		samplerDesc.lodMaxClamp = 1.0f;
-		samplerDesc.compare = wgpu::CompareFunction::Undefined;
-		samplerDesc.maxAnisotropy = 1;
-		m_Sampler = GraphicsContext::GetDevice().createSampler(samplerDesc);
-	}
-
 	void Material::CreateBindGroup()
 	{
 		ASSERT(m_Shader, "Material::CreateMaterialBindGroup - No shader set for material!");
@@ -150,7 +131,7 @@ namespace Engine
 			}
 			else if (binding.type == BindingType::Sampler)
 			{
-				entry.sampler = m_Sampler;
+				entry.sampler = SamplerPool::GetSampler(m_TextureFilter, m_TextureWrap);
 			}
 
 			entries.push_back(entry);

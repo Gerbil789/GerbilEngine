@@ -1,7 +1,4 @@
 #include "EntityInspectorPanel.h"
-
-
-
 #include "Engine/Scene/Components.h"
 #include "Editor/Components/Components.h"
 #include "Engine/Asset/AssetManager.h"

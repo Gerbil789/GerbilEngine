@@ -1,6 +1,6 @@
 .vs/
-bin/
-bin-int/
+/bin/
+/bin-int/
 
 *.sln
 *.vcxproj

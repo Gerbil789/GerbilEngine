@@ -25,55 +25,9 @@ jobs:
         arch: x64
 
     - name: Generate project files
-      run: vendor\bin\premake\premake5.exe vs2022
+      run: vendor\bin\premake\windows\premake5.exe vs2022
       
     - name: Build project
       if: steps.cache-build.outputs.cache-hit != 'true'
       run: |
         msbuild /p:Configuration=${{ matrix.configuration }} /p:Platform=x64 GerbilEngine.sln
-
-  # notify-discord:
-  #   runs-on: windows-latest
-  #   needs: build
-  #   if: always()  # Ensure this job runs even if the build job fails
-  #   steps:
-  #     - name: Send Discord Notification
-  #       run: |
-  #         $STATUS = "${{ job.status }}"
-  #         $BRANCH = "${{ github._name }}"
-  #         $REPOSITORY = "${{ github.repository }}"
-  #         $SHA = "${{ github.sha }}"
-  #         $URL = "https://github.com/${{ github.repository }}/commit/$SHA"
-
-  #         $payload = @{
-  #           username = "Git Watcher"
-  #           embeds = @(
-  #             @{
-  #               title = "Gerbil Engine Workflow Status"
-  #               description = "The build project workflow has completed."
-  #               color = if ($STATUS -eq 'success') { 3066993 } else { 15158332 }
-  #               fields = @(
-  #                 @{
-  #                   name = "Repository"
-  #                   value = "$REPOSITORY"
-  #                 },
-  #                 @{
-  #                   name = "Branch"
-  #                   value = "$BRANCH"
-  #                 },
-  #                 @{
-  #                   name = "Commit"
-  #                   value = "[$SHA]($URL)"
-  #                 },
-  #                 @{
-  #                   name = "Status"
-  #                   value = "$STATUS"
-  #                 }
-  #               )
-  #             }
-  #           )
-  #         }
-
-  #         $jsonPayload = $payload | ConvertTo-Json -Depth 4
-  #         Invoke-RestMethod -Uri ${{ secrets.DISCORD_WEBHOOK_URL }} -Method Post -ContentType "application/json" -Body $jsonPayload
-    
