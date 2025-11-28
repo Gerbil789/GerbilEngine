@@ -15,6 +15,7 @@ namespace Engine
 		Material(const Ref<Shader>& shader);
 
 		Ref<Shader> GetShader() const { return m_Shader; }
+		void SetShader(const Ref<Shader>& shader);
 
 		void SetFloat(const std::string& paramName, float value);
 		//void SetVec2(const std::string& paramName, const glm::vec2& value);

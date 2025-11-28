@@ -18,7 +18,6 @@ struct MaterialUniforms {
 @group(2) @binding(0) var<uniform> uMaterialUniforms: MaterialUniforms;
 @group(2) @binding(1) var Sampler: sampler;
 @group(2) @binding(2) var Albedo: texture_2d<f32>;
-@group(2) @binding(3) var Ambient: texture_2d<f32>;
 
 struct VertexInput {
 	@location(0) position: vec3f,

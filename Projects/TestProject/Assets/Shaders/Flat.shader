@@ -10,15 +10,13 @@ struct ModelUniforms {
 };
 
 struct MaterialUniforms {
-	Color: vec4f,
+	color: vec4f,
 };
 
 @group(0) @binding(0) var<uniform> uFrameUniforms: FrameUniforms;
 @group(1) @binding(0) var<uniform> uModelUniforms: ModelUniforms;
 @group(2) @binding(0) var<uniform> uMaterialUniforms: MaterialUniforms;
 @group(2) @binding(1) var Sampler: sampler;
-@group(2) @binding(2) var Albedo: texture_2d<f32>;
-@group(2) @binding(3) var Ambient: texture_2d<f32>;
 
 struct VertexInput {
 	@location(0) position: vec3f,
@@ -41,8 +39,6 @@ fn vs_main(in: VertexInput) -> VertexOutput {
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4f {
-	let texelCoords = vec2i(in.uv * vec2f(textureDimensions(Albedo)));
-  let color = textureLoad(Albedo, texelCoords, 0).rgb * uMaterialUniforms.Color.rgb;
-	let corrected_color = pow(color, vec3f(2.2));
-	return vec4f(corrected_color, uMaterialUniforms.Color.a);
+	let corrected_color = pow(uMaterialUniforms.color.rgb, vec3f(2.2));
+	return vec4f(corrected_color, uMaterialUniforms.color.a);
 }

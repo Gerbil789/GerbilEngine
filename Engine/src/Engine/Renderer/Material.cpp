@@ -18,6 +18,16 @@ namespace Engine
 		CreateBindGroup();
 	}
 
+	void Material::SetShader(const Ref<Shader>& shader)
+	{
+		m_Shader = shader;
+
+		m_UniformData.resize(m_Shader->GetMaterialUniformBufferSize(), 0);
+		CreateUniformBuffer();
+		CreateSampler();
+		CreateBindGroup();
+	}
+
 	void Material::SetFloat(const std::string& paramName, float value)
 	{
 		auto binding = GetBinding(GetMaterialBindings(m_Shader->GetSpecification()), "uMaterialUniforms");

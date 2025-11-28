@@ -53,21 +53,17 @@ Assets:
     Path: Textures\spritesheet.png
   - ID: 39304943629783121
     Path: Textures\tile.png
-  - ID: 11634115142876566135
-    Path: Materials\brg.material
   - ID: 11488752734390452845
-    Path: Shaders\dev.shader
+    Path: Shaders\Dev.shader
   - ID: 17669822171568293672
     Path: Textures\favorite.png
   - ID: 16704251879842279232
     Path: Textures\mood.png
-  - ID: 13965959571972685705
-    Path: Materials\hehe.material
-  - ID: 13858975600230720374
-    Path: Materials\jddf.material
-  - ID: 7605953735010229493
-    Path: Materials\jjzzt.material
   - ID: 6023610084586369645
     Path: Meshes\cone.glb
   - ID: 9864571265207132016
     Path: Textures\cone_tex.png
+  - ID: 5384802576992374005
+    Path: Shaders\Unlit.shader
+  - ID: 1486764810843681757
+    Path: Shaders\Flat.shader

@@ -79,6 +79,39 @@ namespace Engine
 			return std::static_pointer_cast<T>(asset);
 		}
 
+
+		template<typename T>
+		static std::vector<Ref<T>> GetAssetsOfType(const AssetType& type)
+		{
+			std::vector<Ref<T>> assets;
+			auto records = m_AssetRegistry.GetAllRecords();
+			for (const auto& record : records)
+			{
+				if (record->GetType() != type)
+				{
+					continue;
+				}
+				Ref<Asset> asset;
+				if (IsAssetLoaded(record->id))
+				{
+					asset = m_LoadedAssets.at(record->id);
+				}
+				else
+				{
+					asset = AssetImporter::ImportAsset(*record);
+					if (!asset)
+					{
+						LOG_ERROR("EditorAssetManager::GetAssetsOfType - asset import failed! '{0}'", record->path.string());
+						continue;
+					}
+					m_LoadedAssets[record->id] = asset;
+				}
+				assets.push_back(std::static_pointer_cast<T>(asset));
+			}
+			return assets;
+		}
+
+
 		template<typename T, typename... Args>
 		static Ref<T> CreateAsset(const std::filesystem::path& path, Args&&... args) // create a new asset inside the engine
 		{
