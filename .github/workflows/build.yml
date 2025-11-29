@@ -2,35 +2,56 @@ name: Build Project
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
+
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
     strategy:
       matrix:
-        configuration: [Debug, Release] 
+        configuration: [Debug, Release]
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        submodules: true
+      - uses: actions/checkout@v4
 
-    - name: Set up MSVC
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
-    - name: Build Premake
-      run: .\Scripts\build_premake.bat
+      - name: Build Premake
+        run: .\Scripts\build_premake.bat
 
-    - name: Generate project files
-      run: vendor\premake\bin\release\premake5.exe vs2022
+      - name: Generate Visual Studio project files
+        run: vendor\premake\bin\release\premake5.exe vs2022
       
-    - name: Build project
-      if: steps.cache-build.outputs.cache-hit != 'true'
-      run: |
-        msbuild /p:Configuration=${{ matrix.configuration }} /p:Platform=x64 GerbilEngine.sln
+      - name: Build project
+        run: |
+          msbuild /p:Configuration=${{ matrix.configuration }} /p:Platform=x64 GerbilEngine.sln
+
+
+  build-linux:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        config: [debug, release]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt update
+          sudo apt install -y g++ make
+
+      - name: Build Premake (Linux)
+        run: |
+          chmod +x Scripts/build_premake.sh
+          Scripts/build_premake.sh
+
+      - name: Generate Makefiles
+        run: vendor/premake/bin/release/premake5 gmake2
+
+      - name: Build project using make
+        run: make config=${{ matrix.config }}
