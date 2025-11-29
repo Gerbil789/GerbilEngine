@@ -1,4 +1,5 @@
-[![Build](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build.yml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build.yml)
+[![Windows](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_windows.yaml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_windows.yaml)
+[![Linux](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_linux.yaml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_linux.yaml)
 
 # GerbilEngine
 My custom WebGPU based game engine

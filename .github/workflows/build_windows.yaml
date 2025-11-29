@@ -1,0 +1,32 @@
+name: Build Windows
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Build Premake
+        run: .\Scripts\build_premake.bat
+
+      - name: Generate Visual Studio project files
+        run: vendor\premake\bin\release\premake5.exe vs2022
+      
+      - name: Build project
+        run: |
+          msbuild /p:Configuration=${{ matrix.configuration }} /p:Platform=x64 GerbilEngine.sln
