@@ -10,6 +10,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     strategy:
+      fail-fast: false
       matrix:
         configuration: [Debug, Release]
     steps:
@@ -35,6 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
         config: [debug, release]
     steps:
