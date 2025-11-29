@@ -24,8 +24,11 @@ jobs:
       with:
         arch: x64
 
+    - name: Build Premake
+      run: .\Scripts\build_premake.bat
+
     - name: Generate project files
-      run: vendor\bin\premake\windows\premake5.exe vs2022
+      run: vendor\premake\bin\release\premake5.exe vs2022
       
     - name: Build project
       if: steps.cache-build.outputs.cache-hit != 'true'
