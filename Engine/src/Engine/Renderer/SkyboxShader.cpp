@@ -13,7 +13,8 @@ namespace Engine
 
 		wgpu::ShaderModuleDescriptor shaderDesc;
 		shaderDesc.label = { "SkyboxShaderModule", WGPU_STRLEN };
-		wgpu::ShaderModuleWGSLDescriptor shaderCodeDesc;
+
+		wgpu::ShaderSourceWGSL shaderCodeDesc;
 		shaderCodeDesc.chain.next = nullptr;
 		shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
 		shaderDesc.nextInChain = &shaderCodeDesc.chain;

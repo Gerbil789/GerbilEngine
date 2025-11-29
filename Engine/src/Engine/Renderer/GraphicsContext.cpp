@@ -30,7 +30,10 @@ namespace Engine::GraphicsContext
 		// Initialize WGPU instance
 		wgpu::InstanceDescriptor desc;
 		desc.setDefault();
-		desc.capabilities.timedWaitAnyEnable = true;
+
+		desc.requiredFeatureCount = 1;
+		desc.requiredFeatures = &wgpu::InstanceFeatureName::TimedWaitAny;
+		//desc.capabilities.timedWaitAnyEnable = true;
 		s_Instance = wgpu::createInstance(desc);
 		ASSERT(s_Instance, "Failed to create WGPU instance");
 

@@ -241,7 +241,8 @@ namespace Engine
 		const char* shaderSource = content.c_str();
 
 		wgpu::ShaderModuleDescriptor shaderDesc;
-		wgpu::ShaderModuleWGSLDescriptor shaderCodeDesc;
+
+		wgpu::ShaderSourceWGSL shaderCodeDesc;
 		shaderCodeDesc.chain.next = nullptr;
 		shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
 		shaderDesc.nextInChain = &shaderCodeDesc.chain;
