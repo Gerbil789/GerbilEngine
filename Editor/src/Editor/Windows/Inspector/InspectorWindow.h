@@ -10,7 +10,7 @@ namespace Editor
 	class InspectorWindow : public IEditorWindow
 	{
 	public:
-		void OnUpdate(Engine::Timestep ts) override;
+		void OnUpdate() override;
 
 	private:
 		void DrawAssetPanel(Engine::UUID assetID);

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Core/Timestep.h"
 #include "Engine/Event/Event.h"
 
 namespace Editor
@@ -10,7 +9,7 @@ namespace Editor
 	public:
 		virtual ~IEditorWindow() = default;
 
-		virtual void OnUpdate(Engine::Timestep ts) = 0;
+		virtual void OnUpdate() = 0;
 		virtual void OnEvent(Engine::Event& event) {}
 
 		bool IsVisible() const { return m_IsVisible; }

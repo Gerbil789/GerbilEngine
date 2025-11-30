@@ -11,6 +11,7 @@ namespace Engine
 	public:
 		static void Initialize(); //TODO: why is this static?
 		Renderer(uint32_t width, uint32_t height);
+		~Renderer();
 
 		void SetScene(Scene* scene) { m_Scene = scene; }
 		void SetCamera(Camera* camera) { m_Camera = camera; }

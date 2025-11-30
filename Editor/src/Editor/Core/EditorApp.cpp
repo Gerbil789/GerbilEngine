@@ -3,7 +3,7 @@
 #include "Editor/Core/EditorWindowManager.h"
 #include "Engine/Core/Project.h"
 #include "Editor/Core/EditorIcons.h"
-
+#include "Engine/Core/Time.h"
 //tmp
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/Importer/MaterialImporter.h"
@@ -111,7 +111,7 @@ namespace Editor
 
 		for(int x = 0; x < 10; x++)
 		{
-			for(int y = 0; y < 10; y++)
+			for(int y = 0; y < 1; y++)
 			{
 				for(int z = 0; z < 1; z++)
 				{
@@ -173,10 +173,12 @@ namespace Editor
 		//}
 	}
 
-	void EditorApp::Shutdown()
+	EditorApp::~EditorApp()
 	{
+		ENGINE_PROFILE_BEGIN("Shutdown", "profile_shutdown.json");
 		ENGINE_PROFILE_FUNCTION();
 		EditorWindowManager::Shutdown();
+		ENGINE_PROFILE_END();
 	}
 
 	void EditorApp::Run()
@@ -186,19 +188,12 @@ namespace Editor
 		{
 			ENGINE_PROFILE_SCOPE("RunLoop");
 
-			//TODO: pack this fps counter into something, dont bloat main loop with it
-			// -----------------------------------
-			auto now = std::chrono::steady_clock::now();
-			float deltaTime = std::chrono::duration<float>(now - m_LastFrameTime).count();
-			m_LastFrameTime = now;
-			m_FPSCounter.Update(deltaTime);
-			Engine::Timestep ts(deltaTime);
-			// -----------------------------------
+			Engine::Time::BeginFrame();
 
 			if (m_Minimized) continue;
 
-			EditorWindowManager::OnUpdate(ts);
-			m_Window->OnUpdate(); // This triggers events, which are handled in OnEvent()
+			EditorWindowManager::OnUpdate();
+			m_Window->OnUpdate();
 			m_FileWatcher->OnUpdate();
 		}
 	}

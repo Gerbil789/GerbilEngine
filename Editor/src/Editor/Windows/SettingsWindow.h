@@ -9,6 +9,6 @@ namespace Editor
 	public:
 		~SettingsWindow() = default;
 
-		void OnUpdate(Engine::Timestep ts) override;
+		void OnUpdate() override;
 	};
 }

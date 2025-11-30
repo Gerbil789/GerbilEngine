@@ -9,7 +9,7 @@ namespace Editor
 	{
 	public:
 		SceneHierarchyWindow();
-		void OnUpdate(Engine::Timestep ts) override;
+		void OnUpdate() override;
 
 	private:
 		Engine::Scene* m_Scene = nullptr;

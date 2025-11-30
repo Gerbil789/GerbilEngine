@@ -1,7 +1,6 @@
 #pragma once
 
 #include "IEditorWindow.h"
-#include "Engine/Core/Application.h"
 
 namespace Editor
 {
@@ -9,7 +8,6 @@ namespace Editor
 	{
 	public:
 		~StatisticsWindow() = default;
-
-		void OnUpdate(Engine::Timestep ts) override;
+		void OnUpdate() override;
 	};
 }

@@ -35,7 +35,7 @@ namespace Editor
 			});
 	}
 
-	void ViewportWindow::OnUpdate(Timestep ts)
+	void ViewportWindow::OnUpdate()
 	{
 		ScopedStyle style({
 			{ ImGuiStyleVar_WindowPadding, ImVec2(0, 0) },

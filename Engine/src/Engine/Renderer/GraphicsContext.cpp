@@ -52,15 +52,15 @@ namespace Engine::GraphicsContext
 			wgpu::AdapterInfo info;
 			adapter.getInfo(&info);
 
-			switch (info.backendType) 
+			switch (info.backendType)
 			{
-				case wgpu::BackendType::D3D11:  LOG_INFO("Dawn backend: D3D11"); break;
-				case wgpu::BackendType::D3D12:  LOG_INFO("Dawn backend: D3D12"); break;
-				case wgpu::BackendType::Metal:  LOG_INFO("Dawn backend: Metal"); break;
-				case wgpu::BackendType::Vulkan: LOG_INFO("Dawn backend: Vulkan"); break;
-				case wgpu::BackendType::OpenGL: LOG_INFO("Dawn backend: OpenGL"); break;
-				case wgpu::BackendType::OpenGLES: LOG_INFO("Dawn backend: OpenGLES"); break;
-				default: LOG_WARNING("Dawn backend: Unknown"); break;
+			case wgpu::BackendType::D3D11:  LOG_INFO("Dawn backend: D3D11"); break;
+			case wgpu::BackendType::D3D12:  LOG_INFO("Dawn backend: D3D12"); break;
+			case wgpu::BackendType::Metal:  LOG_INFO("Dawn backend: Metal"); break;
+			case wgpu::BackendType::Vulkan: LOG_INFO("Dawn backend: Vulkan"); break;
+			case wgpu::BackendType::OpenGL: LOG_INFO("Dawn backend: OpenGL"); break;
+			case wgpu::BackendType::OpenGLES: LOG_INFO("Dawn backend: OpenGLES"); break;
+			default: LOG_WARNING("Dawn backend: Unknown"); break;
 			}
 
 			LOG_INFO("GPU: {} ({})", info.device, info.architecture);
@@ -72,14 +72,16 @@ namespace Engine::GraphicsContext
 		// Request device
 		wgpu::DeviceLostCallbackInfo deviceLostCallbackInfo = {};
 		deviceLostCallbackInfo.mode = wgpu::CallbackMode::AllowSpontaneous;
-		deviceLostCallbackInfo.callback = [](WGPUDevice const* device, WGPUDeviceLostReason reason, WGPUStringView message, void* userdata1, void* userdata2){
-			LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", (int)reason, message);
-		};
+		deviceLostCallbackInfo.callback = [](WGPUDevice const* device, WGPUDeviceLostReason reason, WGPUStringView message, void* userdata1, void* userdata2)
+			{
+				if (reason == wgpu::DeviceLostReason::Destroyed) return; // ignore shutdown
+				LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", (int)reason, message);
+			};
 
 		wgpu::UncapturedErrorCallbackInfo uncapturedErrorCallbackInfo = {};
-		uncapturedErrorCallbackInfo.callback = [](WGPUDevice const* device, WGPUErrorType type, WGPUStringView message, void* userdata1, void* userdata2){
+		uncapturedErrorCallbackInfo.callback = [](WGPUDevice const* device, WGPUErrorType type, WGPUStringView message, void* userdata1, void* userdata2) {
 			LOG_ERROR("WebGPU Uncaptured error: {}", message);
-		};
+			};
 
 		wgpu::DeviceDescriptor deviceDesc = {};
 		deviceDesc.label = { "MainDevice", WGPU_STRLEN };
@@ -97,7 +99,7 @@ namespace Engine::GraphicsContext
 		// Configure surface
 		wgpu::SurfaceConfiguration config = {};
 		config.width = window.GetWidth();
-		config.height = window.GetHeight(); 
+		config.height = window.GetHeight();
 		config.usage = WGPUTextureUsage_RenderAttachment;
 		config.format = WGPUTextureFormat_RGBA8Unorm;
 		config.viewFormatCount = 0;

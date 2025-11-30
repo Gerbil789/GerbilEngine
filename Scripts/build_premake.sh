@@ -16,15 +16,15 @@ fi
 
 cd vendor/premake
 
-# 1. Run bootstrap
-if [ ! -f bootstrap.sh ]; then
-    echo "bootstrap.sh missing!"
+# 1. Run Bootstrap
+if [ ! -f Bootstrap.sh ]; then
+    echo "Bootstrap.sh missing!"
     exit 1
 fi
 
-echo "Running bootstrap..."
-chmod +x bootstrap.sh
-./bootstrap.sh
+echo "Running Bootstrap..."
+chmod +x Bootstrap.sh
+./Bootstrap.sh
 
 # After bootstrap, premake creates: build/bootstrap/premake5
 if [ ! -f build/bootstrap/premake5 ]; then

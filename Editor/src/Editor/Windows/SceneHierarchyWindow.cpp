@@ -22,7 +22,7 @@ namespace Editor
 		SceneManager::RegisterOnSceneChanged([this](Scene* scene) {m_Scene = scene; });
 	}
 
-	void SceneHierarchyWindow::OnUpdate(Engine::Timestep ts)
+	void SceneHierarchyWindow::OnUpdate()
 	{
 		ScopedStyle style({
 			{ ImGuiStyleVar_WindowPadding, { 0, 0 } },

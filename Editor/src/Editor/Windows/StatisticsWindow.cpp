@@ -1,34 +1,35 @@
 #include "enginepch.h"
 #include "StatisticsWindow.h"
 #include "Engine/Renderer/Renderer.h"
+#include "Engine/Core/Time.h"
 #include <imgui.h>
 
 namespace Editor
 {
-	using namespace Engine;
+	static constexpr int HISTORY_LENGTH = 600; // 10 seconds @ 60 fps
+	static float fpsHistory[HISTORY_LENGTH] = { 0.0f };
+	static float msHistory[HISTORY_LENGTH] = { 0.0f };
+	static int offset = 0;
 
-	void StatisticsWindow::OnUpdate(Engine::Timestep ts)
+	void StatisticsWindow::OnUpdate()
 	{
+		float fps = Engine::Time::FPS();
+		float ms = 1000.0f / fps;
+
+		fpsHistory[offset] = fps;
+		msHistory[offset] = ms;
+		offset = (offset + 1) % HISTORY_LENGTH;
+
 		ImGui::Begin("Statistics");
-		//ImGui::Text("FPS: %d", static_cast<int>(Application::Get().GetFPS()));
-		//ImGui::Separator();
-		//auto stats2D = Renderer2D::GetStats();
-		//ImGui::Text("2D");
-		//ImGui::Text("Draw Calls: %d", stats2D.DrawCalls);
-		//ImGui::Text("Quads: %d", stats2D.QuadCount);
-		//ImGui::Text("Triangles: %d", stats2D.TriangleCount);
-		//ImGui::Text("Vertices: %d", stats2D.GetTotalVertexCount());
-		//ImGui::Text("Indices: %d", stats2D.GetTotalIndexCount());
-		//ImGui::Separator();
-		/*auto stats = Renderer::GetStats();
-		ImGui::Text("3D");
-		ImGui::Text("Draw Calls: %d", stats.DrawCalls);
-		ImGui::Text("Vertices: %d", stats.VertexCount);
-		ImGui::Text("Indices: %d", stats.IndicesCount);*/
-		ImGui::Text("3D");
-		ImGui::Text("Draw Calls: %s", "undefined");
-		ImGui::Text("Vertices: %s", "undefined");
-		ImGui::Text("Indices: %s", "undefined");
+
+		ImVec2 fullWidth = ImVec2(-1, 80);  // Full width, fixed height
+
+		ImGui::Text("FPS: %.0f", fps);
+		ImGui::PlotLines("##FPS", fpsHistory, HISTORY_LENGTH, offset, nullptr, 0.0f, 200.0f, fullWidth);
+
+		ImGui::Text("Frame Time: %.2f ms", ms);
+		ImGui::PlotLines("##MS", msHistory, HISTORY_LENGTH, offset, nullptr, 0.0f, 40.0f, fullWidth);
+
 		ImGui::End();
 	}
 }

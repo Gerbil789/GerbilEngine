@@ -4,7 +4,7 @@
 
 namespace Editor
 {
-	void SettingsWindow::OnUpdate(Engine::Timestep ts)
+	void SettingsWindow::OnUpdate()
 	{
 		if(!m_IsVisible) return;
 

@@ -6,7 +6,7 @@
 
 namespace Editor
 {
-	void InspectorWindow::OnUpdate(Engine::Timestep ts)
+	void InspectorWindow::OnUpdate()
 	{
 		ImGui::Begin("Inspector");
 

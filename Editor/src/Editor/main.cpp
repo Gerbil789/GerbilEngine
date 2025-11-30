@@ -14,10 +14,6 @@ int main(int argc, char** argv)
     ENGINE_PROFILE_BEGIN("Runtime", "profile_runtime.json");
     app.Run();
     ENGINE_PROFILE_END();
-
-    ENGINE_PROFILE_BEGIN("Shutdown", "profile_shutdown.json");
-		app.Shutdown();
-    ENGINE_PROFILE_END();
   }
   catch (const std::exception& e)
   {

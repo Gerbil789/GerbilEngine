@@ -13,7 +13,7 @@ namespace Editor
 	{
 	public:
 		ContentBrowserWindow();
-		void OnUpdate(Engine::Timestep ts) override;
+		void OnUpdate() override;
 		void OpenDirectory(const std::filesystem::path& path);
 		void RefreshDirectory();
 

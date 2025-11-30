@@ -283,7 +283,7 @@ namespace Editor::EditorWindowManager
 		wgpuDeviceTick(device);
 	}
 
-	void OnUpdate(Engine::Timestep ts)
+	void OnUpdate()
 	{
 		ENGINE_PROFILE_FUNCTION();
 		BeginFrame();
@@ -291,7 +291,7 @@ namespace Editor::EditorWindowManager
 		m_MenuBar.OnUpdate();
 		for (auto& window : m_Windows)
 		{
-			window->OnUpdate(ts);
+			window->OnUpdate();
 		}
 
 		//bool showDemoWindow = false;

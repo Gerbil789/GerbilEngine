@@ -8,7 +8,7 @@ namespace Editor
 	{
 	public:
 		EditorApp(const Engine::ApplicationSpecification& specification);
-		void Shutdown();
+		~EditorApp();
 
 		void Run() override;
 		void OnEvent(Engine::Event& e) override;
