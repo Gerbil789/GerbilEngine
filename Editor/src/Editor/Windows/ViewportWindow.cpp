@@ -1,5 +1,4 @@
 #include "ViewportWindow.h"
-#include "Engine/Core/Core.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Core/Input.h"
@@ -10,6 +9,7 @@
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Command/CommandManager.h"
 #include "Editor/Command/TransformEntity.h"
+
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -112,11 +112,17 @@ namespace Editor
 	void ViewportWindow::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
 		if (e.GetMouseButton() != Mouse::ButtonLeft) return;
-		if (!m_HoveredEntity) return;
-
+	
 		if (m_ViewportHovered && !ImGuizmo::IsOver())
 		{
-			EditorContext::SelectEntity(m_HoveredEntity);
+			if (m_HoveredEntity)
+			{
+				EditorContext::SelectEntity(m_HoveredEntity);
+			}
+			else
+			{
+				EditorContext::ClearSelection();
+			}
 		}
 	}
 

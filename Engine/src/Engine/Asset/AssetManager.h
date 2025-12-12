@@ -23,6 +23,13 @@ namespace Engine
 			m_AssetRegistry.Load(Engine::Project::GetProjectDirectory() / "assetRegistry.yaml");
 		}
 
+		static void Shutdown()
+		{
+			//m_AssetRegistry.Save(Engine::Project::GetProjectDirectory() / "assetRegistry.yaml");
+			m_AssetRegistry.Clear();
+			m_LoadedAssets.clear();
+		}
+
 		static void OnEvent(Event& e)
 		{
 			switch (e.GetEventType())

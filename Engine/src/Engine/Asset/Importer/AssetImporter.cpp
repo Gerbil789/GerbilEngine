@@ -7,6 +7,7 @@
 #include "Engine/Asset/Importer/ShaderImporter.h"
 #include "Engine/Asset/Importer/MaterialImporter.h"
 #include "Engine/Asset/Importer/SceneImporter.h"
+#include "Engine/Asset/Importer/AudioImporter.h"
 
 namespace Engine
 {
@@ -18,7 +19,8 @@ namespace Engine
 		{ AssetType::Mesh, MeshImporter::ImportMesh },
 		{ AssetType::Material, MaterialImporter::ImportMaterial },
 		{ AssetType::Scene, SceneImporter::ImportScene },
-		{ AssetType::Shader, ShaderImporter::ImportShader  }
+		{ AssetType::Shader, ShaderImporter::ImportShader  },
+		{ AssetType::Audio, AudioImporter::ImportAudio  }
 	};
 
 	Ref<Asset> AssetImporter::ImportAsset(const AssetMetadata& metadata)

@@ -11,7 +11,9 @@ namespace Editor
 				{".png", Icon::Image},
 				{".scene", Icon::Landscape},
 				{".material", Icon::File},
-				{".glb", Icon::Mesh}
+				{".glb", Icon::Mesh},
+				{".wav", Icon::Audio},
+				{".mp3", Icon::Audio},
 		};
 
 		if (auto it = map.find(ext); it != map.end())

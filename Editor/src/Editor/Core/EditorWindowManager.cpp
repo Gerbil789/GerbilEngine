@@ -11,12 +11,10 @@
 #include "Editor/Windows/StatisticsWindow.h"
 #include "Editor/Windows/ViewportWindow.h"
 #include "Editor/Components/ScopedStyle.h"
-#include <imgui.h>
-#include <ImGuizmo.h>
 #include <backends/imgui_impl_wgpu.h>
 #include <backends/imgui_impl_glfw.h>
 
-//TODO: move to style file
+//TODO: move to style file or something
 static void SetupImGuiStyle()
 {
 	ImGuiStyle& style = ImGui::GetStyle();
@@ -91,42 +89,19 @@ static void SetupImGuiStyle()
 	style.PopupBorderSize = 0.f;
 }
 
-namespace Editor::EditorWindowManager
+namespace Editor
 {
 	MenuBar m_MenuBar;
+	std::vector<IEditorWindow*> m_Windows;
 
-	SceneHierarchyWindow* m_SceneHierarchyWindow = nullptr;
-	ViewportWindow* m_ViewportWindow = nullptr;
-	ContentBrowserWindow* m_ContentBrowserWindow = nullptr;
-	InspectorWindow* m_InspectorWindow = nullptr;
-	StatisticsWindow* m_StatisticsWindow = nullptr;
-	//SettingsWindow* m_SettingsWindow = nullptr;
-
-	template<>ViewportWindow* GetWindow<ViewportWindow>() { return m_ViewportWindow; }
-	template<>ContentBrowserWindow* GetWindow<ContentBrowserWindow>() { return m_ContentBrowserWindow; }
-	template<>InspectorWindow* GetWindow<InspectorWindow>() { return m_InspectorWindow; }
-	template<>SceneHierarchyWindow* GetWindow<SceneHierarchyWindow>() { return m_SceneHierarchyWindow; }
-	template<> StatisticsWindow* GetWindow<StatisticsWindow>() { return m_StatisticsWindow; }
-	//template<>SettingsWindow* GetWindow<SettingsWindow>() { return m_SettingsWindow; }
-
-	std::vector<IEditorWindow*> m_Windows; // For easy iteration
-
-	void Initialize()
+	void EditorWindowManager::Initialize()
 	{
-		m_ContentBrowserWindow = new ContentBrowserWindow();
-		m_InspectorWindow = new InspectorWindow();
-		m_SceneHierarchyWindow = new SceneHierarchyWindow();
-		m_StatisticsWindow = new StatisticsWindow();
-		m_ViewportWindow = new ViewportWindow();
-		//m_SettingsWindow = new SettingsWindow();
-
 		m_Windows = {
-			m_ContentBrowserWindow,
-			m_InspectorWindow,
-			m_ViewportWindow,
-			m_SceneHierarchyWindow,
-			m_StatisticsWindow,
-			//m_SettingsWindow,
+			new SceneHierarchyWindow(),
+			new ViewportWindow(),
+			new ContentBrowserWindow(),
+			new InspectorWindow(),
+			new StatisticsWindow()
 		};
 
 		//initialize imgui
@@ -158,10 +133,12 @@ namespace Editor::EditorWindowManager
 		ImGui_ImplWGPU_Init(&initInfo);
 	}
 
-	void Shutdown()
+	void EditorWindowManager::Shutdown()
 	{
 		for (auto* window : m_Windows)
+		{
 			delete window;
+		}
 
 		m_Windows.clear();
 
@@ -170,7 +147,47 @@ namespace Editor::EditorWindowManager
 		ImGui::DestroyContext();
 	}
 
-	void BeginFrame()
+	
+
+	void EditorWindowManager::OnUpdate()
+	{
+		ENGINE_PROFILE_FUNCTION();
+		BeginFrame();
+
+		m_MenuBar.OnUpdate();
+		for (auto& window : m_Windows)
+		{
+			window->OnUpdate();
+		}
+
+		//bool showDemoWindow = false;
+		//ImGui::ShowDemoWindow(&showDemoWindow);
+
+		EndFrame();
+	}
+
+	void EditorWindowManager::OnEvent(Engine::Event& e)
+	{
+		ENGINE_PROFILE_FUNCTION();
+		for (auto& window : m_Windows)
+		{
+			window->OnEvent(e);
+		}
+	}
+
+	void EditorWindowManager::ResetLayout()
+	{
+		const std::filesystem::path default_iniPath = "Resources/Editor/layouts/default.ini";
+		std::string defaultLayoutContent;
+
+		if(!Engine::ReadFile(default_iniPath, defaultLayoutContent)) return;
+
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGui::LoadIniSettingsFromMemory(defaultLayoutContent.c_str());
+		LOG_INFO("ImGui layout reset to default");
+	}
+
+	void EditorWindowManager::BeginFrame()
 	{
 		ImGui_ImplWGPU_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -180,7 +197,7 @@ namespace Editor::EditorWindowManager
 			{ ImGuiStyleVar_WindowRounding, 0.0f },
 			{ ImGuiStyleVar_WindowBorderSize, 0.0f },
 			{ ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f)}
-		});
+			});
 
 		// react to window resize
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -196,7 +213,7 @@ namespace Editor::EditorWindowManager
 		ImGui::DockSpace(ImGui::GetID("MyDockSpace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 	}
 
-	void EndFrame()
+	void EditorWindowManager::EndFrame()
 	{
 		ImGui::End(); // end dockspace window
 
@@ -245,7 +262,6 @@ namespace Editor::EditorWindowManager
 		encoderDesc.label = { "ImGuiCommandEncoderDescriptor", WGPU_STRLEN };
 		WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(device, &encoderDesc);
 
-		// The attachment part of the render pass descriptor describes the target texture of the pass
 		wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
 		renderPassColorAttachment.view = targetView;
 		renderPassColorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
@@ -257,7 +273,6 @@ namespace Editor::EditorWindowManager
 		renderPassDesc.label = { "ImGuiRenderPassDescriptor", WGPU_STRLEN };
 		renderPassDesc.colorAttachmentCount = 1;
 		renderPassDesc.colorAttachments = &renderPassColorAttachment;
-
 
 		WGPURenderPassEncoder renderPass = wgpuCommandEncoderBeginRenderPass(encoder, &renderPassDesc);
 
@@ -282,43 +297,4 @@ namespace Editor::EditorWindowManager
 		wgpuSurfacePresent(surface);
 		wgpuDeviceTick(device);
 	}
-
-	void OnUpdate()
-	{
-		ENGINE_PROFILE_FUNCTION();
-		BeginFrame();
-
-		m_MenuBar.OnUpdate();
-		for (auto& window : m_Windows)
-		{
-			window->OnUpdate();
-		}
-
-		//bool showDemoWindow = false;
-		//ImGui::ShowDemoWindow(&showDemoWindow);
-
-		EndFrame();
-	}
-
-	void OnEvent(Engine::Event& e)
-	{
-		ENGINE_PROFILE_FUNCTION();
-		for (auto& window : m_Windows)
-		{
-			window->OnEvent(e);
-		}
-	}
-
-	void ResetLayout()
-	{
-		const std::filesystem::path default_iniPath = "Resources/Editor/layouts/default.ini";
-		std::string defaultLayoutContent;
-
-		if(!Engine::ReadFile(default_iniPath, defaultLayoutContent)) return;
-
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		ImGui::LoadIniSettingsFromMemory(defaultLayoutContent.c_str());
-		LOG_INFO("ImGui layout reset to default");
-	}
-
 }

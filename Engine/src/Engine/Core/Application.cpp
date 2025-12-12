@@ -7,6 +7,9 @@
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/SamplerPool.h"
 
+
+#include "Engine/Audio/Audio.h"
+
 namespace Engine
 {
 	Application* Application::s_Instance = nullptr;
@@ -37,10 +40,14 @@ namespace Engine
 		GraphicsContext::Initialize();
 		SamplerPool::Initialize();
 		Renderer::Initialize();
+		Engine::Audio::Initialize();
+
 	}
 
 	Application::~Application()
 	{
+
+		Engine::Audio::Shutdown();
 		SamplerPool::Shutdown();
 		GraphicsContext::Shutdown();
 	}

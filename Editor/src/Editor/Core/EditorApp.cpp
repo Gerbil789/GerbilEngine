@@ -17,6 +17,7 @@
 #include "Editor/Core/EditorContext.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Editor/Command/CommandManager.h"
+#include "Engine/Audio/Audio.h"
 
 namespace Editor
 {
@@ -92,11 +93,7 @@ namespace Editor
 
 		Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
 
-		//auto shader = Engine::AssetManager::GetAsset<Engine::Shader>(Engine::UUID(11488752734390452845));
-
 		auto material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::UUID(2306162455903992554));
-		//auto material = Engine::AssetManager::CreateAsset<Engine::Material>(Engine::Project::GetAssetsDirectory() / "Materials/Test.material", shader);
-		//material->SetVec4("color", glm::vec4(0.8f, 0.1f, 0.2f, 1.0f));
 
 		//Ref<Engine::Texture2D> texture = Engine::TextureImporter::LoadTexture2D("Resources/Editor/icons/skull.png");
 		//auto smileTexture = Engine::AssetManager::GetAsset<Engine::Texture2D>(Engine::UUID(16704251879842279232));
@@ -106,8 +103,6 @@ namespace Editor
 		// metadata = Engine::AssetManager::GetAssetMetadata(material->id);
 		//Engine::AssetSerializer::SerializeAsset(material, *metadata);
 
-		//auto cubeMapTexture = Engine::AssetManager::GetAsset<Engine::CubeMapTexture>(Engine::UUID(6536980455317652148));
-		
 
 		for(int x = 0; x < 10; x++)
 		{
@@ -171,13 +166,19 @@ namespace Editor
 
 		//	EditorContext::SelectEntity(cam);
 		//}
+
+		//Ref<Engine::AudioClip> clip = Engine::AssetManager::GetAsset<Engine::AudioClip>(Engine::UUID(4188365834911559584));
+		//Engine::Audio::Play(clip);
 	}
 
 	EditorApp::~EditorApp()
 	{
 		ENGINE_PROFILE_BEGIN("Shutdown", "profile_shutdown.json");
 		ENGINE_PROFILE_FUNCTION();
+		Engine::Audio::StopAllSounds();
 		EditorWindowManager::Shutdown();
+		Engine::AssetManager::Shutdown();
+
 		ENGINE_PROFILE_END();
 	}
 

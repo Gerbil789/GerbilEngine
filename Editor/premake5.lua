@@ -25,7 +25,8 @@ project "Editor"
 		"%{wks.location}/vendor/glm",
 		"%{wks.location}/vendor/entt/include",
 		"%{wks.location}/vendor/imgui",
-		"%{wks.location}/vendor/ImGuizmo"
+		"%{wks.location}/vendor/ImGuizmo",
+		"%{wks.location}/vendor/miniaudio"
 	}
 
 	links

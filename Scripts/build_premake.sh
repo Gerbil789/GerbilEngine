@@ -16,6 +16,13 @@ fi
 
 cd vendor/premake
 
+# Install uuid-dev if missing (Debian/Ubuntu) (premake dependency)
+if ! dpkg -s uuid-dev >/dev/null 2>&1; then
+    echo "Installing uuid-dev (requires sudo)..."
+    sudo apt-get update
+    sudo apt-get install -y uuid-dev
+fi
+
 # 1. Run Bootstrap
 if [ ! -f Bootstrap.sh ]; then
     echo "Bootstrap.sh missing!"

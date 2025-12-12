@@ -58,6 +58,12 @@ namespace Editor
 			break;
 		}
 
+		case Engine::AssetType::Audio:
+		{
+			m_AudioInspector.Draw(Engine::AssetManager::GetAsset<Engine::AudioClip>(assetID));
+			break;
+		}
+
 
 		default:
 		{

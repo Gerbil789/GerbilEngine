@@ -29,14 +29,15 @@ project "Engine"
 		"%{wks.location}/vendor/tinygltf",
 		"%{wks.location}/vendor/portable-file-dialogs",
 		"%{wks.location}/vendor/tinygltf",
-		"%{wks.location}/vendor/yaml-cpp/include"
+		"%{wks.location}/vendor/yaml-cpp/include",
+		"%{wks.location}/vendor/miniaudio"
 	}
 
 	links
 	{
 		"glfw",
 		"webgpu_dawn",
-		"yaml-cpp"
+		"yaml-cpp",
 	}
 
 	libdirs 

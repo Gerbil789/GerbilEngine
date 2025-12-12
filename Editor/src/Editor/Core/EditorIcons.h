@@ -10,10 +10,10 @@ namespace Editor
     Folder,
     File,
     EmptyFile,
-    AudioFile,
+    Audio,
     Landscape,
     Image,
-    Mesh
+    Mesh,
   };
 
 
@@ -28,7 +28,7 @@ namespace Editor
       AddIcon(Icon::Folder, { 1, 0 });
       AddIcon(Icon::File, { 2, 0 });
       AddIcon(Icon::EmptyFile, { 3, 0 });
-      AddIcon(Icon::AudioFile, { 4, 0 });
+      AddIcon(Icon::Audio, { 4, 0 });
       AddIcon(Icon::Landscape, { 5, 0 });
       AddIcon(Icon::Image, { 6, 0 });
       AddIcon(Icon::Mesh, { 7, 0 });

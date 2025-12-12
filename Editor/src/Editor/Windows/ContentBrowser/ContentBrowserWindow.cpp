@@ -371,7 +371,7 @@ namespace Editor
 		}
 
 		// label
-		draw_list->AddText(ImVec2(box_min.x + m_LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data.Name.c_str()).x / 2, box_max.y - ImGui::GetFontSize() + 10), label_col, item_data.Name.c_str());
+		draw_list->AddText(ImVec2(box_min.x + m_LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data.Name.c_str()).x / 2, box_max.y - ImGui::GetFontSize()), label_col, item_data.Name.c_str());
 
 		if (item_data.IsDirectory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 		{

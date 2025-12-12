@@ -12,6 +12,7 @@ group "Dependencies"
 	include "vendor/glfw"
 	include "vendor/imgui"
 	include "vendor/yaml-cpp"
+	include "vendor/miniaudio"
 
 group ""
 	include "Engine"

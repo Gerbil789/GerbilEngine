@@ -2,16 +2,22 @@
 
 #include "Engine/Event/Event.h"
 
-namespace Editor::EditorWindowManager
+namespace Editor
 {
-	void Initialize();
-	void Shutdown();
+	class EditorWindowManager
+	{
+	public:
+		static void Initialize();
+		static void Shutdown();
 
-	void OnUpdate();
-	void OnEvent(Engine::Event& e);
+		static void OnUpdate();
+		static void OnEvent(Engine::Event& e);
 
-	void ResetLayout();
+		static void ResetLayout();
 
-	template<typename T>
-	T* GetWindow();
+	private:
+		static void BeginFrame();
+		static void EndFrame();
+
+	};
 }
