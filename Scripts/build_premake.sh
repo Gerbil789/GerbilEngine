@@ -33,12 +33,6 @@ echo "Running Bootstrap..."
 chmod +x Bootstrap.sh
 ./Bootstrap.sh
 
-# After bootstrap, premake creates: build/bootstrap/premake5
-if [ ! -f build/bootstrap/premake5 ]; then
-    echo "Bootstrap FAILED (premake5 missing)"
-    exit 1
-fi
-
 # 2. Build full Premake (gmake2)
 echo "Generating makefiles..."
 ./build/bootstrap/premake5 gmake2
