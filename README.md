@@ -41,5 +41,6 @@ My custom WebGPU based game engine
 | **[portable-file-dialogs](https://github.com/samhocevar/portable-file-dialogs)** | Native file dialogs              |
 
 
+---
 
-
+<img width="1920" height="1042" alt="screenshot" src="https://github.com/user-attachments/assets/1fc200c0-f796-463f-b10e-d2c8e8855740" />
