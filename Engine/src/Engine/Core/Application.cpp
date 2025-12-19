@@ -46,7 +46,6 @@ namespace Engine
 
 	Application::~Application()
 	{
-
 		Engine::Audio::Shutdown();
 		SamplerPool::Shutdown();
 		GraphicsContext::Shutdown();
@@ -68,7 +67,7 @@ namespace Engine
 		}
 
 		m_Minimized = false;
-		GraphicsContext::SetWindowSize(e.GetWidth(), e.GetHeight());
+		GraphicsContext::ConfigureSurface(e.GetWidth(), e.GetHeight());
 	}
 
 	void Application::Close()

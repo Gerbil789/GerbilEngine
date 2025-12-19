@@ -1,7 +1,5 @@
 #!/bin/bash
 
 pushd .. >/dev/null
-./vendor/bin/premake/linux/premake5
+./vendor/premake/bin/release/premake5 gmake2
 popd >/dev/null
-
-read -p "Press [Enter] to continue..."

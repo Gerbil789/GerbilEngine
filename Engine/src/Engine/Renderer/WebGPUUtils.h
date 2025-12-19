@@ -3,6 +3,8 @@
 #include "Engine/Core/Log.h"
 #include <webgpu/webgpu.hpp>
 
+//TODO: rename this file to something better, its practicaly just toString() functions for webgpu enums
+
 namespace Engine
 {
 	static inline wgpu::VertexFormat StringToVertexFormat(const std::string& str)
@@ -144,6 +146,21 @@ namespace Engine
 		case wgpu::VertexFormat::Sint32x3:   return "Sint32x3";
 		case wgpu::VertexFormat::Sint32x4:   return "Sint32x4";
 		default: return "Unknown";
+		}
+	}
+
+	static const std::string BackendTypeToString(wgpu::BackendType type)
+	{
+		switch (type)
+		{
+		case wgpu::BackendType::D3D11:    return "D3D11";
+		case wgpu::BackendType::D3D12:    return "D3D12";
+		case wgpu::BackendType::Metal:    return "Metal";
+		case wgpu::BackendType::Vulkan:   return "Vulkan";
+		case wgpu::BackendType::OpenGL:   return "OpenGL";
+		case wgpu::BackendType::OpenGLES: return "OpenGLES";
+		case wgpu::BackendType::Null:     return "Null";
+		default:                          return "Unknown";
 		}
 	}
 }

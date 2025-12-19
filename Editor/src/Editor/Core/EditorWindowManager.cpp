@@ -96,6 +96,7 @@ namespace Editor
 
 	void EditorWindowManager::Initialize()
 	{
+		//TODO: dont heap allocate the windows
 		m_Windows = {
 			new SceneHierarchyWindow(),
 			new ViewportWindow(),
@@ -127,7 +128,6 @@ namespace Editor
 
 		ImGui_ImplWGPU_InitInfo initInfo;
 		initInfo.Device = Engine::GraphicsContext::GetDevice();
-		initInfo.NumFramesInFlight = 3;
 		initInfo.RenderTargetFormat = WGPUTextureFormat_RGBA8Unorm;
 		initInfo.DepthStencilFormat = WGPUTextureFormat_Undefined;
 		ImGui_ImplWGPU_Init(&initInfo);

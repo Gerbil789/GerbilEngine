@@ -3,12 +3,19 @@
 #include "GraphicsContext.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Core/Application.h"
+#include "Engine/Renderer/WebGPUUtils.h"
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
 namespace Engine::GraphicsContext
 {
+	static wgpu::Instance s_Instance;
+	static wgpu::Device s_Device;
+	static wgpu::Queue s_Queue;
+	static wgpu::Surface s_Surface;
+
+	//TODO: this is windows specific, need to implement for other platforms too
 	wgpu::Surface glfwGetWGPUSurface(wgpu::Instance instance, GLFWwindow* window)
 	{
 		wgpu::SurfaceSourceWindowsHWND hwndDesc;
@@ -18,7 +25,7 @@ namespace Engine::GraphicsContext
 
 		wgpu::SurfaceDescriptor surfaceDesc = {};
 		surfaceDesc.nextInChain = &hwndDesc.chain;
-		surfaceDesc.label = { "MainSurface", WGPU_STRLEN };
+		surfaceDesc.label = {"MainSurface"};
 
 		return instance.createSurface(surfaceDesc);
 	}
@@ -30,10 +37,8 @@ namespace Engine::GraphicsContext
 		// Initialize WGPU instance
 		wgpu::InstanceDescriptor desc;
 		desc.setDefault();
-
 		desc.requiredFeatureCount = 1;
 		desc.requiredFeatures = &wgpu::InstanceFeatureName::TimedWaitAny;
-		//desc.capabilities.timedWaitAnyEnable = true;
 		s_Instance = wgpu::createInstance(desc);
 		ASSERT(s_Instance, "Failed to create WGPU instance");
 
@@ -47,69 +52,47 @@ namespace Engine::GraphicsContext
 		wgpu::Adapter adapter = s_Instance.requestAdapter(adapterOpts);
 		ASSERT(adapter, "Failed to request WGPU adapter");
 
-		// print backend
+		// Print backend info
 		{
 			wgpu::AdapterInfo info;
 			adapter.getInfo(&info);
 
-			switch (info.backendType)
-			{
-			case wgpu::BackendType::D3D11:  LOG_INFO("Dawn backend: D3D11"); break;
-			case wgpu::BackendType::D3D12:  LOG_INFO("Dawn backend: D3D12"); break;
-			case wgpu::BackendType::Metal:  LOG_INFO("Dawn backend: Metal"); break;
-			case wgpu::BackendType::Vulkan: LOG_INFO("Dawn backend: Vulkan"); break;
-			case wgpu::BackendType::OpenGL: LOG_INFO("Dawn backend: OpenGL"); break;
-			case wgpu::BackendType::OpenGLES: LOG_INFO("Dawn backend: OpenGLES"); break;
-			default: LOG_WARNING("Dawn backend: Unknown"); break;
-			}
-
-			LOG_INFO("GPU: {} ({})", info.device, info.architecture);
-			LOG_INFO("Description: {}", info.description);
-			LOG_INFO("VendorID {}", info.vendorID);
-			LOG_INFO("DeviceID {}", info.deviceID);
+			LOG_TRACE("Dawn backend: {}", BackendTypeToString(info.backendType));
+			LOG_TRACE("GPU: {} ({})", info.device, info.architecture);
+			LOG_TRACE("Description: {}", info.description);
+			LOG_TRACE("VendorID 0x{:X}", info.vendorID);
+			LOG_TRACE("DeviceID 0x{:X}", info.deviceID);
 		}
 
 		// Request device
-		wgpu::DeviceLostCallbackInfo deviceLostCallbackInfo = {};
-		deviceLostCallbackInfo.mode = wgpu::CallbackMode::AllowSpontaneous;
-		deviceLostCallbackInfo.callback = [](WGPUDevice const* device, WGPUDeviceLostReason reason, WGPUStringView message, void* userdata1, void* userdata2)
+		wgpu::DeviceDescriptor deviceDesc = {};
+		deviceDesc.label = {"MainDevice"};
+		deviceDesc.requiredFeatureCount = 0;
+		deviceDesc.defaultQueue.label = {"DefaultQueue"};
+
+		deviceDesc.deviceLostCallbackInfo.mode = wgpu::CallbackMode::AllowSpontaneous;
+		deviceDesc.deviceLostCallbackInfo.callback = [](WGPUDevice const* device, WGPUDeviceLostReason reason, WGPUStringView message, void* userdata1, void* userdata2)
 			{
-				if (reason == wgpu::DeviceLostReason::Destroyed) return; // ignore shutdown
+				if (reason == wgpu::DeviceLostReason::Destroyed) return; // ignore shutdown losses (explicit destroy)
 				LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", (int)reason, message);
 			};
 
-		wgpu::UncapturedErrorCallbackInfo uncapturedErrorCallbackInfo = {};
-		uncapturedErrorCallbackInfo.callback = [](WGPUDevice const* device, WGPUErrorType type, WGPUStringView message, void* userdata1, void* userdata2) {
-			LOG_ERROR("WebGPU Uncaptured error: {}", message);
+		deviceDesc.uncapturedErrorCallbackInfo.callback = [](WGPUDevice const* device, WGPUErrorType type, WGPUStringView message, void* userdata1, void* userdata2)
+			{
+				LOG_ERROR("WebGPU Uncaptured error: {}", message);
 			};
 
-		wgpu::DeviceDescriptor deviceDesc = {};
-		deviceDesc.label = { "MainDevice", WGPU_STRLEN };
-		deviceDesc.requiredFeatureCount = 0;
-		deviceDesc.defaultQueue.label = { "DefaultQueue", WGPU_STRLEN };
-		deviceDesc.deviceLostCallbackInfo = deviceLostCallbackInfo;
-		deviceDesc.uncapturedErrorCallbackInfo = uncapturedErrorCallbackInfo;
 		s_Device = adapter.requestDevice(deviceDesc);
 		ASSERT(s_Device, "Failed to request WebGPU device");
+
+		adapter.release();
 
 		// Get queue
 		s_Queue = s_Device.getQueue();
 		ASSERT(s_Queue, "Failed to get WGPU queue");
 
 		// Configure surface
-		wgpu::SurfaceConfiguration config = {};
-		config.width = window.GetWidth();
-		config.height = window.GetHeight();
-		config.usage = WGPUTextureUsage_RenderAttachment;
-		config.format = WGPUTextureFormat_RGBA8Unorm;
-		config.viewFormatCount = 0;
-		config.viewFormats = nullptr;
-		config.device = s_Device;
-		config.presentMode = WGPUPresentMode_Fifo;
-		config.alphaMode = WGPUCompositeAlphaMode_Opaque;
-		s_Surface.configure(config);
-
-		adapter.release();
+		ConfigureSurface(window.GetWidth(), window.GetHeight());
 	}
 
 	void GraphicsContext::Shutdown()
@@ -121,20 +104,40 @@ namespace Engine::GraphicsContext
 		if (s_Instance) s_Instance.release();
 	}
 
-	void GraphicsContext::SetWindowSize(uint32_t width, uint32_t height)
+	void GraphicsContext::ConfigureSurface(uint32_t width, uint32_t height)
 	{
-		WGPUSurfaceConfiguration config = {};
-		config.nextInChain = nullptr;
-		config.device = GraphicsContext::GetDevice();
-		config.format = WGPUTextureFormat_RGBA8Unorm;
-		config.usage = WGPUTextureUsage_RenderAttachment;
+		wgpu::SurfaceConfiguration config = {};
 		config.width = width;
 		config.height = height;
-		config.presentMode = WGPUPresentMode_Fifo;
-		config.alphaMode = WGPUCompositeAlphaMode_Opaque;
+		config.device = s_Device;
+		config.format = wgpu::TextureFormat::RGBA8Unorm;
+		config.usage = wgpu::TextureUsage::RenderAttachment;
+		config.presentMode = wgpu::PresentMode::Fifo;
+		config.alphaMode = wgpu::CompositeAlphaMode::Opaque;
 		config.viewFormatCount = 0;
 		config.viewFormats = nullptr;
+		config.nextInChain = nullptr;
 
-		wgpuSurfaceConfigure(s_Surface, &config);
+		s_Surface.configure(config);
+	}
+
+	const wgpu::Instance& GetInstance()
+	{
+		return s_Instance;
+	}
+
+	const wgpu::Device& GetDevice()
+	{
+		return s_Device;
+	}
+
+	const wgpu::Queue& GetQueue()
+	{
+		return s_Queue;
+	}
+
+	const wgpu::Surface& GetSurface()
+	{
+		return s_Surface;
 	}
 }
