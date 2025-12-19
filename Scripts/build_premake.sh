@@ -35,7 +35,7 @@ chmod +x Bootstrap.sh
 
 # 2. Build full Premake (gmake2)
 echo "Generating makefiles..."
-./build/bootstrap/premake5 gmake2
+./build/bootstrap/make
 
 cd build/gmake2
 
