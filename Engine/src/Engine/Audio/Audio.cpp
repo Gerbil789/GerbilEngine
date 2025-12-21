@@ -6,12 +6,12 @@
 
 namespace Engine
 {
-	ma_engine engine;
+	static ma_engine s_AudioEngine;
 	static std::vector<ma_sound*> s_ActiveSounds;
 
 	void Audio::Initialize()
 	{
-		if (ma_engine_init(NULL, &engine) != MA_SUCCESS)
+		if (ma_engine_init(NULL, &s_AudioEngine) != MA_SUCCESS)
 		{
 			LOG_ERROR("Failed to initialize audio engine.");
 			return;
@@ -21,31 +21,16 @@ namespace Engine
 	void Audio::Shutdown()
 	{
 		StopAllSounds();
-		ma_engine_uninit(&engine);
+		ma_engine_uninit(&s_AudioEngine);
 	}
 
-	void Audio::StopAllSounds()
-	{
-		for (auto* sound : s_ActiveSounds)
-		{
-			ma_sound_stop(sound);
-			ma_sound_uninit(sound);
-			delete sound;
-		}
-		s_ActiveSounds.clear();
-	}
 
-	ma_engine& Audio::GetEngine()
-	{
-		return engine;
-	}
-
-	ma_sound* Audio::Play(Ref<AudioClip> clip)
+	void Audio::Play(Ref<AudioClip> clip)
 	{
 		if(!clip)
 		{
 			LOG_ERROR("AudioClip is null.");
-			return nullptr;
+			return;
 		}
 
 		ma_audio_buffer* buffer = new ma_audio_buffer();
@@ -61,17 +46,17 @@ namespace Engine
 		{
 			LOG_ERROR("Failed to init audio buffer");
 			delete buffer;
-			return nullptr;
+			return;
 		}
 
 		ma_sound* sound = new ma_sound();
-		if (ma_sound_init_from_data_source(&engine, buffer, 0, NULL, sound) != MA_SUCCESS)
+		if (ma_sound_init_from_data_source(&s_AudioEngine, buffer, 0, NULL, sound) != MA_SUCCESS)
 		{
 			LOG_ERROR("Failed to init sound from buffer");
 			ma_audio_buffer_uninit(buffer);
 			delete buffer;
 			delete sound;
-			return nullptr;
+			return;
 		}
 
 		// Store buffer pointer in the sound so we can delete it later.
@@ -79,19 +64,16 @@ namespace Engine
 
 		s_ActiveSounds.push_back(sound);
 		ma_sound_start(sound);
-		return sound;
 	}
 
-	void Audio::Stop(ma_sound* sound)
+	void Audio::StopAllSounds()
 	{
-		auto it = std::find(s_ActiveSounds.begin(), s_ActiveSounds.end(), sound);
-		if (it != s_ActiveSounds.end())
+		for (auto* sound : s_ActiveSounds)
 		{
 			ma_sound_stop(sound);
 			ma_sound_uninit(sound);
 			delete sound;
-			s_ActiveSounds.erase(it);
 		}
+		s_ActiveSounds.clear();
 	}
-
 }

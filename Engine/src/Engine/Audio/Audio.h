@@ -11,10 +11,8 @@ namespace Engine
     static void Initialize();
     static void Shutdown();
 
-    static void StopAllSounds();
+    static void Play(Ref<AudioClip> clip);
 
-    static ma_engine& GetEngine();
-    static ma_sound* Play(Ref<AudioClip> clip);
-		static void Stop(ma_sound* sound);
+    static void StopAllSounds();
   };
 }

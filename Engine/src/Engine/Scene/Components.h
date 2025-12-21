@@ -5,6 +5,7 @@
 #include "Engine/Renderer/Texture.h"
 #include "Engine/Renderer/Mesh.h"
 #include "Engine/Renderer/Material.h"
+#include "Engine/Audio/AudioClip.h"
 
 #include <entt.hpp>
 #include <glm/glm.hpp>
@@ -101,5 +102,21 @@ namespace Engine //TODO: remove all default constructors later, now its needed f
 		glm::vec3 Attenuation = { 1.0f, 0.09f, 0.032f }; // Constant, Linear, Quadratic
 
 		LightComponent() = default;
+	};
+
+	struct AudioSourceComponent
+	{
+		Ref<AudioClip> Clip = nullptr;
+		float Volume = 1.0f;
+		bool Loop = false;
+		bool PlayOnAwake = false;
+
+		AudioSourceComponent() = default;
+	};
+
+	struct AudioListenerComponent
+	{
+		bool IsActive = true;
+		AudioListenerComponent() = default;
 	};
 }

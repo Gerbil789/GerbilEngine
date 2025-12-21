@@ -23,7 +23,7 @@ if ! dpkg -s uuid-dev >/dev/null 2>&1; then
     sudo apt-get install -y uuid-dev
 fi
 
-# 1. Run Bootstrap
+# Run Bootstrap
 if [ ! -f Bootstrap.sh ]; then
     echo "Bootstrap.sh missing!"
     exit 1
@@ -33,20 +33,12 @@ echo "Running Bootstrap..."
 chmod +x Bootstrap.sh
 ./Bootstrap.sh
 
-# 2. Build full Premake (gmake2)
-echo "Generating makefiles..."
-./build/bootstrap/make
-
-cd build/gmake2
+# Build bootstrap premake
+echo "Building bootstrap premake"
+make -C build/bootstrap
 
 echo "Building Premake..."
 make config=release -j$(nproc)
-
-# Check if output exists
-if [ ! -f ../bin/release/premake5 ]; then
-    echo "Premake build FAILED"
-    exit 1
-fi
 
 echo "=== Premake5 built successfully ==="
 exit 0

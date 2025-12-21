@@ -4,8 +4,6 @@
 # GerbilEngine
 My custom WebGPU based game engine
 
-*All dependencies are self contained in this reposity*
-
 #### Prerequisites
  - Windows machine (linux support is comming)
  - Visual Studio 2022 (C++ 23)
@@ -17,17 +15,20 @@ My custom WebGPU based game engine
 2. **Build premake**
 	 - Run `build_premake.bat`
 3. **Generate project files**
-	 - Run `Win-GenerateProjects.bat` 
+	 - Run `generate_project.bat` 
 4. **Build project in Visual Studio**
-  - Open solution in VS (`GerbilEngine.sln`)
-  - Find **`Editor`** project in Solution Explorer
-  - Right click -> **Build**
+   - Open solution in VS (`GerbilEngine.sln`)
+   - Find **`Editor`** project in Solution Explorer
+   - Right click -> **Build**
 5. **Run**
 
-#### Used Libraries
+#### Dependencies
+
+*All dependencies are self contained in this reposity*
 
 | Library                                                                          | Purpose                          |
 | -------------------------------------------------------------------------------- | -------------------------------- |
+| **[Premake](https://premake.github.io)**                                   			 | Build system           					|
 | **[Dawn](https://dawn.googlesource.com/dawn)**                                   | WebGPU implementation            |
 | **[GLFW](https://www.glfw.org)**                                                 | Windowing and input handling     |
 | **[GLM](https://github.com/g-truc/glm)**                                         | Mathematics 											|

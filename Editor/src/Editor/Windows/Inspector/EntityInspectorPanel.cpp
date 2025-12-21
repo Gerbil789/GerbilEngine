@@ -80,11 +80,14 @@ namespace Editor
 			memset(buffer, 0, sizeof(buffer));
 			strcpy_s(buffer, sizeof(buffer), name.c_str());
 
+			ImGui::PushID((int)entity.GetUUID());
+
 			ImGui::PushItemWidth(-1);
 			bool tmp = true;
 			ImGui::Checkbox("##Enabled", &entity.GetComponent<IdentityComponent>().Enabled);
 			ImGui::SameLine();
 			if (ImGui::InputText("##Name", buffer, sizeof(buffer))) { name = std::string(buffer); }
+			ImGui::PopID();
 		}
 
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
@@ -292,6 +295,61 @@ namespace Editor
 				ImGui::NextColumn();
 				ImGui::Columns(1);
 			});
+
+		DrawComponent<AudioSourceComponent>("AudioSource", entity, [](auto& component)
+			{
+				float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 100, 100.0f);
+				ImGui::Columns(2, "audio_source_body", false);
+				ImGui::SetColumnWidth(0, 100);
+				ImGui::SetColumnWidth(1, availWidth);
+
+				ImGui::Text("Audio Clip");
+
+				ImGui::NextColumn();
+
+				std::string audioClipButtonText = component.Clip != nullptr ? std::to_string((uint64_t)component.Clip->id) : "##AudioClip";
+				ImGui::Button(audioClipButtonText.c_str(), ImVec2(availWidth, 0.0f));
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
+					{
+						Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
+						if (AssetManager::GetAssetType(droppedUUID) == AssetType::Audio)
+						{
+							component.Clip = AssetManager::GetAsset<AudioClip>(droppedUUID);
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				ImGui::NextColumn();
+				ImGui::Text("Looping");
+				ImGui::NextColumn();
+				ImGui::Checkbox("Looping", &component.Loop);
+				ImGui::NextColumn();
+				ImGui::Text("Volume");
+				ImGui::NextColumn();
+				UI::FloatField("Volume", component.Volume);
+				ImGui::NextColumn();
+				ImGui::Columns(1);
+
+			});
+
+
+		DrawComponent<AudioListenerComponent>("AudioListener", entity, [](auto& component)
+			{
+				float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 100, 100.0f);
+				ImGui::Columns(2, "audio_listener_body", false);
+				ImGui::SetColumnWidth(0, 100);
+				ImGui::SetColumnWidth(1, availWidth);
+
+				ImGui::Text("Is Active");
+				ImGui::NextColumn();
+				ImGui::Checkbox("Is Active", &component.IsActive);
+
+				ImGui::NextColumn();
+				ImGui::Columns(1);
+			});
 	}
 
 	void EntityInspectorPanel::DrawAddComponentButton(Entity entity)
@@ -346,6 +404,19 @@ namespace Editor
 			{
 				auto& component = entity.AddComponent<MeshComponent>();
 
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::MenuItem("AudioSource"))
+			{
+				auto& component = entity.AddComponent<AudioSourceComponent>();
+				ImGui::CloseCurrentPopup();
+			}
+
+
+			if (ImGui::MenuItem("AudioListener"))
+			{
+				auto& component = entity.AddComponent<AudioListenerComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 
