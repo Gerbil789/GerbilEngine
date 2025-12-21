@@ -114,7 +114,7 @@ namespace Engine
 		out << YAML::EndMap; // Entity
 	}
 
-	void SceneSerializer::Serialize(const Ref<Scene>& scene, const std::filesystem::path& path)
+	void SceneSerializer::Serialize(Scene* scene, const std::filesystem::path& path)
 	{
 		if(!scene)
 		{
@@ -135,7 +135,7 @@ namespace Engine
 		out << YAML::Key << "Scene" << YAML::Value << title;
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
-		auto entities = scene->GetEntities(true);
+		const std::vector<Entity>& entities = scene->GetEntities(true);
 		for(auto ent : entities)
 		{
 			SerializeEntity(out, ent);

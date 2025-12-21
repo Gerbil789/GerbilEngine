@@ -8,8 +8,18 @@
 //#define ENGINE_PROFILE
 #endif
 
+#if defined(_MSC_VER)
+#define DEBUG_BREAK() __debugbreak()
+#elif defined(__GNUC__) || defined(__clang__)
+#define DEBUG_BREAK() __builtin_trap()
+#else
+#include <cstdlib>
+#define DEBUG_BREAK() std::abort()
+#endif
+
 #ifdef ENGINE_ENABLE_ASSERTS
-#define ASSERT(x, ...) { if(!(x)) { LOG_CRITICAL("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
+#define ASSERT(x, ...) { if(!(x)) { LOG_CRITICAL("Assertion Failed: {0}", __VA_ARGS__); DEBUG_BREAK(); } }
+
 #else
 #define ASSERT(x, ...)
 #endif

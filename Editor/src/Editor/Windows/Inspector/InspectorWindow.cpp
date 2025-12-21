@@ -10,25 +10,21 @@ namespace Editor
 	{
 		ImGui::Begin("Inspector");
 
-		auto selection = EditorContext::GetActiveSelection();
+		auto& entities = EditorContext::Entities();
+		auto& assets = EditorContext::Assets();
 
-		switch (selection.Type)
+		if (!entities.Empty())
 		{
-		case SelectionType::Entity:
-		{
-			m_EntityInspector.Draw(selection.Entity);
-			break;
+			m_EntityInspector.Draw(entities.GetPrimary());
 		}
-
-		case SelectionType::Asset:
+		else if (!assets.Empty())
 		{
-			DrawAssetPanel(selection.AssetID);
-			break;
-		}
+			DrawAssetPanel(assets.GetPrimary());
 
-		default:
+		}
+		else
+		{
 			ImGui::Text("Nothing selected");
-
 		}
 
 		ImGui::End();

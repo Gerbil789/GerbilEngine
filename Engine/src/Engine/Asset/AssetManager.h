@@ -139,7 +139,7 @@ namespace Engine
 			asset->id = metadata->id;
 			m_LoadedAssets[metadata->id] = asset;
 
-			AssetSerializer::SerializeAsset(asset, *metadata);
+			AssetSerializer::SerializeAsset(asset.get(), *metadata);
 			LOG_TRACE("Created new asset '{0}', '{1}'", metadata->id, metadata->path);
 			return asset;
 		}

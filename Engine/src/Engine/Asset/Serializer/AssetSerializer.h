@@ -8,7 +8,7 @@ namespace Engine
 	class AssetSerializer
 	{
 	public:
-		static void SerializeAsset(const Ref<Asset>& asset, const AssetMetadata& metadata);
+		static void SerializeAsset(Asset* asset, const AssetMetadata& metadata);
 		static Asset* DeserializeAsset(const AssetMetadata& metadata);
 	};
 }

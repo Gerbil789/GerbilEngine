@@ -139,3 +139,15 @@ namespace Engine
 
 	};
 }
+
+namespace std
+{
+	template<>
+	struct hash<Engine::Entity>
+	{
+		size_t operator()(const Engine::Entity& e) const noexcept
+		{
+			return std::hash<uint32_t>()((uint32_t)e);
+		}
+	};
+}

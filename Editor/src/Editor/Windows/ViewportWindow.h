@@ -42,6 +42,10 @@ namespace Editor
 		bool m_ViewportHovered = false;
 
 		bool m_GizmoPreviouslyUsed = false;
-		glm::vec3 m_InitialPos = glm::vec3(0.0f), m_InitialRot = glm::vec3(0.0f), m_InitialScale = glm::vec3(1.0f);
+		//glm::vec3 m_InitialPos = glm::vec3(0.0f), m_InitialRot = glm::vec3(0.0f), m_InitialScale = glm::vec3(1.0f);
+
+		std::unordered_map<Engine::Entity, glm::mat4> m_InitialWorldTransforms;
+		glm::mat4 m_InitialPrimaryWorld = glm::mat4(1.0f);
+
 	};
 }

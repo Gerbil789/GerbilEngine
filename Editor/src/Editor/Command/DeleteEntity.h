@@ -15,7 +15,7 @@ namespace Editor
     {
       if (m_Entity)
       {
-				EditorContext::ClearSelection();
+				EditorContext::Entities().Clear();
         m_Entity.Destroy();
       }
     }
@@ -23,7 +23,7 @@ namespace Editor
     void Undo() override
     {
       m_Entity = Engine::SceneManager::GetActiveScene()->CreateEntity(m_Name);
-      EditorContext::SelectEntity(m_Entity);
+			EditorContext::Entities().Select(m_Entity);
     }
 
   private:

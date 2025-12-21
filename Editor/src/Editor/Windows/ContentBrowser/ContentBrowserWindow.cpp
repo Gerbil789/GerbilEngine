@@ -264,7 +264,7 @@ namespace Editor
 						if (item_is_selected && !item_data->IsDirectory)
 						{
 							// User selected this asset
-							EditorContext::SelectAsset(item_data->UUID);
+							EditorContext::Select(item_data->UUID);
 						}
 					}
 

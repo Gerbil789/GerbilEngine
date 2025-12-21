@@ -25,18 +25,14 @@ namespace Editor
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-		auto args = specification.args;
-
-
-
-		if (args.Count > 1)
+		if (specification.args.Count > 1)
 		{
-			auto projectFilePath = args[1];
+			auto projectFilePath = specification.args[1];
 			Engine::Project::Load(projectFilePath);
 		}
 		else
 		{
-			auto projectDirectoryPath = Engine::OpenDirectory();
+			auto projectDirectoryPath = Engine::OpenDirectory(); // Prompt user to select project directory
 			if (projectDirectoryPath.empty())
 			{
 				LOG_WARNING("Project::New - No path selected for new project.");

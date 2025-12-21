@@ -17,17 +17,15 @@
 
 namespace Editor
 {
-	using namespace Engine;
-
 	static ImGuizmo::OPERATION gizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
 	ViewportWindow::ViewportWindow()
 	{
 		auto camera = &m_CameraController.GetCamera();
-		camera->SetBackgroundType(Camera::BackgroundType::Skybox);
+		camera->SetBackgroundType(Engine::Camera::BackgroundType::Skybox);
 		m_Renderer.SetCamera(camera);
 
-		SceneManager::RegisterOnSceneChanged([this](Scene* scene)
+		Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene* scene)
 			{
 				m_Scene = scene;
 				m_Renderer.SetScene(m_Scene);
@@ -64,7 +62,7 @@ namespace Editor
 
 		if (mx >= 0 && my >= 0 && mx < (int)m_ViewportSize.x && my < (int)m_ViewportSize.y)
 		{
-			UUID uuid = m_EntityIdRenderer.ReadPixel((uint32_t)mx, (uint32_t)my);
+			Engine::UUID uuid = m_EntityIdRenderer.ReadPixel((uint32_t)mx, (uint32_t)my);
 			if(uuid.IsValid())
 			{
 				m_HoveredEntity = m_Scene->GetEntity(uuid);
@@ -72,56 +70,51 @@ namespace Editor
 		}
 
 		// Draw scene
-		ImGui::Image((ImTextureID)(intptr_t)(WGPUTextureView)m_Renderer.GetTextureView(), ImVec2(m_ViewportSize.x, m_ViewportSize.y)); //TODO: too many casts?
-
-		//if (ImGui::BeginDragDropTarget())
-		//{
-		//	ImGui::EndDragDropTarget();
-		//}
+		ImGui::Image((WGPUTextureView)m_Renderer.GetTextureView(), ImVec2(m_ViewportSize.x, m_ViewportSize.y));
 
 		DrawGizmos();
 		ImGui::End();
 	}
 
 
-	void ViewportWindow::OnEvent(Event& e)
+	void ViewportWindow::OnEvent(Engine::Event& e)
 	{
 		if (m_ViewportFocused || m_ViewportHovered)
 		{
 			m_CameraController.OnEvent(e);
 		}
 
-		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<KeyPressedEvent>([this](auto e) {OnKeyPressed(e); });
-		dispatcher.Dispatch<MouseButtonPressedEvent>([this](auto e) {OnMouseButtonPressed(e); });
+		Engine::EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<Engine::KeyPressedEvent>([this](auto e) {OnKeyPressed(e); });
+		dispatcher.Dispatch<Engine::MouseButtonPressedEvent>([this](auto e) {OnMouseButtonPressed(e); });
 	}
 
-	void ViewportWindow::OnKeyPressed(KeyPressedEvent& e)
+	void ViewportWindow::OnKeyPressed(Engine::KeyPressedEvent& e)
 	{
 		if (e.GetRepeatCount() > 0) return;
 
 		switch (e.GetKey())
 		{
-		case Key::Q: gizmoType = (ImGuizmo::OPERATION)0; break;
-		case Key::W: gizmoType = ImGuizmo::OPERATION::TRANSLATE; break;
-		case Key::E: gizmoType = ImGuizmo::OPERATION::ROTATE; break;
-		case Key::R: gizmoType = ImGuizmo::OPERATION::SCALE; break;
+		case Engine::Key::Q: gizmoType = (ImGuizmo::OPERATION)0; break;
+		case Engine::Key::W: gizmoType = ImGuizmo::OPERATION::TRANSLATE; break;
+		case Engine::Key::E: gizmoType = ImGuizmo::OPERATION::ROTATE; break;
+		case Engine::Key::R: gizmoType = ImGuizmo::OPERATION::SCALE; break;
 		}
 	}
 
-	void ViewportWindow::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+	void ViewportWindow::OnMouseButtonPressed(Engine::MouseButtonPressedEvent& e)
 	{
-		if (e.GetMouseButton() != Mouse::ButtonLeft) return;
+		if (e.GetMouseButton() != Engine::Mouse::ButtonLeft) return;
 	
 		if (m_ViewportHovered && !ImGuizmo::IsOver())
 		{
 			if (m_HoveredEntity)
 			{
-				EditorContext::SelectEntity(m_HoveredEntity);
+				EditorContext::Entities().Select(m_HoveredEntity, Engine::Input::IsKeyPressed(Engine::Key::LeftControl) || Engine::Input::IsKeyPressed(Engine::Key::LeftShift));
 			}
 			else
 			{
-				EditorContext::ClearSelection();
+				EditorContext::Entities().Clear();
 			}
 		}
 	}
@@ -157,7 +150,7 @@ namespace Editor
 			return;
 		}
 
-		Entity selectedEntity = EditorContext::GetActiveSelection().Type == SelectionType::Entity ? EditorContext::GetActiveSelection().Entity : Entity{};
+		Engine::Entity selectedEntity = EditorContext::Entities().GetPrimary();
 
 		if (!selectedEntity)
 		{
@@ -171,11 +164,11 @@ namespace Editor
 		const glm::mat4& cameraProjection = m_CameraController.GetCamera().GetProjectionMatrix();
 		glm::mat4 cameraView = m_CameraController.GetCamera().GetViewMatrix();
 
-		auto& tc = selectedEntity.GetComponent<TransformComponent>();
+		auto& tc = selectedEntity.GetComponent<Engine::TransformComponent>();
 		glm::mat4 worldTransform = tc.GetWorldMatrix(m_Scene->GetRegistry());
 
 		float* snapValue = nullptr;
-		if(Input::IsKeyPressed(Key::LeftControl))
+		if(Engine::Input::IsKeyPressed(Engine::Key::LeftControl))
 		{
 			static float snapTranslateScale[3] = { 0.5f, 0.5f, 0.5f };
 			static float snapRotate[3] = { 45.0f, 45.0f, 45.0f };
@@ -196,44 +189,94 @@ namespace Editor
 
 		if (isUsing && !m_GizmoPreviouslyUsed)
 		{
-			// Store initial state for undo
-			m_InitialPos = tc.Position;
-			m_InitialRot = tc.Rotation;
-			m_InitialScale = tc.Scale;
+			m_InitialWorldTransforms.clear();
+
+			auto& selection = EditorContext::Entities().GetAll();
+
+			for (auto entity : selection)
+			{
+				auto& tc = entity.GetComponent<Engine::TransformComponent>();
+				m_InitialWorldTransforms[entity] = tc.GetWorldMatrix(m_Scene->GetRegistry());
+			}
+
+			m_InitialPrimaryWorld = m_InitialWorldTransforms[selectedEntity];
 		}
 
 		if (isUsing)
 		{
-			glm::mat4 newWorld = worldTransform;
 
-			glm::mat4 parentWorld = glm::mat4(1.0f);
+			glm::mat4 newPrimaryWorld = worldTransform;
+			glm::mat4 delta = newPrimaryWorld * glm::inverse(m_InitialPrimaryWorld);
 
-			if (selectedEntity.GetComponent<TransformComponent>().Parent != entt::null)
+			for (auto entity : EditorContext::Entities().GetAll())
 			{
-				Entity parent = { selectedEntity.GetComponent<TransformComponent>().Parent, m_Scene };
-				parentWorld = parent.GetComponent<TransformComponent>().GetWorldMatrix(m_Scene->GetRegistry());
+				auto& tc = entity.GetComponent<Engine::TransformComponent>();
+
+				glm::mat4 originalWorld = m_InitialWorldTransforms[entity];
+				glm::mat4 newWorld = delta * originalWorld;
+
+				glm::mat4 parentWorld = glm::mat4(1.0f);
+				if (tc.Parent != entt::null)
+				{
+					Engine::Entity parent = { tc.Parent, m_Scene };
+					parentWorld = parent.GetComponent<Engine::TransformComponent>()
+						.GetWorldMatrix(m_Scene->GetRegistry());
+				}
+
+				glm::mat4 newLocal = glm::inverse(parentWorld) * newWorld;
+
+				glm::vec3 skew;
+				glm::vec4 perspective;
+				glm::quat rot;
+				glm::vec3 trans, scale;
+				glm::decompose(newLocal, scale, rot, trans, skew, perspective);
+
+				tc.Position = trans;
+				tc.Rotation = glm::degrees(glm::eulerAngles(rot));
+				tc.Scale = scale;
 			}
-
-			glm::mat4 newLocal = glm::inverse(parentWorld) * newWorld;
-
-			glm::vec3 skew;
-			glm::vec4 perspective;
-			glm::quat rot;
-			glm::vec3 trans, scale;
-			glm::decompose(newLocal, scale, rot, trans, skew, perspective);
-
-			tc.Position = trans;
-			tc.Rotation = glm::degrees(glm::eulerAngles(rot));
-			tc.Scale = scale;
 		}
 
 		if (!isUsing && m_GizmoPreviouslyUsed)
 		{
-			CommandManager::ExecuteCommand<TransformEntityCommand>(
-				selectedEntity,
-				m_InitialPos, m_InitialRot, m_InitialScale,
-				tc.Position, tc.Rotation, tc.Scale
-			);
+			auto& selection = EditorContext::Entities().GetAll();
+
+			std::vector<TransformData> before, after;
+
+			for (auto& [entity, initialWorld] : m_InitialWorldTransforms)
+			{
+				auto& tc = entity.GetComponent<Engine::TransformComponent>();
+				{
+					glm::mat4 parentWorld = glm::mat4(1.0f);
+					if (tc.Parent != entt::null)
+					{
+						Engine::Entity parent = { tc.Parent, m_Scene };
+						parentWorld = parent.GetComponent<Engine::TransformComponent>()
+							.GetWorldMatrix(m_Scene->GetRegistry());
+					}
+					glm::mat4 initialLocal = glm::inverse(parentWorld) * initialWorld;
+					glm::vec3 skew;
+					glm::vec4 perspective;
+					glm::quat rot;
+					glm::vec3 trans, scale;
+					glm::decompose(initialLocal, scale, rot, trans, skew, perspective);
+
+					before.push_back({ trans, glm::degrees(glm::eulerAngles(rot)), scale });
+				}
+			}
+
+			for (auto entity : selection)
+			{
+				auto& tc = entity.GetComponent<Engine::TransformComponent>();
+				TransformData afterData;
+				afterData.Position = tc.Position;
+				afterData.Rotation = tc.Rotation;
+				afterData.Scale = tc.Scale;
+				after.push_back(afterData);
+			}
+
+
+			CommandManager::ExecuteCommand<TransformEntitiesCommand>(selection, before, after);
 		}
 
 		m_GizmoPreviouslyUsed = isUsing;

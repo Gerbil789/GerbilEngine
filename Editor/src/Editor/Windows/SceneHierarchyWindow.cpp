@@ -37,14 +37,12 @@ namespace Editor
 			return;
 		}
 
-		ImGui::BeginMultiSelect(ImGuiMultiSelectFlags_None);
-
 		const auto& entities = m_Scene->GetEntities(true);
 
 		for(size_t i = 0; i < entities.size(); ++i)
 		{
 			Entity entity = entities[i];
-			if(entity.GetComponent<TransformComponent>().Parent == entt::null)
+			if(entity.GetComponent<TransformComponent>().Parent == Entity::Null())
 			{
 				DrawReorderDropTarget(Engine::Entity::Null(), i);
 				DrawEntityNode(entity);
@@ -53,9 +51,9 @@ namespace Editor
 		DrawReorderDropTarget(Engine::Entity::Null(), entities.size());
 
 		// deselect on empty space click
-		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
 		{
-			EditorContext::ClearSelection();
+			EditorContext::Entities().Clear();
 		}
 
 		// right-click context menu
@@ -68,7 +66,6 @@ namespace Editor
 			ImGui::EndPopup();
 		}
 
-		ImGui::EndMultiSelect();
 		ImGui::End();
 	}
 
@@ -82,7 +79,7 @@ namespace Editor
 			flags |= ImGuiTreeNodeFlags_Leaf;
 		}
 
-		bool selected = EditorContext::GetActiveSelection().Entity == entity;
+		bool selected = EditorContext::Entities().IsSelected(entity);
 
 		if (selected)
 		{
@@ -97,7 +94,7 @@ namespace Editor
 		if (ImGui::IsItemClicked())
 		{
 			bool additive = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::LeftShift);
-			EditorContext::SelectEntity(entity, additive);
+			EditorContext::Select(entity, additive);
 		}
 
 		// Drag source

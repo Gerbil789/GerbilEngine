@@ -7,12 +7,12 @@
 
 namespace Engine
 {
-	using AssetSerializeFunction = std::function<void(const Ref<Asset>&, const std::filesystem::path&)>;
+	using AssetSerializeFunction = std::function<void(Asset* asset, const std::filesystem::path&)>;
 	using AssetDeserializeFunction = std::function<Asset*(const std::filesystem::path&)>;
 
 	static std::map<AssetType, AssetSerializeFunction> s_AssetSerializeFunctions = {
-		{ AssetType::Scene, [](const Ref<Asset>& asset, const std::filesystem::path& path) { SceneSerializer::Serialize(std::static_pointer_cast<Scene>(asset), path); }},
-		{ AssetType::Material, [](const Ref<Asset>& asset, const std::filesystem::path& path) { MaterialSerializer::Serialize(std::static_pointer_cast<Material>(asset), path); }}
+		{ AssetType::Scene, [](Asset* asset, const std::filesystem::path& path) { SceneSerializer::Serialize(static_cast<Scene*>(asset), path); }},
+		{ AssetType::Material, [](Asset* asset, const std::filesystem::path& path) { MaterialSerializer::Serialize(static_cast<Material*>(asset), path); }}
 	};
 
 	static std::map<AssetType, AssetDeserializeFunction> s_AssetDeserializeFunctions = {
@@ -20,7 +20,7 @@ namespace Engine
 		{ AssetType::Material, [](const std::filesystem::path& path) -> Asset* { return MaterialSerializer::Deserialize(path); }}
 	};
 
-	void AssetSerializer::SerializeAsset(const Ref<Asset>& asset, const AssetMetadata& metadata)
+	void AssetSerializer::SerializeAsset(Asset* asset, const AssetMetadata& metadata)
 	{
 		AssetType assetType = metadata.GetType();
 

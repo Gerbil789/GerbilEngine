@@ -34,6 +34,8 @@ namespace Engine
 			return entities;
 		}
 
+	
+
 		Entity GetEntity(UUID uuid);
 
 		Entity CreateEntity(const std::string& name = "new entity", const glm::vec3& position = glm::vec3{ 0.0f, 0.0f, 0.0f });

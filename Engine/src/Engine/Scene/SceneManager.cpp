@@ -76,7 +76,7 @@ namespace Engine::SceneManager
 			return; 
 		}
 
-		Ref<Scene> scene = AssetManager::GetAsset<Scene>(s_ActiveScene->id);
+		Scene* scene = AssetManager::GetAsset<Scene>(s_ActiveScene->id).get();
 		auto assetPath = AssetManager::GetAssetPath(s_ActiveScene->id);
 
 		if(assetPath.empty())

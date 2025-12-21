@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Engine/Core/Core.h"
-//#include "Engine/Renderer/Texture.h"
 #include "Engine/Renderer/Skybox.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
@@ -25,7 +24,7 @@ namespace Engine
 
 		const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
-		const glm::mat4& GetViewProjectionMatrix() const { return m_ProjectionMatrix * m_ViewMatrix; }
+		const glm::mat4 GetViewProjectionMatrix() const { return m_ProjectionMatrix * m_ViewMatrix; }
 
 		const glm::quat GetOrientation() const { return glm::quat(glm::radians(glm::vec3(m_Pitch, m_Yaw, 0.0f))); }
 		const glm::vec3 GetForward() const { return GetOrientation() * glm::vec3(0.0f, 0.0f, -1.0f); }
@@ -69,7 +68,7 @@ namespace Engine
 		float m_Orthographic_Far = 100.0f;
 
 		BackgroundType m_BackgroundType = BackgroundType::Color;
-		glm::vec4 m_ClearColor = { 0.05f, 0.05f, 0.05f, 1.0f };
+		glm::vec4 m_ClearColor = { 1.0f, 0.05f, 1.0f, 1.0f };
 		Skybox m_Skybox;
 	};
 }

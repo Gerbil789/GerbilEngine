@@ -7,7 +7,7 @@ namespace Engine
 	class MaterialSerializer
 	{
 	public:
-		static void Serialize(const Ref<Material>& material, const std::filesystem::path& path);
+		static void Serialize(Material* material, const std::filesystem::path& path);
 		static Material* Deserialize(const std::filesystem::path& path);
 	};
 }

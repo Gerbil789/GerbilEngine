@@ -64,7 +64,7 @@ namespace Engine
 		}
 	}
 
-	void MaterialSerializer::Serialize(const Ref<Material>& material, const std::filesystem::path& path)
+	void MaterialSerializer::Serialize(Material* material, const std::filesystem::path& path)
 	{
 		if (!material)
 		{
