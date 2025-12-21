@@ -63,9 +63,9 @@ namespace Engine
 		return s_DefaultWhiteTexture;
 	}
 
-	SubTexture2D::SubTexture2D(const Ref<Texture2D>& texture, const glm::vec2& min, const glm::vec2& max) : m_Texture(texture), m_UVMin(min), m_UVMax(max) {}
+	SubTexture2D::SubTexture2D(Texture2D* texture, const glm::vec2& min, const glm::vec2& max) : m_Texture(texture), m_UVMin(min), m_UVMax(max) {}
 
-	Ref<SubTexture2D> SubTexture2D::CreateFromGrid(const Ref<Texture2D>& texture, const glm::ivec2& cellCoords, const glm::ivec2& cellSize, const glm::ivec2& spriteSize)
+	SubTexture2D* SubTexture2D::CreateFromGrid(Texture2D* texture, const glm::ivec2& cellCoords, const glm::ivec2& cellSize, const glm::ivec2& spriteSize)
 	{
 		glm::vec2 texSize = { (float)texture->GetWidth(), (float)texture->GetHeight() };
 
@@ -81,7 +81,7 @@ namespace Engine
 				((cellCoords.y + spriteSize.y) * cellSize.y) / texSize.y
 		};
 
-		return CreateRef<SubTexture2D>(texture, min, max);
+		return new SubTexture2D(texture, min, max);
 	}
 
 	CubeMapTexture::CubeMapTexture(const TextureSpecification& specification, const std::array<const void*, 6>& data)

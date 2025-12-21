@@ -5,13 +5,13 @@
 
 namespace Engine
 {
-	Ref<AudioClip> AudioImporter::ImportAudio(const AssetMetadata& metadata)
+	AudioClip* AudioImporter::ImportAudio(const AssetMetadata& metadata)
 	{
 		return LoadAudio(Project::GetAssetsDirectory() / metadata.path);
 	}
 
-	Ref<AudioClip> AudioImporter::LoadAudio(const std::filesystem::path& path)
+	AudioClip* AudioImporter::LoadAudio(const std::filesystem::path& path)
 	{
-		return CreateRef<AudioClip>(path.string());
+		return new AudioClip(path.string());
 	}
 }

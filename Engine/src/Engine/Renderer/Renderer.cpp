@@ -254,7 +254,7 @@ namespace Engine
 		uint32_t i = 0;
 		for (const auto& [material, groupEntities] : materialGroups)
 		{
-			Ref<Shader> shader = material->GetShader();
+			Shader* shader = material->GetShader();
 			material->Bind(m_RenderPass);
 			m_RenderPass.setPipeline(shader->GetRenderPipeline());
 

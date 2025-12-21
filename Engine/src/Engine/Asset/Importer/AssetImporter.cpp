@@ -11,7 +11,7 @@
 
 namespace Engine
 {
-	using AssetImportFunction = std::function<Ref<Asset>(const AssetMetadata&)>;
+	using AssetImportFunction = std::function<Asset*(const AssetMetadata&)>;
 
 	static std::map<AssetType, AssetImportFunction> s_AssetImportFunctions = {
 		{ AssetType::Texture2D, TextureImporter::ImportTexture2D },
@@ -19,11 +19,11 @@ namespace Engine
 		{ AssetType::Mesh, MeshImporter::ImportMesh },
 		{ AssetType::Material, MaterialImporter::ImportMaterial },
 		{ AssetType::Scene, SceneImporter::ImportScene },
-		{ AssetType::Shader, ShaderImporter::ImportShader  },
-		{ AssetType::Audio, AudioImporter::ImportAudio  }
+		{ AssetType::Shader, ShaderImporter::ImportShader },
+		{ AssetType::Audio, AudioImporter::ImportAudio }
 	};
 
-	Ref<Asset> AssetImporter::ImportAsset(const AssetMetadata& metadata)
+	Asset* AssetImporter::ImportAsset(const AssetMetadata& metadata)
 	{
 		AssetType assetType = metadata.GetType();
 
@@ -32,7 +32,7 @@ namespace Engine
 			LOG_ERROR("No importer available for asset type: {}", AssetTypeToString(assetType));
 			return nullptr;
 		}
-		auto asset = s_AssetImportFunctions.at(assetType)(metadata);
+		Asset* asset = s_AssetImportFunctions.at(assetType)(metadata);
 		asset->id = metadata.id;
 		return asset;
 	}

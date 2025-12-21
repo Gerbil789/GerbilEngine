@@ -9,6 +9,6 @@ namespace Engine
 	{
 	public:
 		static void SerializeAsset(const Ref<Asset>& asset, const AssetMetadata& metadata);
-		static Ref<Asset> DeserializeAsset(const AssetMetadata& metadata);
+		static Asset* DeserializeAsset(const AssetMetadata& metadata);
 	};
 }

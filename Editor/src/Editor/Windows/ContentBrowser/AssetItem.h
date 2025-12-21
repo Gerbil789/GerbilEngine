@@ -33,7 +33,7 @@ namespace Editor
 		bool IsDirectory = false;
 
 		wgpu::TextureView Thumbnail;
-		Ref<Engine::SubTexture2D> Icon;
+		Engine::SubTexture2D* Icon;
 
 		AssetItem(const Engine::UUID uuid, const std::filesystem::path& path) : UUID(uuid), Path(path), Name(path.filename().stem().string()), IsDirectory(std::filesystem::is_directory(path))
 		{

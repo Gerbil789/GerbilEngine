@@ -8,6 +8,6 @@ namespace Engine
 	class AssetImporter
 	{
 	public:
-		static Ref<Asset> ImportAsset(const AssetMetadata& metadata);
+		static Asset* ImportAsset(const AssetMetadata& metadata);
 	};
 }

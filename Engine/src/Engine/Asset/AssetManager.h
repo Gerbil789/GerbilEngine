@@ -73,17 +73,17 @@ namespace Engine
 				return nullptr;
 			}
 
-			Ref<Asset> asset = AssetImporter::ImportAsset(*metadata);
+			Asset* asset = AssetImporter::ImportAsset(*metadata);
 			if (!asset)
 			{
 				LOG_ERROR("EditorAssetManager::GetAsset - asset import failed! '{0}'", id);
 				return nullptr;
 			}
-			m_LoadedAssets[id] = asset;
+			m_LoadedAssets[id] = Ref<Asset>(asset);
 
 			LOG_TRACE("Loaded asset '{0}', '{1}'", id, m_AssetRegistry.GetRelativePath(id));
 
-			return std::static_pointer_cast<T>(asset);
+			return std::static_pointer_cast<T>(m_LoadedAssets.at(id));
 		}
 
 
@@ -105,12 +105,13 @@ namespace Engine
 				}
 				else
 				{
-					asset = AssetImporter::ImportAsset(*record);
-					if (!asset)
+					Asset* ast = AssetImporter::ImportAsset(*record);
+					if (!ast)
 					{
 						LOG_ERROR("EditorAssetManager::GetAssetsOfType - asset import failed! '{0}'", record->path.string());
 						continue;
 					}
+					asset = Ref<Asset>(ast);
 					m_LoadedAssets[record->id] = asset;
 				}
 				assets.push_back(std::static_pointer_cast<T>(asset));
@@ -176,15 +177,18 @@ namespace Engine
 				return m_LoadedAssets.at(metadata->id);
 			}
 
-			Ref<Asset> asset = AssetImporter::ImportAsset(*metadata);
+			Asset* asset = AssetImporter::ImportAsset(*metadata);
 			if (!asset)
 			{
 				LOG_ERROR("EditorAssetManager::ImportAsset - asset import failed! '{0}'", filepath.string());
 				return nullptr;
 			}
 
-			m_LoadedAssets[asset->id] = asset;
-			return asset;
+
+			Ref<Asset> sharedAsset = Ref<Asset>(asset);
+
+			m_LoadedAssets[asset->id] = sharedAsset;
+			return sharedAsset;
 		}
 
 		static inline std::filesystem::path GetAssetPath(UUID id) // returns relative path to the assets directory

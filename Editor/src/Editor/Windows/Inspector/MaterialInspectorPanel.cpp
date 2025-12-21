@@ -15,19 +15,25 @@ namespace Editor
 			return;
 		}
 
-		Ref<Engine::Shader> shader = material->GetShader();
+		Engine::Shader* shader = material->GetShader();
 		auto shaderSpec = shader->GetSpecification();
 		auto bindings = GetMaterialBindings(shaderSpec);
 		bool hasTextures = false;
 
 
-		static std::vector<Ref<Engine::Shader>> s_AllShaders;
+		static std::vector<Engine::Shader*> s_AllShaders;
 		static std::vector<const char*> shaderNames;
 
 		if (s_AllShaders.empty())
 		{
 			// Load or fetch from AssetManager
-			s_AllShaders = Engine::AssetManager::GetAssetsOfType<Engine::Shader>(Engine::AssetType::Shader);
+			auto sharedptrShaders = Engine::AssetManager::GetAssetsOfType<Engine::Shader>(Engine::AssetType::Shader);
+
+			s_AllShaders.resize(sharedptrShaders.size());
+			for (size_t i = 0; i < sharedptrShaders.size(); i++)
+			{
+				s_AllShaders[i] = sharedptrShaders[i].get();
+			}
 
 			shaderNames.clear();
 			shaderNames.reserve(s_AllShaders.size());

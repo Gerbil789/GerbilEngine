@@ -16,10 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install build tools
+      - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y g++ make
+          sudo apt install -y \
+          g++ make uuid-dev libgl1-mesa-dev
 
       - name: Build Premake (Linux)
         run: |

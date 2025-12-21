@@ -20,7 +20,7 @@ namespace Editor
   class EditorIcons
   {
   public:
-    static void Load(const Ref<Engine::Texture2D> textureAtlas)
+    static void Load(Engine::Texture2D* textureAtlas)
     {
       s_TextureAtlas = textureAtlas;
 
@@ -34,7 +34,7 @@ namespace Editor
       AddIcon(Icon::Mesh, { 7, 0 });
     }
 
-    static Ref<Engine::SubTexture2D> GetIcon(Icon icon)
+    static Engine::SubTexture2D* GetIcon(Icon icon)
     {
       return s_Icons[(size_t)icon];
     }
@@ -42,12 +42,13 @@ namespace Editor
   private:
     static void AddIcon(Icon icon, const glm::ivec2& coords)
     {
-      s_Icons[(size_t)icon] = Engine::SubTexture2D::CreateFromGrid(s_TextureAtlas, coords, s_CellSize);
+      Engine::SubTexture2D* texture = Engine::SubTexture2D::CreateFromGrid(s_TextureAtlas, coords, s_CellSize);
+      s_Icons[(size_t)icon] = texture;
     }
 
   private:
-    inline static Ref<Engine::Texture2D> s_TextureAtlas;
+    inline static Engine::Texture2D* s_TextureAtlas;
 		inline static glm::ivec2 s_CellSize{ 64, 64 };
-    inline static std::array<Ref<Engine::SubTexture2D>, 8> s_Icons;
+    inline static std::array<Engine::SubTexture2D*, 8> s_Icons;
   };
 }

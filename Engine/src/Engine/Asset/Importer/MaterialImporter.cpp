@@ -5,14 +5,14 @@
 
 namespace Engine
 {
-	Ref<Material> MaterialImporter::ImportMaterial(const AssetMetadata& metadata)
+	Material* MaterialImporter::ImportMaterial(const AssetMetadata& metadata)
 	{
 		return LoadMaterial(Project::GetAssetsDirectory() / metadata.path);
 	}
 
-	Ref<Material> MaterialImporter::LoadMaterial(const std::filesystem::path& path)
+	Material* MaterialImporter::LoadMaterial(const std::filesystem::path& path)
 	{
-		Ref<Material> material = MaterialSerializer::Deserialize(path);
+		Material* material = MaterialSerializer::Deserialize(path);
 		return material;
 	}
 }

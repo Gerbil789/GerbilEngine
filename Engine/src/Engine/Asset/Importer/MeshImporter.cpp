@@ -9,12 +9,12 @@
 
 namespace Engine
 {
-	Ref<Mesh> MeshImporter::ImportMesh(const AssetMetadata& metadata)
+	Mesh* MeshImporter::ImportMesh(const AssetMetadata& metadata)
 	{
 		return LoadMesh(Project::GetAssetsDirectory() / metadata.path);
 	}
 
-	Ref<Mesh> MeshImporter::LoadMesh(const std::filesystem::path& path)
+	Mesh* MeshImporter::LoadMesh(const std::filesystem::path& path)
 	{
 		tinygltf::Model model;
 		tinygltf::TinyGLTF loader;
@@ -142,7 +142,7 @@ namespace Engine
 		//}
 
 		MeshSpecification spec { vertices, indices };
-		Ref<Mesh> mesh = CreateRef<Mesh>(spec);
+		Mesh* mesh = new Mesh(spec);
 		return mesh;
 	}
 }

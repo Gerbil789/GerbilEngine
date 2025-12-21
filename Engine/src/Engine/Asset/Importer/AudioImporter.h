@@ -8,7 +8,7 @@ namespace Engine
 	class AudioImporter
 	{
 	public:
-		static Ref<AudioClip> ImportAudio(const AssetMetadata& metadata);
-		static Ref<AudioClip> LoadAudio(const std::filesystem::path& path);
+		static AudioClip* ImportAudio(const AssetMetadata& metadata);
+		static AudioClip* LoadAudio(const std::filesystem::path& path);
 	};
 }

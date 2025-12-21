@@ -8,6 +8,6 @@ namespace Engine
 	{
 	public:
 		static void Serialize(const Ref<Material>& material, const std::filesystem::path& path);
-		static Ref<Material> Deserialize(const std::filesystem::path& path);
+		static Material* Deserialize(const std::filesystem::path& path);
 	};
 }

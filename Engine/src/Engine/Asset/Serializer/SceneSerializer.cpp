@@ -152,7 +152,7 @@ namespace Engine
 	////////////////////////////////////// DESERIALIZATION //////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////
 
-	Ref<Scene> SceneSerializer::Deserialize(const std::filesystem::path& path)
+	Scene* SceneSerializer::Deserialize(const std::filesystem::path& path)
 	{
 		if (path.extension() != ".scene")
 		{
@@ -180,7 +180,7 @@ namespace Engine
 		std::string sceneName = data["Scene"].as<std::string>();
 		LOG_INFO("Deserializing scene '{0}'", sceneName);
 
-		Ref<Scene> scene = CreateRef<Scene>();
+		auto scene = new Scene();
 
 		// Entities
 		auto entities = data["Entities"];
@@ -231,7 +231,7 @@ namespace Engine
 					if (meshNode["Mesh"])
 					{
 						uint64_t meshID = meshNode["Mesh"].as<uint64_t>();
-						meshComp.Mesh = AssetManager::GetAsset<Mesh>(meshID);
+						meshComp.Mesh = AssetManager::GetAsset<Mesh>(meshID).get();
 					}
 
 					if (meshNode["Material"])

@@ -6,12 +6,12 @@
 
 namespace Engine
 {
-	Ref<Shader> ShaderImporter::ImportShader(const AssetMetadata& metadata)
+	Shader* ShaderImporter::ImportShader(const AssetMetadata& metadata)
 	{
 		return LoadShader(Project::GetAssetsDirectory() / metadata.path);
 	}
 
-	Ref<Shader> ShaderImporter::LoadShader(const std::filesystem::path& path)
+	Shader* ShaderImporter::LoadShader(const std::filesystem::path& path)
 	{
 		std::string source;
 		if (!Engine::ReadFile(path, source))
@@ -21,7 +21,7 @@ namespace Engine
 		}
 
 		ShaderSpecification spec = ShaderParser::GetSpecification(source);
-		auto shader = CreateRef<Shader>(spec, source, path.stem().string());
+		auto shader = new Shader(spec, source, path.stem().string());
 		return shader;
 	}
 }

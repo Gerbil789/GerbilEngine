@@ -8,7 +8,7 @@ namespace Engine
 	class ShaderImporter
 	{
 	public:
-		static Ref<Shader> ImportShader(const AssetMetadata& metadata);
-		static Ref<Shader> LoadShader(const std::filesystem::path& path);
+		static Shader* ImportShader(const AssetMetadata& metadata);
+		static Shader* LoadShader(const std::filesystem::path& path);
 	};
 }

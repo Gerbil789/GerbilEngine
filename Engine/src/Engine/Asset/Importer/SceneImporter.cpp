@@ -5,14 +5,14 @@
 
 namespace Engine
 {
-	Ref<Scene> SceneImporter::ImportScene(const AssetMetadata& metadata)
+	Scene* SceneImporter::ImportScene(const AssetMetadata& metadata)
 	{
 		return LoadScene(Project::GetAssetsDirectory() / metadata.path);
 	}
 
-	Ref<Scene> SceneImporter::LoadScene(const std::filesystem::path& path)
+	Scene* SceneImporter::LoadScene(const std::filesystem::path& path)
 	{
-		auto scene = SceneSerializer::Deserialize(path);
+		Scene* scene = SceneSerializer::Deserialize(path);
 		return scene;
 	}
 }

@@ -49,5 +49,5 @@ private:
 	Engine::Renderer* m_Renderer = nullptr;
 
 	Engine::Entity m_Entity;
-	Ref<Engine::Mesh> m_PreviewMesh = nullptr;
+	Engine::Mesh* m_PreviewMesh = nullptr;
 };

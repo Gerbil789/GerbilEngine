@@ -8,7 +8,7 @@
 
 namespace Engine
 {
-	Material::Material(const Ref<Shader>& shader)
+	Material::Material(Shader* shader)
 	{
 		m_Shader = shader; 
 
@@ -17,7 +17,7 @@ namespace Engine
 		CreateBindGroup();
 	}
 
-	void Material::SetShader(const Ref<Shader>& shader)
+	void Material::SetShader(Shader* shader)
 	{
 		m_Shader = shader;
 
@@ -157,7 +157,7 @@ namespace Engine
 	{
 		if (!s_DefaultMaterial)
 		{
-			Ref<Shader> shader = ShaderImporter::LoadShader("Resources/Engine/Shaders/unlit.shader");
+			Shader* shader = ShaderImporter::LoadShader("Resources/Engine/Shaders/unlit.shader");
 			s_DefaultMaterial = CreateRef<Material>(shader);
 			s_DefaultMaterial->SetVec4("color", glm::vec4(1.0f));
 		}

@@ -169,7 +169,7 @@ namespace Engine
 	}
 
 
-	Ref<Material> MaterialSerializer::Deserialize(const std::filesystem::path& path)
+	Material* MaterialSerializer::Deserialize(const std::filesystem::path& path)
 	{
 		YAML::Node data;
 		try
@@ -191,7 +191,7 @@ namespace Engine
 			return nullptr;
 		}
 
-		auto material = CreateRef<Material>(shader);
+		auto material = new Material(shader.get());
 
 		if (auto attributes = data["Attributes"])
 		{

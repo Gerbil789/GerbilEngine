@@ -1,4 +1,4 @@
-project "Engine"
+	project "Engine"
 	kind "StaticLib"
 	language "C++"
 	cppdialect "C++23"
@@ -10,8 +10,9 @@ project "Engine"
 
 	files
 	{
-		"src/**.h",
-		"src/**.cpp"
+		"src/enginepch.cpp",
+		"src/Engine/**.h",
+		"src/Engine/**.cpp"
 	}
 
 	includedirs

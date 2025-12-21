@@ -70,7 +70,7 @@ namespace Engine //TODO: remove all default constructors later, now its needed f
 	struct MeshComponent
 	{
 		Ref<Material> Material = nullptr;
-		Ref<Mesh> Mesh = nullptr;
+		Mesh* Mesh = nullptr;
 
 		MeshComponent() = default;
 	};

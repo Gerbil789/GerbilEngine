@@ -266,7 +266,7 @@ namespace Editor
 						Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
 						if (AssetManager::GetAssetType(droppedUUID) == AssetType::Mesh)
 						{
-							component.Mesh = AssetManager::GetAsset<Mesh>(droppedUUID);
+							component.Mesh = AssetManager::GetAsset<Mesh>(droppedUUID).get();
 						}
 
 					}

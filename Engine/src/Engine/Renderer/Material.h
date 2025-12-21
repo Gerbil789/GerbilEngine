@@ -13,10 +13,10 @@ namespace Engine
 		friend class MaterialSerializer;
 
 	public:
-		Material(const Ref<Shader>& shader);
+		Material(Shader* shader);
 
-		Ref<Shader> GetShader() const { return m_Shader; }
-		void SetShader(const Ref<Shader>& shader);
+		Shader* GetShader() const { return m_Shader; }
+		void SetShader(Shader* shader);
 
 		void SetFloat(const std::string& paramName, float value);
 		//void SetVec2(const std::string& paramName, const glm::vec2& value);
@@ -50,7 +50,7 @@ namespace Engine
 		void CreateBindGroup();
 
 	private:
-		Ref<Shader> m_Shader;
+		Shader* m_Shader;
 
 		std::vector<uint8_t> m_UniformData; // paramerers data packed according to shader layout
 		std::unordered_map<std::string, Ref<Texture2D>> m_Textures; // this is for engine management, the webgpu binds it once and does not need it afterwards

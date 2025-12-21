@@ -5,12 +5,12 @@
 
 namespace Engine
 {
-	Ref<Texture2D> TextureImporter::ImportTexture2D(const AssetMetadata& metadata)
+	Texture2D* TextureImporter::ImportTexture2D(const AssetMetadata& metadata)
 	{
 		return LoadTexture2D(Project::GetAssetsDirectory() / metadata.path);
 	}
 
-	Ref<Texture2D> TextureImporter::LoadTexture2D(const std::filesystem::path& path)
+	Texture2D* TextureImporter::LoadTexture2D(const std::filesystem::path& path)
 	{
 		int width, height, channels;
 		unsigned char* data = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
@@ -26,17 +26,17 @@ namespace Engine
 		spec.height = static_cast<uint32_t>(height);
 		spec.format = wgpu::TextureFormat::RGBA8Unorm;
 
-		Ref<Texture2D> texture = CreateRef<Texture2D>(spec, data);
+		Texture2D* texture = new Texture2D(spec, data);
 		stbi_image_free(data);
 		return texture;
 	}
 
-	Ref<CubeMapTexture> TextureImporter::ImportCubeMapTexture(const AssetMetadata& metadata)
+	CubeMapTexture* TextureImporter::ImportCubeMapTexture(const AssetMetadata& metadata)
 	{
 		return LoadCubeMapTexture(Project::GetAssetsDirectory() / metadata.path);
 	}
 
-	Ref<CubeMapTexture> TextureImporter::LoadCubeMapTexture(const std::filesystem::path& path)
+	CubeMapTexture* TextureImporter::LoadCubeMapTexture(const std::filesystem::path& path)
 	{
 		const std::array<std::string, 6> fileNames = { "px.png", "nx.png", "py.png", "ny.png", "pz.png", "nz.png" };
 		std::array<std::vector<uint8_t>, 6> faces;
@@ -84,6 +84,6 @@ namespace Engine
 		for (int i = 0; i < 6; ++i)
 			facePtrs[i] = faces[i].data();
 
-		return CreateRef<CubeMapTexture>(spec, facePtrs);
+		return new CubeMapTexture(spec, facePtrs);
 	}
 }

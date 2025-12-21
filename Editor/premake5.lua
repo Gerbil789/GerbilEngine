@@ -7,8 +7,8 @@ project "Editor"
 	
 	files
 	{
-		"src/**.h",
-		"src/**.cpp"
+		"src/Editor/**.h",
+		"src/Editor/**.cpp"
 	}
 
 	includedirs

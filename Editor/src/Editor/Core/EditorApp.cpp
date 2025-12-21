@@ -114,7 +114,7 @@ namespace Editor
 					Ref<Engine::Mesh> mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::UUID(8982589797183355654));
 					auto& component = cube.AddComponent<Engine::MeshComponent>();
 					component.Material = material;
-					component.Mesh = mesh;
+					component.Mesh = mesh.get();
 					cube.GetComponent<Engine::TransformComponent>().Position = { (float)x * 3.0f - (15), (float)y * 3.0f, (float)z * 3.0f - 30};
 				}
 

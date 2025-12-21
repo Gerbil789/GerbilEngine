@@ -18,7 +18,6 @@ namespace Editor
 				EditorContext::ClearSelection();
         m_Entity.Destroy();
       }
-
     }
 
     void Undo() override

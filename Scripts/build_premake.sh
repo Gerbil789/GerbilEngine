@@ -1,44 +1,30 @@
 #!/bin/bash
 
-set -e  # exit on error
+set -e  # exit on error (exit if any command returns a non-zero exit code)
 set -o pipefail
 
-# Go to repo root (script is inside /Scripts)
+# Go to repo root (back one level from script)
 cd "$(dirname "$0")/.."
-
-echo "=== Building Premake (Linux) ==="
 
 # Ensure premake directory exists
 if [ ! -d vendor/premake ]; then
-    echo "Premake folder missing"
+    echo "Premake directory missing"
     exit 1
 fi
 
 cd vendor/premake
 
-# Install uuid-dev if missing (Debian/Ubuntu) (premake dependency)
-if ! dpkg -s uuid-dev >/dev/null 2>&1; then
-    echo "Installing uuid-dev (requires sudo)..."
-    sudo apt-get update
-    sudo apt-get install -y uuid-dev
-fi
-
-# Run Bootstrap
 if [ ! -f Bootstrap.sh ]; then
     echo "Bootstrap.sh missing!"
     exit 1
 fi
 
-echo "Running Bootstrap..."
+echo "Running Bootstrap"
 chmod +x Bootstrap.sh
 ./Bootstrap.sh
 
-# Build bootstrap premake
-echo "Building bootstrap premake"
-make -C build/bootstrap
-
-echo "Building Premake..."
-make config=release -j$(nproc)
+echo "Building bootstrap premake5"
+make -C build/bootstrap # -C = Change directory before running make
 
 echo "=== Premake5 built successfully ==="
 exit 0
