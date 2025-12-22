@@ -10,25 +10,25 @@ namespace Engine
     void Detach(entt::registry& registry, entt::entity child)
     {
       auto& transform = registry.get<TransformComponent>(child);
-      if (transform.Parent == entt::null)
+      if (transform.parent == entt::null)
         return;
 
-      auto& parentTransform = registry.get<TransformComponent>(transform.Parent);
+      auto& parentTransform = registry.get<TransformComponent>(transform.parent);
 
       // If this was the first child, update parent's pointer
-      if (parentTransform.FirstChild == child)
-        parentTransform.FirstChild = transform.NextSibling;
+      if (parentTransform.firstChild == child)
+        parentTransform.firstChild = transform.nextSibling;
 
       // Fix sibling links
-      if (transform.PrevSibling != entt::null)
-        registry.get<TransformComponent>(transform.PrevSibling).NextSibling = transform.NextSibling;
-      if (transform.NextSibling != entt::null)
-        registry.get<TransformComponent>(transform.NextSibling).PrevSibling = transform.PrevSibling;
+      if (transform.prevSibling != entt::null)
+        registry.get<TransformComponent>(transform.prevSibling).nextSibling = transform.nextSibling;
+      if (transform.nextSibling != entt::null)
+        registry.get<TransformComponent>(transform.nextSibling).prevSibling = transform.prevSibling;
 
       // Clear child links
-      transform.Parent = entt::null;
-      transform.PrevSibling = entt::null;
-      transform.NextSibling = entt::null;
+      transform.parent = entt::null;
+      transform.prevSibling = entt::null;
+      transform.nextSibling = entt::null;
     }
 
     // Internal: Attach child under parent at the front of the list
@@ -37,17 +37,17 @@ namespace Engine
       auto& parentTransform = registry.get<TransformComponent>(parent);
       auto& childTransform = registry.get<TransformComponent>(child);
 
-      childTransform.Parent = parent;
-      childTransform.PrevSibling = entt::null;
-      childTransform.NextSibling = parentTransform.FirstChild;
+      childTransform.parent = parent;
+      childTransform.prevSibling = entt::null;
+      childTransform.nextSibling = parentTransform.firstChild;
 
-      if (parentTransform.FirstChild != entt::null)
+      if (parentTransform.firstChild != entt::null)
       {
-        auto& first = registry.get<TransformComponent>(parentTransform.FirstChild);
-        first.PrevSibling = child;
+        auto& first = registry.get<TransformComponent>(parentTransform.firstChild);
+        first.prevSibling = child;
       }
 
-      parentTransform.FirstChild = child;
+      parentTransform.firstChild = child;
     }
   }
 
@@ -59,12 +59,12 @@ namespace Engine
     }
 
     auto* tc = registry.try_get<TransformComponent>(descendant);
-    while (tc && tc->Parent != entt::null)
+    while (tc && tc->parent != entt::null)
     {
-      if (tc->Parent == ancestor)
+      if (tc->parent == ancestor)
         return true;
 
-      tc = registry.try_get<TransformComponent>(tc->Parent);
+      tc = registry.try_get<TransformComponent>(tc->parent);
     }
     return false;
   }
@@ -91,8 +91,8 @@ namespace Engine
       // Recalculate local transform so world stays same
       auto& childTransform = registry.get<TransformComponent>(child);
       glm::mat4 parentWorld = glm::mat4(1.0f);
-      if (childTransform.Parent != entt::null)
-        parentWorld = registry.get<TransformComponent>(childTransform.Parent).GetWorldMatrix(registry);
+      if (childTransform.parent != entt::null)
+        parentWorld = registry.get<TransformComponent>(childTransform.parent).GetWorldMatrix(registry);
 
       glm::mat4 local = glm::inverse(parentWorld) * worldMatrix;
 
@@ -103,9 +103,9 @@ namespace Engine
       glm::vec3 trans, scale;
       glm::decompose(local, scale, rot, trans, skew, perspective);
 
-      childTransform.Position = trans;
-      childTransform.Rotation = glm::degrees(glm::eulerAngles(rot));
-      childTransform.Scale = scale;
+      childTransform.position = trans;
+      childTransform.rotation = glm::degrees(glm::eulerAngles(rot));
+      childTransform.scale = scale;
     }
 	}
 
@@ -122,7 +122,7 @@ namespace Engine
 	void HierarchySystem::RemoveChild(entt::registry& registry, entt::entity parent, entt::entity child)
 	{
     auto& childTransform = registry.get<TransformComponent>(child);
-    if (childTransform.Parent == parent)
+    if (childTransform.parent == parent)
       Detach(registry, child);
 	}
 
@@ -131,11 +131,11 @@ namespace Engine
     std::vector<entt::entity> result;
     auto& parentTransform = registry.get<TransformComponent>(parent);
 
-    entt::entity child = parentTransform.FirstChild;
+    entt::entity child = parentTransform.firstChild;
     while (child != entt::null)
     {
       result.push_back(child);
-      child = registry.get<TransformComponent>(child).NextSibling;
+      child = registry.get<TransformComponent>(child).nextSibling;
     }
 
     return result;
@@ -143,7 +143,7 @@ namespace Engine
 
 	entt::entity HierarchySystem::GetParent(entt::registry& registry, entt::entity child)
 	{
-    return registry.get<TransformComponent>(child).Parent;
+    return registry.get<TransformComponent>(child).parent;
 	}
 
   void HierarchySystem::DestroyEntity(entt::registry& registry, entt::entity entity)
@@ -155,10 +155,10 @@ namespace Engine
 
     // Recursively destroy children
     auto& transform = registry.get<TransformComponent>(entity);
-    entt::entity child = transform.FirstChild;
+    entt::entity child = transform.firstChild;
     while (child != entt::null)
     {
-      entt::entity next = registry.get<TransformComponent>(child).NextSibling;
+      entt::entity next = registry.get<TransformComponent>(child).nextSibling;
       DestroyEntity(registry, child);
       child = next;
     }

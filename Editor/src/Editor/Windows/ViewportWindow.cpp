@@ -216,9 +216,9 @@ namespace Editor
 				glm::mat4 newWorld = delta * originalWorld;
 
 				glm::mat4 parentWorld = glm::mat4(1.0f);
-				if (tc.Parent != entt::null)
+				if (tc.parent != entt::null)
 				{
-					Engine::Entity parent = { tc.Parent, m_Scene };
+					Engine::Entity parent = { tc.parent, m_Scene };
 					parentWorld = parent.GetComponent<Engine::TransformComponent>()
 						.GetWorldMatrix(m_Scene->GetRegistry());
 				}
@@ -231,9 +231,9 @@ namespace Editor
 				glm::vec3 trans, scale;
 				glm::decompose(newLocal, scale, rot, trans, skew, perspective);
 
-				tc.Position = trans;
-				tc.Rotation = glm::degrees(glm::eulerAngles(rot));
-				tc.Scale = scale;
+				tc.position = trans;
+				tc.rotation = glm::degrees(glm::eulerAngles(rot));
+				tc.scale = scale;
 			}
 		}
 
@@ -248,9 +248,9 @@ namespace Editor
 				auto& tc = entity.GetComponent<Engine::TransformComponent>();
 				{
 					glm::mat4 parentWorld = glm::mat4(1.0f);
-					if (tc.Parent != entt::null)
+					if (tc.parent != entt::null)
 					{
-						Engine::Entity parent = { tc.Parent, m_Scene };
+						Engine::Entity parent = { tc.parent, m_Scene };
 						parentWorld = parent.GetComponent<Engine::TransformComponent>()
 							.GetWorldMatrix(m_Scene->GetRegistry());
 					}
@@ -269,9 +269,9 @@ namespace Editor
 			{
 				auto& tc = entity.GetComponent<Engine::TransformComponent>();
 				TransformData afterData;
-				afterData.Position = tc.Position;
-				afterData.Rotation = tc.Rotation;
-				afterData.Scale = tc.Scale;
+				afterData.Position = tc.position;
+				afterData.Rotation = tc.rotation;
+				afterData.Scale = tc.scale;
 				after.push_back(afterData);
 			}
 

@@ -230,22 +230,22 @@ namespace Engine
 
 		// Entities
 		const std::vector<Entity>& entities = m_Scene->GetEntities<TransformComponent, MeshComponent>();
-		std::unordered_map<Ref<Material>, std::vector<Entity>> materialGroups;
+		std::unordered_map<Material*, std::vector<Entity>> materialGroups;
 
 		// Group entities by material
 		for (auto entity : entities)
 		{
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
-			if(meshComponent.Mesh == nullptr)
+			if(meshComponent.mesh == nullptr)
 			{
 				continue;
 			}
 
-			Ref<Material> material = meshComponent.Material;
+			Material* material = meshComponent.material;
 
 			if(material == nullptr)
 			{
-				material = Material::GetDefault();
+				material = Material::GetDefault().get();
 			}
 
 			materialGroups[material].push_back(entity);
@@ -261,7 +261,7 @@ namespace Engine
 			for (auto entity : groupEntities)
 			{
 				auto& meshComponent = entity.GetComponent<MeshComponent>();
-				auto& mesh = meshComponent.Mesh;
+				auto& mesh = meshComponent.mesh;
 
 				if (!mesh) continue;
 

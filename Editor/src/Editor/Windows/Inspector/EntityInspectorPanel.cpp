@@ -1,6 +1,6 @@
 #include "EntityInspectorPanel.h"
 #include "Engine/Scene/Components.h"
-#include "Editor/Components/Components.h"
+#include "Editor/Components/Widgets.h"
 #include "Engine/Asset/AssetManager.h"
 
 #include "Editor/Command/CommandManager.h"
@@ -74,7 +74,7 @@ namespace Editor
 	{
 		if (entity.HasComponent<NameComponent>())
 		{
-			std::string& name = entity.GetComponent<NameComponent>().Name;
+			std::string& name = entity.GetComponent<NameComponent>().name;
 
 			char buffer[64];
 			memset(buffer, 0, sizeof(buffer));
@@ -84,41 +84,56 @@ namespace Editor
 
 			ImGui::PushItemWidth(-1);
 			bool tmp = true;
-			ImGui::Checkbox("##Enabled", &entity.GetComponent<IdentityComponent>().Enabled);
+			ImGui::Checkbox("##Enabled", &entity.GetComponent<IdentityComponent>().enabled);
 			ImGui::SameLine();
 			if (ImGui::InputText("##Name", buffer, sizeof(buffer))) { name = std::string(buffer); }
 			ImGui::PopID();
 		}
 
-		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
+
+
+		DrawComponent<TransformComponent>("Transform", entity, [entity](auto& component)
 			{
-				//TODO: Use command for transform changes
+				WidgetResult result;
+				static TransformData s_TransformBefore;
+
 				float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 100, 100.0f);
 				ImGui::Columns(2, "transform", false);
 				ImGui::SetColumnWidth(0, 100);
 				ImGui::SetColumnWidth(1, availWidth);
 
-				ImGui::Text("Position");
-				ImGui::NextColumn();
-				UI::Vec3Field("Position", component.Position);
-				ImGui::NextColumn();
+				auto drawField = [&result](const char* label, glm::vec3& value)
+					{
+						ImGui::Text(label);
+						ImGui::NextColumn();
+						result |= Widget::Vec3Field(label, value);
+						ImGui::NextColumn();
+					};
 
-				ImGui::Text("Rotation");
-				ImGui::NextColumn();
-				UI::Vec3Field("Rotation", component.Rotation);
-				ImGui::NextColumn();
-
-				ImGui::Text("Scale");
-				ImGui::NextColumn();
-				UI::Vec3Field("Scale", component.Scale);
-				ImGui::NextColumn();
+				drawField("Position", component.position);
+				drawField("Rotation", component.rotation);
+				drawField("Scale", component.scale);
 				ImGui::Columns(1);
+
+				if (result.started)
+				{
+					s_TransformBefore = { component.position, component.rotation, component.scale };
+				}
+				else if (result.finished)
+				{
+					TransformData after{ component.position, component.rotation, component.scale };
+
+					if (memcmp(&s_TransformBefore, &after, sizeof(TransformData)) != 0)
+					{
+						CommandManager::ExecuteCommand<TransformEntityCommand>(entity, s_TransformBefore, after);
+					}
+				}
 			});
 
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 			{
-				Ref<Camera> camera = component.Camera;
+				Camera* camera = component.camera;
 
 				//UI::BoolControl("Primary", component.Main);
 				//UI::BoolControl("Fixed Aspect Ratio", component.FixedAspectRatio);
@@ -190,54 +205,54 @@ namespace Editor
 				ImGui::Text("Type");
 				ImGui::NextColumn();
 				std::vector<std::string> lightTypes = { "Point", "Directional", "Spot" };
-				if (UI::EnumField("Type", (int&)component.Type, lightTypes))
+				if (Widget::EnumField("Type", (int&)component.type, lightTypes).changed)
 				{
-					component.Type = (LightType)component.Type;
+					component.type = (LightType)component.type;
 				}
 				ImGui::NextColumn();
 
 
 				ImGui::Text("Color");
 				ImGui::NextColumn();
-				UI::ColorField("##color", component.Color);
+				Widget::ColorField("##color", component.color);
 				ImGui::NextColumn();
 
 				ImGui::Text("Intensity");
 				ImGui::NextColumn();
-				UI::FloatField("Intensity", component.Intensity);
+				Widget::FloatField("Intensity", component.intensity);
 				ImGui::NextColumn();
 
 
-				switch (component.Type)
+				switch (component.type)
 				{
 				case LightType::Directional:
 					break;
 				case LightType::Point:
 					ImGui::Text("Range");
 					ImGui::NextColumn();
-					UI::FloatField("Range", component.Range);
+					Widget::FloatField("Range", component.range);
 					ImGui::NextColumn();
 
 					ImGui::Text("Attenuation");
 					ImGui::NextColumn();
-					UI::Vec3Field("Attenuation", component.Attenuation);
+					Widget::Vec3Field("Attenuation", component.attenuation);
 					ImGui::NextColumn();
 					break;
 
 				case LightType::Spot:
 					ImGui::Text("Inner Angle");
 					ImGui::NextColumn();
-					UI::FloatField("Inner Angle", component.InnerAngle);
+					Widget::FloatField("Inner Angle", component.innerAngle);
 					ImGui::NextColumn();
 
 					ImGui::Text("Outer Angle");
 					ImGui::NextColumn();
-					UI::FloatField("Outer Angle", component.OuterAngle);
+					Widget::FloatField("Outer Angle", component.outerAngle);
 					ImGui::NextColumn();
 
 					ImGui::Text("Attenuation");
 					ImGui::NextColumn();
-					UI::Vec3Field("Attenuation", component.Attenuation);
+					Widget::Vec3Field("Attenuation", component.attenuation);
 					ImGui::NextColumn();
 					break;
 				}
@@ -256,7 +271,7 @@ namespace Editor
 				ImGui::Text("Mesh");
 				ImGui::NextColumn();
 
-				std::string meshButtonText = component.Mesh != nullptr ? std::to_string((uint64_t)component.Mesh->id) : "##Mesh";
+				std::string meshButtonText = component.mesh != nullptr ? std::to_string((uint64_t)component.mesh->id) : "##Mesh";
 				ImGui::Button(meshButtonText.c_str(), ImVec2(availWidth, 0.0f));
 
 				if (ImGui::BeginDragDropTarget())
@@ -266,7 +281,7 @@ namespace Editor
 						Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
 						if (AssetManager::GetAssetType(droppedUUID) == AssetType::Mesh)
 						{
-							component.Mesh = AssetManager::GetAsset<Mesh>(droppedUUID).get();
+							component.mesh = AssetManager::GetAsset<Mesh>(droppedUUID).get();
 						}
 
 					}
@@ -277,7 +292,7 @@ namespace Editor
 
 				ImGui::Text("Material");
 				ImGui::NextColumn();
-				std::string materialButtonText = component.Material != nullptr ? std::to_string((uint64_t)component.Material->id) : "##Material";
+				std::string materialButtonText = component.material != nullptr ? std::to_string((uint64_t)component.material->id) : "##Material";
 				ImGui::Button(materialButtonText.c_str(), ImVec2(availWidth, 0.0f));
 
 				if (ImGui::BeginDragDropTarget())
@@ -287,7 +302,7 @@ namespace Editor
 						Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
 						if (AssetManager::GetAssetType(droppedUUID) == AssetType::Material)
 						{
-							component.Material = AssetManager::GetAsset<Material>(droppedUUID);
+							component.material = AssetManager::GetAsset<Material>(droppedUUID).get();
 						}
 					}
 					ImGui::EndDragDropTarget();
@@ -307,7 +322,7 @@ namespace Editor
 
 				ImGui::NextColumn();
 
-				std::string audioClipButtonText = component.Clip != nullptr ? std::to_string((uint64_t)component.Clip->id) : "##AudioClip";
+				std::string audioClipButtonText = component.clip != nullptr ? std::to_string((uint64_t)component.clip->id) : "##AudioClip";
 				ImGui::Button(audioClipButtonText.c_str(), ImVec2(availWidth, 0.0f));
 				if (ImGui::BeginDragDropTarget())
 				{
@@ -316,7 +331,7 @@ namespace Editor
 						Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
 						if (AssetManager::GetAssetType(droppedUUID) == AssetType::Audio)
 						{
-							component.Clip = AssetManager::GetAsset<AudioClip>(droppedUUID);
+							component.clip = AssetManager::GetAsset<AudioClip>(droppedUUID).get();
 						}
 					}
 					ImGui::EndDragDropTarget();
@@ -325,11 +340,11 @@ namespace Editor
 				ImGui::NextColumn();
 				ImGui::Text("Looping");
 				ImGui::NextColumn();
-				ImGui::Checkbox("Looping", &component.Loop);
+				ImGui::Checkbox("Looping", &component.loop);
 				ImGui::NextColumn();
 				ImGui::Text("Volume");
 				ImGui::NextColumn();
-				UI::FloatField("Volume", component.Volume);
+				Widget::FloatField("Volume", component.volume);
 				ImGui::NextColumn();
 				ImGui::Columns(1);
 
@@ -345,7 +360,7 @@ namespace Editor
 
 				ImGui::Text("Is Active");
 				ImGui::NextColumn();
-				ImGui::Checkbox("Is Active", &component.IsActive);
+				ImGui::Checkbox("Is Active", &component.isActive);
 
 				ImGui::NextColumn();
 				ImGui::Columns(1);

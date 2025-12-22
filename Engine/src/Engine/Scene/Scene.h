@@ -25,7 +25,7 @@ namespace Engine
 			auto view = m_Registry.view<IdentityComponent, Components...>();
 			for (auto entity : view)
 			{
-				if(!includeDisabled && !m_Registry.get<IdentityComponent>(entity).Enabled)
+				if(!includeDisabled && !m_Registry.get<IdentityComponent>(entity).enabled)
 				{
 					continue;
 				}

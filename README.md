@@ -24,7 +24,7 @@ My custom WebGPU based game engine
 
 #### Dependencies
 
-*All dependencies are self contained in this reposity*
+*All dependencies are self contained in this repository*
 
 | Library                                                                          | Purpose                          |
 | -------------------------------------------------------------------------------- | -------------------------------- |

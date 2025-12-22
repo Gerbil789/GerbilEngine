@@ -89,7 +89,7 @@ namespace Editor
 
 		Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
 
-		auto material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::UUID(2306162455903992554));
+		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::UUID(2306162455903992554)).get();
 
 		//Ref<Engine::Texture2D> texture = Engine::TextureImporter::LoadTexture2D("Resources/Editor/icons/skull.png");
 		//auto smileTexture = Engine::AssetManager::GetAsset<Engine::Texture2D>(Engine::UUID(16704251879842279232));
@@ -109,9 +109,9 @@ namespace Editor
 					auto cube = scene->CreateEntity("GridCube");
 					Ref<Engine::Mesh> mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::UUID(8982589797183355654));
 					auto& component = cube.AddComponent<Engine::MeshComponent>();
-					component.Material = material;
-					component.Mesh = mesh.get();
-					cube.GetComponent<Engine::TransformComponent>().Position = { (float)x * 3.0f - (15), (float)y * 3.0f, (float)z * 3.0f - 30};
+					component.material = material;
+					component.mesh = mesh.get();
+					cube.GetComponent<Engine::TransformComponent>().position = { (float)x * 3.0f - (15), (float)y * 3.0f, (float)z * 3.0f - 30};
 				}
 
 			}

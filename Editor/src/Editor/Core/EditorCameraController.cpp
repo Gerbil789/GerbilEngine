@@ -34,7 +34,7 @@ namespace Editor
 			auto entity = EditorContext::Entities().GetPrimary();
 			if (!entity) return false; //TODO: must return bool?
 
-			glm::vec3 focusPoint = entity.GetComponent<TransformComponent>().Position;
+			glm::vec3 focusPoint = entity.GetComponent<TransformComponent>().position;
 			FocusOnPoint(focusPoint); //TODO: does this even work? xd
 		}
 

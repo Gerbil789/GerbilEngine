@@ -1,18 +1,13 @@
-#include "Components.h"
-#include "Engine/Core/Core.h"
+#include "Widgets.h"
 #include "Engine/Asset/AssetManager.h"
 #include <imgui.h>
-#include <imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
-#include <filesystem>
 
-namespace Editor::UI
+namespace Editor::Widget
 {
-	using namespace Engine;
-
-	bool TextureField(const char* label, Ref<Texture2D>& texture)
+	WidgetResult TextureField(const char* label, Engine::Texture2D*& texture)
 	{
-		bool modified = false;
+		WidgetResult result;
 		const ImVec2 buttonSize = ImVec2(64, 64);
 
 		ImGui::PushID(label);
@@ -38,16 +33,15 @@ namespace Editor::UI
 		}
 
 
-
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
 				Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
-				if (AssetManager::GetAssetType(droppedUUID) == AssetType::Texture2D)
+				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Texture2D)
 				{
-					texture = AssetManager::GetAsset<Texture2D>(droppedUUID);
-					modified = true;
+					texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(droppedUUID).get();
+					result.changed = true;
 				}
 
 			}
@@ -59,49 +53,63 @@ namespace Editor::UI
 			if (ImGui::MenuItem("Remove Texture"))
 			{
 				texture = nullptr;
-				modified = true;
+				result.changed = true;
 			}
 			ImGui::EndPopup();
 		}
 
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+
 		ImGui::PopID();
-		return modified;
+		return result;
 	}
 
-	bool IntField(const char* label, int& value)
+	WidgetResult IntField(const char* label, int& value)
 	{
-		bool valueChanged = false;
+		WidgetResult result;
+
 		ImGui::PushID(label);
 
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 		if (ImGui::DragInt("##input", &value, 1.0f, 0, 0, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
 		{
-			valueChanged = true;
+			result.changed = true;
 		}
 
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+
 		ImGui::PopID();
-		return valueChanged;
-		
+		return result;
+
 	}
 
-	bool FloatField(const char* label, float& value)
+	WidgetResult FloatField(const char* label, float& value)
 	{
-		bool valueChanged = false;
+		WidgetResult result;
+
 		ImGui::PushID(label);
 
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 		if (ImGui::DragFloat(label, &value, 0.05f, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
 		{
-			valueChanged = true;
+			result.changed = true;
 		}
+
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
 		
 		ImGui::PopID();
-		return valueChanged;
+		return result;
 	}
 
-	bool FloatSliderField(const char* label, float& value, float min, float max)
+	WidgetResult FloatSliderField(const char* label, float& value, float min, float max)
 	{
-		bool valueChanged = false;
+		WidgetResult result;
 		ImGui::PushID(label);
 
 		float fullWidth = ImGui::GetContentRegionAvail().x;
@@ -111,7 +119,7 @@ namespace Editor::UI
 		ImGui::SetNextItemWidth(sliderWidth);
 		if (ImGui::SliderFloat("##slider", &value, min, max, "", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat | ImGuiSliderFlags_NoInput))
 		{
-			valueChanged = true;
+			result.changed = true;
 		}
 
 		ImGui::SameLine();
@@ -120,16 +128,20 @@ namespace Editor::UI
 		if (ImGui::InputFloat("##input", &value, 0.0f, 0.0f, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AlwaysOverwrite | ImGuiInputTextFlags_ParseEmptyRefVal))
 		{
 			value = glm::clamp(value, min, max);
-			valueChanged = true;
+			result.changed = true;
 		}
 
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+
 		ImGui::PopID();
-		return valueChanged;
+		return result;
 	}
 
-	bool Vec2Field(const char* label, glm::vec2& values)
+	WidgetResult Vec2Field(const char* label, glm::vec2& value)
 	{
-		bool valueChanged = false;
+		WidgetResult result;
 		ImGui::PushID(label);
 
 		//TODO: this is not perfectly aligned with other fields...
@@ -142,67 +154,61 @@ namespace Editor::UI
 		ImGui::Text("X");
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(fieldWidth);
-		if (ImGui::DragFloat("##X", &values.x, 0.05f, 0.0f, 0.0f, "%.2f"))
+		if (ImGui::DragFloat("##X", &value.x, 0.05f, 0.0f, 0.0f, "%.2f"))
 		{
-			valueChanged = true; 
+			result.changed = true;
 		}
 
 		ImGui::SameLine();
 		ImGui::Text("Y");
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(fieldWidth);
-		if (ImGui::DragFloat("##Y", &values.y, 0.05f, 0.0f, 0.0f, "%.2f"))
+		if (ImGui::DragFloat("##Y", &value.y, 0.05f, 0.0f, 0.0f, "%.2f"))
 		{
-			valueChanged = true;
+			result.changed = true;
 		}
+
+		result.active |= ImGui::IsItemActive();
+		result.started |= ImGui::IsItemActivated();
+		result.finished |= ImGui::IsItemDeactivatedAfterEdit();
 		
 		ImGui::PopID();
-		return valueChanged;
+		return result;
 	}
 
-	bool Vec3Field(const char* label, glm::vec3& values)
+	WidgetResult Vec3Field(const char* label, glm::vec3& value)
 	{
-		bool valueChanged = false;
+		WidgetResult result;
 		ImGui::PushID(label);
 
 		float itemSpacing = ImGui::GetStyle().ItemSpacing.x;
 		float fullWidth = ImGui::GetContentRegionAvail().x - itemSpacing;
 
 		float labelWidth = ImGui::CalcTextSize("X").x;       
-
-		// Calculate the width for each drag float field, ensuring space for labels and padding
 		float inputWidth = (fullWidth - (labelWidth * 3) - (itemSpacing * 4)) / 3.0f;
 
-		// X component
-		ImGui::Text("X");
-		ImGui::SameLine();
-		ImGui::PushItemWidth(inputWidth);
-		valueChanged |= ImGui::DragFloat("##X", &values.x, 0.1f);
-		ImGui::PopItemWidth();
+		auto handleFloat = [&](const char* id, float& v)
+			{
+				ImGui::Text(id);
+				ImGui::SameLine();
+				ImGui::PushItemWidth(inputWidth);
+				result.changed = ImGui::DragFloat(("##" + std::string(id)).c_str(), &v, 0.1f);
+				ImGui::PopItemWidth();
 
-		ImGui::SameLine();
+				result.active |= ImGui::IsItemActive();
+				result.started |= ImGui::IsItemActivated();
+				result.finished |= ImGui::IsItemDeactivatedAfterEdit();
+			};
 
-		// Y component
-		ImGui::Text("Y");
+		handleFloat("X", value.x);
 		ImGui::SameLine();
-		ImGui::PushItemWidth(inputWidth);
-		valueChanged |= ImGui::DragFloat("##Y", &values.y, 0.1f);
-		ImGui::PopItemWidth();
-
+		handleFloat("Y", value.y);
 		ImGui::SameLine();
-
-		// Z component
-		ImGui::Text("Z");
-		ImGui::SameLine();
-		ImGui::PushItemWidth(inputWidth);
-		valueChanged |= ImGui::DragFloat("##Z", &values.z, 0.1f);
-		ImGui::PopItemWidth();
+		handleFloat("Z", value.z);
 
 		ImGui::PopID();
-		return valueChanged;
+		return result;
 	}
-
-	
 
 	bool FloatSliderControl(const char* label, float& value, float min, float max)
 	{
@@ -219,14 +225,9 @@ namespace Editor::UI
 		return valueChanged;
 	}
 
-	void StringControl(const char* label, std::string& value, const char* resetValue)
+	WidgetResult EnumField(const char* label, int& value, const std::vector<std::string>& options)
 	{
-		ASSERT(false, "StringControl Not implemented")
-	}
-
-	bool EnumField(const char* label, int& value, const std::vector<std::string>& options)
-	{
-		bool valueChanged = false;
+		WidgetResult result;
 		ImGui::PushID(label);
 
 		if (ImGui::BeginCombo("##value", options[value].c_str()))
@@ -237,7 +238,7 @@ namespace Editor::UI
 				if (ImGui::Selectable(options[i].c_str(), isSelected))
 				{
 					value = i;
-					valueChanged = true;
+					result.changed = true;
 				}
 				if (isSelected)
 					ImGui::SetItemDefaultFocus();
@@ -245,13 +246,17 @@ namespace Editor::UI
 			ImGui::EndCombo();
 		}
 
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+
 		ImGui::PopID();
-		return valueChanged;
+		return result;
 	}
 
-	bool EnumField(const char* label, int& value, const std::vector<std::filesystem::path>& options)
+	WidgetResult EnumField(const char* label, int& value, const std::vector<std::filesystem::path>& options)
 	{
-		bool valueChanged = false;
+		WidgetResult result;
 		ImGui::PushID(label);
 
 		if (ImGui::BeginCombo("##value", options[value].stem().string().c_str()))
@@ -262,7 +267,7 @@ namespace Editor::UI
 				if (ImGui::Selectable(options[i].stem().string().c_str(), isSelected))
 				{
 					value = i;
-					valueChanged = true;
+					result.changed = true;
 				}
 				if (isSelected)
 					ImGui::SetItemDefaultFocus();
@@ -270,13 +275,17 @@ namespace Editor::UI
 			ImGui::EndCombo();
 		}
 
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+
 		ImGui::PopID();
-		return valueChanged;
+		return result;
 	}
 
-	bool ColorField(const char* label, glm::vec4& color)
+	WidgetResult ColorField(const char* label, glm::vec4& color)
 	{
-		bool valueChanged = false;
+		WidgetResult result;
 
 		ImGui::PushID(label);
 		ImGui::BeginGroup(); 
@@ -288,19 +297,23 @@ namespace Editor::UI
 
 		if (ImGui::BeginPopup("##ColorPicker"))
 		{
-			valueChanged |= ImGui::ColorPicker4("##Picker", glm::value_ptr(color), ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_AlphaBar);
+			result.changed |= ImGui::ColorPicker4("##Picker", glm::value_ptr(color), ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_AlphaBar);
 			ImGui::EndPopup();
 		}
+
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
 
 		ImGui::EndGroup();
 		ImGui::PopID();
 
-		return valueChanged;
+		return result;
 	}
 
-	bool ColorField(const char* label, glm::vec3& color)
+	WidgetResult ColorField(const char* label, glm::vec3& color)
 	{
-		bool valueChanged = false;
+		WidgetResult result;
 
 		ImGui::PushID(label);
 		ImGui::BeginGroup();  // Group the controls to keep them together
@@ -313,13 +326,18 @@ namespace Editor::UI
 
 		if (ImGui::BeginPopup("##ColorPicker"))
 		{
-			valueChanged |= ImGui::ColorPicker3("##Picker", glm::value_ptr(color), ImGuiColorEditFlags_DisplayRGB);
+			result.changed |= ImGui::ColorPicker3("##Picker", glm::value_ptr(color), ImGuiColorEditFlags_DisplayRGB);
 			ImGui::EndPopup();
 		}
 
 		ImGui::EndGroup();
+
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+
 		ImGui::PopID();
 
-		return valueChanged;
+		return result;
 	}
 }

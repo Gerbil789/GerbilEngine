@@ -50,7 +50,7 @@ namespace Engine
 		auto view = m_Registry.view<IdentityComponent>();
 		for (auto entity : view)
 		{
-			if (view.get<IdentityComponent>(entity).ID == uuid)
+			if (view.get<IdentityComponent>(entity).id == uuid)
 				return Entity{ entity, this };
 		}
 		return Entity();

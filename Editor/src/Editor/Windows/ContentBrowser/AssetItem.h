@@ -46,7 +46,7 @@ namespace Editor
 			std::string ext = path.extension().string();
 			Icon = EditorIcons::GetIcon(GetIconForExtension(ext));
 
-			if (ext == ".png")
+			if (ext == ".png" || ext == ".jpg")
 			{
 				Thumbnail = Engine::AssetManager::GetAsset<Engine::Texture2D>(uuid)->GetTextureView();
 			}
@@ -54,7 +54,7 @@ namespace Editor
 			{
 				auto thumbnailRenderer = ThumbnailRenderer();
 				thumbnailRenderer.Initialize();
-				thumbnailRenderer.SetMaterial(Engine::AssetManager::GetAsset<Engine::Material>(uuid));
+				thumbnailRenderer.SetMaterial(Engine::AssetManager::GetAsset<Engine::Material>(uuid).get());
 				Thumbnail = thumbnailRenderer.Render();
 			}
 		}

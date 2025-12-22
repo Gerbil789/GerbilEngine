@@ -1,6 +1,6 @@
 #include "enginepch.h"
 #include "SceneHierarchyWindow.h"
-#include "Editor/Components/Components.h"
+#include "Editor/Components/Widgets.h"
 #include "Engine/Scene/Components.h"
 #include "Editor/Components/ScopedStyle.h"
 #include "Engine/Core/Input.h"
@@ -42,7 +42,7 @@ namespace Editor
 		for(size_t i = 0; i < entities.size(); ++i)
 		{
 			Entity entity = entities[i];
-			if(entity.GetComponent<TransformComponent>().Parent == Entity::Null())
+			if(entity.GetComponent<TransformComponent>().parent == Entity::Null())
 			{
 				DrawReorderDropTarget(Engine::Entity::Null(), i);
 				DrawEntityNode(entity);
@@ -133,7 +133,7 @@ namespace Editor
 
 		if (opened)
 		{
-			entt::entity child = entity.GetComponent<TransformComponent>().FirstChild;
+			entt::entity child = entity.GetComponent<TransformComponent>().firstChild;
 			size_t i = 0;
 
 			while (child != entt::null)
@@ -141,7 +141,7 @@ namespace Editor
 				Engine::Entity childEntity = { child, m_Scene };
 				DrawReorderDropTarget(entity, i);
 				DrawEntityNode(childEntity);
-				child = childEntity.GetComponent<TransformComponent>().NextSibling;
+				child = childEntity.GetComponent<TransformComponent>().nextSibling;
 				i++;
 			}
 			DrawReorderDropTarget(entity, i);

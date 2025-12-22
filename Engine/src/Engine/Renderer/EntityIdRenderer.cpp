@@ -106,7 +106,7 @@ namespace Engine
 		for (Entity& entity : entities)
 		{
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
-			auto& mesh = meshComponent.Mesh;
+			auto& mesh = meshComponent.mesh;
 
 			if (!mesh) continue;
 

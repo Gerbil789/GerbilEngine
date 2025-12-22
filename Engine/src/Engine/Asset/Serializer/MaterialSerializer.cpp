@@ -236,7 +236,7 @@ namespace Engine
 				uint64_t texID;
 				if (DeserializeValue(node, texID))
 				{
-					auto texture = AssetManager::GetAsset<Texture2D>(UUID(texID));
+					auto texture = AssetManager::GetAsset<Texture2D>(UUID(texID)).get();
 					if (texture)
 						material->SetTexture(name, texture);
 					else

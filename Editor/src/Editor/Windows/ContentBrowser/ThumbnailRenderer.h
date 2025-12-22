@@ -13,7 +13,6 @@ public:
 	void Initialize()
 	{
 		Engine::Scene* scene = new Engine::Scene();
-
 		Engine::Camera* camera = new Engine::Camera();
 		camera->SetBackgroundType(Engine::Camera::BackgroundType::Color);
 		camera->SetViewportSize({ 64.0f, 64.0f });
@@ -24,16 +23,16 @@ public:
 
 		m_Entity = scene->CreateEntity("PreviewEntity");
 		auto& mc = m_Entity.AddComponent<Engine::MeshComponent>();
-		mc.Mesh = m_PreviewMesh;
+		mc.mesh = m_PreviewMesh;
 
 		m_Renderer = new Engine::Renderer(64, 64);
 		m_Renderer->SetCamera(camera);
 		m_Renderer->SetScene(scene);
 	}
 
-	void SetMaterial(Ref<Engine::Material> material)
+	void SetMaterial(Engine::Material* material)
 	{
-		m_Entity.GetComponent<Engine::MeshComponent>().Material = material;
+		m_Entity.GetComponent<Engine::MeshComponent>().material = material;
 	}
 
 	wgpu::TextureView Render()

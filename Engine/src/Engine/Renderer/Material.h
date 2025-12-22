@@ -29,8 +29,8 @@ namespace Engine
 		TextureFilter GetTextureFilter() const { return m_TextureFilter; }
 		TextureWrap GetTextureWrap() const { return m_TextureWrap; }
 
-		void SetTexture(const std::string& name, Ref<Texture2D> texture);
-		Ref<Texture2D> GetTexture(const std::string& name) const
+		void SetTexture(const std::string& name, Texture2D* texture);
+		Texture2D* GetTexture(const std::string& name) const
 		{
 			auto it = m_Textures.find(name);
 			if (it != m_Textures.end())
@@ -53,7 +53,7 @@ namespace Engine
 		Shader* m_Shader;
 
 		std::vector<uint8_t> m_UniformData; // paramerers data packed according to shader layout
-		std::unordered_map<std::string, Ref<Texture2D>> m_Textures; // this is for engine management, the webgpu binds it once and does not need it afterwards
+		std::unordered_map<std::string, Texture2D*> m_Textures; // this is for engine management, the webgpu binds it once and does not need it afterwards
 		wgpu::BindGroup m_BindGroup;
 		wgpu::Buffer m_UniformBuffer; 
 

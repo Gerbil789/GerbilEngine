@@ -67,12 +67,12 @@ namespace Engine
 		std::memcpy(m_UniformData.data() + it->offset, &value, sizeof(glm::vec4));
 	}
 
-	void Material::SetTexture(const std::string& name, Ref<Texture2D> texture)
+	void Material::SetTexture(const std::string& name, Texture2D* texture)
 	{
 		if (!texture)
 		{
 			LOG_WARNING("Material::SetTexture - Texture is null!");
-			texture = Texture2D::GetDefault();
+			texture = Texture2D::GetDefault().get();
 		}
 
 		const auto materialBindings = GetMaterialBindings(m_Shader->GetSpecification());
@@ -123,7 +123,7 @@ namespace Engine
 				// check if texture is set for this binding
 				if (m_Textures.find(binding.name) == m_Textures.end())
 				{
-					m_Textures[binding.name] = Texture2D::GetDefault();
+					m_Textures[binding.name] = Texture2D::GetDefault().get();
 				}
 
 				auto tex = m_Textures[binding.name];

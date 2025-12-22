@@ -17,8 +17,7 @@ namespace Editor
   class TransformEntityCommand : public ICommand
   {
   public:
-    TransformEntityCommand(Engine::Entity entity, const TransformData& before, const TransformData& after)
-      : m_Entity(entity), m_Before(before), m_After(after) {}
+    TransformEntityCommand(Engine::Entity entity, const TransformData& before, const TransformData& after) : m_Entity(entity), m_Before(before), m_After(after) {}
 
     void Execute() override
     {
@@ -34,9 +33,9 @@ namespace Editor
     void Apply(const TransformData& data)
     {
       auto& tc = m_Entity.GetComponent<Engine::TransformComponent>();
-      tc.Position = data.Position;
-      tc.Rotation = data.Rotation;
-      tc.Scale = data.Scale;
+      tc.position = data.Position;
+      tc.rotation = data.Rotation;
+      tc.scale = data.Scale;
     }
 
   private:
@@ -67,9 +66,9 @@ namespace Editor
       for (size_t i = 0; i < m_Entities.size(); i++)
       {
         auto& tc = m_Entities[i].GetComponent<Engine::TransformComponent>();
-        tc.Position = data[i].Position;
-        tc.Rotation = data[i].Rotation;
-        tc.Scale = data[i].Scale;
+        tc.position = data[i].Position;
+        tc.rotation = data[i].Rotation;
+        tc.scale = data[i].Scale;
       }
     }
 

@@ -61,15 +61,15 @@ namespace Engine
 
 		// Identity
 		auto& identityComponent = entity.GetComponent<IdentityComponent>();
-		auto& id = identityComponent.ID;
-		auto& enabled = identityComponent.Enabled;
+		auto& id = identityComponent.id;
+		auto& enabled = identityComponent.enabled;
 
 		out << YAML::Key << "ID" << YAML::Value << id;
 		out << YAML::Key << "Enabled" << YAML::Value << enabled;
 
 		// Name
 		auto& nameComponent = entity.GetComponent<NameComponent>();
-		out << YAML::Key << "Name" << YAML::Value << nameComponent.Name;
+		out << YAML::Key << "Name" << YAML::Value << nameComponent.name;
 
 		// Transform
 		auto& transformComponent = entity.GetComponent<TransformComponent>();
@@ -77,9 +77,9 @@ namespace Engine
 		out << YAML::Key << "Transform";
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "Translation" << YAML::Value << transformComponent.Position;
-		out << YAML::Key << "Rotation" << YAML::Value << transformComponent.Rotation;
-		out << YAML::Key << "Scale" << YAML::Value << transformComponent.Scale;
+		out << YAML::Key << "Translation" << YAML::Value << transformComponent.position;
+		out << YAML::Key << "Rotation" << YAML::Value << transformComponent.rotation;
+		out << YAML::Key << "Scale" << YAML::Value << transformComponent.scale;
 
 		out << YAML::EndMap; // Transform
 
@@ -87,8 +87,8 @@ namespace Engine
 		if(entity.HasComponent<MeshComponent>())
 		{
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
-			auto& mesh = meshComponent.Mesh;
-			auto& material = meshComponent.Material;
+			auto& mesh = meshComponent.mesh;
+			auto& material = meshComponent.material;
 
 			out << YAML::Key << "MeshComponent";
 			out << YAML::BeginMap;
@@ -196,14 +196,14 @@ namespace Engine
 
 				// Identity component
 				auto& identity = entity.GetComponent<IdentityComponent>();
-				identity.ID = uuid;
-				identity.Enabled = enabled;
+				identity.id = uuid;
+				identity.enabled = enabled;
 
 				// Name
 				if (entityNode["Name"])
 				{
 					auto& nameComp = entity.GetComponent<NameComponent>();
-					nameComp.Name = entityNode["Name"].as<std::string>();
+					nameComp.name = entityNode["Name"].as<std::string>();
 				}
 
 				// Transform
@@ -213,13 +213,13 @@ namespace Engine
 					auto transformNode = entityNode["Transform"];
 
 					if (transformNode["Translation"])
-						transform.Position = ReadVec3(transformNode["Translation"]);
+						transform.position = ReadVec3(transformNode["Translation"]);
 
 					if (transformNode["Rotation"])
-						transform.Rotation = ReadVec3(transformNode["Rotation"]);
+						transform.rotation = ReadVec3(transformNode["Rotation"]);
 
 					if (transformNode["Scale"])
-						transform.Scale = ReadVec3(transformNode["Scale"]);
+						transform.scale = ReadVec3(transformNode["Scale"]);
 				}
 
 				// Mesh
@@ -231,13 +231,13 @@ namespace Engine
 					if (meshNode["Mesh"])
 					{
 						uint64_t meshID = meshNode["Mesh"].as<uint64_t>();
-						meshComp.Mesh = AssetManager::GetAsset<Mesh>(meshID).get();
+						meshComp.mesh = AssetManager::GetAsset<Mesh>(meshID).get();
 					}
 
 					if (meshNode["Material"])
 					{
 						uint64_t materialID = meshNode["Material"].as<uint64_t>();
-						meshComp.Material = AssetManager::GetAsset<Material>(materialID);
+						meshComp.material = AssetManager::GetAsset<Material>(materialID).get();
 					}
 				}
 

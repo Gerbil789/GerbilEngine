@@ -60,12 +60,12 @@ namespace Engine
 		}
 
 		void SetName(const std::string& name) { GetComponent<NameComponent>() = name; }
-		const std::string& GetName() const { return GetComponent<NameComponent>().Name; }
+		const std::string& GetName() const { return GetComponent<NameComponent>().name; }
 
-		void SetActive(bool active) { GetComponent<IdentityComponent>().Enabled = active; }
-		const bool IsActive() const { return GetComponent<IdentityComponent>().Enabled; }
+		void SetActive(bool active) { GetComponent<IdentityComponent>().enabled = active; }
+		const bool IsActive() const { return GetComponent<IdentityComponent>().enabled; }
 
-		UUID GetUUID() { return GetComponent<IdentityComponent>().ID; }
+		UUID GetUUID() { return GetComponent<IdentityComponent>().id; }
 
 		void SetParent(Entity newParent, bool keepWorld = true);
 		void RemoveParent(bool keepWorld = true);
@@ -95,24 +95,24 @@ namespace Engine
 			if (HasComponent<IdentityComponent>())
 			{
 				const auto& idc = GetComponent<IdentityComponent>();
-				ss << "UUID: " << idc.ID << "\n";
-				ss << "Active: " << (idc.Enabled ? "true" : "false") << "\n";
+				ss << "UUID: " << idc.id << "\n";
+				ss << "Active: " << (idc.enabled ? "true" : "false") << "\n";
 			}
 
 			if (HasComponent<NameComponent>())
 			{
-				ss << "Name: " << GetComponent<NameComponent>().Name << "\n";
+				ss << "Name: " << GetComponent<NameComponent>().name << "\n";
 			}
 
 			// Hierarchy
 			if (HasComponent<TransformComponent>())
 			{
 				const auto& tc = GetComponent<TransformComponent>();
-				if (tc.Parent != entt::null)
+				if (tc.parent != entt::null)
 				{
-					Entity parent(tc.Parent, m_Scene);
+					Entity parent(tc.parent, m_Scene);
 					ss << "Parent: "
-						<< (parent.HasComponent<NameComponent>() ? parent.GetName() : std::to_string((uint32_t)tc.Parent))
+						<< (parent.HasComponent<NameComponent>() ? parent.GetName() : std::to_string((uint32_t)tc.parent))
 						<< "\n";
 				}
 				else

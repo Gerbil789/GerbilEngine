@@ -1,6 +1,6 @@
 #include "MaterialInspectorPanel.h"
 #include "Engine/Renderer/Shader.h"
-#include "Editor/Components/Components.h"
+#include "Editor/Components/Widgets.h"
 #include <imgui.h>
 
 #include "Engine/Asset/AssetManager.h"
@@ -105,7 +105,7 @@ namespace Editor
 							float value;
 							auto data = material->GetUniformData();
 							memcpy(&value, data.data() + param.offset, sizeof(float));
-							if (UI::FloatField(param.name.c_str(), value))
+							if (Widget::FloatField(param.name.c_str(), value).changed)
 								material->SetFloat(param.name, value);
 							break;
 						}
@@ -115,7 +115,7 @@ namespace Editor
 							glm::vec4 value;
 							auto data = material->GetUniformData();
 							memcpy(&value, data.data() + param.offset, sizeof(glm::vec4));
-							if (UI::ColorField(param.name.c_str(), value))
+							if (Widget::ColorField(param.name.c_str(), value).changed)
 								material->SetVec4(param.name, value);
 							break;
 						}
@@ -133,9 +133,12 @@ namespace Editor
 
 					ImGui::TableSetColumnIndex(1);
 
-					Ref<Engine::Texture2D> texture = material->GetTexture(binding.name);
-					if (UI::TextureField(("##" + binding.name).c_str(), texture))
+					Engine::Texture2D* texture = material->GetTexture(binding.name);
+					if (Widget::TextureField(("##" + binding.name).c_str(), texture).changed)
+					{
 						material->SetTexture(binding.name, texture);
+					}
+
 				}
 			}
 
