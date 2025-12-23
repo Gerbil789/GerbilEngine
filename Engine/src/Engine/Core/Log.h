@@ -1,17 +1,10 @@
 #pragma once
 
-#include "Engine/Core/Core.h"
 #include "Engine/Core/UUID.h"
-#include <glm/glm.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
 #include <filesystem>
 #include <string>
 #include <webgpu/webgpu.h>
-#include <spdlog/spdlog.h>
-#include <spdlog/fmt/ostr.h>
-
-//TODO: replace fmt with std::format ?
+#include <format>
 
 namespace Engine
 {
@@ -19,44 +12,59 @@ namespace Engine
 	{
 	public:
 		static void Initialize();
-		inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
+		static void Shutdown();
 
-	private:
-		static std::shared_ptr<spdlog::logger> s_CoreLogger;
+		static void Trace(const std::string& message);
+		static void Info(const std::string& message);
+		static void Warn(const std::string& message);
+		static void Error(const std::string& message);
+		static void Critical(const std::string& message);
 	};
 }
 
 template <>
-struct fmt::formatter<std::filesystem::path> : fmt::formatter<std::string> {
-	template <typename FormatContext>
-	auto format(const std::filesystem::path& path, FormatContext& ctx) {
-		return fmt::formatter<std::string>::format(path.string(), ctx);
-	}
-};
-
-template <>
-struct fmt::formatter<WGPUStringView> : fmt::formatter<std::string> {
-	template <typename FormatContext>
-	auto format(const WGPUStringView& strView, FormatContext& ctx) {
-		std::string s = (strView.data && strView.length > 0) ?
-			std::string(strView.data, strView.length) :
-			std::string{};
-		return fmt::formatter<std::string>::format(s, ctx);
-	}
-};
-
-template <>
-struct fmt::formatter<Engine::UUID> : fmt::formatter<uint64_t>
+struct std::formatter<std::filesystem::path, char> : std::formatter<std::string_view, char>
 {
-	template <typename FormatContext>
-	auto format(const Engine::UUID& uuid, FormatContext& ctx)
+	auto format(const std::filesystem::path& p, format_context& ctx) const
 	{
-		return fmt::formatter<uint64_t>::format(static_cast<uint64_t>(uuid), ctx);
+		return std::formatter<std::string_view, char>::format(
+			p.string(), ctx
+		);
 	}
 };
 
-#define LOG_TRACE(...)		::Engine::Log::GetCoreLogger()->trace(__VA_ARGS__)
-#define LOG_INFO(...)			::Engine::Log::GetCoreLogger()->info(__VA_ARGS__)
-#define LOG_WARNING(...)  ::Engine::Log::GetCoreLogger()->warn(__VA_ARGS__)
-#define LOG_ERROR(...)		::Engine::Log::GetCoreLogger()->error(__VA_ARGS__)
-#define LOG_CRITICAL(...) ::Engine::Log::GetCoreLogger()->critical(__VA_ARGS__)
+template <>
+struct std::formatter<WGPUStringView, char>
+	: std::formatter<std::string_view, char>
+{
+	auto format(const WGPUStringView& strView, format_context& ctx) const
+	{
+		std::string_view sv =
+			(strView.data && strView.length > 0)
+			? std::string_view(strView.data, strView.length)
+			: std::string_view{};
+
+		return std::formatter<std::string_view, char>::format(sv, ctx);
+	}
+};
+
+template <>
+struct std::formatter<Engine::UUID, char>
+	: std::formatter<uint64_t, char>
+{
+	auto format(const Engine::UUID& uuid, format_context& ctx) const
+	{
+		return std::formatter<uint64_t, char>::format(
+			static_cast<uint64_t>(uuid),
+			ctx
+		);
+	}
+};
+
+#define LOG_TRACE(...)		::Engine::Log::Trace(std::format(__VA_ARGS__))
+#define LOG_INFO(...)			::Engine::Log::Info(std::format(__VA_ARGS__))
+#define LOG_WARNING(...)  ::Engine::Log::Warn(std::format(__VA_ARGS__))
+#define LOG_ERROR(...)		::Engine::Log::Error(std::format(__VA_ARGS__))
+#define LOG_CRITICAL(...) ::Engine::Log::Critical(std::format(__VA_ARGS__))
+
+

@@ -4,6 +4,7 @@
 #include "Engine/Core/Project.h"
 #include "Editor/Core/EditorIcons.h"
 #include "Engine/Core/Time.h"
+#include "Engine/Utils/Path.h"
 //tmp
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/Importer/MaterialImporter.h"
@@ -207,5 +208,15 @@ namespace Editor
 		{
 			Engine::AssetManager::OnEvent(e);
 		}
+	}
+
+	EditorApp CreateApp(Engine::ApplicationCommandLineArgs args)
+	{
+		Engine::ApplicationSpecification spec;
+		spec.title = "Gerbil Editor";
+		spec.workingDirectory = GetExecutableDir();
+		spec.args = args;
+
+		return EditorApp(spec);
 	}
 }

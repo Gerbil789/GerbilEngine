@@ -2,7 +2,6 @@
 
 #include <string>
 #include <filesystem>
-#include <optional>
 
 namespace Engine 
 {

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Engine/Core/Log.h"
+#include "Engine/Core/Core.h"
 #include <webgpu/webgpu.hpp>
 
 //TODO: rename this file to something better, its practicaly just toString() functions for webgpu enums
 
 namespace Engine
 {
-	static inline wgpu::VertexFormat StringToVertexFormat(const std::string& str)
+	inline static wgpu::VertexFormat StringToVertexFormat(const std::string& str)
 	{
 		static const std::unordered_map<std::string, wgpu::VertexFormat> formatMap = {
 			{ "vec1f", wgpu::VertexFormat::Float32 },
@@ -49,7 +49,7 @@ namespace Engine
 		return wgpu::VertexFormat::Force32;
 	}
 
-	static inline uint32_t GetVertexFormatSize(wgpu::VertexFormat format)
+	inline static uint32_t GetVertexFormatSize(wgpu::VertexFormat format)
 	{
 		switch (format)
 		{
@@ -91,8 +91,9 @@ namespace Engine
 		case wgpu::VertexFormat::Sint32x3:  return 12;
 		case wgpu::VertexFormat::Sint32x4:  return 16;
 
+		default:
 			LOG_ERROR("Unknown vertex format size");
-		default: return 0;
+			return 0;
 		}
 	}
 
@@ -111,7 +112,7 @@ namespace Engine
 		return wgpu::ShaderStage(result);
 	}
 
-	static inline std::string VertexFormatToString(wgpu::VertexFormat format)
+	inline static std::string VertexFormatToString(wgpu::VertexFormat format)
 	{
 		switch (format)
 		{
@@ -149,7 +150,7 @@ namespace Engine
 		}
 	}
 
-	static const std::string BackendTypeToString(wgpu::BackendType type)
+	inline static const std::string BackendTypeToString(wgpu::BackendType type)
 	{
 		switch (type)
 		{

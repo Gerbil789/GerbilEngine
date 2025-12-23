@@ -8,6 +8,6 @@ namespace Editor
 	class AudioInspectorPanel
 	{
 	public:
-		void Draw(Ref<Engine::AudioClip> audioClip);
+		void Draw(Engine::AudioClip* audioClip);
 	};
 }

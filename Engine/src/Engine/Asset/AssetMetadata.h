@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Engine/Core/UUID.h"
-#include "Engine/Core/Log.h"
 #include <filesystem>
 
 namespace Engine
@@ -31,7 +30,6 @@ namespace Engine
 		if (auto it = extensionToType.find(lower); it != extensionToType.end())
 			return it->second;
 
-		LOG_WARNING("Unknown asset extension: {}", extension);
 		return AssetType::Unknown;
 	}
 

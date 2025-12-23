@@ -11,7 +11,7 @@ namespace Editor
 		std::vector<float> Max;
 	};
 
-	WaveformData GenerateWaveformFromFile(const Ref<Engine::AudioClip> audioClip, uint32_t resolution)
+	WaveformData GenerateWaveformFromFile(const Engine::AudioClip* audioClip, uint32_t resolution)
 	{
 		WaveformData waveformData;
 		waveformData.Min.resize(resolution);
@@ -21,7 +21,7 @@ namespace Editor
 
 	}
 
-	void AudioInspectorPanel::Draw(Ref<Engine::AudioClip> audioClip)
+	void AudioInspectorPanel::Draw(Engine::AudioClip* audioClip)
 	{
 		if (!audioClip)
 		{

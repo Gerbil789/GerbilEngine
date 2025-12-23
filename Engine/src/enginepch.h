@@ -1,3 +1,6 @@
+#define NOMINMAX
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include <memory>
 #include <utility>
 #include <algorithm>
@@ -6,8 +9,8 @@
 #include <sstream>
 #include <filesystem>
 #include <vector>
+#include <array>
 #include <unordered_map>
 #include <unordered_set>
-
-#include "Engine/Core/Log.h"
-#include "Engine/Debug/Instrumentor.h"
+#include <fstream>
+#include <cstdint>

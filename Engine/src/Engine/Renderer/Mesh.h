@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Asset/Asset.h"
+#include <glm/glm.hpp>
 #include <webgpu/webgpu.hpp>
 
 namespace Engine

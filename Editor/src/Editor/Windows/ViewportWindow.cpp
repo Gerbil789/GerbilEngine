@@ -12,6 +12,8 @@
 
 #include <imgui.h>
 #include <ImGuizmo.h>
+
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
@@ -164,8 +166,8 @@ namespace Editor
 		const glm::mat4& cameraProjection = m_CameraController.GetCamera().GetProjectionMatrix();
 		glm::mat4 cameraView = m_CameraController.GetCamera().GetViewMatrix();
 
-		auto& tc = selectedEntity.GetComponent<Engine::TransformComponent>();
-		glm::mat4 worldTransform = tc.GetWorldMatrix(m_Scene->GetRegistry());
+		auto& transformComponent = selectedEntity.GetComponent<Engine::TransformComponent>();
+		glm::mat4 worldTransform = transformComponent.GetWorldMatrix(m_Scene->GetRegistry());
 
 		float* snapValue = nullptr;
 		if(Engine::Input::IsKeyPressed(Engine::Key::LeftControl))

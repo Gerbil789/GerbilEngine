@@ -1,7 +1,7 @@
 workspace "GerbilEngine"
-	architecture "x64"
-	startproject "Editor"
-	configurations { "Debug", "Release" }
+architecture "x64"
+startproject "Editor"
+configurations { "Debug", "Release" }
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
@@ -13,6 +13,7 @@ group "Dependencies"
 	include "vendor/imgui"
 	include "vendor/yaml-cpp"
 	include "vendor/miniaudio"
+	include "vendor/spdlog"
 
 group ""
 	include "Engine"

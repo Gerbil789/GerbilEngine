@@ -2,6 +2,7 @@
 
 #include "Engine/Asset/Asset.h"
 
+
 namespace Engine
 {
 	class AudioClip : public Asset
@@ -11,14 +12,12 @@ namespace Engine
 
 		uint32_t GetChannels() const { return m_Channels; }
 		uint32_t GetSampleRate() const { return m_SampleRate; }
-		uint64_t GetTotalFrames() const { return m_FrameCount; }
+		uint64_t GetTotalFrames() const;
 		const std::vector<float>& GetPCMFrames() const { return m_PCMFrames; }
 
 	private:
 		uint32_t m_Channels = 0;  // 1 = mono, 2 = stereo
 		uint32_t m_SampleRate = 0;
-		uint64_t m_FrameCount = 0;
 		std::vector<float> m_PCMFrames;
-
 	};
 }

@@ -31,7 +31,7 @@ namespace Engine
 		auto binding = GetBinding(GetMaterialBindings(m_Shader->GetSpecification()), "uMaterialUniforms");
 		if (binding.type != BindingType::UniformBuffer)
 		{
-			LOG_WARNING("Material::SetFloat - Parameter '{}' is not a uniform buffer!", "uMaterialUniforms");
+			LOG_WARNING("Material::SetFloat - Parameter 'uMaterialUniforms' is not a uniform buffer!");
 			return;
 		}
 

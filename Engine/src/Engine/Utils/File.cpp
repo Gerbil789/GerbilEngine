@@ -1,13 +1,12 @@
 #include "enginepch.h"
 #include "File.h"
+#include "Engine/Core/Log.h"
 #include <portable-file-dialogs.h>
 
 namespace Engine
 {
 	bool ReadFile(const std::filesystem::path& path, std::string& outData)
 	{
-		ENGINE_PROFILE_FUNCTION();
-
 		std::ifstream in(path, std::ios::in | std::ios::binary);
 		if (!in)
 		{

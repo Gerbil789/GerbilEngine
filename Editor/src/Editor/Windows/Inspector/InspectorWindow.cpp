@@ -56,7 +56,7 @@ namespace Editor
 
 		case Engine::AssetType::Audio:
 		{
-			m_AudioInspector.Draw(Engine::AssetManager::GetAsset<Engine::AudioClip>(assetID));
+			m_AudioInspector.Draw(Engine::AssetManager::GetAsset<Engine::AudioClip>(assetID).get());
 			break;
 		}
 

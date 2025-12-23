@@ -1,9 +1,12 @@
 #include "enginepch.h"
 #include "AudioClip.h"
+#include "Engine/Core/Log.h"
 #include <miniaudio.h>   
 
 namespace Engine
 {
+	ma_uint64 m_FrameCount = 0;
+
 	AudioClip::AudioClip(const std::string& path)
 	{
 		ma_decoder decoder;
@@ -28,5 +31,10 @@ namespace Engine
 		ma_decoder_read_pcm_frames(&decoder, m_PCMFrames.data(), m_FrameCount, NULL);
 
 		ma_decoder_uninit(&decoder);
+	}
+
+	uint64_t AudioClip::GetTotalFrames() const
+	{
+		return static_cast<uint64_t>(m_FrameCount);
 	}
 }

@@ -1,7 +1,8 @@
 #include "enginepch.h"
 #include "AssetRegistry.h"
-#include <yaml-cpp/yaml.h>
 #include "Engine/Core/Project.h"
+#include <yaml-cpp/yaml.h>
+#include <fstream>
 
 namespace Engine
 {

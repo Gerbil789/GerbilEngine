@@ -40,7 +40,7 @@ namespace Engine
 	{
 		const std::array<std::string, 6> fileNames = { "px.png", "nx.png", "py.png", "ny.png", "pz.png", "nz.png" };
 		std::array<std::vector<uint8_t>, 6> faces;
-		int width = 0, height = 0, channels = 0;
+		int width = 0, height = 0;
 
 		for (size_t i = 0; i < 6; ++i)
 		{

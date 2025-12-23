@@ -5,7 +5,7 @@
 
 #include "Editor/Command/CommandManager.h"
 #include "Editor/Command/TransformEntity.h"
-
+#include "Editor/Core/EditorContext.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
@@ -90,10 +90,10 @@ namespace Editor
 			ImGui::PopID();
 		}
 
-
-
 		DrawComponent<TransformComponent>("Transform", entity, [entity](auto& component)
 			{
+
+
 				WidgetResult result;
 				static TransformData s_TransformBefore;
 
@@ -121,6 +121,9 @@ namespace Editor
 				}
 				else if (result.finished)
 				{
+					//std::vector<Engine::Entity>& selectedEntities = EditorContext::Entities().GetAll();
+
+
 					TransformData after{ component.position, component.rotation, component.scale };
 
 					if (memcmp(&s_TransformBefore, &after, sizeof(TransformData)) != 0)
@@ -417,21 +420,20 @@ namespace Editor
 
 			if (ImGui::MenuItem("MeshRenderer"))
 			{
-				auto& component = entity.AddComponent<MeshComponent>();
-
+				entity.AddComponent<MeshComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 
 			if (ImGui::MenuItem("AudioSource"))
 			{
-				auto& component = entity.AddComponent<AudioSourceComponent>();
+				entity.AddComponent<AudioSourceComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 
 
 			if (ImGui::MenuItem("AudioListener"))
 			{
-				auto& component = entity.AddComponent<AudioListenerComponent>();
+				entity.AddComponent<AudioListenerComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 

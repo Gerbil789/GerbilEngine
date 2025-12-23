@@ -22,7 +22,7 @@ namespace Engine
 		T& GetComponent()
 		{
 			const char* typeName = typeid(T).name();
-			ASSERT(HasComponent<T>(), fmt::format("Entity does not have component of type {}", typeName).c_str());
+			ASSERT(HasComponent<T>(), std::format("Entity does not have component of type {}", typeName).c_str());
 			return m_Scene->m_Registry.get<T>(m_EntityHandle);
 		}
 
@@ -30,7 +30,7 @@ namespace Engine
 		const T& GetComponent() const
 		{
 			const char* typeName = typeid(T).name();
-			ASSERT(HasComponent<T>(), fmt::format("Entity does not have component of type {}", typeName).c_str());
+			ASSERT(HasComponent<T>(), std::format("Entity does not have component of type {}", typeName).c_str());
 			return m_Scene->m_Registry.get<T>(m_EntityHandle);
 		}
 

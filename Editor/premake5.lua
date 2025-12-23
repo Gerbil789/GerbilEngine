@@ -1,59 +1,55 @@
 project "Editor"
-	kind "ConsoleApp"
-	language "C++"
-	cppdialect "C++23"
-	staticruntime "on"
-	externalwarnings "Off"
-	
-	files
-	{
-		"src/Editor/**.h",
-		"src/Editor/**.cpp"
-	}
+kind "ConsoleApp"
+language "C++"
+cppdialect "C++23"
+staticruntime "on"
+externalwarnings "Off"
+warnings "Extra"
 
-	includedirs
-	{
-		"src",
-		"%{wks.location}/Engine/src",
-		"%{wks.location}/vendor/dawn/include" 
-	}
+files
+{
+	"src/Editor/**.h",
+	"src/Editor/**.cpp"
+}
 
-	externalincludedirs
-	{
-		"%{wks.location}/vendor/spdlog/include",
-		"%{wks.location}/vendor/glfw/include",
-		"%{wks.location}/vendor/glm",
-		"%{wks.location}/vendor/entt/include",
-		"%{wks.location}/vendor/imgui",
-		"%{wks.location}/vendor/ImGuizmo",
-		"%{wks.location}/vendor/miniaudio"
-	}
+includedirs
+{
+	"src",
+	"%{wks.location}/Engine/src",
+	"%{wks.location}/vendor/dawn/include" 
+}
 
-	links
-	{
-		"Engine",
-		"ImGui",
-	}
+externalincludedirs
+{
+	"%{wks.location}/vendor/glfw/include",
+	"%{wks.location}/vendor/glm",
+	"%{wks.location}/vendor/entt/include",
+	"%{wks.location}/vendor/imgui",
+	"%{wks.location}/vendor/ImGuizmo"
+}
 
-	postbuildcommands 
-	{
-		"{COPY} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
-		"{COPY} %{wks.location}/Resources %{cfg.targetdir}/Resources"
-	}
+links
+{
+	"Engine",
+	"ImGui",
+}
 
-	postbuildmessage "Copying dependencies..."
+postbuildcommands 
+{
+	"{COPY} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
+	"{COPY} %{wks.location}/Resources %{cfg.targetdir}/Resources"
+}
 
-	filter "system:windows"
-		systemversion "latest"
-		buildoptions { "/MP" }
-		defines { "ENGINE_PLATFORM_WINDOWS" }
-
-	filter "configurations:Debug"
-		defines { "DEBUG" }
-		symbols "on"
-		runtime "Debug"
-
-	filter "configurations:Release"
-		defines { "RELEASE" }
-		optimize "on"
-		runtime "Release"
+postbuildmessage "Copying dependencies..."
+filter "system:windows"
+	systemversion "latest"
+	buildoptions { "/MP", "/permissive-" }
+	defines { "ENGINE_PLATFORM_WINDOWS" }
+filter "configurations:Debug"
+	defines { "DEBUG" }
+	symbols "on"
+	runtime "Debug"
+filter "configurations:Release"
+	defines { "RELEASE" }
+	optimize "on"
+	runtime "Release"

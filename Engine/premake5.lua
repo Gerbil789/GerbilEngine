@@ -1,68 +1,68 @@
-	project "Engine"
-	kind "StaticLib"
-	language "C++"
-	cppdialect "C++23"
-	staticruntime "on"
-	externalwarnings "Off"
+project "Engine"
+kind "StaticLib"
+language "C++"
+cppdialect "C++23"
+staticruntime "on"
+externalwarnings "Off"
+warnings "Extra"
 
-	pchheader "enginepch.h"
-	pchsource "src/enginepch.cpp"
+pchheader "enginepch.h"
+pchsource "src/enginepch.cpp"
 
-	files
+files
+{
+	"src/enginepch.cpp",
+	"src/Engine/**.h",
+	"src/Engine/**.cpp"
+}
+
+includedirs
+{
+	"src",
+	"%{wks.location}/vendor/dawn/include"
+}
+
+externalincludedirs
+{
+	"%{wks.location}/vendor/spdlog/include",
+	"%{wks.location}/vendor/glfw/include",
+	"%{wks.location}/vendor/glm",
+	"%{wks.location}/vendor/entt/include",
+	"%{wks.location}/vendor/tinygltf",
+	"%{wks.location}/vendor/portable-file-dialogs",
+	"%{wks.location}/vendor/yaml-cpp/include",
+	"%{wks.location}/vendor/miniaudio"
+}
+
+links
+{
+	"glfw",
+	"webgpu_dawn",
+	"yaml-cpp",
+	"miniaudio",
+	"spdlog"
+}
+
+libdirs 
+{
+	"%{wks.location}/vendor/dawn"
+}
+
+filter "system:windows"
+	systemversion "latest"
+	buildoptions { "/MP", "/permissive-" } -- MP = Enable multithreading for Visual Studio
+	defines
 	{
-		"src/enginepch.cpp",
-		"src/Engine/**.h",
-		"src/Engine/**.cpp"
+		"ENGINE_PLATFORM_WINDOWS",
+		"ENGINE_BUILD_DLL",
+		"GLFW_INCLUDE_NONE",
+		"YAML_CPP_STATIC_DEFINE"
 	}
-
-	includedirs
-	{
-		"src",
-		"%{wks.location}/vendor/dawn/include"
-	}
-
-	externalincludedirs
-	{
-		"%{wks.location}/vendor/spdlog/include",
-		"%{wks.location}/vendor/glfw/include",
-		"%{wks.location}/vendor/glm",
-		"%{wks.location}/vendor/entt/include",
-		"%{wks.location}/vendor/tinygltf",
-		"%{wks.location}/vendor/portable-file-dialogs",
-		"%{wks.location}/vendor/tinygltf",
-		"%{wks.location}/vendor/yaml-cpp/include",
-		"%{wks.location}/vendor/miniaudio"
-	}
-
-	links
-	{
-		"glfw",
-		"webgpu_dawn",
-		"yaml-cpp",
-	}
-
-	libdirs 
-	{
-		"%{wks.location}/vendor/dawn"
-	}
-
-	filter "system:windows"
-		systemversion "latest"
-		buildoptions { "/MP" } -- Enable multithreading for Visual Studio
-		defines
-		{
-			"ENGINE_PLATFORM_WINDOWS",
-			"ENGINE_BUILD_DLL",
-			"GLFW_INCLUDE_NONE",
-			"YAML_CPP_STATIC_DEFINE"
-		}
-
-	filter "configurations:Debug"
-		defines { "DEBUG" }
-		symbols "on"
-		runtime "Debug"
-
-	filter "configurations:Release"
-		defines { "RELEASE" }
-		optimize "on"
-		runtime "Release"
+filter "configurations:Debug"
+	defines { "DEBUG" }
+	symbols "on"
+	runtime "Debug"
+filter "configurations:Release"
+	defines { "RELEASE" }
+	optimize "on"
+	runtime "Release"

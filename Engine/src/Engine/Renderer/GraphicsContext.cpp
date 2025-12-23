@@ -25,7 +25,7 @@ namespace Engine::GraphicsContext
 
 		wgpu::SurfaceDescriptor surfaceDesc = {};
 		surfaceDesc.nextInChain = &hwndDesc.chain;
-		surfaceDesc.label = {"MainSurface"};
+		surfaceDesc.label = { "MainSurface" };
 
 		return instance.createSurface(surfaceDesc);
 	}
@@ -66,20 +66,20 @@ namespace Engine::GraphicsContext
 
 		// Request device
 		wgpu::DeviceDescriptor deviceDesc = {};
-		deviceDesc.label = {"MainDevice"};
+		deviceDesc.label = { "MainDevice" };
 		deviceDesc.requiredFeatureCount = 0;
-		deviceDesc.defaultQueue.label = {"DefaultQueue"};
+		deviceDesc.defaultQueue.label = { "DefaultQueue" };
 
 		deviceDesc.deviceLostCallbackInfo.mode = wgpu::CallbackMode::AllowSpontaneous;
-		deviceDesc.deviceLostCallbackInfo.callback = [](WGPUDevice const* device, WGPUDeviceLostReason reason, WGPUStringView message, void* userdata1, void* userdata2)
+		deviceDesc.deviceLostCallbackInfo.callback = []([[maybe_unused]] WGPUDevice const* device, WGPUDeviceLostReason reason, WGPUStringView message, [[maybe_unused]] void* userdata1, [[maybe_unused]] void* userdata2)
 			{
 				if (reason == wgpu::DeviceLostReason::Destroyed) return; // ignore shutdown losses (explicit destroy)
 				LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", (int)reason, message);
 			};
 
-		deviceDesc.uncapturedErrorCallbackInfo.callback = [](WGPUDevice const* device, WGPUErrorType type, WGPUStringView message, void* userdata1, void* userdata2)
+		deviceDesc.uncapturedErrorCallbackInfo.callback = []([[maybe_unused]] WGPUDevice const* device, WGPUErrorType type, WGPUStringView message, [[maybe_unused]] void* userdata1, [[maybe_unused]] void* userdata2)
 			{
-				LOG_ERROR("WebGPU Uncaptured error: {}", message);
+				LOG_ERROR("WebGPU Uncaptured {} error: {}", (int)type, message);
 			};
 
 		s_Device = adapter.requestDevice(deviceDesc);

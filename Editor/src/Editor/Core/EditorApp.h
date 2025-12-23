@@ -1,5 +1,4 @@
 #include "Engine/Core/Application.h"
-#include "Engine/Utils/Path.h"
 #include "Engine/Utils/FileWatcher.h"
 
 namespace Editor
@@ -18,13 +17,5 @@ namespace Editor
 
 	};
 
-	inline EditorApp CreateApp(Engine::ApplicationCommandLineArgs args)
-	{
-		Engine::ApplicationSpecification spec;
-		spec.title = "Gerbil Editor";
-		spec.workingDirectory = GetExecutableDir();
-		spec.args = args;
-
-		return EditorApp(spec);
-	}
+	EditorApp CreateApp(Engine::ApplicationCommandLineArgs args);
 }
