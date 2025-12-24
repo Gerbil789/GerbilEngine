@@ -1,12 +1,8 @@
 #pragma once
 
-#include "Engine/Core/Core.h"
 #include "Engine/Core/Window.h"
 #include "Engine/Event/ApplicationEvent.h"
-#include "Engine/Event/KeyEvent.h"
-#include "Engine/Core/Input.h"
 #include "Engine/Utils/FPSCounter.h"
-#include <chrono>
 
 namespace Engine
 {
@@ -17,7 +13,10 @@ namespace Engine
 
 		const char* operator[](int index) const
 		{
-			ASSERT(index < Count, "Bad command line arguments");
+			if(index >= Count)
+			{
+				throw std::out_of_range("Bad command line arguments index");
+			}
 			return Args[index];
 		}
 	};
@@ -46,7 +45,6 @@ namespace Engine
 		void Close();
 
 	private:
-		void OnWindowClose(WindowCloseEvent& e);
 		void OnWindowResize(WindowResizeEvent& e);
 
 	protected:
@@ -57,7 +55,6 @@ namespace Engine
 		bool m_Minimized = false;
 
 		FPSCounter m_FPSCounter { 30 };
-		std::chrono::steady_clock::time_point m_LastFrameTime;
 	};
 }
 

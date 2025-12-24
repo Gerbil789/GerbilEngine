@@ -1,4 +1,6 @@
 #include "CommandManager.h"
+#include "Engine/Core/Input.h"
+#include <filesystem>
 
 namespace Editor
 {

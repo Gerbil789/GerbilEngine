@@ -2,9 +2,11 @@
 #include "Engine/Scene/Components.h"
 #include "Editor/Components/Widgets.h"
 #include "Engine/Asset/AssetManager.h"
-
+#include "Engine/Renderer/Mesh.h"
+#include "Engine/Renderer/Material.h"
 #include "Editor/Command/CommandManager.h"
 #include "Editor/Command/TransformEntity.h"
+#include "Engine/Audio/AudioClip.h"
 #include "Editor/Core/EditorContext.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -83,7 +85,6 @@ namespace Editor
 			ImGui::PushID((int)entity.GetUUID());
 
 			ImGui::PushItemWidth(-1);
-			bool tmp = true;
 			ImGui::Checkbox("##Enabled", &entity.GetComponent<IdentityComponent>().enabled);
 			ImGui::SameLine();
 			if (ImGui::InputText("##Name", buffer, sizeof(buffer))) { name = std::string(buffer); }
@@ -142,7 +143,7 @@ namespace Editor
 				//UI::BoolControl("Fixed Aspect Ratio", component.FixedAspectRatio);
 
 
-				std::vector<std::string> projectionTypes = { "Perspective", "Orthographic" };
+				//std::vector<std::string> projectionTypes = { "Perspective", "Orthographic" };
 
 				//const char* currentProjectionTypeString = projectionTypeString[(int)camera.GetProjectionType()];
 
@@ -376,10 +377,6 @@ namespace Editor
 		style.FramePadding = ImVec2(20, 5);
 		style.FrameRounding = 7.5f;
 
-
-
-		float lineHeigth = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-
 		ImVec2 window_size = ImGui::GetWindowSize();
 		ImVec2 button_size = ImVec2{ 200, 30 };
 
@@ -392,8 +389,6 @@ namespace Editor
 
 		//set Y offset
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10);
-
-
 
 		if (ImGui::Button("Add Component", button_size))
 		{

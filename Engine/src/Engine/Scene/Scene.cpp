@@ -1,6 +1,7 @@
 #include "enginepch.h"
 #include "Scene.h"
 #include "Engine/Scene/Entity.h"
+#include "Engine/Core/Log.h"
 
 namespace Engine
 {

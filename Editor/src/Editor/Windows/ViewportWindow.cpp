@@ -147,7 +147,7 @@ namespace Editor
 
 	void ViewportWindow::DrawGizmos()
 	{
-		if(!gizmoType)
+		if(gizmoType == 0)
 		{
 			return;
 		}
@@ -174,15 +174,7 @@ namespace Editor
 		{
 			static float snapTranslateScale[3] = { 0.5f, 0.5f, 0.5f };
 			static float snapRotate[3] = { 45.0f, 45.0f, 45.0f };
-
-			if (gizmoType == ImGuizmo::OPERATION::ROTATE)
-			{
-				snapValue = snapRotate;
-			}
-			else
-			{
-				snapValue = snapTranslateScale;
-			}
+			snapValue = (gizmoType == ImGuizmo::OPERATION::ROTATE) ? snapRotate : snapTranslateScale;
 		}
 
 		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), gizmoType, ImGuizmo::MODE::LOCAL, glm::value_ptr(worldTransform), nullptr, snapValue);

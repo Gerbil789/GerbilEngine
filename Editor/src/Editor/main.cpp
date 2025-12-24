@@ -1,5 +1,6 @@
 #include "Engine/Core/Log.h"
 #include "Editor/Core/EditorApp.h"
+#include "Engine/Core/Core.h"
 
 int main(int argc, char** argv)
 {

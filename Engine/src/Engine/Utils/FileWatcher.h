@@ -9,6 +9,7 @@ namespace Engine
   public:
     using EventCallbackFn = std::function<void(Event&)>;
 
+    FileWatcher() = default;
     FileWatcher(const std::filesystem::path& directory);
 		~FileWatcher() = default;
 

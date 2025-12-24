@@ -124,7 +124,7 @@ namespace Editor
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Engine/fonts/roboto/Roboto-Regular.ttf", 18.0f);
 		SetupImGuiStyle();
 
-		ImGui_ImplGlfw_InitForOther(Engine::Application::GetWindow().GetNativeWindow(), true);
+		ImGui_ImplGlfw_InitForOther(static_cast<GLFWwindow*>(Engine::Application::GetWindow().GetNativeWindow()), true);
 
 		ImGui_ImplWGPU_InitInfo initInfo;
 		initInfo.Device = Engine::GraphicsContext::GetDevice();

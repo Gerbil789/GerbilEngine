@@ -6,6 +6,12 @@
 
 namespace Engine
 {
+	struct AABB
+	{
+		glm::vec3 min = glm::vec3(FLT_MAX);
+		glm::vec3 max = glm::vec3(-FLT_MAX);
+	};
+
 	struct Vertex 
 	{
 		glm::vec3 position;
@@ -27,10 +33,12 @@ namespace Engine
 		const wgpu::Buffer& GetVertexBuffer() const { return m_VertexBuffer; }
 		const wgpu::Buffer& GetIndexBuffer() const { return m_IndexBuffer; }
 		uint32_t GetIndexCount() const { return m_IndexCount; }
+		const AABB& GetBounds() const { return m_Bounds; }
 
 	private:
 		wgpu::Buffer m_VertexBuffer;
 		wgpu::Buffer m_IndexBuffer;
 		uint32_t m_IndexCount = 0;
+		AABB m_Bounds;
 	};
 }

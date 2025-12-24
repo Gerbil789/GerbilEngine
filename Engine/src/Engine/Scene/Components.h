@@ -1,19 +1,17 @@
 #pragma once
 
 #include "Engine/Core/UUID.h"
-#include "Engine/Renderer/Camera.h"
-#include "Engine/Renderer/Texture.h"
-#include "Engine/Renderer/Mesh.h"
-#include "Engine/Renderer/Material.h"
-#include "Engine/Audio/AudioClip.h"
 #include <entt.hpp>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
 
 namespace Engine //TODO: remove all default constructors later, now its needed for some template stuff that i dont like...
 {
+	// Forward declarations
+	class Camera;
+	class Mesh;
+	class Material;
+	class AudioClip;
+
 	struct IdentityComponent
 	{
 		UUID id;
@@ -48,21 +46,8 @@ namespace Engine //TODO: remove all default constructors later, now its needed f
 		TransformComponent() = default;
 		TransformComponent(const glm::vec3& position) : position(position) {}
 
-		glm::mat4 GetLocalMatrix() const
-		{
-			return glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(glm::radians(rotation))) * glm::scale(glm::mat4(1.0f), scale);
-		}
-
-		glm::mat4 GetWorldMatrix(const entt::registry& registry) const
-		{
-			glm::mat4 local = GetLocalMatrix();
-			if (parent != entt::null)
-			{
-				const auto& parentTransform = registry.get<TransformComponent>(parent);
-				return parentTransform.GetWorldMatrix(registry) * local;
-			}
-			return local;
-		}
+		glm::mat4 GetLocalMatrix() const;
+		glm::mat4 GetWorldMatrix(const entt::registry& registry) const;
 	};
 
 	struct MeshComponent

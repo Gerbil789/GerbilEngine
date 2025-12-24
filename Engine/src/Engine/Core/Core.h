@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Engine/Core/Log.h"
-#include <filesystem>
 
 #ifdef DEBUG
 #define ENGINE_ENABLE_ASSERTS

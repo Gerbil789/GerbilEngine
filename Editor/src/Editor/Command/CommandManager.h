@@ -2,7 +2,6 @@
 
 #include "Editor/Command/ICommand.h"
 #include "Engine/Event/KeyEvent.h"
-#include "Engine/Core/Input.h"
 #include <stack>
 
 namespace Editor
@@ -13,12 +12,12 @@ namespace Editor
 		template <typename T, typename... Args>
     static void ExecuteCommand(Args&&... args)
     {
-      auto command = CreateScope<T>(std::forward<Args>(args)...);
+      auto command = std::make_unique<T>(std::forward<Args>(args)...);
       command->Execute();
       s_UndoStack.push(std::move(command));
 
       // clear redo stack
-      std::stack<Scope<ICommand>> empty;
+      std::stack<std::unique_ptr<ICommand>> empty;
       s_RedoStack.swap(empty);
     }
 
@@ -29,7 +28,7 @@ namespace Editor
   private:
 		//const static int s_MaxUndoSteps = 128; //TODO: limit undo steps
 
-    inline static std::stack<Scope<ICommand>> s_UndoStack;
-    inline static std::stack<Scope<ICommand>> s_RedoStack;
+    inline static std::stack<std::unique_ptr<ICommand>> s_UndoStack;
+    inline static std::stack<std::unique_ptr<ICommand>> s_RedoStack;
   };
 }

@@ -5,6 +5,7 @@
 #include "Engine/Renderer/Shader.h"
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Utils/File.h"
+#include "Engine/Renderer/Mesh.h"
 
 namespace Engine
 {
@@ -167,7 +168,7 @@ namespace Engine
 
 		wgpu::BufferMapCallbackInfo callbackInfo{};
 		callbackInfo.mode = wgpu::CallbackMode::WaitAnyOnly;
-		callbackInfo.callback = [](WGPUMapAsyncStatus status, WGPUStringView message, void* userdata1, void* userdata2) {
+		callbackInfo.callback = [](WGPUMapAsyncStatus status, WGPUStringView message, void*, void*) {
 			if (status != wgpu::MapAsyncStatus::Success) {
 				LOG_ERROR("Readback buffer map callback: status: {0}, message: {1}", (int)status, message);
 			}
@@ -246,7 +247,7 @@ namespace Engine
 		shaderCodeDesc.chain.next = nullptr;
 		shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
 		shaderDesc.nextInChain = &shaderCodeDesc.chain;
-		shaderCodeDesc.code = { shaderSource, strlen(shaderSource) };
+		shaderCodeDesc.code = { shaderSource, WGPU_STRLEN };
 
 		wgpu::ShaderModule shaderModule = m_Device.createShaderModule(shaderDesc);
 		//wgpu::ShaderModule shaderModule = Shader::LoadShader("Resources/Engine/shaders/entityId.wgsl");

@@ -54,8 +54,8 @@ namespace Engine
 	void Application::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowCloseEvent>([this](auto e) {Close(); });
-		dispatcher.Dispatch<WindowResizeEvent>([this](auto e) {OnWindowResize(e); });
+		dispatcher.Dispatch<WindowCloseEvent>([this](auto&) {Close(); });
+		dispatcher.Dispatch<WindowResizeEvent>([this](auto& e) {OnWindowResize(e); });
 	}
 
 	void Application::OnWindowResize(WindowResizeEvent& e)
@@ -74,10 +74,5 @@ namespace Engine
 	{
 		m_Running = false;
 		LOG_INFO("Application Closed");
-	}
-
-	void Application::OnWindowClose(WindowCloseEvent& e)
-	{
-		Close();
 	}
 }

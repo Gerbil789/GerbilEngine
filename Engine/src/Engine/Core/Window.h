@@ -1,9 +1,7 @@
 #pragma once
 
-#include "enginepch.h"
-#include "Engine/Core/Core.h"
 #include "Engine/Event/Event.h"
-#include <GLFW/glfw3.h>
+struct GLFWwindow; // forward declaration
 
 namespace Engine
 {
@@ -27,12 +25,13 @@ namespace Engine
 
 		uint32_t GetWidth() const { return m_Data.Width; }
 		uint32_t GetHeight() const { return m_Data.Height; }
-		GLFWwindow* GetNativeWindow() const { return m_Window; }
+		void* GetNativeWindow() const { return m_Window; }
 
 		void SetEventCallback(const EventCallbackFn& callback) { m_Data.EventCallback = callback; }
 
 	private:
 		void SetEventCallbacks();
+		void SetWindowIcon(const std::filesystem::path& iconPath);
 
 	private:
 		GLFWwindow* m_Window = nullptr;

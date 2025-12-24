@@ -4,9 +4,79 @@
 #include "Engine/Scene/Entity.h"
 #include "Engine/Renderer/GraphicsContext.h"
 #include "Engine/Renderer/Material.h"
+#include "Engine/Renderer/Mesh.h"
 
 namespace Engine
 {
+	static AABB TransformAABB(const AABB& local, const glm::mat4& m)
+	{
+		glm::vec3 center = (local.min + local.max) * 0.5f;
+		glm::vec3 extent = (local.max - local.min) * 0.5f;
+
+		glm::vec3 worldCenter = glm::vec3(m * glm::vec4(center, 1.0f));
+
+		glm::mat3 absMat = glm::mat3(
+			glm::abs(m[0]),
+			glm::abs(m[1]),
+			glm::abs(m[2])
+		);
+
+		glm::vec3 worldExtent = absMat * extent;
+
+		return {
+				worldCenter - worldExtent,
+				worldCenter + worldExtent
+		};
+	}
+
+	struct Frustum
+	{
+		glm::vec4 planes[6]; // (normal.xyz, distance)
+	};
+
+	static Frustum ExtractFrustum(const glm::mat4& vp)
+	{
+		Frustum f;
+
+		// vp = projection * view
+		f.planes[0] = vp[3] + vp[0]; // Left
+		f.planes[1] = vp[3] - vp[0]; // Right
+		f.planes[2] = vp[3] + vp[1]; // Bottom
+		f.planes[3] = vp[3] - vp[1]; // Top
+		f.planes[4] = vp[3] + vp[2]; // Near
+		f.planes[5] = vp[3] - vp[2]; // Far
+
+		// Normalize planes
+		for (auto& p : f.planes)
+		{
+			float len = glm::length(glm::vec3(p));
+			p = -p / len; // flip so normal points into frustum
+		}
+
+		return f;
+	}
+
+	static bool IsVisible(const Frustum& f, const AABB& aabb)
+	{
+		for (const auto& plane : f.planes)
+		{
+			glm::vec3 normal = glm::vec3(plane);
+
+			glm::vec3 p = aabb.min;
+			if (plane.x >= 0) p.x = aabb.max.x;
+			if (plane.y >= 0) p.y = aabb.max.y;
+			if (plane.z >= 0) p.z = aabb.max.z;
+
+			if (glm::dot(normal, p) + plane.w < 0.001f)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+
 	//TODO: move these structs somewhere...
 	struct alignas(16) FrameUniforms {
 		glm::mat4 view;
@@ -52,13 +122,13 @@ namespace Engine
 			bindGroupLayoutEntry.buffer.minBindingSize = sizeof(ModelUniforms);
 
 			wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc{};
-			bindGroupLayoutDesc.label = { "ModelBindGroupLayout", WGPU_STRLEN };
+			bindGroupLayoutDesc.label = { "ModelBindGroupLayout" };
 			bindGroupLayoutDesc.entryCount = 1;
 			bindGroupLayoutDesc.entries = &bindGroupLayoutEntry;
 			s_ModelBindGroupLayout = s_Device.createBindGroupLayout(bindGroupLayoutDesc);
 
 			wgpu::BufferDescriptor bufferDesc{};
-			bufferDesc.label = { "ModelUniformBuffer", WGPU_STRLEN };;
+			bufferDesc.label = { "ModelUniformBuffer" };
 			bufferDesc.size = BufferSize;
 			bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 			s_ModelUniformBuffer = s_Device.createBuffer(bufferDesc);
@@ -70,7 +140,7 @@ namespace Engine
 			bindGroupEntry.size = sizeof(ModelUniforms);
 
 			wgpu::BindGroupDescriptor bindGroupDesc{};
-			bindGroupDesc.label = { "ModelBindGroup", WGPU_STRLEN };
+			bindGroupDesc.label = { "ModelBindGroup" };
 			bindGroupDesc.layout = s_ModelBindGroupLayout;
 			bindGroupDesc.entryCount = 1;
 			bindGroupDesc.entries = &bindGroupEntry;
@@ -86,13 +156,13 @@ namespace Engine
 			bindGroupLayoutEntry.buffer.minBindingSize = sizeof(FrameUniforms);
 
 			wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc{};
-			bindGroupLayoutDesc.label = { "FrameBindGroupLayout", WGPU_STRLEN };
+			bindGroupLayoutDesc.label = { "FrameBindGroupLayout" };
 			bindGroupLayoutDesc.entryCount = 1;
 			bindGroupLayoutDesc.entries = &bindGroupLayoutEntry;
 			s_FrameBindGroupLayout = s_Device.createBindGroupLayout(bindGroupLayoutDesc);
 
 			wgpu::BufferDescriptor bufferDesc{};
-			bufferDesc.label = { "FrameUniformBuffer", WGPU_STRLEN };;
+			bufferDesc.label = { "FrameUniformBuffer" };
 			bufferDesc.size = sizeof(FrameUniforms);
 			bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 
@@ -105,7 +175,7 @@ namespace Engine
 			bindGroupEntry.size = sizeof(FrameUniforms);
 
 			wgpu::BindGroupDescriptor bindGroupDesc{};
-			bindGroupDesc.label = { "FrameBindGroup", WGPU_STRLEN };
+			bindGroupDesc.label = { "FrameBindGroup" };
 			bindGroupDesc.layout = s_FrameBindGroupLayout;
 			bindGroupDesc.entryCount = 1;
 			bindGroupDesc.entries = &bindGroupEntry;
@@ -129,7 +199,7 @@ namespace Engine
 
 		// Color texture
 		wgpu::TextureDescriptor colorTextureDesc{};
-		colorTextureDesc.label = { "RendererColorTexture", WGPU_STRLEN };
+		colorTextureDesc.label = { "RendererColorTexture" };
 		colorTextureDesc.dimension = wgpu::TextureDimension::_2D;
 		colorTextureDesc.format = wgpu::TextureFormat::RGBA8Unorm;
 		colorTextureDesc.size = { width, height, 1 };
@@ -139,7 +209,7 @@ namespace Engine
 		wgpu::Texture colorTexture = s_Device.createTexture(colorTextureDesc);
 
 		wgpu::TextureViewDescriptor viewDesc{};
-		viewDesc.label = { "RendererTextureView", WGPU_STRLEN };
+		viewDesc.label = { "RendererTextureView" };
 		viewDesc.dimension = WGPUTextureViewDimension_2D;
 		viewDesc.format = colorTextureDesc.format;
 		viewDesc.baseMipLevel = 0;
@@ -150,7 +220,7 @@ namespace Engine
 
 		// Depth texture
 		wgpu::TextureDescriptor depthTextureDesc;
-		colorTextureDesc.label = { "RendererDepthTexture", WGPU_STRLEN };
+		depthTextureDesc.label = { "RendererDepthTexture" };
 		depthTextureDesc.dimension = wgpu::TextureDimension::_2D;
 		depthTextureDesc.format = wgpu::TextureFormat::Depth24Plus;
 		depthTextureDesc.mipLevelCount = 1;
@@ -195,13 +265,13 @@ namespace Engine
 		depthStencilAttachment.stencilReadOnly = true;
 
 		wgpu::RenderPassDescriptor renderPassDescriptor;
-		renderPassDescriptor.label = { "RenderPass", WGPU_STRLEN };
+		renderPassDescriptor.label = { "RenderPass" };
 		renderPassDescriptor.colorAttachmentCount = 1;
 		renderPassDescriptor.colorAttachments = &colorAttachment;
 		renderPassDescriptor.depthStencilAttachment = &depthStencilAttachment;
 
 		wgpu::CommandEncoderDescriptor encoderDesc = {};
-		encoderDesc.label = { "RendererCommandEncoder", WGPU_STRLEN };
+		encoderDesc.label = { "RendererCommandEncoder" };
 		m_CommandEncoder = s_Device.createCommandEncoder(encoderDesc);
 
 		m_RenderPass = m_CommandEncoder.beginRenderPass(renderPassDescriptor);
@@ -227,6 +297,9 @@ namespace Engine
 			m_RenderPass.setBindGroup(1, skybox.GetBindGroup(), 0, nullptr);
 			m_RenderPass.draw(36, 1, 0, 0);
 		}
+
+		glm::mat4 vp = m_Camera->GetViewProjectionMatrix();
+		Frustum frustum = ExtractFrustum(vp);
 
 		// Entities
 		const std::vector<Entity>& entities = m_Scene->GetEntities<TransformComponent, MeshComponent>();
@@ -263,9 +336,15 @@ namespace Engine
 				auto& meshComponent = entity.GetComponent<MeshComponent>();
 				auto& mesh = meshComponent.mesh;
 
-				if (!mesh) continue;
-
 				glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetWorldMatrix(m_Scene->GetRegistry());
+
+				AABB worldAABB = TransformAABB(mesh->GetBounds(), modelMatrix);
+
+				//if (!IsVisible(frustum, worldAABB))
+				//{
+				//	continue;
+				//}
+
 
 				uint32_t dynamicOffset = i * s_ModelUniformStride;
 				s_Queue.writeBuffer(s_ModelUniformBuffer, dynamicOffset, &modelMatrix, sizeof(modelMatrix));
@@ -278,6 +357,7 @@ namespace Engine
 				i++;
 			}
 		}
+		//LOG_INFO("Rendered {0} objects", i);
 	}
 
 	void Renderer::EndScene()

@@ -4,57 +4,47 @@
 #include "Engine/Event/ApplicationEvent.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Event/KeyEvent.h"
+#include "Engine/Core/Log.h"
 #include <stb_image.h>
+#include <GLFW/glfw3.h>
 
 namespace Engine
 {
 	Window::Window(const WindowSpecification& specification)
 	{
-		ENGINE_PROFILE_FUNCTION();
-
 		m_Data.Width = specification.width;
 		m_Data.Height = specification.height;
 
-		LOG_TRACE("Creating window {0} ({1}, {2})", specification.title, m_Data.Width, m_Data.Height);
+		LOG_TRACE("Creating window {} ({}, {})", specification.title, m_Data.Width, m_Data.Height);
 
-		bool glfwInitialized = glfwInit();
-		ASSERT(glfwInitialized, "Could not initialize GLFW!");
+		if (!glfwInit())
+		{
+			throw std::runtime_error("Could not initialize GLFW!");
+		}
 
-		glfwSetErrorCallback([](int error, const char* description) { LOG_ERROR("GLFW Error ({0}): {1}", error, description); });
+
+		glfwSetErrorCallback([](int error, const char* description) { LOG_ERROR("GLFW Error ({}): {}", error, description); });
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
 		m_Window = glfwCreateWindow(static_cast<int>(m_Data.Width), static_cast<int>(m_Data.Height), specification.title.c_str(), nullptr, nullptr);
 
-		ASSERT(m_Window, "Could not create GLFW window!");
-
-		SetEventCallbacks();
-
-		int iconWidth, iconHeight, channels;
-		unsigned char* iconPixels = stbi_load(specification.iconPath.string().c_str(), &iconWidth, &iconHeight, &channels, STBI_rgb_alpha);
-		if (!iconPixels)
+		if(!m_Window)
 		{
-			LOG_ERROR("Failed to load icon from path: {0}", specification.iconPath);
-			return;
+			throw std::runtime_error("Could not create GLFW window!");
 		}
 
-		GLFWimage icon;
-		icon.width = iconWidth;
-		icon.height = iconHeight;
-		icon.pixels = iconPixels;
-		glfwSetWindowIcon(m_Window, 1, &icon);
-		stbi_image_free(iconPixels);
+		SetEventCallbacks();
+		SetWindowIcon(specification.iconPath);
 	}
 
 	Window::~Window()
 	{
-		ENGINE_PROFILE_FUNCTION();
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();
 	}
 
 	void Window::OnUpdate()
 	{
-		ENGINE_PROFILE_FUNCTION();
 		glfwPollEvents();
 	}
 
@@ -79,7 +69,7 @@ namespace Engine
 				data.EventCallback(event);
 			});
 
-		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int, int action, int)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -114,7 +104,7 @@ namespace Engine
 				data.EventCallback(event);
 			});
 
-		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
+		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -152,4 +142,22 @@ namespace Engine
 			});
 	}
 
+	void Window::SetWindowIcon(const std::filesystem::path& iconPath)
+	{
+		int iconWidth, iconHeight, channels;
+		unsigned char* iconPixels = stbi_load(iconPath.string().c_str(), &iconWidth, &iconHeight, &channels, STBI_rgb_alpha);
+
+		if (!iconPixels)
+		{
+			LOG_ERROR("Failed to load icon from path: {}", iconPath);
+			return;
+		}
+
+		GLFWimage icon;
+		icon.width = iconWidth;
+		icon.height = iconHeight;
+		icon.pixels = iconPixels;
+		glfwSetWindowIcon(m_Window, 1, &icon);
+		stbi_image_free(iconPixels);
+	}
 }

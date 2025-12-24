@@ -21,7 +21,6 @@ includedirs
 
 externalincludedirs
 {
-	"%{wks.location}/vendor/glfw/include",
 	"%{wks.location}/vendor/glm",
 	"%{wks.location}/vendor/entt/include",
 	"%{wks.location}/vendor/imgui",

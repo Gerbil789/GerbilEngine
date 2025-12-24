@@ -9,7 +9,7 @@ namespace Engine::Input
 
 	void Initialize()
 	{
-		s_Window = Application::GetWindow().GetNativeWindow();
+		s_Window = static_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow());
 	}
 
 	bool IsKeyPressed(KeyCode key)

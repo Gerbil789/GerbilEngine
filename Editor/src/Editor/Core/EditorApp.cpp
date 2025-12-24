@@ -19,9 +19,11 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Editor/Command/CommandManager.h"
 #include "Engine/Audio/Audio.h"
-
+#include "Engine/Utils/FileWatcher.h"
 namespace Editor
 {
+	Engine::FileWatcher m_FileWatcher;
+
 	EditorApp::EditorApp(const Engine::ApplicationSpecification& specification) : Application(specification)
 	{
 		ENGINE_PROFILE_FUNCTION();
@@ -49,8 +51,8 @@ namespace Editor
 
 		EditorWindowManager::Initialize();
 
-		m_FileWatcher = CreateScope<Engine::FileWatcher>(Engine::Project::GetAssetsDirectory());
-		m_FileWatcher->SetEventCallback([this](Engine::Event& e) {this->OnEvent(e); });
+		m_FileWatcher = Engine::FileWatcher(Engine::Project::GetAssetsDirectory());
+		m_FileWatcher.SetEventCallback([this](Engine::Event& e) {this->OnEvent(e); });
 
 		LOG_INFO("--- Editor initialization complete ---");
 
@@ -192,7 +194,7 @@ namespace Editor
 
 			EditorWindowManager::OnUpdate();
 			m_Window->OnUpdate();
-			m_FileWatcher->OnUpdate();
+			m_FileWatcher.OnUpdate();
 		}
 	}
 

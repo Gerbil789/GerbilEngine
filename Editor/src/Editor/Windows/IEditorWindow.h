@@ -10,7 +10,7 @@ namespace Editor
 		virtual ~IEditorWindow() = default;
 
 		virtual void OnUpdate() = 0;
-		virtual void OnEvent(Engine::Event& event) {}
+		virtual void OnEvent(Engine::Event&) {}
 
 		bool IsVisible() const { return m_IsVisible; }
 		void SetVisible(bool visible) { m_IsVisible = visible; }

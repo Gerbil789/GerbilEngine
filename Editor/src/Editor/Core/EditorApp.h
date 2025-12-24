@@ -1,5 +1,6 @@
+#pragma once
+
 #include "Engine/Core/Application.h"
-#include "Engine/Utils/FileWatcher.h"
 
 namespace Editor
 {
@@ -11,10 +12,6 @@ namespace Editor
 
 		void Run() override;
 		void OnEvent(Engine::Event& e) override;
-
-	private:
-		Scope<Engine::FileWatcher> m_FileWatcher;
-
 	};
 
 	EditorApp CreateApp(Engine::ApplicationCommandLineArgs args);

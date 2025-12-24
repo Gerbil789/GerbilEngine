@@ -8,8 +8,7 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Utils/File.h"
 #include "Editor/Core/EditorContext.h"
-
-#include <GLFW/glfw3.h>
+//#include <GLFW/glfw3.h>
 
 namespace Editor
 {
@@ -17,7 +16,7 @@ namespace Editor
 	{
 		m_CurrentDirectory = Engine::Project::GetAssetsDirectory();
 
-		glfwSetDropCallback(Engine::Application::GetWindow().GetNativeWindow(), [](GLFWwindow* window, int count, const char* paths[])
+		/*glfwSetDropCallback(static_cast<GLFWwindow*>(Engine::Application::GetWindow().GetNativeWindow()), [](GLFWwindow*, int count, const char* paths[])
 			{
 				for (int i = 0; i < count; i++)
 				{
@@ -31,7 +30,7 @@ namespace Editor
 						LOG_INFO("Dropped file: {0}", path);
 					}
 				}
-			});
+			});*/
 
 		OpenDirectory(m_CurrentDirectory);
 	}

@@ -1,15 +1,21 @@
 #include "enginepch.h"
 #include "FPSCounter.h"
 
-namespace Engine {
+namespace Engine 
+{
+  size_t m_FrameHistorySize;
+  std::vector<float> m_FPSHistory;
+  size_t m_FPSHistoryIndex;
+  float m_FPSHistorySum;
+  float m_AverageFPS;
 
   FPSCounter::FPSCounter(size_t historySize)
-    : m_FrameHistorySize(historySize),
-    m_FPSHistory(historySize, 0.0f),
-    m_FPSHistoryIndex(0),
-    m_FPSHistorySum(0.0f),
-    m_AverageFPS(0.0f)
   {
+		m_FrameHistorySize = historySize;
+		m_FPSHistory.resize(historySize, 0.0f);
+		m_FPSHistoryIndex = 0;
+		m_FPSHistorySum = 0.0f;
+		m_AverageFPS = 0.0f;
   }
 
   void FPSCounter::Update(float deltaTime)

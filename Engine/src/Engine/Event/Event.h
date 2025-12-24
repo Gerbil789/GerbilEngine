@@ -1,5 +1,6 @@
 #pragma once
-#include "Engine/Core/Core.h"
+
+#include <string>
 #include <functional>
 
 namespace Engine
@@ -23,7 +24,6 @@ namespace Engine
 		EventCategoryMouse = 8,				// (001000)
 		EventCategoryMouseButton = 16,// (010000) 
 		EventCategoryFile = 32				// (100000)
-
 	};
 
 

@@ -43,7 +43,7 @@ namespace Engine::GraphicsContext
 		ASSERT(s_Instance, "Failed to create WGPU instance");
 
 		// Create WGPU surface
-		s_Surface = glfwGetWGPUSurface(s_Instance, window.GetNativeWindow());
+		s_Surface = glfwGetWGPUSurface(s_Instance, static_cast<GLFWwindow*>(window.GetNativeWindow()));
 		ASSERT(s_Surface, "Failed to create WebGPU surface");
 
 		// Request adapter
@@ -71,13 +71,13 @@ namespace Engine::GraphicsContext
 		deviceDesc.defaultQueue.label = { "DefaultQueue" };
 
 		deviceDesc.deviceLostCallbackInfo.mode = wgpu::CallbackMode::AllowSpontaneous;
-		deviceDesc.deviceLostCallbackInfo.callback = []([[maybe_unused]] WGPUDevice const* device, WGPUDeviceLostReason reason, WGPUStringView message, [[maybe_unused]] void* userdata1, [[maybe_unused]] void* userdata2)
+		deviceDesc.deviceLostCallbackInfo.callback = [](WGPUDevice const*, WGPUDeviceLostReason reason, WGPUStringView message, void*, void*)
 			{
 				if (reason == wgpu::DeviceLostReason::Destroyed) return; // ignore shutdown losses (explicit destroy)
 				LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", (int)reason, message);
 			};
 
-		deviceDesc.uncapturedErrorCallbackInfo.callback = []([[maybe_unused]] WGPUDevice const* device, WGPUErrorType type, WGPUStringView message, [[maybe_unused]] void* userdata1, [[maybe_unused]] void* userdata2)
+		deviceDesc.uncapturedErrorCallbackInfo.callback = [](WGPUDevice const*, WGPUErrorType type, WGPUStringView message, void*, void*)
 			{
 				LOG_ERROR("WebGPU Uncaptured {} error: {}", (int)type, message);
 			};
