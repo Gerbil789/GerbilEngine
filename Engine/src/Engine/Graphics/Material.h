@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Engine/Asset/Asset.h"
-#include "Engine/Renderer/Shader.h"
-#include "Engine/Renderer/Texture.h"
-#include "Engine/Renderer/SamplerPool.h"
+#include "Engine/Graphics/Shader.h"
+#include "Engine/Graphics/Texture.h"
+#include "Engine/Graphics/SamplerPool.h"
 #include <glm/glm.hpp>
 
 namespace Engine 

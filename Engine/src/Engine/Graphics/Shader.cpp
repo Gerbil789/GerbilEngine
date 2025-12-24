@@ -1,8 +1,9 @@
 #include "enginepch.h"
 #include "Shader.h"
-#include "Engine/Renderer/GraphicsContext.h"
-#include "Engine/Renderer/WebGPUUtils.h"
-#include "Engine/Renderer/Renderer.h"
+#include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Graphics/WebGPUUtils.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
+#include "Engine/Graphics/Renderer/RenderGlobals.h"
 
 namespace Engine
 {
@@ -94,8 +95,8 @@ namespace Engine
 		m_MaterialBindGroupLayout = CreateMaterialBindGroupLayout(specification);
 
 		wgpu::BindGroupLayout bindGroupLayouts[] = {
-			Renderer::GetFrameBindGroupLayout(),
-			Renderer::GetModelBindGroupLayout(),
+			RenderGlobals::GetFrameLayout(),
+			RenderGlobals::GetModelLayout(),
 			m_MaterialBindGroupLayout
 		};
 

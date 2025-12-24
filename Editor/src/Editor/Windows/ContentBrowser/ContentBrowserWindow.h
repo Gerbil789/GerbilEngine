@@ -4,7 +4,7 @@
 #include "AssetItem.h"
 #include "ThumbnailRenderer.h"
 #include "Editor/Utility/SelectionWithDeletion.h"
-#include "Engine/Renderer/Texture.h"
+#include "Engine/Graphics/Texture.h"
 #include <filesystem>
 
 namespace Editor

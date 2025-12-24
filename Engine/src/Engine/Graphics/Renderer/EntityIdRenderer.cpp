@@ -1,11 +1,11 @@
 #include "enginepch.h"
 #include "EntityIdRenderer.h"
-#include "Engine/Renderer/GraphicsContext.h"
+#include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Scene/Entity.h"
-#include "Engine/Renderer/Shader.h"
-#include "Engine/Renderer/Renderer.h"
+#include "Engine/Graphics/Shader.h"
 #include "Engine/Utils/File.h"
-#include "Engine/Renderer/Mesh.h"
+#include "Engine/Graphics/Mesh.h"
+#include "Engine/Graphics/Renderer/RenderGlobals.h"
 
 namespace Engine
 {
@@ -99,7 +99,7 @@ namespace Engine
 		wgpu::RenderPassEncoder renderPass = encoder.beginRenderPass(renderPassDescriptor);
 		renderPass.setPipeline(m_Pipeline);
 
-		renderPass.setBindGroup(GroupID::Frame, Renderer::GetFrameBindGroup(), 0, nullptr);
+		renderPass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
 		std::vector<Entity> entities = m_Scene->GetEntities<TransformComponent, MeshComponent>();
 
@@ -113,8 +113,8 @@ namespace Engine
 
 			glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetLocalMatrix(); //TODO: world matrix?
 
-			uint32_t dynamicOffset = i * Renderer::GetModelUniformStride();
-			renderPass.setBindGroup(GroupID::Model, Renderer::GetModelBindGroup(), 1, &dynamicOffset);
+			uint32_t dynamicOffset = i * RenderGlobals::GetModelUniformStride();
+			renderPass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
 
 			uint32_t idDynamicOffset = i * 256; // WebGPU requires dynamic offsets to be aligned to 256 bytes
 
@@ -318,8 +318,8 @@ namespace Engine
 		pipelineDesc.multisample.alphaToCoverageEnabled = false;
 
 		wgpu::BindGroupLayout bindGroupLayouts[] = {
-			Renderer::GetFrameBindGroupLayout(),
-			Renderer::GetModelBindGroupLayout(),
+			RenderGlobals::GetFrameLayout(),
+			RenderGlobals::GetModelLayout(),
 			m_BindGroupLayout
 		};
 

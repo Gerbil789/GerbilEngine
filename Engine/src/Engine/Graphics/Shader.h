@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "Engine/Asset/Asset.h"
-#include "Engine/Renderer/ShaderSpecification.h"
+#include "Engine/Graphics/ShaderSpecification.h"
 #include <filesystem>
 #include <webgpu/webgpu.hpp>
 

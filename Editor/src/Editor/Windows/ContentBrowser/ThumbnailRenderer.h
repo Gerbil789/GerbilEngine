@@ -1,13 +1,14 @@
 #pragma once
 
-#include "Engine/Renderer/Renderer.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Importer/MeshImporter.h"
-#include "Engine/Renderer/Camera.h"
+#include "Engine/Graphics/Camera.h"
+#include "Engine/Graphics/Renderer/BaseRenderPass.h"
 
-class ThumbnailRenderer
+class ThumbnailRenderer //TODO: this whole class needs to be reworked
 {
 public:
 	void Initialize()
@@ -26,6 +27,7 @@ public:
 		mc.mesh = m_PreviewMesh;
 
 		m_Renderer = new Engine::Renderer(64, 64);
+		m_Renderer->AddPass(new Engine::BaseRenderPass());
 		m_Renderer->SetCamera(camera);
 		m_Renderer->SetScene(scene);
 	}
@@ -37,9 +39,7 @@ public:
 
 	wgpu::TextureView Render()
 	{
-		m_Renderer->BeginScene();
 		m_Renderer->RenderScene();
-		m_Renderer->EndScene();
 
 		return m_Renderer->GetTextureView();
 	}

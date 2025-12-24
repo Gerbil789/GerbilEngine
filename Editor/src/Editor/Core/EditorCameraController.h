@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Renderer/Camera.h"
+#include "Engine/Graphics/Camera.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Event/KeyEvent.h"
 

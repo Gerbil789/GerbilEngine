@@ -1,8 +1,8 @@
 #include "enginepch.h"
 #include "Material.h"
-#include "Engine/Renderer/GraphicsContext.h"
-#include "Engine/Renderer/WebGPUUtils.h"
-#include "Engine/Renderer/Renderer.h"
+#include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Graphics/WebGPUUtils.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Importer/ShaderImporter.h"
 

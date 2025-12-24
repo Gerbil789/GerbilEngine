@@ -1,6 +1,6 @@
 #include "enginepch.h"
 #include "StatisticsWindow.h"
-#include "Engine/Renderer/Renderer.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Core/Time.h"
 #include <imgui.h>
 

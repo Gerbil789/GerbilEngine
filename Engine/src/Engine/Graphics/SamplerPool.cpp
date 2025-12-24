@@ -1,8 +1,6 @@
 #include "enginepch.h"
 #include "SamplerPool.h"
 
-
-
 namespace Engine
 {
 	void SamplerPool::Initialize()

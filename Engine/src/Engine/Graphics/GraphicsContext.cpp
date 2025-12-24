@@ -3,10 +3,18 @@
 #include "GraphicsContext.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Core/Application.h"
-#include "Engine/Renderer/WebGPUUtils.h"
+#include "Engine/Graphics/WebGPUUtils.h"
 #include <GLFW/glfw3.h>
+
+//TODO: move platform specific code to separate files
+#if defined(_WIN32)
 #define GLFW_EXPOSE_NATIVE_WIN32
+#elif defined(__linux__)
+#define GLFW_EXPOSE_NATIVE_X11
+#endif
+
 #include <GLFW/glfw3native.h>
+
 
 namespace Engine::GraphicsContext
 {
@@ -15,19 +23,35 @@ namespace Engine::GraphicsContext
 	static wgpu::Queue s_Queue;
 	static wgpu::Surface s_Surface;
 
-	//TODO: this is windows specific, need to implement for other platforms too
 	wgpu::Surface glfwGetWGPUSurface(wgpu::Instance instance, GLFWwindow* window)
 	{
-		wgpu::SurfaceSourceWindowsHWND hwndDesc;
+#if defined(_WIN32)
+
+		wgpu::SurfaceSourceWindowsHWND hwndDesc{};
 		hwndDesc.chain.sType = WGPUSType_SurfaceSourceWindowsHWND;
-		hwndDesc.hinstance = GetModuleHandle(NULL);
+		hwndDesc.hinstance = GetModuleHandle(nullptr);
 		hwndDesc.hwnd = glfwGetWin32Window(window);
 
-		wgpu::SurfaceDescriptor surfaceDesc = {};
-		surfaceDesc.nextInChain = &hwndDesc.chain;
+		wgpu::SurfaceDescriptor surfaceDesc{};
 		surfaceDesc.label = { "MainSurface" };
+		surfaceDesc.nextInChain = &hwndDesc.chain;
 
 		return instance.createSurface(surfaceDesc);
+
+#elif defined(__linux__)
+
+		wgpu::SurfaceSourceXlibWindow x11Desc{};
+		x11Desc.chain.sType = WGPUSType_SurfaceSourceXlibWindow;
+		x11Desc.display = glfwGetX11Display();
+		x11Desc.window = glfwGetX11Window(window);
+
+		wgpu::SurfaceDescriptor surfaceDesc{};
+		surfaceDesc.label = { "MainSurface" };
+		surfaceDesc.nextInChain = &x11Desc.chain;
+
+		return instance.createSurface(surfaceDesc);
+
+#endif
 	}
 
 	void Initialize()

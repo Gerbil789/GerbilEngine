@@ -1,6 +1,6 @@
 #include "enginepch.h"
 #include "Texture.h"
-#include "Engine/Renderer/GraphicsContext.h"
+#include "Engine/Graphics/GraphicsContext.h"
 
 namespace Engine
 {

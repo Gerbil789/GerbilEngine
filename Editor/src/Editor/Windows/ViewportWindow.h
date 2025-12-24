@@ -3,9 +3,9 @@
 #include "IEditorWindow.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
-#include "Engine/Renderer/Renderer.h"
-#include "Engine/Renderer/EntityIdRenderer.h"
-#include "Engine/Renderer/Camera.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
+#include "Engine/Graphics/Renderer/EntityIdRenderer.h"
+#include "Engine/Graphics/Camera.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Editor/Core/EditorCameraController.h"
 #include <glm/glm.hpp>

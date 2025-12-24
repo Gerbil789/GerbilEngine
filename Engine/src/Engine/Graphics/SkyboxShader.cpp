@@ -1,9 +1,10 @@
 #include "enginepch.h"
 #include "SkyboxShader.h"
-#include "Engine/Renderer/GraphicsContext.h"
-#include "Engine/Renderer/WebGPUUtils.h"
-#include "Engine/Renderer/Renderer.h"
+#include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Graphics/WebGPUUtils.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Utils/File.h"
+#include "Engine/Graphics/Renderer/RenderGlobals.h"
 
 namespace Engine
 {
@@ -126,7 +127,7 @@ namespace Engine
 		m_BindGroupLayout = device.createBindGroupLayout(desc);
 
 		wgpu::BindGroupLayout bindGroupLayouts[] = {
-			Renderer::GetFrameBindGroupLayout(),
+			RenderGlobals::GetFrameLayout(),
 			m_BindGroupLayout
 		};
 

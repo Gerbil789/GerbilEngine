@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Core/Core.h"
-#include "Engine/Renderer/Skybox.h"
+#include "Engine/Graphics/Skybox.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>

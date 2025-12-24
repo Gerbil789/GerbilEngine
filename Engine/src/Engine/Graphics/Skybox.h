@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Engine/Core/Core.h"
-#include "Engine/Renderer/Texture.h"
-#include "Engine/Renderer/SkyboxShader.h"
+#include "Engine/Graphics/Texture.h"
+#include "Engine/Graphics/SkyboxShader.h"
 
 namespace Engine
 {

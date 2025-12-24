@@ -1,9 +1,9 @@
 #include "enginepch.h"
 #include "Components.h"
-#include "Engine/Renderer/Camera.h"
-#include "Engine/Renderer/Texture.h"
-#include "Engine/Renderer/Mesh.h"
-#include "Engine/Renderer/Material.h"
+#include "Engine/Graphics/Camera.h"
+#include "Engine/Graphics/Texture.h"
+#include "Engine/Graphics/Mesh.h"
+#include "Engine/Graphics/Material.h"
 #include "Engine/Audio/AudioClip.h"
 
 namespace Engine

@@ -2,7 +2,6 @@
 
 #include "Engine/Asset/Asset.h"
 
-
 namespace Engine
 {
 	class AudioClip : public Asset

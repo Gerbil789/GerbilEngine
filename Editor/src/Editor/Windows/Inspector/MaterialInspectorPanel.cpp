@@ -1,5 +1,5 @@
 #include "MaterialInspectorPanel.h"
-#include "Engine/Renderer/Shader.h"
+#include "Engine/Graphics/Shader.h"
 #include "Editor/Components/Widgets.h"
 #include <imgui.h>
 

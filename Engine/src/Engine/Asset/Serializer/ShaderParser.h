@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Renderer/Shader.h"
+#include "Engine/Graphics/Shader.h"
 
 namespace Engine 
 {

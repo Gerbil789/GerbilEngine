@@ -1,6 +1,6 @@
 #include "enginepch.h"
 #include "ShaderInspectorPanel.h"
-#include "Engine/Renderer/WebGPUUtils.h"
+#include "Engine/Graphics/WebGPUUtils.h"
 #include <imgui.h>
 
 namespace Editor
@@ -25,8 +25,5 @@ namespace Editor
 		{
 			ImGui::TextUnformatted((" - " + binding.name + " (Group " + std::to_string(binding.group) + ", Binding " + std::to_string(binding.binding) + ")").c_str());
 		}
-
-
-
 	}
 }

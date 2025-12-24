@@ -3,10 +3,9 @@
 #include "Engine/Core/Core.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Renderer/GraphicsContext.h"
-#include "Engine/Renderer/Renderer.h"
-#include "Engine/Renderer/SamplerPool.h"
-
+#include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Graphics/SamplerPool.h"
+#include "Engine/Graphics/Renderer/RenderGlobals.h"
 
 #include "Engine/Audio/Audio.h"
 
@@ -39,7 +38,7 @@ namespace Engine
 		Input::Initialize();
 		GraphicsContext::Initialize();
 		SamplerPool::Initialize();
-		Renderer::Initialize();
+		RenderGlobals::Initialize();
 		Engine::Audio::Initialize();
 
 	}

@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "ShaderParser.h"
 #include "Engine/Core/Log.h"
-#include "Engine/Renderer/WebGPUUtils.h"
+#include "Engine/Graphics/WebGPUUtils.h"
 
 #include <regex>
 

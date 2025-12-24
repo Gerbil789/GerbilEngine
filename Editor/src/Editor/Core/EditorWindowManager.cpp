@@ -2,7 +2,7 @@
 #include "EditorWindowManager.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Utils/File.h"
-#include "Engine/Renderer/GraphicsContext.h"
+#include "Engine/Graphics/GraphicsContext.h"
 #include "Editor/Windows/MenuBar.h"
 #include "Editor/Windows/ContentBrowser/ContentBrowserWindow.h"
 #include "Editor/Windows/Inspector/InspectorWindow.h"

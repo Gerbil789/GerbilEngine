@@ -2,8 +2,8 @@
 #include "SceneSerializer.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Renderer/Mesh.h"
-#include "Engine/Renderer/Material.h"
+#include "Engine/Graphics/Mesh.h"
+#include "Engine/Graphics/Material.h"
 #include <yaml-cpp/yaml.h>
 
 namespace Engine

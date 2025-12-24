@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Renderer/GraphicsContext.h"
+#include "Engine/Graphics/GraphicsContext.h"
 #include <functional>
 
 namespace Engine

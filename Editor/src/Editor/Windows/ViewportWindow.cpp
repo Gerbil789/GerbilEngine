@@ -9,6 +9,7 @@
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Command/CommandManager.h"
 #include "Editor/Command/TransformEntity.h"
+#include "Engine/Graphics/Renderer/BaseRenderPass.h"
 
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -26,6 +27,7 @@ namespace Editor
 		auto camera = &m_CameraController.GetCamera();
 		camera->SetBackgroundType(Engine::Camera::BackgroundType::Skybox);
 		m_Renderer.SetCamera(camera);
+		m_Renderer.AddPass(new Engine::BaseRenderPass());
 
 		Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene* scene)
 			{
@@ -51,9 +53,7 @@ namespace Editor
 		m_ViewportFocused = ImGui::IsWindowFocused();
 
 		// Render scene
-		m_Renderer.BeginScene();
 		m_Renderer.RenderScene();
-		m_Renderer.EndScene();
 
 		// Render entity IDs
 		m_EntityIdRenderer.Render(); 

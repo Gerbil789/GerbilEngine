@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "ContentBrowserWindow.h"
 #include "Engine/Core/Project.h"
-#include "Engine/Renderer/Material.h"
+#include "Engine/Graphics/Material.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Core/Application.h"
 #include "Editor/Components/ScopedStyle.h"
