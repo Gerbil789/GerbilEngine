@@ -6,9 +6,10 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Importer/MeshImporter.h"
 #include "Engine/Graphics/Camera.h"
-#include "Engine/Graphics/Renderer/BaseRenderPass.h"
+#include "Engine/Graphics/RenderPass/OpaquePass.h"
+#include "Engine/Graphics/RenderPass/BackgroundPass.h"
 
-class ThumbnailRenderer //TODO: this whole class needs to be reworked
+class ThumbnailRenderer //TODO: this whole class needs to be reworked, too many dependencies in the header, bloats compile times
 {
 public:
 	void Initialize()
@@ -27,7 +28,8 @@ public:
 		mc.mesh = m_PreviewMesh;
 
 		m_Renderer = new Engine::Renderer(64, 64);
-		m_Renderer->AddPass(new Engine::BaseRenderPass());
+		m_Renderer->AddPass(new Engine::BackgroundPass());
+		m_Renderer->AddPass(new Engine::OpaquePass());
 		m_Renderer->SetCamera(camera);
 		m_Renderer->SetScene(scene);
 	}

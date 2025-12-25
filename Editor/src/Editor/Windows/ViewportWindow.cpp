@@ -9,7 +9,9 @@
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Command/CommandManager.h"
 #include "Editor/Command/TransformEntity.h"
-#include "Engine/Graphics/Renderer/BaseRenderPass.h"
+#include "Engine/Graphics/RenderPass/BackgroundPass.h"
+#include "Engine/Graphics/RenderPass/OpaquePass.h"
+#include "Engine/Graphics/RenderPass/WireframePass.h"
 
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -27,7 +29,9 @@ namespace Editor
 		auto camera = &m_CameraController.GetCamera();
 		camera->SetBackgroundType(Engine::Camera::BackgroundType::Skybox);
 		m_Renderer.SetCamera(camera);
-		m_Renderer.AddPass(new Engine::BaseRenderPass());
+		m_Renderer.AddPass(new Engine::BackgroundPass());
+		m_Renderer.AddPass(new Engine::OpaquePass());
+		//m_Renderer.AddPass(new Engine::WireframePass());
 
 		Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene* scene)
 			{

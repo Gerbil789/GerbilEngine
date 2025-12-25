@@ -1,0 +1,15 @@
+#pragma once
+
+#include "Engine/Graphics/RenderPass/RenderPass.h"
+
+namespace Engine
+{
+	class WireframePass : public RenderPass
+	{
+	public:
+		WireframePass();
+		virtual ~WireframePass();
+
+		virtual void Execute(wgpu::CommandEncoder& encoder, const RenderContext& context) override;
+	};
+}

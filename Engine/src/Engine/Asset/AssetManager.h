@@ -55,6 +55,8 @@ namespace Engine
 				//TODO: handle file modification (reload asset, etc...)
 				break;
 			}
+			default:
+				break;
 			}
 		}
 
@@ -154,7 +156,7 @@ namespace Engine
 			return m_AssetRegistry.GetMetadata(id);
 		}
 
-		static const AssetType GetAssetType(UUID id)
+		static AssetType GetAssetType(UUID id)
 		{
 			auto metadata = m_AssetRegistry.GetMetadata(id);
 			if (!metadata)

@@ -1,68 +1,68 @@
 Assets:
   - ID: 2694865476912390428
     Path: Textures\skull.png
-  - ID: 8982589797183355654
-    Path: Meshes\cube.glb
   - ID: 2430232742964632950
     Path: Materials\cone.material
-  - ID: 6023610084586369645
-    Path: Meshes\cone.glb
-  - ID: 11488752734390452845
-    Path: Shaders\Dev.shader
+  - ID: 8982589797183355654
+    Path: Meshes\cube.glb
+  - ID: 5773291836826301117
+    Path: Scenes\empty.scene
   - ID: 16775844654374535381
     Path: Meshes\bad cube.glb
   - ID: 15783146352431223061
     Path: Textures\concrete_pillar\normal.png
-  - ID: 5773291836826301117
-    Path: Scenes\empty.scene
+  - ID: 6023610084586369645
+    Path: Meshes\cone.glb
+  - ID: 11488752734390452845
+    Path: Shaders\Dev.shader
   - ID: 2306162455903992554
     Path: Materials\Test.material
-  - ID: 17556434590940161352
-    Path: Textures\metal_plates\metallic.png
   - ID: 12250063124513744072
     Path: Textures\metal_plates\ambient.png
+  - ID: 17556434590940161352
+    Path: Textures\metal_plates\metallic.png
   - ID: 5073552622789407463
     Path: Scenes\MyScene.scene
   - ID: 7796496215400302547
     Path: Textures\bricks_wall\albedo.png
-  - ID: 1362570588462280121
-    Path: Textures\background.png
-  - ID: 2853061957645165945
-    Path: Textures\concrete_pillar\roughness.png
-  - ID: 1528564429035083513
-    Path: Meshes\Rocks\rock_4.glb
   - ID: 12536270321169401593
     Path: Meshes\Rocks\rock_6.glb
+  - ID: 1528564429035083513
+    Path: Meshes\Rocks\rock_4.glb
+  - ID: 2853061957645165945
+    Path: Textures\concrete_pillar\roughness.png
+  - ID: 1362570588462280121
+    Path: Textures\background.png
   - ID: 16789549155580106633
     Path: Textures\metal_plates\normal.png
   - ID: 7643789161623611460
     Path: Textures\bricks_wall\ambient.png
   - ID: 14899039829185301908
     Path: Textures\bricks_wall\height.png
-  - ID: 6538048173471328587
-    Path: Meshes\sphere.glb
   - ID: 15824823137009738635
     Path: Meshes\bad cube 2.glb
-  - ID: 7280531552173679287
-    Path: Textures\bricks_wall\normal.png
+  - ID: 6538048173471328587
+    Path: Meshes\sphere.glb
   - ID: 4495233893825811959
     Path: Meshes\Rocks\rock_1.glb
+  - ID: 7280531552173679287
+    Path: Textures\bricks_wall\normal.png
   - ID: 14689403870797383974
     Path: Textures\bricks_wall\roughness.png
   - ID: 6401710123764655857
     Path: Textures\metal_plates\color.png
-  - ID: 9663298294828637969
-    Path: Textures\concrete_pillar\ambient.png
   - ID: 39304943629783121
     Path: Textures\tile.png
-  - ID: 8398882664557588896
-    Path: Audio\Ievan Polkka (Medieval Cover).mp3
+  - ID: 9663298294828637969
+    Path: Textures\concrete_pillar\ambient.png
   - ID: 4188365834911559584
     Path: Audio\music.mp3
-  - ID: 17808716298089464060
-    Path: Textures\concrete_pillar\color.png
+  - ID: 8398882664557588896
+    Path: Audio\Ievan Polkka (Medieval Cover).mp3
   - ID: 597879891253628668
     Path: Meshes\Rocks\rock_3.glb
+  - ID: 17808716298089464060
+    Path: Textures\concrete_pillar\color.png
   - ID: 8301645721951659981
     Path: Textures\concrete_pillar\height.png
   - ID: 9021856193546548807
@@ -81,10 +81,10 @@ Assets:
     Path: Textures\favorite.png
   - ID: 1486764810843681757
     Path: Shaders\Flat.shader
-  - ID: 5709536494730707269
-    Path: Meshes\Rocks\rock_2.glb
   - ID: 539581536164685189
     Path: Textures\rocks\Color.png
+  - ID: 5709536494730707269
+    Path: Meshes\Rocks\rock_2.glb
   - ID: 16704251879842279232
     Path: Textures\mood.png
   - ID: 9864571265207132016
