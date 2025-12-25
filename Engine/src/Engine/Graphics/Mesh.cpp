@@ -7,6 +7,7 @@ namespace Engine
 	Mesh::Mesh(const MeshSpecification& specification)
 	{
 		m_IndexCount = static_cast<uint32_t>(specification.indices.size());
+		m_WireIndices = specification.wireframeIndices;
 
 		// Calculate AABB bounds
 		for (const Vertex& v : specification.vertices)
@@ -14,6 +15,7 @@ namespace Engine
 			m_Bounds.min = glm::min(m_Bounds.min, v.position);
 			m_Bounds.max = glm::max(m_Bounds.max, v.position);
 		}
+
 
 		// Vertex buffer
 		wgpu::BufferDescriptor vertexBufferdesc{};

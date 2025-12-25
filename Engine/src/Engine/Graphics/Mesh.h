@@ -23,6 +23,7 @@ namespace Engine
 	{
 		std::vector<Vertex> vertices;
 		std::vector<uint16_t> indices;
+		std::vector<uint16_t> wireframeIndices;
 	};
 
 	class Mesh : public Asset
@@ -34,11 +35,13 @@ namespace Engine
 		const wgpu::Buffer& GetIndexBuffer() const { return m_IndexBuffer; }
 		uint32_t GetIndexCount() const { return m_IndexCount; }
 		const AABB& GetBounds() const { return m_Bounds; }
+		const std::vector<uint16_t>& GetWireframeIndices() const { return m_WireIndices; }
 
 	private:
 		wgpu::Buffer m_VertexBuffer;
 		wgpu::Buffer m_IndexBuffer;
 		uint32_t m_IndexCount = 0;
 		AABB m_Bounds;
+		std::vector<uint16_t> m_WireIndices;
 	};
 }

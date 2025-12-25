@@ -64,17 +64,26 @@ namespace Engine::GraphicsContext
 		desc.requiredFeatureCount = 1;
 		desc.requiredFeatures = &wgpu::InstanceFeatureName::TimedWaitAny;
 		s_Instance = wgpu::createInstance(desc);
-		ASSERT(s_Instance, "Failed to create WGPU instance");
+		if(!s_Instance)
+		{
+			throw std::runtime_error("Failed to create WGPU instance");
+		}
 
 		// Create WGPU surface
 		s_Surface = glfwGetWGPUSurface(s_Instance, static_cast<GLFWwindow*>(window.GetNativeWindow()));
-		ASSERT(s_Surface, "Failed to create WebGPU surface");
+		if(!s_Surface)
+		{
+			throw std::runtime_error("Failed to create WGPU surface");
+		}
 
 		// Request adapter
 		wgpu::RequestAdapterOptions adapterOpts = {};
 		adapterOpts.compatibleSurface = s_Surface;
 		wgpu::Adapter adapter = s_Instance.requestAdapter(adapterOpts);
-		ASSERT(adapter, "Failed to request WGPU adapter");
+		if(!adapter)
+		{
+			throw std::runtime_error("Failed to request WGPU adapter");
+		}
 
 		// Print backend info
 		{
@@ -103,23 +112,29 @@ namespace Engine::GraphicsContext
 
 		deviceDesc.uncapturedErrorCallbackInfo.callback = [](WGPUDevice const*, WGPUErrorType type, WGPUStringView message, void*, void*)
 			{
-				LOG_ERROR("WebGPU Uncaptured {} error: {}", (int)type, message);
+				LOG_ERROR("WebGPU Uncaptured error [type: {}]: {}", ErrorTypeToString(type), message);
 			};
 
 		s_Device = adapter.requestDevice(deviceDesc);
-		ASSERT(s_Device, "Failed to request WebGPU device");
+		if(!s_Device)
+		{
+			throw std::runtime_error("Failed to request WGPU device");
+		}
 
 		adapter.release();
 
 		// Get queue
 		s_Queue = s_Device.getQueue();
-		ASSERT(s_Queue, "Failed to get WGPU queue");
+		if(!s_Queue)
+		{
+			throw std::runtime_error("Failed to get WGPU queue");
+		}
 
 		// Configure surface
 		ConfigureSurface(window.GetWidth(), window.GetHeight());
 	}
 
-	void GraphicsContext::Shutdown()
+	void Shutdown()
 	{
 		if (s_Surface) s_Surface.unconfigure();
 		if (s_Queue) s_Queue.release();
@@ -128,7 +143,7 @@ namespace Engine::GraphicsContext
 		if (s_Instance) s_Instance.release();
 	}
 
-	void GraphicsContext::ConfigureSurface(uint32_t width, uint32_t height)
+	void ConfigureSurface(uint32_t width, uint32_t height)
 	{
 		wgpu::SurfaceConfiguration config = {};
 		config.width = width;

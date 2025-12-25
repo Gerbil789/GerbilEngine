@@ -64,7 +64,7 @@ namespace Engine
 		const std::string& GetName() const { return GetComponent<NameComponent>().name; }
 
 		void SetActive(bool active) { GetComponent<IdentityComponent>().enabled = active; }
-		const bool IsActive() const { return GetComponent<IdentityComponent>().enabled; }
+		bool IsActive() const { return GetComponent<IdentityComponent>().enabled; }
 
 		UUID GetUUID() { return GetComponent<IdentityComponent>().id; }
 

@@ -12,7 +12,7 @@
 #include "Engine/Graphics/RenderPass/BackgroundPass.h"
 #include "Engine/Graphics/RenderPass/OpaquePass.h"
 #include "Engine/Graphics/RenderPass/WireframePass.h"
-
+#include "Engine/Graphics/RenderPass/EntityIdPass.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
 
@@ -22,6 +22,7 @@
 
 namespace Editor
 {
+	static Engine::EntityIdPass* s_EntityIdPass = nullptr;
 	static ImGuizmo::OPERATION gizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
 	ViewportWindow::ViewportWindow()
@@ -31,13 +32,15 @@ namespace Editor
 		m_Renderer.SetCamera(camera);
 		m_Renderer.AddPass(new Engine::BackgroundPass());
 		m_Renderer.AddPass(new Engine::OpaquePass());
+		s_EntityIdPass = new Engine::EntityIdPass();
+		m_Renderer.AddPass(s_EntityIdPass);
 		//m_Renderer.AddPass(new Engine::WireframePass());
 
 		Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene* scene)
 			{
 				m_Scene = scene;
 				m_Renderer.SetScene(m_Scene);
-				m_EntityIdRenderer.SetScene(m_Scene);
+				//m_EntityIdRenderer.SetScene(m_Scene);
 			});
 	}
 
@@ -59,16 +62,13 @@ namespace Editor
 		// Render scene
 		m_Renderer.RenderScene();
 
-		// Render entity IDs
-		m_EntityIdRenderer.Render(); 
-
 		ImVec2 mousePos = ImGui::GetMousePos();
 		float mx = mousePos.x - m_ViewportBounds[0].x;
 		float my = mousePos.y - m_ViewportBounds[0].y;
 
 		if (mx >= 0 && my >= 0 && mx < (int)m_ViewportSize.x && my < (int)m_ViewportSize.y)
 		{
-			Engine::UUID uuid = m_EntityIdRenderer.ReadPixel((uint32_t)mx, (uint32_t)my);
+			Engine::UUID uuid = s_EntityIdPass->ReadPixel((uint32_t)mx, (uint32_t)my);
 			if(uuid.IsValid())
 			{
 				m_HoveredEntity = m_Scene->GetEntity(uuid);
@@ -137,7 +137,6 @@ namespace Editor
 			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
 			{
 				m_Renderer.Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-				m_EntityIdRenderer.Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			}
 		}
 

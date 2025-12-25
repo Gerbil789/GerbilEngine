@@ -120,7 +120,7 @@ namespace Engine
 			case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE: {
 				const uint8_t* src = reinterpret_cast<const uint8_t*>(data);
 				for (size_t i = 0; i < count; ++i)
-					indices.push_back(static_cast<uint32_t>(src[i]));
+					indices.push_back(static_cast<uint16_t>(src[i]));
 				break;
 			}
 			default:
@@ -129,19 +129,21 @@ namespace Engine
 			}
 		}
 
-		//for(int i = 0; i < vertices.size(); i++)
-		//{
-		//	auto vertex = vertices[i];
-		//	LOG_TRACE("Vertex {0}: [{1},{2},{3}]", i, vertex.position.x, vertex.position.y, vertex.position.z);
-		//}
+		std::vector<uint16_t> wireIndices;
+		wireIndices.reserve(indices.size() * 2); // 3 edges = 6 indices per triangle
 
-		//for (int i = 0; i < indices.size(); i++)
-		//{
-		//	auto index = indices[i];
-		//	LOG_TRACE("Index {0}: [{1}]", i, index);
-		//}
+		for (size_t i = 0; i + 2 < indices.size(); i += 3)
+		{
+			uint16_t i0 = indices[i + 0];
+			uint16_t i1 = indices[i + 1];
+			uint16_t i2 = indices[i + 2];
 
-		MeshSpecification spec { vertices, indices };
+			wireIndices.push_back(i0); wireIndices.push_back(i1);
+			wireIndices.push_back(i1); wireIndices.push_back(i2);
+			wireIndices.push_back(i2); wireIndices.push_back(i0);
+		}
+
+		MeshSpecification spec{ vertices, indices, wireIndices }; //TODO: is this copy or reference?
 		Mesh* mesh = new Mesh(spec);
 		return mesh;
 	}

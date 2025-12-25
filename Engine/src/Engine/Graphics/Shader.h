@@ -2,10 +2,9 @@
 
 #include "Engine/Asset/Asset.h"
 #include "Engine/Graphics/ShaderSpecification.h"
-#include <filesystem>
 #include <webgpu/webgpu.hpp>
 
-namespace GroupID //TODO: remove
+namespace GroupID //TODO: remove / refactor
 {
 	constexpr int Frame = 0;
 	constexpr int Model = 1;

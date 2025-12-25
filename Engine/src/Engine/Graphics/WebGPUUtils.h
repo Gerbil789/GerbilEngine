@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Core/Core.h"
+#include "Engine/Core/Log.h"
 #include <webgpu/webgpu.hpp>
 
 //TODO: rename this file to something better, its practicaly just toString() functions for webgpu enums
@@ -45,7 +45,7 @@ namespace Engine
 		if (it != formatMap.end())
 			return it->second;
 
-		ASSERT(false, "Unknown vertex attribute format: {}", str);
+		LOG_ERROR("Unknown vertex attribute format: {}", str);
 		return wgpu::VertexFormat::Force32;
 	}
 
@@ -108,7 +108,7 @@ namespace Engine
 		if (stage.find("compute") != std::string::npos)
 			result |= static_cast<uint32_t>(wgpu::ShaderStage::Compute);
 
-		ASSERT(result != 0, "Unknown shader stage: {}", stage);
+		LOG_ERROR("Unknown shader stage: {}", stage);	
 		return wgpu::ShaderStage(result);
 	}
 
@@ -162,6 +162,19 @@ namespace Engine
 		case wgpu::BackendType::OpenGLES: return "OpenGLES";
 		case wgpu::BackendType::Null:     return "Null";
 		default:                          return "Unknown";
+		}
+	}
+
+	inline static const std::string ErrorTypeToString(wgpu::ErrorType type)
+	{
+		switch (type)
+		{
+		case wgpu::ErrorType::NoError:      return "NoError";
+		case wgpu::ErrorType::Validation:   return "Validation";
+		case wgpu::ErrorType::OutOfMemory:  return "OutOfMemory";
+		case wgpu::ErrorType::Internal:     return "Internal";
+		case wgpu::ErrorType::Unknown:      return "Unknown";
+		default:                            return "Unknown";
 		}
 	}
 }

@@ -1,5 +1,5 @@
 #include "enginepch.h"
-#include "EntityIdRenderer.h"
+#include "EntityIdPass.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Graphics/Shader.h"
@@ -9,102 +9,41 @@
 
 namespace Engine
 {
-	EntityIdRenderer::EntityIdRenderer(uint32_t width, uint32_t height)
+	EntityIdPass::EntityIdPass()
 	{
-		m_Device = GraphicsContext::GetDevice();
-		m_Queue = GraphicsContext::GetQueue();
+		Resize(1, 1);
 		CreateBindGroupLayout();
 		CreatePipeline();
-
-		Resize(width, height);
 	}
 
-	void EntityIdRenderer::Resize(uint32_t width, uint32_t height)
+	void EntityIdPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
 	{
-		// Color texture
-		wgpu::TextureDescriptor colorTextureDesc{};
-		colorTextureDesc.label = { "EntityIdRendererColorTexture", WGPU_STRLEN };
-		colorTextureDesc.dimension = wgpu::TextureDimension::_2D;
-		colorTextureDesc.format = wgpu::TextureFormat::RG32Uint;	// 64bits for uuid (2x32)
-		colorTextureDesc.size = { width, height, 1 };
-		colorTextureDesc.mipLevelCount = 1;
-		colorTextureDesc.sampleCount = 1;
-		colorTextureDesc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
-		m_Texture = m_Device.createTexture(colorTextureDesc);
+		if(context.width != m_Width || context.height != m_Height)
+		{
+			Resize(context.width, context.height);
+		}
 
-		wgpu::TextureViewDescriptor viewDesc{};
-		viewDesc.label = { "EntityIdRendererTextureView", WGPU_STRLEN };
-		viewDesc.dimension = WGPUTextureViewDimension_2D;
-		viewDesc.format = colorTextureDesc.format;
-		viewDesc.baseMipLevel = 0;
-		viewDesc.mipLevelCount = 1;
-		viewDesc.baseArrayLayer = 0;
-		viewDesc.arrayLayerCount = 1;
-		m_TextureView = m_Texture.createView(viewDesc);
+		wgpu::RenderPassColorAttachment color{};
+		color.view = m_TextureView;
+		color.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
+		color.loadOp = wgpu::LoadOp::Clear;
+		color.storeOp = wgpu::StoreOp::Store;
+		color.clearValue = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-		// Depth texture
-		wgpu::TextureDescriptor depthTextureDesc;
-		colorTextureDesc.label = { "EntityIdRendererDepthTexture", WGPU_STRLEN };
-		depthTextureDesc.dimension = wgpu::TextureDimension::_2D;
-		depthTextureDesc.format = wgpu::TextureFormat::Depth24Plus;
-		depthTextureDesc.mipLevelCount = 1;
-		depthTextureDesc.sampleCount = 1;
-		depthTextureDesc.size = { width, height, 1 };
-		depthTextureDesc.usage = wgpu::TextureUsage::RenderAttachment;
-		depthTextureDesc.viewFormatCount = 1;
-		depthTextureDesc.viewFormats = (WGPUTextureFormat*)&wgpu::TextureFormat::Depth24Plus;
-		wgpu::Texture depthTexture = m_Device.createTexture(depthTextureDesc);
+		wgpu::RenderPassDescriptor passDescriptor;
+		passDescriptor.label = { "EntityIdRenderPass", WGPU_STRLEN };
+		passDescriptor.colorAttachmentCount = 1;
+		passDescriptor.colorAttachments = &color;
 
-		wgpu::TextureViewDescriptor depthTextureViewDesc;
-		depthTextureViewDesc.aspect = wgpu::TextureAspect::DepthOnly;
-		depthTextureViewDesc.baseArrayLayer = 0;
-		depthTextureViewDesc.arrayLayerCount = 1;
-		depthTextureViewDesc.baseMipLevel = 0;
-		depthTextureViewDesc.mipLevelCount = 1;
-		depthTextureViewDesc.dimension = wgpu::TextureViewDimension::_2D;
-		depthTextureViewDesc.format = wgpu::TextureFormat::Depth24Plus;
-		m_DepthView = depthTexture.createView(depthTextureViewDesc);
-	}
+		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
+		pass.setPipeline(m_Pipeline);
 
-	void EntityIdRenderer::Render()
-	{
-		wgpu::RenderPassColorAttachment colorAttachment{};
-		colorAttachment.view = m_TextureView;
-		colorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
-		colorAttachment.loadOp = wgpu::LoadOp::Clear;
-		colorAttachment.storeOp = wgpu::StoreOp::Store;
-		colorAttachment.clearValue = { 0.0f, 0.0f };
+		pass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
-		wgpu::RenderPassDepthStencilAttachment depthStencilAttachment{};
-		depthStencilAttachment.view = m_DepthView;
-		depthStencilAttachment.depthClearValue = 1.0f;
-		depthStencilAttachment.depthLoadOp = wgpu::LoadOp::Clear;
-		depthStencilAttachment.depthStoreOp = wgpu::StoreOp::Store;
-		depthStencilAttachment.depthReadOnly = false;
-		depthStencilAttachment.stencilClearValue = 0;
-		depthStencilAttachment.stencilLoadOp = wgpu::LoadOp::Undefined;
-		depthStencilAttachment.stencilStoreOp = wgpu::StoreOp::Undefined;
-		depthStencilAttachment.stencilReadOnly = true;
-
-		wgpu::RenderPassDescriptor renderPassDescriptor;
-		renderPassDescriptor.label = { "EntityIdRenderPass", WGPU_STRLEN };
-		renderPassDescriptor.colorAttachmentCount = 1;
-		renderPassDescriptor.colorAttachments = &colorAttachment;
-		renderPassDescriptor.depthStencilAttachment = &depthStencilAttachment;
-
-		wgpu::CommandEncoderDescriptor encoderDesc = {};
-		encoderDesc.label = { "RendererCommandEncoder", WGPU_STRLEN };
-		wgpu::CommandEncoder encoder = m_Device.createCommandEncoder(encoderDesc);
-
-		wgpu::RenderPassEncoder renderPass = encoder.beginRenderPass(renderPassDescriptor);
-		renderPass.setPipeline(m_Pipeline);
-
-		renderPass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
-
-		std::vector<Entity> entities = m_Scene->GetEntities<TransformComponent, MeshComponent>();
+		const std::vector<Entity>& entities = context.scene->GetEntities<TransformComponent, MeshComponent>();
 
 		uint32_t i = 0;
-		for (Entity& entity : entities)
+		for (Entity entity : entities)
 		{
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
 			auto& mesh = meshComponent.mesh;
@@ -114,36 +53,31 @@ namespace Engine
 			glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetLocalMatrix(); //TODO: world matrix?
 
 			uint32_t dynamicOffset = i * RenderGlobals::GetModelUniformStride();
-			renderPass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
+			pass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
 
 			uint32_t idDynamicOffset = i * 256; // WebGPU requires dynamic offsets to be aligned to 256 bytes
 
 			Engine::UUID uuid = entity.GetUUID();
-			m_Queue.writeBuffer(m_UniformBuffer, idDynamicOffset, &uuid, sizeof(Engine::UUID));
-			renderPass.setBindGroup(2, m_BindGroup, 1, &idDynamicOffset);
+			GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, idDynamicOffset, &uuid, sizeof(Engine::UUID));
+			pass.setBindGroup(2, m_BindGroup, 1, &idDynamicOffset);
 
-			renderPass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
-			renderPass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, mesh->GetIndexBuffer().getSize());
-			renderPass.drawIndexed(mesh->GetIndexCount(), 1, 0, 0, 0);
+			pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
+			pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, mesh->GetIndexBuffer().getSize());
+			pass.drawIndexed(mesh->GetIndexCount(), 1, 0, 0, 0);
 
 			i++;
 		}
 
-		renderPass.end();
-		renderPass.release();
-
-		wgpu::CommandBuffer commandBuffer = encoder.finish();
-		encoder.release();
-		m_Queue.submit(1, &commandBuffer);
+		pass.end();
 	}
 
-	Engine::UUID EntityIdRenderer::ReadPixel(uint32_t x, uint32_t y)
+	Engine::UUID EntityIdPass::ReadPixel(uint32_t x, uint32_t y)
 	{
 		wgpu::BufferDescriptor bufferDesc{};
 		bufferDesc.label = { "EntityIdReadbackBuffer", WGPU_STRLEN };
 		bufferDesc.size = sizeof(Engine::UUID);
 		bufferDesc.usage = wgpu::BufferUsage::MapRead | wgpu::BufferUsage::CopyDst;
-		wgpu::Buffer readbackBuffer = m_Device.createBuffer(bufferDesc);
+		wgpu::Buffer readbackBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
 
 		// Copy from texture to buffer
 		wgpu::TexelCopyTextureInfo src{};
@@ -159,12 +93,12 @@ namespace Engine
 
 		wgpu::CommandEncoderDescriptor encoderDesc{};
 		encoderDesc.label = { "EntityIdReadbackEncoder", WGPU_STRLEN };
-		wgpu::CommandEncoder encoder = m_Device.createCommandEncoder(encoderDesc);
+		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder(encoderDesc);
 
 		encoder.copyTextureToBuffer(src, dst, copySize);
 		wgpu::CommandBuffer cmdBuffer = encoder.finish();
 		encoder.release();
-		m_Queue.submit(1, &cmdBuffer);
+		GraphicsContext::GetQueue().submit(1, &cmdBuffer);
 
 		wgpu::BufferMapCallbackInfo callbackInfo{};
 		callbackInfo.mode = wgpu::CallbackMode::WaitAnyOnly;
@@ -190,12 +124,38 @@ namespace Engine
 		const uint64_t* pixel = reinterpret_cast<const uint64_t*>(mapped);
 		Engine::UUID id(*pixel);
 
-		readbackBuffer.release();
+		readbackBuffer.release(); //TODO: must this be?
 
 		return id;
 	}
 
-	void EntityIdRenderer::CreateBindGroupLayout()
+	void EntityIdPass::Resize(uint32_t width, uint32_t height)
+	{
+		m_Width = width;
+		m_Height = height;
+
+		wgpu::TextureDescriptor entityID{};
+		entityID.label = { "RendererEntityIDTexture", WGPU_STRLEN };
+		entityID.dimension = wgpu::TextureDimension::_2D;
+		entityID.format = wgpu::TextureFormat::RG32Uint;	// 64bits for uuid (2x32)
+		entityID.size = { width, height, 1 };
+		entityID.mipLevelCount = 1;
+		entityID.sampleCount = 1;
+		entityID.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
+		m_Texture = GraphicsContext::GetDevice().createTexture(entityID);
+
+		wgpu::TextureViewDescriptor view{};
+		view.label = { "RendererEntityIDTextureView", WGPU_STRLEN };
+		view.dimension = wgpu::TextureViewDimension::_2D;
+		view.format = entityID.format;
+		view.baseMipLevel = 0;
+		view.mipLevelCount = 1;
+		view.baseArrayLayer = 0;
+		view.arrayLayerCount = 1;
+		m_TextureView = m_Texture.createView(view);
+	}
+
+	void EntityIdPass::CreateBindGroupLayout()
 	{
 		wgpu::BindGroupLayoutEntry entry = wgpu::Default;
 		entry.binding = 0;
@@ -212,11 +172,11 @@ namespace Engine
 		m_BindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(desc);
 
 		wgpu::BufferDescriptor bufferDesc{};
-		bufferDesc.label = { "EntityIdUniformBuffer", WGPU_STRLEN };;
+		bufferDesc.label = { "EntityIdUniformBuffer", WGPU_STRLEN };
 		bufferDesc.size = 1024 * 256 * sizeof(Engine::UUID); //1024 max entities, 256 bytes alignment
 		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 
-		m_UniformBuffer = m_Device.createBuffer(bufferDesc);
+		m_UniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
 
 		wgpu::BindGroupEntry bindGroupEntry{};
 		bindGroupEntry.binding = 0;
@@ -229,28 +189,26 @@ namespace Engine
 		bindGroupDesc.layout = m_BindGroupLayout;
 		bindGroupDesc.entryCount = 1;
 		bindGroupDesc.entries = &bindGroupEntry;
-		m_BindGroup = m_Device.createBindGroup(bindGroupDesc);
+		m_BindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
 	}
 
-	void EntityIdRenderer::CreatePipeline()
+	void EntityIdPass::CreatePipeline()
 	{
-		std::string content;;
-		std::filesystem::path path = "Resources/Engine/shaders/entityId.wgsl";
-		bool ok = Engine::ReadFile(path, content);
-		ASSERT(ok, "Failed to load entity id shader");
-
-		const char* shaderSource = content.c_str();
-
-		wgpu::ShaderModuleDescriptor shaderDesc;
+		std::string content;
+		if (!Engine::ReadFile("Resources/Engine/shaders/entityId.wgsl", content))
+		{
+			throw std::runtime_error("Failed to load entity id shader");
+		}
 
 		wgpu::ShaderSourceWGSL shaderCodeDesc;
 		shaderCodeDesc.chain.next = nullptr;
 		shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
-		shaderDesc.nextInChain = &shaderCodeDesc.chain;
-		shaderCodeDesc.code = { shaderSource, WGPU_STRLEN };
+		shaderCodeDesc.code = { content.c_str(), WGPU_STRLEN };
 
-		wgpu::ShaderModule shaderModule = m_Device.createShaderModule(shaderDesc);
-		//wgpu::ShaderModule shaderModule = Shader::LoadShader("Resources/Engine/shaders/entityId.wgsl");
+		wgpu::ShaderModuleDescriptor shaderDesc{};
+		shaderDesc.nextInChain = &shaderCodeDesc.chain;
+
+		wgpu::ShaderModule shaderModule = GraphicsContext::GetDevice().createShaderModule(shaderDesc);
 		std::vector<wgpu::VertexAttribute> vertexAttribs(3);
 
 		// Position
@@ -305,14 +263,6 @@ namespace Engine
 		fragmentState.targets = &colorTarget;
 		pipelineDesc.fragment = &fragmentState;
 
-		wgpu::DepthStencilState depthStencilState{};
-		depthStencilState.depthCompare = wgpu::CompareFunction::Less;
-		depthStencilState.depthWriteEnabled = wgpu::OptionalBool::True;
-		depthStencilState.format = wgpu::TextureFormat::Depth24Plus;
-		depthStencilState.stencilReadMask = 0xFFFFFFFF;
-		depthStencilState.stencilWriteMask = 0xFFFFFFFF;
-		pipelineDesc.depthStencil = &depthStencilState;
-
 		pipelineDesc.multisample.count = 1;
 		pipelineDesc.multisample.mask = ~0u; // Default value for the mask, meaning "all bits on"
 		pipelineDesc.multisample.alphaToCoverageEnabled = false;
@@ -327,9 +277,9 @@ namespace Engine
 		layoutDesc.label = { "EntityIdShaderPipelineLayout", WGPU_STRLEN };
 		layoutDesc.bindGroupLayoutCount = 3;
 		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayouts;
-		pipelineDesc.layout = m_Device.createPipelineLayout(layoutDesc);
+		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
 
-		m_Pipeline = m_Device.createRenderPipeline(pipelineDesc);
+		m_Pipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
 		shaderModule.release();
 	}
 }

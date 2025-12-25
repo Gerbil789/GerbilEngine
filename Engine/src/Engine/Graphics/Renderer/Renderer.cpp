@@ -44,7 +44,7 @@ namespace Engine
 		// Color
 		{
 			wgpu::TextureDescriptor color{};
-			color.label = { "RendererColorTexture" };
+			color.label = { "RendererColorTexture", WGPU_STRLEN };
 			color.dimension = wgpu::TextureDimension::_2D;
 			color.format = wgpu::TextureFormat::RGBA8Unorm;
 			color.size = { width, height, 1 };
@@ -54,7 +54,7 @@ namespace Engine
 			wgpu::Texture colorTexture = GraphicsContext::GetDevice().createTexture(color);
 
 			wgpu::TextureViewDescriptor view{};
-			view.label = { "RendererColorTextureView" };
+			view.label = { "RendererColorTextureView", WGPU_STRLEN };
 			view.dimension = wgpu::TextureViewDimension::_2D;
 			view.format = color.format;
 			view.baseMipLevel = 0;
@@ -67,7 +67,7 @@ namespace Engine
 		// Depth
 		{
 			wgpu::TextureDescriptor depth;
-			depth.label = { "RendererDepthTextureView" };
+			depth.label = { "RendererDepthTextureView", WGPU_STRLEN };
 			depth.dimension = wgpu::TextureDimension::_2D;
 			depth.format = wgpu::TextureFormat::Depth24Plus;
 			depth.mipLevelCount = 1;
@@ -102,7 +102,7 @@ namespace Engine
 		GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetFrameUniformBuffer(), 0, &frameUniforms, sizeof(frameUniforms));
 
 		wgpu::CommandEncoderDescriptor encoderDesc = {};
-		encoderDesc.label = { "RendererCommandEncoder" };
+		encoderDesc.label = { "RendererCommandEncoder", WGPU_STRLEN };
 		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder(encoderDesc);
 
 		for(auto pass : m_Passes)

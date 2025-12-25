@@ -2,7 +2,6 @@
 #include "Shader.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 
 namespace Engine
