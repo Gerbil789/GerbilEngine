@@ -9,14 +9,6 @@
 
 namespace Engine
 {
-	BackgroundPass::BackgroundPass()
-	{
-	}
-
-	BackgroundPass::~BackgroundPass()
-	{
-	}
-
 	void BackgroundPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
 	{
 		wgpu::RenderPassColorAttachment color{};
@@ -27,22 +19,10 @@ namespace Engine
 		const glm::vec4& col = context.camera->GetClearColor();
 		color.clearValue = wgpu::Color(col.r, col.g, col.b, col.a);
 
-		wgpu::RenderPassDepthStencilAttachment depth{};
-		depth.view = context.depthTarget;
-		depth.depthClearValue = 1.0f;
-		depth.depthLoadOp = wgpu::LoadOp::Clear;
-		depth.depthStoreOp = wgpu::StoreOp::Store;
-		depth.depthReadOnly = false;
-		depth.stencilClearValue = 0;
-		depth.stencilLoadOp = wgpu::LoadOp::Undefined;
-		depth.stencilStoreOp = wgpu::StoreOp::Undefined;
-		depth.stencilReadOnly = true;
-
 		wgpu::RenderPassDescriptor passDescriptor;
-		passDescriptor.label = { "BackgroundRenderPass" };
+		passDescriptor.label = { "BackgroundRenderPass", WGPU_STRLEN };
 		passDescriptor.colorAttachmentCount = 1;
 		passDescriptor.colorAttachments = &color;
-		passDescriptor.depthStencilAttachment = &depth;
 
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
 
@@ -57,6 +37,5 @@ namespace Engine
 		}
 
 		pass.end();
-		pass.release();
 	}
 }

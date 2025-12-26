@@ -8,8 +8,7 @@ namespace Engine
 	{
 	public:
 		WireframePass();
-		virtual ~WireframePass();
-
 		virtual void Execute(wgpu::CommandEncoder& encoder, const RenderContext& context) override;
+
 	};
 }

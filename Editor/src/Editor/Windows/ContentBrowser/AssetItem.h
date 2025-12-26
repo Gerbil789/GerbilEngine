@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Editor/Core/EditorIcons.h"
+#include "Engine/Asset/AssetManager.h"
 #include "ThumbnailRenderer.h"
 
 namespace Editor
@@ -54,8 +55,7 @@ namespace Editor
 			{
 				auto thumbnailRenderer = ThumbnailRenderer();
 				thumbnailRenderer.Initialize();
-				thumbnailRenderer.SetMaterial(Engine::AssetManager::GetAsset<Engine::Material>(uuid).get());
-				Thumbnail = thumbnailRenderer.Render();
+				Thumbnail = thumbnailRenderer.Render(Engine::AssetManager::GetAsset<Engine::Material>(uuid).get());
 			}
 		}
 	};

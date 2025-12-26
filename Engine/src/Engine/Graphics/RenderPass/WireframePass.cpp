@@ -5,19 +5,166 @@
 #include "Engine/Graphics/Material.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Utils/File.h"
 
 namespace Engine
 {
+	wgpu::RenderPipeline m_Pipeline;
+	wgpu::BindGroup m_BindGroup;
+	wgpu::Buffer m_UniformBuffer;
+
+	struct WireframeUniform
+	{
+		glm::vec4 color;
+	};
+	static_assert(sizeof(WireframeUniform) % 16 == 0);
+
+
 	WireframePass::WireframePass()
 	{
+		wgpu::BindGroupLayoutEntry entry = wgpu::Default;
+		entry.binding = 0;
+		entry.visibility = wgpu::ShaderStage::Fragment;
+		entry.buffer.type = wgpu::BufferBindingType::Uniform;
+		entry.buffer.minBindingSize = sizeof(WireframeUniform);
+		entry.buffer.hasDynamicOffset = false;
+
+		wgpu::BindGroupLayoutDescriptor desc{};
+		desc.label = { "WireframeBindGroupLayout", WGPU_STRLEN };
+		desc.entryCount = 1;
+		desc.entries = &entry;
+
+		wgpu::BindGroupLayout bindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(desc);
+
+		wgpu::BufferDescriptor bufferDesc{};
+		bufferDesc.label = { "WireframeUniformBuffer", WGPU_STRLEN };
+		bufferDesc.size = 1024 * 256 * sizeof(WireframeUniform); //1024 max entities, 256 bytes alignment
+		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
+
+		m_UniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
+
+		wgpu::BindGroupEntry bindGroupEntry{};
+		bindGroupEntry.binding = 0;
+		bindGroupEntry.buffer = m_UniformBuffer;
+		bindGroupEntry.offset = 0;
+		bindGroupEntry.size = sizeof(WireframeUniform);
+
+		wgpu::BindGroupDescriptor bindGroupDesc{};
+		bindGroupDesc.label = { "WireframeBindGroup", WGPU_STRLEN };
+		bindGroupDesc.layout = bindGroupLayout;
+		bindGroupDesc.entryCount = 1;
+		bindGroupDesc.entries = &bindGroupEntry;
+		m_BindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+
+		std::string content;
+		if (!Engine::ReadFile("Resources/Engine/shaders/wireframe.wgsl", content))
+		{
+			throw std::runtime_error("Failed to load wireframe shader");
+		}
+
+		wgpu::ShaderSourceWGSL shaderCodeDesc;
+		shaderCodeDesc.chain.next = nullptr;
+		shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
+		shaderCodeDesc.code = { content.c_str(), WGPU_STRLEN };
+
+		wgpu::ShaderModuleDescriptor shaderDesc{};
+		shaderDesc.nextInChain = &shaderCodeDesc.chain;
+
+		wgpu::ShaderModule shaderModule = GraphicsContext::GetDevice().createShaderModule(shaderDesc);
+		std::vector<wgpu::VertexAttribute> vertexAttribs(3);
+
+		// Position
+		vertexAttribs[0].shaderLocation = 0; // @location(0)
+		vertexAttribs[0].format = wgpu::VertexFormat::Float32x3;
+		vertexAttribs[0].offset = 0;
+
+		// Normal
+		vertexAttribs[1].shaderLocation = 1; // @location(1)
+		vertexAttribs[1].format = wgpu::VertexFormat::Float32x3;
+		vertexAttribs[1].offset = 3 * sizeof(float);
+
+		// UV
+		vertexAttribs[2].shaderLocation = 2; // @location(2)
+		vertexAttribs[2].format = wgpu::VertexFormat::Float32x2;
+		vertexAttribs[2].offset = 6 * sizeof(float);
+
+		wgpu::VertexBufferLayout vertexBufferLayout;
+
+		vertexBufferLayout.attributeCount = static_cast<uint32_t>(vertexAttribs.size());
+		vertexBufferLayout.attributes = vertexAttribs.data();
+		vertexBufferLayout.arrayStride = 8 * sizeof(float);
+		vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
+
+
+		wgpu::RenderPipelineDescriptor pipelineDesc;
+		pipelineDesc.label = { "WireframeShaderPipeline", WGPU_STRLEN };
+
+		pipelineDesc.vertex.bufferCount = 1;
+		pipelineDesc.vertex.buffers = &vertexBufferLayout;
+		pipelineDesc.vertex.module = shaderModule;
+		pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN };
+		pipelineDesc.vertex.constantCount = 0;
+		pipelineDesc.vertex.constants = nullptr;
+
+		pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::LineList;
+		pipelineDesc.primitive.stripIndexFormat = wgpu::IndexFormat::Undefined;
+		pipelineDesc.primitive.frontFace = wgpu::FrontFace::CCW;
+		pipelineDesc.primitive.cullMode = wgpu::CullMode::None;
+
+		wgpu::ColorTargetState colorTarget;
+		colorTarget.format = wgpu::TextureFormat::RGBA8Unorm;
+		//colorTarget.blend = &blendState;
+		colorTarget.writeMask = wgpu::ColorWriteMask::All;
+
+
+		wgpu::DepthStencilState depthStencil{};
+		depthStencil.format = wgpu::TextureFormat::Depth24Plus;
+		depthStencil.depthWriteEnabled = wgpu::OptionalBool::False;
+		depthStencil.depthCompare = wgpu::CompareFunction::LessEqual;
+		depthStencil.stencilFront = {};
+		depthStencil.stencilBack = {};
+		depthStencil.stencilReadMask = 0;
+		depthStencil.stencilWriteMask = 0;
+
+		wgpu::FragmentState fragmentState;
+		fragmentState.module = shaderModule;
+		fragmentState.entryPoint = { "fs_main", WGPU_STRLEN };
+		fragmentState.constantCount = 0;
+		fragmentState.constants = nullptr;
+		fragmentState.targetCount = 1;
+		fragmentState.targets = &colorTarget;
+		pipelineDesc.depthStencil = &depthStencil;
+		pipelineDesc.fragment = &fragmentState;
+
+		pipelineDesc.multisample.count = 1;
+		pipelineDesc.multisample.mask = ~0u; // Default value for the mask, meaning "all bits on"
+		pipelineDesc.multisample.alphaToCoverageEnabled = false;
+
+
+
+
+
+
+		wgpu::BindGroupLayout bindGroupLayouts[] = {
+			RenderGlobals::GetFrameLayout(),
+			RenderGlobals::GetModelLayout(),
+			bindGroupLayout
+		};
+
+		wgpu::PipelineLayoutDescriptor layoutDesc{};
+		layoutDesc.label = { "WireframeShaderPipelineLayout", WGPU_STRLEN };
+		layoutDesc.bindGroupLayoutCount = 3;
+		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayouts;
+		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
+
+		m_Pipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
+		shaderModule.release();
 	}
 
-	WireframePass::~WireframePass()
+	void WireframePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
 	{
-	}
+		if(!m_Enabled) return;
 
-	void WireframePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context) 
-	{
 		wgpu::RenderPassColorAttachment color{};
 		color.view = context.colorTarget;
 		color.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
@@ -27,7 +174,7 @@ namespace Engine
 		wgpu::RenderPassDepthStencilAttachment depth{};
 		depth.view = context.depthTarget;
 		depth.depthClearValue = 1.0f;
-		depth.depthLoadOp = wgpu::LoadOp::Load;
+		depth.depthLoadOp = wgpu::LoadOp::Clear;
 		depth.depthStoreOp = wgpu::StoreOp::Store;
 		depth.depthReadOnly = false;
 		depth.stencilClearValue = 0;
@@ -36,7 +183,7 @@ namespace Engine
 		depth.stencilReadOnly = true;
 
 		wgpu::RenderPassDescriptor passDescriptor{};
-		passDescriptor.label = { "WireframeRenderPass" };
+		passDescriptor.label = { "WireframeRenderPass", WGPU_STRLEN };
 		passDescriptor.colorAttachmentCount = 1;
 		passDescriptor.colorAttachments = &color;
 		passDescriptor.depthStencilAttachment = &depth;
@@ -48,52 +195,31 @@ namespace Engine
 		const std::vector<Entity>& entities = context.scene->GetEntities<TransformComponent, MeshComponent>();
 		std::unordered_map<Material*, std::vector<Entity>> materialGroups;
 
-		// Group entities by material
+		const WireframeUniform uniformData { glm::vec4(0.0f, 1.0f, 0.0f, 1.0f) }; // Green color for wireframe
+
+		GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, 0, &uniformData, sizeof(uniformData));
+		pass.setBindGroup(GroupID::Material, m_BindGroup, 0, nullptr);
+		pass.setPipeline(m_Pipeline);
+
+		uint32_t i = 0;
 		for (auto entity : entities)
 		{
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
-			if (meshComponent.mesh == nullptr)
-			{
-				continue;
-			}
+			auto& mesh = meshComponent.mesh;
 
-			Material* material = meshComponent.material;
+			glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetWorldMatrix(context.scene->GetRegistry());
 
-			if (material == nullptr)
-			{
-				material = Material::GetDefault().get();
-			}
+			uint32_t dynamicOffset = i * RenderGlobals::GetModelUniformStride();
+			GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetModelUniformBuffer(), dynamicOffset, &modelMatrix, sizeof(modelMatrix));
+			pass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
 
-			materialGroups[material].push_back(entity);
-		}
+			pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
+			pass.setIndexBuffer(mesh->GetEdgeBuffer(), wgpu::IndexFormat::Uint16, 0, mesh->GetEdgeBuffer().getSize());
+			pass.drawIndexed(mesh->GetEdgeIndexCount(), 1, 0, 0, 0);
 
-		uint32_t i = 0;
-		for (const auto& [material, groupEntities] : materialGroups)
-		{
-			Shader* shader = material->GetShader();
-			material->Bind(pass);
-			pass.setPipeline(shader->GetRenderPipeline());
-
-			for (auto entity : groupEntities)
-			{
-				auto& meshComponent = entity.GetComponent<MeshComponent>();
-				auto& mesh = meshComponent.mesh;
-
-				glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetWorldMatrix(context.scene->GetRegistry());
-
-				uint32_t dynamicOffset = i * RenderGlobals::GetModelUniformStride();
-				GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetModelUniformBuffer(), dynamicOffset, &modelMatrix, sizeof(modelMatrix));
-				pass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
-
-				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
-				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, mesh->GetIndexBuffer().getSize());
-				pass.drawIndexed(mesh->GetIndexCount(), 1, 0, 0, 0);
-
-				i++;
-			}
+			i++;
 		}
 
 		pass.end();
-		pass.release();
 	}
 }

@@ -1,15 +1,9 @@
 #pragma once
 
 #include "IEditorWindow.h"
-#include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
-
-#include "Engine/Graphics/Camera.h"
-#include "Engine/Event/MouseEvent.h"
 #include "Editor/Core/EditorCameraController.h"
-#include <glm/glm.hpp>
-#include <filesystem>
 
 namespace Editor
 {
@@ -29,8 +23,8 @@ namespace Editor
 
 	private:
 		Engine::Scene* m_Scene = nullptr;
-		Engine::Renderer m_Renderer = Engine::Renderer(640, 640);
-		//Engine::EntityIdRenderer m_EntityIdRenderer = Engine::EntityIdRenderer(640, 640);
+		Engine::Renderer m_Renderer;
+
 		EditorCameraController m_CameraController;
 
 		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };

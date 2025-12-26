@@ -51,13 +51,13 @@ namespace Engine::RenderGlobals
 			bindGroupLayoutEntry.buffer.minBindingSize = sizeof(ModelUniforms);
 
 			wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc{};
-			bindGroupLayoutDesc.label = { "ModelBindGroupLayout" };
+			bindGroupLayoutDesc.label = { "ModelBindGroupLayout", WGPU_STRLEN };
 			bindGroupLayoutDesc.entryCount = 1;
 			bindGroupLayoutDesc.entries = &bindGroupLayoutEntry;
 			s_ModelBindGroupLayout = device.createBindGroupLayout(bindGroupLayoutDesc);
 
 			wgpu::BufferDescriptor bufferDesc{};
-			bufferDesc.label = { "ModelUniformBuffer" };
+			bufferDesc.label = { "ModelUniformBuffer", WGPU_STRLEN };
 			bufferDesc.size = BufferSize;
 			bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 			s_ModelUniformBuffer = device.createBuffer(bufferDesc);
@@ -69,7 +69,7 @@ namespace Engine::RenderGlobals
 			bindGroupEntry.size = sizeof(ModelUniforms);
 
 			wgpu::BindGroupDescriptor bindGroupDesc{};
-			bindGroupDesc.label = { "ModelBindGroup" };
+			bindGroupDesc.label = { "ModelBindGroup", WGPU_STRLEN };
 			bindGroupDesc.layout = s_ModelBindGroupLayout;
 			bindGroupDesc.entryCount = 1;
 			bindGroupDesc.entries = &bindGroupEntry;
@@ -85,13 +85,13 @@ namespace Engine::RenderGlobals
 			bindGroupLayoutEntry.buffer.minBindingSize = sizeof(FrameUniforms);
 
 			wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc{};
-			bindGroupLayoutDesc.label = { "FrameBindGroupLayout" };
+			bindGroupLayoutDesc.label = { "FrameBindGroupLayout", WGPU_STRLEN };
 			bindGroupLayoutDesc.entryCount = 1;
 			bindGroupLayoutDesc.entries = &bindGroupLayoutEntry;
 			s_FrameBindGroupLayout = device.createBindGroupLayout(bindGroupLayoutDesc);
 
 			wgpu::BufferDescriptor bufferDesc{};
-			bufferDesc.label = { "FrameUniformBuffer" };
+			bufferDesc.label = { "FrameUniformBuffer", WGPU_STRLEN };
 			bufferDesc.size = sizeof(FrameUniforms);
 			bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 
@@ -104,7 +104,7 @@ namespace Engine::RenderGlobals
 			bindGroupEntry.size = sizeof(FrameUniforms);
 
 			wgpu::BindGroupDescriptor bindGroupDesc{};
-			bindGroupDesc.label = { "FrameBindGroup" };
+			bindGroupDesc.label = { "FrameBindGroup", WGPU_STRLEN };
 			bindGroupDesc.layout = s_FrameBindGroupLayout;
 			bindGroupDesc.entryCount = 1;
 			bindGroupDesc.entries = &bindGroupEntry;

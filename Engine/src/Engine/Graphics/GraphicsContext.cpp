@@ -33,7 +33,7 @@ namespace Engine::GraphicsContext
 		hwndDesc.hwnd = glfwGetWin32Window(window);
 
 		wgpu::SurfaceDescriptor surfaceDesc{};
-		surfaceDesc.label = { "MainSurface" };
+		surfaceDesc.label = { "MainSurface", WGPU_STRLEN };
 		surfaceDesc.nextInChain = &hwndDesc.chain;
 
 		return instance.createSurface(surfaceDesc);
@@ -46,7 +46,7 @@ namespace Engine::GraphicsContext
 		x11Desc.window = glfwGetX11Window(window);
 
 		wgpu::SurfaceDescriptor surfaceDesc{};
-		surfaceDesc.label = { "MainSurface" };
+		surfaceDesc.label = { "MainSurface", WGPU_STRLEN };
 		surfaceDesc.nextInChain = &x11Desc.chain;
 
 		return instance.createSurface(surfaceDesc);
@@ -99,9 +99,9 @@ namespace Engine::GraphicsContext
 
 		// Request device
 		wgpu::DeviceDescriptor deviceDesc = {};
-		deviceDesc.label = { "MainDevice" };
+		deviceDesc.label = { "MainDevice", WGPU_STRLEN };
 		deviceDesc.requiredFeatureCount = 0;
-		deviceDesc.defaultQueue.label = { "DefaultQueue" };
+		deviceDesc.defaultQueue.label = { "DefaultQueue", WGPU_STRLEN };
 
 		deviceDesc.deviceLostCallbackInfo.mode = wgpu::CallbackMode::AllowSpontaneous;
 		deviceDesc.deviceLostCallbackInfo.callback = [](WGPUDevice const*, WGPUDeviceLostReason reason, WGPUStringView message, void*, void*)

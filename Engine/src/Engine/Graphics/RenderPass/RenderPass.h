@@ -9,5 +9,7 @@ namespace Engine
   public:
     virtual ~RenderPass() = default;
     virtual void Execute(wgpu::CommandEncoder& encoder, const RenderContext& context) = 0;
+
+		bool m_Enabled = true;
   };
 }

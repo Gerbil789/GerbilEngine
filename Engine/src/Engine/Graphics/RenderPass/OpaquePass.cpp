@@ -75,28 +75,21 @@ namespace Engine
 //	return true;
 //}
 
-
-	OpaquePass::OpaquePass()
-	{
-	}
-
-	OpaquePass::~OpaquePass()
-	{
-	}
-
 	void OpaquePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
 	{
-		ENGINE_PROFILE_FUNCTION();
+		if (!m_Enabled) return;
+
 		wgpu::RenderPassColorAttachment color{};
 		color.view = context.colorTarget;
 		color.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 		color.loadOp = wgpu::LoadOp::Load;
 		color.storeOp = wgpu::StoreOp::Store;
+		color.clearValue = wgpu::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 		wgpu::RenderPassDepthStencilAttachment depth{};
 		depth.view = context.depthTarget;
 		depth.depthClearValue = 1.0f;
-		depth.depthLoadOp = wgpu::LoadOp::Load;
+		depth.depthLoadOp = wgpu::LoadOp::Clear;
 		depth.depthStoreOp = wgpu::StoreOp::Store;
 		depth.depthReadOnly = false;
 		depth.stencilClearValue = 0;
@@ -105,7 +98,7 @@ namespace Engine
 		depth.stencilReadOnly = true;
 
 		wgpu::RenderPassDescriptor renderPassDescriptor;
-		renderPassDescriptor.label = { "BaseRenderPass" };
+		renderPassDescriptor.label = { "BaseRenderPass", WGPU_STRLEN };
 		renderPassDescriptor.colorAttachmentCount = 1;
 		renderPassDescriptor.colorAttachments = &color;
 		renderPassDescriptor.depthStencilAttachment = &depth;
@@ -175,6 +168,5 @@ namespace Engine
 		//LOG_INFO("Rendered {0} objects", i);
 
 		pass.end();
-		pass.release();
 	}
 }

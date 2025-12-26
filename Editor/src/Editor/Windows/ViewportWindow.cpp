@@ -1,48 +1,59 @@
 #include "ViewportWindow.h"
+
+#include "Editor/Components/ScopedStyle.h"
+#include "Editor/Core/EditorContext.h"
+#include "Editor/Command/CommandManager.h"
+#include "Editor/Command/TransformEntity.h"
+
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Event/MouseEvent.h"
-#include "Editor/Components/ScopedStyle.h"
-#include "Engine/Asset/Importer/TextureImporter.h"
-#include "Engine/Asset/AssetManager.h"
-#include "Editor/Core/EditorContext.h"
-#include "Editor/Command/CommandManager.h"
-#include "Editor/Command/TransformEntity.h"
+
 #include "Engine/Graphics/RenderPass/BackgroundPass.h"
 #include "Engine/Graphics/RenderPass/OpaquePass.h"
 #include "Engine/Graphics/RenderPass/WireframePass.h"
 #include "Engine/Graphics/RenderPass/EntityIdPass.h"
+
 #include <imgui.h>
 #include <ImGuizmo.h>
-
-#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
 namespace Editor
 {
-	static Engine::EntityIdPass* s_EntityIdPass = nullptr;
 	static ImGuizmo::OPERATION gizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+	static Engine::EntityIdPass* s_EntityIdPass = nullptr;
+	static Engine::OpaquePass* s_OpaquePass = nullptr;
+	static Engine::WireframePass* s_WireframePass = nullptr;
 
 	ViewportWindow::ViewportWindow()
 	{
 		auto camera = &m_CameraController.GetCamera();
 		camera->SetBackgroundType(Engine::Camera::BackgroundType::Skybox);
 		m_Renderer.SetCamera(camera);
+
+
 		m_Renderer.AddPass(new Engine::BackgroundPass());
-		m_Renderer.AddPass(new Engine::OpaquePass());
+
+		s_OpaquePass = new Engine::OpaquePass();
+		m_Renderer.AddPass(s_OpaquePass);
+
 		s_EntityIdPass = new Engine::EntityIdPass();
 		m_Renderer.AddPass(s_EntityIdPass);
-		//m_Renderer.AddPass(new Engine::WireframePass());
+
+		s_WireframePass = new Engine::WireframePass();
+		//s_WireframePass->m_Enabled = false;
+		m_Renderer.AddPass(s_WireframePass);
 
 		Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene* scene)
 			{
 				m_Scene = scene;
 				m_Renderer.SetScene(m_Scene);
-				//m_EntityIdRenderer.SetScene(m_Scene);
 			});
 	}
+
 
 	void ViewportWindow::OnUpdate()
 	{
@@ -54,7 +65,7 @@ namespace Editor
 
 		ImGui::Begin("Viewport");
 
-		UpdateViewportSize(); //TODO: dont call every frame?
+		UpdateViewportSize();
 		
 		m_ViewportHovered = ImGui::IsWindowHovered();
 		m_ViewportFocused = ImGui::IsWindowFocused();
@@ -74,11 +85,30 @@ namespace Editor
 				m_HoveredEntity = m_Scene->GetEntity(uuid);
 			}
 		}
+		ImVec2 imagePos = ImGui::GetCursorScreenPos();
 
 		// Draw scene
 		ImGui::Image((WGPUTextureView)m_Renderer.GetTextureView(), ImVec2(m_ViewportSize.x, m_ViewportSize.y));
 
 		DrawGizmos();
+
+		const float padding = 8.0f;
+		ImGui::SetCursorScreenPos(ImVec2(
+			imagePos.x + m_ViewportSize.x - padding - 120.0f,
+			imagePos.y + padding
+		));
+
+		ImGui::SetNextItemWidth(120.0f);
+
+		if (ImGui::BeginCombo("##ViewportOptions", "Passes"))
+		{
+			ImGui::Checkbox("Opaque", &s_OpaquePass->m_Enabled);
+			ImGui::Checkbox("Wireframe", &s_WireframePass->m_Enabled);
+			//ImGui::Checkbox("Normal");
+			//ImGui::Checkbox("Debug");
+			ImGui::EndCombo();
+		}
+
 		ImGui::End();
 	}
 

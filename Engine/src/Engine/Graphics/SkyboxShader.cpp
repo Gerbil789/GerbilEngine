@@ -87,13 +87,13 @@ namespace Engine
 		fragmentState.targets = &colorTarget;
 		pipelineDesc.fragment = &fragmentState;
 
-		wgpu::DepthStencilState depthStencilState{};
-		depthStencilState.depthCompare = wgpu::CompareFunction::LessEqual;
-		depthStencilState.depthWriteEnabled = wgpu::OptionalBool::False;
-		depthStencilState.format = wgpu::TextureFormat::Depth24Plus;
-		depthStencilState.stencilReadMask = 0xFFFFFFFF;
-		depthStencilState.stencilWriteMask = 0xFFFFFFFF;
-		pipelineDesc.depthStencil = &depthStencilState;
+		//wgpu::DepthStencilState depthStencilState{};
+		//depthStencilState.depthCompare = wgpu::CompareFunction::LessEqual;
+		//depthStencilState.depthWriteEnabled = wgpu::OptionalBool::False;
+		//depthStencilState.format = wgpu::TextureFormat::Depth24Plus;
+		//depthStencilState.stencilReadMask = 0xFFFFFFFF;
+		//depthStencilState.stencilWriteMask = 0xFFFFFFFF;
+		//pipelineDesc.depthStencil = &depthStencilState;
 
 		pipelineDesc.multisample.count = 1;		// no multisampling
 		pipelineDesc.multisample.mask = ~0u;	// all samples enabled

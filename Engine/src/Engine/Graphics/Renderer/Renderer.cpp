@@ -5,9 +5,9 @@
 
 namespace Engine
 {
-	Renderer::Renderer(uint32_t width, uint32_t height)
+	Renderer::Renderer()
 	{
-		Resize(width, height);
+		Resize(1, 1);
 	}
 
 	Renderer::~Renderer()
@@ -75,7 +75,7 @@ namespace Engine
 			depth.size = { width, height, 1 };
 			depth.usage = wgpu::TextureUsage::RenderAttachment;
 			depth.viewFormatCount = 1;
-			depth.viewFormats = (WGPUTextureFormat*)&wgpu::TextureFormat::Depth24Plus;
+			depth.viewFormats = &wgpu::TextureFormat::Depth24Plus;
 			wgpu::Texture depthTexture = GraphicsContext::GetDevice().createTexture(depth);
 
 			wgpu::TextureViewDescriptor view;

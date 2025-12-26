@@ -14,5 +14,6 @@
 #include <unordered_set>
 #include <fstream>
 #include <cstdint>
+#include <cstring>
 
 #include <glm/glm.hpp>

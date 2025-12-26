@@ -19,10 +19,14 @@ struct ModelUniforms {
 	model: mat4x4f,
 };
 
+struct WireframeUniforms {
+    color: vec4f,
+};
+
 
 @group(0) @binding(0) var<uniform> uFrameUniforms: FrameUniforms;
 @group(1) @binding(0) var<uniform> uModelUniforms: ModelUniforms;
-@group(2) @binding(0) var<uniform> u_EntityID : vec2<u32>;
+@group(2) @binding(0) var<uniform> uWireframe: WireframeUniforms;
 
 @vertex
 fn vs_main(in: VertexInput) -> VertexOutput {
@@ -32,6 +36,6 @@ fn vs_main(in: VertexInput) -> VertexOutput {
 }
 
 @fragment
-fn fs_main(in: VertexOutput) -> @location(0) vec2<u32> {
-	return u_EntityID;
+fn fs_main(in: VertexOutput) -> @location(0) vec4f {
+	return uWireframe.color;
 }

@@ -35,13 +35,17 @@ namespace Engine
 		const wgpu::Buffer& GetIndexBuffer() const { return m_IndexBuffer; }
 		uint32_t GetIndexCount() const { return m_IndexCount; }
 		const AABB& GetBounds() const { return m_Bounds; }
-		const std::vector<uint16_t>& GetWireframeIndices() const { return m_WireIndices; }
+
+		const wgpu::Buffer& GetEdgeBuffer() const { return m_EdgeBuffer; }
+		uint32_t GetEdgeIndexCount() const { return m_EdgeIndexCount; }
 
 	private:
 		wgpu::Buffer m_VertexBuffer;
 		wgpu::Buffer m_IndexBuffer;
 		uint32_t m_IndexCount = 0;
 		AABB m_Bounds;
-		std::vector<uint16_t> m_WireIndices;
+
+		wgpu::Buffer m_EdgeBuffer;
+		uint32_t m_EdgeIndexCount = 0;
 	};
 }
