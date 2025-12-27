@@ -161,7 +161,7 @@ namespace Engine
 		shaderModule.release();
 	}
 
-	void WireframePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
+	void WireframePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)
 	{
 		if(!m_Enabled) return;
 
@@ -192,32 +192,29 @@ namespace Engine
 
 		pass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
-		const std::vector<Entity>& entities = context.scene->GetEntities<TransformComponent, MeshComponent>();
-		std::unordered_map<Material*, std::vector<Entity>> materialGroups;
-
 		const WireframeUniform uniformData { glm::vec4(0.0f, 1.0f, 0.0f, 1.0f) }; // Green color for wireframe
 
 		GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, 0, &uniformData, sizeof(uniformData));
 		pass.setBindGroup(GroupID::Material, m_BindGroup, 0, nullptr);
 		pass.setPipeline(m_Pipeline);
 
-		uint32_t i = 0;
-		for (auto entity : entities)
+		Mesh* currentMesh = nullptr;
+
+		for (const DrawItem& draw : drawList.items)
 		{
-			auto& meshComponent = entity.GetComponent<MeshComponent>();
-			auto& mesh = meshComponent.mesh;
+			if (!draw.mesh) continue;
 
-			glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetWorldMatrix(context.scene->GetRegistry());
+			if (draw.mesh != currentMesh)
+			{
+				pass.setVertexBuffer(0, draw.mesh->GetVertexBuffer(), 0, draw.mesh->GetVertexBuffer().getSize());
+				pass.setIndexBuffer(draw.mesh->GetEdgeBuffer(), wgpu::IndexFormat::Uint16, 0, draw.mesh->GetEdgeBuffer().getSize());
+				currentMesh = draw.mesh;
+			}
 
-			uint32_t dynamicOffset = i * RenderGlobals::GetModelUniformStride();
-			GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetModelUniformBuffer(), dynamicOffset, &modelMatrix, sizeof(modelMatrix));
+			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
 			pass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
 
-			pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
-			pass.setIndexBuffer(mesh->GetEdgeBuffer(), wgpu::IndexFormat::Uint16, 0, mesh->GetEdgeBuffer().getSize());
-			pass.drawIndexed(mesh->GetEdgeIndexCount(), 1, 0, 0, 0);
-
-			i++;
+			pass.drawIndexed(currentMesh->GetEdgeIndexCount(), 1, 0, 0, 0);
 		}
 
 		pass.end();

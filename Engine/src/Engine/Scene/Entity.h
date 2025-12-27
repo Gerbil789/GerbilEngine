@@ -67,6 +67,7 @@ namespace Engine
 		bool IsActive() const { return GetComponent<IdentityComponent>().enabled; }
 
 		UUID GetUUID() { return GetComponent<IdentityComponent>().id; }
+		const UUID GetUUID() const { return GetComponent<IdentityComponent>().id; }
 
 		void SetParent(Entity newParent, bool keepWorld = true);
 		void RemoveParent(bool keepWorld = true);

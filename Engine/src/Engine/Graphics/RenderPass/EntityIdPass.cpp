@@ -16,7 +16,7 @@ namespace Engine
 		CreatePipeline();
 	}
 
-	void EntityIdPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
+	void EntityIdPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)
 	{
 		if(context.width != m_Width || context.height != m_Height)
 		{
@@ -40,30 +40,28 @@ namespace Engine
 
 		pass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
-		const std::vector<Entity>& entities = context.scene->GetEntities<TransformComponent, MeshComponent>();
+		Mesh* currentMesh = nullptr;
 
-		uint32_t i = 0;
-		for (Entity entity : entities)
+		for (const DrawItem& draw : drawList.items)
 		{
-			auto& meshComponent = entity.GetComponent<MeshComponent>();
-			auto& mesh = meshComponent.mesh;
+			if (!draw.mesh) continue;
 
-			if (!mesh) continue;
+			if (draw.mesh != currentMesh)
+			{
+				pass.setVertexBuffer(0, draw.mesh->GetVertexBuffer(), 0, draw.mesh->GetVertexBuffer().getSize());
+				pass.setIndexBuffer(draw.mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, draw.mesh->GetIndexBuffer().getSize());
+				currentMesh = draw.mesh;
+			}
 
-			uint32_t dynamicOffset = i * RenderGlobals::GetModelUniformStride();
+			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
 			pass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
 
-			uint32_t idDynamicOffset = i * 256; // WebGPU requires dynamic offsets to be aligned to 256 bytes
 
-			Engine::UUID uuid = entity.GetUUID();
-			GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, idDynamicOffset, &uuid, sizeof(Engine::UUID));
-			pass.setBindGroup(2, m_BindGroup, 1, &idDynamicOffset);
+			Engine::UUID uuid = draw.entity.GetUUID();
+			GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, dynamicOffset, &uuid, sizeof(Engine::UUID));
+			pass.setBindGroup(2, m_BindGroup, 1, &dynamicOffset);
 
-			pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
-			pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, mesh->GetIndexBuffer().getSize());
-			pass.drawIndexed(mesh->GetIndexCount(), 1, 0, 0, 0);
-
-			i++;
+			pass.drawIndexed(currentMesh->GetIndexCount(), 1, 0, 0, 0);
 		}
 
 		pass.end();

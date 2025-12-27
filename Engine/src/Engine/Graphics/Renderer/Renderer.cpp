@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
+#include "Engine/Graphics/Renderer/DrawList.h"
 
 namespace Engine
 {
@@ -105,9 +106,21 @@ namespace Engine
 		encoderDesc.label = { "RendererCommandEncoder", WGPU_STRLEN };
 		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder(encoderDesc);
 
+		DrawList list = DrawList::CreateFromScene(m_RenderContext.scene);
+
+		for (const DrawItem& item : list.items)
+		{
+			glm::mat4 model = item.entity.GetComponent<TransformComponent>().GetWorldMatrix(m_RenderContext.scene->GetRegistry());
+
+			uint32_t offset = item.modelIndex * RenderGlobals::GetModelUniformStride();
+
+			GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetModelUniformBuffer(), offset, &model, sizeof(glm::mat4));
+		}
+
+
 		for(auto pass : m_Passes)
 		{
-			pass->Execute(encoder, m_RenderContext);
+			pass->Execute(encoder, m_RenderContext, list);
 		}
 
 		wgpu::CommandBuffer commandBuffer = encoder.finish();

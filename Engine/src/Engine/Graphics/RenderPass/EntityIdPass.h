@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Graphics/RenderPass/RenderPass.h"
-#include "Engine/Core/UUID.h"
+#include "Engine/Core/UUID.h" //TODO: remove
 #include <webgpu/webgpu.hpp>
 
 namespace Engine
@@ -10,7 +10,7 @@ namespace Engine
 	{
   public:
     EntityIdPass();
-    virtual void Execute(wgpu::CommandEncoder& encoder, const RenderContext& context) override;
+    virtual void Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList) override;
     Engine::UUID ReadPixel(uint32_t x, uint32_t y);
 
   private:

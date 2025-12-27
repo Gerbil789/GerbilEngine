@@ -9,7 +9,7 @@
 
 namespace Engine
 {
-	void BackgroundPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
+	void BackgroundPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList&)
 	{
 		wgpu::RenderPassColorAttachment color{};
 		color.view = context.colorTarget;

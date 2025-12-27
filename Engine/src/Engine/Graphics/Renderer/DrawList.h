@@ -1,0 +1,56 @@
+#pragma once
+
+#include "Engine/Scene/Entity.h"
+#include "Engine/Graphics/Mesh.h"
+#include "Engine/Graphics/Material.h"
+
+namespace Engine
+{
+	struct DrawItem
+	{
+		Entity entity;
+		Mesh* mesh;
+		Material* material;
+		uint32_t modelIndex; // index into model buffer
+	};
+
+	class DrawList
+	{
+	public:
+		std::vector<DrawItem> items;
+
+		inline static DrawList CreateFromScene(Scene* scene)
+		{
+			DrawList list;
+
+			uint32_t modelIndex = 0;
+
+			const auto& entities = scene->GetEntities<TransformComponent, MeshComponent>();
+			list.items.reserve(entities.size());
+
+			for (auto entity : entities)
+			{
+				auto& mc = entity.GetComponent<MeshComponent>();
+				if (!mc.mesh)
+				{
+					continue;
+				}
+
+				Material* material = mc.material ? mc.material : Material::GetDefault().get();
+
+				list.items.push_back({ entity, mc.mesh, material, modelIndex++ });
+			}
+
+			std::sort(list.items.begin(), list.items.end(), [](const DrawItem& a, const DrawItem& b)
+				{
+					if (a.material != b.material)
+					{
+						return a.material < b.material;
+					}
+					return a.mesh < b.mesh;
+				});
+
+			return list;
+		}
+	};
+}

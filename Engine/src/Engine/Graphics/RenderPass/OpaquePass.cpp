@@ -75,7 +75,7 @@ namespace Engine
 //	return true;
 //}
 
-	void OpaquePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
+	void OpaquePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)
 	{
 		if (!m_Enabled) return;
 
@@ -107,65 +107,34 @@ namespace Engine
 
 		pass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
-		//glm::mat4 vp = m_Camera->GetViewProjectionMatrix();
-		//Frustum frustum = ExtractFrustum(vp);
+		Material* currentMaterial = nullptr;
+		Mesh* currentMesh = nullptr;
 
-		const std::vector<Entity>& entities = context.scene->GetEntities<TransformComponent, MeshComponent>();
-		std::unordered_map<Material*, std::vector<Entity>> materialGroups;
-
-		// Group entities by material
-		for (auto entity : entities)
+		for (const DrawItem& draw : drawList.items)
 		{
-			auto& meshComponent = entity.GetComponent<MeshComponent>();
-			if (meshComponent.mesh == nullptr)
+			if (!draw.mesh) continue;
+
+			if (draw.material != currentMaterial)
 			{
-				continue;
+				draw.material->Bind(pass);
+				pass.setPipeline(draw.material->GetShader()->GetRenderPipeline());
+				currentMaterial = draw.material;
+				currentMesh = nullptr;
 			}
 
-			Material* material = meshComponent.material;
-
-			if (material == nullptr)
+			if (draw.mesh != currentMesh)
 			{
-				material = Material::GetDefault().get();
+				pass.setVertexBuffer(0, draw.mesh->GetVertexBuffer(), 0, draw.mesh->GetVertexBuffer().getSize());
+				pass.setIndexBuffer(draw.mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, draw.mesh->GetIndexBuffer().getSize());
+
+				currentMesh = draw.mesh;
 			}
 
-			materialGroups[material].push_back(entity);
+			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
+			pass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
+
+			pass.drawIndexed(currentMesh->GetIndexCount(), 1, 0, 0, 0);
 		}
-
-		uint32_t i = 0;
-		for (const auto& [material, groupEntities] : materialGroups)
-		{
-			Shader* shader = material->GetShader();
-			material->Bind(pass);
-			pass.setPipeline(shader->GetRenderPipeline());
-
-			for (auto entity : groupEntities)
-			{
-				auto& meshComponent = entity.GetComponent<MeshComponent>();
-				auto& mesh = meshComponent.mesh;
-
-				glm::mat4 modelMatrix = entity.GetComponent<TransformComponent>().GetWorldMatrix(context.scene->GetRegistry());
-
-				//AABB worldAABB = TransformAABB(mesh->GetBounds(), modelMatrix);
-
-				//if (!IsVisible(frustum, worldAABB))
-				//{
-				//	continue;
-				//}
-
-
-				uint32_t dynamicOffset = i * RenderGlobals::GetModelUniformStride();
-				GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetModelUniformBuffer(), dynamicOffset, &modelMatrix, sizeof(modelMatrix));
-				pass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
-
-				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
-				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, mesh->GetIndexBuffer().getSize());
-				pass.drawIndexed(mesh->GetIndexCount(), 1, 0, 0, 0);
-
-				i++;
-			}
-		}
-		//LOG_INFO("Rendered {0} objects", i);
 
 		pass.end();
 	}
