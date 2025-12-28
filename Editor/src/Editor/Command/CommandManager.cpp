@@ -11,10 +11,10 @@ namespace Editor
       return;
     }
 
-    auto command = std::move(s_UndoStack.top());
+    auto command = s_UndoStack.top();
     s_UndoStack.pop();
     command->Undo();
-    s_RedoStack.push(std::move(command));
+    s_RedoStack.push(command);
   }
 
   void CommandManager::Redo()
@@ -24,10 +24,10 @@ namespace Editor
       return;
     }
 
-    auto command = std::move(s_RedoStack.top());
+    auto command = s_RedoStack.top();
     s_RedoStack.pop();
     command->Execute();
-    s_UndoStack.push(std::move(command));
+    s_UndoStack.push(command);
   }
 
   void CommandManager::OnEvent(Engine::Event& e)

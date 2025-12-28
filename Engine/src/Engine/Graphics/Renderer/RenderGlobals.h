@@ -4,6 +4,7 @@
 
 namespace Engine::RenderGlobals
 {
+  //TODO: i dont like having this in header...
   struct alignas(16) FrameUniforms {
     glm::mat4 view;
     glm::mat4 projection;

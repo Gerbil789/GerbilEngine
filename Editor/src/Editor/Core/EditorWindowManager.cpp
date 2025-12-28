@@ -91,11 +91,19 @@ static void SetupImGuiStyle()
 
 namespace Editor
 {
+	static wgpu::Device s_Device;
+	static wgpu::Surface s_Surface;
+	static wgpu::Queue s_Queue;
+
 	MenuBar m_MenuBar;
 	std::vector<IEditorWindow*> m_Windows;
 
 	void EditorWindowManager::Initialize()
 	{
+		s_Device = Engine::GraphicsContext::GetDevice();
+		s_Surface = Engine::GraphicsContext::GetSurface();
+		s_Queue = Engine::GraphicsContext::GetQueue();
+
 		//TODO: dont heap allocate the windows
 		m_Windows = {
 			new SceneHierarchyWindow(),
@@ -105,10 +113,8 @@ namespace Editor
 			new StatisticsWindow()
 		};
 
-		//initialize imgui
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 		const std::string imgui_ini = "Resources/Editor/layouts/imgui.ini";
 		if (!std::filesystem::exists(imgui_ini))
@@ -117,6 +123,7 @@ namespace Editor
 			ImGui::SaveIniSettingsToDisk(imgui_ini.c_str());
 		}
 
+		ImGuiIO& io = ImGui::GetIO();
 		io.IniFilename = "Resources/Editor/layouts/imgui.ini";
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
@@ -128,8 +135,8 @@ namespace Editor
 
 		ImGui_ImplWGPU_InitInfo initInfo;
 		initInfo.Device = Engine::GraphicsContext::GetDevice();
-		initInfo.RenderTargetFormat = WGPUTextureFormat_RGBA8Unorm;
-		initInfo.DepthStencilFormat = WGPUTextureFormat_Undefined;
+		initInfo.RenderTargetFormat = wgpu::TextureFormat::RGBA8Unorm;
+		initInfo.DepthStencilFormat = wgpu::TextureFormat::Undefined;
 		ImGui_ImplWGPU_Init(&initInfo);
 	}
 
@@ -139,15 +146,12 @@ namespace Editor
 		{
 			delete window;
 		}
-
 		m_Windows.clear();
 
 		ImGui_ImplWGPU_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}
-
-	
 
 	void EditorWindowManager::OnUpdate()
 	{
@@ -182,7 +186,7 @@ namespace Editor
 
 		if(!Engine::ReadFile(default_iniPath, defaultLayoutContent)) return;
 
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGuiIO& io = ImGui::GetIO();
 		ImGui::LoadIniSettingsFromMemory(defaultLayoutContent.c_str());
 		LOG_INFO("ImGui layout reset to default");
 	}
@@ -199,7 +203,6 @@ namespace Editor
 			{ ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f)}
 			});
 
-		// react to window resize
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(viewport->WorkPos);
 		ImGui::SetNextWindowSize(viewport->WorkSize);
@@ -217,40 +220,21 @@ namespace Editor
 	{
 		ImGui::End(); // end dockspace window
 
-		Engine::Window& window = Engine::Application::GetWindow(); //TODO: store this in a member variable?
-		ImGuiIO& io = ImGui::GetIO();
-		io.DisplaySize = ImVec2((float)window.GetWidth(), (float)window.GetHeight());
-
 		ImGui::Render();
 
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 
-		auto device = Engine::GraphicsContext::GetDevice(); //TODO: store this in a member variable?
-		auto surface = Engine::GraphicsContext::GetSurface();
-		auto queue = Engine::GraphicsContext::GetQueue();
-
 		wgpu::SurfaceTexture surfaceTexture;
-		surface.getCurrentTexture(&surfaceTexture);
-		if (surfaceTexture.status != WGPUSurfaceGetCurrentTextureStatus_SuccessOptimal)
+		s_Surface.getCurrentTexture(&surfaceTexture);
+		if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal)
 		{
-			LOG_ERROR("Failed to get current surface texture: {0}", (int)surfaceTexture.status);
+			LOG_ERROR("Failed to get current surface texture. status: {}", (int)surfaceTexture.status);
 			return;
 		}
 
-		// Create a view for this surface texture
-		wgpu::TextureViewDescriptor viewDescriptor;
-		viewDescriptor.label = { "ImGuiSurfaceTextureViewDescriptor", WGPU_STRLEN };
-		viewDescriptor.format = wgpuTextureGetFormat(surfaceTexture.texture);
-		viewDescriptor.dimension = WGPUTextureViewDimension_2D;
-		viewDescriptor.baseMipLevel = 0;
-		viewDescriptor.mipLevelCount = 1;
-		viewDescriptor.baseArrayLayer = 0;
-		viewDescriptor.arrayLayerCount = 1;
-		viewDescriptor.aspect = WGPUTextureAspect_All;
-		viewDescriptor.usage = WGPUTextureUsage_RenderAttachment;
-		wgpu::TextureView targetView = wgpuTextureCreateView(surfaceTexture.texture, &viewDescriptor);
-		wgpuTextureRelease(surfaceTexture.texture);
+		wgpu::Texture texture = surfaceTexture.texture;
+		wgpu::TextureView targetView = texture.createView();
 
 		if (!targetView)
 		{
@@ -258,43 +242,32 @@ namespace Editor
 			return;
 		}
 
-		wgpu::CommandEncoderDescriptor encoderDesc = {};
+		wgpu::CommandEncoderDescriptor encoderDesc {};
 		encoderDesc.label = { "ImGuiCommandEncoderDescriptor", WGPU_STRLEN };
-		WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(device, &encoderDesc);
+		wgpu::CommandEncoder encoder = s_Device.createCommandEncoder(encoderDesc);
 
-		wgpu::RenderPassColorAttachment renderPassColorAttachment = {};
-		renderPassColorAttachment.view = targetView;
-		renderPassColorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
-		renderPassColorAttachment.loadOp = WGPULoadOp_Clear;
-		renderPassColorAttachment.storeOp = WGPUStoreOp_Store;
-		renderPassColorAttachment.clearValue = WGPUColor{ 0.9, 0.1, 0.2, 1.0 };
+		wgpu::RenderPassColorAttachment color = {};
+		color.view = targetView;
+		color.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
+		color.loadOp = wgpu::LoadOp::Clear;
+		color.storeOp = wgpu::StoreOp::Store;
+		color.clearValue = wgpu::Color{ 0.9, 0.1, 0.2, 1.0 };
 
-		wgpu::RenderPassDescriptor renderPassDesc = {};
-		renderPassDesc.label = { "ImGuiRenderPassDescriptor", WGPU_STRLEN };
-		renderPassDesc.colorAttachmentCount = 1;
-		renderPassDesc.colorAttachments = &renderPassColorAttachment;
+		wgpu::RenderPassDescriptor passDesc {};
+		passDesc.label = { "ImGuiRenderPassDescriptor", WGPU_STRLEN };
+		passDesc.colorAttachmentCount = 1;
+		passDesc.colorAttachments = &color;
 
-		WGPURenderPassEncoder renderPass = wgpuCommandEncoderBeginRenderPass(encoder, &renderPassDesc);
+		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDesc);
+		ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), pass);
+		pass.end();
 
-		ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), renderPass);
+		wgpu::CommandBufferDescriptor commandBufferDesc {};
+		commandBufferDesc.label = { "ImGuiCommandBuffer", WGPU_STRLEN };
+		commandBufferDesc.nextInChain = nullptr;
+		wgpu::CommandBuffer commandBuffer = encoder.finish(commandBufferDesc);
 
-		wgpuRenderPassEncoderEnd(renderPass);
-		wgpuRenderPassEncoderRelease(renderPass);
-
-		WGPUCommandBufferDescriptor cmdBufferDescriptor = {};
-		cmdBufferDescriptor.nextInChain = nullptr;
-		cmdBufferDescriptor.label = { "ImGuiCommandBuffer", WGPU_STRLEN };
-		WGPUCommandBuffer command = wgpuCommandEncoderFinish(encoder, &cmdBufferDescriptor);
-		wgpuCommandEncoderRelease(encoder);
-
-		wgpuQueueSubmit(queue, 1, &command);
-		wgpuCommandBufferRelease(command);
-
-		wgpuDeviceTick(device);
-
-		wgpuTextureViewRelease(targetView);
-
-		wgpuSurfacePresent(surface);
-		wgpuDeviceTick(device);
+		s_Queue.submit(1, &commandBuffer);
+		s_Surface.present();
 	}
 }

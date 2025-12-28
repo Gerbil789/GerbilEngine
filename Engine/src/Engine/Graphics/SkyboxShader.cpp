@@ -33,9 +33,6 @@ namespace Engine
 			return;
 		}
 
-		auto device = GraphicsContext::GetDevice();
-		auto queue = GraphicsContext::GetQueue();
-
 		wgpu::ShaderModule shaderModule = CreateShaderModule(source);
 
 		//std::array<wgpu::VertexAttribute, 1> vertexAttribs;
@@ -124,7 +121,7 @@ namespace Engine
 		desc.entryCount = 2;
 		desc.entries = layoutEntries.data();
 
-		m_BindGroupLayout = device.createBindGroupLayout(desc);
+		m_BindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(desc);
 
 		wgpu::BindGroupLayout bindGroupLayouts[] = {
 			RenderGlobals::GetFrameLayout(),
@@ -135,9 +132,9 @@ namespace Engine
 		layoutDesc.label = { "SkyboxPipelineLayout", WGPU_STRLEN };
 		layoutDesc.bindGroupLayoutCount = 2;
 		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayouts;
-		pipelineDesc.layout = device.createPipelineLayout(layoutDesc);
+		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
 
-		m_RenderPipeline = device.createRenderPipeline(pipelineDesc);
+		m_RenderPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
 
 		shaderModule.release();
 	}

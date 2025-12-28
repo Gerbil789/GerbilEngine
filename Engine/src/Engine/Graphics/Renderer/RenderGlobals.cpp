@@ -31,7 +31,6 @@ namespace Engine::RenderGlobals
 	void Initialize()
 	{
 		wgpu::Device device = GraphicsContext::GetDevice();
-		wgpu::Queue queue = GraphicsContext::GetQueue();
 
 		// Model 
 		{

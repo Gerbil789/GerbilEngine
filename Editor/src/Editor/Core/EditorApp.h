@@ -10,8 +10,8 @@ namespace Editor
 		EditorApp(const Engine::ApplicationSpecification& specification);
 		~EditorApp();
 
-		void Run() override;
-		void OnEvent(Engine::Event& e) override;
+		virtual void Run() override;
+		virtual void OnEvent(Engine::Event& e) override;
 	};
 
 	EditorApp CreateApp(Engine::ApplicationCommandLineArgs args);

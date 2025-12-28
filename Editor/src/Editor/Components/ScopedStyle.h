@@ -41,7 +41,7 @@ namespace Editor
 		StyleEntry(ImGuiCol c, ImVec4 val) : type(StyleType::Color), var((ImGuiStyleVar)0), varType(StyleVarType::Float), varFloat(0.0f), col(c), colValue(val) {}
 	};
 
-	class ScopedStyle
+	class ScopedStyle // RAII style pusher/popper
 	{
 	public:
 		ScopedStyle(std::initializer_list<StyleEntry> entries)

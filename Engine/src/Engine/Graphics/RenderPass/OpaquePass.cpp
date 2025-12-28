@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "OpaquePass.h"
-#include "Engine/Scene/Entity.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
@@ -98,7 +97,7 @@ namespace Engine
 		depth.stencilReadOnly = true;
 
 		wgpu::RenderPassDescriptor renderPassDescriptor;
-		renderPassDescriptor.label = { "BaseRenderPass", WGPU_STRLEN };
+		renderPassDescriptor.label = { "OpaqueRenderPass", WGPU_STRLEN };
 		renderPassDescriptor.colorAttachmentCount = 1;
 		renderPassDescriptor.colorAttachments = &color;
 		renderPassDescriptor.depthStencilAttachment = &depth;
@@ -126,7 +125,6 @@ namespace Engine
 			{
 				pass.setVertexBuffer(0, draw.mesh->GetVertexBuffer(), 0, draw.mesh->GetVertexBuffer().getSize());
 				pass.setIndexBuffer(draw.mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, draw.mesh->GetIndexBuffer().getSize());
-
 				currentMesh = draw.mesh;
 			}
 

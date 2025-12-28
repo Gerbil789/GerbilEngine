@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Graphics/RenderPass/RenderPass.h"
-#include "Engine/Core/UUID.h" //TODO: remove
+#include "Engine/Core/UUID.h"
 #include <webgpu/webgpu.hpp>
 
 namespace Engine
@@ -25,7 +25,7 @@ namespace Engine
 		uint32_t m_Width = 0;
 		uint32_t m_Height = 0;
 
-    wgpu::RenderPipeline m_Pipeline;
+    wgpu::RenderPipeline m_EntityIdPipeline;
     wgpu::BindGroupLayout m_BindGroupLayout;
     wgpu::BindGroup m_BindGroup;
 		wgpu::Buffer m_UniformBuffer;

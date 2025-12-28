@@ -1,10 +1,6 @@
 #include "enginepch.h"
 #include "BackgroundPass.h"
-#include "Engine/Scene/Entity.h"
-#include "Engine/Graphics/Mesh.h"
-#include "Engine/Graphics/Material.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
-#include "Engine/Asset/AssetManager.h"
 #include "Engine/Graphics/Camera.h"
 
 namespace Engine
@@ -35,7 +31,6 @@ namespace Engine
 			pass.setBindGroup(1, skybox.GetBindGroup(), 0, nullptr);
 			pass.draw(36, 1, 0, 0);
 		}
-
 		pass.end();
 	}
 }

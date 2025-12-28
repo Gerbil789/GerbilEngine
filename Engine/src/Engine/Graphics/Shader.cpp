@@ -12,9 +12,6 @@ namespace Engine
 		m_Name = name;
 		LOG_INFO("Creating shader: {}", m_Name);
 
-		auto device = GraphicsContext::GetDevice();
-		auto queue = GraphicsContext::GetQueue();
-
 		wgpu::ShaderModule shaderModule = CreateShaderModule(source);
 
 		auto vertexAttributeCount = specification.vertexAttributes.size();
@@ -104,9 +101,9 @@ namespace Engine
 		layoutDesc.label = { label.c_str(), WGPU_STRLEN};
 		layoutDesc.bindGroupLayoutCount = 3;
 		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayouts;
-		pipelineDesc.layout = device.createPipelineLayout(layoutDesc);
+		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
 
-		m_RenderPipeline = device.createRenderPipeline(pipelineDesc);
+		m_RenderPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
 
 		shaderModule.release();
 	}

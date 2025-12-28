@@ -13,6 +13,7 @@
 #include "Engine/Graphics/RenderPass/BackgroundPass.h"
 #include "Engine/Graphics/RenderPass/OpaquePass.h"
 #include "Engine/Graphics/RenderPass/WireframePass.h"
+#include "Engine/Graphics/RenderPass/NormalPass.h"
 #include "Engine/Graphics/RenderPass/EntityIdPass.h"
 
 #include <imgui.h>
@@ -27,6 +28,7 @@ namespace Editor
 	static Engine::EntityIdPass* s_EntityIdPass = nullptr;
 	static Engine::OpaquePass* s_OpaquePass = nullptr;
 	static Engine::WireframePass* s_WireframePass = nullptr;
+	static Engine::NormalPass* s_NormalPass = nullptr;
 
 	ViewportWindow::ViewportWindow()
 	{
@@ -43,9 +45,15 @@ namespace Editor
 		s_EntityIdPass = new Engine::EntityIdPass();
 		m_Renderer.AddPass(s_EntityIdPass);
 
+		s_NormalPass = new Engine::NormalPass();
+		s_NormalPass->m_Enabled = false;
+		m_Renderer.AddPass(s_NormalPass);
+
 		s_WireframePass = new Engine::WireframePass();
-		//s_WireframePass->m_Enabled = false;
+		s_WireframePass->m_Enabled = false;
 		m_Renderer.AddPass(s_WireframePass);
+
+
 
 		Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene* scene)
 			{
@@ -103,8 +111,8 @@ namespace Editor
 		if (ImGui::BeginCombo("##ViewportOptions", "Passes"))
 		{
 			ImGui::Checkbox("Opaque", &s_OpaquePass->m_Enabled);
+			ImGui::Checkbox("Normal", &s_NormalPass->m_Enabled);
 			ImGui::Checkbox("Wireframe", &s_WireframePass->m_Enabled);
-			//ImGui::Checkbox("Normal");
 			//ImGui::Checkbox("Debug");
 			ImGui::EndCombo();
 		}

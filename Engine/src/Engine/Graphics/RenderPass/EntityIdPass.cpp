@@ -1,8 +1,6 @@
 #include "enginepch.h"
 #include "EntityIdPass.h"
-#include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Scene/Entity.h"
-#include "Engine/Graphics/Shader.h"
 #include "Engine/Utils/File.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
@@ -18,7 +16,7 @@ namespace Engine
 
 	void EntityIdPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)
 	{
-		if(context.width != m_Width || context.height != m_Height)
+		if (context.width != m_Width || context.height != m_Height)
 		{
 			Resize(context.width, context.height);
 		}
@@ -30,13 +28,26 @@ namespace Engine
 		color.storeOp = wgpu::StoreOp::Store;
 		color.clearValue = { 0.0f, 0.0f, 0.0f, 0.0f };
 
+		wgpu::RenderPassDepthStencilAttachment depth{};
+		depth.view = context.depthTarget;
+		depth.depthClearValue = 1.0f;
+		depth.depthLoadOp = wgpu::LoadOp::Load;
+		depth.depthStoreOp = wgpu::StoreOp::Store;
+		depth.depthReadOnly = false;
+		depth.stencilClearValue = 0;
+		depth.stencilLoadOp = wgpu::LoadOp::Undefined;
+		depth.stencilStoreOp = wgpu::StoreOp::Undefined;
+		depth.stencilReadOnly = true;
+
+
 		wgpu::RenderPassDescriptor passDescriptor;
 		passDescriptor.label = { "EntityIdRenderPass", WGPU_STRLEN };
 		passDescriptor.colorAttachmentCount = 1;
 		passDescriptor.colorAttachments = &color;
+		passDescriptor.depthStencilAttachment = &depth;
 
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
-		pass.setPipeline(m_Pipeline);
+		pass.setPipeline(m_EntityIdPipeline);
 
 		pass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
@@ -250,6 +261,15 @@ namespace Engine
 		//colorTarget.blend = &blendState;
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 
+		wgpu::DepthStencilState depthStencil{};
+		depthStencil.format = wgpu::TextureFormat::Depth24Plus;
+		depthStencil.depthWriteEnabled = wgpu::OptionalBool::False;
+		depthStencil.depthCompare = wgpu::CompareFunction::LessEqual;
+		depthStencil.stencilFront = {};
+		depthStencil.stencilBack = {};
+		depthStencil.stencilReadMask = 0;
+		depthStencil.stencilWriteMask = 0;
+
 		wgpu::FragmentState fragmentState;
 		fragmentState.module = shaderModule;
 		fragmentState.entryPoint = { "fs_main", WGPU_STRLEN };
@@ -257,6 +277,7 @@ namespace Engine
 		fragmentState.constants = nullptr;
 		fragmentState.targetCount = 1;
 		fragmentState.targets = &colorTarget;
+		pipelineDesc.depthStencil = &depthStencil;
 		pipelineDesc.fragment = &fragmentState;
 
 		pipelineDesc.multisample.count = 1;
@@ -275,7 +296,6 @@ namespace Engine
 		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayouts;
 		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
 
-		m_Pipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
-		shaderModule.release();
+		m_EntityIdPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
 	}
 }

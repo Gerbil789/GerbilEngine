@@ -1,15 +1,12 @@
 #include "enginepch.h"
 #include "WireframePass.h"
-#include "Engine/Scene/Entity.h"
 #include "Engine/Graphics/Mesh.h"
-#include "Engine/Graphics/Material.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
-#include "Engine/Asset/AssetManager.h"
 #include "Engine/Utils/File.h"
 
 namespace Engine
 {
-	wgpu::RenderPipeline m_Pipeline;
+	wgpu::RenderPipeline m_WireframePipeline;
 	wgpu::BindGroup m_BindGroup;
 	wgpu::Buffer m_UniformBuffer;
 
@@ -116,15 +113,14 @@ namespace Engine
 		//colorTarget.blend = &blendState;
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 
-
-		wgpu::DepthStencilState depthStencil{};
-		depthStencil.format = wgpu::TextureFormat::Depth24Plus;
-		depthStencil.depthWriteEnabled = wgpu::OptionalBool::False;
-		depthStencil.depthCompare = wgpu::CompareFunction::LessEqual;
-		depthStencil.stencilFront = {};
-		depthStencil.stencilBack = {};
-		depthStencil.stencilReadMask = 0;
-		depthStencil.stencilWriteMask = 0;
+		//wgpu::DepthStencilState depthStencil{};
+		//depthStencil.format = wgpu::TextureFormat::Depth24Plus;
+		//depthStencil.depthWriteEnabled = wgpu::OptionalBool::False;
+		//depthStencil.depthCompare = wgpu::CompareFunction::LessEqual;
+		//depthStencil.stencilFront = {};
+		//depthStencil.stencilBack = {};
+		//depthStencil.stencilReadMask = 0;
+		//depthStencil.stencilWriteMask = 0;
 
 		wgpu::FragmentState fragmentState;
 		fragmentState.module = shaderModule;
@@ -133,17 +129,12 @@ namespace Engine
 		fragmentState.constants = nullptr;
 		fragmentState.targetCount = 1;
 		fragmentState.targets = &colorTarget;
-		pipelineDesc.depthStencil = &depthStencil;
+		pipelineDesc.depthStencil = nullptr; // No depth for wireframe
 		pipelineDesc.fragment = &fragmentState;
 
 		pipelineDesc.multisample.count = 1;
 		pipelineDesc.multisample.mask = ~0u; // Default value for the mask, meaning "all bits on"
 		pipelineDesc.multisample.alphaToCoverageEnabled = false;
-
-
-
-
-
 
 		wgpu::BindGroupLayout bindGroupLayouts[] = {
 			RenderGlobals::GetFrameLayout(),
@@ -157,8 +148,7 @@ namespace Engine
 		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayouts;
 		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
 
-		m_Pipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
-		shaderModule.release();
+		m_WireframePipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
 	}
 
 	void WireframePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)
@@ -171,32 +161,31 @@ namespace Engine
 		color.loadOp = wgpu::LoadOp::Load;
 		color.storeOp = wgpu::StoreOp::Store;
 
-		wgpu::RenderPassDepthStencilAttachment depth{};
-		depth.view = context.depthTarget;
-		depth.depthClearValue = 1.0f;
-		depth.depthLoadOp = wgpu::LoadOp::Clear;
-		depth.depthStoreOp = wgpu::StoreOp::Store;
-		depth.depthReadOnly = false;
-		depth.stencilClearValue = 0;
-		depth.stencilLoadOp = wgpu::LoadOp::Undefined;
-		depth.stencilStoreOp = wgpu::StoreOp::Undefined;
-		depth.stencilReadOnly = true;
+		//wgpu::RenderPassDepthStencilAttachment depth{};
+		//depth.view = context.depthTarget;
+		//depth.depthClearValue = 1.0f;
+		//depth.depthLoadOp = wgpu::LoadOp::Clear;
+		//depth.depthStoreOp = wgpu::StoreOp::Store;
+		//depth.depthReadOnly = false;
+		//depth.stencilClearValue = 0;
+		//depth.stencilLoadOp = wgpu::LoadOp::Undefined;
+		//depth.stencilStoreOp = wgpu::StoreOp::Undefined;
+		//depth.stencilReadOnly = true;
 
 		wgpu::RenderPassDescriptor passDescriptor{};
 		passDescriptor.label = { "WireframeRenderPass", WGPU_STRLEN };
 		passDescriptor.colorAttachmentCount = 1;
 		passDescriptor.colorAttachments = &color;
-		passDescriptor.depthStencilAttachment = &depth;
+		//passDescriptor.depthStencilAttachment = &depth;
 
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
+		pass.setPipeline(m_WireframePipeline);
 
 		pass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
 		const WireframeUniform uniformData { glm::vec4(0.0f, 1.0f, 0.0f, 1.0f) }; // Green color for wireframe
-
 		GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, 0, &uniformData, sizeof(uniformData));
 		pass.setBindGroup(GroupID::Material, m_BindGroup, 0, nullptr);
-		pass.setPipeline(m_Pipeline);
 
 		Mesh* currentMesh = nullptr;
 
@@ -213,10 +202,8 @@ namespace Engine
 
 			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
 			pass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
-
 			pass.drawIndexed(currentMesh->GetEdgeIndexCount(), 1, 0, 0, 0);
 		}
-
 		pass.end();
 	}
 }
