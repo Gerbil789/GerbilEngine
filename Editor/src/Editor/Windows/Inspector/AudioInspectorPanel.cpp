@@ -11,7 +11,7 @@ namespace Editor
 		std::vector<float> Max;
 	};
 
-	WaveformData GenerateWaveformFromFile(const Engine::AudioClip* audioClip, uint32_t resolution)
+	WaveformData GenerateWaveformFromFile(const Engine::AudioClip*, uint32_t resolution)
 	{
 		WaveformData waveformData;
 		waveformData.Min.resize(resolution);
@@ -41,7 +41,7 @@ namespace Editor
 		float width = ImGui::GetContentRegionAvail().x;
 		float height = 150.0f;
 
-		for (int i = 0; i < waveformResolution; i++)
+		for (uint32_t i = 0; i < waveformResolution; i++)
 		{
 			float t = (float)i / (float)waveformResolution;
 			float x = p0.x + t * width;

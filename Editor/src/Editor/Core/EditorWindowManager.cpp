@@ -186,7 +186,6 @@ namespace Editor
 
 		if(!Engine::ReadFile(default_iniPath, defaultLayoutContent)) return;
 
-		ImGuiIO& io = ImGui::GetIO();
 		ImGui::LoadIniSettingsFromMemory(defaultLayoutContent.c_str());
 		LOG_INFO("ImGui layout reset to default");
 	}

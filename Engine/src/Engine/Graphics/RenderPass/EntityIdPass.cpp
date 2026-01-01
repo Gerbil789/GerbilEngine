@@ -4,6 +4,7 @@
 #include "Engine/Utils/File.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
+#include "Engine/Graphics/WebGPUUtils.h"
 
 namespace Engine
 {
@@ -111,7 +112,7 @@ namespace Engine
 		callbackInfo.mode = wgpu::CallbackMode::WaitAnyOnly;
 		callbackInfo.callback = [](WGPUMapAsyncStatus status, WGPUStringView message, void*, void*) {
 			if (status != wgpu::MapAsyncStatus::Success) {
-				LOG_ERROR("Readback buffer map callback: status: {0}, message: {1}", (int)status, message);
+				LOG_ERROR("Readback buffer map callback: status: {0}, message: {1}", (int)status, ToStringView(message));
 			}
 			};
 

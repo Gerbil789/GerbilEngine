@@ -50,7 +50,7 @@ namespace Editor
 			std::vector<AssetItem> new_items;
 			new_items.reserve(items.size() - Size);
 			int item_next_idx_to_select = -1;
-			for (int idx = 0; idx < items.size(); idx++)
+			for (int idx = 0; idx < static_cast<int>(items.size()); idx++)
 			{
 				if (!Contains(GetStorageIdFromIndex(idx)))
 				{

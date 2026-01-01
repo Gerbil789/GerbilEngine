@@ -177,4 +177,21 @@ namespace Engine
 		default:                            return "Unknown";
 		}
 	}
+
+
+	inline std::string_view ToStringView(WGPUStringView sv)
+	{
+		if (!sv.data || sv.length == 0)
+			return {};
+
+		return std::string_view{ sv.data, sv.length };
+	}
+
+	inline std::string ToString(WGPUStringView sv)
+	{
+		if (!sv.data || sv.length == 0)
+			return {};
+
+		return std::string{ sv.data, sv.length };
+	}
 }

@@ -61,7 +61,7 @@ namespace Engine::SceneManager
 		LoadScene(filePath);
 	}
 
-	void LoadScene(const std::filesystem::path& path)
+	void LoadScene(const std::filesystem::path&)
 	{
 		//Ref<Scene> scene = AssetManager::GetAsset<Scene>(path);
 		//s_ActiveScene = scene;

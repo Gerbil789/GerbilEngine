@@ -43,15 +43,15 @@ namespace Engine
 		);
 	}
 
-	static glm::vec4 ReadVec4(const YAML::Node& node)
-	{
-		return glm::vec4(
-			node[0].as<float>(),
-			node[1].as<float>(),
-			node[2].as<float>(),
-			node[3].as<float>()
-		);
-	}
+	//static glm::vec4 ReadVec4(const YAML::Node& node)
+	//{
+	//	return glm::vec4(
+	//		node[0].as<float>(),
+	//		node[1].as<float>(),
+	//		node[2].as<float>(),
+	//		node[3].as<float>()
+	//	);
+	//}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////// SERIALIZATION ////////////////////////////////////////

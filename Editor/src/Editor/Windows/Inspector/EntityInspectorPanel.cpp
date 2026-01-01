@@ -78,23 +78,20 @@ namespace Editor
 		{
 			std::string& name = entity.GetComponent<NameComponent>().name;
 
-			char buffer[64];
-			memset(buffer, 0, sizeof(buffer));
-			strcpy_s(buffer, sizeof(buffer), name.c_str());
+			std::array<char, 256> buffer{};
+			std::snprintf(buffer.data(), buffer.size(), "%s", name.c_str());
 
 			ImGui::PushID((int)entity.GetUUID());
 
 			ImGui::PushItemWidth(-1);
 			ImGui::Checkbox("##Enabled", &entity.GetComponent<IdentityComponent>().enabled);
 			ImGui::SameLine();
-			if (ImGui::InputText("##Name", buffer, sizeof(buffer))) { name = std::string(buffer); }
+			if (ImGui::InputText("##Name", buffer.data(), buffer.size())) { name = std::string(buffer.data()); }
 			ImGui::PopID();
 		}
 
 		DrawComponent<TransformComponent>("Transform", entity, [entity](auto& component)
 			{
-
-
 				WidgetResult result;
 				static TransformData s_TransformBefore;
 
@@ -137,7 +134,7 @@ namespace Editor
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 			{
-				Camera* camera = component.camera;
+				//Camera* camera = component.camera;
 
 				//UI::BoolControl("Primary", component.Main);
 				//UI::BoolControl("Fixed Aspect Ratio", component.FixedAspectRatio);

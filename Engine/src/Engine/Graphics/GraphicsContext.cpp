@@ -91,8 +91,8 @@ namespace Engine::GraphicsContext
 			adapter.getInfo(&info);
 
 			LOG_TRACE("Dawn backend: {}", BackendTypeToString(info.backendType));
-			LOG_TRACE("GPU: {} ({})", info.device, info.architecture);
-			LOG_TRACE("Description: {}", info.description);
+			LOG_TRACE("GPU: {} ({})", ToStringView(info.device), ToStringView(info.architecture));
+			LOG_TRACE("Description: {}", ToStringView(info.description));
 			LOG_TRACE("VendorID 0x{:X}", info.vendorID);
 			LOG_TRACE("DeviceID 0x{:X}", info.deviceID);
 		}
@@ -107,12 +107,12 @@ namespace Engine::GraphicsContext
 		deviceDesc.deviceLostCallbackInfo.callback = [](WGPUDevice const*, WGPUDeviceLostReason reason, WGPUStringView message, void*, void*)
 			{
 				if (reason == wgpu::DeviceLostReason::Destroyed) return; // ignore shutdown losses (explicit destroy)
-				LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", (int)reason, message);
+				LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", (int)reason, message.data);
 			};
 
 		deviceDesc.uncapturedErrorCallbackInfo.callback = [](WGPUDevice const*, WGPUErrorType type, WGPUStringView message, void*, void*)
 			{
-				LOG_ERROR("WebGPU Uncaptured error [type: {}]: {}", ErrorTypeToString(type), message);
+				LOG_ERROR("WebGPU Uncaptured error [type: {}]: {}", ErrorTypeToString(type), message.data);
 			};
 
 		s_Device = adapter.requestDevice(deviceDesc);

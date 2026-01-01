@@ -162,6 +162,10 @@ namespace Engine
 				entry.sampler.type = binding.samplerType;
 				entry.visibility = wgpu::ShaderStage::Fragment;
 				break;
+
+			default:
+				LOG_WARNING("Unsupported binding type in material bind group layout creation");
+				continue;
 			}
 
 			layoutEntries.push_back(entry);
