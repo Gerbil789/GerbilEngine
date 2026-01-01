@@ -60,7 +60,7 @@ namespace Engine
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
-		void SetName(const std::string& name) { GetComponent<NameComponent>() = name; }
+		void SetName(const std::string& name) { GetComponent<NameComponent>().name = name; }
 		const std::string& GetName() const { return GetComponent<NameComponent>().name; }
 
 		void SetActive(bool active) { GetComponent<IdentityComponent>().enabled = active; }

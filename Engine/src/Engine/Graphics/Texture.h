@@ -34,12 +34,7 @@ namespace Engine
 	{
 	public:
 		Texture2D(const TextureSpecification& specification, const void* data);
-
-		static Ref<Texture2D> GetDefault();
-
-	private:
-		inline static Ref<Texture2D> s_DefaultWhiteTexture;
-
+		static Texture2D* GetDefault();
 	};
 
 	class SubTexture2D

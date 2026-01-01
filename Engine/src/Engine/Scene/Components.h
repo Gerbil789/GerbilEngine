@@ -4,7 +4,7 @@
 #include <entt.hpp>
 #include <glm/glm.hpp>
 
-namespace Engine //TODO: remove all default constructors later, now its needed for some template stuff that i dont like...
+namespace Engine
 {
 	// Forward declarations
 	class Camera;
@@ -14,22 +14,13 @@ namespace Engine //TODO: remove all default constructors later, now its needed f
 
 	struct IdentityComponent
 	{
-		UUID id;
+		UUID id = UUID();
 		bool enabled = true;
-
-		IdentityComponent() : id(UUID()) {}
-		IdentityComponent(UUID uuid, bool enabled = true) : id(uuid), enabled(enabled) {}
 	};
 
 	struct NameComponent
 	{
-		std::string name;
-
-		NameComponent() = default;
-		NameComponent(const std::string& name) : name(name.empty() ? "Entity" : name) {}
-
-		operator std::string& () { return name; }
-		operator const std::string& () const { return name; }
+		std::string name = "Entity";
 	};
 
 	struct TransformComponent
@@ -43,37 +34,24 @@ namespace Engine //TODO: remove all default constructors later, now its needed f
 		entt::entity nextSibling = entt::null;
 		entt::entity prevSibling = entt::null;
 
-		TransformComponent() = default;
 		TransformComponent(const glm::vec3& position) : position(position) {}
 
 		glm::mat4 GetLocalMatrix() const;
-		glm::mat4 GetWorldMatrix(const entt::registry& registry) const;
+		glm::mat4 GetWorldMatrix(const entt::registry& registry) const; //TODO: passing registry is not ideal
 	};
 
 	struct MeshComponent
 	{
 		Material* material = nullptr;
 		Mesh* mesh = nullptr;
-
-		MeshComponent() = default;
 	};
-
 
 	struct CameraComponent
 	{
 		Camera* camera = nullptr;
-
-		CameraComponent() = default;
 	};
 
-
-	enum class LightType
-	{
-		Point = 0,
-		Directional = 1,
-		Spot = 2
-	};
-
+	enum class LightType { Point = 0, Directional = 1, Spot = 2 }; //TODO: move to the light system
 	struct LightComponent
 	{
 		LightType type = LightType::Point;
@@ -83,8 +61,6 @@ namespace Engine //TODO: remove all default constructors later, now its needed f
 		float innerAngle = 30.0f;
 		float outerAngle = 50.0f;
 		glm::vec3 attenuation = { 1.0f, 0.09f, 0.032f }; // Constant, Linear, Quadratic
-
-		LightComponent() = default;
 	};
 
 	struct AudioSourceComponent
@@ -93,13 +69,10 @@ namespace Engine //TODO: remove all default constructors later, now its needed f
 		float volume = 1.0f;
 		bool loop = false;
 		bool playOnAwake = false;
-
-		AudioSourceComponent() = default;
 	};
 
 	struct AudioListenerComponent
 	{
 		bool isActive = true;
-		AudioListenerComponent() = default;
 	};
 }

@@ -1,10 +1,7 @@
 #include "enginepch.h"
 #include "Components.h"
-#include "Engine/Graphics/Camera.h"
-#include "Engine/Graphics/Texture.h"
-#include "Engine/Graphics/Mesh.h"
-#include "Engine/Graphics/Material.h"
-#include "Engine/Audio/AudioClip.h"
+#include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace Engine
 {

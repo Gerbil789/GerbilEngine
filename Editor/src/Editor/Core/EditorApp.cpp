@@ -20,6 +20,7 @@
 #include "Editor/Command/CommandManager.h"
 #include "Engine/Audio/Audio.h"
 #include "Engine/Utils/FileWatcher.h"
+
 namespace Editor
 {
 	Engine::FileWatcher m_FileWatcher;
@@ -94,15 +95,6 @@ namespace Editor
 
 		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::UUID(2306162455903992554)).get();
 
-		//Ref<Engine::Texture2D> texture = Engine::TextureImporter::LoadTexture2D("Resources/Editor/icons/skull.png");
-		//auto smileTexture = Engine::AssetManager::GetAsset<Engine::Texture2D>(Engine::UUID(16704251879842279232));
-		//material->SetTexture("albedoTexture", smileTexture);
-
-		//save material, TODO: make better save function
-		// metadata = Engine::AssetManager::GetAssetMetadata(material->id);
-		//Engine::AssetSerializer::SerializeAsset(material, *metadata);
-
-
 		for(int x = 0; x < 10; x++)
 		{
 			for(int y = 0; y < 1; y++)
@@ -110,10 +102,10 @@ namespace Editor
 				for(int z = 0; z < 1; z++)
 				{
 					auto cube = scene->CreateEntity("GridCube");
-					Ref<Engine::Mesh> mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::UUID(8982589797183355654));
+					Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::UUID(8982589797183355654)).get();
 					auto& component = cube.AddComponent<Engine::MeshComponent>();
 					component.material = material;
-					component.mesh = mesh.get();
+					component.mesh = mesh;
 					cube.GetComponent<Engine::TransformComponent>().position = { (float)x * 3.0f - (15), (float)y * 3.0f, (float)z * 3.0f - 30};
 				}
 

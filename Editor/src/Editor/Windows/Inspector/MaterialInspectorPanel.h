@@ -7,7 +7,6 @@ namespace Editor
 	class MaterialInspectorPanel
 	{
 	public:
-		void Draw(Ref<Engine::Material> material);
-
+		void Draw(Engine::Material* material);
 	};
 }

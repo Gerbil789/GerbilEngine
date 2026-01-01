@@ -1,13 +1,11 @@
 #include "MaterialInspectorPanel.h"
-#include "Engine/Graphics/Shader.h"
 #include "Editor/Components/Widgets.h"
-#include <imgui.h>
-
 #include "Engine/Asset/AssetManager.h"
+#include <imgui.h>
 
 namespace Editor
 {
-	void MaterialInspectorPanel::Draw(Ref<Engine::Material> material)
+	void MaterialInspectorPanel::Draw(Engine::Material* material)
 	{
 		if (!material)
 		{
@@ -49,11 +47,8 @@ namespace Editor
 			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupColumn("Shader", ImGuiTableColumnFlags_WidthFixed, 120.0f);
 
-
-
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0);
-
 
 			ImGui::Text(Engine::AssetManager::GetAssetMetadata(material->id)->path.stem().string().c_str());
 

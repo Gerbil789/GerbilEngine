@@ -42,7 +42,7 @@ namespace Engine
 		void Bind(wgpu::RenderPassEncoder pass);
 		std::vector<uint8_t> GetUniformData() const { return m_UniformData; } //TODO: this should not be public
 
-		static Ref<Material> GetDefault();
+		static Material* GetDefault();
 
 	private:
 		void CreateUniformBuffer();
@@ -58,9 +58,5 @@ namespace Engine
 
 		TextureFilter m_TextureFilter = TextureFilter::Bilinear;
 		TextureWrap m_TextureWrap = TextureWrap::Repeat;
-
-
-		inline static Ref<Material> s_DefaultMaterial;
-
 	};
 }

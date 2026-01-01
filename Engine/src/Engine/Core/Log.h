@@ -10,7 +10,6 @@ namespace Engine
 	{
 	public:
 		static void Initialize();
-		static void Shutdown();
 
 		static void Trace(const std::string& message);
 		static void Info(const std::string& message);
@@ -44,5 +43,3 @@ struct std::formatter<Engine::UUID, char>
 #define LOG_WARNING(...)  Engine::Log::Warn(std::format(__VA_ARGS__))
 #define LOG_ERROR(...)		Engine::Log::Error(std::format(__VA_ARGS__))
 #define LOG_CRITICAL(...) Engine::Log::Critical(std::format(__VA_ARGS__))
-
-

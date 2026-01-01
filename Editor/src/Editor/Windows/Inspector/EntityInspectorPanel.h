@@ -8,9 +8,5 @@ namespace Editor
 	{
 	public:
 		void Draw(Engine::Entity entity);
-
-	private:
-		void DrawComponents(Engine::Entity entity);
-		void DrawAddComponentButton(Engine::Entity entity);
 	};
 }

@@ -5,7 +5,7 @@
 
 namespace Editor
 {
-	void ShaderInspectorPanel::Draw(Ref<Engine::Shader> shader)
+	void ShaderInspectorPanel::Draw(Engine::Shader* shader)
 	{
 		ImGui::TextUnformatted(shader->GetName().c_str());
 

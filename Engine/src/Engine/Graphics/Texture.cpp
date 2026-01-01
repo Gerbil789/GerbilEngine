@@ -4,6 +4,8 @@
 
 namespace Engine
 {
+	static Texture2D* s_DefaultWhiteTexture = nullptr;
+
 	Texture2D::Texture2D(const TextureSpecification& specification, const void* data)
 	{
 		m_Width = specification.width;
@@ -47,7 +49,7 @@ namespace Engine
 		m_TextureView = texture.createView(viewDesc);
 	}
 
-	Ref<Texture2D> Texture2D::GetDefault()
+	Texture2D* Texture2D::GetDefault()
 	{
 		if(!s_DefaultWhiteTexture)
 		{
@@ -56,8 +58,7 @@ namespace Engine
 			spec.height = 1;
 			spec.format = wgpu::TextureFormat::RGBA8Unorm;
 			uint32_t whitePixel = 0xFFFFFFFF;
-
-			s_DefaultWhiteTexture = CreateRef<Texture2D>(spec, &whitePixel);
+			s_DefaultWhiteTexture = new Texture2D(spec, &whitePixel);
 		}
 
 		return s_DefaultWhiteTexture;

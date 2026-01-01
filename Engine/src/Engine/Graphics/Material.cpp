@@ -8,6 +8,8 @@
 
 namespace Engine
 {
+	static Material* s_DefaultMaterial = nullptr;
+
 	Material::Material(Shader* shader)
 	{
 		m_Shader = shader; 
@@ -72,7 +74,7 @@ namespace Engine
 		if (!texture)
 		{
 			LOG_WARNING("Material::SetTexture - Texture is null!");
-			texture = Texture2D::GetDefault().get();
+			texture = Texture2D::GetDefault();
 		}
 
 		const auto materialBindings = GetMaterialBindings(m_Shader->GetSpecification());
@@ -123,7 +125,7 @@ namespace Engine
 				// check if texture is set for this binding
 				if (m_Textures.find(binding.name) == m_Textures.end())
 				{
-					m_Textures[binding.name] = Texture2D::GetDefault().get();
+					m_Textures[binding.name] = Texture2D::GetDefault();
 				}
 
 				auto tex = m_Textures[binding.name];
@@ -153,12 +155,12 @@ namespace Engine
 	}
 
 
-	Ref<Material> Material::GetDefault()
+	Material* Material::GetDefault()
 	{
 		if (!s_DefaultMaterial)
 		{
 			Shader* shader = ShaderImporter::LoadShader("Resources/Engine/Shaders/unlit.shader");
-			s_DefaultMaterial = CreateRef<Material>(shader);
+			s_DefaultMaterial = new Material(shader);
 			s_DefaultMaterial->SetVec4("color", glm::vec4(1.0f));
 		}
 

@@ -44,13 +44,13 @@ namespace Editor
 
 		case Engine::AssetType::Shader:
 		{
-			m_ShaderInspector.Draw(Engine::AssetManager::GetAsset<Engine::Shader>(assetID));
+			m_ShaderInspector.Draw(Engine::AssetManager::GetAsset<Engine::Shader>(assetID).get());
 			break;
 		}
 
 		case Engine::AssetType::Material:
 		{
-			m_MaterialInspector.Draw(Engine::AssetManager::GetAsset<Engine::Material>(assetID));
+			m_MaterialInspector.Draw(Engine::AssetManager::GetAsset<Engine::Material>(assetID).get());
 			break;
 		}
 

@@ -36,7 +36,7 @@ namespace Engine
 					continue;
 				}
 
-				Material* material = mc.material ? mc.material : Material::GetDefault().get();
+				Material* material = mc.material ? mc.material : Material::GetDefault();
 
 				list.items.push_back({ entity, mc.mesh, material, modelIndex++ });
 			}

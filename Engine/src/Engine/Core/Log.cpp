@@ -52,11 +52,6 @@ namespace Engine
 		s_Logger->flush_on(spdlog::level::trace);
 	}
 
-	void Log::Shutdown()
-	{
-
-	}
-
 	void Log::Trace(const std::string& msg) { s_Logger->trace(msg); }
 	void Log::Info(const std::string& msg) { s_Logger->info(msg); }
 	void Log::Warn(const std::string& msg) { s_Logger->warn(msg); }

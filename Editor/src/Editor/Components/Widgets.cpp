@@ -27,7 +27,7 @@ namespace Editor::Widget
 			{
 				Engine::UUID uuid = texture->id;
 				ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
-				ImGui::Text("%llu", texture->id);
+				ImGui::Text("%llu", static_cast<unsigned long long>((uint64_t)texture->id));
 				ImGui::EndDragDropSource();
 			}
 		}
@@ -94,7 +94,7 @@ namespace Editor::Widget
 		ImGui::PushID(label);
 
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-		if (ImGui::DragFloat(label, &value, 0.05f, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
+		if (ImGui::DragFloat(("##" + std::string(label)).c_str(), &value, 0.05f, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
 		{
 			result.changed = true;
 		}
