@@ -23,9 +23,8 @@ namespace Editor
     }
 
   private:
+    Engine::Entity m_Entity;
     std::string m_OldName;
     std::string m_NewName;
-    Engine::Entity m_Entity;
-
   };
 }

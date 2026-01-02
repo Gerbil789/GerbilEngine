@@ -4,7 +4,6 @@
 #include "Engine/Event/ApplicationEvent.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Event/KeyEvent.h"
-#include "Engine/Core/Log.h"
 #include <stb_image.h>
 #include <GLFW/glfw3.h>
 

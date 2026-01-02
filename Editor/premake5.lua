@@ -30,6 +30,7 @@ externalincludedirs
 links
 {
 	"Engine",
+	"yaml-cpp",
 	"ImGui",
 }
 

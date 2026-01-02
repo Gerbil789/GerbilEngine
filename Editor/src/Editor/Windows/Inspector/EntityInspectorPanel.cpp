@@ -50,7 +50,7 @@ namespace Editor
 
 		auto drawField = [&result](const char* label, glm::vec3& value)
 			{
-				ImGui::Text(label);
+				ImGui::Text("%s", label);
 				ImGui::NextColumn();
 				result |= Widget::Vec3Field(label, value);
 				ImGui::NextColumn();

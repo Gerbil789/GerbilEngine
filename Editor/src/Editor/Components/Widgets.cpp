@@ -189,7 +189,7 @@ namespace Editor::Widget
 
 		auto handleFloat = [&](const char* id, float& v)
 			{
-				ImGui::Text(id);
+				ImGui::Text("%s", id);
 				ImGui::SameLine();
 				ImGui::PushItemWidth(inputWidth);
 				result.changed = ImGui::DragFloat(("##" + std::string(id)).c_str(), &v, 0.1f);
@@ -232,7 +232,7 @@ namespace Editor::Widget
 
 		if (ImGui::BeginCombo("##value", options[value].c_str()))
 		{
-			for (int i = 0; i < options.size(); i++)
+			for (int i = 0; i < static_cast<int>(options.size()); i++)
 			{
 				bool isSelected = value == i;
 				if (ImGui::Selectable(options[i].c_str(), isSelected))
@@ -261,7 +261,7 @@ namespace Editor::Widget
 
 		if (ImGui::BeginCombo("##value", options[value].stem().string().c_str()))
 		{
-			for (int i = 0; i < options.size(); i++)
+			for (int i = 0; i < static_cast<int>(options.size()); i++)
 			{
 				bool isSelected = value == i;
 				if (ImGui::Selectable(options[i].stem().string().c_str(), isSelected))

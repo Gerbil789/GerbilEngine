@@ -9,7 +9,7 @@ namespace Editor
   class DeleteEntityCommand : public ICommand
   {
   public:
-    DeleteEntityCommand(Engine::Entity entity) : m_Entity(entity), m_Name(entity.GetName()) {}
+    DeleteEntityCommand(Engine::Entity entity) : m_Name(entity.GetName()), m_Entity(entity) {}
 
     void Execute() override
     {

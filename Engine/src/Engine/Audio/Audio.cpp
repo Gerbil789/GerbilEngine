@@ -25,7 +25,7 @@ namespace Engine
 	}
 
 
-	void Audio::Play(Ref<AudioClip> clip)
+	void Audio::Play(AudioClip* clip)
 	{
 		if(!clip)
 		{

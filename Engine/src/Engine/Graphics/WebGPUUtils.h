@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Core/Log.h"
+#include "Engine/Core/Log.h" //TODO: remove dependency
 #include <webgpu/webgpu.hpp>
 
 //TODO: rename this file to something better, its practicaly just toString() functions for webgpu enums

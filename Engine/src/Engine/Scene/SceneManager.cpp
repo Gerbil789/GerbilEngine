@@ -7,7 +7,6 @@
 
 namespace Engine::SceneManager
 {
-	// The scene is owned by asset manager, we don't use Ref<> here to avoid circular reference
 	Scene* s_ActiveScene = nullptr;
 	static std::vector<SceneChangedCallback> s_Callbacks;
 
@@ -24,14 +23,14 @@ namespace Engine::SceneManager
 		}
 	}
 
-	void SetActiveScene(Ref<Scene> scene)
+	void SetActiveScene(Scene* scene)
 	{
 		if (!scene) 
 		{
 			LOG_ERROR("Setting active scene failed. Scene is null");
 			return;
 		}
-		s_ActiveScene = scene.get();
+		s_ActiveScene = scene;
 		LOG_INFO("Active scene set to {0}", s_ActiveScene->id);
 		NotifySceneChanged();
 	}
@@ -47,7 +46,7 @@ namespace Engine::SceneManager
 
 	void CreateScene(const std::filesystem::path& path)
 	{
-		Ref<Scene> scene = AssetManager::CreateAsset<Scene>(path);
+		Scene* scene = AssetManager::CreateAsset<Scene>(path).get();
 		SetActiveScene(scene);
 	}
 
@@ -63,7 +62,7 @@ namespace Engine::SceneManager
 
 	void LoadScene(const std::filesystem::path&)
 	{
-		//Ref<Scene> scene = AssetManager::GetAsset<Scene>(path);
+		//Scene* scene = AssetManager::GetAsset<Scene>(path);
 		//s_ActiveScene = scene;
 
 	}

@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "File.h"
-#include "Engine/Core/Log.h"
 #include <portable-file-dialogs.h>
 
 namespace Engine

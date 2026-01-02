@@ -1,7 +1,6 @@
 #include "enginepch.h"
 #define WEBGPU_CPP_IMPLEMENTATION // must be defined before including webgpu.hpp
 #include "GraphicsContext.h"
-#include "Engine/Core/Log.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Graphics/WebGPUUtils.h"
 #include <GLFW/glfw3.h>

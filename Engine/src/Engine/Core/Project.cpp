@@ -4,13 +4,13 @@
 
 namespace Engine
 {
-	Ref<Project> Project::New()
+	Project* Project::New()
 	{
 		LOG_ERROR("Project::New - Not implemented yet!");
 		return nullptr;
 	}
 
-	Ref<Project> Project::Load(const std::filesystem::path& projectDirectoryPath)
+	Project* Project::Load(const std::filesystem::path& projectDirectoryPath)
 	{
 		std::filesystem::path configPath = projectDirectoryPath / "project.yaml";
 
@@ -31,7 +31,7 @@ namespace Engine
 			return nullptr;
 		}
 
-		s_ActiveProject = CreateRef<Project>();
+		s_ActiveProject = new Project();
 		s_ActiveProject->m_ProjectDirectory = projectDirectoryPath;
 
 		if (data["Title"])

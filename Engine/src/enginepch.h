@@ -17,3 +17,5 @@
 #include <cstring>
 
 #include <glm/glm.hpp>
+
+#include "Engine/Core/Log.h"

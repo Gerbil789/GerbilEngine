@@ -16,7 +16,7 @@ project "yaml-cpp"
     "include"
   }
 
-	defines { "YAML_CPP_STATIC_DEFINE" } -- important! to build as static lib
+	defines { "YAML_CPP_STATIC_DEFINE" }
 
 	filter "system:windows"
 		systemversion "latest"

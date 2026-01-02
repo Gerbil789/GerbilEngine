@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Core/Log.h"
+#include "Engine/Core/Log.h" //TODO: remove dependency
 
 #include <algorithm>
 #include <chrono>

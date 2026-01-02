@@ -42,7 +42,6 @@ namespace Engine
 		BackgroundType GetBackgroundType() const { return m_BackgroundType; }
 		const glm::vec4& GetClearColor() const { return m_ClearColor; }
 		void SetClearColor(const glm::vec4& color) { m_ClearColor = color; }
-		//void SetSkyboxTexture(const Ref<CubeMapTexture>& texture) { m_Skybox = skybox; }
 
 		Skybox& GetSkybox() { return m_Skybox; }
 

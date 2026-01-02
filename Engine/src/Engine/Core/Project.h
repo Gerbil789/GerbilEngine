@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Engine/Core/Core.h"
-#include <string>
+#include "Engine/Core/UUID.h"
 #include <filesystem>
 
 namespace Engine
@@ -9,11 +8,11 @@ namespace Engine
 	class Project
 	{
 	public:
-		static Ref<Project> New();
-		static Ref<Project> Load(const std::filesystem::path& projectDirectoryPath);
+		static Project* New();
+		static Project* Load(const std::filesystem::path& projectDirectoryPath);
 		static void Save();
 
-		static Ref<Project> GetActive() { return s_ActiveProject; }
+		static Project* GetActive() { return s_ActiveProject; }
 
 		inline static std::filesystem::path GetProjectDirectory()
 		{
@@ -40,6 +39,6 @@ namespace Engine
 		std::string m_Title = "Untitled";
 		UUID m_StartSceneID = UUID(0);
 
-		inline static Ref<Project> s_ActiveProject;
+		inline static Project* s_ActiveProject;
 	};
 }

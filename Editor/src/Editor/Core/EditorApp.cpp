@@ -65,7 +65,7 @@ namespace Editor
 		}
 		else
 		{
-			auto scene = Engine::AssetManager::GetAsset<Engine::Scene>(startSceneID);
+			Engine::Scene* scene = Engine::AssetManager::GetAsset<Engine::Scene>(startSceneID).get();
 			if (!scene)
 			{
 				LOG_WARNING("Failed to load start scene with ID: {0}, creating new scene", startSceneID);
@@ -158,7 +158,7 @@ namespace Editor
 		//	EditorContext::SelectEntity(cam);
 		//}
 
-		//Ref<Engine::AudioClip> clip = Engine::AssetManager::GetAsset<Engine::AudioClip>(Engine::UUID(4188365834911559584));
+		//Engine::AudioClip* clip = Engine::AssetManager::GetAsset<Engine::AudioClip>(Engine::UUID(4188365834911559584));
 		//Engine::Audio::Play(clip);
 	}
 

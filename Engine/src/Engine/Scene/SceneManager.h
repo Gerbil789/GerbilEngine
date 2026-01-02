@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Core/Core.h"
 #include <filesystem>
 #include <functional>
 
@@ -15,7 +14,7 @@ namespace Engine
 		void RegisterOnSceneChanged(const SceneChangedCallback& callback);
 		void NotifySceneChanged();
 
-		void SetActiveScene(Ref<Scene> scene);
+		void SetActiveScene(Scene* scene);
 		Scene* GetActiveScene();
 
 		void CreateScene(const std::filesystem::path& path);
