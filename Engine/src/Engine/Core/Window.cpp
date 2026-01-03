@@ -1,45 +1,87 @@
 #include "enginepch.h"
 #include "Window.h"
-#include "Engine/Core/Application.h"
 #include "Engine/Event/ApplicationEvent.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Event/KeyEvent.h"
+#include "Engine/Graphics/GraphicsContext.h"
 #include <stb_image.h>
 #include <GLFW/glfw3.h>
 
+//TODO: move platform specific code to separate files or figure something better xd
+#if defined(ENGINE_PLATFORM_WINDOWS)
+#define GLFW_EXPOSE_NATIVE_WIN32
+#elif defined(ENGINE_PLATFORM_LINUX)
+#define GLFW_EXPOSE_NATIVE_X11
+#endif
+
+#include <GLFW/glfw3native.h>
+
 namespace Engine
 {
-	Window::Window(const WindowSpecification& specification)
+	wgpu::Surface CreateSurface(GLFWwindow* window)
 	{
-		m_Data.Width = specification.width;
-		m_Data.Height = specification.height;
+		wgpu::SurfaceDescriptor surfaceDesc{};
+		surfaceDesc.label = { "MainSurface", WGPU_STRLEN };
 
-		LOG_TRACE("Creating window {} ({}, {})", specification.title, m_Data.Width, m_Data.Height);
+#if defined(ENGINE_PLATFORM_WINDOWS)
+		wgpu::SurfaceSourceWindowsHWND hwndDesc{};
+		hwndDesc.chain.sType = WGPUSType_SurfaceSourceWindowsHWND;
+		hwndDesc.hinstance = GetModuleHandle(nullptr);
+		hwndDesc.hwnd = glfwGetWin32Window(window);
+		surfaceDesc.nextInChain = &hwndDesc.chain;
+#elif defined(ENGINE_PLATFORM_LINUX)
+		wgpu::SurfaceSourceXlibWindow x11Desc{};
+		x11Desc.chain.sType = WGPUSType_SurfaceSourceXlibWindow;
+		x11Desc.display = glfwGetX11Display();
+		x11Desc.window = glfwGetX11Window(window);
+		surfaceDesc.nextInChain = &x11Desc.chain;
+#endif
+		return GraphicsContext::GetInstance().createSurface(surfaceDesc);
+	}
 
+	void Window::InitializeGLFW()
+	{
 		if (!glfwInit())
 		{
 			throw std::runtime_error("Could not initialize GLFW!");
 		}
 
-
 		glfwSetErrorCallback([](int error, const char* description) { LOG_ERROR("GLFW Error ({}): {}", error, description); });
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	}
 
-		m_Window = glfwCreateWindow(static_cast<int>(m_Data.Width), static_cast<int>(m_Data.Height), specification.title.c_str(), nullptr, nullptr);
+	void Window::ShutdownGLFW()
+	{
+		glfwTerminate();
+	}
+
+	Window::Window(const WindowSpecification& specification)
+	{
+		m_Data.width = specification.width;
+		m_Data.height = specification.height;
+
+		LOG_TRACE("Creating window {} ({}, {})", specification.title, m_Data.width, m_Data.height);
+
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		m_Window = glfwCreateWindow(static_cast<int>(m_Data.width), static_cast<int>(m_Data.height), specification.title.c_str(), nullptr, nullptr);
 
 		if(!m_Window)
 		{
 			throw std::runtime_error("Could not create GLFW window!");
 		}
 
+		m_Data.window = this;
+		glfwSetWindowUserPointer(m_Window, &m_Data);
+
 		SetEventCallbacks();
 		SetWindowIcon(specification.iconPath);
+
+		m_Surface = CreateSurface(static_cast<GLFWwindow*>(m_Window));
+		ConfigureSurface(m_Data.width, m_Data.height);
 	}
 
 	Window::~Window()
 	{
 		glfwDestroyWindow(m_Window);
-		glfwTerminate();
 	}
 
 	void Window::OnUpdate()
@@ -49,23 +91,24 @@ namespace Engine
 
 	void Window::SetEventCallbacks()
 	{
-		glfwSetWindowUserPointer(m_Window, &m_Data);
-
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				data.Width = width;
-				data.Height = height;
+				data.width = width;
+				data.height = height;
+
+				Window* self = static_cast<Window*>(data.window);
+				self->ConfigureSurface(width, height);
 
 				WindowResizeEvent event(width, height);
-				data.EventCallback(event);
+				data.callback(event);
 			});
 
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 				WindowCloseEvent event;
-				data.EventCallback(event);
+				data.callback(event);
 			});
 
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int, int action, int)
@@ -77,19 +120,19 @@ namespace Engine
 				case GLFW_PRESS:
 				{
 					KeyPressedEvent event(key, 0);
-					data.EventCallback(event);
+					data.callback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
 					KeyReleasedEvent event(key);
-					data.EventCallback(event);
+					data.callback(event);
 					break;
 				}
 				case GLFW_REPEAT:
 				{
 					KeyPressedEvent event(key, 1);
-					data.EventCallback(event);
+					data.callback(event);
 					break;
 				}
 				}
@@ -100,7 +143,7 @@ namespace Engine
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 				KeyTypedEvent event(keycode);
-				data.EventCallback(event);
+				data.callback(event);
 			});
 
 		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int)
@@ -112,13 +155,13 @@ namespace Engine
 				case GLFW_PRESS:
 				{
 					MouseButtonPressedEvent event(button);
-					data.EventCallback(event);
+					data.callback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
 					MouseButtonReleasedEvent event(button);
-					data.EventCallback(event);
+					data.callback(event);
 					break;
 				}
 				}
@@ -129,7 +172,7 @@ namespace Engine
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 				MouseScrolledEvent event((float)xOffset, (float)yOffset);
-				data.EventCallback(event);
+				data.callback(event);
 			});
 
 		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
@@ -137,8 +180,25 @@ namespace Engine
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 				MouseMovedEvent event((float)xPos, (float)yPos);
-				data.EventCallback(event);
+				data.callback(event);
 			});
+	}
+
+	void Window::ConfigureSurface(uint32_t width, uint32_t height)
+	{
+		wgpu::SurfaceConfiguration config{};
+		config.width = width;
+		config.height = height;
+		config.device = GraphicsContext::GetDevice();
+		config.format = wgpu::TextureFormat::RGBA8Unorm;
+		config.usage = wgpu::TextureUsage::RenderAttachment;
+		config.presentMode = wgpu::PresentMode::Fifo;
+		config.alphaMode = wgpu::CompositeAlphaMode::Opaque;
+		config.viewFormatCount = 0;
+		config.viewFormats = nullptr;
+		config.nextInChain = nullptr;
+
+		m_Surface.configure(config);
 	}
 
 	void Window::SetWindowIcon(const std::filesystem::path& iconPath)

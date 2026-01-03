@@ -24,13 +24,12 @@ namespace Editor
 
 		if (s_AllShaders.empty())
 		{
-			// Load or fetch from AssetManager
-			auto sharedptrShaders = Engine::AssetManager::GetAssetsOfType<Engine::Shader>(Engine::AssetType::Shader);
+			auto shaders = Engine::AssetManager::GetAssetsOfType<Engine::Shader>(Engine::AssetType::Shader);
 
-			s_AllShaders.resize(sharedptrShaders.size());
-			for (size_t i = 0; i < sharedptrShaders.size(); i++)
+			s_AllShaders.resize(shaders.size());
+			for (size_t i = 0; i < shaders.size(); i++)
 			{
-				s_AllShaders[i] = sharedptrShaders[i].get();
+				s_AllShaders[i] = shaders[i];
 			}
 
 			shaderNames.clear();

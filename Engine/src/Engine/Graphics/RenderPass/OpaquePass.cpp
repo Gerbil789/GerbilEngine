@@ -96,13 +96,13 @@ namespace Engine
 		depth.stencilStoreOp = wgpu::StoreOp::Undefined;
 		depth.stencilReadOnly = true;
 
-		wgpu::RenderPassDescriptor renderPassDescriptor;
-		renderPassDescriptor.label = { "OpaqueRenderPass", WGPU_STRLEN };
-		renderPassDescriptor.colorAttachmentCount = 1;
-		renderPassDescriptor.colorAttachments = &color;
-		renderPassDescriptor.depthStencilAttachment = &depth;
+		wgpu::RenderPassDescriptor passDescriptor{};
+		passDescriptor.label = { "OpaqueRenderPass", WGPU_STRLEN };
+		passDescriptor.colorAttachmentCount = 1;
+		passDescriptor.colorAttachments = &color;
+		passDescriptor.depthStencilAttachment = &depth;
 
-		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(renderPassDescriptor);
+		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
 
 		pass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 

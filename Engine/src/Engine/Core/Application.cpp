@@ -6,7 +6,7 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
-
+#include "Engine/Utils/Path.h"
 #include "Engine/Audio/Audio.h"
 
 namespace Engine
@@ -20,11 +20,10 @@ namespace Engine
 		ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		// Set working directory
-		if (!specification.workingDirectory.empty())
-		{
-			std::filesystem::current_path(specification.workingDirectory);
-		}
+		std::filesystem::current_path(GetExecutableDir()); // Set working directory
+
+		GraphicsContext::Initialize();
+		Window::InitializeGLFW();
 
 		WindowSpecification windowSpec;
 		windowSpec.title = specification.title;
@@ -32,15 +31,13 @@ namespace Engine
 		windowSpec.height = 900;
 		windowSpec.iconPath = "Resources/Engine/icons/logo.png";
 
-		m_Window = new Window(windowSpec);
-		m_Window->SetEventCallback([this](Event& e) {this->OnEvent(e);});
+		m_MainWindow = new Window(windowSpec);
+		m_MainWindow->SetEventCallback([this](Event& e) {this->OnEvent(e);});
 
 		Input::Initialize();
-		GraphicsContext::Initialize();
 		SamplerPool::Initialize();
 		RenderGlobals::Initialize();
 		Engine::Audio::Initialize();
-
 	}
 
 	Application::~Application()
@@ -48,6 +45,8 @@ namespace Engine
 		Engine::Audio::Shutdown();
 		SamplerPool::Shutdown();
 		GraphicsContext::Shutdown();
+		delete m_MainWindow;
+		Window::ShutdownGLFW();
 	}
 
 	void Application::OnEvent(Event& e)
@@ -59,19 +58,12 @@ namespace Engine
 
 	void Application::OnWindowResize(WindowResizeEvent& e)
 	{
-		if(e.GetWidth() == 0 || e.GetHeight() == 0)
-		{
-			m_Minimized = true;
-			return;
-		}
-
-		m_Minimized = false;
-		GraphicsContext::ConfigureSurface(e.GetWidth(), e.GetHeight());
+		m_Minimized = (e.GetWidth() == 0 || e.GetHeight() == 0) ? true : false;
 	}
 
 	void Application::Close()
 	{
 		m_Running = false;
-		LOG_INFO("Application Closed");
+		LOG_INFO("Editor application closed");
 	}
 }

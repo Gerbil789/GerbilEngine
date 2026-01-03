@@ -40,7 +40,7 @@ namespace Editor::Widget
 				Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
 				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Texture2D)
 				{
-					texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(droppedUUID).get();
+					texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(droppedUUID);
 					result.changed = true;
 				}
 

@@ -4,6 +4,7 @@
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Command/CommandManager.h"
 #include "Editor/Command/TransformEntity.h"
+#include "Editor/Core/EditorApp.h"
 
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
@@ -93,18 +94,25 @@ namespace Editor
 				m_HoveredEntity = m_Scene->GetEntity(uuid);
 			}
 		}
-		ImVec2 imagePos = ImGui::GetCursorScreenPos();
 
-		// Draw scene
-		ImGui::Image((WGPUTextureView)m_Renderer.GetTextureView(), ImVec2(m_ViewportSize.x, m_ViewportSize.y));
+		ImVec2 viewportMin = ImGui::GetCursorScreenPos();
+		ImVec2 viewportSize = ImVec2(m_ViewportSize.x, m_ViewportSize.y);
+		ImVec2 viewportMax = ImVec2(viewportMin.x + viewportSize.x, viewportMin.y + viewportSize.y);
+
+		ImGui::Image((WGPUTextureView)m_Renderer.GetTextureView(), viewportSize);
 
 		DrawGizmos();
 
-		const float padding = 8.0f;
-		ImGui::SetCursorScreenPos(ImVec2(
-			imagePos.x + m_ViewportSize.x - padding - 120.0f,
-			imagePos.y + padding
-		));
+
+		ImGui::SetCursorScreenPos(ImVec2(viewportMin.x + (-viewportMin.x + viewportMax.x) / 2.0f - 30.0f, viewportMin.y + 4.0f));
+
+		ImGui::SetNextItemWidth(60.0f);
+		if (ImGui::Button("Play"))
+		{
+			static_cast<EditorApp&>(EditorApp::Get()).PlayGame();
+		}
+
+		ImGui::SetCursorScreenPos(ImVec2(viewportMax.x - 120.0f - 8.0f, viewportMin.y + 4.0f));
 
 		ImGui::SetNextItemWidth(120.0f);
 
@@ -254,8 +262,7 @@ namespace Editor
 				if (tc.parent != entt::null)
 				{
 					Engine::Entity parent = { tc.parent, m_Scene };
-					parentWorld = parent.GetComponent<Engine::TransformComponent>()
-						.GetWorldMatrix(m_Scene->GetRegistry());
+					parentWorld = parent.GetComponent<Engine::TransformComponent>().GetWorldMatrix(m_Scene->GetRegistry());
 				}
 
 				glm::mat4 newLocal = glm::inverse(parentWorld) * newWorld;

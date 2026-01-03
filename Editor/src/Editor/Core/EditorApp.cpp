@@ -1,16 +1,13 @@
-#include "enginepch.h"
 #include "EditorApp.h"
 #include "Editor/Core/EditorWindowManager.h"
 #include "Engine/Core/Project.h"
 #include "Editor/Core/EditorIcons.h"
 #include "Engine/Core/Time.h"
-#include "Engine/Utils/Path.h"
 //tmp
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/Importer/MaterialImporter.h"
 #include "Engine/Asset/Importer/MeshImporter.h"
 #include "Engine/Utils/File.h"
-#include "Engine/Core/UUID.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Asset/AssetManager.h"
@@ -65,7 +62,7 @@ namespace Editor
 		}
 		else
 		{
-			Engine::Scene* scene = Engine::AssetManager::GetAsset<Engine::Scene>(startSceneID).get();
+			Engine::Scene* scene = Engine::AssetManager::GetAsset<Engine::Scene>(startSceneID);
 			if (!scene)
 			{
 				LOG_WARNING("Failed to load start scene with ID: {0}, creating new scene", startSceneID);
@@ -93,7 +90,8 @@ namespace Editor
 
 		Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
 
-		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::UUID(2306162455903992554)).get();
+		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::UUID(2306162455903992554));
+		Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::UUID(8982589797183355654));
 
 		for(int x = 0; x < 10; x++)
 		{
@@ -102,7 +100,6 @@ namespace Editor
 				for(int z = 0; z < 1; z++)
 				{
 					auto cube = scene->CreateEntity("GridCube");
-					Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::UUID(8982589797183355654)).get();
 					auto& component = cube.AddComponent<Engine::MeshComponent>();
 					component.material = material;
 					component.mesh = mesh;
@@ -185,8 +182,13 @@ namespace Editor
 			if (m_Minimized) continue;
 
 			EditorWindowManager::OnUpdate();
-			m_Window->OnUpdate();
+			m_MainWindow->OnUpdate();
 			m_FileWatcher.OnUpdate();
+
+			if(m_GameInstance)
+			{
+				m_GameInstance->Update();
+			}
 		}
 	}
 
@@ -197,20 +199,27 @@ namespace Editor
 		CommandManager::OnEvent(e);
 		EditorWindowManager::OnEvent(e);
 
-
 		if(e.GetCategoryFlags() & Engine::EventCategoryFile)
 		{
 			Engine::AssetManager::OnEvent(e);
 		}
 	}
 
+	void EditorApp::PlayGame()
+	{
+		if (m_GameInstance) return; // already playing
+
+		m_GameInstance = std::make_unique<Engine::GameInstance>();
+		m_GameInstance->OnExit = [this]() { this->m_GameInstance.reset(); };
+		Engine::Scene* activeScene = Engine::SceneManager::GetActiveScene();
+		m_GameInstance->Initialize(activeScene);
+	}
+
 	EditorApp CreateApp(Engine::ApplicationCommandLineArgs args)
 	{
 		Engine::ApplicationSpecification spec;
 		spec.title = "Gerbil Editor";
-		spec.workingDirectory = GetExecutableDir();
 		spec.args = args;
-
 		return EditorApp(spec);
 	}
 }

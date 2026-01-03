@@ -23,8 +23,7 @@ namespace Engine
 
 	struct ApplicationSpecification
 	{
-		std::string title = "Gerbil Application";
-		std::filesystem::path workingDirectory;
+		std::string title = "Application";
 		ApplicationCommandLineArgs args;
 	};
 
@@ -38,7 +37,7 @@ namespace Engine
 		virtual void OnEvent(Event& e);
 
 		static Application& Get() { return *s_Instance; }
-		static Window& GetWindow() { return *s_Instance->m_Window; }
+		static Window& GetWindow() { return *s_Instance->m_MainWindow; }
 
 		float GetFPS() const { return m_FPSCounter.GetAverageFPS(); } //TODO: handle FPS somewhere else
 
@@ -49,7 +48,7 @@ namespace Engine
 
 	protected:
 		static Application* s_Instance;
-		Window* m_Window;
+		Window* m_MainWindow;
 
 		bool m_Running = true;
 		bool m_Minimized = false;

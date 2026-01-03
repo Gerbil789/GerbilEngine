@@ -17,7 +17,7 @@ namespace Engine
 
 		if (!data)
 		{
-			LOG_ERROR("Failed to load texture at: {0}", path);
+			LOG_ERROR("Failed to load texture at: {}", path);
 			return nullptr;
 		}
 

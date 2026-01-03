@@ -191,7 +191,7 @@ namespace Engine
 			return nullptr;
 		}
 
-		auto material = new Material(shader.get());
+		auto material = new Material(shader);
 
 		if (auto attributes = data["Attributes"])
 		{
@@ -236,7 +236,7 @@ namespace Engine
 				uint64_t texID;
 				if (DeserializeValue(node, texID))
 				{
-					auto texture = AssetManager::GetAsset<Texture2D>(UUID(texID)).get();
+					auto texture = AssetManager::GetAsset<Texture2D>(UUID(texID));
 					if (texture)
 						material->SetTexture(name, texture);
 					else

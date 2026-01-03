@@ -10,7 +10,7 @@ namespace Engine
   public:
     UUID(); // generates a new UUID
     UUID(uint64_t value) : m_Value(value) {}
-    UUID(const UUID&) = default;
+		UUID(const UUID&) = default;
 
     bool operator==(const UUID& other) const { return m_Value == other.m_Value; }
     bool operator!=(const UUID& other) const { return m_Value != other.m_Value; }

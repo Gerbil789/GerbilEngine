@@ -88,7 +88,7 @@ namespace Editor
 
 		ImGui::PushID((uint32_t)entity);
 
-		bool opened = ImGui::TreeNodeEx(("%s", entity.GetName().c_str()), flags);
+		bool opened = ImGui::TreeNodeEx(entity.GetName().c_str(), flags);
 
 		// Handle selection
 		if (ImGui::IsItemClicked())

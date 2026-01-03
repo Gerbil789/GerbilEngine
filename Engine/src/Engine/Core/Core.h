@@ -7,7 +7,7 @@
 //#define ENGINE_PROFILE
 #endif
 
-#if defined(_MSC_VER)
+#if defined(ENGINE_PLATFORM_WINDOWS)
 #define DEBUG_BREAK() __debugbreak()
 #elif defined(__GNUC__) || defined(__clang__)
 #define DEBUG_BREAK() __builtin_trap()
@@ -16,6 +16,7 @@
 #define DEBUG_BREAK() std::abort()
 #endif
 
+//TODO: move assert into separate file
 #ifdef ENGINE_ENABLE_ASSERTS
 #define ASSERT(x, ...) { if(!(x)) { LOG_CRITICAL("Assertion Failed: {0}", __VA_ARGS__); DEBUG_BREAK(); } }
 #else
@@ -34,19 +35,3 @@
 #define ENGINE_PROFILE_SCOPE(name)
 #define ENGINE_PROFILE_FUNCTION()
 #endif
-
-template<typename T>
-using Scope = std::unique_ptr<T>;
-template<typename T, typename ... Args>
-constexpr Scope<T> CreateScope(Args&& ... args)
-{
-	return std::make_unique<T>(std::forward<Args>(args)...);
-}
-
-template<typename T>
-using Ref = std::shared_ptr<T>;
-template<typename T, typename ... Args>
-constexpr Ref<T> CreateRef(Args&& ... args)
-{
-	return std::make_shared<T>(std::forward<Args>(args)...);
-}

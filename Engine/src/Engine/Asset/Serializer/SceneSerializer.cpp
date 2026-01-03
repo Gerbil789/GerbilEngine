@@ -233,13 +233,13 @@ namespace Engine
 					if (meshNode["Mesh"])
 					{
 						uint64_t meshID = meshNode["Mesh"].as<uint64_t>();
-						meshComp.mesh = AssetManager::GetAsset<Mesh>(meshID).get();
+						meshComp.mesh = AssetManager::GetAsset<Mesh>(meshID);
 					}
 
 					if (meshNode["Material"])
 					{
 						uint64_t materialID = meshNode["Material"].as<uint64_t>();
-						meshComp.material = AssetManager::GetAsset<Material>(materialID).get();
+						meshComp.material = AssetManager::GetAsset<Material>(materialID);
 					}
 				}
 

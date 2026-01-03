@@ -55,7 +55,7 @@ namespace Editor
 			{
 				auto thumbnailRenderer = ThumbnailRenderer();
 				thumbnailRenderer.Initialize();
-				Thumbnail = thumbnailRenderer.Render(Engine::AssetManager::GetAsset<Engine::Material>(uuid).get());
+				Thumbnail = thumbnailRenderer.Render(Engine::AssetManager::GetAsset<Engine::Material>(uuid));
 			}
 		}
 	};

@@ -108,7 +108,7 @@ namespace Editor
 				Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
 				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Mesh)
 				{
-					component.mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(droppedUUID).get();
+					component.mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(droppedUUID);
 				}
 
 			}
@@ -129,7 +129,7 @@ namespace Editor
 				Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
 				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Material)
 				{
-					component.material = Engine::AssetManager::GetAsset<Engine::Material>(droppedUUID).get();
+					component.material = Engine::AssetManager::GetAsset<Engine::Material>(droppedUUID);
 				}
 			}
 			ImGui::EndDragDropTarget();
@@ -192,7 +192,7 @@ namespace Editor
 				Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
 				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Audio)
 				{
-					component.clip = Engine::AssetManager::GetAsset<Engine::AudioClip>(droppedUUID).get();
+					component.clip = Engine::AssetManager::GetAsset<Engine::AudioClip>(droppedUUID);
 				}
 			}
 			ImGui::EndDragDropTarget();

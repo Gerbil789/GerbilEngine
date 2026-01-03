@@ -46,7 +46,7 @@ namespace Engine::SceneManager
 
 	void CreateScene(const std::filesystem::path& path)
 	{
-		Scene* scene = AssetManager::CreateAsset<Scene>(path).get();
+		Scene* scene = AssetManager::CreateAsset<Scene>(path);
 		SetActiveScene(scene);
 	}
 
@@ -75,7 +75,7 @@ namespace Engine::SceneManager
 			return; 
 		}
 
-		Scene* scene = AssetManager::GetAsset<Scene>(s_ActiveScene->id).get();
+		Scene* scene = AssetManager::GetAsset<Scene>(s_ActiveScene->id);
 		auto assetPath = AssetManager::GetAssetPath(s_ActiveScene->id);
 
 		if(assetPath.empty())
