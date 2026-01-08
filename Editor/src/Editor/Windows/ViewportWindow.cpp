@@ -34,9 +34,8 @@ namespace Editor
 	ViewportWindow::ViewportWindow()
 	{
 		auto camera = &m_CameraController.GetCamera();
-		camera->SetBackgroundType(Engine::Camera::BackgroundType::Skybox);
+		camera->SetBackground(Engine::Camera::Background::Skybox);
 		m_Renderer.SetCamera(camera);
-
 
 		m_Renderer.AddPass(new Engine::BackgroundPass());
 
@@ -53,8 +52,6 @@ namespace Editor
 		s_WireframePass = new Engine::WireframePass();
 		s_WireframePass->m_Enabled = false;
 		m_Renderer.AddPass(s_WireframePass);
-
-
 
 		Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene* scene)
 			{
@@ -216,7 +213,7 @@ namespace Editor
 		glm::mat4 cameraView = m_CameraController.GetCamera().GetViewMatrix();
 
 		auto& transformComponent = selectedEntity.GetComponent<Engine::TransformComponent>();
-		glm::mat4 worldTransform = transformComponent.GetWorldMatrix(m_Scene->GetRegistry());
+		glm::mat4 worldTransform = transformComponent.GetWorldMatrix(m_Scene->Registry());
 
 		float* snapValue = nullptr;
 		if(Engine::Input::IsKeyPressed(Engine::Key::LeftControl))
@@ -239,7 +236,7 @@ namespace Editor
 			for (auto entity : selection)
 			{
 				auto& tc = entity.GetComponent<Engine::TransformComponent>();
-				m_InitialWorldTransforms[entity] = tc.GetWorldMatrix(m_Scene->GetRegistry());
+				m_InitialWorldTransforms[entity] = tc.GetWorldMatrix(m_Scene->Registry());
 			}
 
 			m_InitialPrimaryWorld = m_InitialWorldTransforms[selectedEntity];
@@ -261,8 +258,8 @@ namespace Editor
 				glm::mat4 parentWorld = glm::mat4(1.0f);
 				if (tc.parent != entt::null)
 				{
-					Engine::Entity parent = { tc.parent, m_Scene };
-					parentWorld = parent.GetComponent<Engine::TransformComponent>().GetWorldMatrix(m_Scene->GetRegistry());
+					Engine::Entity parent{ tc.parent, &m_Scene->Registry() };
+					parentWorld = parent.GetComponent<Engine::TransformComponent>().GetWorldMatrix(m_Scene->Registry());
 				}
 
 				glm::mat4 newLocal = glm::inverse(parentWorld) * newWorld;
@@ -292,9 +289,8 @@ namespace Editor
 					glm::mat4 parentWorld = glm::mat4(1.0f);
 					if (tc.parent != entt::null)
 					{
-						Engine::Entity parent = { tc.parent, m_Scene };
-						parentWorld = parent.GetComponent<Engine::TransformComponent>()
-							.GetWorldMatrix(m_Scene->GetRegistry());
+						Engine::Entity parent{ tc.parent, &m_Scene->Registry() };
+						parentWorld = parent.GetComponent<Engine::TransformComponent>().GetWorldMatrix(m_Scene->Registry());
 					}
 					glm::mat4 initialLocal = glm::inverse(parentWorld) * initialWorld;
 					glm::vec3 skew;

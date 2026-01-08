@@ -8,12 +8,15 @@ struct GLFWwindow; // forward declaration
 
 namespace Engine
 {
+	enum class WindowMode { Windowed, BorderlessFullscreen };
+
 	struct WindowSpecification
 	{
 		std::string title = "untitled window";
 		uint32_t width = 1600;
 		uint32_t height = 900;
 		std::filesystem::path iconPath = "";
+		WindowMode mode = WindowMode::Windowed;
 	};
 
 	class Window
@@ -36,6 +39,9 @@ namespace Engine
 
 		void SetEventCallback(const EventCallbackFn& callback) { m_Data.callback = callback; }
 
+		void SetMode(WindowMode mode);
+		WindowMode GetMode() const;
+
 	private:
 		void SetEventCallbacks();
 		void ConfigureSurface(uint32_t width, uint32_t height);
@@ -43,7 +49,14 @@ namespace Engine
 
 	private:
 		GLFWwindow* m_Window = nullptr;
+		WindowMode m_Mode = WindowMode::Windowed;
 		wgpu::Surface m_Surface;
+
+		// Stored windowed state
+		int m_WindowedX = 100;
+		int m_WindowedY = 100;
+		int m_WindowedWidth = 1280;
+		int m_WindowedHeight = 720;
 
 		struct WindowData
 		{

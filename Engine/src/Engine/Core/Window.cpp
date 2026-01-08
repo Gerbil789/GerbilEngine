@@ -8,12 +8,14 @@
 #include <GLFW/glfw3.h>
 
 //TODO: move platform specific code to separate files or figure something better xd
+// look at this https://dawn.googlesource.com/dawn/+/refs/heads/main/src/dawn/glfw/utils.cpp
+
 #if defined(ENGINE_PLATFORM_WINDOWS)
 #define GLFW_EXPOSE_NATIVE_WIN32
 #elif defined(ENGINE_PLATFORM_LINUX)
 #define GLFW_EXPOSE_NATIVE_X11
+#define GLFW_EXPOSE_NATIVE_WAYLAND
 #endif
-
 #include <GLFW/glfw3native.h>
 
 namespace Engine
@@ -25,13 +27,13 @@ namespace Engine
 
 #if defined(ENGINE_PLATFORM_WINDOWS)
 		wgpu::SurfaceSourceWindowsHWND hwndDesc{};
-		hwndDesc.chain.sType = WGPUSType_SurfaceSourceWindowsHWND;
-		hwndDesc.hinstance = GetModuleHandle(nullptr);
 		hwndDesc.hwnd = glfwGetWin32Window(window);
+		hwndDesc.hinstance = GetModuleHandle(nullptr);
+		hwndDesc.chain.sType = wgpu::SType::SurfaceSourceWindowsHWND;
 		surfaceDesc.nextInChain = &hwndDesc.chain;
-#elif defined(ENGINE_PLATFORM_LINUX)
+#else
 		wgpu::SurfaceSourceXlibWindow x11Desc{};
-		x11Desc.chain.sType = WGPUSType_SurfaceSourceXlibWindow;
+		x11Desc.chain.sType = wgpu::SType::SurfaceSourceXlibWindow;
 		x11Desc.display = glfwGetX11Display();
 		x11Desc.window = glfwGetX11Window(window);
 		surfaceDesc.nextInChain = &x11Desc.chain;
@@ -59,7 +61,7 @@ namespace Engine
 		m_Data.width = specification.width;
 		m_Data.height = specification.height;
 
-		LOG_TRACE("Creating window {} ({}, {})", specification.title, m_Data.width, m_Data.height);
+		LOG_TRACE("Creating '{}' window ({}, {})", specification.title, m_Data.width, m_Data.height);
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		m_Window = glfwCreateWindow(static_cast<int>(m_Data.width), static_cast<int>(m_Data.height), specification.title.c_str(), nullptr, nullptr);
@@ -87,6 +89,40 @@ namespace Engine
 	void Window::OnUpdate()
 	{
 		glfwPollEvents();
+	}
+
+	void Window::SetMode(WindowMode mode)
+	{
+		if (m_Mode == mode) 			return;
+
+		m_Mode = mode;
+
+		if (mode == WindowMode::BorderlessFullscreen)
+		{
+			glfwGetWindowPos(m_Window, &m_WindowedX, &m_WindowedY);
+			glfwGetWindowSize(m_Window, &m_WindowedWidth, &m_WindowedHeight);
+
+			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+			const GLFWvidmode* vidmode = glfwGetVideoMode(monitor);
+
+			glfwSetWindowAttrib(m_Window, GLFW_DECORATED, GLFW_FALSE);
+
+			glfwSetWindowPos(m_Window, 0, 0);
+			glfwSetWindowSize(m_Window, vidmode->width, vidmode->height);
+		}
+		else
+		{
+			glfwSetWindowAttrib(m_Window, GLFW_DECORATED, GLFW_TRUE);
+
+			glfwSetWindowSize(m_Window, m_WindowedWidth, m_WindowedHeight);
+			glfwSetWindowPos(m_Window, m_WindowedX, m_WindowedY);
+		}
+
+	}
+
+	WindowMode Window::GetMode() const
+	{
+		return m_Mode;
 	}
 
 	void Window::SetEventCallbacks()

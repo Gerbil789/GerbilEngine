@@ -17,6 +17,7 @@
 #include "Editor/Command/CommandManager.h"
 #include "Engine/Audio/Audio.h"
 #include "Engine/Utils/FileWatcher.h"
+#include "Engine/Core/KeyCodes.h"
 
 namespace Editor
 {
@@ -93,6 +94,7 @@ namespace Editor
 		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::UUID(2306162455903992554));
 		Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::UUID(8982589797183355654));
 
+		// Create grid of cubes
 		for(int x = 0; x < 10; x++)
 		{
 			for(int y = 0; y < 1; y++)
@@ -109,54 +111,19 @@ namespace Editor
 			}
 		}
 
-		//// Entity 1
-		//{
-		//	auto cube = scene->CreateEntity("FirstCube");
-		//	auto mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/cube.glb");
+		// Camera entity
+		{
+			auto cameraEntity = scene->CreateEntity("Camera");
+			auto& component = cameraEntity.AddComponent<Engine::CameraComponent>();
+			std::unique_ptr<Engine::Camera> camera = std::make_unique<Engine::Camera>();
 
-		//	auto& component = cube.AddComponent<Engine::MeshComponent>();
-		//	component.Material = material;
-		//	component.Mesh = mesh;
+			camera->SetBackground(Engine::Camera::Background::Skybox);
+			component.camera = camera.release();
 
-		//	cube.GetComponent<Engine::TransformComponent>().Position = { 2.0f, 0.0f, 0.0f };
-		//	//cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
-
-		//	LOG_INFO("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
-		//}
-
-
-		//// Entity 2
-		//{
-		//	auto cube = scene->CreateEntity("SecondCube");
-		//	auto mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/sphere.glb");
-
-		//	auto& component = cube.AddComponent<Engine::MeshComponent>();
-		//	component.Material = material;
-		//	component.Mesh = mesh;
-
-		//	cube.GetComponent<Engine::TransformComponent>().Position = { 0.0f, 0.0f, 0.0f };
-		//	//cube.GetComponent<Engine::TransformComponent>().Rotation = { 45.0f, 45.0f, 0.0f };
-
-		//	LOG_INFO("Created entity '{0}' with ID: {1}", cube.GetName(), cube.GetUUID());
-		//}
-
-		//// Camera Entity
-		//{
-		//	auto cam = scene->CreateEntity("camera");
-
-		//	auto& component = cam.AddComponent<Engine::CameraComponent>();
-		//	scene->SetActiveCamera(cam);
-
-		//	cam.GetComponent<Engine::TransformComponent>().Position = { 0.0f, 0.0f, 10.0f };
-
-		//	LOG_INFO("Created entity '{0}' with ID: {1}", cam.GetName(), cam.GetUUID());
-
-
-		//	EditorContext::SelectEntity(cam);
-		//}
-
-		//Engine::AudioClip* clip = Engine::AssetManager::GetAsset<Engine::AudioClip>(Engine::UUID(4188365834911559584));
-		//Engine::Audio::Play(clip);
+			cameraEntity.GetComponent<Engine::TransformComponent>().position = { 0.0f, 0.0f, 0.0f };
+			cameraEntity.GetComponent<Engine::TransformComponent>().rotation = { 0.0f, 0.0f, 0.0f };
+			scene->SetActiveCamera(cameraEntity);
+		}
 	}
 
 	EditorApp::~EditorApp()
@@ -195,6 +162,22 @@ namespace Editor
 	void EditorApp::OnEvent(Engine::Event& e)
 	{
 		ENGINE_PROFILE_FUNCTION();
+		if (e.GetEventType() == Engine::EventType::KeyPressed)
+		{
+			Engine::KeyEvent& keyEvent = static_cast<Engine::KeyEvent&>(e);
+			if (keyEvent.GetKey() == Engine::Key::F11)
+			{
+				if (m_MainWindow->GetMode() == Engine::WindowMode::BorderlessFullscreen)
+				{
+					m_MainWindow->SetMode(Engine::WindowMode::Windowed);
+				}
+				else
+				{
+					m_MainWindow->SetMode(Engine::WindowMode::BorderlessFullscreen);
+				}
+			}
+		}
+
 		Application::OnEvent(e);
 		CommandManager::OnEvent(e);
 		EditorWindowManager::OnEvent(e);
@@ -209,7 +192,7 @@ namespace Editor
 	{
 		if (m_GameInstance) return; // already playing
 
-		m_GameInstance = std::make_unique<Engine::GameInstance>();
+		m_GameInstance = std::make_unique<GameInstance>();
 		m_GameInstance->OnExit = [this]() { this->m_GameInstance.reset(); };
 		Engine::Scene* activeScene = Engine::SceneManager::GetActiveScene();
 		m_GameInstance->Initialize(activeScene);

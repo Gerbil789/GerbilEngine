@@ -102,7 +102,6 @@ namespace Editor
 	{
 		s_Device = Engine::GraphicsContext::GetDevice();
 		s_Queue = Engine::GraphicsContext::GetQueue();
-
 		s_Surface = Engine::Application::GetWindow().GetSurface();
 
 		//TODO: dont heap allocate the windows

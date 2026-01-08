@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Core/Application.h"
-#include "Engine/Core/GameInstance.h"
+#include "Editor/Core/GameInstance.h"
 
 namespace Editor
 {
@@ -17,7 +17,7 @@ namespace Editor
 		void PlayGame();
 
 	private:
-		std::unique_ptr<Engine::GameInstance> m_GameInstance;
+		std::unique_ptr<GameInstance> m_GameInstance;
 	};
 
 	EditorApp CreateApp(Engine::ApplicationCommandLineArgs args);

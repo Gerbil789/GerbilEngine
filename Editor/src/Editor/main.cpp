@@ -18,7 +18,7 @@ int main(int argc, char** argv)
   }
   catch (const std::exception& e)
   {
-    LOG_CRITICAL("Fatal error: {0}", e.what());
+    LOG_CRITICAL("{}", e.what());
     return EXIT_FAILURE;
 	}
 }

@@ -110,7 +110,7 @@ namespace Engine
 
 		for (const DrawItem& item : list.items)
 		{
-			glm::mat4 model = item.entity.GetComponent<TransformComponent>().GetWorldMatrix(m_RenderContext.scene->GetRegistry());
+			glm::mat4 model = item.entity.GetComponent<TransformComponent>().GetWorldMatrix(m_RenderContext.scene->Registry());
 
 			uint32_t offset = item.modelIndex * RenderGlobals::GetModelUniformStride();
 
@@ -130,5 +130,10 @@ namespace Engine
 	wgpu::TextureView Renderer::GetTextureView() const
 	{
 		return m_RenderContext.colorTarget;
+	}
+
+	void Renderer::SetColorTarget(wgpu::TextureView color)
+	{
+		m_RenderContext.colorTarget = color;
 	}
 }

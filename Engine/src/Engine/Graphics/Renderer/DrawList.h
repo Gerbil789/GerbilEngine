@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Scene/Entity.h"
+#include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
 

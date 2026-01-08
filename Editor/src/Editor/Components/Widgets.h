@@ -35,5 +35,4 @@ namespace Editor::Widget
 	WidgetResult ColorField(const char* label, glm::vec4& color);
 	WidgetResult ColorField(const char* label, glm::vec3& color);
 	WidgetResult EnumField(const char* label, int& value, const std::vector<std::string>& options);
-	WidgetResult EnumField(const char* label, int& value, const std::vector<std::filesystem::path>& options);
 }

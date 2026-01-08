@@ -1,8 +1,6 @@
 #include "enginepch.h"
 #include "Skybox.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Asset/Importer/ShaderImporter.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Graphics/SamplerPool.h"
 

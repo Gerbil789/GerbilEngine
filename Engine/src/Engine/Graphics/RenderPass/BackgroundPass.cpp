@@ -2,6 +2,7 @@
 #include "BackgroundPass.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Graphics/Camera.h"
+#include "Engine/Graphics/Skybox.h"
 
 namespace Engine
 {
@@ -24,7 +25,7 @@ namespace Engine
 
 		pass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
-		if (context.camera->GetBackgroundType() == Camera::BackgroundType::Skybox)
+		if (context.camera->GetProjection() == Camera::Projection::Perspective && context.camera->GetBackground() == Camera::Background::Skybox)
 		{
 			auto& skybox = context.camera->GetSkybox();
 			pass.setPipeline(skybox.GetShader().GetRenderPipeline());

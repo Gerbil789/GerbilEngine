@@ -24,6 +24,8 @@ namespace Engine
 
 		wgpu::TextureView GetTextureView() const;
 
+		void SetColorTarget(wgpu::TextureView color);
+
 	private:
 		RenderContext m_RenderContext;
 		std::vector<RenderPass*> m_Passes;

@@ -9,6 +9,7 @@
 #include "Editor/Command/TransformEntity.h"
 #include "Engine/Audio/AudioClip.h"
 #include "Editor/Core/EditorContext.h"
+#include "Engine/Graphics/Camera.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
@@ -77,6 +78,74 @@ namespace Editor
 		}
 	}
 
+	void DrawCamera(Engine::Entity entity)
+	{
+		if (!entity.HasComponent<Engine::CameraComponent>()) return;
+
+
+
+		if (!ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			return;
+		}
+
+		auto& component = entity.GetComponent<Engine::CameraComponent>();
+		Engine::Camera* camera = component.camera;
+
+		float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 100, 100.0f);
+		ImGui::Columns(2, "camera_body", false);
+		ImGui::SetColumnWidth(0, 100);
+		ImGui::SetColumnWidth(1, availWidth);
+
+		ImGui::Text("Projection");
+		ImGui::NextColumn();
+
+		Engine::Camera::Projection projType = camera->GetProjection();
+		std::vector<std::string> projTypeNames = { "Perspective", "Orthographic" };
+		int currentProjType = static_cast<int>(projType);
+		if (Widget::EnumField("Projection Type", currentProjType, projTypeNames).changed)
+		{
+			camera->SetProjection(static_cast<Engine::Camera::Projection>(currentProjType));
+		}
+		ImGui::NextColumn();
+
+		ImGui::Text("Background");
+		ImGui::NextColumn();
+
+		Engine::Camera::Background bgType = camera->GetBackground();
+		std::vector<std::string> bgTypeNames = { "Color", "Skybox" };
+
+		int currentBgType = static_cast<int>(bgType);
+		if (Widget::EnumField("Background Type", currentBgType, bgTypeNames).changed)
+		{
+			camera->SetBackground(static_cast<Engine::Camera::Background>(currentBgType));
+		}
+		ImGui::NextColumn();
+
+		if(bgType == Engine::Camera::Background::Color)
+		{
+			ImGui::Text("Clear Color");
+			ImGui::NextColumn();
+			glm::vec4 value;
+			memcpy(&value, &camera->GetClearColor().x, sizeof(glm::vec4));
+			if (Widget::ColorField("Clear Color", value).changed)
+			{
+				camera->SetClearColor(value);
+			}
+		}
+		else
+		{
+			// Skybox settings
+		}
+		//ImGui::NextColumn();
+		
+
+
+		ImGui::Columns(1);
+	}
+
+
+
 	void DrawMesh(Engine::Entity entity)
 	{
 		if (!entity.HasComponent<Engine::MeshComponent>()) return;
@@ -136,7 +205,6 @@ namespace Editor
 		}
 		ImGui::NextColumn();
 		ImGui::Columns(1);
-
 	}
 
 	void DrawAudioListener(Engine::Entity entity)
@@ -258,6 +326,7 @@ namespace Editor
 
 		DrawName(entity);
 		DrawTransform(entity);
+		DrawCamera(entity);
 		DrawMesh(entity);
 		DrawAudioListener(entity);
 		DrawAudioSource(entity);

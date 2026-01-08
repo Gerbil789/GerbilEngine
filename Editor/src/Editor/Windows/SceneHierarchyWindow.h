@@ -2,6 +2,7 @@
 
 #include "IEditorWindow.h"
 #include "Engine/Scene/Entity.h"
+#include "Engine/Scene/Scene.h"
 
 namespace Editor
 {

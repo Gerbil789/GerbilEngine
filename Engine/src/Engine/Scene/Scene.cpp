@@ -17,11 +17,10 @@ namespace Engine
 	Entity Scene::CreateEntity(UUID uuid, const std::string& name, const glm::vec3& position)
 	{
 		entt::entity handle = m_Registry.create();
-		Entity entity = { handle, this };
-		entity.AddComponent<IdentityComponent>(uuid);
-		entity.AddComponent<NameComponent>(name);
-		entity.AddComponent<TransformComponent>(position);
-		return entity;
+		m_Registry.emplace<IdentityComponent>(handle, UUID{}, true);
+		m_Registry.emplace<NameComponent>(handle, name);
+		m_Registry.emplace<TransformComponent>(handle, position);
+		return Entity{ handle, &m_Registry };
 	}
 
 	Entity Scene::GetActiveCamera()
@@ -31,7 +30,7 @@ namespace Engine
 			return {}; // Return null entity wrapper
 		}
 
-		return Entity{ m_ActiveCamera, this };
+		return Entity{ m_ActiveCamera, &m_Registry };
 	}
 
 	void Scene::SetActiveCamera(Entity entity)
@@ -41,8 +40,7 @@ namespace Engine
 			LOG_WARNING("Setting active camera to entity without CameraComponent!");
 			return;
 		}
-
-		m_ActiveCamera = entity;
+		m_ActiveCamera = entity.Handle();
 	}
 
 	Entity Scene::GetEntity(UUID uuid)
@@ -51,7 +49,9 @@ namespace Engine
 		for (auto entity : view)
 		{
 			if (view.get<IdentityComponent>(entity).id == uuid)
-				return Entity{ entity, this };
+			{
+				return Entity{ entity, &m_Registry };
+			}
 		}
 		return Entity();
 	}

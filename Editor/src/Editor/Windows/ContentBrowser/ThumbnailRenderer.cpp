@@ -15,7 +15,7 @@ namespace Editor
 	{
 		Engine::Scene* scene = new Engine::Scene();
 		Engine::Camera* camera = new Engine::Camera();
-		camera->SetBackgroundType(Engine::Camera::BackgroundType::Color);
+		camera->SetBackground(Engine::Camera::Background::Color);
 		camera->SetViewportSize({ 64.0f, 64.0f });
 		camera->SetPosition({ 0.0f, 0.0f, 3.0f });
 		camera->SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });

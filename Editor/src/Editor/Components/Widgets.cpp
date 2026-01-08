@@ -241,36 +241,9 @@ namespace Editor::Widget
 					result.changed = true;
 				}
 				if (isSelected)
-					ImGui::SetItemDefaultFocus();
-			}
-			ImGui::EndCombo();
-		}
-
-		result.active = ImGui::IsItemActive();
-		result.started = ImGui::IsItemActivated();
-		result.finished = ImGui::IsItemDeactivatedAfterEdit();
-
-		ImGui::PopID();
-		return result;
-	}
-
-	WidgetResult EnumField(const char* label, int& value, const std::vector<std::filesystem::path>& options)
-	{
-		WidgetResult result;
-		ImGui::PushID(label);
-
-		if (ImGui::BeginCombo("##value", options[value].stem().string().c_str()))
-		{
-			for (int i = 0; i < static_cast<int>(options.size()); i++)
-			{
-				bool isSelected = value == i;
-				if (ImGui::Selectable(options[i].stem().string().c_str(), isSelected))
 				{
-					value = i;
-					result.changed = true;
-				}
-				if (isSelected)
 					ImGui::SetItemDefaultFocus();
+				}
 			}
 			ImGui::EndCombo();
 		}
