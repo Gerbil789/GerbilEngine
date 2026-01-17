@@ -9,7 +9,7 @@
 
 namespace Engine
 {
-	Mesh* MeshImporter::ImportMesh(const AssetMetadata& metadata)
+	Mesh* MeshImporter::ImportMesh(const AssetRecord& metadata)
 	{
 		return LoadMesh(Project::GetAssetsDirectory() / metadata.path);
 	}

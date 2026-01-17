@@ -61,12 +61,11 @@ namespace Engine
 		return AssetType::Unknown;
 	}
 
-	struct AssetMetadata
+	struct AssetRecord
 	{
 		UUID id;
 		std::filesystem::path path;
-
-		AssetType GetType() const { return GetAssetTypeFromExtension(path.extension().string()); }
+		AssetType type;
 	};
 
 

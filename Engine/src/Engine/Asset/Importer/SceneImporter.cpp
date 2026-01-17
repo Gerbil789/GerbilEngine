@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	Scene* SceneImporter::ImportScene(const AssetMetadata& metadata)
+	Scene* SceneImporter::ImportScene(const AssetRecord& metadata)
 	{
 		return LoadScene(Project::GetAssetsDirectory() / metadata.path);
 	}

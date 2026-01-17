@@ -11,7 +11,7 @@
 
 namespace Engine
 {
-	using AssetImportFunction = std::function<Asset*(const AssetMetadata&)>;
+	using AssetImportFunction = std::function<Asset*(const AssetRecord&)>;
 
 	static std::map<AssetType, AssetImportFunction> s_AssetImportFunctions = {
 		{ AssetType::Texture2D, TextureImporter::ImportTexture2D },
@@ -23,9 +23,9 @@ namespace Engine
 		{ AssetType::Audio, AudioImporter::ImportAudio }
 	};
 
-	Asset* AssetImporter::ImportAsset(const AssetMetadata& metadata)
+	Asset* AssetImporter::ImportAsset(const AssetRecord& metadata)
 	{
-		AssetType assetType = metadata.GetType();
+		AssetType assetType = metadata.type;
 
 		if (s_AssetImportFunctions.find(assetType) == s_AssetImportFunctions.end())
 		{

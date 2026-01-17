@@ -20,9 +20,9 @@ namespace Engine
 		{ AssetType::Material, [](const std::filesystem::path& path) -> Asset* { return MaterialSerializer::Deserialize(path); }}
 	};
 
-	void AssetSerializer::SerializeAsset(Asset* asset, const AssetMetadata& metadata)
+	void AssetSerializer::SerializeAsset(Asset* asset, const AssetRecord& metadata)
 	{
-		AssetType assetType = metadata.GetType();
+		AssetType assetType = metadata.type;
 
 		if (s_AssetSerializeFunctions.find(assetType) == s_AssetSerializeFunctions.end())
 		{
@@ -33,9 +33,9 @@ namespace Engine
 		return s_AssetSerializeFunctions.at(assetType)(asset, Project::GetAssetsDirectory() / metadata.path);
 	}
 
-	Asset* AssetSerializer::DeserializeAsset(const AssetMetadata& metadata)
+	Asset* AssetSerializer::DeserializeAsset(const AssetRecord& metadata)
 	{
-		AssetType assetType = metadata.GetType();
+		AssetType assetType = metadata.type;
 
 		if (s_AssetDeserializeFunctions.find(assetType) == s_AssetDeserializeFunctions.end())
 		{

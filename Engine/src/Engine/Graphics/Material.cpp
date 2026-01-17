@@ -10,12 +10,27 @@ namespace Engine
 {
 	static Material* s_DefaultMaterial = nullptr;
 
-	Material::Material(Shader* shader)
+	Material::Material(const MaterialSpecification& spec)
 	{
-		m_Shader = shader; 
+		m_Shader = spec.shader;
+		m_TextureFilter = spec.filter;
+		m_TextureWrap = spec.wrap;
 
 		m_UniformData.resize(m_Shader->GetMaterialUniformBufferSize(), 0);
 		CreateUniformBuffer();
+
+		for (auto& [name, value] : spec.floatDefaults)
+			SetFloat(name, value);
+
+		for (auto& [name, value] : spec.vec4Defaults)
+			SetVec4(name, value);
+
+		for (auto& [name, id] : spec.textureDefaults)
+		{
+			if (auto tex = AssetManager::GetAsset<Texture2D>(id))
+				SetTexture(name, tex);
+		}
+
 		CreateBindGroup();
 	}
 
@@ -122,7 +137,6 @@ namespace Engine
 			}
 			else if (binding.type == BindingType::Texture2D)
 			{
-				// check if texture is set for this binding
 				if (m_Textures.find(binding.name) == m_Textures.end())
 				{
 					m_Textures[binding.name] = Texture2D::GetDefault();
@@ -159,8 +173,9 @@ namespace Engine
 	{
 		if (!s_DefaultMaterial)
 		{
-			Shader* shader = ShaderImporter::LoadShader("Resources/Engine/Shaders/unlit.shader");
-			s_DefaultMaterial = new Material(shader);
+			MaterialSpecification spec;
+			spec.shader = ShaderImporter::LoadShader("Resources/Engine/Shaders/unlit.shader");
+			s_DefaultMaterial = new Material(spec);
 			s_DefaultMaterial->SetVec4("color", glm::vec4(1.0f));
 		}
 

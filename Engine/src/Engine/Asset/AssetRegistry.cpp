@@ -24,30 +24,31 @@ namespace Engine
 		m_Records.clear();
 		for (const auto& entry : data["Assets"])
 		{
-			AssetMetadata metadata;
-			metadata.id = entry["ID"].as<uint64_t>();
+			AssetRecord record;
+			record.id = entry["ID"].as<uint64_t>();
 			std::filesystem::path relativePath = entry["Path"].as<std::string>();
-			metadata.path = assetsDir / relativePath;
+			record.path = assetsDir / relativePath;
+			record.type = AssetTypeFromString(entry["Type"].as<std::string>());
 
-			auto type = GetAssetTypeFromExtension(metadata.path.extension().string());
-			if (type == AssetType::Unknown)
-			{
-				LOG_ERROR("Asset '{}' has unknown type, skipping.", metadata.path);
-				continue;
-			}
+			//auto type = GetAssetTypeFromExtension(record.path.extension().string());
+			//if (type == AssetType::Unknown)
+			//{
+			//	LOG_ERROR("Asset '{}' has unknown type, skipping.", record.path);
+			//	continue;
+			//}
 
-			if (type == AssetType::Other)
+			if (record.type == AssetType::Other)
 			{
 				continue; // Skip 'Other' types like .txt, .md, etc.
 			}
 
-			if (!std::filesystem::exists(metadata.path))
+			if (!std::filesystem::exists(record.path))
 			{
-				LOG_WARNING("Asset '{}' not found on disk, skipping.", metadata.path);
+				LOG_WARNING("Asset '{}' not found on disk, skipping.", record.path);
 				continue;
 			}
 
-			m_Records[metadata.id] = std::move(metadata);
+			m_Records[record.id] = std::move(record);
 		}
 
 		for (auto& file : std::filesystem::recursive_directory_iterator(assetsDir))
@@ -58,7 +59,7 @@ namespace Engine
 			}
 
 			auto ext = file.path().extension().string();
-			if(ext.empty())
+			if (ext.empty())
 			{
 				continue; // Skip files without extension
 			}
@@ -87,11 +88,12 @@ namespace Engine
 
 			if (!found)
 			{
-				AssetMetadata metadata;
-				metadata.id = UUID(); // generate new UUID
-				metadata.path = file.path();
-				LOG_INFO("Discovered new asset '{}'", metadata.path);
-				m_Records[metadata.id] = std::move(metadata);
+				AssetRecord record;
+				record.id = UUID(); // generate new UUID
+				record.path = file.path();
+				record.type = type;
+				LOG_INFO("Discovered new asset '{}'", record.path);
+				m_Records[record.id] = std::move(record);
 			}
 		}
 
@@ -106,19 +108,20 @@ namespace Engine
 
 		auto assetsDir = Engine::Project::GetAssetsDirectory();
 
-		for (const auto& [uuid, metadata] : m_Records)
+		for (const auto& [uuid, record] : m_Records)
 		{
-			std::filesystem::path relativePath = std::filesystem::relative(metadata.path, assetsDir);
+			std::filesystem::path relativePath = std::filesystem::relative(record.path, assetsDir);
 
-			if(relativePath.empty())
+			if (relativePath.empty())
 			{
-				LOG_WARNING("Asset '{}' is outside of the assets directory, skipping.", metadata.path);
+				LOG_WARNING("Asset '{}' is outside of the assets directory, skipping.", record.path);
 				continue;
 			}
 
 			out << YAML::BeginMap;
-			out << YAML::Key << "ID" << YAML::Value << (uint64_t)metadata.id;
+			out << YAML::Key << "ID" << YAML::Value << (uint64_t)record.id;
 			out << YAML::Key << "Path" << YAML::Value << relativePath.string();
+			out << YAML::Key << "Type" << YAML::Value << AssetTypeToString(record.type);
 			out << YAML::EndMap;
 		}
 
@@ -129,23 +132,28 @@ namespace Engine
 		fout << out.c_str();
 	}
 
-	const AssetMetadata* AssetRegistry::Create(const std::filesystem::path& path)
+	const AssetRecord* AssetRegistry::Create(const std::filesystem::path& path)
 	{
-		auto id = GetUUIDFromPath(path);
-		if (id.IsValid())
+		if (auto id = GetUUIDFromPath(path); id.IsValid())
 		{
 			LOG_WARNING("Asset '{}' already exists in registry.", path);
-			return GetMetadata(id);
+			return GetRecord(id);
 		}
 
-		AssetMetadata record;
-		id = UUID();
-		record.id = id;
-		record.path = path;
-		m_Records[id] = std::move(record);
+		UUID id = UUID();
+
+		auto [it, inserted] = m_Records.try_emplace(
+			id,
+			AssetRecord{
+					id,
+					path,
+					GetAssetTypeFromExtension(path.extension().string())
+			}
+		);
+
 		Save(Project::GetProjectDirectory() / "assetRegistry.yaml");
 		LOG_TRACE("Added asset '{}' to registry.", path);
-		return &m_Records[id];
+		return &it->second;
 	}
 
 	const UUID AssetRegistry::GetUUIDFromPath(const std::filesystem::path& path) const
@@ -161,7 +169,7 @@ namespace Engine
 		return id;
 	}
 
-	const AssetMetadata* AssetRegistry::GetMetadata(const UUID& id) const
+	const AssetRecord* AssetRegistry::GetRecord(const UUID& id) const
 	{
 		if (auto it = m_Records.find(id); it != m_Records.end())
 		{

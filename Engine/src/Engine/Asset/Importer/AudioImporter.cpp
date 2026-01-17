@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	AudioClip* AudioImporter::ImportAudio(const AssetMetadata& metadata)
+	AudioClip* AudioImporter::ImportAudio(const AssetRecord& metadata)
 	{
 		return LoadAudio(Project::GetAssetsDirectory() / metadata.path);
 	}

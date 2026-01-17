@@ -6,7 +6,7 @@
 
 namespace Engine
 {
-	Shader* ShaderImporter::ImportShader(const AssetMetadata& metadata)
+	Shader* ShaderImporter::ImportShader(const AssetRecord& metadata)
 	{
 		return LoadShader(Project::GetAssetsDirectory() / metadata.path);
 	}

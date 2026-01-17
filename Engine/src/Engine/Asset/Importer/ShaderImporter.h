@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Asset/AssetMetadata.h"
+#include "Engine/Asset/AssetRecord.h"
 #include "Engine/Graphics/Shader.h"
 
 namespace Engine
@@ -8,7 +8,7 @@ namespace Engine
 	class ShaderImporter
 	{
 	public:
-		static Shader* ImportShader(const AssetMetadata& metadata);
+		static Shader* ImportShader(const AssetRecord& metadata);
 		static Shader* LoadShader(const std::filesystem::path& path);
 	};
 }

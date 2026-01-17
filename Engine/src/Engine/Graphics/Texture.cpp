@@ -31,7 +31,7 @@ namespace Engine
 
 		wgpu::TexelCopyBufferLayout layout{};
 		layout.offset = 0;
-		layout.bytesPerRow = m_Width * 4; // 4 bytes per pixel (RGBA8)
+		layout.bytesPerRow = m_Width * 4; // 4 bytes per pixel (RGBA8) TODO: support other formats
 		layout.rowsPerImage = m_Height;
 
 		wgpu::Extent3D size = { m_Width, m_Height, 1 };

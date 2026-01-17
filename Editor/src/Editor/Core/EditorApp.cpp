@@ -91,10 +91,10 @@ namespace Editor
 
 		Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
 
-		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::UUID(2306162455903992554));
-		Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::UUID(8982589797183355654));
+		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::UUID(2260062122974363559));
+		Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::UUID(17611688567092875307));
 
-		// Create grid of cubes
+		//// Create grid of cubes
 		for(int x = 0; x < 10; x++)
 		{
 			for(int y = 0; y < 1; y++)

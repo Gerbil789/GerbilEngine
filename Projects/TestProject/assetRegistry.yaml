@@ -1,95 +1,139 @@
 Assets:
-  - ID: 2694865476912390428
-    Path: Textures\skull.png
-  - ID: 2430232742964632950
-    Path: Materials\cone.material
-  - ID: 8982589797183355654
-    Path: Meshes\cube.glb
-  - ID: 5773291836826301117
-    Path: Scenes\empty.scene
-  - ID: 16775844654374535381
-    Path: Meshes\bad cube.glb
-  - ID: 15783146352431223061
-    Path: Textures\concrete_pillar\normal.png
-  - ID: 6023610084586369645
-    Path: Meshes\cone.glb
-  - ID: 11488752734390452845
-    Path: Shaders\Dev.shader
-  - ID: 2306162455903992554
-    Path: Materials\Test.material
-  - ID: 12250063124513744072
-    Path: Textures\metal_plates\ambient.png
-  - ID: 17556434590940161352
-    Path: Textures\metal_plates\metallic.png
-  - ID: 5073552622789407463
-    Path: Scenes\MyScene.scene
-  - ID: 7796496215400302547
-    Path: Textures\bricks_wall\albedo.png
-  - ID: 12536270321169401593
+  - ID: 7557191306909542263
     Path: Meshes\Rocks\rock_6.glb
-  - ID: 1528564429035083513
-    Path: Meshes\Rocks\rock_4.glb
-  - ID: 2853061957645165945
-    Path: Textures\concrete_pillar\roughness.png
-  - ID: 1362570588462280121
-    Path: Textures\background.png
-  - ID: 16789549155580106633
-    Path: Textures\metal_plates\normal.png
-  - ID: 7643789161623611460
+    Type: Mesh
+  - ID: 16662610643511626615
+    Path: Scenes\empty.scene
+    Type: Scene
+  - ID: 11811911768948703527
     Path: Textures\bricks_wall\ambient.png
-  - ID: 14899039829185301908
-    Path: Textures\bricks_wall\height.png
-  - ID: 15824823137009738635
-    Path: Meshes\bad cube 2.glb
-  - ID: 6538048173471328587
-    Path: Meshes\sphere.glb
-  - ID: 4495233893825811959
-    Path: Meshes\Rocks\rock_1.glb
-  - ID: 7280531552173679287
-    Path: Textures\bricks_wall\normal.png
-  - ID: 14689403870797383974
-    Path: Textures\bricks_wall\roughness.png
-  - ID: 6401710123764655857
-    Path: Textures\metal_plates\color.png
-  - ID: 39304943629783121
-    Path: Textures\tile.png
-  - ID: 9663298294828637969
-    Path: Textures\concrete_pillar\ambient.png
-  - ID: 4188365834911559584
-    Path: Audio\music.mp3
-  - ID: 8398882664557588896
-    Path: Audio\Ievan Polkka (Medieval Cover).mp3
-  - ID: 597879891253628668
-    Path: Meshes\Rocks\rock_3.glb
-  - ID: 17808716298089464060
-    Path: Textures\concrete_pillar\color.png
-  - ID: 8301645721951659981
-    Path: Textures\concrete_pillar\height.png
-  - ID: 9021856193546548807
-    Path: Textures\gerbil.jpg
-  - ID: 12541391431068497957
-    Path: Textures\SwordddV2.png
-  - ID: 12130483913259218786
-    Path: Textures\metal_plates\height.png
-  - ID: 699890594733415705
-    Path: Textures\spritesheet.png
-  - ID: 16913295600460062190
-    Path: Textures\metal_plates\roughness.png
-  - ID: 5093464727115355433
-    Path: Meshes\Rocks\rock_5.glb
-  - ID: 17669822171568293672
-    Path: Textures\favorite.png
-  - ID: 1486764810843681757
-    Path: Shaders\Flat.shader
-  - ID: 539581536164685189
-    Path: Textures\rocks\Color.png
-  - ID: 5709536494730707269
-    Path: Meshes\Rocks\rock_2.glb
-  - ID: 16704251879842279232
-    Path: Textures\mood.png
-  - ID: 9864571265207132016
-    Path: Textures\cone_tex.png
-  - ID: 5384802576992374005
+    Type: Texture
+  - ID: 2260062122974363559
+    Path: Materials\Test.material
+    Type: Material
+  - ID: 12435825516134781144
     Path: Shaders\Unlit.shader
-  - ID: 5186542143050892216
+    Type: Shader
+  - ID: 14602335504666008472
+    Path: Audio\Ievan Polkka (Medieval Cover).mp3
+    Type: Audio
+  - ID: 2768374737517666392
+    Path: Textures\background.png
+    Type: Texture
+  - ID: 12674182175083468496
+    Path: Textures\skull.png
+    Type: Texture
+  - ID: 5514179449601264138
+    Path: Audio\music.mp3
+    Type: Audio
+  - ID: 13900387464373758090
+    Path: Textures\bricks_wall\roughness.png
+    Type: Texture
+  - ID: 1587467815564260715
+    Path: Meshes\bad cube.glb
+    Type: Mesh
+  - ID: 17611688567092875307
+    Path: Meshes\bad cube 2.glb
+    Type: Mesh
+  - ID: 3718094854804367078
+    Path: Meshes\cone.glb
+    Type: Mesh
+  - ID: 3005608063343877734
+    Path: Shaders\Flat.shader
+    Type: Shader
+  - ID: 17210712188989752338
+    Path: Meshes\cube.glb
+    Type: Mesh
+  - ID: 424460496881838034
+    Path: Meshes\Rocks\rock_5.glb
+    Type: Mesh
+  - ID: 11721992318472228561
+    Path: Meshes\Rocks\rock_1.glb
+    Type: Mesh
+  - ID: 4118349461086809634
+    Path: Meshes\Rocks\rock_2.glb
+    Type: Mesh
+  - ID: 558957539392152779
+    Path: Meshes\Rocks\rock_3.glb
+    Type: Mesh
+  - ID: 16762300228901828808
+    Path: Meshes\Rocks\rock_4.glb
+    Type: Mesh
+  - ID: 10879810946928067656
     Path: Textures\rocks\Normal.png
+    Type: Texture
+  - ID: 8571133269967914218
+    Path: Meshes\sphere.glb
+    Type: Mesh
+  - ID: 13883584817892698282
+    Path: Shaders\Dev.shader
+    Type: Shader
+  - ID: 13516903918776608577
+    Path: Scenes\MyScene.scene
+    Type: Scene
+  - ID: 2725109590674858145
+    Path: Textures\bricks_wall\albedo.png
+    Type: Texture
+  - ID: 4403553832707578397
+    Path: Textures\bricks_wall\height.png
+    Type: Texture
+  - ID: 14992687653753978268
+    Path: Textures\bricks_wall\normal.png
+    Type: Texture
+  - ID: 15538453410002894140
+    Path: Textures\concrete_pillar\ambient.png
+    Type: Texture
+  - ID: 1818873935455018020
+    Path: Textures\concrete_pillar\color.png
+    Type: Texture
+  - ID: 10754507402167278265
+    Path: Textures\concrete_pillar\height.png
+    Type: Texture
+  - ID: 4872716647586055481
+    Path: Textures\spritesheet.png
+    Type: Texture
+  - ID: 14573171312751083696
+    Path: Textures\concrete_pillar\normal.png
+    Type: Texture
+  - ID: 12450443475206171837
+    Path: Textures\concrete_pillar\roughness.png
+    Type: Texture
+  - ID: 6524656021123211448
+    Path: Textures\cone_tex.png
+    Type: Texture
+  - ID: 5620118350841422469
+    Path: Textures\favorite.png
+    Type: Texture
+  - ID: 14983905808293688552
+    Path: Textures\gerbil.jpg
+    Type: Texture
+  - ID: 2723929689549121448
+    Path: Textures\mood.png
+    Type: Texture
+  - ID: 7702630365260565263
+    Path: Textures\metal_plates\ambient.png
+    Type: Texture
+  - ID: 10293999580072544122
+    Path: Textures\metal_plates\color.png
+    Type: Texture
+  - ID: 833192031896922707
+    Path: Textures\metal_plates\height.png
+    Type: Texture
+  - ID: 8632045613739991327
+    Path: Textures\metal_plates\metallic.png
+    Type: Texture
+  - ID: 3520318071689282372
+    Path: Textures\metal_plates\normal.png
+    Type: Texture
+  - ID: 1989282394406186329
+    Path: Textures\metal_plates\roughness.png
+    Type: Texture
+  - ID: 13598849223740347139
+    Path: Textures\rocks\Color.png
+    Type: Texture
+  - ID: 13476968608639661767
+    Path: Textures\SwordddV2.png
+    Type: Texture
+  - ID: 6043186722141602419
+    Path: Textures\tile.png
+    Type: Texture

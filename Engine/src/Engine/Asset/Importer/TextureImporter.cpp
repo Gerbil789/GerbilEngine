@@ -5,9 +5,9 @@
 
 namespace Engine
 {
-	Texture2D* TextureImporter::ImportTexture2D(const AssetMetadata& metadata)
+	Texture2D* TextureImporter::ImportTexture2D(const AssetRecord& record)
 	{
-		return LoadTexture2D(Project::GetAssetsDirectory() / metadata.path);
+		return LoadTexture2D(Project::GetAssetsDirectory() / record.path);
 	}
 
 	Texture2D* TextureImporter::LoadTexture2D(const std::filesystem::path& path)
@@ -31,9 +31,9 @@ namespace Engine
 		return texture;
 	}
 
-	CubeMapTexture* TextureImporter::ImportCubeMapTexture(const AssetMetadata& metadata)
+	CubeMapTexture* TextureImporter::ImportCubeMapTexture(const AssetRecord& record)
 	{
-		return LoadCubeMapTexture(Project::GetAssetsDirectory() / metadata.path);
+		return LoadCubeMapTexture(Project::GetAssetsDirectory() / record.path);
 	}
 
 	CubeMapTexture* TextureImporter::LoadCubeMapTexture(const std::filesystem::path& path)

@@ -5,9 +5,9 @@
 
 namespace Engine
 {
-	Material* MaterialImporter::ImportMaterial(const AssetMetadata& metadata)
+	Material* MaterialImporter::ImportMaterial(const AssetRecord& record)
 	{
-		return LoadMaterial(Project::GetAssetsDirectory() / metadata.path);
+		return LoadMaterial(Project::GetAssetsDirectory() / record.path);
 	}
 
 	Material* MaterialImporter::LoadMaterial(const std::filesystem::path& path)

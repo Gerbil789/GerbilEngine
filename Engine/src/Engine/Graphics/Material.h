@@ -7,19 +7,27 @@
 
 namespace Engine 
 {
+	struct MaterialSpecification
+	{
+		Shader* shader = nullptr;
+
+		TextureFilter filter = TextureFilter::Bilinear;
+		TextureWrap wrap = TextureWrap::Repeat;
+
+		std::unordered_map<std::string, float> floatDefaults;
+		std::unordered_map<std::string, glm::vec4> vec4Defaults;
+		std::unordered_map<std::string, UUID> textureDefaults;
+	};
+
 	class Material : public Asset
 	{
-		friend class MaterialSerializer;
-
 	public:
-		Material(Shader* shader);
+		Material(const MaterialSpecification& spec);
 
 		Shader* GetShader() const { return m_Shader; }
 		void SetShader(Shader* shader);
 
 		void SetFloat(const std::string& paramName, float value);
-		//void SetVec2(const std::string& paramName, const glm::vec2& value);
-		//void SetVec3(const std::string& paramName, const glm::vec3& value);
 		void SetVec4(const std::string& paramName, const glm::vec4& value);
 
 		void SetTextureFilter(TextureFilter filter) { m_TextureFilter = filter; CreateBindGroup(); }
@@ -40,7 +48,9 @@ namespace Engine
 		}
 
 		void Bind(wgpu::RenderPassEncoder pass);
-		std::vector<uint8_t> GetUniformData() const { return m_UniformData; } //TODO: this should not be public
+
+		const std::vector<uint8_t>& GetUniformData() const { return m_UniformData; }
+		const std::unordered_map<std::string, Texture2D*>& GetTextures() const { return m_Textures; }
 
 		static Material* GetDefault();
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Asset/AssetMetadata.h"
+#include "Engine/Asset/AssetRecord.h"
 #include "Engine/Audio/AudioClip.h"
 
 namespace Engine
@@ -8,7 +8,7 @@ namespace Engine
 	class AudioImporter
 	{
 	public:
-		static AudioClip* ImportAudio(const AssetMetadata& metadata);
+		static AudioClip* ImportAudio(const AssetRecord& metadata);
 		static AudioClip* LoadAudio(const std::filesystem::path& path);
 	};
 }

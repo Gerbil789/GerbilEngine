@@ -1,13 +1,13 @@
 #pragma once
 
 #include "Engine/Asset/Asset.h"
-#include "Engine/Asset/AssetMetadata.h"
+#include "Engine/Asset/AssetRecord.h"
 
 namespace Engine
 {
 	class AssetImporter
 	{
 	public:
-		static Asset* ImportAsset(const AssetMetadata& metadata);
+		static Asset* ImportAsset(const AssetRecord& metadata);
 	};
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Asset/AssetMetadata.h"
+#include "Engine/Asset/AssetRecord.h"
 #include "Engine/Graphics/Material.h"
 
 namespace Engine
@@ -8,7 +8,7 @@ namespace Engine
 	class MaterialImporter
 	{
 	public:
-		static Material* ImportMaterial(const AssetMetadata& metadata);
+		static Material* ImportMaterial(const AssetRecord& record);
 		static Material* LoadMaterial(const std::filesystem::path& path);
 	};
 }

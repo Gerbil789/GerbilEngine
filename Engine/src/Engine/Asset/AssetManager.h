@@ -20,7 +20,7 @@ namespace Engine
 
 		static void Shutdown()
 		{
-			// TODO: release all assets properly later
+			// TODO: release all assets properly
 			m_AssetRegistry.Clear();
 			m_LoadedAssets.clear();
 		}
@@ -66,17 +66,17 @@ namespace Engine
 			}
 			else
 			{
-				auto metadata = m_AssetRegistry.GetMetadata(id);
+				auto metadata = m_AssetRegistry.GetRecord(id);
 				if (!metadata)
 				{
-					LOG_ERROR("EditorAssetManager::GetAsset - Failed to load asset '{}', Record not found in registry", id);
+					LOG_ERROR("AssetManager::GetAsset - Failed to load asset '{}', Record not found in registry", id);
 					return nullptr;
 				}
 
 				asset = AssetImporter::ImportAsset(*metadata);
 				if (!asset)
 				{
-					LOG_ERROR("EditorAssetManager::GetAsset - asset import failed! '{}'", id);
+					LOG_ERROR("AssetManager::GetAsset - asset import failed! '{}'", id);
 					return nullptr;
 				}
 				m_LoadedAssets[id] = asset;
@@ -97,7 +97,7 @@ namespace Engine
 
 			for (const auto& record : records)
 			{
-				if (record->GetType() != type)
+				if (record->type != type)
 				{
 					continue;
 				}
@@ -112,7 +112,7 @@ namespace Engine
 					asset = AssetImporter::ImportAsset(*record);
 					if (!asset)
 					{
-						LOG_ERROR("EditorAssetManager::GetAssetsOfType - asset import failed! '{}'", record->path.string());
+						LOG_ERROR("AssetManager::GetAssetsOfType - asset import failed! '{}'", record->path.string());
 						continue;
 					}
 					m_LoadedAssets[record->id] = asset;
@@ -128,14 +128,14 @@ namespace Engine
 			auto metadata = m_AssetRegistry.Create(path);
 			if (!metadata)
 			{
-				LOG_ERROR("EditorAssetManager::CreateAsset - Failed to add record in registry '{}'", path);
+				LOG_ERROR("AssetManager::CreateAsset - Failed to add record in registry '{}'", path);
 				return nullptr;
 			}
 
 			Asset* asset = new T(std::forward<Args>(args)...);
 			if (!asset)
 			{
-				LOG_ERROR("EditorAssetManager::CreateAsset - failed to create asset. '{}'", path);
+				LOG_ERROR("AssetManager::CreateAsset - failed to create asset. '{}'", path);
 				return nullptr;
 			}
 
@@ -152,19 +152,19 @@ namespace Engine
 			return m_LoadedAssets.find(id) != m_LoadedAssets.end();
 		}
 
-		static const AssetMetadata* GetAssetMetadata(UUID id)
+		static const AssetRecord* GetAssetMetadata(UUID id)
 		{
-			return m_AssetRegistry.GetMetadata(id);
+			return m_AssetRegistry.GetRecord(id);
 		}
 
 		static AssetType GetAssetType(UUID id)
 		{
-			auto metadata = m_AssetRegistry.GetMetadata(id);
+			auto metadata = m_AssetRegistry.GetRecord(id);
 			if (!metadata)
 			{
 				return AssetType::Unknown;
 			}
-			return metadata->GetType();
+			return metadata->type;
 		}
 
 		static Asset* CreateAsset(const std::filesystem::path& filepath)
@@ -183,7 +183,7 @@ namespace Engine
 			Asset* asset = AssetImporter::ImportAsset(*metadata);
 			if (!asset)
 			{
-				LOG_ERROR("EditorAssetManager::ImportAsset - asset import failed! '{0}'", filepath.string());
+				LOG_ERROR("AssetManager::ImportAsset - asset import failed! '{0}'", filepath.string());
 				return nullptr;
 			}
 
@@ -197,7 +197,7 @@ namespace Engine
 			return m_AssetRegistry.GetPath(id);
 		}
 
-		static std::vector<const AssetMetadata*> GetAllAssetMetadata()
+		static std::vector<const AssetRecord*> GetAllAssetMetadata()
 		{
 			return m_AssetRegistry.GetAllRecords();
 		}
