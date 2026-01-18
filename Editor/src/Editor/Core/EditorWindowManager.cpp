@@ -11,8 +11,11 @@
 #include "Editor/Windows/StatisticsWindow.h"
 #include "Editor/Windows/ViewportWindow.h"
 #include "Editor/Components/ScopedStyle.h"
+#include "Editor/Windows/PopUp/NewProjectPopupWindow.h"
 #include <backends/imgui_impl_wgpu.h>
 #include <backends/imgui_impl_glfw.h>
+
+#include "Editor/Core/PopupWindowManager.h"
 
 //TODO: move to style file or something
 static void SetupImGuiStyle()
@@ -97,12 +100,15 @@ namespace Editor
 
 	MenuBar m_MenuBar;
 	std::vector<IEditorWindow*> m_Windows;
+	NewProjectPopupWindow newProjectPopup;
 
 	void EditorWindowManager::Initialize()
 	{
 		s_Device = Engine::GraphicsContext::GetDevice();
 		s_Queue = Engine::GraphicsContext::GetQueue();
 		s_Surface = Engine::Application::GetWindow().GetSurface();
+
+		PopupManager::Register(&newProjectPopup);
 
 		//TODO: dont heap allocate the windows
 		m_Windows = {
@@ -158,10 +164,13 @@ namespace Editor
 		ENGINE_PROFILE_FUNCTION();
 		BeginFrame();
 
-		m_MenuBar.OnUpdate();
+		m_MenuBar.Draw();
+
+		PopupManager::Draw();
+
 		for (auto& window : m_Windows)
 		{
-			window->OnUpdate();
+			window->Draw();
 		}
 
 		//bool showDemoWindow = false;

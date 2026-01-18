@@ -74,16 +74,11 @@ namespace Engine::GraphicsContext
 		{
 			throw std::runtime_error("Failed to get WGPU queue");
 		}
-
-		//// Configure surface
-		//ConfigureSurface(window.GetWidth(), window.GetHeight());
 	}
 
 	void Shutdown()
 	{
-		//if (s_Surface) s_Surface.unconfigure();
 		if (s_Queue) s_Queue.release();
-		//if (s_Surface) s_Surface.release();
 		if (s_Device) s_Device.release();
 		if (s_Instance) s_Instance.release();
 	}

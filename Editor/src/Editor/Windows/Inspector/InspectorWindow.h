@@ -11,7 +11,7 @@ namespace Editor
 	class InspectorWindow : public IEditorWindow
 	{
 	public:
-		void OnUpdate() override;
+		void Draw() override;
 
 	private:
 		void DrawAssetPanel(Engine::UUID assetID);

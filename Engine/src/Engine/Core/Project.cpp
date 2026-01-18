@@ -10,13 +10,13 @@ namespace Engine
 		return nullptr;
 	}
 
-	Project* Project::Load(const std::filesystem::path& projectDirectoryPath)
+	Project* Project::Load(const std::filesystem::path& path)
 	{
-		std::filesystem::path configPath = projectDirectoryPath / "project.yaml";
+		std::filesystem::path configPath = path / "project.yaml";
 
 		if (!std::filesystem::exists(configPath))
 		{
-			LOG_ERROR("Project::Load - Config file not found at {0}", configPath.string());
+			LOG_ERROR("Project::Load - Config file not found at {}", configPath);
 			return nullptr;
 		}
 
@@ -27,24 +27,22 @@ namespace Engine
 		}
 		catch (const YAML::ParserException& e)
 		{
-			LOG_ERROR("Project::Load - Failed to parse YAML: {0}", e.what());
+			LOG_ERROR("Project::Load - Failed to parse YAML: {}", e.what());
 			return nullptr;
 		}
 
 		s_ActiveProject = new Project();
-		s_ActiveProject->m_ProjectDirectory = projectDirectoryPath;
+		s_ActiveProject->m_ProjectDirectory = path;
 
 		if (data["Title"])
 		{
 			s_ActiveProject->m_Title = data["Title"].as<std::string>();
 		}
 
-		uint64_t id = data["StartSceneID"] ? data["StartSceneID"].as<uint64_t>(0) : 0;
+		uint64_t id = data["StartScene"] ? data["StartScene"].as<uint64_t>(0) : 0;
 		s_ActiveProject->m_StartSceneID = UUID(id);
 
-		s_ActiveProject->m_ProjectDirectory = projectDirectoryPath;
-
-		LOG_INFO("Loaded project '{0}' from {1}", s_ActiveProject->m_Title, configPath);
+		LOG_INFO("Loaded project '{}' from {}", s_ActiveProject->m_Title, configPath);
 		return s_ActiveProject;
 	}
 
@@ -59,8 +57,7 @@ namespace Engine
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Title" << YAML::Value << s_ActiveProject->m_Title;
-		out << YAML::Key << "StartSceneID" << YAML::Value << (uint64_t)s_ActiveProject->m_StartSceneID;
-		out << YAML::Key << "ProjectDirectory" << YAML::Value << s_ActiveProject->m_ProjectDirectory.string();
+		out << YAML::Key << "StartScene" << YAML::Value << (uint64_t)s_ActiveProject->m_StartSceneID;
 		out << YAML::EndMap;
 
 		std::filesystem::path savePath = s_ActiveProject->m_ProjectDirectory / "project.yaml";

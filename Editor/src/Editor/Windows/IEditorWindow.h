@@ -9,7 +9,7 @@ namespace Editor
 	public:
 		virtual ~IEditorWindow() = default;
 
-		virtual void OnUpdate() = 0;
+		virtual void Draw() = 0;
 		virtual void OnEvent(Engine::Event&) {}
 
 		bool IsVisible() const { return m_IsVisible; }

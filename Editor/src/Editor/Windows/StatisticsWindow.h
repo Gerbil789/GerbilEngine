@@ -7,7 +7,6 @@ namespace Editor
 	class StatisticsWindow : public IEditorWindow
 	{
 	public:
-		~StatisticsWindow() = default;
-		void OnUpdate() override;
+		void Draw() override;
 	};
 }

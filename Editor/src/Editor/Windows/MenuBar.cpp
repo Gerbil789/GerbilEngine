@@ -1,75 +1,95 @@
 #include "MenuBar.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Engine/Asset/AssetManager.h"
-#include "Engine/Core/Application.h"
 #include "Editor/Command/CommandManager.h"
-#include "Editor/Core/EditorWindowManager.h"
+#include "Editor/Core/PopupWindowManager.h"
+#include "Engine/Core/Log.h"
 #include <imgui.h>
 
 namespace Editor
 {
-	void MenuBar::OnUpdate()
+	struct ScopedMenuBar
 	{
-		if (ImGui::BeginMenuBar())
+		bool open;
+		ScopedMenuBar() : open(ImGui::BeginMenuBar()) {}
+		~ScopedMenuBar() { if (open) ImGui::EndMenuBar(); }
+		explicit operator bool() const { return open; }
+	};
+
+	struct ScopedMenu
+	{
+		bool open;
+		explicit ScopedMenu(const char* label)
+			: open(ImGui::BeginMenu(label)) {
+		}
+		~ScopedMenu() { if (open) ImGui::EndMenu(); }
+		explicit operator bool() const { return open; }
+	};
+
+	using MenuAction = void(*)();
+
+	struct MenuEntry
+	{
+		const char* label;
+		const char* shortcut;
+		MenuAction action;
+	};
+
+	static const MenuEntry FileMenu[]
+	{
+		{"New",  "Ctrl+N", [] { LOG_WARNING("New File - not implemented");} },
+		{"Open", "Ctrl+O", [] { LOG_WARNING("Open File - not implemented");} },
+		{"Save", "Ctrl+S", Engine::SceneManager::SaveScene},
+	};
+
+	static const MenuEntry EditMenu[]
+	{
+		{"Undo", "Ctrl+Z", CommandManager::Undo},
+		{"Redo", "Ctrl+Shift+Z", CommandManager::Redo},
+	};
+
+	static const MenuEntry ProjectMenu[]
+	{
+		{"New", "", [] { PopupManager::Open("New Project"); }},
+		{"Settings", "", [] { LOG_WARNING("Project Settings - not implemented"); }},
+	};
+
+	void MenuBar::Draw()
+	{
+		if (ScopedMenuBar bar{})
 		{
-			if (ImGui::BeginMenu("File"))
+
+			if (ScopedMenu file{ "File" })
 			{
-				if (ImGui::MenuItem("New", "ctrl + N"))
+				for (auto& e : FileMenu)
 				{
-					//SceneManager::CreateScene("NewScene");
+					if (ImGui::MenuItem(e.label, e.shortcut))
+					{
+						e.action();
+					}
 				}
-
-				if (ImGui::MenuItem("Open", "ctrl + O"))
-				{
-					//SceneManager::LoadScene();
-				}
-
-				if (ImGui::MenuItem("Save", "ctrl + S"))
-				{
-					Engine::SceneManager::SaveScene();
-					//auto assets = AssetManager::GetLoadedAssets();
-					//for (auto asset : assets)
-					//{
-					//	if (asset->IsModified())
-					//	{
-					//		//TODO: save asset
-					//		LOG_INFO("Asset '{0}' is modified", asset->GetFilePath());
-					//	}
-
-					//}
-
-
-				}
-
-				if (ImGui::MenuItem("Save as", "ctrl + shift + S"))
-				{
-					Engine::SceneManager::SaveSceneAs();
-				}
-
-				ImGui::Separator();
-
-				if (ImGui::MenuItem("Settings")) { /*m_SettingsPanel.SetVisible(true);*/ }
-
-				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Actions"))
+			if (ScopedMenu edit{ "Edit" })
 			{
-				if (ImGui::MenuItem("Undo"))
+				for (auto& e : EditMenu)
 				{
-					CommandManager::Undo();
+					if (ImGui::MenuItem(e.label, e.shortcut))
+					{
+						e.action();
+					}
 				}
-
-				if (ImGui::MenuItem("Redo"))
-				{
-					CommandManager::Redo();
-				}
-
-				ImGui::EndMenu();
 			}
-			
 
-			ImGui::EndMenuBar();
+			if (ScopedMenu project{ "Project" })
+			{
+				for (auto& e : ProjectMenu)
+				{
+					if (ImGui::MenuItem(e.label, e.shortcut))
+					{
+						e.action();
+					}
+				}
+			}
 		}
 	}
 }

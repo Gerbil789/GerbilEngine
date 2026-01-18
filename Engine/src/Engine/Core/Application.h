@@ -39,8 +39,6 @@ namespace Engine
 		static Application& Get() { return *s_Instance; }
 		static Window& GetWindow() { return *s_Instance->m_MainWindow; }
 
-		float GetFPS() const { return m_FPSCounter.GetAverageFPS(); } //TODO: handle FPS somewhere else
-
 		void Close();
 
 	private:
@@ -52,8 +50,6 @@ namespace Engine
 
 		bool m_Running = true;
 		bool m_Minimized = false;
-
-		FPSCounter m_FPSCounter { 30 };
 	};
 }
 

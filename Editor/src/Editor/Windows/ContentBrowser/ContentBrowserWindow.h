@@ -13,7 +13,7 @@ namespace Editor
 	{
 	public:
 		ContentBrowserWindow();
-		void OnUpdate() override;
+		void Draw() override;
 		void OpenDirectory(const std::filesystem::path& path);
 		void RefreshDirectory();
 

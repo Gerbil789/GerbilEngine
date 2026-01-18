@@ -35,7 +35,7 @@ namespace Editor
 		OpenDirectory(m_CurrentDirectory);
 	}
 
-	void ContentBrowserWindow::OnUpdate()
+	void ContentBrowserWindow::Draw()
 	{
 		ImGui::Begin("Content Browser", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 		DrawNavigationBar();

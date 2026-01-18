@@ -61,7 +61,7 @@ namespace Editor
 	}
 
 
-	void ViewportWindow::OnUpdate()
+	void ViewportWindow::Draw()
 	{
 		ScopedStyle style({
 			{ ImGuiStyleVar_WindowPadding, ImVec2(0, 0) },

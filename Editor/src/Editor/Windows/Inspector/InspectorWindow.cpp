@@ -6,7 +6,7 @@
 
 namespace Editor
 {
-	void InspectorWindow::OnUpdate()
+	void InspectorWindow::Draw()
 	{
 		ImGui::Begin("Inspector");
 

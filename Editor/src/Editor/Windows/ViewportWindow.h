@@ -11,7 +11,7 @@ namespace Editor
 	{
 	public:
 		ViewportWindow();
-		void OnUpdate() override;
+		void Draw() override;
 		void OnEvent(Engine::Event& e) override;
 
 	private:

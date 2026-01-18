@@ -12,7 +12,7 @@ Assets:
     Path: Materials\Test.material
     Type: Material
   - ID: 12435825516134781144
-    Path: Shaders\Unlit.shader
+    Path: Shaders\Unlit.wgsl
     Type: Shader
   - ID: 14602335504666008472
     Path: Audio\Ievan Polkka (Medieval Cover).mp3
@@ -39,7 +39,7 @@ Assets:
     Path: Meshes\cone.glb
     Type: Mesh
   - ID: 3005608063343877734
-    Path: Shaders\Flat.shader
+    Path: Shaders\Flat.wgsl
     Type: Shader
   - ID: 17210712188989752338
     Path: Meshes\cube.glb
@@ -66,7 +66,7 @@ Assets:
     Path: Meshes\sphere.glb
     Type: Mesh
   - ID: 13883584817892698282
-    Path: Shaders\Dev.shader
+    Path: Shaders\Dev.wgsl
     Type: Shader
   - ID: 13516903918776608577
     Path: Scenes\MyScene.scene

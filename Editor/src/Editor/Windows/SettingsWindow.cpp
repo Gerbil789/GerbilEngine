@@ -4,7 +4,7 @@
 
 namespace Editor
 {
-	void SettingsWindow::OnUpdate()
+	void SettingsWindow::Draw()
 	{
 		if(!m_IsVisible) return;
 

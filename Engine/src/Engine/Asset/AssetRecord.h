@@ -22,7 +22,7 @@ namespace Engine
 				{ ".wav",				AssetType::Audio },
 				{ ".mp3",				AssetType::Audio },
 				{ ".scene",			AssetType::Scene },
-				{ ".shader",		AssetType::Shader},
+				{ ".wgsl",			AssetType::Shader},
 				{ ".hdr",				AssetType::CubeMap},
 				{ ".txt",				AssetType::Other}
 		};

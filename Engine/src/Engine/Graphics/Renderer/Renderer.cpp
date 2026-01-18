@@ -117,7 +117,6 @@ namespace Engine
 			GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetModelUniformBuffer(), offset, &model, sizeof(glm::mat4));
 		}
 
-
 		for(auto pass : m_Passes)
 		{
 			pass->Execute(encoder, m_RenderContext, list);

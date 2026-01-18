@@ -9,7 +9,7 @@ namespace Engine
 	{
 	public:
 		static Project* New();
-		static Project* Load(const std::filesystem::path& projectDirectoryPath);
+		static Project* Load(const std::filesystem::path& path);
 		static void Save();
 
 		static Project* GetActive() { return s_ActiveProject; }
@@ -37,7 +37,7 @@ namespace Engine
 	private:
 		std::filesystem::path m_ProjectDirectory;
 		std::string m_Title = "Untitled";
-		UUID m_StartSceneID = UUID(0);
+		UUID m_StartSceneID = UUID{ 0 };
 
 		inline static Project* s_ActiveProject;
 	};

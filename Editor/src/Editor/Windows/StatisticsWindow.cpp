@@ -11,7 +11,7 @@ namespace Editor
 	static float msHistory[HISTORY_LENGTH] = { 0.0f };
 	static int offset = 0;
 
-	void StatisticsWindow::OnUpdate()
+	void StatisticsWindow::Draw()
 	{
 		float fps = Engine::Time::FPS();
 		float ms = 1000.0f / fps;

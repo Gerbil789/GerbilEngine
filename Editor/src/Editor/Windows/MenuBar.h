@@ -5,6 +5,6 @@ namespace Editor
 	class MenuBar
 	{
 	public:
-		void OnUpdate();
+		void Draw();
 	};
 }

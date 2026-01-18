@@ -10,7 +10,7 @@ namespace Editor
 	{
 	public:
 		SceneHierarchyWindow();
-		void OnUpdate() override;
+		void Draw() override;
 
 	private:
 		Engine::Scene* m_Scene = nullptr;
