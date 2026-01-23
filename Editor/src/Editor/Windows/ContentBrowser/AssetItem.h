@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Editor/Core/EditorIcons.h"
+#include "Editor/Core/IconManager.h"
 #include "Engine/Asset/AssetManager.h"
 #include "ThumbnailRenderer.h"
 
@@ -40,12 +40,12 @@ namespace Editor
 		{
 			if (IsDirectory)
 			{
-				Icon = EditorIcons::GetIcon(std::filesystem::is_empty(path) ? Icon::EmptyFolder : Icon::Folder);
+				Icon = IconManager::GetIcon(std::filesystem::is_empty(path) ? Icon::EmptyFolder : Icon::Folder);
 				return;
 			}
 
 			std::string ext = path.extension().string();
-			Icon = EditorIcons::GetIcon(GetIconForExtension(ext));
+			Icon = IconManager::GetIcon(GetIconForExtension(ext));
 
 			if (ext == ".png" || ext == ".jpg")
 			{

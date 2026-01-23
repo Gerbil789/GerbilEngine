@@ -1,13 +1,13 @@
 #include "enginepch.h"
 #include "AudioImporter.h"
-#include "Engine/Core/Project.h"
+#include "Engine/Core/Engine.h"
 #include "Engine/Audio/Audio.h"
 
 namespace Engine
 {
 	AudioClip* AudioImporter::ImportAudio(const AssetRecord& metadata)
 	{
-		return LoadAudio(Project::GetAssetsDirectory() / metadata.path);
+		return LoadAudio(Engine::GetAssetsDirectory() / metadata.path);
 	}
 
 	AudioClip* AudioImporter::LoadAudio(const std::filesystem::path& path)

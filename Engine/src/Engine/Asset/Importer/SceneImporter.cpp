@@ -1,13 +1,13 @@
 #include "enginepch.h"
 #include "SceneImporter.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
-#include "Engine/Core/Project.h"
+#include "Engine/Core/Engine.h"
 
 namespace Engine
 {
-	Scene* SceneImporter::ImportScene(const AssetRecord& metadata)
+	Scene* SceneImporter::ImportScene(const AssetRecord& record)
 	{
-		return LoadScene(Project::GetAssetsDirectory() / metadata.path);
+		return LoadScene(Engine::GetAssetsDirectory() / record.path);
 	}
 
 	Scene* SceneImporter::LoadScene(const std::filesystem::path& path)

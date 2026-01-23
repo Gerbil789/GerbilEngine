@@ -1,6 +1,6 @@
 #include "enginepch.h"
 #include "AssetRegistry.h"
-#include "Engine/Core/Project.h"
+#include "Engine/Core/Engine.h"
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 
@@ -20,7 +20,7 @@ namespace Engine
 			return;
 		}
 
-		auto assetsDir = Project::GetAssetsDirectory();
+		auto assetsDir = Engine::GetAssetsDirectory();
 		m_Records.clear();
 		for (const auto& entry : data["Assets"])
 		{
@@ -106,7 +106,7 @@ namespace Engine
 		out << YAML::BeginMap;
 		out << YAML::Key << "Assets" << YAML::Value << YAML::BeginSeq;
 
-		auto assetsDir = Engine::Project::GetAssetsDirectory();
+		auto assetsDir = Engine::GetAssetsDirectory();
 
 		for (const auto& [uuid, record] : m_Records)
 		{
@@ -151,7 +151,7 @@ namespace Engine
 			}
 		);
 
-		Save(Project::GetProjectDirectory() / "assetRegistry.yaml");
+		Save(Engine::GetProjectDirectory() / "assetRegistry.yaml");
 		LOG_TRACE("Added asset '{}' to registry.", path);
 		return &it->second;
 	}
@@ -195,7 +195,7 @@ namespace Engine
 		static std::filesystem::path emptyPath;
 		if (auto it = m_Records.find(id); it != m_Records.end())
 		{
-			auto assetsDir = Project::GetAssetsDirectory();
+			auto assetsDir = Engine::GetAssetsDirectory();
 			return std::filesystem::relative(it->second.path, assetsDir);
 		}
 		return emptyPath;

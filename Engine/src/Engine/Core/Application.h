@@ -2,7 +2,6 @@
 
 #include "Engine/Core/Window.h"
 #include "Engine/Event/ApplicationEvent.h"
-#include "Engine/Utils/FPSCounter.h"
 
 namespace Engine
 {

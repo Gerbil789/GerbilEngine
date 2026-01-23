@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "ContentBrowserWindow.h"
-#include "Engine/Core/Project.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Core/Application.h"
@@ -14,7 +13,7 @@ namespace Editor
 {
 	ContentBrowserWindow::ContentBrowserWindow()
 	{
-		m_CurrentDirectory = Engine::Project::GetAssetsDirectory();
+		m_CurrentDirectory = EditorContext::GetProject().GetAssetsDirectory();
 
 		/*glfwSetDropCallback(static_cast<GLFWwindow*>(Engine::Application::GetWindow().GetNativeWindow()), [](GLFWwindow*, int count, const char* paths[])
 			{
@@ -102,16 +101,16 @@ namespace Editor
 
 		ImGui::BeginChild("NavBar", ImVec2(0, 24), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-		auto relativePath = std::filesystem::relative(m_CurrentDirectory, Engine::Project::GetAssetsDirectory());
+		auto relativePath = std::filesystem::relative(m_CurrentDirectory, EditorContext::GetProject().GetAssetsDirectory());
 
-		std::filesystem::path pathSoFar = Engine::Project::GetAssetsDirectory();
+		std::filesystem::path pathSoFar = EditorContext::GetProject().GetAssetsDirectory();
 
 		if (ImGui::Button("Assets"))
 		{
-			OpenDirectory(Engine::Project::GetAssetsDirectory());
+			OpenDirectory(EditorContext::GetProject().GetAssetsDirectory());
 		}
 
-		if (m_CurrentDirectory != Engine::Project::GetAssetsDirectory())
+		if (m_CurrentDirectory != EditorContext::GetProject().GetAssetsDirectory())
 		{
 			for (const auto& component : relativePath)
 			{

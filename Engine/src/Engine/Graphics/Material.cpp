@@ -25,9 +25,9 @@ namespace Engine
 		for (auto& [name, value] : spec.vec4Defaults)
 			SetVec4(name, value);
 
-		for (auto& [name, id] : spec.textureDefaults)
+		for (auto& [name, uuid] : spec.textureDefaults)
 		{
-			if (auto tex = AssetManager::GetAsset<Texture2D>(id))
+			if (auto tex = AssetManager::GetAsset<Texture2D>(uuid))
 				SetTexture(name, tex);
 		}
 

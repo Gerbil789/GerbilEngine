@@ -2,6 +2,8 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Editor/Command/CommandManager.h"
 #include "Editor/Core/PopupWindowManager.h"
+#include "Engine/Utils/File.h"
+#include "Editor/Core/Project.h"
 #include "Engine/Core/Log.h"
 #include <imgui.h>
 
@@ -50,6 +52,7 @@ namespace Editor
 	static const MenuEntry ProjectMenu[]
 	{
 		{"New", "", [] { PopupManager::Open("New Project"); }},
+		{"Open", "", [] { Editor::Project::Load(Engine::OpenDirectory()); }},
 		{"Settings", "", [] { LOG_WARNING("Project Settings - not implemented"); }},
 	};
 

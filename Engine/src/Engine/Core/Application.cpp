@@ -8,6 +8,7 @@
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Utils/Path.h"
 #include "Engine/Audio/Audio.h"
+#include "Engine/Core/EngineContext.h"
 
 namespace Engine
 {

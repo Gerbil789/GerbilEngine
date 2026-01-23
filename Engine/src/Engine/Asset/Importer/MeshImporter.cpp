@@ -1,6 +1,6 @@
 #include "enginepch.h"
 #include "MeshImporter.h"
-#include "Engine/Core/Project.h"
+#include "Engine/Core/Engine.h"
 #include <glm/glm.hpp>
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -11,7 +11,7 @@ namespace Engine
 {
 	Mesh* MeshImporter::ImportMesh(const AssetRecord& metadata)
 	{
-		return LoadMesh(Project::GetAssetsDirectory() / metadata.path);
+		return LoadMesh(Engine::GetAssetsDirectory() / metadata.path);
 	}
 
 	Mesh* MeshImporter::LoadMesh(const std::filesystem::path& path)

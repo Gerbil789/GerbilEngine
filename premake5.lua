@@ -18,3 +18,6 @@ group "Dependencies"
 group ""
 	include "Engine"
 	include "Editor"
+
+group "Games"
+	include "Projects/TestProject"

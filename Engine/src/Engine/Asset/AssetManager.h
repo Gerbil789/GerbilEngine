@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Core/Log.h"
-#include "Engine/Core/Project.h"
+#include "Engine/Core/Engine.h"
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Asset/Importer/AssetImporter.h"
 #include "Engine/Asset/Serializer/AssetSerializer.h"
@@ -15,7 +15,7 @@ namespace Engine
 	public:
 		static void Initialize()
 		{
-			m_AssetRegistry.Load(Engine::Project::GetProjectDirectory() / "assetRegistry.yaml");
+			m_AssetRegistry.Load(Engine::GetProjectDirectory() / "assetRegistry.yaml");
 		}
 
 		static void Shutdown()

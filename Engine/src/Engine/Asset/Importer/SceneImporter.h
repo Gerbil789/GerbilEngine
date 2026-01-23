@@ -8,7 +8,7 @@ namespace Engine
 	class SceneImporter
 	{
 	public:
-		static Scene* ImportScene(const AssetRecord& metadata);
+		static Scene* ImportScene(const AssetRecord& record);
 		static Scene* LoadScene(const std::filesystem::path& path);
 	};
 }

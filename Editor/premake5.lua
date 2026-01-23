@@ -24,7 +24,8 @@ externalincludedirs
 	"%{wks.location}/vendor/glm",
 	"%{wks.location}/vendor/entt/include",
 	"%{wks.location}/vendor/imgui",
-	"%{wks.location}/vendor/ImGuizmo"
+	"%{wks.location}/vendor/ImGuizmo",
+	"%{wks.location}/vendor/yaml-cpp/include",
 }
 
 links
@@ -46,7 +47,11 @@ postbuildmessage "Copying dependencies..."
 filter "system:windows"
 	systemversion "latest"
 	buildoptions { "/MP", "/permissive-" }
-	defines { "ENGINE_PLATFORM_WINDOWS" }
+	defines 
+	{ 
+		"ENGINE_PLATFORM_WINDOWS",
+		"YAML_CPP_STATIC_DEFINE"
+	}
 filter "configurations:Debug"
 	defines { "DEBUG" }
 	symbols "on"

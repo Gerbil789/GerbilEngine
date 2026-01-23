@@ -1,7 +1,5 @@
 #include "enginepch.h"
 #include "AssetImporter.h"
-
-#include "Engine/Core/Project.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/Importer/MeshImporter.h"
 #include "Engine/Asset/Importer/ShaderImporter.h"

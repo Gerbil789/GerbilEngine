@@ -1,13 +1,13 @@
 #include "enginepch.h"
 #include "TextureImporter.h"
-#include "Engine/Core/Project.h"
+#include "Engine/Core/Engine.h"
 #include <stb_image.h>
 
 namespace Engine
 {
 	Texture2D* TextureImporter::ImportTexture2D(const AssetRecord& record)
 	{
-		return LoadTexture2D(Project::GetAssetsDirectory() / record.path);
+		return LoadTexture2D(Engine::GetAssetsDirectory() / record.path);
 	}
 
 	Texture2D* TextureImporter::LoadTexture2D(const std::filesystem::path& path)
@@ -33,7 +33,7 @@ namespace Engine
 
 	CubeMapTexture* TextureImporter::ImportCubeMapTexture(const AssetRecord& record)
 	{
-		return LoadCubeMapTexture(Project::GetAssetsDirectory() / record.path);
+		return LoadCubeMapTexture(Engine::GetAssetsDirectory() / record.path);
 	}
 
 	CubeMapTexture* TextureImporter::LoadCubeMapTexture(const std::filesystem::path& path)

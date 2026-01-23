@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Engine/Core/Application.h"
-#include "Editor/Core/GameInstance.h"
 
 namespace Editor
 {
@@ -14,10 +13,7 @@ namespace Editor
 		virtual void Run() override;
 		virtual void OnEvent(Engine::Event& e) override;
 
-		void PlayGame();
-
-	private:
-		std::unique_ptr<GameInstance> m_GameInstance;
+		void PlayGame(); //TODO: move somewhere else
 	};
 
 	EditorApp CreateApp(Engine::ApplicationCommandLineArgs args);

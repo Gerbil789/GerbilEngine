@@ -68,7 +68,7 @@ namespace Engine
 
 	SubTexture2D* SubTexture2D::CreateFromGrid(Texture2D* texture, const glm::ivec2& cellCoords, const glm::ivec2& cellSize, const glm::ivec2& spriteSize)
 	{
-		glm::vec2 texSize = { (float)texture->GetWidth(), (float)texture->GetHeight() };
+		glm::vec2 texSize = { static_cast<float>(texture->GetWidth()), static_cast<float>(texture->GetHeight()) };
 
 		glm::vec2 min
 		{

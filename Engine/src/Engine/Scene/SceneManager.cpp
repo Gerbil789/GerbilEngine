@@ -84,7 +84,7 @@ namespace Engine::SceneManager
 			return;
 		}
 
-		auto path = Project::GetAssetsDirectory() / assetPath;
+		auto path = Engine::GetAssetsDirectory() / assetPath;
 
 		SceneSerializer::Serialize(scene, path);
 

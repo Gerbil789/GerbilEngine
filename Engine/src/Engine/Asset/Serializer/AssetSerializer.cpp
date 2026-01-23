@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "AssetSerializer.h"
 
-#include "Engine/Core/Project.h"
+#include "Engine/Core/Engine.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
 
@@ -20,9 +20,9 @@ namespace Engine
 		{ AssetType::Material, [](const std::filesystem::path& path) -> Asset* { return MaterialSerializer::Deserialize(path); }}
 	};
 
-	void AssetSerializer::SerializeAsset(Asset* asset, const AssetRecord& metadata)
+	void AssetSerializer::SerializeAsset(Asset* asset, const AssetRecord& record)
 	{
-		AssetType assetType = metadata.type;
+		AssetType assetType = record.type;
 
 		if (s_AssetSerializeFunctions.find(assetType) == s_AssetSerializeFunctions.end())
 		{
@@ -30,12 +30,12 @@ namespace Engine
 			return;
 		}
 
-		return s_AssetSerializeFunctions.at(assetType)(asset, Project::GetAssetsDirectory() / metadata.path);
+		return s_AssetSerializeFunctions.at(assetType)(asset, Engine::GetAssetsDirectory() / record.path);
 	}
 
-	Asset* AssetSerializer::DeserializeAsset(const AssetRecord& metadata)
+	Asset* AssetSerializer::DeserializeAsset(const AssetRecord& record)
 	{
-		AssetType assetType = metadata.type;
+		AssetType assetType = record.type;
 
 		if (s_AssetDeserializeFunctions.find(assetType) == s_AssetDeserializeFunctions.end())
 		{
@@ -43,7 +43,7 @@ namespace Engine
 			return nullptr;
 		}
 
-		return s_AssetDeserializeFunctions.at(assetType)(Project::GetAssetsDirectory() / metadata.path);
+		return s_AssetDeserializeFunctions.at(assetType)(Engine::GetAssetsDirectory() / record.path);
 	}
 
 }

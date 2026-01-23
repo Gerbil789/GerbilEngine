@@ -1,9 +1,13 @@
 #include "NewProjectPopupWindow.h"
+#include "Editor/Core/Project.h"
 #include "Engine/Utils/File.h"
 #include <imgui.h>
 
 namespace Editor
 {
+	static char m_Name[128]{};
+	static char m_Path[512]{};
+
 	void NewProjectPopupWindow::Draw()
 	{
 		if (m_OpenRequested)
@@ -23,16 +27,21 @@ namespace Editor
 				std::string dir = Engine::OpenDirectory();
 				if (!dir.empty())
 				{
-					strncpy(m_Path, dir.c_str(), sizeof(m_Path));
+					strncpy_s(m_Path, dir.c_str(), sizeof(m_Path));
 				}
 			}
 
 			if (ImGui::Button("Create"))
+			{
+				Editor::Project::New(m_Name, m_Path);
 				ImGui::CloseCurrentPopup();
+			}
 
 			ImGui::SameLine();
 			if (ImGui::Button("Cancel"))
+			{
 				ImGui::CloseCurrentPopup();
+			}
 
 			ImGui::EndPopup();
 		}

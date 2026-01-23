@@ -1,14 +1,14 @@
 #include "enginepch.h"
 #include "ShaderImporter.h"
-#include "Engine/Core/Project.h"
+#include "Engine/Core/Engine.h"
 #include "Engine/Asset/Serializer/ShaderParser.h"
 #include "Engine/Utils/File.h"
 
 namespace Engine
 {
-	Shader* ShaderImporter::ImportShader(const AssetRecord& metadata)
+	Shader* ShaderImporter::ImportShader(const AssetRecord& record)
 	{
-		return LoadShader(Project::GetAssetsDirectory() / metadata.path);
+		return LoadShader(Engine::GetAssetsDirectory() / record.path);
 	}
 
 	Shader* ShaderImporter::LoadShader(const std::filesystem::path& path)

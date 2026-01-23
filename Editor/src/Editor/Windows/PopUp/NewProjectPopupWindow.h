@@ -18,7 +18,5 @@ namespace Editor
 		
 	private:
 		bool m_OpenRequested = false;
-		char m_Name[128]{};
-		char m_Path[512]{};
 	};
 }
