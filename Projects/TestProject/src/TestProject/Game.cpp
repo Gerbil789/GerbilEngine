@@ -1,39 +1,52 @@
+#include "enginepch.h"
 #include "Engine/Core/API.h"
-#include <iostream>
+#include "TestProject/PlayerController.h"
+#include <print>
+
+using namespace Engine;
 
 extern "C"
 {
   GAME_API void Game_OnLoad(GameContext* context)
   {
-		std::cout << "Game_OnLoad function called from Game DLL" << std::endl;
+		std::println("Game_OnLoad function called from Game DLL");
 
-    if (context && context->CurrentScene)
-    {
-      std::cout << "Entities in the scene:" << std::endl;
-      for (auto entity : context->CurrentScene->GetEntities())
+    ScriptDescriptor desc{};
+    desc.Name = "PlayerController";
+    desc.Size = sizeof(PlayerController);
+
+    desc.OnCreate = [](void* instance, Entity e)
       {
-        std::string name = entity.GetName();
-        std::cout << " - Entity ID: " << static_cast<uint32_t>(entity) << ", Name: " << name << std::endl;
-      }
-    }
-    else
+        Player_OnCreate(*(PlayerController*)instance, e);
+      };
+
+    desc.OnUpdate = [](void* instance, Entity e, float dt)
+      {
+        Player_OnUpdate(*(PlayerController*)instance, e, dt);
+      };
+
+    desc.Fields = 
     {
-      std::cout << "No valid scene found in GameContext." << std::endl;
-		}
+        { "Speed", ScriptFieldType::Float, offsetof(PlayerController, Speed) }
+    };
+
+    context->RegisterScript(desc);
   }
 
   GAME_API void Game_OnUnload()
   {
-    std::cout << "Game_OnUnload function called from Game DLL" << std::endl;
+		std::println("Game_OnUnload function called from Game DLL");
   }
 
   GAME_API void Game_Start()
   {
-    std::cout << "Game_Start function called from Game DLL" << std::endl;
+		std::println("Game_Start function called from Game DLL");
   }
 
   GAME_API void Game_Update(float delta)
   {
-    std::cout << "Game_Update function called from Game DLL" << std::endl;
+
+
+
   }
 }

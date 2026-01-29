@@ -1,19 +1,16 @@
 Assets:
-  - ID: 11811911768948703527
-    Path: Textures\bricks_wall\ambient.png
-    Type: Texture
-  - ID: 2260062122974363559
-    Path: Materials\Test.material
-    Type: Material
   - ID: 7557191306909542263
     Path: Meshes\Rocks\rock_6.glb
     Type: Mesh
   - ID: 16662610643511626615
     Path: Scenes\empty.scene
     Type: Scene
-  - ID: 12674182175083468496
-    Path: Textures\skull.png
+  - ID: 11811911768948703527
+    Path: Textures\bricks_wall\ambient.png
     Type: Texture
+  - ID: 2260062122974363559
+    Path: Materials\Test.material
+    Type: Material
   - ID: 12435825516134781144
     Path: Shaders\Unlit.wgsl
     Type: Shader
@@ -23,29 +20,32 @@ Assets:
   - ID: 2768374737517666392
     Path: Textures\background.png
     Type: Texture
-  - ID: 13900387464373758090
-    Path: Textures\bricks_wall\roughness.png
+  - ID: 12674182175083468496
+    Path: Textures\skull.png
     Type: Texture
   - ID: 5514179449601264138
     Path: Audio\music.mp3
     Type: Audio
+  - ID: 13900387464373758090
+    Path: Textures\bricks_wall\roughness.png
+    Type: Texture
+  - ID: 1587467815564260715
+    Path: Meshes\bad cube.glb
+    Type: Mesh
   - ID: 17611688567092875307
     Path: Meshes\bad cube 2.glb
     Type: Mesh
-  - ID: 1587467815564260715
-    Path: Meshes\bad cube.glb
+  - ID: 3718094854804367078
+    Path: Meshes\cone.glb
     Type: Mesh
   - ID: 3005608063343877734
     Path: Shaders\Flat.wgsl
     Type: Shader
-  - ID: 3718094854804367078
-    Path: Meshes\cone.glb
+  - ID: 17210712188989752338
+    Path: Meshes\cube.glb
     Type: Mesh
   - ID: 424460496881838034
     Path: Meshes\Rocks\rock_5.glb
-    Type: Mesh
-  - ID: 17210712188989752338
-    Path: Meshes\cube.glb
     Type: Mesh
   - ID: 11721992318472228561
     Path: Meshes\Rocks\rock_1.glb
@@ -56,18 +56,18 @@ Assets:
   - ID: 558957539392152779
     Path: Meshes\Rocks\rock_3.glb
     Type: Mesh
+  - ID: 16762300228901828808
+    Path: Meshes\Rocks\rock_4.glb
+    Type: Mesh
   - ID: 10879810946928067656
     Path: Textures\rocks\Normal.png
     Type: Texture
-  - ID: 16762300228901828808
-    Path: Meshes\Rocks\rock_4.glb
+  - ID: 8571133269967914218
+    Path: Meshes\sphere.glb
     Type: Mesh
   - ID: 13883584817892698282
     Path: Shaders\Dev.wgsl
     Type: Shader
-  - ID: 8571133269967914218
-    Path: Meshes\sphere.glb
-    Type: Mesh
   - ID: 13516903918776608577
     Path: Scenes\MyScene.scene
     Type: Scene
@@ -86,11 +86,11 @@ Assets:
   - ID: 1818873935455018020
     Path: Textures\concrete_pillar\color.png
     Type: Texture
-  - ID: 4872716647586055481
-    Path: Textures\spritesheet.png
-    Type: Texture
   - ID: 10754507402167278265
     Path: Textures\concrete_pillar\height.png
+    Type: Texture
+  - ID: 4872716647586055481
+    Path: Textures\spritesheet.png
     Type: Texture
   - ID: 14573171312751083696
     Path: Textures\concrete_pillar\normal.png
@@ -104,11 +104,11 @@ Assets:
   - ID: 5620118350841422469
     Path: Textures\favorite.png
     Type: Texture
-  - ID: 2723929689549121448
-    Path: Textures\mood.png
-    Type: Texture
   - ID: 14983905808293688552
     Path: Textures\gerbil.jpg
+    Type: Texture
+  - ID: 2723929689549121448
+    Path: Textures\mood.png
     Type: Texture
   - ID: 7702630365260565263
     Path: Textures\metal_plates\ambient.png

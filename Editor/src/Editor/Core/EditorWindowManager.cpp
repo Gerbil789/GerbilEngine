@@ -10,7 +10,7 @@
 #include "Editor/Windows/SettingsWindow.h"
 #include "Editor/Windows/StatisticsWindow.h"
 #include "Editor/Windows/ViewportWindow.h"
-#include "Editor/Components/ScopedStyle.h"
+#include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Editor/Windows/PopUp/NewProjectPopupWindow.h"
 #include <backends/imgui_impl_wgpu.h>
 #include <backends/imgui_impl_glfw.h>

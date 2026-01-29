@@ -1,13 +1,12 @@
-#include "Widgets.h"
+#include "Property.h"
 #include "Engine/Asset/AssetManager.h"
-#include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 
-namespace Editor::Widget
+namespace Editor
 {
-	WidgetResult TextureField(const char* label, Engine::Texture2D*& texture)
+	PropertyEditResult TextureField(const char* label, Engine::Texture2D*& texture)
 	{
-		WidgetResult result;
+		PropertyEditResult result;
 		const ImVec2 buttonSize = ImVec2(64, 64);
 
 		ImGui::PushID(label);
@@ -66,9 +65,9 @@ namespace Editor::Widget
 		return result;
 	}
 
-	WidgetResult IntField(const char* label, int& value)
+	PropertyEditResult IntField(const char* label, int& value)
 	{
-		WidgetResult result;
+		PropertyEditResult result;
 
 		ImGui::PushID(label);
 
@@ -87,9 +86,9 @@ namespace Editor::Widget
 
 	}
 
-	WidgetResult FloatField(const char* label, float& value)
+	PropertyEditResult FloatField(const char* label, float& value)
 	{
-		WidgetResult result;
+		PropertyEditResult result;
 
 		ImGui::PushID(label);
 
@@ -107,9 +106,9 @@ namespace Editor::Widget
 		return result;
 	}
 
-	WidgetResult FloatSliderField(const char* label, float& value, float min, float max)
+	PropertyEditResult FloatSliderField(const char* label, float& value, float min, float max)
 	{
-		WidgetResult result;
+		PropertyEditResult result;
 		ImGui::PushID(label);
 
 		float fullWidth = ImGui::GetContentRegionAvail().x;
@@ -139,9 +138,9 @@ namespace Editor::Widget
 		return result;
 	}
 
-	WidgetResult Vec2Field(const char* label, glm::vec2& value)
+	PropertyEditResult Vec2Field(const char* label, glm::vec2& value)
 	{
-		WidgetResult result;
+		PropertyEditResult result;
 		ImGui::PushID(label);
 
 		//TODO: this is not perfectly aligned with other fields...
@@ -176,9 +175,9 @@ namespace Editor::Widget
 		return result;
 	}
 
-	WidgetResult Vec3Field(const char* label, glm::vec3& value)
+	PropertyEditResult Vec3Field(const char* label, glm::vec3& value)
 	{
-		WidgetResult result;
+		PropertyEditResult result;
 		ImGui::PushID(label);
 
 		float itemSpacing = ImGui::GetStyle().ItemSpacing.x;
@@ -225,9 +224,9 @@ namespace Editor::Widget
 		return valueChanged;
 	}
 
-	WidgetResult EnumField(const char* label, int& value, const std::vector<std::string>& options)
+	PropertyEditResult EnumField(const char* label, int& value, const std::vector<std::string>& options)
 	{
-		WidgetResult result;
+		PropertyEditResult result;
 		ImGui::PushID(label);
 
 		if (ImGui::BeginCombo("##value", options[value].c_str()))
@@ -256,9 +255,9 @@ namespace Editor::Widget
 		return result;
 	}
 
-	WidgetResult ColorField(const char* label, glm::vec4& color)
+	PropertyEditResult ColorField(const char* label, glm::vec4& color)
 	{
-		WidgetResult result;
+		PropertyEditResult result;
 
 		ImGui::PushID(label);
 		ImGui::BeginGroup(); 
@@ -284,9 +283,9 @@ namespace Editor::Widget
 		return result;
 	}
 
-	WidgetResult ColorField(const char* label, glm::vec3& color)
+	PropertyEditResult ColorField(const char* label, glm::vec3& color)
 	{
-		WidgetResult result;
+		PropertyEditResult result;
 
 		ImGui::PushID(label);
 		ImGui::BeginGroup();  // Group the controls to keep them together

@@ -1,6 +1,6 @@
 #include "ViewportWindow.h"
 
-#include "Editor/Components/ScopedStyle.h"
+#include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Command/CommandManager.h"
 #include "Editor/Command/TransformEntity.h"

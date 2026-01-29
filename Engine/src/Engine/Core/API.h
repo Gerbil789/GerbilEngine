@@ -2,6 +2,9 @@
 
 #include "Engine/Core/GameContext.h"
 #include "Engine/Scene/Entity.h"
+#include "Engine/Scene/Components.h"
+
+//using namespace Engine;
 
 #ifdef ENGINE_PLATFORM_WINDOWS
     #ifdef GAME_BUILD_DLL

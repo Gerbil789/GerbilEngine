@@ -1,66 +1,89 @@
 #include "EntityInspectorPanel.h"
-#include "Editor/Components/ScopedStyle.h"
+
+#include "Editor/Windows/Utility/ScopedStyle.h"
+#include "Editor/Windows/Utility/Property.h"
+#include "Editor/Command/CommandManager.h"
+#include "Editor/Command/TransformEntity.h"
+#include "Editor/Core/EditorContext.h"
+
 #include "Engine/Scene/Components.h"
-#include "Editor/Components/Widgets.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
-#include "Editor/Command/CommandManager.h"
-#include "Editor/Command/TransformEntity.h"
-#include "Engine/Audio/AudioClip.h"
-#include "Editor/Core/EditorContext.h"
 #include "Engine/Graphics/Camera.h"
+#include "Engine/Audio/AudioClip.h"
+
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
 
+#include "Engine/Script/ScriptRegistry.h"
+
 namespace Editor
 {
-	void DrawName(Engine::Entity entity)
+	struct ComponentSection
 	{
-		if (entity.HasComponent<Engine::NameComponent>())
+		bool open = false;
+
+		ComponentSection(const char* label, bool hasComponent)
 		{
-			std::string& name = entity.GetComponent<Engine::NameComponent>().name;
-
-			std::array<char, 256> buffer{};
-			std::snprintf(buffer.data(), buffer.size(), "%s", name.c_str());
-
-			ImGui::PushID((int)entity.GetUUID());
-
-			ImGui::PushItemWidth(-1);
-			ImGui::Checkbox("##Enabled", &entity.GetComponent<Engine::IdentityComponent>().enabled);
-			ImGui::SameLine();
-			if (ImGui::InputText("##Name", buffer.data(), buffer.size())) { name = std::string(buffer.data()); }
-			ImGui::PopID();
+			open = hasComponent && ImGui::CollapsingHeader(label, ImGuiTreeNodeFlags_DefaultOpen);
 		}
+
+		explicit operator bool() const { return open; }
+	};
+
+	bool DrawEntityHeader(Engine::Entity entity)
+	{
+		if (!entity.HasComponent<Engine::NameComponent>())
+		{
+			ImGui::TextColored(ImVec4(1, 0, 0, 1), "Unknown Entity");
+			return false;
+		}
+
+		std::string& name = entity.GetComponent<Engine::NameComponent>().name;
+
+		std::array<char, 256> buffer{};
+		std::snprintf(buffer.data(), buffer.size(), "%s", name.c_str());
+
+		ImGui::PushID((int)entity.GetUUID());
+
+		ImGui::PushItemWidth(-1);
+		ImGui::Checkbox("##Enabled", &entity.GetComponent<Engine::IdentityComponent>().enabled);
+		ImGui::SameLine();
+		if (ImGui::InputText("##Name", buffer.data(), buffer.size())) { name = std::string(buffer.data()); }
+
+
+		return true;
 	}
 
 	void DrawTransform(Engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::TransformComponent>()) return;
+		ComponentSection header("Transform", entity.HasComponent<Engine::TransformComponent>());
+		if (!header) return;
 
 		auto& tc = entity.GetComponent<Engine::TransformComponent>();
 
-		WidgetResult result;
+		PropertyEditResult result;
 		static TransformData s_TransformBefore;
 
-		float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 100, 100.0f);
-		ImGui::Columns(2, "transform", false);
-		ImGui::SetColumnWidth(0, 100);
-		ImGui::SetColumnWidth(1, availWidth);
+		PropertyTable table;
+		if (!table) return;
 
-		auto drawField = [&result](const char* label, glm::vec3& value)
-			{
-				ImGui::Text("%s", label);
-				ImGui::NextColumn();
-				result |= Widget::Vec3Field(label, value);
-				ImGui::NextColumn();
-			};
+		{
+			PropertyRow row("Position");
+			result |= Vec3Field("Position", tc.position);
+		}
 
-		drawField("Position", tc.position);
-		drawField("Rotation", tc.rotation);
-		drawField("Scale", tc.scale);
-		ImGui::Columns(1);
+		{
+			PropertyRow row("Rotation");
+			result |= Vec3Field("Rotation", tc.rotation);
+		}
+
+		{
+			PropertyRow row("Scale");
+			result |= Vec3Field("Scale", tc.scale);
+		}
 
 		if (result.started)
 		{
@@ -68,214 +91,179 @@ namespace Editor
 		}
 		else if (result.finished)
 		{
-			//std::vector<Engine::Entity>& selectedEntities = EditorContext::Entities().GetAll();
 			TransformData after{ tc.position, tc.rotation, tc.scale };
 
-			if (memcmp(&s_TransformBefore, &after, sizeof(TransformData)) != 0)
+			if (memcmp(&s_TransformBefore, &after, sizeof(TransformData)) != 0) //TODO: float comparison is unsafe
 			{
-				CommandManager::ExecuteCommand<TransformEntityCommand>(entity, s_TransformBefore, after);
+				CommandManager::ExecuteCommand<TransformEntityCommand>(
+					entity, s_TransformBefore, after
+				);
 			}
 		}
 	}
 
 	void DrawCamera(Engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::CameraComponent>()) return;
-
-
-
-		if (!ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			return;
-		}
+		ComponentSection header("Camera", entity.HasComponent<Engine::CameraComponent>());
+		if (!header) return;
 
 		auto& component = entity.GetComponent<Engine::CameraComponent>();
 		Engine::Camera* camera = component.camera;
 
-		float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 100, 100.0f);
-		ImGui::Columns(2, "camera_body", false);
-		ImGui::SetColumnWidth(0, 100);
-		ImGui::SetColumnWidth(1, availWidth);
+		PropertyTable table;
+		if (!table) return;
 
-		ImGui::Text("Projection");
-		ImGui::NextColumn();
-
-		Engine::Camera::Projection projType = camera->GetProjection();
-		std::vector<std::string> projTypeNames = { "Perspective", "Orthographic" };
-		int currentProjType = static_cast<int>(projType);
-		if (Widget::EnumField("Projection Type", currentProjType, projTypeNames).changed)
 		{
-			camera->SetProjection(static_cast<Engine::Camera::Projection>(currentProjType));
-		}
-		ImGui::NextColumn();
+			PropertyRow row("Projection");
+			Engine::Camera::Projection projType = camera->GetProjection();
+			int current = static_cast<int>(projType);
 
-		ImGui::Text("Background");
-		ImGui::NextColumn();
-
-		Engine::Camera::Background bgType = camera->GetBackground();
-		std::vector<std::string> bgTypeNames = { "Color", "Skybox" };
-
-		int currentBgType = static_cast<int>(bgType);
-		if (Widget::EnumField("Background Type", currentBgType, bgTypeNames).changed)
-		{
-			camera->SetBackground(static_cast<Engine::Camera::Background>(currentBgType));
-		}
-		ImGui::NextColumn();
-
-		if(bgType == Engine::Camera::Background::Color)
-		{
-			ImGui::Text("Clear Color");
-			ImGui::NextColumn();
-			glm::vec4 value;
-			memcpy(&value, &camera->GetClearColor().x, sizeof(glm::vec4));
-			if (Widget::ColorField("Clear Color", value).changed)
+			if (EnumField("Projection", current, { "Perspective", "Orthographic" }).changed) //TODO: use static reflection? (cpp26)
 			{
-				camera->SetClearColor(value);
+				camera->SetProjection(static_cast<Engine::Camera::Projection>(current));
 			}
 		}
-		else
+
 		{
-			// Skybox settings
+			PropertyRow row("Background");
+			Engine::Camera::Background bg = camera->GetBackground();
+			int current = static_cast<int>(bg);
+
+			if (EnumField("Background", current, { "Color", "Skybox" }).changed) //TODO: use static reflection? (cpp26)
+			{
+				camera->SetBackground(static_cast<Engine::Camera::Background>(current));
+			}
 		}
-		//ImGui::NextColumn();
-		
 
+		if (camera->GetBackground() == Engine::Camera::Background::Color)
+		{
+			PropertyRow row("Clear Color");
 
-		ImGui::Columns(1);
+			glm::vec4 color = camera->GetClearColor();
+			if (ColorField("Clear Color", color).changed)
+			{
+				camera->SetClearColor(color);
+			}
+		}
 	}
-
-
 
 	void DrawMesh(Engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::MeshComponent>()) return;
+		ComponentSection header("Mesh", entity.HasComponent<Engine::MeshComponent>());
+		if (!header) return;
 
 		auto& component = entity.GetComponent<Engine::MeshComponent>();
 
-		if (!ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			return;
-		}
-
-
-		float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 100, 100.0f);
-		ImGui::Columns(2, "light_body", false);
-		ImGui::SetColumnWidth(0, 100);
-		ImGui::SetColumnWidth(1, availWidth);
-
-
-		ImGui::Text("Mesh");
-		ImGui::NextColumn();
-
 		std::string meshButtonText = component.mesh != nullptr ? std::to_string((uint64_t)component.mesh->id) : "##Mesh";
-		ImGui::Button(meshButtonText.c_str(), ImVec2(availWidth, 0.0f));
-
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
-			{
-				Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
-				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Mesh)
-				{
-					component.mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(droppedUUID);
-				}
-
-			}
-			ImGui::EndDragDropTarget();
-		}
-
-		ImGui::NextColumn();
-
-		ImGui::Text("Material");
-		ImGui::NextColumn();
 		std::string materialButtonText = component.material != nullptr ? std::to_string((uint64_t)component.material->id) : "##Material";
-		ImGui::Button(materialButtonText.c_str(), ImVec2(availWidth, 0.0f));
 
-		if (ImGui::BeginDragDropTarget())
+		PropertyTable table;
+		if (!table) return;
+
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
-			{
-				Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
-				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Material)
-				{
-					component.material = Engine::AssetManager::GetAsset<Engine::Material>(droppedUUID);
+			PropertyRow row("Mesh");
+			ImGui::Button(meshButtonText.c_str(), ImVec2(-FLT_MIN, 0));
+			DragDropTarget{}.Accept("UUID", [&](const void* data) {
+				Engine::UUID id = *static_cast<const Engine::UUID*>(data);
+				if (Engine::AssetManager::GetAssetType(id) == Engine::AssetType::Mesh) {
+					component.mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(id);
 				}
-			}
-			ImGui::EndDragDropTarget();
+				});
 		}
-		ImGui::NextColumn();
-		ImGui::Columns(1);
+
+		{
+			PropertyRow row("Material");
+			ImGui::Button(materialButtonText.c_str(), ImVec2(-FLT_MIN, 0));
+			DragDropTarget{}.Accept("UUID", [&](const void* data) {
+				Engine::UUID id = *static_cast<const Engine::UUID*>(data);
+				if (Engine::AssetManager::GetAssetType(id) == Engine::AssetType::Material) {
+					component.material = Engine::AssetManager::GetAsset<Engine::Material>(id);
+				}
+				});
+		}
 	}
 
 	void DrawAudioListener(Engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::AudioListenerComponent>()) return;
+		ComponentSection header("AudioListener", entity.HasComponent<Engine::AudioListenerComponent>());
+		if (!header) return;
 
 		auto& component = entity.GetComponent<Engine::AudioListenerComponent>();
 
-		if (!ImGui::CollapsingHeader("AudioListener", ImGuiTreeNodeFlags_DefaultOpen))
+		PropertyTable table;
+		if (!table) return;
+
 		{
-			return;
+			PropertyRow row("Is Active");
+			ImGui::Checkbox("Is Active", &component.isActive);
 		}
-
-		float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 100, 100.0f);
-		ImGui::Columns(2, "audio_listener_body", false);
-		ImGui::SetColumnWidth(0, 100);
-		ImGui::SetColumnWidth(1, availWidth);
-
-		ImGui::Text("Is Active");
-		ImGui::NextColumn();
-		ImGui::Checkbox("Is Active", &component.isActive);
-
-		ImGui::NextColumn();
-		ImGui::Columns(1);
 	}
 
 	void DrawAudioSource(Engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::AudioSourceComponent>()) return;
+		ComponentSection header("AudioSource", entity.HasComponent<Engine::AudioSourceComponent>());
+		if (!header) return;
 
 		auto& component = entity.GetComponent<Engine::AudioSourceComponent>();
 
-		if (!ImGui::CollapsingHeader("AudioSource", ImGuiTreeNodeFlags_DefaultOpen))
+		PropertyTable table;
+		if (!table) return;
+
 		{
+			PropertyRow row("Audio Clip");
+
+			std::string audioClipButtonText = component.clip != nullptr ? std::to_string((uint64_t)component.clip->id) : "##AudioClip";
+			ImGui::Button(audioClipButtonText.c_str(), ImVec2(-FLT_MIN, 0.0f));
+			DragDropTarget{}.Accept("UUID", [&](const void* data) {
+				Engine::UUID id = *static_cast<const Engine::UUID*>(data);
+				if (Engine::AssetManager::GetAssetType(id) == Engine::AssetType::Audio) {
+					component.clip = Engine::AssetManager::GetAsset<Engine::AudioClip>(id);
+				}
+				});
+		}
+
+		{
+			PropertyRow row("Looping");
+			ImGui::Checkbox("Looping", &component.loop);
+		}
+
+		{
+			PropertyRow row("Volume");
+			FloatField("Volume", component.volume);
+		}
+	}
+
+	void DrawScript(Engine::Entity entity)
+	{
+		ComponentSection header("Script", entity.HasComponent<Engine::ScriptComponent>());
+		if (!header) return;
+
+		auto& component = entity.GetComponent<Engine::ScriptComponent>();
+
+		PropertyTable table;
+		if (!table) return;
+
+		const Engine::RegisteredScript* script = Engine::ScriptRegistry::Get(component.id);
+
+		if (!script)
+		{
+			PropertyRow row("Script not found!");
 			return;
 		}
 
-		float availWidth = glm::max(ImGui::GetContentRegionAvail().x - 100, 100.0f);
-		ImGui::Columns(2, "audio_source_body", false);
-		ImGui::SetColumnWidth(0, 100);
-		ImGui::SetColumnWidth(1, availWidth);
-
-		ImGui::Text("Audio Clip");
-
-		ImGui::NextColumn();
-
-		std::string audioClipButtonText = component.clip != nullptr ? std::to_string((uint64_t)component.clip->id) : "##AudioClip";
-		ImGui::Button(audioClipButtonText.c_str(), ImVec2(availWidth, 0.0f));
-		if (ImGui::BeginDragDropTarget())
+		for (auto& field : script->Desc.Fields)
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
+			switch (field.Type)
 			{
-				Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
-				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Audio)
-				{
-					component.clip = Engine::AssetManager::GetAsset<Engine::AudioClip>(droppedUUID);
-				}
+			case Engine::ScriptFieldType::Float:
+			{
+				PropertyRow row(field.Name);
+				float& value = *reinterpret_cast<float*>(reinterpret_cast<uint8_t*>(component.data) + field.Offset);
+				FloatField(field.Name, value);
+				break;
 			}
-			ImGui::EndDragDropTarget();
+			}
 		}
-
-		ImGui::NextColumn();
-		ImGui::Text("Looping");
-		ImGui::NextColumn();
-		ImGui::Checkbox("Looping", &component.loop);
-		ImGui::NextColumn();
-		ImGui::Text("Volume");
-		ImGui::NextColumn();
-		Widget::FloatField("Volume", component.volume);
-		ImGui::NextColumn();
-		ImGui::Columns(1);
 	}
 
 	void DrawAddComponentButton(Engine::Entity entity)
@@ -299,23 +287,38 @@ namespace Editor
 			ImGui::OpenPopup("AddComponent");
 		}
 
-		auto menuItem = [&](const char* label, auto addFn)
+		struct AddComponentEntry
+		{
+			const char* name;
+			void (*add)(Engine::Entity);
+		};
+
+		static AddComponentEntry entries[] = {
+		{ "Camera", [](Engine::Entity e) { e.AddComponent<Engine::CameraComponent>(); } },
+		{ "Mesh",   [](Engine::Entity e) { e.AddComponent<Engine::MeshComponent>(); } },
+		{ "Light",  [](Engine::Entity e) { e.AddComponent<Engine::LightComponent>(); } },
+		{ "AudioSource", [](Engine::Entity e) { e.AddComponent<Engine::AudioSourceComponent>(); } },
+		{ "AudioListener", [](Engine::Entity e) { e.AddComponent<Engine::AudioListenerComponent>(); } },
+		{ "Script", [](Engine::Entity e)
 			{
-				if (ImGui::MenuItem(label))
-				{
-					addFn();
-					ImGui::CloseCurrentPopup();
-				}
-			};
+				auto& component = e.AddComponent<Engine::ScriptComponent>();
+				component.id = Engine::ScriptRegistry::GetByName("PlayerController")->ID;
+				component.data = malloc(sizeof(float)); // Temporary
+				float value = 0.0f;
+				memcpy(component.data, &value, sizeof(float));
+			} },
+		};
 
 		if (ImGui::BeginPopup("AddComponent"))
 		{
-			menuItem("Camera", [&] { entity.AddComponent<Engine::CameraComponent>(); });
-			menuItem("Light", [&] { entity.AddComponent<Engine::LightComponent>(); });
-			menuItem("Mesh", [&] { entity.AddComponent<Engine::MeshComponent>(); });
-			menuItem("AudioSource", [&] { entity.AddComponent<Engine::AudioSourceComponent>(); });
-			menuItem("AudioListener", [&] { entity.AddComponent<Engine::AudioListenerComponent>(); });
-
+			for (auto& entry : entries)
+			{
+				if (ImGui::MenuItem(entry.name))
+				{
+					entry.add(entity);
+					ImGui::CloseCurrentPopup();
+				}
+			}
 			ImGui::EndPopup();
 		}
 	}
@@ -323,14 +326,19 @@ namespace Editor
 	void EntityInspectorPanel::Draw(Engine::Entity entity)
 	{
 		if (!entity) return;
+		if (!DrawEntityHeader(entity)) return;
 
-		DrawName(entity);
 		DrawTransform(entity);
 		DrawCamera(entity);
 		DrawMesh(entity);
 		DrawAudioListener(entity);
 		DrawAudioSource(entity);
+		DrawScript(entity);
+
 		ImGui::Separator();
+
 		DrawAddComponentButton(entity);
+
+		ImGui::PopID();
 	}
 }

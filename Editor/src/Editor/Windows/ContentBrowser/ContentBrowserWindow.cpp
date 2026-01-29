@@ -3,7 +3,7 @@
 #include "Engine/Graphics/Material.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Core/Application.h"
-#include "Editor/Components/ScopedStyle.h"
+#include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Utils/File.h"
 #include "Editor/Core/EditorContext.h"

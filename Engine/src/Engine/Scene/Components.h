@@ -75,4 +75,11 @@ namespace Engine
 	{
 		bool isActive = true;
 	};
+
+
+	struct ScriptComponent
+	{
+		UUID id;
+		void* data;
+	};
 }

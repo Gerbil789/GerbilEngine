@@ -1,8 +1,8 @@
 #include "enginepch.h"
 #include "ShaderParser.h"
 #include "Engine/Graphics/WebGPUUtils.h"
-
 #include <regex>
+#include <utility>
 
 namespace Engine
 {
@@ -19,11 +19,11 @@ namespace Engine
     if (type == "mat4x4f")   return ShaderValueType::Mat4;
 
     // fallback
-		LOG_ERROR("ParseValueType - Unknown type string: {0}", type);
+		LOG_ERROR("ParseValueType - Unknown type string: {}", type);
     return ShaderValueType::Float;
   }
 
-  size_t GetTypeSize(ShaderValueType type)
+  constexpr size_t GetTypeSize(ShaderValueType type)
   {
     switch (type)
     {
@@ -31,21 +31,15 @@ namespace Engine
     case ShaderValueType::Int:
     case ShaderValueType::UInt:
     case ShaderValueType::Float: return 4;
-
     case ShaderValueType::Vec2: return 8;
     case ShaderValueType::Vec3: return 12;
     case ShaderValueType::Vec4: return 16;
-
     case ShaderValueType::Mat3: return 48;
     case ShaderValueType::Mat4: return 64;
-
-    default: 
-			LOG_ERROR("GetTypeSize - Unknown ShaderValueType!");
-      return 4;
     }
+
+    std::unreachable();
   }
-
-
 
 	ShaderSpecification ShaderParser::GetSpecification(const std::string& source)
 	{

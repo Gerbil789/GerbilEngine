@@ -20,8 +20,13 @@
 #include "Engine/Core/GameContext.h"
 #include <windows.h>
 
+#include "Engine/Script/ScriptRegistry.h"
+
 namespace Editor
 {
+
+	int(*OnUpdateFn)(float delta) = nullptr;
+
 	GameInstance* m_GameInstance = nullptr;
 	Engine::FileWatcher m_FileWatcher;
 
@@ -150,8 +155,36 @@ namespace Editor
 
 		GameContext* gameContext = new GameContext();
 		gameContext->CurrentScene = scene;
+		gameContext->RegisterScript = [](const Engine::ScriptDescriptor& desc) {
+			Engine::ScriptRegistry::Register(desc);
+		};
 
 		Game_Test_Fn(gameContext);
+
+
+		//print all registered scripts
+		auto scripts = Engine::ScriptRegistry::GetAll();
+
+		//print count
+		LOG_INFO("Total Registered Scripts: {}", scripts.size());
+
+		for (const auto& script : scripts)
+		{
+			LOG_INFO("Registered Script: {} with ID: {}", script.Desc.Name, script.ID);
+		}
+
+		auto script = Engine::ScriptRegistry::GetByName("PlayerController");
+		auto entity = scene->CreateEntity("Player");
+		script->Desc.OnCreate(nullptr, entity);
+
+
+		OnUpdateFn = (int(*)(float delta))GetProcAddress(gameModule, "Game_Update");
+
+		if (!OnUpdateFn)
+		{
+			throw std::runtime_error("Failed to load Game_Update function from TestProject.dll");
+		}
+
 	}
 
 	EditorApp::~EditorApp()
@@ -176,6 +209,9 @@ namespace Editor
 			Engine::Time::BeginFrame();
 
 			if (m_Minimized) continue;
+
+
+			OnUpdateFn(Engine::Time::DeltaTime());
 
 			EditorWindowManager::OnUpdate();
 			m_MainWindow->OnUpdate();

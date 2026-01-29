@@ -3,7 +3,7 @@
 #include "Editor/Windows/IEditorWindow.h"
 #include "AssetItem.h"
 #include "ThumbnailRenderer.h"
-#include "Editor/Utility/SelectionWithDeletion.h"
+#include "Editor/Windows/Utility/SelectionWithDeletion.h"
 #include "Engine/Graphics/Texture.h"
 #include <filesystem>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Scene/Entity.h"
+namespace Engine { class Entity; }
 
 namespace Editor
 {
