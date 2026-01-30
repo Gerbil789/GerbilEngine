@@ -5,10 +5,10 @@
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Engine/Core/Input.h"
 #include "Editor/Core/EditorContext.h"
-#include "Editor/Command/CommandManager.h"
-#include "Editor/Command/CreateEntity.h"
-#include "Editor/Command/DeleteEntity.h"
-#include "Editor/Command/RenameEntity.h"
+#include "Editor/Command/EditorCommandManager.h"
+#include "Editor/Command/Entity/CreateEntity.h"
+#include "Editor/Command/Entity/DeleteEntity.h"
+#include "Editor/Command/Entity/RenameEntity.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
@@ -61,7 +61,7 @@ namespace Editor
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
-				CommandManager::ExecuteCommand<CreateEntityCommand>("Empty");
+				EditorCommandManager::ExecuteCommand<CreateEntityCommand>("Empty");
 			}
 			ImGui::EndPopup();
 		}
@@ -126,7 +126,7 @@ namespace Editor
 
 			if (ImGui::MenuItem("Rename"))
 			{
-				CommandManager::ExecuteCommand<RenameEntityCommand>(entity, "BRUH");
+				EditorCommandManager::ExecuteCommand<RenameEntityCommand>(entity, "BRUH");
 			}
 			ImGui::EndPopup();
 		}
@@ -151,7 +151,7 @@ namespace Editor
 
 		if (entityDeleted) //TODO: is delayed deletion necessary?
 		{
-			CommandManager::ExecuteCommand<DeleteEntityCommand>(entity);
+			EditorCommandManager::ExecuteCommand<DeleteEntityCommand>(entity);
 		}
 
 		ImGui::PopID();

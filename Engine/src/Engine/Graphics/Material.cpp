@@ -174,9 +174,9 @@ namespace Engine
 		if (!s_DefaultMaterial)
 		{
 			MaterialSpecification spec;
-			spec.shader = ShaderImporter::LoadShader("Resources/Engine/Shaders/unlit.shader");
+			spec.shader = ShaderImporter::LoadShader("Resources/Engine/Shaders/unlit.wgsl");
 			s_DefaultMaterial = new Material(spec);
-			s_DefaultMaterial->SetVec4("color", glm::vec4(1.0f));
+			s_DefaultMaterial->SetVec4("color", glm::vec4{ 1.0f, 0.0f, 1.0f, 1.0f });
 		}
 
 		return s_DefaultMaterial;

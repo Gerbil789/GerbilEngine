@@ -1,6 +1,6 @@
 #include "MenuBar.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Editor/Command/CommandManager.h"
+#include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Core/PopupWindowManager.h"
 #include "Engine/Utils/File.h"
 #include "Editor/Core/Project.h"
@@ -45,8 +45,8 @@ namespace Editor
 
 	static const MenuEntry EditMenu[]
 	{
-		{"Undo", "Ctrl+Z", CommandManager::Undo},
-		{"Redo", "Ctrl+Shift+Z", CommandManager::Redo},
+		{"Undo", "Ctrl+Z", EditorCommandManager::Undo},
+		{"Redo", "Ctrl+Shift+Z", EditorCommandManager::Redo},
 	};
 
 	static const MenuEntry ProjectMenu[]

@@ -3,8 +3,10 @@ kind "StaticLib"
 language "C++"
 cppdialect "C++23"
 staticruntime "on"
+conformancemode "On"
 externalwarnings "Off"
 warnings "Extra"
+fatalwarnings { "All" }
 
 pchheader "enginepch.h"
 pchsource "src/enginepch.cpp"
@@ -58,10 +60,12 @@ filter "system:windows"
 		"GLFW_INCLUDE_NONE",
 		"YAML_CPP_STATIC_DEFINE"
 	}
+
 filter "configurations:Debug"
 	defines { "DEBUG" }
 	symbols "on"
 	runtime "Debug"
+
 filter "configurations:Release"
 	defines { "RELEASE" }
 	optimize "on"

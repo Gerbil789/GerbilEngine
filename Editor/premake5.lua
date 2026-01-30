@@ -3,8 +3,10 @@ kind "ConsoleApp"
 language "C++"
 cppdialect "C++23"
 staticruntime "on"
+conformancemode "On"
 externalwarnings "Off"
 warnings "Extra"
+fatalwarnings { "All" }
 
 files
 {
@@ -52,10 +54,12 @@ filter "system:windows"
 		"ENGINE_PLATFORM_WINDOWS",
 		"YAML_CPP_STATIC_DEFINE"
 	}
+
 filter "configurations:Debug"
 	defines { "DEBUG" }
 	symbols "on"
 	runtime "Debug"
+
 filter "configurations:Release"
 	defines { "RELEASE" }
 	optimize "on"

@@ -163,7 +163,6 @@ namespace Engine
       begin = match.suffix().first;
     }
 
-    // --- Step 2: parse bindings ---
     std::regex bindRegex(R"(@group\((\d+)\)\s*@binding\((\d+)\)\s*var(?:<(\w+)>)?\s+(\w+)\s*:\s*([a-zA-Z0-9_<>]+))");
     begin = source.cbegin();
 

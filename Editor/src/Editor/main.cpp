@@ -6,6 +6,10 @@ int main(int argc, char** argv)
 {
   Engine::Log::Initialize();
 
+#if defined(_MSC_VER)
+  LOG_TRACE("Compiler: MSVC {}.{} | C++ std: {}", _MSC_VER / 100, _MSC_VER % 100, _MSVC_LANG);
+#endif
+
   try
   {
     ENGINE_PROFILE_BEGIN("Initialization", "profile_init.json");

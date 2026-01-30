@@ -34,10 +34,18 @@ namespace Engine
 		entt::entity nextSibling = entt::null;
 		entt::entity prevSibling = entt::null;
 
+		TransformComponent() = default;
 		TransformComponent(const glm::vec3& position) : position(position) {}
 
 		glm::mat4 GetLocalMatrix() const;
 		glm::mat4 GetWorldMatrix(const entt::registry& registry) const; //TODO: passing registry is not ideal
+
+		void Reset()
+		{
+			position = { 0.0f, 0.0f, 0.0f };
+			rotation = { 0.0f, 0.0f, 0.0f };
+			scale = { 1.0f, 1.0f, 1.0f };
+		}
 	};
 
 	struct MeshComponent

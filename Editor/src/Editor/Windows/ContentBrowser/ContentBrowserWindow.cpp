@@ -71,7 +71,7 @@ namespace Editor
 		}
 
 		// then find files
-		for (auto& meta : Engine::AssetManager::GetAllAssetMetadata())
+		for (auto& meta : Engine::AssetManager::GetAllAssetRecords())
 		{
 			if (meta->path.parent_path() == m_CurrentDirectory)
 			{
@@ -275,7 +275,7 @@ namespace Editor
 					{
 						Engine::UUID uuid = item_data->UUID;
 						ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
-						ImGui::Text("%s", item_data->Path.string().c_str());
+						ImGui::Text("%s", item_data->Name.c_str());
 						ImGui::EndDragDropSource();
 					}
 

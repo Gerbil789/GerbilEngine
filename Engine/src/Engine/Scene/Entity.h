@@ -37,28 +37,24 @@ namespace Engine
 		template<typename T>
 		T* TryGetComponent()
 		{
-			//return m_Scene->m_Registry.try_get<T>(m_EntityHandle);
 			return m_Registry ? m_Registry->try_get<T>(m_Handle) : nullptr;
 		}
 
 		template<typename T>
 		const T* TryGetComponent() const
 		{
-			//return m_Scene->m_Registry.try_get<T>(m_EntityHandle);
 			return m_Registry ? m_Registry->try_get<T>(m_Handle) : nullptr;
 		}
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{
-			ASSERT(!HasComponent<T>(), "Entity already has component!");
-			return m_Registry->emplace<T>(m_Handle, std::forward<Args>(args)...);
+			return m_Registry->get_or_emplace<T>(m_Handle, std::forward<Args>(args)...);
 		}
 
 		template<typename T>
 		void RemoveComponent()
 		{
-			ASSERT(HasComponent<T>(), "Entity does not have component!");
 			m_Registry->remove<T>(m_Handle);
 		}
 

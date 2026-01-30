@@ -49,7 +49,7 @@ namespace Editor
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0);
 
-			ImGui::Text("%s", Engine::AssetManager::GetAssetMetadata(material->id)->path.stem().string().c_str());
+			ImGui::Text("%s", Engine::AssetManager::GetAssetRecord(material->id)->path.stem().string().c_str());
 
 			ImGui::TableSetColumnIndex(1);
 			ImGui::SetNextItemWidth(-FLT_MIN); // fill full column

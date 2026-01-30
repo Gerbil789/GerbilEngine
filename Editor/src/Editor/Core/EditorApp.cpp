@@ -8,7 +8,7 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Editor/Core/EditorContext.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Editor/Command/CommandManager.h"
+#include "Editor/Command/EditorCommandManager.h"
 #include "Engine/Audio/Audio.h"
 #include "Engine/Utils/FileWatcher.h"
 #include "Engine/Core/KeyCodes.h"
@@ -21,6 +21,7 @@
 #include <windows.h>
 
 #include "Engine/Script/ScriptRegistry.h"
+#include "Engine/Event/KeyEvent.h"
 
 namespace Editor
 {
@@ -207,15 +208,16 @@ namespace Editor
 			ENGINE_PROFILE_SCOPE("RunLoop");
 
 			Engine::Time::BeginFrame();
+			m_MainWindow->OnUpdate(); // process input events
 
 			if (m_Minimized) continue;
 
+			OnUpdateFn(Engine::Time::DeltaTime()); // TODO: move to GameInstance
+			EditorWindowManager::OnUpdate(); // process editor UI
 
-			OnUpdateFn(Engine::Time::DeltaTime());
+			EditorCommandManager::Flush(); // execute queued commands
 
-			EditorWindowManager::OnUpdate();
-			m_MainWindow->OnUpdate();
-			m_FileWatcher.OnUpdate();
+			m_FileWatcher.OnUpdate(); // check for file changes
 
 			if(m_GameInstance)
 			{
@@ -244,7 +246,7 @@ namespace Editor
 		}
 
 		Application::OnEvent(e);
-		CommandManager::OnEvent(e);
+		EditorCommandManager::OnEvent(e);
 		EditorWindowManager::OnEvent(e);
 
 		if(e.GetCategoryFlags() & Engine::EventCategoryFile)

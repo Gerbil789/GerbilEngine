@@ -1,35 +1,35 @@
-name: Build Linux
+# name: Build Linux
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
 
-jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        config: [debug, release]
-    steps:
-      - uses: actions/checkout@v4
+# jobs:
+#   build-linux:
+#     runs-on: ubuntu-latest
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         config: [debug, release]
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y \
-          g++ make uuid-dev libgl1-mesa-dev \
-          libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
+#       - name: Install dependencies
+#         run: |
+#           sudo apt update
+#           sudo apt install -y \
+#           g++ make uuid-dev libgl1-mesa-dev \
+#           libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
 
-      - name: Build Premake (Linux)
-        run: |
-          chmod +x Scripts/build_premake.sh
-          Scripts/build_premake.sh
+#       - name: Build Premake (Linux)
+#         run: |
+#           chmod +x Scripts/build_premake.sh
+#           Scripts/build_premake.sh
 
-      - name: Generate Makefiles
-        run: vendor/premake/bin/release/premake5 gmake2
+#       - name: Generate Makefiles
+#         run: vendor/premake/bin/release/premake5 gmake2
 
-      - name: Build project using make
-        run: make config=${{ matrix.config }}
+#       - name: Build project using make
+#         run: make config=${{ matrix.config }}

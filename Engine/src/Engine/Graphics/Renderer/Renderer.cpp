@@ -106,7 +106,7 @@ namespace Engine
 		encoderDesc.label = { "RendererCommandEncoder", WGPU_STRLEN };
 		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder(encoderDesc);
 
-		DrawList list = DrawList::CreateFromScene(m_RenderContext.scene);
+		const DrawList& list = DrawList::CreateFromScene(m_RenderContext.scene);
 
 		for (const DrawItem& item : list.items)
 		{

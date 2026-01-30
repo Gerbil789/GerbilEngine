@@ -3,9 +3,10 @@ kind "SharedLib"
 language "C++"
 cppdialect "C++23"
 staticruntime "on"
+conformancemode "On"
 externalwarnings "Off"
 warnings "Extra"
-
+-- fatalwarnings { "All" }
 
 -- override output location
 targetdir ("%{prj.location}/bin/%{cfg.system}/%{cfg.buildcfg}")
@@ -64,10 +65,12 @@ filter "system:windows"
 		"YAML_CPP_STATIC_DEFINE",
 		"GAME_BUILD_DLL"
 	}
+
 filter "configurations:Debug"
 	defines { "DEBUG" }
 	symbols "on"
 	runtime "Debug"
+
 filter "configurations:Release"
 	defines { "RELEASE" }
 	optimize "on"

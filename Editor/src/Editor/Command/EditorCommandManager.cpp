@@ -1,10 +1,11 @@
-#include "CommandManager.h"
+#include "EditorCommandManager.h"
 #include "Engine/Core/Input.h"
+#include "Engine/Event/KeyEvent.h"
 #include <filesystem>
 
 namespace Editor
 {
-	void CommandManager::Undo()
+	void EditorCommandManager::Undo()
   {
     if (s_UndoStack.empty())
     {
@@ -17,7 +18,7 @@ namespace Editor
     s_RedoStack.push(command);
   }
 
-  void CommandManager::Redo()
+  void EditorCommandManager::Redo()
   {
     if (s_RedoStack.empty())
     {
@@ -30,7 +31,7 @@ namespace Editor
     s_UndoStack.push(command);
   }
 
-  void CommandManager::OnEvent(Engine::Event& e)
+  void EditorCommandManager::OnEvent(Engine::Event& e)
   {
     if (e.GetEventType() == Engine::EventType::KeyPressed)
     {
@@ -47,5 +48,22 @@ namespace Editor
         }
       }
     }
+  }
+
+  void EditorCommandManager::Flush()
+  {
+    if (s_Deferred.empty()) return;
+
+    for (ICommand* command : s_Deferred)
+    {
+      command->Execute();
+      s_UndoStack.push(command);
+    }
+
+    s_Deferred.clear();
+
+    // structural changes invalidate redo history
+    std::stack<ICommand*> empty;
+    s_RedoStack.swap(empty);
   }
 }

@@ -2,8 +2,8 @@
 
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Editor/Core/EditorContext.h"
-#include "Editor/Command/CommandManager.h"
-#include "Editor/Command/TransformEntity.h"
+#include "Editor/Command/EditorCommandManager.h"
+#include "Editor/Command/Entity/TransformEntity.h"
 #include "Editor/Core/EditorApp.h"
 
 #include "Engine/Scene/SceneManager.h"
@@ -314,7 +314,7 @@ namespace Editor
 			}
 
 
-			CommandManager::ExecuteCommand<TransformEntitiesCommand>(selection, before, after);
+			EditorCommandManager::ExecuteCommand<TransformEntitiesCommand>(selection, before, after);
 		}
 
 		m_GizmoPreviouslyUsed = isUsing;

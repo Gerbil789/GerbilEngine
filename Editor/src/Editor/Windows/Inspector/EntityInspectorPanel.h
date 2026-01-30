@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Engine { class Entity; }
+#include "Engine/Scene/Entity.h"
 
 namespace Editor
 {
@@ -8,5 +8,17 @@ namespace Editor
 	{
 	public:
 		void Draw(Engine::Entity entity);
+
+	private:
+		void DrawTransform();
+		void DrawCamera();
+		void DrawMesh();
+		void DrawAudioListener();
+		void DrawAudioSource();
+		void DrawScript();
+		void DrawAddComponentButton();
+
+	private:
+		Engine::Entity m_Entity;
 	};
 }

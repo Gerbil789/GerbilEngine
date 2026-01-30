@@ -152,7 +152,7 @@ namespace Engine
 			return m_LoadedAssets.find(id) != m_LoadedAssets.end();
 		}
 
-		static const AssetRecord* GetAssetMetadata(UUID id)
+		static const AssetRecord* GetAssetRecord(UUID id)
 		{
 			return m_AssetRegistry.GetRecord(id);
 		}
@@ -197,7 +197,12 @@ namespace Engine
 			return m_AssetRegistry.GetPath(id);
 		}
 
-		static std::vector<const AssetRecord*> GetAllAssetMetadata()
+		static inline std::string GetAssetName(UUID id)
+		{
+			return m_AssetRegistry.GetPath(id).stem().string();
+		}
+
+		static std::vector<const AssetRecord*> GetAllAssetRecords()
 		{
 			return m_AssetRegistry.GetAllRecords();
 		}
