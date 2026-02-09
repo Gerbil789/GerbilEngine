@@ -1,5 +1,4 @@
-#include "enginepch.h"
-#include "Engine/Core/API.h"
+#include "Engine/Script/ScriptRegistry.h"
 #include "TestProject/PlayerController.h"
 #include <print>
 
@@ -7,46 +6,36 @@ using namespace Engine;
 
 extern "C"
 {
-  GAME_API void Game_OnLoad(GameContext* context)
+  GAME_API void RegisterScripts(Engine::ScriptRegistry& registry)
   {
-		std::println("Game_OnLoad function called from Game DLL");
+    std::println("RegisterScripts function called from Game DLL");
 
-    ScriptDescriptor desc{};
-    desc.Name = "PlayerController";
-    desc.Size = sizeof(PlayerController);
-
-    desc.OnCreate = [](void* instance, Entity e)
-      {
-        Player_OnCreate(*(PlayerController*)instance, e);
-      };
-
-    desc.OnUpdate = [](void* instance, Entity e, float dt)
-      {
-        Player_OnUpdate(*(PlayerController*)instance, e, dt);
-      };
-
-    desc.Fields = 
+    std::vector<ScriptField> fields
     {
-        { "Speed", ScriptFieldType::Float, offsetof(PlayerController, Speed) }
+        { "Speed", ScriptFieldType::Float, offsetof(PlayerController, Speed) },
+        { "GodMode", ScriptFieldType::Bool, offsetof(PlayerController, GodMode) }
     };
 
-    context->RegisterScript(desc);
+    registry.Register<PlayerController>("PlayerController", fields);
   }
 
-  GAME_API void Game_OnUnload()
-  {
-		std::println("Game_OnUnload function called from Game DLL");
-  }
+  //GAME_API void OnLoad(GameContext*)
+  //{
+		//std::println("OnLoad function called from Game DLL");
+  //}
 
-  GAME_API void Game_Start()
-  {
-		std::println("Game_Start function called from Game DLL");
-  }
+  //GAME_API void OnUnload()
+  //{
+		//std::println("OnUnload function called from Game DLL");
+  //}
 
-  GAME_API void Game_Update(float delta)
-  {
+  //GAME_API void OnStart()
+  //{
+		//std::println("OnStart function called from Game DLL");
+  //}
 
-
-
-  }
+  //GAME_API void OnUpdate([[maybe_unused]] float delta)
+  //{
+		////std::println("OnUpdate function called from Game DLL with delta: {}", delta);
+  //}
 }

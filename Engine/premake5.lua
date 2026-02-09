@@ -1,32 +1,33 @@
 project "Engine"
-kind "StaticLib"
+kind "SharedLib"
 language "C++"
 cppdialect "C++23"
-staticruntime "on"
+staticruntime "off"
 conformancemode "On"
 externalwarnings "Off"
 warnings "Extra"
-fatalwarnings { "All" }
+-- fatalwarnings { "All" }
 
 pchheader "enginepch.h"
 pchsource "src/enginepch.cpp"
 
 files
 {
-	"src/enginepch.cpp",
-	"src/Engine/**.h",
-	"src/Engine/**.cpp"
+	"include/Engine/**.h",
+	"src/**.h",
+	"src/**.cpp",
+	"src/enginepch.cpp"
 }
 
 includedirs
 {
-	"src",
-	"%{wks.location}/vendor/dawn/include"
+	"include",	-- public headers
+	"src"				-- private headers
 }
 
 externalincludedirs
 {
-	"%{wks.location}/vendor/spdlog/include",
+	"%{wks.location}/vendor/dawn/include",
 	"%{wks.location}/vendor/glfw/include",
 	"%{wks.location}/vendor/glm",
 	"%{wks.location}/vendor/entt/include",
@@ -41,8 +42,7 @@ links
 	"glfw",
 	"webgpu_dawn",
 	"yaml-cpp",
-	"miniaudio",
-	"spdlog"
+	"miniaudio"
 }
 
 libdirs 
@@ -50,15 +50,23 @@ libdirs
 	"%{wks.location}/vendor/dawn"
 }
 
+postbuildcommands
+{
+    '{COPY} "%{cfg.buildtarget.abspath}" "%{wks.location}/bin/' .. outputdir .. '/Editor/"'
+}
+
+postbuildmessage "Copying Engine.dll to Editor directory"
+
 filter "system:windows"
+  disablewarnings { "4251" }
 	systemversion "latest"
 	buildoptions { "/MP", "/permissive-" } -- MP = Enable multithreading for Visual Studio
 	defines
 	{
 		"ENGINE_PLATFORM_WINDOWS",
-		"ENGINE_BUILD_DLL",
 		"GLFW_INCLUDE_NONE",
-		"YAML_CPP_STATIC_DEFINE"
+		"YAML_CPP_STATIC_DEFINE",
+		"ENGINE_BUILD_DLL"
 	}
 
 filter "configurations:Debug"

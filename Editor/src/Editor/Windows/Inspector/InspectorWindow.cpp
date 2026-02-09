@@ -1,4 +1,3 @@
-#include "enginepch.h"
 #include "InspectorWindow.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Editor/Core/EditorContext.h"
@@ -30,7 +29,7 @@ namespace Editor
 		ImGui::End();
 	}
 
-	void InspectorWindow::DrawAssetPanel(Engine::UUID assetID)
+	void InspectorWindow::DrawAssetPanel(Engine::Uuid assetID)
 	{
 		auto type = Engine::AssetManager::GetAssetType(assetID);
 

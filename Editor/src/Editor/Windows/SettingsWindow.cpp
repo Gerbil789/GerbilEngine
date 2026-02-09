@@ -1,6 +1,6 @@
-#include "enginepch.h"
 #include "SettingsWindow.h"
-#include <imgui_internal.h>
+//#include <imgui_internal.h>
+#include <imgui.h>
 
 namespace Editor
 {

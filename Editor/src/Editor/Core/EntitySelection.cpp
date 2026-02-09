@@ -1,4 +1,3 @@
-#include "enginepch.h"
 #include "EntitySelection.h"
 #include "AssetSelection.h"
 

@@ -2,11 +2,11 @@ project "Editor"
 kind "ConsoleApp"
 language "C++"
 cppdialect "C++23"
-staticruntime "on"
+staticruntime "off"
 conformancemode "On"
 externalwarnings "Off"
 warnings "Extra"
-fatalwarnings { "All" }
+-- fatalwarnings { "All" }
 
 files
 {
@@ -17,27 +17,31 @@ files
 includedirs
 {
 	"src",
-	"%{wks.location}/Engine/src",
-	"%{wks.location}/vendor/dawn/include" 
+	"%{wks.location}/Engine/include"
 }
 
 externalincludedirs
 {
+	"%{wks.location}/vendor/dawn/include",
+	"%{wks.location}/vendor/glfw/include",
 	"%{wks.location}/vendor/glm",
 	"%{wks.location}/vendor/entt/include",
 	"%{wks.location}/vendor/imgui",
-	"%{wks.location}/vendor/ImGuizmo",
-	"%{wks.location}/vendor/yaml-cpp/include",
+	"%{wks.location}/vendor/ImGuizmo"
 }
 
 links
 {
 	"Engine",
-	"yaml-cpp",
-	"ImGui"
+	"glfw",
+	"ImGui",
+	"webgpu_dawn"
 }
 
-
+libdirs 
+{
+	"%{wks.location}/vendor/dawn"
+}
 
 postbuildcommands 
 {
@@ -52,8 +56,12 @@ filter "system:windows"
 	defines 
 	{ 
 		"ENGINE_PLATFORM_WINDOWS",
+		"GLFW_INCLUDE_NONE",
 		"YAML_CPP_STATIC_DEFINE"
 	}
+
+filter "system:windows"
+  disablewarnings { "4251" } -- 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
 
 filter "configurations:Debug"
 	defines { "DEBUG" }

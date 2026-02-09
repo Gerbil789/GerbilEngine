@@ -2,12 +2,17 @@
 
 #include "Engine/Event/Event.h"
 
+namespace Engine
+{
+	class Window;
+}
+
 namespace Editor
 {
 	class EditorWindowManager
 	{
 	public:
-		static void Initialize();
+		static void Initialize(Engine::Window& window);
 		static void Shutdown();
 
 		static void OnUpdate();

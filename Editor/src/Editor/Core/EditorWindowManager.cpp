@@ -1,6 +1,8 @@
-#include "enginepch.h"
+
+#include <webgpu/webgpu.hpp>
+
 #include "EditorWindowManager.h"
-#include "Engine/Core/Application.h"
+#include "Engine/Core/Window.h"
 #include "Engine/Utils/File.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Editor/Windows/MenuBar.h"
@@ -16,6 +18,7 @@
 #include <backends/imgui_impl_glfw.h>
 
 #include "Editor/Core/PopupWindowManager.h"
+#include <GLFW/glfw3.h>
 
 //TODO: move to style file or something
 static void SetupImGuiStyle()
@@ -102,11 +105,13 @@ namespace Editor
 	std::vector<IEditorWindow*> m_Windows;
 	NewProjectPopupWindow newProjectPopup;
 
-	void EditorWindowManager::Initialize()
+	void EditorWindowManager::Initialize(Engine::Window& window)
 	{
-		s_Device = Engine::GraphicsContext::GetDevice();
-		s_Queue = Engine::GraphicsContext::GetQueue();
-		s_Surface = Engine::Application::GetWindow().GetSurface();
+		auto* graphicsHandles = Engine::GraphicsContext::GetGraphicsHandles();
+
+		s_Device = graphicsHandles->device;
+		s_Queue = graphicsHandles->queue;
+		s_Surface = *static_cast<wgpu::Surface*>(window.GetSurface());
 
 		PopupManager::Register(&newProjectPopup);
 
@@ -133,14 +138,14 @@ namespace Editor
 		io.IniFilename = "Resources/Editor/layouts/imgui.ini";
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows //TODO: this is not working correctly
+		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows //TODO: this is not working correctly, webgpu backend issue?
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Engine/fonts/roboto/Roboto-Regular.ttf", 18.0f);
 		SetupImGuiStyle();
 
-		ImGui_ImplGlfw_InitForOther(static_cast<GLFWwindow*>(Engine::Application::GetWindow().GetNativeWindow()), true);
+		ImGui_ImplGlfw_InitForOther(static_cast<GLFWwindow*>(window.GetNativeWindow()), true);
 
 		ImGui_ImplWGPU_InitInfo initInfo;
-		initInfo.Device = Engine::GraphicsContext::GetDevice();
+		initInfo.Device = s_Device;
 		initInfo.RenderTargetFormat = wgpu::TextureFormat::RGBA8Unorm;
 		initInfo.DepthStencilFormat = wgpu::TextureFormat::Undefined;
 		ImGui_ImplWGPU_Init(&initInfo);
@@ -205,11 +210,12 @@ namespace Editor
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		ScopedStyle style({
+		ScopedStyle style
+		{
 			{ ImGuiStyleVar_WindowRounding, 0.0f },
 			{ ImGuiStyleVar_WindowBorderSize, 0.0f },
 			{ ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f)}
-			});
+		};
 
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -230,8 +236,8 @@ namespace Editor
 
 		ImGui::Render();
 
-		ImGui::UpdatePlatformWindows();
-		ImGui::RenderPlatformWindowsDefault();
+		//ImGui::UpdatePlatformWindows();
+		//ImGui::RenderPlatformWindowsDefault();
 
 		wgpu::SurfaceTexture surfaceTexture;
 		s_Surface.getCurrentTexture(&surfaceTexture);

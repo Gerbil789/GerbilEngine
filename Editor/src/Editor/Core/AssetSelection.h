@@ -8,13 +8,13 @@ namespace Editor
   {
   public:
     void Clear();
-    void Select(Engine::UUID id);
-    bool IsSelected(Engine::UUID id) const;
+    void Select(Engine::Uuid id);
+    bool IsSelected(Engine::Uuid id) const;
 
 		bool Empty() const { return m_Selected.empty(); }
-    Engine::UUID GetPrimary() const;
+    Engine::Uuid GetPrimary() const;
 
   private:
-    std::vector<Engine::UUID> m_Selected;
+    std::vector<Engine::Uuid> m_Selected;
   };
 }

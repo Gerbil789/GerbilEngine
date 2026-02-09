@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 namespace Engine
 {
   class SubTexture2D;

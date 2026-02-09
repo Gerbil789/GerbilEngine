@@ -18,7 +18,7 @@ namespace Editor
       m_EntitySelection.Select(entity, additive);
 		}
 
-    static void Select(Engine::UUID assetID)
+    static void Select(Engine::Uuid assetID)
 		{
       m_EntitySelection.Clear();
 			m_AssetSelection.Select(assetID);

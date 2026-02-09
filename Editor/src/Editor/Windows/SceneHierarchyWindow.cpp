@@ -1,4 +1,3 @@
-#include "enginepch.h"
 #include "SceneHierarchyWindow.h"
 #include "Editor/Windows/Utility/Property.h"
 #include "Engine/Scene/Components.h"

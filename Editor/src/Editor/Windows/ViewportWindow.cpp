@@ -85,7 +85,7 @@ namespace Editor
 
 		if (mx >= 0 && my >= 0 && mx < (int)m_ViewportSize.x && my < (int)m_ViewportSize.y)
 		{
-			Engine::UUID uuid = s_EntityIdPass->ReadPixel((uint32_t)mx, (uint32_t)my);
+			Engine::Uuid uuid = s_EntityIdPass->ReadPixel((uint32_t)mx, (uint32_t)my);
 			if(uuid.IsValid())
 			{
 				m_HoveredEntity = m_Scene->GetEntity(uuid);
@@ -106,7 +106,7 @@ namespace Editor
 		ImGui::SetNextItemWidth(60.0f);
 		if (ImGui::Button("Play"))
 		{
-			static_cast<EditorApp&>(EditorApp::Get()).PlayGame();
+			/*static_cast<EditorApp&>(EditorApp::Get()).PlayGame();*/
 		}
 
 		ImGui::SetCursorScreenPos(ImVec2(viewportMax.x - 120.0f - 8.0f, viewportMin.y + 4.0f));

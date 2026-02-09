@@ -2,13 +2,12 @@ project "TestProject"
 kind "SharedLib"
 language "C++"
 cppdialect "C++23"
-staticruntime "on"
+staticruntime "off"
 conformancemode "On"
 externalwarnings "Off"
 warnings "Extra"
 -- fatalwarnings { "All" }
 
--- override output location
 targetdir ("%{prj.location}/bin/%{cfg.system}/%{cfg.buildcfg}")
 objdir ("%{prj.location}/bin-int/%{cfg.system}/%{cfg.buildcfg}")
 
@@ -21,48 +20,49 @@ files
 includedirs
 {
 	"src",
-	"%{wks.location}/Engine/src",
-	"%{wks.location}/vendor/dawn/include"
+	"%{wks.location}/Engine/include",
+	-- "%{wks.location}/vendor/dawn/include"
 }
 
 externalincludedirs
 {
-	"%{wks.location}/vendor/spdlog/include",
-	"%{wks.location}/vendor/glfw/include",
+	-- "%{wks.location}/vendor/glfw/include",
 	"%{wks.location}/vendor/glm",
 	"%{wks.location}/vendor/entt/include",
-	"%{wks.location}/vendor/tinygltf",
-	"%{wks.location}/vendor/portable-file-dialogs",
+	-- "%{wks.location}/vendor/tinygltf",
+	-- "%{wks.location}/vendor/portable-file-dialogs",
 	-- "%{wks.location}/vendor/yaml-cpp/include",
-	"%{wks.location}/vendor/miniaudio"
+	-- "%{wks.location}/vendor/miniaudio"
 }
 
 links
 {
 	"Engine",
-	"glfw",
-	"webgpu_dawn",
+	-- "glfw",
+	-- "webgpu_dawn",
 	-- "yaml-cpp",
-	"miniaudio",
-	"spdlog"
+	-- "miniaudio"
 }
 
 libdirs 
 {
-	"%{wks.location}/vendor/dawn"
+	--"%{wks.location}/vendor/dawn"
 }
 
-
+postbuildcommands 
+{
+	"{COPY} %{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Engine/Engine.dll %{cfg.targetdir}"
+}
 
 filter "system:windows"
+  disablewarnings { "4251" }
 	systemversion "latest"
 	buildoptions { "/MP", "/permissive-" } -- MP = Enable multithreading for Visual Studio
 	defines
 	{
 		"ENGINE_PLATFORM_WINDOWS",
-		"ENGINE_BUILD_DLL",
 		"GLFW_INCLUDE_NONE",
-		"YAML_CPP_STATIC_DEFINE",
+		-- "YAML_CPP_STATIC_DEFINE",
 		"GAME_BUILD_DLL"
 	}
 

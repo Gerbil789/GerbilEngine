@@ -13,7 +13,6 @@ group "Dependencies"
 	include "vendor/imgui"
 	include "vendor/yaml-cpp"
 	include "vendor/miniaudio"
-	include "vendor/spdlog"
 
 group ""
 	include "Engine"

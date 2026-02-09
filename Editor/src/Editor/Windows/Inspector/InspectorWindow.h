@@ -14,7 +14,7 @@ namespace Editor
 		void Draw() override;
 
 	private:
-		void DrawAssetPanel(Engine::UUID assetID);
+		void DrawAssetPanel(Engine::Uuid assetID);
 
 	private:
 		EntityInspectorPanel m_EntityInspector;

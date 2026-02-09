@@ -86,7 +86,7 @@ namespace Editor
 
 	PropertyEditResult TextureField(const char* label, Engine::Texture2D*& texture);
 	PropertyEditResult IntField(const char* label, int& value);
-	PropertyEditResult FloatField(const char* label, float& value);
+	PropertyEditResult FloatField(const char* label, float& value, float min = 0.0f, float max = 1.0f);
 	PropertyEditResult FloatSliderField(const char* label, float& value, float min = 0.0f, float max = 1.0f);
 	PropertyEditResult Vec2Field(const char* label, glm::vec2& value);
 	PropertyEditResult Vec3Field(const char* label, glm::vec3& value);

@@ -1,4 +1,5 @@
 #include "EditorApp.h"
+#define WEBGPU_CPP_IMPLEMENTATION // must be defined before including webgpu.hpp
 #include "Editor/Core/EditorWindowManager.h"
 #include "Editor/Core/IconManager.h"
 #include "Engine/Core/Time.h"
@@ -10,7 +11,7 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Engine/Audio/Audio.h"
-#include "Engine/Utils/FileWatcher.h"
+//#include "Engine/Utils/FileWatcher.h"
 #include "Engine/Core/KeyCodes.h"
 
 #include "Editor/Core/GameInstance.h"
@@ -25,11 +26,8 @@
 
 namespace Editor
 {
-
-	int(*OnUpdateFn)(float delta) = nullptr;
-
 	GameInstance* m_GameInstance = nullptr;
-	Engine::FileWatcher m_FileWatcher;
+	//Engine::FileWatcher m_FileWatcher;
 
 	EditorApp::EditorApp(const Engine::ApplicationSpecification& specification) : Application(specification)
 	{
@@ -52,14 +50,14 @@ namespace Editor
 
 		Engine::AssetManager::Initialize();
 		IconManager::Load("Resources/Editor/icons/icons.png");
-		EditorWindowManager::Initialize();
+		EditorWindowManager::Initialize(*m_MainWindow);
 
-		m_FileWatcher = Engine::FileWatcher(EditorContext::GetProject().GetAssetsDirectory());
-		m_FileWatcher.SetEventCallback([this](Engine::Event& e) {this->OnEvent(e); });
+		//m_FileWatcher = Engine::FileWatcher(EditorContext::GetProject().GetAssetsDirectory());
+		//m_FileWatcher.SetEventCallback([this](Engine::Event& e) {this->OnEvent(e); });
 
 		LOG_INFO("--- Editor initialization complete ---");
 
-		Engine::UUID startSceneID = EditorContext::GetProject().GetStartSceneID();
+		Engine::Uuid startSceneID = EditorContext::GetProject().GetStartSceneID();
 		if (!startSceneID.IsValid())
 		{
 			LOG_WARNING("No valid start scene set in project, creating new scene");
@@ -95,8 +93,8 @@ namespace Editor
 
 		Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
 
-		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::UUID(2260062122974363559));
-		Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::UUID(17611688567092875307));
+		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::Uuid(2260062122974363559));
+		Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::Uuid(17611688567092875307));
 
 		//// Create grid of cubes
 		for(int x = 0; x < 10; x++)
@@ -145,47 +143,52 @@ namespace Editor
 			throw std::runtime_error("Failed to load TestProject.dll");
 		}
 
-		using GameTestFn = int(*)(GameContext*);
+	/*	using GameLoadFn = int(*)(GameContext*);
 
-		auto Game_Test_Fn = (GameTestFn)GetProcAddress(gameModule, "Game_OnLoad");
+		auto Game_Load_Fn = (GameLoadFn)GetProcAddress(gameModule, "OnLoad");
 
-		if (!Game_Test_Fn)
+		if (!Game_Load_Fn)
 		{
-			throw std::runtime_error("Failed to load Game_OnLoad function from TestProject.dll");
+			throw std::runtime_error("Failed to load OnLoad function from TestProject.dll");
 		}
 
 		GameContext* gameContext = new GameContext();
 		gameContext->CurrentScene = scene;
-		gameContext->RegisterScript = [](const Engine::ScriptDescriptor& desc) {
-			Engine::ScriptRegistry::Register(desc);
-		};
+		Game_Load_Fn(gameContext);*/
 
-		Game_Test_Fn(gameContext);
+		using GameRegisterScriptsFn = int(*)(Engine::ScriptRegistry&);
+		auto Game_Register_Fn = (GameRegisterScriptsFn)GetProcAddress(gameModule, "RegisterScripts");
+
+		if (!Game_Register_Fn)
+		{
+			throw std::runtime_error("Failed to load RegisterScripts function from TestProject.dll");
+		}
+
+		Engine::ScriptRegistry& registry = Engine::ScriptRegistry::Get();
+		Game_Register_Fn(registry);
 
 
-		//print all registered scripts
-		auto scripts = Engine::ScriptRegistry::GetAll();
-
+		auto scripts = registry.GetAll();
 		//print count
 		LOG_INFO("Total Registered Scripts: {}", scripts.size());
 
 		for (const auto& script : scripts)
 		{
-			LOG_INFO("Registered Script: {} with ID: {}", script.Desc.Name, script.ID);
+			LOG_INFO("Registered Script: {}", script->name);
 		}
 
-		auto script = Engine::ScriptRegistry::GetByName("PlayerController");
-		auto entity = scene->CreateEntity("Player");
-		script->Desc.OnCreate(nullptr, entity);
+		auto player = scene->CreateEntity("Player");
+		auto& component = player.AddComponent<Engine::MeshComponent>();
+		component.material = material;
+		component.mesh = mesh;
 
+		auto& scriptComponent = player.AddComponent<Engine::ScriptComponent>();
+		scriptComponent.id = "PlayerController";
 
-		OnUpdateFn = (int(*)(float delta))GetProcAddress(gameModule, "Game_Update");
-
-		if (!OnUpdateFn)
-		{
-			throw std::runtime_error("Failed to load Game_Update function from TestProject.dll");
-		}
-
+		Engine::Script* playerScript = registry.Get("PlayerController").factory();
+		playerScript->Self = player;
+		playerScript->OnCreate();
+		scriptComponent.instance = std::move(playerScript);
 	}
 
 	EditorApp::~EditorApp()
@@ -212,12 +215,20 @@ namespace Editor
 
 			if (m_Minimized) continue;
 
-			OnUpdateFn(Engine::Time::DeltaTime()); // TODO: move to GameInstance
+			for(auto& ent : Engine::SceneManager::GetActiveScene()->GetEntities<Engine::ScriptComponent>())
+			{
+				auto& scriptComp = ent.GetComponent<Engine::ScriptComponent>();
+				if (scriptComp.instance)
+				{
+					scriptComp.instance->OnUpdate(Engine::Time::DeltaTime());
+				}
+			}
+
 			EditorWindowManager::OnUpdate(); // process editor UI
 
 			EditorCommandManager::Flush(); // execute queued commands
 
-			m_FileWatcher.OnUpdate(); // check for file changes
+			//m_FileWatcher.OnUpdate(); // check for file changes
 
 			if(m_GameInstance)
 			{

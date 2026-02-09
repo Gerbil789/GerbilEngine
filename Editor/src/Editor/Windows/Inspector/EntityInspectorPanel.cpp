@@ -209,7 +209,7 @@ namespace Editor
 			PropertyRow row("Mesh");
 			ImGui::Button(meshText.c_str(), ImVec2(-FLT_MIN, 0));
 			DragDropTarget{}.Accept("UUID", [&](const void* data) {
-				Engine::UUID id = *static_cast<const Engine::UUID*>(data);
+				Engine::Uuid id = *static_cast<const Engine::Uuid*>(data);
 				if (Engine::AssetManager::GetAssetType(id) == Engine::AssetType::Mesh) {
 					component.mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(id);
 				}
@@ -220,7 +220,7 @@ namespace Editor
 			PropertyRow row("Material");
 			ImGui::Button(materialText.c_str(), ImVec2(-FLT_MIN, 0));
 			DragDropTarget{}.Accept("UUID", [&](const void* data) {
-				Engine::UUID id = *static_cast<const Engine::UUID*>(data);
+				Engine::Uuid id = *static_cast<const Engine::Uuid*>(data);
 				if (Engine::AssetManager::GetAssetType(id) == Engine::AssetType::Material) {
 					component.material = Engine::AssetManager::GetAsset<Engine::Material>(id);
 				}
@@ -264,7 +264,7 @@ namespace Editor
 			std::string audioClipButtonText = component.clip != nullptr ? Engine::AssetManager::GetAssetName(component.clip->id) : "##AudioClip";
 			ImGui::Button(audioClipButtonText.c_str(), ImVec2(-FLT_MIN, 0.0f));
 			DragDropTarget{}.Accept("UUID", [&](const void* data) {
-				Engine::UUID id = *static_cast<const Engine::UUID*>(data);
+				Engine::Uuid id = *static_cast<const Engine::Uuid*>(data);
 				if (Engine::AssetManager::GetAssetType(id) == Engine::AssetType::Audio) {
 					component.clip = Engine::AssetManager::GetAsset<Engine::AudioClip>(id);
 				}
@@ -282,6 +282,8 @@ namespace Editor
 		}
 	}
 
+
+
 	void EntityInspectorPanel::DrawScript()
 	{
 		if (!m_Entity.HasComponent<Engine::ScriptComponent>()) return;
@@ -289,32 +291,21 @@ namespace Editor
 		ComponentHeader header("Script");
 		if (!header.open) return;
 
-		auto& component = m_Entity.GetComponent<Engine::ScriptComponent>();
-
 		PropertyTable table;
 		if (!table) return;
 
-		const Engine::RegisteredScript* script = Engine::ScriptRegistry::Get(component.id);
-
-		if (!script)
+		Engine::ScriptComponent& component = m_Entity.GetComponent<Engine::ScriptComponent>();
+		if (!component.instance)
 		{
 			PropertyRow row("Script not found!");
 			return;
 		}
 
-		for (auto& field : script->Desc.Fields)
-		{
-			switch (field.Type)
-			{
-			case Engine::ScriptFieldType::Float:
-			{
-				PropertyRow row(field.Name);
-				float& value = *reinterpret_cast<float*>(reinterpret_cast<uint8_t*>(component.data) + field.Offset);
-				FloatField(field.Name, value);
-				break;
-			}
-			}
-		}
+		Engine::ScriptRegistry& registry = Engine::ScriptRegistry::Get();
+		Engine::ScriptDescriptor desc = registry.Get(component.id);
+
+		PropertyRow row("Script");
+		ImGui::Button(desc.name.c_str(), ImVec2(-FLT_MIN, 0.0f));
 	}
 
 	void EntityInspectorPanel::DrawAddComponentButton()
@@ -354,11 +345,11 @@ namespace Editor
 			AddComponentEntry{ "AudioListener", [](Engine::Entity e) { e.AddComponent<Engine::AudioListenerComponent>(); } },
 			AddComponentEntry{ "Script",				[](Engine::Entity e)
 			{
-				auto& component = e.AddComponent<Engine::ScriptComponent>();
-				component.id = Engine::ScriptRegistry::GetByName("PlayerController")->ID;
-				component.data = malloc(sizeof(float)); // Temporary
-				float value = 0.0f;
-				memcpy(component.data, &value, sizeof(float));
+				/*auto& component = */e.AddComponent<Engine::ScriptComponent>();
+				//component.id = Engine::ScriptRegistry::GetByName("PlayerController")->ID;
+				//component.data = malloc(sizeof(float)); // Temporary
+				//float value = 0.0f;
+				//memcpy(component.data, &value, sizeof(float));
 			} }
 		};
 

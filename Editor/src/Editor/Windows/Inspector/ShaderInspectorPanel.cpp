@@ -1,4 +1,3 @@
-#include "enginepch.h"
 #include "ShaderInspectorPanel.h"
 #include "Engine/Graphics/WebGPUUtils.h"
 #include <imgui.h>

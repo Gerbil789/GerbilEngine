@@ -1,15 +1,12 @@
 #pragma once
 
-namespace Engine
-{
-  class Entity;
-}
+#include "Engine/Script/Script.h"
 
-
-struct PlayerController
+struct PlayerController : public Engine::Script
 {
-  float Speed = 5.0f;
+  float Speed = 10.0f;
+	bool GodMode = false;
+
+	void OnCreate() override;
+	void OnUpdate(float delta) override;
 };
-
-void Player_OnCreate(PlayerController&, Engine::Entity);
-void Player_OnUpdate(PlayerController&, Engine::Entity, float);

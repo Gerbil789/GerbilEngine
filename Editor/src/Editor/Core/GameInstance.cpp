@@ -1,4 +1,3 @@
-#include "enginepch.h"
 #include "GameInstance.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Graphics/RenderPass/BackgroundPass.h"
@@ -57,7 +56,10 @@ namespace Editor
 		camera->SetRotation(m_ActiveCameraEntity.GetComponent<Engine::TransformComponent>().rotation);
 
 		wgpu::SurfaceTexture surfaceTexture;
-		m_GameWindow->GetSurface().getCurrentTexture(&surfaceTexture);
+
+		wgpu::Surface& surface = *static_cast<wgpu::Surface*>(m_GameWindow->GetSurface()); //TODO: store
+		surface.getCurrentTexture(&surfaceTexture);
+
 		if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal)
 		{
 			LOG_ERROR("Failed to get current surface texture. status: {}", (int)surfaceTexture.status);
@@ -77,7 +79,7 @@ namespace Editor
 
 		m_Renderer.RenderScene();
 
-		m_GameWindow->GetSurface().present();
+		surface.present();
 	}
 
 	void GameInstance::OnEvent(Engine::Event& event)

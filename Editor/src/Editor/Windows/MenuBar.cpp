@@ -20,9 +20,7 @@ namespace Editor
 	struct ScopedMenu
 	{
 		bool open;
-		explicit ScopedMenu(const char* label)
-			: open(ImGui::BeginMenu(label)) {
-		}
+		explicit ScopedMenu(const char* label) : open(ImGui::BeginMenu(label)) {}
 		~ScopedMenu() { if (open) ImGui::EndMenu(); }
 		explicit operator bool() const { return open; }
 	};

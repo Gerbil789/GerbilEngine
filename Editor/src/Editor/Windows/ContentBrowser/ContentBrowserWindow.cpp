@@ -1,4 +1,3 @@
-#include "enginepch.h"
 #include "ContentBrowserWindow.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Scene/Scene.h"
@@ -66,7 +65,7 @@ namespace Editor
 			auto& path = entry.path();
 			if (entry.is_directory())
 			{
-				m_Items.emplace_back(Engine::UUID(), path); // UUID optional for folder
+				m_Items.emplace_back(Engine::Uuid(), path); // UUID optional for folder
 			}
 		}
 
@@ -273,7 +272,7 @@ namespace Editor
 
 					if (ImGui::BeginDragDropSource())
 					{
-						Engine::UUID uuid = item_data->UUID;
+						Engine::Uuid uuid = item_data->UUID;
 						ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
 						ImGui::Text("%s", item_data->Name.c_str());
 						ImGui::EndDragDropSource();
@@ -283,7 +282,7 @@ namespace Editor
 					{
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID")) 
 						{
-							Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
+							Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
 							auto path = Engine::AssetManager::GetAssetPath(droppedUUID);
 							LOG_INFO("Dropped file path: {0}", path);
 						}

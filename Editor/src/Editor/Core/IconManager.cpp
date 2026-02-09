@@ -1,6 +1,7 @@
-#include "enginepch.h"
 #include "IconManager.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
+#include <glm/glm.hpp>
+#include <array>
 
 namespace Editor
 {

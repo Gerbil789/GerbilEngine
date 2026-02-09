@@ -24,7 +24,7 @@ namespace Editor
 		{
 			if (ImGui::BeginDragDropSource())
 			{
-				Engine::UUID uuid = texture->id;
+				Engine::Uuid uuid = texture->id;
 				ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
 				ImGui::Text("%llu", static_cast<unsigned long long>((uint64_t)texture->id));
 				ImGui::EndDragDropSource();
@@ -36,7 +36,7 @@ namespace Editor
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
-				Engine::UUID droppedUUID = *static_cast<const Engine::UUID*>(payload->Data);
+				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
 				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Texture2D)
 				{
 					texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(droppedUUID);
@@ -86,14 +86,14 @@ namespace Editor
 
 	}
 
-	PropertyEditResult FloatField(const char* label, float& value)
+	PropertyEditResult FloatField(const char* label, float& value, float min, float max)
 	{
 		PropertyEditResult result;
 
 		ImGui::PushID(label);
 
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-		if (ImGui::DragFloat(("##" + std::string(label)).c_str(), &value, 0.05f, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
+		if (ImGui::DragFloat(("##" + std::string(label)).c_str(), &value, 0.05f, min, max, "%.2f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
 		{
 			result.changed = true;
 		}
