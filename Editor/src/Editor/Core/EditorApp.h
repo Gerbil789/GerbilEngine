@@ -1,20 +1,47 @@
 #pragma once
 
-#include "Engine/Core/Application.h"
+#include "Engine/Core/Window.h"
+
+namespace Engine
+{
+	class Event;
+	class WindowResizeEvent;
+}
 
 namespace Editor
 {
-	class EditorApp : public Engine::Application
+	struct ApplicationCommandLineArgs
 	{
-	public:
-		EditorApp(const Engine::ApplicationSpecification& specification);
-		~EditorApp();
+		int Count = 0;
+		char** Args = nullptr;
 
-		virtual void Run() override;
-		virtual void OnEvent(Engine::Event& e) override;
-
-		void PlayGame(); //TODO: move somewhere else
+		const char* operator[](int index) const
+		{
+			if (index >= Count)
+			{
+				throw std::out_of_range("Bad command line arguments index");
+			}
+			return Args[index];
+		}
 	};
 
-	EditorApp CreateApp(Engine::ApplicationCommandLineArgs args);
+	struct ApplicationSpecification
+	{
+		std::string title = "Application";
+		ApplicationCommandLineArgs args;
+	};
+
+	class EditorApp
+	{
+	public:
+		EditorApp(const ApplicationSpecification& specification);
+		~EditorApp();
+
+		void Run();
+		void OnEvent(Engine::Event& e);
+
+	private:
+		Engine::Window* m_Window;
+		bool m_Running = true;
+	};
 }

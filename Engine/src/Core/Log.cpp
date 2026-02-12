@@ -86,18 +86,36 @@ namespace Engine
       return "\033[0m";
     }
 
-    void Print(Level level, std::string_view message)
+    static std::string CleanFunctionName(std::string_view full)
+    {
+      // Remove parameters
+      auto paren = full.find('(');
+      if (paren != std::string_view::npos)
+        full = full.substr(0, paren);
+
+      // Remove return type + calling convention
+      // Keep only text after last space
+      auto space = full.rfind(' ');
+      if (space != std::string_view::npos)
+        full = full.substr(space + 1);
+
+      return std::string(full);
+    }
+
+    void Print(Level level, std::string_view message, const std::source_location& location)
     {
       std::scoped_lock lock(s_LogMutex);
       std::string timestamp = MakeTimestamp();
 
+      std::string full = std::format("[{}] [{}] {}", timestamp, CleanFunctionName(location.function_name()), message);
+
       // Console
-      std::println("{}[{}] {}{}", Color(level), timestamp, message, ResetColor());
+      std::println("{}{}{}", Color(level), full, ResetColor());
 
       // File
       if (s_LogFile.is_open())
       {
-        s_LogFile << '[' << timestamp << "] " << message << '\n';
+        s_LogFile << full << '\n';
         s_LogFile.flush();
       }
     }
@@ -120,9 +138,28 @@ namespace Engine
     OpenLogFile();
   }
 
-  void Log::Trace(std::string_view msg) { Print(Level::Trace, msg); }
-  void Log::Info(std::string_view msg) { Print(Level::Info, msg); }
-  void Log::Warn(std::string_view msg) { Print(Level::Warn, msg); }
-  void Log::Error(std::string_view msg) { Print(Level::Error, msg); }
-  void Log::Critical(std::string_view msg) { Print(Level::Critical, msg); }
+  void Log::Trace(std::string_view msg, const std::source_location& loc)
+  {
+    Print(Level::Trace, msg, loc);
+  }
+
+  void Log::Info(std::string_view msg, const std::source_location& loc)
+  {
+    Print(Level::Info, msg, loc);
+  }
+
+  void Log::Warn(std::string_view msg, const std::source_location& loc)
+  {
+    Print(Level::Warn, msg, loc);
+  }
+
+  void Log::Error(std::string_view msg, const std::source_location& loc)
+  {
+    Print(Level::Error, msg, loc);
+  }
+
+  void Log::Critical(std::string_view msg, const std::source_location& loc)
+  {
+    Print(Level::Critical, msg, loc);
+  }
 }

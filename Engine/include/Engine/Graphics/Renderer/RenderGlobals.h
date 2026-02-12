@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Engine/Core/API.h"
 #include <webgpu/webgpu.hpp>
 
 namespace Engine::RenderGlobals
@@ -13,7 +14,7 @@ namespace Engine::RenderGlobals
   };
   static_assert(sizeof(FrameUniforms) % 16 == 0);
 
-  void Initialize();
+  ENGINE_API void Initialize();
 
   // Frame
   wgpu::BindGroupLayout GetFrameLayout();

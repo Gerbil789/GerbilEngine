@@ -8,13 +8,19 @@ namespace Engine
   static float s_FPS = 0.0f;
   static std::chrono::steady_clock::time_point s_LastTime;
 
+  void Time::Initialize()
+  {
+    s_LastTime = std::chrono::steady_clock::now();
+  }
+
   void Time::BeginFrame()
   {
     auto now = std::chrono::steady_clock::now();
     s_DeltaTime = std::chrono::duration<float>(now - s_LastTime).count();
+    s_DeltaTime = std::min(s_DeltaTime, 0.1f);
     s_LastTime = now;
 
-    s_FPS = 1.0f / s_DeltaTime;
+    s_FPS = (s_DeltaTime > 0.0f) ? (1.0f / s_DeltaTime) : 0.0f;
   }
 
   float Time::DeltaTime()

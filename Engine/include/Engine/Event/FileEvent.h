@@ -9,12 +9,8 @@ namespace Engine
   public:
     std::filesystem::path GetPath() const { return path; }
 
-		virtual EventType GetEventType() const { return EventType::None; }
-		virtual const char* GetName() const { return "FileEvent"; }
-
-
     EVENT_CLASS_CATEGORY(EventCategoryFile)
-  protected:
+
 		FileEvent(const std::filesystem::path& path) : path(path) {}
     std::filesystem::path path;
   };
@@ -23,12 +19,6 @@ namespace Engine
 	{
     public:
     FileAddedEvent(const std::filesystem::path& path) : FileEvent(path) {}
-    std::string ToString() const override
-    {
-      std::stringstream ss;
-      ss << "FileAddedEvent: " << path;
-      return ss.str();
-    }
     EVENT_CLASS_TYPE(FileAdded)
 	};
 
@@ -36,12 +26,6 @@ namespace Engine
   {
   public:
     FileRemovedEvent(const std::filesystem::path& path) : FileEvent(path) {}
-    std::string ToString() const override
-    {
-      std::stringstream ss;
-      ss << "FileRemovedEvent: " << path;
-      return ss.str();
-    }
     EVENT_CLASS_TYPE(FileRemoved)
 	};
 
@@ -49,12 +33,6 @@ namespace Engine
   {
   public:
     FileModifiedEvent(const std::filesystem::path& path) : FileEvent(path) {}
-    std::string ToString() const override
-    {
-      std::stringstream ss;
-      ss << "FileModifiedEvent: " << path;
-      return ss.str();
-    }
     EVENT_CLASS_TYPE(FileModified)
   };
 

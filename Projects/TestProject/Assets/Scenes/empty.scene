@@ -1,3 +1,22 @@
 Scene: empty
 Entities:
-  []
+  - ID: 5499294315201257900
+    Enabled: true
+    Name: BlueCube
+    Transform:
+      Translation: [-2, 0, 0]
+      Rotation: [45, 45, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Mesh: 9153350241491098746
+      Material: 9667627839419811388
+  - ID: 14270387761137402067
+    Enabled: true
+    Name: Other
+    Transform:
+      Translation: [2, 0, 0]
+      Rotation: [45, 45, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Mesh: 0
+      Material: 0

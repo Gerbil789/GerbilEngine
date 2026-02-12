@@ -21,17 +21,17 @@ namespace Engine
 		{ AssetType::Audio, AudioImporter::ImportAudio }
 	};
 
-	Asset* AssetImporter::ImportAsset(const AssetRecord& metadata)
+	Asset* AssetImporter::ImportAsset(const AssetRecord& record)
 	{
-		AssetType assetType = metadata.type;
+		AssetType assetType = record.type;
 
 		if (s_AssetImportFunctions.find(assetType) == s_AssetImportFunctions.end())
 		{
 			LOG_ERROR("No importer available for asset type: {}", AssetTypeToString(assetType));
 			return nullptr;
 		}
-		Asset* asset = s_AssetImportFunctions.at(assetType)(metadata);
-		asset->id = metadata.id;
+		Asset* asset = s_AssetImportFunctions.at(assetType)(record);
+		asset->id = record.id;
 		return asset;
 	}
 }

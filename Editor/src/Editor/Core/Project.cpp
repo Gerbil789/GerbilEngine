@@ -1,6 +1,6 @@
 #include "Project.h"
 #include "Engine/Core/Log.h"
-//#include <yaml-cpp/yaml.h>
+#include <yaml-cpp/yaml.h>
 #include <fstream>
 
 namespace Editor
@@ -36,7 +36,7 @@ namespace Editor
 			throw std::runtime_error("Project::Load - Config file not found at " + configPath.string());
 		}
 
-		/*YAML::Node data;
+		YAML::Node data;
 		try
 		{
 			data = YAML::LoadFile(configPath.string());
@@ -45,20 +45,20 @@ namespace Editor
 		{
 			LOG_ERROR("Project::Load - Failed to parse YAML: {}", e.what());
 			return nullptr;
-		}*/
+		}
 
 		Project* project = new Project();
 		project->m_ProjectDirectory = path;
 		project->m_AssetsDirectory = project->m_ProjectDirectory / "Assets";
 
-		/*if (data["Title"])
+		if (data["Title"])
 		{
 			project->m_Title = data["Title"].as<std::string>();
 		}
 
 		uint64_t id = data["StartScene"] ? data["StartScene"].as<uint64_t>(0) : 0;
 		project->m_StartSceneID = Engine::Uuid(id);
-		*/
+		
 		LOG_INFO("Loaded project '{}' from {}", project->m_Title, configPath);
 		return project;
 	}

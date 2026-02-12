@@ -1,10 +1,14 @@
-#include "GameInstance.h"
+#include "enginepch.h"
+#include "Engine/Core/GameInstance.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Graphics/RenderPass/BackgroundPass.h"
 #include "Engine/Graphics/RenderPass/OpaquePass.h"
 #include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Scene/SceneManager.h"
+#include "Engine/Scene/Components.h"
+#include "Engine/Script/Script.h"
 
-namespace Editor
+namespace Engine
 {
 	GameInstance::GameInstance()
 	{
@@ -47,9 +51,20 @@ namespace Editor
 		m_Renderer.SetCamera(cameraComponent.camera);
 	}
 
-	void GameInstance::Update()
+	void GameInstance::Update(float delta)
 	{
-		if (m_Minimized) return;
+		if (m_GameWindow->IsMinimized()) return;
+
+		// update scripts
+		for (auto& ent : Engine::SceneManager::GetActiveScene()->GetEntities<Engine::ScriptComponent>())
+		{
+			auto& scriptComp = ent.GetComponent<Engine::ScriptComponent>();
+			if (scriptComp.instance)
+			{
+				scriptComp.instance->OnUpdate(delta);
+			}
+		}
+
 
 		Engine::Camera* camera = m_ActiveCameraEntity.GetComponent<Engine::CameraComponent>().camera;
 		camera->SetPosition(m_ActiveCameraEntity.GetComponent<Engine::TransformComponent>().position);
@@ -98,8 +113,6 @@ namespace Editor
 
 	void GameInstance::OnWindowResize(Engine::WindowResizeEvent& e)
 	{
-		m_Minimized = (e.GetWidth() == 0 || e.GetHeight() == 0) ? true : false;
-
 		m_Renderer.Resize((uint32_t)e.GetWidth(), (uint32_t)e.GetHeight());
 	}
 

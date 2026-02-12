@@ -5,8 +5,8 @@
 
 namespace Engine::GraphicsContext
 {
-	void Initialize();
-	void Shutdown();
+	ENGINE_API void Initialize();
+	ENGINE_API void Shutdown();
 
 	const wgpu::Instance& GetInstance();
 	const wgpu::Device& GetDevice();

@@ -1,6 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Core/Window.h"
-#include "Engine/Event/ApplicationEvent.h"
+#include "Engine/Event/WindowEvent.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Graphics/GraphicsContext.h"
@@ -17,6 +17,26 @@
 #define GLFW_EXPOSE_NATIVE_WAYLAND
 #endif
 #include <GLFW/glfw3native.h>
+
+
+namespace GLFW
+{
+	void Initialize()
+	{
+		if (!glfwInit())
+		{
+			throw std::runtime_error("Could not initialize GLFW!");
+		}
+
+		glfwSetErrorCallback([](int error, const char* description) { LOG_ERROR("GLFW Error ({}): {}", error, description); });
+	}
+
+	void Shutdown()
+	{
+		glfwTerminate();
+	}
+}
+
 
 namespace Engine
 {
@@ -41,21 +61,6 @@ namespace Engine
 		surfaceDesc.nextInChain = &x11Desc.chain;
 #endif
 		return GraphicsContext::GetInstance().createSurface(surfaceDesc);
-	}
-
-	void Window::InitializeGLFW()
-	{
-		if (!glfwInit())
-		{
-			throw std::runtime_error("Could not initialize GLFW!");
-		}
-
-		glfwSetErrorCallback([](int error, const char* description) { LOG_ERROR("GLFW Error ({}): {}", error, description); });
-	}
-
-	void Window::ShutdownGLFW()
-	{
-		glfwTerminate();
 	}
 
 	Window::Window(const WindowSpecification& specification)
@@ -100,7 +105,7 @@ namespace Engine
 
 	void Window::SetMode(WindowMode mode)
 	{
-		if (m_Mode == mode) 			return;
+		if (m_Mode == mode) return;
 
 		m_Mode = mode;
 
@@ -224,6 +229,13 @@ namespace Engine
 
 				MouseMovedEvent event((float)xPos, (float)yPos);
 				data.callback(event);
+			});
+
+		glfwSetWindowIconifyCallback(m_Window, [](GLFWwindow* window, int iconified)
+			{
+				Window::WindowData& data = *(Window::WindowData*)glfwGetWindowUserPointer(window);
+				Window* self = static_cast<Window*>(data.window);
+				self->m_Minimized = iconified != 0;
 			});
 	}
 

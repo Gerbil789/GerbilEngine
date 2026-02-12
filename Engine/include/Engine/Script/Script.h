@@ -16,6 +16,5 @@ namespace Engine
     virtual void OnUpdate([[maybe_unused]] float delta) {}
     virtual void OnDestroy() {}
   };
-
 }
 

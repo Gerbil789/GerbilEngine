@@ -132,7 +132,7 @@ namespace Editor
 					ImGui::TableSetColumnIndex(1);
 
 					Engine::Texture2D* texture = material->GetTexture(binding.name);
-					if (TextureField(("##" + binding.name).c_str(), texture).changed)
+					if (TextureField(binding.name, texture).changed)
 					{
 						material->SetTexture(binding.name, texture);
 					}

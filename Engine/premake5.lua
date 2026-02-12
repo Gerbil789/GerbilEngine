@@ -66,6 +66,8 @@ filter "system:windows"
 		"ENGINE_PLATFORM_WINDOWS",
 		"GLFW_INCLUDE_NONE",
 		"YAML_CPP_STATIC_DEFINE",
+		"GLM_ENABLE_EXPERIMENTAL",
+		"NOMINMAX", -- prevent windows.h from defining min and max macros
 		"ENGINE_BUILD_DLL"
 	}
 

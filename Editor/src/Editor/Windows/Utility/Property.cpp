@@ -4,12 +4,12 @@
 
 namespace Editor
 {
-	PropertyEditResult TextureField(const char* label, Engine::Texture2D*& texture)
+	PropertyEditResult TextureField(const std::string& label, Engine::Texture2D*& texture)
 	{
 		PropertyEditResult result;
 		const ImVec2 buttonSize = ImVec2(64, 64);
 
-		ImGui::PushID(label);
+		ImGui::PushID(label.c_str());
 
 		if (texture == nullptr) 
 		{
@@ -17,7 +17,7 @@ namespace Editor
 		}
 		else 
 		{
-			ImGui::ImageButton(label, (ImTextureID)(intptr_t)(WGPUTextureView)texture->GetTextureView(), buttonSize);
+			ImGui::ImageButton(label.c_str(), (ImTextureID)(intptr_t)(WGPUTextureView)texture->GetTextureView(), buttonSize);
 		}
 
 		if(texture)
@@ -207,6 +207,22 @@ namespace Editor
 
 		ImGui::PopID();
 		return result;
+	}
+
+	PropertyEditResult BoolField(const char* label, bool& value)
+	{
+		PropertyEditResult result;
+		ImGui::PushID(label);
+		if (ImGui::Checkbox("##checkbox", &value))
+		{
+			result.changed = true;
+		}
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+		ImGui::PopID();
+		return result;
+		
 	}
 
 	bool FloatSliderControl(const char* label, float& value, float min, float max)

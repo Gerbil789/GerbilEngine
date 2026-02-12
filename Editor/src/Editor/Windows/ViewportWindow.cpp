@@ -4,8 +4,7 @@
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Command/Entity/TransformEntity.h"
-#include "Editor/Core/EditorApp.h"
-
+#include "Engine/Core/Runtime.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Core/Input.h"
@@ -96,7 +95,7 @@ namespace Editor
 		ImVec2 viewportSize = ImVec2(m_ViewportSize.x, m_ViewportSize.y);
 		ImVec2 viewportMax = ImVec2(viewportMin.x + viewportSize.x, viewportMin.y + viewportSize.y);
 
-		ImGui::Image((WGPUTextureView)m_Renderer.GetTextureView(), viewportSize);
+		ImGui::Image(static_cast<WGPUTextureView>(m_Renderer.GetTextureView()), viewportSize);
 
 		DrawGizmos();
 
@@ -106,7 +105,7 @@ namespace Editor
 		ImGui::SetNextItemWidth(60.0f);
 		if (ImGui::Button("Play"))
 		{
-			/*static_cast<EditorApp&>(EditorApp::Get()).PlayGame();*/
+			Engine::Runtime::Start();
 		}
 
 		ImGui::SetCursorScreenPos(ImVec2(viewportMax.x - 120.0f - 8.0f, viewportMin.y + 4.0f));

@@ -1,8 +1,8 @@
-Shader: 13883584817892698282
+Shader: 10614378585745839232
 Sampler:
   Filter: 0
   Wrap: 2
 Attributes:
   Color: [0.9, 0.1, 0.2, 1]
 Textures:
-  Albedo: 5620118350841422469
+  Albedo: 13428705016315603756

@@ -33,7 +33,7 @@ namespace std {
 
 namespace Engine
 {
-	class SamplerPool
+	class ENGINE_API SamplerPool
 	{
 	public:
 		static void Initialize();

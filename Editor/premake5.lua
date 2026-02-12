@@ -27,7 +27,8 @@ externalincludedirs
 	"%{wks.location}/vendor/glm",
 	"%{wks.location}/vendor/entt/include",
 	"%{wks.location}/vendor/imgui",
-	"%{wks.location}/vendor/ImGuizmo"
+	"%{wks.location}/vendor/ImGuizmo",
+	"%{wks.location}/vendor/yaml-cpp/include",
 }
 
 links
@@ -35,6 +36,7 @@ links
 	"Engine",
 	"glfw",
 	"ImGui",
+	"yaml-cpp",
 	"webgpu_dawn"
 }
 
@@ -57,7 +59,9 @@ filter "system:windows"
 	{ 
 		"ENGINE_PLATFORM_WINDOWS",
 		"GLFW_INCLUDE_NONE",
-		"YAML_CPP_STATIC_DEFINE"
+		"YAML_CPP_STATIC_DEFINE",
+		"GLM_ENABLE_EXPERIMENTAL",
+		"NOMINMAX", -- prevent windows.h from defining min and max macros
 	}
 
 filter "system:windows"

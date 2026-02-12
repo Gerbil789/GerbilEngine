@@ -13,7 +13,7 @@ int main(int argc, char** argv)
   try
   {
     ENGINE_PROFILE_BEGIN("Initialization", "profile_init.json");
-    auto app = Editor::CreateApp({ argc, argv });
+    auto app = Editor::EditorApp({ "Gerbil Editor", { argc, argv } });
     ENGINE_PROFILE_END();
 
     ENGINE_PROFILE_BEGIN("Runtime", "profile_runtime.json");
@@ -24,5 +24,5 @@ int main(int argc, char** argv)
   {
     LOG_CRITICAL("{}", e.what());
     return EXIT_FAILURE;
-	}
+  }
 }

@@ -1,10 +1,9 @@
 #include "EditorApp.h"
-#define WEBGPU_CPP_IMPLEMENTATION // must be defined before including webgpu.hpp
+#define WEBGPU_CPP_IMPLEMENTATION
 #include "Editor/Core/EditorWindowManager.h"
 #include "Editor/Core/IconManager.h"
 #include "Engine/Core/Time.h"
 
-//tmp
 #include "Engine/Utils/File.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Editor/Core/EditorContext.h"
@@ -14,22 +13,35 @@
 //#include "Engine/Utils/FileWatcher.h"
 #include "Engine/Core/KeyCodes.h"
 
-#include "Editor/Core/GameInstance.h"
-
 #include "Engine/Core/Engine.h"
 #include "Engine/Core/API.h"
 #include "Engine/Core/GameContext.h"
-#include <windows.h>
+
 
 #include "Engine/Script/ScriptRegistry.h"
+#include "Engine/Script/Script.h"
 #include "Engine/Event/KeyEvent.h"
+
+#include "Engine/Core/Input.h"
+#include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Graphics/SamplerPool.h"
+#include "Engine/Graphics/Renderer/RenderGlobals.h"
+#include "Engine/Utils/Path.h"
+#include "Engine/Core/EngineContext.h"
+#include "Engine/Event/ApplicationEvent.h"
+
+#include "Engine/Scene/Scene.h"
+#include "Engine/Core/Window.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
+#include "Engine/Core/Runtime.h"
+
+#include <windows.h>
 
 namespace Editor
 {
-	GameInstance* m_GameInstance = nullptr;
 	//Engine::FileWatcher m_FileWatcher;
 
-	EditorApp::EditorApp(const Engine::ApplicationSpecification& specification) : Application(specification)
+	EditorApp::EditorApp(const ApplicationSpecification& specification)
 	{
 		ENGINE_PROFILE_FUNCTION();
 
@@ -43,14 +55,28 @@ namespace Editor
 			EditorContext::SetProject(Project::Load(Engine::OpenDirectory())); // Prompt user to select project directory
 		}
 
+		std::filesystem::current_path(GetExecutableDir()); // Set working directory
+
+		Engine::GraphicsContext::Initialize();
+		GLFW::Initialize();
+
+		m_Window = new Engine::Window({ specification.title, 1600, 900, "Resources/Engine/icons/logo.png" });
+		m_Window->SetEventCallback([this](Engine::Event& e) {this->OnEvent(e); });
+
+		Engine::Input::Initialize(*m_Window);
+		Engine::SamplerPool::Initialize();
+		Engine::RenderGlobals::Initialize();
+		Engine::Audio::Initialize();
+		Engine::Time::Initialize();
+
 		Engine::EngineContext context;
 		context.ProjectDirectory = EditorContext::GetProject().GetProjectDirectory();
 		context.AssetsDirectory = EditorContext::GetProject().GetAssetsDirectory();
-		Engine::InitializeEngine(context);
+		Engine::InitializeEngine(context); //TODO: improve engine context
 
 		Engine::AssetManager::Initialize();
 		IconManager::Load("Resources/Editor/icons/icons.png");
-		EditorWindowManager::Initialize(*m_MainWindow);
+		EditorWindowManager::Initialize(*m_Window);
 
 		//m_FileWatcher = Engine::FileWatcher(EditorContext::GetProject().GetAssetsDirectory());
 		//m_FileWatcher.SetEventCallback([this](Engine::Event& e) {this->OnEvent(e); });
@@ -93,10 +119,10 @@ namespace Editor
 
 		Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
 
-		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::Uuid(2260062122974363559));
-		Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::Uuid(17611688567092875307));
+		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::Uuid(9667627839419811388));
+		Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::Uuid(9153350241491098746));
 
-		//// Create grid of cubes
+		// Create grid of cubes
 		for(int x = 0; x < 10; x++)
 		{
 			for(int y = 0; y < 1; y++)
@@ -109,7 +135,6 @@ namespace Editor
 					component.mesh = mesh;
 					cube.GetComponent<Engine::TransformComponent>().position = { (float)x * 3.0f - (15), (float)y * 3.0f, (float)z * 3.0f - 30};
 				}
-
 			}
 		}
 
@@ -143,19 +168,6 @@ namespace Editor
 			throw std::runtime_error("Failed to load TestProject.dll");
 		}
 
-	/*	using GameLoadFn = int(*)(GameContext*);
-
-		auto Game_Load_Fn = (GameLoadFn)GetProcAddress(gameModule, "OnLoad");
-
-		if (!Game_Load_Fn)
-		{
-			throw std::runtime_error("Failed to load OnLoad function from TestProject.dll");
-		}
-
-		GameContext* gameContext = new GameContext();
-		gameContext->CurrentScene = scene;
-		Game_Load_Fn(gameContext);*/
-
 		using GameRegisterScriptsFn = int(*)(Engine::ScriptRegistry&);
 		auto Game_Register_Fn = (GameRegisterScriptsFn)GetProcAddress(gameModule, "RegisterScripts");
 
@@ -167,11 +179,9 @@ namespace Editor
 		Engine::ScriptRegistry& registry = Engine::ScriptRegistry::Get();
 		Game_Register_Fn(registry);
 
-
 		auto scripts = registry.GetAll();
-		//print count
-		LOG_INFO("Total Registered Scripts: {}", scripts.size());
 
+		LOG_INFO("Total Registered Scripts: {}", scripts.size());
 		for (const auto& script : scripts)
 		{
 			LOG_INFO("Registered Script: {}", script->name);
@@ -200,6 +210,13 @@ namespace Editor
 		IconManager::Unload();
 		Engine::AssetManager::Shutdown();
 
+
+		Engine::Audio::Shutdown();
+		Engine::SamplerPool::Shutdown();
+		Engine::GraphicsContext::Shutdown();
+		delete m_Window;
+		GLFW::Shutdown();
+
 		ENGINE_PROFILE_END();
 	}
 
@@ -211,18 +228,21 @@ namespace Editor
 			ENGINE_PROFILE_SCOPE("RunLoop");
 
 			Engine::Time::BeginFrame();
-			m_MainWindow->OnUpdate(); // process input events
+			m_Window->OnUpdate(); // poll events
 
-			if (m_Minimized) continue;
+			if (m_Window->IsMinimized()) continue;
 
-			for(auto& ent : Engine::SceneManager::GetActiveScene()->GetEntities<Engine::ScriptComponent>())
-			{
-				auto& scriptComp = ent.GetComponent<Engine::ScriptComponent>();
-				if (scriptComp.instance)
-				{
-					scriptComp.instance->OnUpdate(Engine::Time::DeltaTime());
-				}
-			}
+			float delta = Engine::Time::DeltaTime();
+
+			//// update scripts, TODO: update this only in runtime
+			//for(auto& ent : Engine::SceneManager::GetActiveScene()->GetEntities<Engine::ScriptComponent>())
+			//{
+			//	auto& scriptComp = ent.GetComponent<Engine::ScriptComponent>();
+			//	if (scriptComp.instance)
+			//	{
+			//		scriptComp.instance->OnUpdate(delta);
+			//	}
+			//}
 
 			EditorWindowManager::OnUpdate(); // process editor UI
 
@@ -230,57 +250,27 @@ namespace Editor
 
 			//m_FileWatcher.OnUpdate(); // check for file changes
 
-			if(m_GameInstance)
-			{
-				m_GameInstance->Update();
-			}
+			Engine::Runtime::Update(delta);
 		}
 	}
 
 	void EditorApp::OnEvent(Engine::Event& e)
 	{
 		ENGINE_PROFILE_FUNCTION();
-		if (e.GetEventType() == Engine::EventType::KeyPressed)
-		{
-			Engine::KeyEvent& keyEvent = static_cast<Engine::KeyEvent&>(e);
-			if (keyEvent.GetKey() == Engine::Key::F11)
-			{
-				if (m_MainWindow->GetMode() == Engine::WindowMode::BorderlessFullscreen)
-				{
-					m_MainWindow->SetMode(Engine::WindowMode::Windowed);
-				}
-				else
-				{
-					m_MainWindow->SetMode(Engine::WindowMode::BorderlessFullscreen);
-				}
-			}
-		}
+		Engine::EventDispatcher dispatcher(e);
 
-		Application::OnEvent(e);
+		dispatcher.Dispatch<Engine::KeyPressedEvent>([this](auto& e) 
+			{
+				if(e.GetKey() == Engine::Key::F11)
+				{
+					m_Window->SetMode((m_Window->GetMode() == Engine::WindowMode::BorderlessFullscreen) ? Engine::WindowMode::Windowed : Engine::WindowMode::BorderlessFullscreen);
+				}
+			});
+
 		EditorCommandManager::OnEvent(e);
 		EditorWindowManager::OnEvent(e);
 
-		if(e.GetCategoryFlags() & Engine::EventCategoryFile)
-		{
-			Engine::AssetManager::OnEvent(e);
-		}
-	}
-
-	void EditorApp::PlayGame()
-	{
-		if (m_GameInstance) return; // already playing
-
-		m_GameInstance = new GameInstance();
-		m_GameInstance->OnExit = [this]() { delete m_GameInstance; m_GameInstance = nullptr; };
-		Engine::Scene* activeScene = Engine::SceneManager::GetActiveScene();
-		m_GameInstance->Initialize(activeScene);
-	}
-
-	EditorApp CreateApp(Engine::ApplicationCommandLineArgs args)
-	{
-		Engine::ApplicationSpecification spec;
-		spec.title = "Gerbil Editor";
-		spec.args = args;
-		return EditorApp(spec);
+		Engine::AssetManager::OnEvent(e);
+		dispatcher.Dispatch<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
 	}
 }

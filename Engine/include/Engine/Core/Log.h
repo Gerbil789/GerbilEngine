@@ -7,6 +7,7 @@
 #include <string>
 #include <string_view>
 #include <format>
+#include <source_location>
 
 namespace Engine
 {
@@ -15,11 +16,21 @@ namespace Engine
 	public:
 		static void Initialize();
 
-		static void Trace(std::string_view message);
-		static void Info(std::string_view message);
-		static void Warn(std::string_view message);
-		static void Error(std::string_view message);
-		static void Critical(std::string_view message);
+
+		static void Trace(std::string_view message,
+			const std::source_location& location = std::source_location::current());
+
+		static void Info(std::string_view message,
+			const std::source_location& location = std::source_location::current());
+
+		static void Warn(std::string_view message,
+			const std::source_location& location = std::source_location::current());
+
+		static void Error(std::string_view message,
+			const std::source_location& location = std::source_location::current());
+
+		static void Critical(std::string_view message,
+			const std::source_location& location = std::source_location::current());
 	};
 }
 

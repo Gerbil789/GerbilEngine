@@ -50,7 +50,7 @@ namespace Engine
 
 		void Bind(wgpu::RenderPassEncoder pass);
 
-		const std::vector<uint8_t>& GetUniformData() const { return m_UniformData; }
+		const std::vector<std::byte>& GetUniformData() const { return m_UniformData; }
 		const std::unordered_map<std::string, Texture2D*>& GetTextures() const { return m_Textures; }
 
 		static Material* GetDefault();
@@ -62,7 +62,7 @@ namespace Engine
 	private:
 		Shader* m_Shader;
 
-		std::vector<uint8_t> m_UniformData; // paramerers data packed according to shader layout
+		std::vector<std::byte> m_UniformData; // parameters data packed according to shader layout
 		std::unordered_map<std::string, Texture2D*> m_Textures; // this is for engine management, the webgpu binds it once and does not need it afterwards
 		wgpu::BindGroup m_BindGroup;
 		wgpu::Buffer m_UniformBuffer; 

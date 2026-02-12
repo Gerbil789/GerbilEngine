@@ -1,6 +1,3 @@
-#define NOMINMAX
-#define GLM_ENABLE_EXPERIMENTAL
-
 #include <memory>
 #include <utility>
 #include <algorithm>

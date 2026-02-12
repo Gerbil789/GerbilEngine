@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	void SerializeUniformBuffer(YAML::Emitter& out, const Binding& binding, const std::vector<uint8_t>& data)
+	void SerializeUniformBuffer(YAML::Emitter& out, const Binding& binding, const std::vector<std::byte>& data)
 	{
 		for (const auto& param : binding.parameters)
 		{

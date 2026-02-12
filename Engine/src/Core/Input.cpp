@@ -5,41 +5,32 @@
 
 namespace Engine::Input
 {
-	GLFWwindow* m_Window = nullptr;
+	namespace
+	{
+		GLFWwindow* s_Window = nullptr;
+	}
 
 	void Initialize(Window& window)
 	{
-		m_Window = static_cast<GLFWwindow*>(window.GetNativeWindow());
+		s_Window = static_cast<GLFWwindow*>(window.GetNativeWindow());
 	}
 
 	bool IsKeyPressed(KeyCode key)
 	{
-		auto state = glfwGetKey(m_Window, static_cast<int32_t>(key));
+		int state = glfwGetKey(s_Window, static_cast<int>(key));
 		return state == GLFW_PRESS || state == GLFW_REPEAT;
-	}
-
-	bool IsKeyPressed(std::initializer_list<KeyCode> keys)
-	{
-		for (KeyCode key : keys)
-		{
-			if (IsKeyPressed(key))
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 
 	bool IsMouseButtonPressed(MouseCode button)
 	{
-		auto state = glfwGetMouseButton(m_Window, button);
+		int state = glfwGetMouseButton(s_Window, button);
 		return state == GLFW_PRESS;
 	}
 
 	glm::vec2 GetMousePosition()
 	{
 		double x, y;
-		glfwGetCursorPos(m_Window, &x, &y);
+		glfwGetCursorPos(s_Window, &x, &y);
 		return { static_cast<float>(x), static_cast<float>(y) };
 	}
 

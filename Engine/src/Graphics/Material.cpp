@@ -16,7 +16,7 @@ namespace Engine
 		m_TextureFilter = spec.filter;
 		m_TextureWrap = spec.wrap;
 
-		m_UniformData.resize(m_Shader->GetMaterialUniformBufferSize(), 0);
+		m_UniformData.resize(m_Shader->GetMaterialUniformBufferSize(), std::byte{});
 		CreateUniformBuffer();
 
 		for (auto& [name, value] : spec.floatDefaults)
@@ -38,7 +38,7 @@ namespace Engine
 	{
 		m_Shader = shader;
 
-		m_UniformData.resize(m_Shader->GetMaterialUniformBufferSize(), 0);
+		m_UniformData.resize(m_Shader->GetMaterialUniformBufferSize(), std::byte{});
 		CreateUniformBuffer();
 		CreateBindGroup();
 	}

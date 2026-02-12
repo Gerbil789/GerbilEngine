@@ -1,14 +1,21 @@
 #pragma once
 
-#include "Engine/Event/Event.h"
-#include <filesystem>
-//#include <webgpu/webgpu.hpp>
 #include "Engine/Core/API.h"
+#include <filesystem>
+#include <functional>
 
 struct GLFWwindow; // forward declaration
 
+namespace GLFW
+{
+	ENGINE_API void Initialize();
+	ENGINE_API void Shutdown();
+}
+
 namespace Engine
 {
+	class Event;
+
 	enum class WindowMode { Windowed, BorderlessFullscreen };
 
 	struct WindowSpecification
@@ -23,11 +30,6 @@ namespace Engine
 	class ENGINE_API Window
 	{
 	public:
-		using EventCallbackFn = std::function<void(Event&)>;
-
-		static void InitializeGLFW();
-		static void ShutdownGLFW();
-
 		Window(const WindowSpecification& specification);
 		~Window();
 
@@ -35,13 +37,15 @@ namespace Engine
 
 		uint32_t GetWidth() const { return m_Data.width; }
 		uint32_t GetHeight() const { return m_Data.height; }
-		void* GetNativeWindow() const { return m_Window; }
-		void* GetSurface() const; //wgpu::Surface
+		void* GetNativeWindow() const { return m_Window; } // GLFWwindow*
+		void* GetSurface() const; // wgpu::Surface
 
-		void SetEventCallback(const EventCallbackFn& callback) { m_Data.callback = callback; }
+		void SetEventCallback(const std::function<void(Event&)>& callback) { m_Data.callback = callback; }
 
 		void SetMode(WindowMode mode);
 		WindowMode GetMode() const;
+
+		bool IsMinimized() const { return m_Minimized; }
 
 	private:
 		void SetEventCallbacks();
@@ -51,8 +55,8 @@ namespace Engine
 	private:
 		GLFWwindow* m_Window = nullptr;
 		WindowMode m_Mode = WindowMode::Windowed;
+		bool m_Minimized = false;
 
-		// Stored windowed state
 		int m_WindowedX = 100;
 		int m_WindowedY = 100;
 		int m_WindowedWidth = 1280;
@@ -61,7 +65,7 @@ namespace Engine
 		struct WindowData
 		{
 			uint32_t width = 1600, height = 900;
-			EventCallbackFn callback;
+			std::function<void(Event&)> callback;
 			Window* window = nullptr;
 		} m_Data;
 	};

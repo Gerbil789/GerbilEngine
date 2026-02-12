@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+// keycodes are copied from glfw3.h, for now...
+
 namespace Engine
 {
 	using KeyCode = uint16_t;
@@ -10,7 +12,6 @@ namespace Engine
 	{
 		enum : KeyCode
 		{
-			// From glfw3.h
 			Space = 32,
 			Apostrophe = 39, /* ' */
 			Comma = 44, /* , */
@@ -150,7 +151,6 @@ namespace Engine
 	{
 		enum : MouseCode
 		{
-			// From glfw3.h
 			Button0 = 0,
 			Button1 = 1,
 			Button2 = 2,

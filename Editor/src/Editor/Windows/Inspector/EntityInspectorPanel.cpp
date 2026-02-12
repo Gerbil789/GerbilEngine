@@ -19,9 +19,11 @@
 #include <functional>
 
 #include "Engine/Script/ScriptRegistry.h"
+#include "Engine/Script/Script.h"
 
 #include "Editor/Command/Component/MeshCommand.h"
 #include "Editor/Command/Component/TransformCommand.h"
+#include "Editor/Command/Component/ScriptCommand.h"
 
 namespace Editor
 {
@@ -288,24 +290,96 @@ namespace Editor
 	{
 		if (!m_Entity.HasComponent<Engine::ScriptComponent>()) return;
 
-		ComponentHeader header("Script");
+		const std::initializer_list<ComponentMenuAction> menuActions
+		{
+			{ "Reset", [this] { EditorCommandManager::EnqueueCommand<ResetScriptComponentCommand>(m_Entity); } },
+			{ "Remove", [this] { EditorCommandManager::EnqueueCommand<RemoveScriptComponentCommand>(m_Entity); } }
+		};
+
+		ComponentHeader header("Script", menuActions);
 		if (!header.open) return;
 
 		PropertyTable table;
 		if (!table) return;
 
+		Engine::ScriptRegistry& registry = Engine::ScriptRegistry::Get();
 		Engine::ScriptComponent& component = m_Entity.GetComponent<Engine::ScriptComponent>();
-		if (!component.instance)
+
 		{
-			PropertyRow row("Script not found!");
-			return;
+			PropertyRow row("Script");
+			std::vector<const Engine::ScriptDescriptor*> scripts = registry.GetAll();
+			std::vector<std::string> scriptNames;
+			scriptNames.reserve(scripts.size());
+			for (const auto* desc : scripts)
+				scriptNames.push_back(desc->name);
+			int current = 0;
+			int index = 0;
+			for(auto name : scriptNames)
+			{
+				if (name == component.id)
+				{
+					index = current;
+					break;
+				}
+				current++;
+			}
+
+			if (EnumField("Script", index, scriptNames).changed && index >= 0)
+			{
+				const Engine::ScriptDescriptor* desc = scripts[index];
+				component.id = desc->name;
+				component.instance = desc->factory();
+				component.instance->Self = m_Entity;
+				component.instance->OnCreate();
+			}
 		}
 
-		Engine::ScriptRegistry& registry = Engine::ScriptRegistry::Get();
-		Engine::ScriptDescriptor desc = registry.Get(component.id);
+		if (!component.instance)
+			return;
 
-		PropertyRow row("Script");
-		ImGui::Button(desc.name.c_str(), ImVec2(-FLT_MIN, 0.0f));
+		ImGui::Separator();
+
+		Engine::ScriptDescriptor& desc = registry.Get(component.id);
+
+		for (const Engine::ScriptField& field : desc.fields)
+		{
+			PropertyRow row(field.name.c_str());
+
+			std::byte* base = reinterpret_cast<std::byte*>(component.instance);
+			void* fieldPtr = base + field.offset;
+
+			switch (field.type)
+			{
+			case Engine::ScriptFieldType::Float:
+			{
+				float& value = *reinterpret_cast<float*>(fieldPtr);
+				FloatField(field.name.c_str(), value, FLT_MIN, FLT_MAX);
+				break;
+			}
+
+			case Engine::ScriptFieldType::Bool:
+			{
+				bool& value = *reinterpret_cast<bool*>(fieldPtr);
+				BoolField(field.name.c_str(), value);
+				break;
+			}
+
+			case Engine::ScriptFieldType::Int:
+			{
+				int& value = *reinterpret_cast<int*>(fieldPtr);
+				IntField(field.name.c_str(), value);
+				break;
+			}
+
+			case Engine::ScriptFieldType::Texture:
+			{
+				Engine::Texture2D*& texture = *reinterpret_cast<Engine::Texture2D**>(fieldPtr);
+				TextureField(field.name, texture);
+				break;
+			}
+
+			}
+		}
 	}
 
 	void EntityInspectorPanel::DrawAddComponentButton()
