@@ -12,17 +12,22 @@ int main(int argc, char** argv)
 
   try
   {
-    ENGINE_PROFILE_BEGIN("Initialization", "profile_init.json");
-    auto app = Editor::EditorApp({ "Gerbil Editor", { argc, argv } });
+    ENGINE_PROFILE_BEGIN("Editor initialization", "profile_init.json");
+    auto app = Editor::EditorApp({ argc, argv });
     ENGINE_PROFILE_END();
 
-    ENGINE_PROFILE_BEGIN("Runtime", "profile_runtime.json");
+    ENGINE_PROFILE_BEGIN("Editor runtime", "profile_runtime.json");
     app.Run();
     ENGINE_PROFILE_END();
+
+    ENGINE_PROFILE_BEGIN("Editor shutdown", "profile_shutdown.json");
+		// app will be destroyed here as it goes out of scope, which will call its destructor and shutdown the engine
   }
   catch (const std::exception& e)
   {
     LOG_CRITICAL("{}", e.what());
     return EXIT_FAILURE;
   }
+
+  ENGINE_PROFILE_END();
 }

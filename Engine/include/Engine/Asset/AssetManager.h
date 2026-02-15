@@ -10,7 +10,7 @@
 
 namespace Engine
 {
-	class AssetManager
+	class ENGINE_API AssetManager
 	{
 	public:
 		static void Initialize()
@@ -58,34 +58,30 @@ namespace Engine
 		template<typename T>
 		static T* GetAsset(Uuid id)
 		{
-			Asset* asset = nullptr;
+			Asset* asset = GetLoadedAsset(id);
 
-			if (IsAssetLoaded(id))
+			if (asset)
 			{
-				asset = m_LoadedAssets.at(id);
+				return static_cast<T*>(asset);
 			}
-			else
+
+			auto record = m_AssetRegistry.GetRecord(id);
+			if (!record)
 			{
-				auto metadata = m_AssetRegistry.GetRecord(id);
-				if (!metadata)
-				{
-					LOG_ERROR("AssetManager::GetAsset - Failed to load asset '{}', Record not found in registry", id);
-					return nullptr;
-				}
+				LOG_ERROR("Failed to load asset '{}', Record not found in registry", id);
+				return nullptr;
+			}
 
-				asset = AssetImporter::ImportAsset(*metadata);
-				if (!asset)
-				{
-					LOG_ERROR("AssetManager::GetAsset - asset import failed! '{}'", id);
-					return nullptr;
-				}
-				m_LoadedAssets[id] = asset;
-
+			asset = AssetImporter::ImportAsset(*record);
+			if (asset)
+			{
 				LOG_TRACE("Loaded asset '{}', '{}'", id, m_AssetRegistry.GetRelativePath(id));
-
+				m_LoadedAssets[id] = asset;
+				return static_cast<T*>(asset);
 			}
-			auto ret = static_cast<T*>(asset);
-			return ret;
+
+			LOG_ERROR("asset import failed! '{}'", id);
+			return nullptr;
 		}
 
 
@@ -102,21 +98,19 @@ namespace Engine
 					continue;
 				}
 
-				Asset* asset = nullptr;
-				if (IsAssetLoaded(record->id))
-				{
-					asset = m_LoadedAssets.at(record->id);
-				}
-				else
+				Asset* asset = GetLoadedAsset(record->id);
+
+				if (!asset)
 				{
 					asset = AssetImporter::ImportAsset(*record);
 					if (!asset)
 					{
-						LOG_ERROR("AssetManager::GetAssetsOfType - asset import failed! '{}'", record->path.string());
+						LOG_ERROR("asset import failed! '{}'", record->path.string());
 						continue;
 					}
 					m_LoadedAssets[record->id] = asset;
 				}
+
 				assets.push_back(static_cast<T*>(asset));
 			}
 			return assets;
@@ -125,31 +119,35 @@ namespace Engine
 		template<typename T, typename... Args>
 		static T* CreateAsset(const std::filesystem::path& path, Args&&... args)
 		{
-			auto metadata = m_AssetRegistry.Create(path);
-			if (!metadata)
+			auto record = m_AssetRegistry.Create(path);
+			if (!record)
 			{
-				LOG_ERROR("AssetManager::CreateAsset - Failed to add record in registry '{}'", path);
+				LOG_ERROR("Failed to add record in registry '{}'", path);
 				return nullptr;
 			}
 
 			Asset* asset = new T(std::forward<Args>(args)...);
 			if (!asset)
 			{
-				LOG_ERROR("AssetManager::CreateAsset - failed to create asset. '{}'", path);
+				LOG_ERROR("failed to create asset. '{}'", path);
 				return nullptr;
 			}
 
-			asset->id = metadata->id;
-			m_LoadedAssets[metadata->id] = asset;
+			asset->id = record->id;
+			m_LoadedAssets[record->id] = asset;
 
-			AssetSerializer::SerializeAsset(asset, *metadata);
-			LOG_TRACE("Created new asset '{}', '{}'", metadata->id, metadata->path);
+			AssetSerializer::SerializeAsset(asset, *record);
+			LOG_TRACE("Created new asset '{}', '{}'", record->id, record->path);
 			return static_cast<T*>(asset);
 		}
 
-		static bool IsAssetLoaded(Uuid id)
+		static Asset* GetLoadedAsset(Uuid id)
 		{
-			return m_LoadedAssets.find(id) != m_LoadedAssets.end();
+			auto it = m_LoadedAssets.find(id);
+			if (it != m_LoadedAssets.end())
+				return it->second;
+
+			return nullptr;
 		}
 
 		static const AssetRecord* GetAssetRecord(Uuid id)
@@ -159,31 +157,32 @@ namespace Engine
 
 		static AssetType GetAssetType(Uuid id)
 		{
-			auto metadata = m_AssetRegistry.GetRecord(id);
-			if (!metadata)
+			auto record = m_AssetRegistry.GetRecord(id);
+			if (!record)
 			{
 				return AssetType::Unknown;
 			}
-			return metadata->type;
+			return record->type;
 		}
 
 		static Asset* CreateAsset(const std::filesystem::path& filepath)
 		{
-			auto metadata = m_AssetRegistry.Create(filepath);
-			if (!metadata)
+			auto record = m_AssetRegistry.Create(filepath);
+			if (!record)
 			{
+				LOG_ERROR("Failed to add record in registry '{}'", filepath);
 				return nullptr;
 			}
 
-			if (IsAssetLoaded(metadata->id))
+			if (Asset* asset = GetLoadedAsset(record->id))
 			{
-				return m_LoadedAssets[metadata->id];
+				return asset;
 			}
 
-			Asset* asset = AssetImporter::ImportAsset(*metadata);
+			Asset* asset = AssetImporter::ImportAsset(*record);
 			if (!asset)
 			{
-				LOG_ERROR("AssetManager::ImportAsset - asset import failed! '{0}'", filepath.string());
+				LOG_ERROR("Asset import failed! '{}'", filepath);
 				return nullptr;
 			}
 

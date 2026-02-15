@@ -1,16 +1,17 @@
 #include "enginepch.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Scene.h"
-#include "Engine/Utils/File.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
+#include "Engine/Scene/Entity.h"
+#include "Engine/Core/UUID.h"
 
 namespace Engine::SceneManager
 {
 	Scene* s_ActiveScene = nullptr;
-	static std::vector<SceneChangedCallback> s_Callbacks;
+	static std::vector<std::function<void(Scene*)>> s_Callbacks;
 
-	void RegisterOnSceneChanged(const SceneChangedCallback& callback)
+	void RegisterOnSceneChanged(const std::function<void(Scene*)>& callback)
 	{
 		s_Callbacks.push_back(callback);
 	}
@@ -30,8 +31,9 @@ namespace Engine::SceneManager
 			LOG_ERROR("Setting active scene failed. Scene is null");
 			return;
 		}
+
 		s_ActiveScene = scene;
-		LOG_INFO("Active scene set to {0}", s_ActiveScene->id);
+		LOG_INFO("Active scene set to {}", s_ActiveScene->id);
 		NotifySceneChanged();
 	}
 
@@ -44,27 +46,23 @@ namespace Engine::SceneManager
 		return s_ActiveScene;
 	}
 
-	void CreateScene(const std::filesystem::path& path)
+	void LoadScene(Uuid id)
 	{
-		Scene* scene = AssetManager::CreateAsset<Scene>(path);
-		SetActiveScene(scene);
-	}
-
-	void LoadScene()
-	{
-		std::string filePath = OpenFile();
-		if (filePath.empty()) 
-		{ 
-			LOG_ERROR("Failed to open file {0}", filePath); return; 
+		if (!id)
+		{
+			throw std::runtime_error("No valid start scene set in the project");
 		}
-		LoadScene(filePath);
-	}
 
-	void LoadScene(const std::filesystem::path&)
-	{
-		//Scene* scene = AssetManager::GetAsset<Scene>(path);
-		//s_ActiveScene = scene;
+		Engine::Scene* scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
+		Engine::SceneManager::SetActiveScene(scene);
 
+		auto entities = scene->GetEntities(true);
+		LOG_INFO("Loaded scene with {} entities", entities.size());
+
+		for (Entity ent : entities)
+		{
+			LOG_INFO("  {} \t{}", ent.GetName(), ent.GetUUID());
+		}
 	}
 
 	void SaveScene()
@@ -88,19 +86,21 @@ namespace Engine::SceneManager
 
 		SceneSerializer::Serialize(scene, path);
 
-		LOG_INFO("Scene {0} saved to file {1}", s_ActiveScene->id, path);
+		LOG_INFO("Scene {} saved to file {}", s_ActiveScene->id, path);
 	}
 
 	void SaveSceneAs()
 	{
-		std::string path = SaveFile();
-		if (!path.empty())
-		{
-			//s_ActiveScene->SetFilePath(path);
-			//Serializer::Serialize(s_ActiveScene);
-			//LOG_INFO("Save as {0}", path);
+		LOG_WARNING("Saving scene failed. NOT IMPLEMENTED!");
 
-			LOG_WARNING("Saving scene failed. NOT IMPLEMENTED!");
-		}
+		//std::string path = SaveFile();
+		//if (!path.empty())
+		//{
+		//	//s_ActiveScene->SetFilePath(path);
+		//	//Serializer::Serialize(s_ActiveScene);
+		//	//LOG_INFO("Save as {0}", path);
+
+		//	LOG_WARNING("Saving scene failed. NOT IMPLEMENTED!");
+		//}
 	}
 }

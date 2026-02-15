@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	class AssetSerializer
+	class ENGINE_API AssetSerializer
 	{
 	public:
 		static void SerializeAsset(Asset* asset, const AssetRecord& metadata);

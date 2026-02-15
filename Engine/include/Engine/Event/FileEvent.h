@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Event/Event.h"
+#include <filesystem>
 
 namespace Engine
 {
@@ -17,7 +18,7 @@ namespace Engine
 
 	class FileAddedEvent : public FileEvent
 	{
-    public:
+   public:
     FileAddedEvent(const std::filesystem::path& path) : FileEvent(path) {}
     EVENT_CLASS_TYPE(FileAdded)
 	};

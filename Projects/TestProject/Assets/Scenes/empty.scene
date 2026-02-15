@@ -18,5 +18,5 @@ Entities:
       Rotation: [45, 45, 0]
       Scale: [1, 1, 1]
     MeshComponent:
-      Mesh: 0
-      Material: 0
+      Mesh: 9153350241491098746
+      Material: 9667627839419811388

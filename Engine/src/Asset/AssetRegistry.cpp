@@ -136,27 +136,21 @@ namespace Engine
 
 	bool AssetRegistry::IsUUIDValid(const Uuid& id) const
 	{
-		return id.IsValid() && m_Records.find(id) != m_Records.end();
+		return id && m_Records.find(id) != m_Records.end();
 	}
 
 	const AssetRecord* AssetRegistry::Create(const std::filesystem::path& path)
 	{
-		if (auto id = GetUUIDFromPath(path); id.IsValid())
+		Uuid id = GetUUIDFromPath(path);
+		if (id)
 		{
 			LOG_WARNING("Asset '{}' already exists in registry.", path);
 			return GetRecord(id);
 		}
 
-		Uuid id = Uuid();
+		id = Uuid();
 
-		auto [it, inserted] = m_Records.try_emplace(
-			id,
-			AssetRecord{
-					id,
-					path,
-					GetAssetTypeFromExtension(path.extension().string())
-			}
-		);
+		auto [it, inserted] = m_Records.try_emplace(id, AssetRecord{id, path, GetAssetTypeFromExtension(path.extension().string())});
 
 		Save(Engine::GetProjectDirectory() / "assetRegistry.yaml");
 		LOG_TRACE("Added asset '{}' to registry.", path);

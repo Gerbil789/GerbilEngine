@@ -68,9 +68,9 @@ namespace Engine
       m_Registry.emplace(name, std::move(desc));
     }
 
-    ScriptDescriptor& Get(std::string id) { return m_Registry.at(id); }
+    ScriptDescriptor& GetDescriptor(std::string id) { return m_Registry.at(id); }
 
-    std::vector<const ScriptDescriptor*> GetAll() const
+    std::vector<const ScriptDescriptor*> GetAllDescriptors() const
     {
       std::vector<const ScriptDescriptor*> result;
       result.reserve(m_Registry.size());
@@ -85,8 +85,6 @@ namespace Engine
     {
       m_Registry.clear();
     }
-
-
 
   private:
     ScriptRegistry() = default;

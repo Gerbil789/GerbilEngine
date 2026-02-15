@@ -85,7 +85,7 @@ namespace Editor
 		if (mx >= 0 && my >= 0 && mx < (int)m_ViewportSize.x && my < (int)m_ViewportSize.y)
 		{
 			Engine::Uuid uuid = s_EntityIdPass->ReadPixel((uint32_t)mx, (uint32_t)my);
-			if(uuid.IsValid())
+			if(uuid)
 			{
 				m_HoveredEntity = m_Scene->GetEntity(uuid);
 			}

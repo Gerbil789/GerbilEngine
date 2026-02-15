@@ -2,65 +2,51 @@
 #define WEBGPU_CPP_IMPLEMENTATION
 #include "Editor/Core/EditorWindowManager.h"
 #include "Editor/Core/IconManager.h"
+#include "Editor/Core/EditorContext.h"
+#include "Editor/Utility/FileWatcher.h"
 #include "Engine/Core/Time.h"
-
 #include "Engine/Utils/File.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Editor/Core/EditorContext.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Engine/Audio/Audio.h"
-//#include "Engine/Utils/FileWatcher.h"
 #include "Engine/Core/KeyCodes.h"
-
 #include "Engine/Core/Engine.h"
-#include "Engine/Core/API.h"
 #include "Engine/Core/GameContext.h"
-
-
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Script/Script.h"
 #include "Engine/Event/KeyEvent.h"
-
+#include "Engine/Event/WindowEvent.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/SamplerPool.h"
+#include "Engine/Graphics/Camera.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Utils/Path.h"
 #include "Engine/Core/EngineContext.h"
-#include "Engine/Event/ApplicationEvent.h"
-
 #include "Engine/Scene/Scene.h"
-#include "Engine/Core/Window.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Core/Runtime.h"
-
-#include <windows.h>
 
 namespace Editor
 {
-	//Engine::FileWatcher m_FileWatcher;
+	namespace
+	{
+		FileWatcher* m_FileWatcher = nullptr;
+	}
 
-	EditorApp::EditorApp(const ApplicationSpecification& specification)
+	EditorApp::EditorApp(const ApplicationCommandLineArgs& args)
 	{
 		ENGINE_PROFILE_FUNCTION();
 
-		if (specification.args.Count > 1)
-		{
-			auto projectFilePath = specification.args[1];
-			EditorContext::SetProject(Project::Load(projectFilePath));
-		}
-		else
-		{
-			EditorContext::SetProject(Project::Load(Engine::OpenDirectory())); // Prompt user to select project directory
-		}
+		std::filesystem::path projectPath = (args.Count > 1) ? std::filesystem::path(args[1]) : Engine::OpenDirectory();
+		EditorContext::SetProject(Project::Load(projectPath));
 
 		std::filesystem::current_path(GetExecutableDir()); // Set working directory
 
 		Engine::GraphicsContext::Initialize();
 		GLFW::Initialize();
 
-		m_Window = new Engine::Window({ specification.title, 1600, 900, "Resources/Engine/icons/logo.png" });
+		m_Window = new Engine::Window({"Gerbil Editor", 1600, 900, "Resources/Engine/icons/logo.png"});
 		m_Window->SetEventCallback([this](Engine::Event& e) {this->OnEvent(e); });
 
 		Engine::Input::Initialize(*m_Window);
@@ -78,146 +64,74 @@ namespace Editor
 		IconManager::Load("Resources/Editor/icons/icons.png");
 		EditorWindowManager::Initialize(*m_Window);
 
-		//m_FileWatcher = Engine::FileWatcher(EditorContext::GetProject().GetAssetsDirectory());
-		//m_FileWatcher.SetEventCallback([this](Engine::Event& e) {this->OnEvent(e); });
+		m_FileWatcher = new FileWatcher(EditorContext::GetProject().GetAssetsDirectory(), [this](std::unique_ptr<Engine::FileEvent> e) {PushFileEvent(std::move(e)); });
+
+		const Project& project = EditorContext::GetProject();
+		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / BUILD_CONFIG / (project.GetTitle() + ".dll");
+		Engine::ScriptRegistry& registry = Engine::ScriptRegistry::Get();
+		Engine::Runtime::LoadScripts(registry, dllPath);
+
+		Engine::SceneManager::LoadScene(EditorContext::GetProject().GetStartSceneID());
 
 		LOG_INFO("--- Editor initialization complete ---");
 
-		Engine::Uuid startSceneID = EditorContext::GetProject().GetStartSceneID();
-		if (!startSceneID.IsValid())
-		{
-			LOG_WARNING("No valid start scene set in project, creating new scene");
-			Engine::SceneManager::CreateScene(EditorContext::GetProject().GetAssetsDirectory() / "Scenes/empty.scene");
-		}
-		else
-		{
-			Engine::Scene* scene = Engine::AssetManager::GetAsset<Engine::Scene>(startSceneID);
-			if (!scene)
-			{
-				LOG_WARNING("Failed to load start scene with ID: {}, creating new scene", startSceneID);
-				Engine::SceneManager::CreateScene(EditorContext::GetProject().GetAssetsDirectory() / "Scenes/empty.scene");
-			}
-			else
-			{
-				Engine::SceneManager::SetActiveScene(scene);
-			}
-		}
-
-
-		{
-			Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
-			LOG_INFO("Active scene: {}", scene->id);
-
-			auto entities = scene->GetEntities(true);
-			LOG_INFO("Scene has {} entities", entities.size());
-
-			for (auto ent : entities)
-			{
-				LOG_INFO("Entity: '{}' with ID: {}", ent.GetName(), ent.GetUUID());
-			}
-		}
-
 		Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
 
-		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(Engine::Uuid(9667627839419811388));
-		Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::Uuid(9153350241491098746));
+		//TODO: NEVER HARDCODE ASSETS LIKE THIS, THIS IS JUST FOR TESTING PURPOSES
+		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(9667627839419811388);
+		Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(9153350241491098746);
 
-		// Create grid of cubes
-		for(int x = 0; x < 10; x++)
+		for (int x = 0; x < 10; x++)
 		{
-			for(int y = 0; y < 1; y++)
+			for (int y = 0; y < 1; y++)
 			{
-				for(int z = 0; z < 1; z++)
+				for (int z = 0; z < 1; z++)
 				{
 					auto cube = scene->CreateEntity("GridCube");
-					auto& component = cube.AddComponent<Engine::MeshComponent>();
-					component.material = material;
-					component.mesh = mesh;
-					cube.GetComponent<Engine::TransformComponent>().position = { (float)x * 3.0f - (15), (float)y * 3.0f, (float)z * 3.0f - 30};
+					cube.AddComponent<Engine::MeshComponent>(material, mesh);
+					cube.GetComponent<Engine::TransformComponent>().position = { static_cast<float>(x) * 3.0f - (15), static_cast<float>(y) * 3.0f, static_cast<float>(z) * 3.0f - 30 };
 				}
 			}
 		}
 
-		// Camera entity
+		// camera entity
 		{
 			auto cameraEntity = scene->CreateEntity("Camera");
 			auto& component = cameraEntity.AddComponent<Engine::CameraComponent>();
 			std::unique_ptr<Engine::Camera> camera = std::make_unique<Engine::Camera>();
-
 			camera->SetBackground(Engine::Camera::Background::Skybox);
 			component.camera = camera.release();
-
-			cameraEntity.GetComponent<Engine::TransformComponent>().position = { 0.0f, 0.0f, 0.0f };
-			cameraEntity.GetComponent<Engine::TransformComponent>().rotation = { 0.0f, 0.0f, 0.0f };
 			scene->SetActiveCamera(cameraEntity);
 		}
 
-
-		// DLL test
-		std::filesystem::path dllPath = EditorContext::GetProject().GetProjectDirectory() / "bin/windows/Debug/TestProject.dll";
-
-		//check if path is valid
-		if (!std::filesystem::exists(dllPath))
+		// player entity
 		{
-			throw std::runtime_error("DLL path does not exist: " + dllPath.string());
+			auto player = scene->CreateEntity("Player");
+			player.AddComponent<Engine::MeshComponent>(material, mesh);
+
+			auto& scriptComponent = player.AddComponent<Engine::ScriptComponent>();
+			scriptComponent.id = "PlayerController";
+
+			Engine::Script* playerScript = registry.GetDescriptor("PlayerController").factory();
+			playerScript->Self = player;
+			playerScript->OnCreate();
+			scriptComponent.instance = std::move(playerScript);
 		}
-
-		HMODULE gameModule = LoadLibraryA(dllPath.string().c_str());
-		if (!gameModule)
-		{
-			throw std::runtime_error("Failed to load TestProject.dll");
-		}
-
-		using GameRegisterScriptsFn = int(*)(Engine::ScriptRegistry&);
-		auto Game_Register_Fn = (GameRegisterScriptsFn)GetProcAddress(gameModule, "RegisterScripts");
-
-		if (!Game_Register_Fn)
-		{
-			throw std::runtime_error("Failed to load RegisterScripts function from TestProject.dll");
-		}
-
-		Engine::ScriptRegistry& registry = Engine::ScriptRegistry::Get();
-		Game_Register_Fn(registry);
-
-		auto scripts = registry.GetAll();
-
-		LOG_INFO("Total Registered Scripts: {}", scripts.size());
-		for (const auto& script : scripts)
-		{
-			LOG_INFO("Registered Script: {}", script->name);
-		}
-
-		auto player = scene->CreateEntity("Player");
-		auto& component = player.AddComponent<Engine::MeshComponent>();
-		component.material = material;
-		component.mesh = mesh;
-
-		auto& scriptComponent = player.AddComponent<Engine::ScriptComponent>();
-		scriptComponent.id = "PlayerController";
-
-		Engine::Script* playerScript = registry.Get("PlayerController").factory();
-		playerScript->Self = player;
-		playerScript->OnCreate();
-		scriptComponent.instance = std::move(playerScript);
 	}
 
 	EditorApp::~EditorApp()
 	{
-		ENGINE_PROFILE_BEGIN("Shutdown", "profile_shutdown.json");
 		ENGINE_PROFILE_FUNCTION();
-		Engine::Audio::StopAllSounds();
+
+		delete m_FileWatcher;
+		Engine::Audio::Shutdown();
 		EditorWindowManager::Shutdown();
 		IconManager::Unload();
 		Engine::AssetManager::Shutdown();
-
-
-		Engine::Audio::Shutdown();
 		Engine::SamplerPool::Shutdown();
-		Engine::GraphicsContext::Shutdown();
 		delete m_Window;
 		GLFW::Shutdown();
-
-		ENGINE_PROFILE_END();
+		Engine::GraphicsContext::Shutdown();
 	}
 
 	void EditorApp::Run()
@@ -228,29 +142,15 @@ namespace Editor
 			ENGINE_PROFILE_SCOPE("RunLoop");
 
 			Engine::Time::BeginFrame();
+			ProcessFileEvents(); // handle file events from FileWatcher
 			m_Window->OnUpdate(); // poll events
 
 			if (m_Window->IsMinimized()) continue;
 
-			float delta = Engine::Time::DeltaTime();
-
-			//// update scripts, TODO: update this only in runtime
-			//for(auto& ent : Engine::SceneManager::GetActiveScene()->GetEntities<Engine::ScriptComponent>())
-			//{
-			//	auto& scriptComp = ent.GetComponent<Engine::ScriptComponent>();
-			//	if (scriptComp.instance)
-			//	{
-			//		scriptComp.instance->OnUpdate(delta);
-			//	}
-			//}
-
 			EditorWindowManager::OnUpdate(); // process editor UI
-
 			EditorCommandManager::Flush(); // execute queued commands
 
-			//m_FileWatcher.OnUpdate(); // check for file changes
-
-			Engine::Runtime::Update(delta);
+			Engine::Runtime::Update();
 		}
 	}
 
@@ -269,8 +169,26 @@ namespace Editor
 
 		EditorCommandManager::OnEvent(e);
 		EditorWindowManager::OnEvent(e);
-
 		Engine::AssetManager::OnEvent(e);
 		dispatcher.Dispatch<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
+	}
+
+	void EditorApp::PushFileEvent(std::unique_ptr<Engine::FileEvent> e)
+	{
+		std::lock_guard<std::mutex> lock(m_FileEventMutex);
+		m_FileEventQueue.push(std::move(e));
+	}
+
+	void EditorApp::ProcessFileEvents()
+	{
+		std::lock_guard<std::mutex> lock(m_FileEventMutex);
+
+		while (!m_FileEventQueue.empty())
+		{
+			auto& event = m_FileEventQueue.front();
+			LOG_INFO("Processing file event: {}", event->GetPath());
+			//OnEvent(*event);
+			m_FileEventQueue.pop();
+		}
 	}
 }

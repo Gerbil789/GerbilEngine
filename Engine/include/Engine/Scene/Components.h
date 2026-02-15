@@ -53,6 +53,9 @@ namespace Engine
 	{
 		Material* material = nullptr;
 		Mesh* mesh = nullptr;
+
+		MeshComponent() = default;
+		MeshComponent(Material* material, Mesh* mesh) : material(material), mesh(mesh) {}
 	};
 
 	struct ENGINE_API CameraComponent

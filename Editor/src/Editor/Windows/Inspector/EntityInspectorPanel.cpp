@@ -307,7 +307,7 @@ namespace Editor
 
 		{
 			PropertyRow row("Script");
-			std::vector<const Engine::ScriptDescriptor*> scripts = registry.GetAll();
+			std::vector<const Engine::ScriptDescriptor*> scripts = registry.GetAllDescriptors();
 			std::vector<std::string> scriptNames;
 			scriptNames.reserve(scripts.size());
 			for (const auto* desc : scripts)
@@ -339,7 +339,7 @@ namespace Editor
 
 		ImGui::Separator();
 
-		Engine::ScriptDescriptor& desc = registry.Get(component.id);
+		Engine::ScriptDescriptor& desc = registry.GetDescriptor(component.id);
 
 		for (const Engine::ScriptField& field : desc.fields)
 		{

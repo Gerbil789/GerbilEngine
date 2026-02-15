@@ -9,17 +9,69 @@ namespace Engine
 		m_Registry.clear();
 	}
 
-	Entity Scene::CreateEntity(const std::string& name, const glm::vec3& position)
+	Scene* Scene::Copy(Scene* other)
 	{
-		return CreateEntity(Uuid(), name, position);
+		Scene* newScene = new Scene();
+		auto& srcRegistry = other->m_Registry;
+		auto& dstRegistry = newScene->m_Registry;
+
+		std::unordered_map<Uuid, entt::entity> uuidToEntityMap;
+
+		auto view = srcRegistry.view<IdentityComponent>();
+		for (auto srcEntity : view)
+		{
+			const auto& id = srcRegistry.get<IdentityComponent>(srcEntity);
+			const auto& name = srcRegistry.get<NameComponent>(srcEntity);
+
+			Entity newEntity = newScene->CreateEntity(id.id, name.name);
+
+			const auto& transform = srcRegistry.get<TransformComponent>(srcEntity);
+			newEntity.GetComponent<TransformComponent>() = transform;
+
+			uuidToEntityMap[id.id] = newEntity.Handle();
+		}
+
+		auto copyComponent = [&](auto typeTag)
+			{
+				using Component = decltype(typeTag);
+
+				auto componentView = srcRegistry.view<Component>();
+				for (auto srcEntity : componentView)
+				{
+					const auto& id = srcRegistry.get<IdentityComponent>(srcEntity);
+					entt::entity dstEntity = uuidToEntityMap[id.id];
+
+					const auto& srcComponent = componentView.get<Component>(srcEntity);
+					dstRegistry.emplace_or_replace<Component>(dstEntity, srcComponent);
+				}
+			};
+
+		copyComponent(MeshComponent{});
+		copyComponent(ScriptComponent{});
+		copyComponent(LightComponent{});
+		copyComponent(CameraComponent{});
+
+
+		if (other->m_ActiveCamera != entt::null)
+		{
+			const auto& id = srcRegistry.get<IdentityComponent>(other->m_ActiveCamera);
+			newScene->m_ActiveCamera = uuidToEntityMap[id.id];
+		}
+
+		return newScene;
 	}
 
-	Entity Scene::CreateEntity(Uuid uuid, const std::string& name, const glm::vec3& position)
+	Entity Scene::CreateEntity(const std::string& name)
+	{
+		return CreateEntity(Uuid(), name);
+	}
+
+	Entity Scene::CreateEntity(Uuid uuid, const std::string& name)
 	{
 		entt::entity handle = m_Registry.create();
 		m_Registry.emplace<IdentityComponent>(handle, uuid, true);
 		m_Registry.emplace<NameComponent>(handle, name);
-		m_Registry.emplace<TransformComponent>(handle, position);
+		m_Registry.emplace<TransformComponent>(handle);
 		return Entity{ handle, &m_Registry };
 	}
 

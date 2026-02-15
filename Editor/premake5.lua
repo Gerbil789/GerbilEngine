@@ -68,11 +68,11 @@ filter "system:windows"
   disablewarnings { "4251" } -- 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
 
 filter "configurations:Debug"
-	defines { "DEBUG" }
+	defines { "DEBUG", "BUILD_CONFIG=\"Debug\"" }
 	symbols "on"
 	runtime "Debug"
 
 filter "configurations:Release"
-	defines { "RELEASE" }
+	defines { "RELEASE", "BUILD_CONFIG=\"Release\"" }
 	optimize "on"
 	runtime "Release"

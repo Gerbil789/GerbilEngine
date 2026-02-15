@@ -7,6 +7,7 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Script/Script.h"
+#include "Engine/Core/Time.h"
 
 namespace Engine
 {
@@ -40,23 +41,26 @@ namespace Engine
 	void GameInstance::Initialize(Engine::Scene* scene)
 	{
 		m_Running = true;
+		m_ActiveScene = Scene::Copy(scene);
 
-		auto entities = scene->GetEntities(true);
-		LOG_INFO("GameInstance - Initialized with scene ID: {}, containing {} entities", scene->id, entities.size());
+		auto entities = m_ActiveScene->GetEntities(true);
+		LOG_INFO("GameInstance - Initialized with scene ID: {}, containing {} entities", m_ActiveScene->id, entities.size());
 
-		m_Renderer.SetScene(scene);
+		m_Renderer.SetScene(m_ActiveScene);
 
-		m_ActiveCameraEntity = scene->GetActiveCamera();
+		m_ActiveCameraEntity = m_ActiveScene->GetActiveCamera();
 		auto& cameraComponent = m_ActiveCameraEntity.GetComponent<Engine::CameraComponent>();
 		m_Renderer.SetCamera(cameraComponent.camera);
 	}
 
-	void GameInstance::Update(float delta)
+	void GameInstance::Update()
 	{
 		if (m_GameWindow->IsMinimized()) return;
 
+		float delta = Engine::Time::DeltaTime();
+
 		// update scripts
-		for (auto& ent : Engine::SceneManager::GetActiveScene()->GetEntities<Engine::ScriptComponent>())
+		for (auto& ent : m_ActiveScene->GetEntities<Engine::ScriptComponent>())
 		{
 			auto& scriptComp = ent.GetComponent<Engine::ScriptComponent>();
 			if (scriptComp.instance)
@@ -108,6 +112,8 @@ namespace Engine
 	{
 		LOG_INFO("========== Closing game instance ===========");
 		m_Running = false;
+		delete m_ActiveScene;
+		m_ActiveScene = nullptr;
 		OnExit();
 	}
 

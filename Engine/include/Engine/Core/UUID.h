@@ -15,7 +15,6 @@ namespace Engine
 
     bool operator==(const Uuid& other) const { return m_Value == other.m_Value; }
     bool operator!=(const Uuid& other) const { return m_Value != other.m_Value; }
-		bool IsValid() const { return m_Value != 0; }
 		operator uint64_t() const { return m_Value; }
 
   private:
