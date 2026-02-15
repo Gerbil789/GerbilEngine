@@ -13,6 +13,7 @@ namespace Editor
 		void DrawTransform();
 		void DrawCamera();
 		void DrawMesh();
+		void DrawLight();
 		void DrawAudioListener();
 		void DrawAudioSource();
 		void DrawScript();

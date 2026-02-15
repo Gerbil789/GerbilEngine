@@ -2,6 +2,7 @@
 
 #include "Editor/Command/ICommand.h"
 #include "Engine/Scene/SceneManager.h"
+#include "Engine/Scene/Scene.h"
 #include "Editor/Core/EditorContext.h"
 
 namespace Editor

@@ -11,54 +11,54 @@ Assets:
   - ID: 1626069878057041495
     Path: Audio\Ievan Polkka (Medieval Cover).mp3
     Type: Audio
-  - ID: 9153350241491098746
-    Path: Meshes\cube.glb
-    Type: Mesh
   - ID: 10975628317494508874
     Path: Textures\spritesheet.png
     Type: Texture
   - ID: 1864499238232293066
     Path: Audio\music.mp3
     Type: Audio
-  - ID: 13428705016315603756
-    Path: Textures\favorite.png
-    Type: Texture
+  - ID: 9153350241491098746
+    Path: Meshes\cube.glb
+    Type: Mesh
   - ID: 3088373566504746988
     Path: Meshes\bad cube.glb
     Type: Mesh
-  - ID: 13715123166120170876
-    Path: Textures\bricks_wall\height.png
+  - ID: 13428705016315603756
+    Path: Textures\favorite.png
     Type: Texture
   - ID: 9667627839419811388
     Path: Materials\Test.material
     Type: Material
+  - ID: 13715123166120170876
+    Path: Textures\bricks_wall\height.png
+    Type: Texture
   - ID: 9802921481971375387
     Path: Meshes\bad cube 2.glb
     Type: Mesh
   - ID: 2873530127775231289
     Path: Meshes\cone.glb
     Type: Mesh
-  - ID: 5673680266398117148
-    Path: Textures\bricks_wall\normal.png
-    Type: Texture
   - ID: 5906759997218235868
     Path: Meshes\Rocks\rock_1.glb
     Type: Mesh
+  - ID: 5673680266398117148
+    Path: Textures\bricks_wall\normal.png
+    Type: Texture
   - ID: 337363563088221182
     Path: Meshes\Rocks\rock_2.glb
+    Type: Mesh
+  - ID: 838677727696996058
+    Path: Meshes\Rocks\rock_3.glb
     Type: Mesh
   - ID: 6168044906402137882
     Path: Textures\metal_plates\roughness.png
     Type: Texture
-  - ID: 838677727696996058
-    Path: Meshes\Rocks\rock_3.glb
+  - ID: 8403485442075291592
+    Path: Meshes\Rocks\rock_4.glb
     Type: Mesh
   - ID: 7346751248309590408
     Path: Textures\tile.png
     Type: Texture
-  - ID: 8403485442075291592
-    Path: Meshes\Rocks\rock_4.glb
-    Type: Mesh
   - ID: 13061213637319697236
     Path: Meshes\Rocks\rock_5.glb
     Type: Mesh
@@ -71,12 +71,12 @@ Assets:
   - ID: 16538296205849696160
     Path: Scenes\MyScene.scene
     Type: Scene
-  - ID: 1532821608029403520
-    Path: Textures\background.png
-    Type: Texture
   - ID: 10614378585745839232
     Path: Shaders\Dev.wgsl
     Type: Shader
+  - ID: 1532821608029403520
+    Path: Textures\background.png
+    Type: Texture
   - ID: 9538445625437357667
     Path: Shaders\Flat.wgsl
     Type: Shader
@@ -86,11 +86,11 @@ Assets:
   - ID: 11191491332555772085
     Path: Textures\bricks_wall\albedo.png
     Type: Texture
-  - ID: 18379026084475814552
-    Path: Textures\metal_plates\normal.png
-    Type: Texture
   - ID: 11167953401946863704
     Path: Textures\bricks_wall\ambient.png
+    Type: Texture
+  - ID: 18379026084475814552
+    Path: Textures\metal_plates\normal.png
     Type: Texture
   - ID: 2667654944998561291
     Path: Textures\bricks_wall\roughness.png
@@ -98,11 +98,11 @@ Assets:
   - ID: 17636335620445898322
     Path: Textures\concrete_pillar\ambient.png
     Type: Texture
-  - ID: 13374189058442281770
-    Path: Textures\concrete_pillar\normal.png
-    Type: Texture
   - ID: 3932435452252890858
     Path: Textures\concrete_pillar\color.png
+    Type: Texture
+  - ID: 13374189058442281770
+    Path: Textures\concrete_pillar\normal.png
     Type: Texture
   - ID: 14561975446468220054
     Path: Textures\concrete_pillar\height.png

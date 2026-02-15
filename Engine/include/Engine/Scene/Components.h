@@ -56,6 +56,12 @@ namespace Engine
 
 		MeshComponent() = default;
 		MeshComponent(Material* material, Mesh* mesh) : material(material), mesh(mesh) {}
+
+		void Reset()
+		{
+			material = nullptr;
+			mesh = nullptr;
+		}
 	};
 
 	struct ENGINE_API CameraComponent
@@ -73,6 +79,17 @@ namespace Engine
 		float innerAngle = 30.0f;
 		float outerAngle = 50.0f;
 		glm::vec3 attenuation = { 1.0f, 0.09f, 0.032f }; // Constant, Linear, Quadratic
+
+		void Reset()
+		{
+			type = LightType::Point;
+			color = { 1.0f, 1.0f, 1.0f };
+			intensity = 1.0f;
+			range = 10.0f;
+			innerAngle = 30.0f;
+			outerAngle = 50.0f;
+			attenuation = { 1.0f, 0.09f, 0.032f };
+		}
 	};
 
 	struct ENGINE_API AudioSourceComponent
@@ -92,5 +109,11 @@ namespace Engine
 	{
 		std::string id;
 		Script* instance = nullptr;
+
+		void Reset()
+		{
+			id.clear();
+			instance = nullptr;
+		}	
 	};
 }

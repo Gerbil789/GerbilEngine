@@ -3,7 +3,7 @@
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Command/EditorCommandManager.h"
-#include "Editor/Command/Entity/TransformEntity.h"
+#include "Editor/Command/TransformEntity.h"
 #include "Engine/Core/Runtime.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
@@ -15,6 +15,7 @@
 #include "Engine/Graphics/RenderPass/WireframePass.h"
 #include "Engine/Graphics/RenderPass/NormalPass.h"
 #include "Engine/Graphics/RenderPass/EntityIdPass.h"
+#include "Engine/Graphics/RenderPass/LightPass.h"
 
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -29,6 +30,7 @@ namespace Editor
 	static Engine::OpaquePass* s_OpaquePass = nullptr;
 	static Engine::WireframePass* s_WireframePass = nullptr;
 	static Engine::NormalPass* s_NormalPass = nullptr;
+	static Engine::LightPass* s_LightPass = nullptr;
 
 	ViewportWindow::ViewportWindow()
 	{
@@ -43,6 +45,9 @@ namespace Editor
 
 		s_EntityIdPass = new Engine::EntityIdPass();
 		m_Renderer.AddPass(s_EntityIdPass);
+
+		s_LightPass = new Engine::LightPass();
+		m_Renderer.AddPass(s_LightPass);
 
 		s_NormalPass = new Engine::NormalPass();
 		s_NormalPass->m_Enabled = false;
@@ -115,6 +120,7 @@ namespace Editor
 		if (ImGui::BeginCombo("##ViewportOptions", "Passes"))
 		{
 			ImGui::Checkbox("Opaque", &s_OpaquePass->m_Enabled);
+			ImGui::Checkbox("Light", &s_LightPass->m_Enabled);
 			ImGui::Checkbox("Normal", &s_NormalPass->m_Enabled);
 			ImGui::Checkbox("Wireframe", &s_WireframePass->m_Enabled);
 			//ImGui::Checkbox("Debug");
@@ -312,8 +318,8 @@ namespace Editor
 				after.push_back(afterData);
 			}
 
+			EditorCommandManager::Enqueue(std::make_unique<TransformEntitiesCommand>(selection, before, after));
 
-			EditorCommandManager::ExecuteCommand<TransformEntitiesCommand>(selection, before, after);
 		}
 
 		m_GizmoPreviouslyUsed = isUsing;

@@ -5,9 +5,7 @@
 #include "Engine/Core/Input.h"
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Command/EditorCommandManager.h"
-#include "Editor/Command/Entity/CreateEntity.h"
-#include "Editor/Command/Entity/DeleteEntity.h"
-#include "Editor/Command/Entity/RenameEntity.h"
+#include "Engine/Scene/SceneManager.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
@@ -60,7 +58,7 @@ namespace Editor
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
-				EditorCommandManager::ExecuteCommand<CreateEntityCommand>("Empty");
+				EditorCommandManager::CreateEntity("Empty");
 			}
 			ImGui::EndPopup();
 		}
@@ -122,11 +120,6 @@ namespace Editor
 			{
 				entityDeleted = true;
 			}
-
-			if (ImGui::MenuItem("Rename"))
-			{
-				EditorCommandManager::ExecuteCommand<RenameEntityCommand>(entity, "BRUH");
-			}
 			ImGui::EndPopup();
 		}
 
@@ -150,7 +143,7 @@ namespace Editor
 
 		if (entityDeleted) //TODO: is delayed deletion necessary?
 		{
-			EditorCommandManager::ExecuteCommand<DeleteEntityCommand>(entity);
+			EditorCommandManager::DeleteEntity(entity); // <---- its already deferred in here 
 		}
 
 		ImGui::PopID();

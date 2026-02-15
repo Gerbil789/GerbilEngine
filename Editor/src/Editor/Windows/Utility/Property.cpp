@@ -1,6 +1,7 @@
 #include "Property.h"
 #include "Engine/Asset/AssetManager.h"
 #include <glm/gtc/type_ptr.hpp>
+#include <array>
 
 namespace Editor
 {
@@ -65,14 +66,14 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult IntField(const char* label, int& value)
+	PropertyEditResult IntField(const std::string& label, int& value, int min, int max)
 	{
 		PropertyEditResult result;
 
-		ImGui::PushID(label);
+		ImGui::PushID(label.c_str());
 
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-		if (ImGui::DragInt("##input", &value, 1.0f, 0, 0, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
+		if (ImGui::DragInt("##input", &value, 1.0f, min, max, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
 		{
 			result.changed = true;
 		}
@@ -86,11 +87,11 @@ namespace Editor
 
 	}
 
-	PropertyEditResult FloatField(const char* label, float& value, float min, float max)
+	PropertyEditResult FloatField(const std::string& label, float& value, float min, float max)
 	{
 		PropertyEditResult result;
 
-		ImGui::PushID(label);
+		ImGui::PushID(label.c_str());
 
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 		if (ImGui::DragFloat(("##" + std::string(label)).c_str(), &value, 0.05f, min, max, "%.2f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
@@ -106,10 +107,10 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult FloatSliderField(const char* label, float& value, float min, float max)
+	PropertyEditResult FloatSliderField(const std::string& label, float& value, float min, float max)
 	{
 		PropertyEditResult result;
-		ImGui::PushID(label);
+		ImGui::PushID(label.c_str());
 
 		float fullWidth = ImGui::GetContentRegionAvail().x;
 		float inputWidth = 70.0f;
@@ -138,10 +139,10 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult Vec2Field(const char* label, glm::vec2& value)
+	PropertyEditResult Vec2Field(const std::string& label, glm::vec2& value)
 	{
 		PropertyEditResult result;
-		ImGui::PushID(label);
+		ImGui::PushID(label.c_str());
 
 		//TODO: this is not perfectly aligned with other fields...
 		//float fieldWidth = ImGui::GetContentRegionAvail().x / 2.0f - ImGui::GetStyle().ItemSpacing.x - 14.0f;
@@ -175,10 +176,10 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult Vec3Field(const char* label, glm::vec3& value)
+	PropertyEditResult Vec3Field(const std::string& label, glm::vec3& value)
 	{
 		PropertyEditResult result;
-		ImGui::PushID(label);
+		ImGui::PushID(label.c_str());
 
 		float itemSpacing = ImGui::GetStyle().ItemSpacing.x;
 		float fullWidth = ImGui::GetContentRegionAvail().x - itemSpacing;
@@ -209,10 +210,10 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult BoolField(const char* label, bool& value)
+	PropertyEditResult BoolField(const std::string& label, bool& value)
 	{
 		PropertyEditResult result;
-		ImGui::PushID(label);
+		ImGui::PushID(label.c_str());
 		if (ImGui::Checkbox("##checkbox", &value))
 		{
 			result.changed = true;
@@ -222,13 +223,12 @@ namespace Editor
 		result.finished = ImGui::IsItemDeactivatedAfterEdit();
 		ImGui::PopID();
 		return result;
-		
 	}
 
-	bool FloatSliderControl(const char* label, float& value, float min, float max)
+	bool FloatSliderControl(const std::string& label, float& value, float min, float max)
 	{
 		bool valueChanged = false;
-		ImGui::PushID(label);
+		ImGui::PushID(label.c_str());
 		ImGui::PushItemWidth(-1);
 		if (ImGui::SliderFloat("##value", &value, min, max))
 		{
@@ -240,10 +240,10 @@ namespace Editor
 		return valueChanged;
 	}
 
-	PropertyEditResult EnumField(const char* label, int& value, const std::vector<std::string>& options)
+	PropertyEditResult EnumField(const std::string& label, int& value, const std::vector<std::string>& options)
 	{
 		PropertyEditResult result;
-		ImGui::PushID(label);
+		ImGui::PushID(label.c_str());
 
 		if (ImGui::BeginCombo("##value", options[value].c_str()))
 		{
@@ -271,11 +271,11 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult ColorField(const char* label, glm::vec4& color)
+	PropertyEditResult ColorField(const std::string& label, glm::vec4& color)
 	{
 		PropertyEditResult result;
 
-		ImGui::PushID(label);
+		ImGui::PushID(label.c_str());
 		ImGui::BeginGroup(); 
 
 		if (ImGui::ColorButton("##ColorPreview", ImVec4(color.r, color.g, color.b, color.a), ImGuiColorEditFlags_NoPicker, ImVec2(ImGui::GetContentRegionAvail().x, 24.0f)))
@@ -299,11 +299,11 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult ColorField(const char* label, glm::vec3& color)
+	PropertyEditResult ColorField(const std::string& label, glm::vec3& color)
 	{
 		PropertyEditResult result;
 
-		ImGui::PushID(label);
+		ImGui::PushID(label.c_str());
 		ImGui::BeginGroup();  // Group the controls to keep them together
 
 
@@ -326,6 +326,33 @@ namespace Editor
 
 		ImGui::PopID();
 
+		return result;
+	}
+
+	PropertyEditResult TextField(const std::string& label, std::string& text)
+	{
+		static std::array<char, 256> buffer{};
+
+		PropertyEditResult result;
+		ImGui::PushID(label.c_str());
+		ImGui::PushItemWidth(-1);
+
+		if (buffer[0] == '\0')
+		{
+			std::snprintf(buffer.data(), buffer.size(), "%s", text.c_str());
+		}
+
+		if (ImGui::InputText("##Text", buffer.data(), buffer.size())) 
+		{ 
+			text = buffer.data(); 
+			result.changed = true;
+		}
+
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+		ImGui::PopItemWidth();
+		ImGui::PopID();
 		return result;
 	}
 }

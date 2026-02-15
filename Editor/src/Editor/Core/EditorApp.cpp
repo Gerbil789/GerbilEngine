@@ -165,9 +165,13 @@ namespace Editor
 				{
 					m_Window->SetMode((m_Window->GetMode() == Engine::WindowMode::BorderlessFullscreen) ? Engine::WindowMode::Windowed : Engine::WindowMode::BorderlessFullscreen);
 				}
+
+				if ((e.GetKey() == Engine::Key::Z || e.GetKey() == Engine::Key::Y) && Engine::Input::IsKeyPressed(Engine::Key::LeftControl))
+				{
+					(!Engine::Input::IsKeyPressed(Engine::Key::LeftShift) ? EditorCommandManager::Undo() : EditorCommandManager::Redo());
+				}
 			});
 
-		EditorCommandManager::OnEvent(e);
 		EditorWindowManager::OnEvent(e);
 		Engine::AssetManager::OnEvent(e);
 		dispatcher.Dispatch<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });

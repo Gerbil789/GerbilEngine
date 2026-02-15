@@ -3,7 +3,7 @@
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Editor/Windows/Utility/Property.h"
 #include "Editor/Command/EditorCommandManager.h"
-#include "Editor/Command/Entity/TransformEntity.h"
+#include "Editor/Command/TransformEntity.h"
 #include "Editor/Core/EditorContext.h"
 
 #include "Engine/Scene/Components.h"
@@ -21,31 +21,29 @@
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Script/Script.h"
 
-#include "Editor/Command/Component/MeshCommand.h"
-#include "Editor/Command/Component/TransformCommand.h"
-#include "Editor/Command/Component/ScriptCommand.h"
+#include "Editor/Command/PropertyChangeCommand.h"
+#include "Editor/Command/ComponentSnapshotCommand.h"
+#include "Editor/Command/AddComponentCommand.h"
+#include "Editor/Command/RemoveComponentCommand.h"
 
 namespace Editor
 {
 	struct EntityHeader
 	{
-		std::array<char, 256> buffer{};
-
 		EntityHeader(Engine::Entity entity)
 		{
-			auto& name = entity.GetComponent<Engine::NameComponent>().name;
+			ImGui::PushID(static_cast<int>(entity.GetUUID()));
 
-			if (buffer[0] == '\0')
-			{
-				std::snprintf(buffer.data(), buffer.size(), "%s", name.c_str());
-			}
-
-			ImGui::PushID((int)entity.GetUUID());
-
-			ImGui::PushItemWidth(-1);
-			ImGui::Checkbox("##Enabled", &entity.GetComponent<Engine::IdentityComponent>().enabled);
+			bool& enabled = entity.GetComponent<Engine::IdentityComponent>().enabled;
+			BoolField("Enabled", enabled);
 			ImGui::SameLine();
-			if (ImGui::InputText("##Name", buffer.data(), buffer.size())) { name = buffer.data(); }
+
+			std::string& name = entity.GetComponent<Engine::NameComponent>().name;
+			if(TextField("Name", name).finished)
+			{
+				//TODO: somehow store the original name
+				//EditorCommandManager::ModifyComponent<Engine::NameComponent>(entity, { name }, { name });
+			}
 		}
 
 		~EntityHeader()
@@ -56,7 +54,7 @@ namespace Editor
 
 	struct ComponentMenuAction
 	{
-		const char* label;
+		const std::string label;
 		std::function<void()> action;
 		bool enabled = true;
 	};
@@ -75,11 +73,7 @@ namespace Editor
 			{
 				for (const auto& a : actions)
 				{
-					if (!a.label) continue;
-
-					bool enabled = a.action && a.enabled;
-
-					if (ImGui::MenuItem(a.label, nullptr, false, enabled) && enabled)
+					if (ImGui::MenuItem(a.label.c_str(), nullptr, false, a.enabled) && a.enabled)
 					{
 						a.action();
 					}
@@ -95,7 +89,8 @@ namespace Editor
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
-			{ "Reset", [this] { EditorCommandManager::EnqueueCommand<ResetTransformComponentCommand>(m_Entity); } }
+			{ "Reset", [this] {auto before = m_Entity.GetComponent<Engine::TransformComponent>(); auto after = before; after.Reset();
+						EditorCommandManager::ModifyComponent<Engine::TransformComponent>(m_Entity, before, after); } },
 		};
 
 		ComponentHeader header("Transform", menuActions);
@@ -134,7 +129,7 @@ namespace Editor
 
 			if (memcmp(&s_TransformBefore, &after, sizeof(TransformData)) != 0) //TODO: float comparison is unsafe
 			{
-				EditorCommandManager::ExecuteCommand<TransformEntityCommand>(m_Entity, s_TransformBefore, after);
+				EditorCommandManager::Enqueue(std::make_unique<TransformEntityCommand>(m_Entity, s_TransformBefore, after));
 			}
 		}
 	}
@@ -192,8 +187,10 @@ namespace Editor
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
-			{ "Reset", [this] { EditorCommandManager::EnqueueCommand<ResetMeshComponentCommand>(m_Entity); } },
-			{ "Remove", [this] { EditorCommandManager::EnqueueCommand<RemoveMeshComponentCommand>(m_Entity); } }
+			{ "Reset", [this] {auto before = m_Entity.GetComponent<Engine::MeshComponent>(); auto after = before; after.Reset();
+						EditorCommandManager::ModifyComponent<Engine::MeshComponent>(m_Entity, before, after); } },
+
+			{ "Remove", [this] {EditorCommandManager::RemoveComponent<Engine::MeshComponent>(m_Entity); } }
 		};
 
 		ComponentHeader header("Mesh", menuActions);
@@ -230,6 +227,64 @@ namespace Editor
 		}
 	}
 
+	void EntityInspectorPanel::DrawLight()
+	{
+		if (!m_Entity.HasComponent<Engine::LightComponent>()) return;
+		auto& component = m_Entity.GetComponent<Engine::LightComponent>();
+
+		const std::initializer_list<ComponentMenuAction> menuActions
+		{
+			{ "Reset", [this] {auto before = m_Entity.GetComponent<Engine::LightComponent>(); auto after = before; after.Reset();
+						EditorCommandManager::ModifyComponent<Engine::LightComponent>(m_Entity, before, after); } },
+
+			{ "Remove", [this] {EditorCommandManager::RemoveComponent<Engine::LightComponent>(m_Entity); } }
+		};
+
+		ComponentHeader header("Light", menuActions);
+		if (!header.open) return;
+
+		PropertyTable table;
+		if (!table) return;
+
+		{
+			PropertyRow row("Type");
+			Engine::LightType type = component.type;
+			int current = static_cast<int>(type);
+			if (EnumField("Type", current, { "Point", "Directional", "Spot" }).changed)
+			{
+				component.type = static_cast<Engine::LightType>(current);
+			}
+		}
+
+		{
+			PropertyRow row("Color");
+			ColorField("Color", component.color);
+		}
+
+		{
+			PropertyRow row("Intensity");
+			FloatField("Intensity", component.intensity, 0.0f);
+		}
+
+		if(component.type != Engine::LightType::Directional)
+		{
+			PropertyRow row("Range");
+			FloatField("Range", component.range, 0.0f);
+		}
+
+		if (component.type == Engine::LightType::Spot)
+		{
+			{
+				PropertyRow row("Inner Angle");
+				FloatField("Inner Angle", component.innerAngle, 0.0f, 90.0f);
+			}
+			{
+				PropertyRow row("Outer Angle");
+				FloatField("Outer Angle", component.outerAngle, 0.0f, 90.0f);
+			}
+		}
+	}
+
 	void EntityInspectorPanel::DrawAudioListener()
 	{
 		if (!m_Entity.HasComponent<Engine::AudioListenerComponent>()) return;
@@ -244,7 +299,9 @@ namespace Editor
 
 		{
 			PropertyRow row("Is Active");
-			ImGui::Checkbox("Is Active", &component.isActive);
+			bool& isActive = component.isActive;
+			BoolField("Is Active", isActive);
+
 		}
 	}
 
@@ -284,16 +341,16 @@ namespace Editor
 		}
 	}
 
-
-
 	void EntityInspectorPanel::DrawScript()
 	{
 		if (!m_Entity.HasComponent<Engine::ScriptComponent>()) return;
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
-			{ "Reset", [this] { EditorCommandManager::EnqueueCommand<ResetScriptComponentCommand>(m_Entity); } },
-			{ "Remove", [this] { EditorCommandManager::EnqueueCommand<RemoveScriptComponentCommand>(m_Entity); } }
+			{ "Reset", [this] {auto before = m_Entity.GetComponent<Engine::ScriptComponent>(); auto after = before; after.Reset();
+						EditorCommandManager::ModifyComponent<Engine::ScriptComponent>(m_Entity, before, after); } },
+
+			{ "Remove", [this] {EditorCommandManager::RemoveComponent<Engine::ScriptComponent>(m_Entity); } }
 		};
 
 		ComponentHeader header("Script", menuActions);
@@ -417,14 +474,7 @@ namespace Editor
 			AddComponentEntry{ "Light",         [](Engine::Entity e) { e.AddComponent<Engine::LightComponent>(); } },
 			AddComponentEntry{ "AudioSource",   [](Engine::Entity e) { e.AddComponent<Engine::AudioSourceComponent>(); } },
 			AddComponentEntry{ "AudioListener", [](Engine::Entity e) { e.AddComponent<Engine::AudioListenerComponent>(); } },
-			AddComponentEntry{ "Script",				[](Engine::Entity e)
-			{
-				/*auto& component = */e.AddComponent<Engine::ScriptComponent>();
-				//component.id = Engine::ScriptRegistry::GetByName("PlayerController")->ID;
-				//component.data = malloc(sizeof(float)); // Temporary
-				//float value = 0.0f;
-				//memcpy(component.data, &value, sizeof(float));
-			} }
+			AddComponentEntry{ "Script",				[](Engine::Entity e) { e.AddComponent<Engine::ScriptComponent>(); } }
 		};
 
 		if (ImGui::BeginPopup("AddComponent"))
@@ -451,6 +501,7 @@ namespace Editor
 		DrawTransform();
 		DrawCamera();
 		DrawMesh();
+		DrawLight();
 		DrawAudioListener();
 		DrawAudioSource();
 		DrawScript();

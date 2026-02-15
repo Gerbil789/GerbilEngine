@@ -67,8 +67,7 @@ namespace Editor
 
 		~DragDropTarget()
 		{
-			if (active)
-				ImGui::EndDragDropTarget();
+			if (active) ImGui::EndDragDropTarget();
 		}
 
 		template<typename Fn>
@@ -77,7 +76,9 @@ namespace Editor
 			if (!active) return;
 
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(type))
+			{
 				fn(payload->Data);
+			}
 		}
 
 	private:
@@ -85,13 +86,14 @@ namespace Editor
 	};
 
 	PropertyEditResult TextureField(const std::string& label, Engine::Texture2D*& texture);
-	PropertyEditResult IntField(const char* label, int& value);
-	PropertyEditResult FloatField(const char* label, float& value, float min = 0.0f, float max = 1.0f);
-	PropertyEditResult FloatSliderField(const char* label, float& value, float min = 0.0f, float max = 1.0f);
-	PropertyEditResult Vec2Field(const char* label, glm::vec2& value);
-	PropertyEditResult Vec3Field(const char* label, glm::vec3& value);
-	PropertyEditResult BoolField(const char* label, bool& value);
-	PropertyEditResult ColorField(const char* label, glm::vec4& color);
-	PropertyEditResult ColorField(const char* label, glm::vec3& color);
-	PropertyEditResult EnumField(const char* label, int& value, const std::vector<std::string>& options);
+	PropertyEditResult IntField(const std::string& label, int& value, int min = INT_MIN, int max = INT_MAX);
+	PropertyEditResult FloatField(const std::string& label, float& value, float min = FLT_MIN, float max = FLT_MAX);
+	PropertyEditResult FloatSliderField(const std::string& label, float& value, float min = FLT_MIN, float max = FLT_MAX);
+	PropertyEditResult Vec2Field(const std::string& label, glm::vec2& value);
+	PropertyEditResult Vec3Field(const std::string& label, glm::vec3& value);
+	PropertyEditResult BoolField(const std::string& label, bool& value);
+	PropertyEditResult ColorField(const std::string& label, glm::vec4& color);
+	PropertyEditResult ColorField(const std::string& label, glm::vec3& color);
+	PropertyEditResult EnumField(const std::string& label, int& value, const std::vector<std::string>& options);
+	PropertyEditResult TextField(const std::string& label, std::string& text);
 }

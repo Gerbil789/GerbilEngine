@@ -1,3 +1,14 @@
+struct VertexInput {
+	@location(0) position: vec3f,
+	@location(1) normal: vec3f,
+	@location(2) uv: vec2f,
+};
+
+struct VertexOutput {
+	@builtin(position) position: vec4f,
+	@location(0) uv: vec2f,
+};
+
 struct FrameUniforms {
 	view: mat4x4f,
 	projection: mat4x4f,
@@ -18,17 +29,6 @@ struct MaterialUniforms {
 @group(2) @binding(0) var<uniform> uMaterialUniforms: MaterialUniforms;
 @group(2) @binding(1) var Sampler: sampler;
 @group(2) @binding(2) var albedoTexture: texture_2d<f32>;
-
-struct VertexInput {
-	@location(0) position: vec3f,
-	@location(1) normal: vec3f,
-	@location(2) uv: vec2f,
-};
-
-struct VertexOutput {
-	@builtin(position) position: vec4f,
-	@location(0) uv: vec2f,
-};
 
 @vertex
 fn vs_main(in: VertexInput) -> VertexOutput {

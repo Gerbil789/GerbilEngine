@@ -1,46 +1,48 @@
 #pragma once
 
 #include "Editor/Command/ICommand.h"
+#include "Editor/Command/RemoveComponentCommand.h"
+#include "Editor/Command/AddComponentCommand.h"
+#include "Editor/Command/ComponentSnapshotCommand.h"
 #include <stack>
 #include <vector>
-
-namespace Engine { class Event; }
 
 namespace Editor
 {
   class EditorCommandManager 
   {
   public:
-		template <typename T, typename... Args>
-    static void ExecuteCommand(Args&&... args)
-    {
-      auto command = new T(std::forward<Args>(args)...);
-      command->Execute();
-      s_UndoStack.push(command);
+    static void CreateEntity(const std::string& name = "Empty");
+    static void DeleteEntity(Engine::Entity entity);
 
-      // clear redo stack
-      std::stack<ICommand*> empty;
-      s_RedoStack.swap(empty);
+    template<typename T>
+    static void RemoveComponent(Engine::Entity e)
+    {
+      Enqueue(std::make_unique<RemoveComponentCommand<T>>(e));
     }
 
-    template <typename T, typename... Args>
-    static void EnqueueCommand(Args&&... args)
+    template<typename T>
+    static void AddComponent(Engine::Entity e, const T& initial)
     {
-      s_Deferred.emplace_back(new T(std::forward<Args>(args)...) );
+      Enqueue(std::make_unique<AddComponentCommand<T>>(e, initial));
     }
 
+    template<typename T>
+    static void ModifyComponent(Engine::Entity e, const T& before, const T& after)
+    {
+      Enqueue(std::make_unique<ComponentSnapshotCommand<T>>(e, before, after));
+    }
+
+    static void Enqueue(std::unique_ptr<ICommand> cmd);
     static void Undo();
     static void Redo();
-    static void OnEvent(Engine::Event& e);
-
     static void Flush();
    
   private:
 		//const static int s_MaxUndoSteps = 128; //TODO: limit undo steps
 
-    inline static std::stack<ICommand*> s_UndoStack;
-    inline static std::stack<ICommand*> s_RedoStack;
-
-    inline static std::vector<ICommand*> s_Deferred;
+    inline static std::stack<std::unique_ptr<ICommand>> s_UndoStack;
+    inline static std::stack<std::unique_ptr<ICommand>> s_RedoStack;
+    inline static std::vector<std::unique_ptr<ICommand>> s_Deferred;
   };
 }
