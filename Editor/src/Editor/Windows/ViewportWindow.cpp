@@ -47,6 +47,7 @@ namespace Editor
 		m_Renderer.AddPass(s_EntityIdPass);
 
 		s_LightPass = new Engine::LightPass();
+		s_LightPass->m_Enabled = false;
 		m_Renderer.AddPass(s_LightPass);
 
 		s_NormalPass = new Engine::NormalPass();

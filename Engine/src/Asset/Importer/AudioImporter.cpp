@@ -12,6 +12,6 @@ namespace Engine
 
 	AudioClip* AudioImporter::LoadAudio(const std::filesystem::path& path)
 	{
-		return new AudioClip(path.string());
+		return new AudioClip(path);
 	}
 }

@@ -25,7 +25,7 @@ namespace Engine
 		shaderDesc.nextInChain = &shaderCodeDesc.chain;
 
 		wgpu::ShaderModule shaderModule = GraphicsContext::GetDevice().createShaderModule(shaderDesc);
-		std::vector<wgpu::VertexAttribute> vertexAttribs(3);
+		std::array<wgpu::VertexAttribute, 3> vertexAttribs;
 
 		// Position
 		vertexAttribs[0].shaderLocation = 0; // @location(0)
@@ -44,11 +44,10 @@ namespace Engine
 
 		wgpu::VertexBufferLayout vertexBufferLayout;
 
-		vertexBufferLayout.attributeCount = static_cast<uint32_t>(vertexAttribs.size());
+		vertexBufferLayout.attributeCount = vertexAttribs.size();
 		vertexBufferLayout.attributes = vertexAttribs.data();
 		vertexBufferLayout.arrayStride = 8 * sizeof(float);
 		vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
-
 
 		wgpu::RenderPipelineDescriptor pipelineDesc;
 		pipelineDesc.label = { "NormalShaderPipeline", WGPU_STRLEN };
@@ -70,7 +69,6 @@ namespace Engine
 		//colorTarget.blend = &blendState;
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 
-
 		wgpu::DepthStencilState depthStencil{};
 		depthStencil.format = wgpu::TextureFormat::Depth24Plus;
 		depthStencil.depthWriteEnabled = wgpu::OptionalBool::False;
@@ -91,18 +89,18 @@ namespace Engine
 		pipelineDesc.fragment = &fragmentState;
 
 		pipelineDesc.multisample.count = 1;
-		pipelineDesc.multisample.mask = ~0u; // Default value for the mask, meaning "all bits on"
+		pipelineDesc.multisample.mask = ~0u;
 		pipelineDesc.multisample.alphaToCoverageEnabled = false;
 
-		wgpu::BindGroupLayout bindGroupLayouts[] = {
+		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = {
 			RenderGlobals::GetFrameLayout(),
 			RenderGlobals::GetModelLayout()
 		};
 
 		wgpu::PipelineLayoutDescriptor layoutDesc{};
 		layoutDesc.label = { "NormalShaderPipelineLayout", WGPU_STRLEN };
-		layoutDesc.bindGroupLayoutCount = 2;
-		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayouts;
+		layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
+		layoutDesc.bindGroupLayouts = reinterpret_cast<WGPUBindGroupLayout*>(&bindGroupLayouts);
 		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
 
 		m_NormalPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
@@ -139,24 +137,24 @@ namespace Engine
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(renderPassDescriptor);
 		pass.setPipeline(m_NormalPipeline);
 
-		pass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
+		pass.setBindGroup(0, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
-		Mesh* currentMesh = nullptr;
+		Mesh* mesh = nullptr;
 
 		for (const DrawItem& draw : drawList.items)
 		{
 			if (!draw.mesh) continue;
 
-			if (draw.mesh != currentMesh)
+			if (draw.mesh != mesh)
 			{
-				pass.setVertexBuffer(0, draw.mesh->GetVertexBuffer(), 0, draw.mesh->GetVertexBuffer().getSize());
-				pass.setIndexBuffer(draw.mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, draw.mesh->GetIndexBuffer().getSize());
-				currentMesh = draw.mesh;
+				mesh = draw.mesh;
+				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
+				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, mesh->GetIndexBuffer().getSize());
 			}
 
 			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
-			pass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
-			pass.drawIndexed(currentMesh->GetIndexCount(), 1, 0, 0, 0);
+			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
+			pass.drawIndexed(mesh->GetIndexCount(), 1, 0, 0, 0);
 		}
 		pass.end();
 	}

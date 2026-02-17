@@ -52,7 +52,7 @@ namespace Editor
 		Engine::Input::Initialize(*m_Window);
 		Engine::SamplerPool::Initialize();
 		Engine::RenderGlobals::Initialize();
-		Engine::Audio::Initialize();
+
 		Engine::Time::Initialize();
 
 		Engine::EngineContext context;
@@ -61,6 +61,7 @@ namespace Editor
 		Engine::InitializeEngine(context); //TODO: improve engine context
 
 		Engine::AssetManager::Initialize();
+		Engine::Audio::Initialize();
 		IconManager::Load("Resources/Editor/icons/icons.png");
 		EditorWindowManager::Initialize(*m_Window);
 
@@ -80,6 +81,7 @@ namespace Editor
 		//TODO: NEVER HARDCODE ASSETS LIKE THIS, THIS IS JUST FOR TESTING PURPOSES
 		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(9667627839419811388);
 		Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(9153350241491098746);
+
 
 		for (int x = 0; x < 10; x++)
 		{
@@ -103,6 +105,7 @@ namespace Editor
 			component.camera = camera.release();
 			scene->SetActiveCamera(cameraEntity);
 		}
+
 
 		// player entity
 		{

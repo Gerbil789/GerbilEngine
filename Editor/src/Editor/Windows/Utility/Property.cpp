@@ -87,14 +87,14 @@ namespace Editor
 
 	}
 
-	PropertyEditResult FloatField(const std::string& label, float& value, float min, float max)
+	PropertyEditResult FloatField(const std::string& label, float& value, float min, float max, float speed)
 	{
 		PropertyEditResult result;
 
 		ImGui::PushID(label.c_str());
 
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-		if (ImGui::DragFloat(("##" + std::string(label)).c_str(), &value, 0.05f, min, max, "%.2f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
+		if (ImGui::DragFloat(("##" + std::string(label)).c_str(), &value, speed, min, max, "%.2f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
 		{
 			result.changed = true;
 		}
@@ -117,17 +117,8 @@ namespace Editor
 		float sliderWidth = fullWidth - inputWidth - ImGui::GetStyle().ItemSpacing.x;
 
 		ImGui::SetNextItemWidth(sliderWidth);
-		if (ImGui::SliderFloat("##slider", &value, min, max, "", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat | ImGuiSliderFlags_NoInput))
+		if (ImGui::SliderFloat("##slider", &value, min, max, "%.3f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat | ImGuiSliderFlags_NoInput))
 		{
-			result.changed = true;
-		}
-
-		ImGui::SameLine();
-
-		ImGui::SetNextItemWidth(inputWidth);
-		if (ImGui::InputFloat("##input", &value, 0.0f, 0.0f, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AlwaysOverwrite | ImGuiInputTextFlags_ParseEmptyRefVal))
-		{
-			value = glm::clamp(value, min, max);
 			result.changed = true;
 		}
 

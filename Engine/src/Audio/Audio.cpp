@@ -1,79 +1,117 @@
 #include "enginepch.h"
 #include "Engine/Audio/Audio.h"
-
+#include "Engine/Audio/AudioClip.h"
+#include "Engine/Asset/AssetManager.h"
 #define MINIAUDIO_IMPLEMENTATION
 #include <miniaudio.h>
+
+// https://miniaud.io/docs/manual/index.html#Introduction
 
 namespace Engine
 {
 	static ma_engine s_AudioEngine;
-	static std::vector<ma_sound*> s_ActiveSounds;
 
 	void Audio::Initialize()
 	{
-		if (ma_engine_init(NULL, &s_AudioEngine) != MA_SUCCESS)
+		if (ma_engine_init(nullptr, &s_AudioEngine) != MA_SUCCESS)
 		{
-			LOG_ERROR("Failed to initialize audio engine.");
-			return;
+			throw std::runtime_error("Failed to initialize audio engine");
 		}
+
+
+		auto clips = AssetManager::GetAssetsOfType<AudioClip>(AssetType::Audio);
+
+		ma_fence fence;
+
+		if(ma_fence_init(&fence) != MA_SUCCESS)
+		{
+			LOG_ERROR("Failed to initialize fence");
+		}
+
+		auto records = AssetManager::GetAllAssetRecordsOfType(AssetType::Audio);
+
+		for(auto record : records)
+		{
+			AssetManager::LoadAsset<AudioClip>(*record, record->path, (void*)&fence);
+		}
+
+		ma_fence_wait(&fence); // Wait for all sounds to finish loading
+		LOG_INFO("Loaded {} audio files", records.size());
 	}
 
 	void Audio::Shutdown()
 	{
-		StopAllSounds();
 		ma_engine_uninit(&s_AudioEngine);
 	}
 
+	ma_engine& Audio::GetAudioEngine()
+	{
+		return s_AudioEngine;
+	}
 
 	void Audio::Play(AudioClip* clip)
 	{
 		if(!clip)
 		{
+			LOG_WARNING("AudioClip is null.");
+			return;
+		}
+
+		ma_sound& sound = clip->GetSound();
+
+		ma_sound_set_fade_in_pcm_frames(&sound, 0, 1, 128);
+		if (ma_sound_start(&sound) != MA_SUCCESS)
+		{
+			LOG_ERROR("Failed to start audio.");
+		}
+	}
+
+	void Audio::Stop(AudioClip* clip)
+	{
+		if (!clip)
+		{
+			LOG_WARNING("AudioClip is null.");
+			return;
+		}
+
+		ma_sound& sound = clip->GetSound();
+
+		if (ma_sound_stop(&sound) != MA_SUCCESS)
+		{
+			LOG_ERROR("Failed to stop audio.");
+		}
+	}
+
+	bool Audio::IsPlaying(AudioClip* clip)
+	{
+		if (!clip)
+		{
+			LOG_ERROR("AudioClip is null.");
+			return false;
+		}
+
+		return ma_sound_is_playing(&clip->GetSound()) == MA_TRUE;
+	}
+
+	void Audio::SetVolume(AudioClip* clip, float volume)
+	{
+		if (!clip)
+		{
 			LOG_ERROR("AudioClip is null.");
 			return;
 		}
 
-		ma_audio_buffer* buffer = new ma_audio_buffer();
-		ma_audio_buffer_config config = ma_audio_buffer_config_init(
-			ma_format_f32,
-			clip->GetChannels(),
-			clip->GetTotalFrames(),
-			clip->GetPCMFrames().data(),
-			NULL
-		);
-
-		if (ma_audio_buffer_init(&config, buffer) != MA_SUCCESS)
-		{
-			LOG_ERROR("Failed to init audio buffer");
-			delete buffer;
-			return;
-		}
-
-		ma_sound* sound = new ma_sound();
-		if (ma_sound_init_from_data_source(&s_AudioEngine, buffer, 0, NULL, sound) != MA_SUCCESS)
-		{
-			LOG_ERROR("Failed to init sound from buffer");
-			ma_audio_buffer_uninit(buffer);
-			delete buffer;
-			delete sound;
-			return;
-		}
-
-		// Store buffer pointer in the sound so we can delete it later.
-		sound->pDataSource = buffer;
-
-		s_ActiveSounds.push_back(sound);
-		ma_sound_start(sound);
+		ma_sound_set_volume(&clip->GetSound(), volume);
 	}
 
-	void Audio::StopAllSounds()
+	void Audio::SetLooping(AudioClip* clip, bool loop)
 	{
-		for (auto* sound : s_ActiveSounds)
+		if (!clip)
 		{
-			ma_sound_stop(sound);
-			ma_sound_uninit(sound);
-			delete sound;
+			LOG_ERROR("AudioClip is null.");
+			return;
 		}
-		s_ActiveSounds.clear();
+
+		ma_sound_set_looping(&clip->GetSound(), loop);
 	}
 }

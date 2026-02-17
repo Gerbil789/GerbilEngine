@@ -89,14 +89,24 @@ namespace Engine
 		pipelineDesc.primitive.frontFace = wgpu::FrontFace::CCW;
 		pipelineDesc.primitive.cullMode = wgpu::CullMode::None;
 
+
+		wgpu::BlendState blend{};
+		blend.color.operation = wgpu::BlendOperation::Add;
+		blend.color.srcFactor = wgpu::BlendFactor::One;
+		blend.color.dstFactor = wgpu::BlendFactor::One;
+		blend.alpha.operation = wgpu::BlendOperation::Add;
+		blend.alpha.srcFactor = wgpu::BlendFactor::One;
+		blend.alpha.dstFactor = wgpu::BlendFactor::One;
+
 		wgpu::ColorTargetState colorTarget;
 		colorTarget.format = wgpu::TextureFormat::RGBA8Unorm;
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
+		colorTarget.blend = &blend;
 
 		wgpu::DepthStencilState depthStencil{};
 		depthStencil.format = wgpu::TextureFormat::Depth24Plus;
 		depthStencil.depthWriteEnabled = wgpu::OptionalBool::False;
-		depthStencil.depthCompare = wgpu::CompareFunction::LessEqual;
+		depthStencil.depthCompare = wgpu::CompareFunction::Equal;
 		depthStencil.stencilFront = {};
 		depthStencil.stencilBack = {};
 		depthStencil.stencilReadMask = 0;
@@ -202,7 +212,7 @@ namespace Engine
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(renderPassDescriptor);
 		pass.setPipeline(m_LightPipeline);
 
-		pass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
+		pass.setBindGroup(0, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 		pass.setBindGroup(2, s_LightBindGroup, 0, nullptr);
 
 
@@ -233,22 +243,22 @@ namespace Engine
 		GraphicsContext::GetDevice().getQueue().writeBuffer(s_LightUniformBuffer, 0, &lightUniforms, sizeof(LightUniforms));
 
 
-		Mesh* currentMesh = nullptr;
+		Mesh* mesh = nullptr;
 
 		for (const DrawItem& draw : drawList.items)
 		{
 			if (!draw.mesh) continue;
 
-			if (draw.mesh != currentMesh)
+			if (draw.mesh != mesh)
 			{
-				pass.setVertexBuffer(0, draw.mesh->GetVertexBuffer(), 0, draw.mesh->GetVertexBuffer().getSize());
-				pass.setIndexBuffer(draw.mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, draw.mesh->GetIndexBuffer().getSize());
-				currentMesh = draw.mesh;
+				mesh = draw.mesh;
+				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
+				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, mesh->GetIndexBuffer().getSize());
 			}
 
 			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
-			pass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
-			pass.drawIndexed(currentMesh->GetIndexCount(), 1, 0, 0, 0);
+			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
+			pass.drawIndexed(mesh->GetIndexCount(), 1, 0, 0, 0);
 		}
 		pass.end();
 	}

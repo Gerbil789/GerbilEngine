@@ -38,18 +38,10 @@ namespace Engine
 		TextureWrap GetTextureWrap() const { return m_TextureWrap; }
 
 		void SetTexture(const std::string& name, Texture2D* texture);
-		Texture2D* GetTexture(const std::string& name) const
-		{
-			auto it = m_Textures.find(name);
-			if (it != m_Textures.end())
-			{
-				return it->second;
-			}
-			return nullptr;
-		}
+		Texture2D* GetTexture(const std::string& name) const;
 
-		void Bind(wgpu::RenderPassEncoder pass);
-
+		wgpu::BindGroup GetBindGroup() const { return m_BindGroup; }
+		wgpu::Buffer GetUniformBuffer() const { return m_UniformBuffer; }
 		const std::vector<std::byte>& GetUniformData() const { return m_UniformData; }
 		const std::unordered_map<std::string, Texture2D*>& GetTextures() const { return m_Textures; }
 

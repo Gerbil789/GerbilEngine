@@ -1,5 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Scene/Components.h"
+#include "Engine/Audio/Audio.h"
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 
@@ -21,5 +22,24 @@ namespace Engine
       return parentTransform.GetWorldMatrix(registry) * local;
     }
     return local;
+  }
+
+  void AudioSourceComponent::Play()
+  {
+    Audio::Play(clip);
+	}
+
+  void AudioSourceComponent::Stop()
+  {
+    Audio::Stop(clip);
+	}
+
+  void AudioSourceComponent::SetVolume(float volume)
+  {
+    Audio::SetVolume(clip, volume);
+  }
+  void AudioSourceComponent::SetLooping(bool loop)
+  {
+    Audio::SetLooping(clip, loop);
   }
 }

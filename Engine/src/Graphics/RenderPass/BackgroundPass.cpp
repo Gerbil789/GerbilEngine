@@ -23,7 +23,7 @@ namespace Engine
 
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
 
-		pass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
+		pass.setBindGroup(0, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
 		if (context.camera->GetProjection() == Camera::Projection::Perspective && context.camera->GetBackground() == Camera::Background::Skybox)
 		{
@@ -32,6 +32,7 @@ namespace Engine
 			pass.setBindGroup(1, skybox.GetBindGroup(), 0, nullptr);
 			pass.draw(36, 1, 0, 0);
 		}
+
 		pass.end();
 	}
 }

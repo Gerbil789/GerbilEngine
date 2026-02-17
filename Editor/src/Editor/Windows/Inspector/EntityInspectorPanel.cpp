@@ -34,8 +34,7 @@ namespace Editor
 		{
 			ImGui::PushID(static_cast<int>(entity.GetUUID()));
 
-			bool& enabled = entity.GetComponent<Engine::IdentityComponent>().enabled;
-			BoolField("Enabled", enabled);
+			BoolField("Enabled", entity.GetComponent<Engine::IdentityComponent>().enabled);
 			ImGui::SameLine();
 
 			std::string& name = entity.GetComponent<Engine::NameComponent>().name;
@@ -299,9 +298,7 @@ namespace Editor
 
 		{
 			PropertyRow row("Is Active");
-			bool& isActive = component.isActive;
-			BoolField("Is Active", isActive);
-
+			BoolField("Is Active", component.isActive);
 		}
 	}
 
@@ -319,7 +316,6 @@ namespace Editor
 
 		{
 			PropertyRow row("Audio Clip");
-
 			std::string audioClipButtonText = component.clip != nullptr ? Engine::AssetManager::GetAssetName(component.clip->id) : "##AudioClip";
 			ImGui::Button(audioClipButtonText.c_str(), ImVec2(-FLT_MIN, 0.0f));
 			DragDropTarget{}.Accept("UUID", [&](const void* data) {
@@ -331,13 +327,31 @@ namespace Editor
 		}
 
 		{
+			PropertyRow row("Play on awake");
+			BoolField("PlayOnAwake", component.playOnAwake);
+
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::BeginTooltip();
+				ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Not implemented");
+				ImGui::EndTooltip();
+			}
+		}
+
+		{
 			PropertyRow row("Looping");
-			ImGui::Checkbox("Looping", &component.loop);
+			if(BoolField("Looping", component.loop).changed)
+			{
+				component.SetLooping(component.loop);
+			}
 		}
 
 		{
 			PropertyRow row("Volume");
-			FloatField("Volume", component.volume);
+			if(FloatField("Volume", component.volume, 0.0f, 1.0f, 0.01f).changed)
+			{
+				component.SetVolume(component.volume);
+			}
 		}
 	}
 

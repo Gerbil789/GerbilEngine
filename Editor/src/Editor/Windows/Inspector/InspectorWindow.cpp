@@ -1,6 +1,7 @@
 #include "InspectorWindow.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Editor/Core/EditorContext.h"
+#include "Engine/Audio/AudioClip.h"
 #include <imgui.h>
 
 namespace Editor

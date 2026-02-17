@@ -104,34 +104,34 @@ namespace Engine
 
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
 
-		pass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
+		pass.setBindGroup(0, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
-		Material* currentMaterial = nullptr;
-		Mesh* currentMesh = nullptr;
+		Material* material = nullptr;
+		Mesh* mesh = nullptr;
 
 		for (const DrawItem& draw : drawList.items)
 		{
 			if (!draw.mesh) continue;
 
-			if (draw.material != currentMaterial)
+			if (draw.material != material)
 			{
-				draw.material->Bind(pass);
-				pass.setPipeline(draw.material->GetShader()->GetRenderPipeline());
-				currentMaterial = draw.material;
-				currentMesh = nullptr;
+				material = draw.material;
+				GraphicsContext::GetQueue().writeBuffer(material->GetUniformBuffer(), 0, material->GetUniformData().data(), material->GetUniformData().size());
+				pass.setBindGroup(2, material->GetBindGroup(), 0, nullptr);
+				pass.setPipeline(material->GetShader()->GetRenderPipeline());
 			}
 
-			if (draw.mesh != currentMesh)
+			if (draw.mesh != mesh)
 			{
-				pass.setVertexBuffer(0, draw.mesh->GetVertexBuffer(), 0, draw.mesh->GetVertexBuffer().getSize());
-				pass.setIndexBuffer(draw.mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, draw.mesh->GetIndexBuffer().getSize());
-				currentMesh = draw.mesh;
+				mesh = draw.mesh;
+				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
+				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, mesh->GetIndexBuffer().getSize());
 			}
 
 			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
-			pass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
+			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
 
-			pass.drawIndexed(currentMesh->GetIndexCount(), 1, 0, 0, 0);
+			pass.drawIndexed(mesh->GetIndexCount(), 1, 0, 0, 0);
 		}
 
 		pass.end();

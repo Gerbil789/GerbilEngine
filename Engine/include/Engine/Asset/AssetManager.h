@@ -84,6 +84,30 @@ namespace Engine
 			return nullptr;
 		}
 
+		template<typename T, typename... Args>
+		static T* LoadAsset(const AssetRecord& record, Args&&... args)
+		{
+			static_assert(std::is_base_of_v<Asset, T>, "T must derive from Asset");
+
+			Asset* asset = GetLoadedAsset(record.id);
+
+			if (asset)
+			{
+				return static_cast<T*>(asset);
+			}
+
+			asset = new T(std::forward<Args>(args)...);
+			if (asset)
+			{
+				LOG_TRACE("Loaded asset '{}', '{}'", record.id, m_AssetRegistry.GetRelativePath(record.id));
+				m_LoadedAssets[record.id] = asset;
+				return static_cast<T*>(asset);
+			}
+
+			LOG_ERROR("asset import failed! '{}'", record.id);
+			return nullptr;
+		}
+
 
 		template<typename T>
 		static std::vector<T*> GetAssetsOfType(const AssetType& type)
@@ -204,6 +228,21 @@ namespace Engine
 		static std::vector<const AssetRecord*> GetAllAssetRecords()
 		{
 			return m_AssetRegistry.GetAllRecords();
+		}
+
+		static std::vector<const AssetRecord*> GetAllAssetRecordsOfType(AssetType type)
+		{
+			std::vector<const AssetRecord*> allRecords = m_AssetRegistry.GetAllRecords();
+			std::vector<const AssetRecord*> records;
+
+
+			for (auto record : allRecords)
+			{
+				if (record->type != type) continue;
+				records.emplace_back(record);
+			}
+
+			return records;
 		}
 
 	private:

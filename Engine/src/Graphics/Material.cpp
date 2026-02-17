@@ -106,6 +106,16 @@ namespace Engine
 		CreateBindGroup(); // recreate bind group to update texture
 	}
 
+	Texture2D* Material::GetTexture(const std::string& name) const
+	{
+		auto it = m_Textures.find(name);
+		if (it != m_Textures.end())
+		{
+			return it->second;
+		}
+		return nullptr;
+	}
+
 	void Material::CreateUniformBuffer()
 	{
 		wgpu::BufferDescriptor bufferDesc{};
@@ -160,12 +170,6 @@ namespace Engine
 		bindGroupDesc.entries = entries.data();
 
 		m_BindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
-	}
-
-	void Material::Bind(wgpu::RenderPassEncoder pass)
-	{
-		GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, 0, m_UniformData.data(), m_UniformData.size());
-		pass.setBindGroup(GroupID::Material, m_BindGroup, 0, nullptr);
 	}
 
 

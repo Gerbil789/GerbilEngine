@@ -87,7 +87,7 @@ namespace Editor
 
 	PropertyEditResult TextureField(const std::string& label, Engine::Texture2D*& texture);
 	PropertyEditResult IntField(const std::string& label, int& value, int min = INT_MIN, int max = INT_MAX);
-	PropertyEditResult FloatField(const std::string& label, float& value, float min = FLT_MIN, float max = FLT_MAX);
+	PropertyEditResult FloatField(const std::string& label, float& value, float min = FLT_MIN, float max = FLT_MAX, float speed = 0.05f);
 	PropertyEditResult FloatSliderField(const std::string& label, float& value, float min = FLT_MIN, float max = FLT_MAX);
 	PropertyEditResult Vec2Field(const std::string& label, glm::vec2& value);
 	PropertyEditResult Vec3Field(const std::string& label, glm::vec3& value);

@@ -98,6 +98,20 @@ namespace Engine
 		float volume = 1.0f;
 		bool loop = false;
 		bool playOnAwake = false;
+
+		void Reset()
+		{
+			clip = nullptr;
+			volume = 1.0f;
+			loop = false;
+			playOnAwake = false;
+		}
+
+		void Play();
+		void Stop();
+		void SetVolume(float volume);
+		void SetLooping(bool loop);
+
 	};
 
 	struct ENGINE_API AudioListenerComponent
