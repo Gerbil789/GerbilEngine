@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Core/API.h"
 #include "Engine/Asset/Asset.h"
 #include "Engine/Scene/Components.h"
 #include <entt.hpp>
@@ -18,7 +17,6 @@ namespace Engine
 		static Scene* Copy(Scene* other);
 
 		Entity CreateEntity(const std::string& name = "new entity");
-		Entity CreateEntity(Uuid uuid, const std::string& name = "new entity");
 
 		Entity GetEntity(Uuid uuid);
 		Entity GetActiveCamera();

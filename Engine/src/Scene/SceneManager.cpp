@@ -3,8 +3,6 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
-#include "Engine/Scene/Entity.h"
-#include "Engine/Core/UUID.h"
 
 namespace Engine::SceneManager
 {
@@ -46,52 +44,32 @@ namespace Engine::SceneManager
 		return s_ActiveScene;
 	}
 
-	void LoadScene(Uuid id)
-	{
-		if (!id)
-		{
-			throw std::runtime_error("No valid start scene set in the project");
-		}
-
-		Engine::Scene* scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
-		Engine::SceneManager::SetActiveScene(scene);
-
-		auto entities = scene->GetEntities(true);
-		LOG_INFO("Loaded scene with {} entities", entities.size());
-
-		for (Entity ent : entities)
-		{
-			LOG_INFO("  {} \t{}", ent.GetName(), ent.GetUUID());
-		}
-	}
-
 	void SaveScene()
 	{
 		if(s_ActiveScene == nullptr) 
 		{ 
-			LOG_WARNING("Saving scene failed. Current scene is nullptr"); 
+			LOG_WARNING("Current scene is null"); 
 			return; 
 		}
 
-		Scene* scene = AssetManager::GetAsset<Scene>(s_ActiveScene->id);
 		auto assetPath = AssetManager::GetAssetPath(s_ActiveScene->id);
 
 		if(assetPath.empty())
 		{
-			LOG_ERROR("SceneManager::SaveScene() - Current scene has no path");
+			LOG_ERROR("Current scene has no path");
 			return;
 		}
 
 		auto path = Engine::GetAssetsDirectory() / assetPath;
 
-		SceneSerializer::Serialize(scene, path);
+		SceneSerializer::Serialize(s_ActiveScene, path);
 
 		LOG_INFO("Scene {} saved to file {}", s_ActiveScene->id, path);
 	}
 
 	void SaveSceneAs()
 	{
-		LOG_WARNING("Saving scene failed. NOT IMPLEMENTED!");
+		LOG_WARNING("NOT IMPLEMENTED!");
 
 		//std::string path = SaveFile();
 		//if (!path.empty())

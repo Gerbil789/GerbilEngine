@@ -4,6 +4,8 @@
 #include "Engine/Core/Engine.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
+#include "Engine/Scene/Scene.h"
+#include <map>
 
 namespace Engine
 {

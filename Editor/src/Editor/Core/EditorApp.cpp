@@ -2,10 +2,10 @@
 #define WEBGPU_CPP_IMPLEMENTATION
 #include "Editor/Core/EditorWindowManager.h"
 #include "Editor/Core/IconManager.h"
-#include "Editor/Core/EditorContext.h"
+#include "Editor/Core/EditorSelection.h"
 #include "Editor/Utility/FileWatcher.h"
 #include "Engine/Core/Time.h"
-#include "Engine/Utils/File.h"
+#include "Engine/Utility/File.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Editor/Command/EditorCommandManager.h"
@@ -22,10 +22,10 @@
 #include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Camera.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
-#include "Engine/Utils/Path.h"
+#include "Engine/Utility/Path.h"
 #include "Engine/Core/EngineContext.h"
 #include "Engine/Scene/Scene.h"
-#include "Engine/Core/Runtime.h"
+#include "Editor/Core/EditorRuntime.h"
 
 namespace Editor
 {
@@ -36,10 +36,8 @@ namespace Editor
 
 	EditorApp::EditorApp(const ApplicationCommandLineArgs& args)
 	{
-		ENGINE_PROFILE_FUNCTION();
-
 		std::filesystem::path projectPath = (args.Count > 1) ? std::filesystem::path(args[1]) : Engine::OpenDirectory();
-		EditorContext::SetProject(Project::Load(projectPath));
+		EditorSelection::SetProject(Project::Load(projectPath));
 
 		std::filesystem::current_path(GetExecutableDir()); // Set working directory
 
@@ -56,8 +54,8 @@ namespace Editor
 		Engine::Time::Initialize();
 
 		Engine::EngineContext context;
-		context.ProjectDirectory = EditorContext::GetProject().GetProjectDirectory();
-		context.AssetsDirectory = EditorContext::GetProject().GetAssetsDirectory();
+		context.ProjectDirectory = EditorSelection::GetProject().GetProjectDirectory();
+		context.AssetsDirectory = EditorSelection::GetProject().GetAssetsDirectory();
 		Engine::InitializeEngine(context); //TODO: improve engine context
 
 		Engine::AssetManager::Initialize();
@@ -65,61 +63,68 @@ namespace Editor
 		IconManager::Load("Resources/Editor/icons/icons.png");
 		EditorWindowManager::Initialize(*m_Window);
 
-		m_FileWatcher = new FileWatcher(EditorContext::GetProject().GetAssetsDirectory(), [this](std::unique_ptr<Engine::FileEvent> e) {PushFileEvent(std::move(e)); });
+		m_FileWatcher = new FileWatcher(EditorSelection::GetProject().GetAssetsDirectory(), [this](std::unique_ptr<Engine::FileEvent> e) {PushFileEvent(std::move(e)); });
 
-		const Project& project = EditorContext::GetProject();
+		const Project& project = EditorSelection::GetProject();
 		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / BUILD_CONFIG / (project.GetTitle() + ".dll");
 		Engine::ScriptRegistry& registry = Engine::ScriptRegistry::Get();
-		Engine::Runtime::LoadScripts(registry, dllPath);
 
-		Engine::SceneManager::LoadScene(EditorContext::GetProject().GetStartSceneID());
+		EditorRuntime::Initialize();
+		EditorRuntime::LoadScripts(registry, dllPath);
+
+		
+		if (auto id = EditorSelection::GetProject().GetStartSceneID(); id)
+		{
+			Engine::Scene* scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
+			Engine::SceneManager::SetActiveScene(scene);
+			//EditorContext::Get().editorScene = scene;
+		}
 
 		LOG_INFO("--- Editor initialization complete ---");
 
-		Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
+		//Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
 
 		//TODO: NEVER HARDCODE ASSETS LIKE THIS, THIS IS JUST FOR TESTING PURPOSES
-		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(9667627839419811388);
-		Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(9153350241491098746);
+		//Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(9667627839419811388);
+		//Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(9153350241491098746);
+
+		//for (int x = 0; x < 10; x++)
+		//{
+		//	for (int y = 0; y < 1; y++)
+		//	{
+		//		for (int z = 0; z < 1; z++)
+		//		{
+		//			auto cube = scene->CreateEntity("GridCube");
+		//			cube.AddComponent<Engine::MeshComponent>(material, mesh);
+		//			cube.GetComponent<Engine::TransformComponent>().position = { static_cast<float>(x) * 3.0f - (15), static_cast<float>(y) * 3.0f, static_cast<float>(z) * 3.0f - 30 };
+		//		}
+		//	}
+		//}
+
+		//// camera entity
+		//{
+		//	auto cameraEntity = scene->CreateEntity("Camera");
+		//	auto& component = cameraEntity.AddComponent<Engine::CameraComponent>();
+		//	std::unique_ptr<Engine::Camera> camera = std::make_unique<Engine::Camera>();
+		//	camera->SetBackground(Engine::Camera::Background::Skybox);
+		//	component.camera = camera.release();
+		//	scene->SetActiveCamera(cameraEntity);
+		//}
 
 
-		for (int x = 0; x < 10; x++)
-		{
-			for (int y = 0; y < 1; y++)
-			{
-				for (int z = 0; z < 1; z++)
-				{
-					auto cube = scene->CreateEntity("GridCube");
-					cube.AddComponent<Engine::MeshComponent>(material, mesh);
-					cube.GetComponent<Engine::TransformComponent>().position = { static_cast<float>(x) * 3.0f - (15), static_cast<float>(y) * 3.0f, static_cast<float>(z) * 3.0f - 30 };
-				}
-			}
-		}
+		//// player entity
+		//{
+		//	auto player = scene->CreateEntity("Player");
+		//	player.AddComponent<Engine::MeshComponent>(material, mesh);
 
-		// camera entity
-		{
-			auto cameraEntity = scene->CreateEntity("Camera");
-			auto& component = cameraEntity.AddComponent<Engine::CameraComponent>();
-			std::unique_ptr<Engine::Camera> camera = std::make_unique<Engine::Camera>();
-			camera->SetBackground(Engine::Camera::Background::Skybox);
-			component.camera = camera.release();
-			scene->SetActiveCamera(cameraEntity);
-		}
+		//	auto& scriptComponent = player.AddComponent<Engine::ScriptComponent>();
+		//	scriptComponent.id = "PlayerController";
 
-
-		// player entity
-		{
-			auto player = scene->CreateEntity("Player");
-			player.AddComponent<Engine::MeshComponent>(material, mesh);
-
-			auto& scriptComponent = player.AddComponent<Engine::ScriptComponent>();
-			scriptComponent.id = "PlayerController";
-
-			Engine::Script* playerScript = registry.GetDescriptor("PlayerController").factory();
-			playerScript->Self = player;
-			playerScript->OnCreate();
-			scriptComponent.instance = std::move(playerScript);
-		}
+		//	Engine::Script* playerScript = registry.GetDescriptor("PlayerController").factory();
+		//	playerScript->Self = player;
+		//	playerScript->OnCreate();
+		//	scriptComponent.instance = std::move(playerScript);
+		//}
 	}
 
 	EditorApp::~EditorApp()
@@ -139,27 +144,27 @@ namespace Editor
 
 	void EditorApp::Run()
 	{
-		ENGINE_PROFILE_FUNCTION();
 		while (m_Running)
 		{
-			ENGINE_PROFILE_SCOPE("RunLoop");
-
 			Engine::Time::BeginFrame();
 			ProcessFileEvents(); // handle file events from FileWatcher
 			m_Window->OnUpdate(); // poll events
 
 			if (m_Window->IsMinimized()) continue;
 
-			EditorWindowManager::OnUpdate(); // process editor UI
+			EditorWindowManager::OnUpdate(); // update editor UI
 			EditorCommandManager::Flush(); // execute queued commands
+			
+			if (EditorRuntime::GetState() == EditorState::Play)
+			{
+				EditorRuntime::Update();
+			}
 
-			Engine::Runtime::Update();
 		}
 	}
 
 	void EditorApp::OnEvent(Engine::Event& e)
 	{
-		ENGINE_PROFILE_FUNCTION();
 		Engine::EventDispatcher dispatcher(e);
 
 		dispatcher.Dispatch<Engine::KeyPressedEvent>([this](auto& e) 

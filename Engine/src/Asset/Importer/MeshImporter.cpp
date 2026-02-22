@@ -144,7 +144,6 @@ namespace Engine
 		}
 
 		MeshSpecification spec{ vertices, indices, wireIndices }; //TODO: is this copy or reference?
-		Mesh* mesh = new Mesh(spec);
-		return mesh;
+		return new Mesh(spec);
 	}
 }

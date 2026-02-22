@@ -3,7 +3,7 @@
 
 #include "EditorWindowManager.h"
 #include "Engine/Core/Window.h"
-#include "Engine/Utils/File.h"
+#include "Engine/Utility/File.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Editor/Windows/MenuBar.h"
 #include "Editor/Windows/ContentBrowser/ContentBrowserWindow.h"
@@ -107,10 +107,8 @@ namespace Editor
 
 	void EditorWindowManager::Initialize(Engine::Window& window)
 	{
-		auto* graphicsHandles = Engine::GraphicsContext::GetGraphicsHandles();
-
-		s_Device = graphicsHandles->device;
-		s_Queue = graphicsHandles->queue;
+		s_Device = Engine::GraphicsContext::GetDevice();
+		s_Queue = Engine::GraphicsContext::GetQueue();
 		s_Surface = *static_cast<wgpu::Surface*>(window.GetSurface());
 
 		PopupManager::Register(&newProjectPopup);
@@ -178,7 +176,7 @@ namespace Editor
 			window->Draw();
 		}
 
-		//bool showDemoWindow = false;
+		//bool showDemoWindow = true;
 		//ImGui::ShowDemoWindow(&showDemoWindow);
 
 		EndFrame();

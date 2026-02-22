@@ -1,7 +1,7 @@
 #include "EditorCameraController.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Scene/Entity.h"
-#include "Editor/Core/EditorContext.h"
+#include "Editor/Core/EditorSelection.h"
 
 namespace Editor
 {
@@ -9,7 +9,7 @@ namespace Editor
 
 	void EditorCameraController::SetViewportSize(const glm::vec2& size)
 	{
-		m_Camera.SetViewportSize(size); // Update aspect ratio
+		m_Camera.SetAspectRatio(size.x / size.y);
 	}
 
 	void EditorCameraController::OnEvent(Event& e)
@@ -26,12 +26,12 @@ namespace Editor
 	{
 		if(e.GetKey() == Key::F) //Focus
 		{
-			if(EditorContext::Entities().Empty())
+			if(EditorSelection::Entities().Empty())
 			{
 				return false;
 			}
 
-			auto entity = EditorContext::Entities().GetPrimary();
+			auto entity = EditorSelection::Entities().GetPrimary();
 			if (!entity) return false; //TODO: must return bool?
 
 			glm::vec3 focusPoint = entity.GetComponent<TransformComponent>().position;

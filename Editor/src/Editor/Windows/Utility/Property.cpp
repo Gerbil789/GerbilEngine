@@ -1,13 +1,14 @@
 #include "Property.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Graphics/Texture.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
 
 namespace Editor
 {
-	PropertyEditResult TextureField(const std::string& label, Engine::Texture2D*& texture)
+	EditResult TextureField(const std::string& label, Engine::Texture2D*& texture)
 	{
-		PropertyEditResult result;
+		EditResult result;
 		const ImVec2 buttonSize = ImVec2(64, 64);
 
 		ImGui::PushID(label.c_str());
@@ -66,9 +67,9 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult IntField(const std::string& label, int& value, int min, int max)
+	EditResult IntField(const std::string& label, int& value, int min, int max)
 	{
-		PropertyEditResult result;
+		EditResult result;
 
 		ImGui::PushID(label.c_str());
 
@@ -87,9 +88,9 @@ namespace Editor
 
 	}
 
-	PropertyEditResult FloatField(const std::string& label, float& value, float min, float max, float speed)
+	EditResult FloatField(const std::string& label, float& value, float min, float max, float speed)
 	{
-		PropertyEditResult result;
+		EditResult result;
 
 		ImGui::PushID(label.c_str());
 
@@ -107,9 +108,9 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult FloatSliderField(const std::string& label, float& value, float min, float max)
+	EditResult FloatSliderField(const std::string& label, float& value, float min, float max)
 	{
-		PropertyEditResult result;
+		EditResult result;
 		ImGui::PushID(label.c_str());
 
 		float fullWidth = ImGui::GetContentRegionAvail().x;
@@ -130,9 +131,9 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult Vec2Field(const std::string& label, glm::vec2& value)
+	EditResult Vec2Field(const std::string& label, glm::vec2& value)
 	{
-		PropertyEditResult result;
+		EditResult result;
 		ImGui::PushID(label.c_str());
 
 		//TODO: this is not perfectly aligned with other fields...
@@ -167,9 +168,9 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult Vec3Field(const std::string& label, glm::vec3& value)
+	EditResult Vec3Field(const std::string& label, glm::vec3& value, float min, float max, float speed)
 	{
-		PropertyEditResult result;
+		EditResult result;
 		ImGui::PushID(label.c_str());
 
 		float itemSpacing = ImGui::GetStyle().ItemSpacing.x;
@@ -178,12 +179,12 @@ namespace Editor
 		float labelWidth = ImGui::CalcTextSize("X").x;       
 		float inputWidth = (fullWidth - (labelWidth * 3) - (itemSpacing * 4)) / 3.0f;
 
-		auto handleFloat = [&](const char* id, float& v)
+		auto handleFloat = [&](const std::string& id, float& v)
 			{
-				ImGui::Text("%s", id);
+				ImGui::TextUnformatted(id.c_str());
 				ImGui::SameLine();
 				ImGui::PushItemWidth(inputWidth);
-				result.changed = ImGui::DragFloat(("##" + std::string(id)).c_str(), &v, 0.1f);
+				result.changed = ImGui::DragFloat(("##" + id).c_str(), &v, speed, min, max, "%.2f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat);
 				ImGui::PopItemWidth();
 
 				result.active |= ImGui::IsItemActive();
@@ -201,9 +202,9 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult BoolField(const std::string& label, bool& value)
+	EditResult BoolField(const std::string& label, bool& value)
 	{
-		PropertyEditResult result;
+		EditResult result;
 		ImGui::PushID(label.c_str());
 		if (ImGui::Checkbox("##checkbox", &value))
 		{
@@ -231,9 +232,9 @@ namespace Editor
 		return valueChanged;
 	}
 
-	PropertyEditResult EnumField(const std::string& label, int& value, const std::vector<std::string>& options)
+	EditResult EnumField(const std::string& label, int& value, const std::vector<std::string>& options)
 	{
-		PropertyEditResult result;
+		EditResult result;
 		ImGui::PushID(label.c_str());
 
 		if (ImGui::BeginCombo("##value", options[value].c_str()))
@@ -262,9 +263,9 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult ColorField(const std::string& label, glm::vec4& color)
+	EditResult ColorField(const std::string& label, glm::vec4& color)
 	{
-		PropertyEditResult result;
+		EditResult result;
 
 		ImGui::PushID(label.c_str());
 		ImGui::BeginGroup(); 
@@ -290,9 +291,9 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult ColorField(const std::string& label, glm::vec3& color)
+	EditResult ColorField(const std::string& label, glm::vec3& color)
 	{
-		PropertyEditResult result;
+		EditResult result;
 
 		ImGui::PushID(label.c_str());
 		ImGui::BeginGroup();  // Group the controls to keep them together
@@ -320,11 +321,11 @@ namespace Editor
 		return result;
 	}
 
-	PropertyEditResult TextField(const std::string& label, std::string& text)
+	EditResult TextField(const std::string& label, std::string& text)
 	{
 		static std::array<char, 256> buffer{};
 
-		PropertyEditResult result;
+		EditResult result;
 		ImGui::PushID(label.c_str());
 		ImGui::PushItemWidth(-1);
 

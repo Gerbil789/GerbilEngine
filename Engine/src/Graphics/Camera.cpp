@@ -16,9 +16,9 @@ namespace Engine
 		delete m_Skybox;
 	}
 
-	void Camera::SetViewportSize(const glm::vec2& size)
+	void Camera::SetAspectRatio(float ratio)
 	{
-		m_AspectRatio = size.x / size.y;
+		m_AspectRatio = ratio;
 		UpdateProjectionMatrix();
 	}
 
@@ -60,8 +60,7 @@ namespace Engine
 	{
 		m_Pitch = rotation.x;
 		m_Yaw = rotation.y;
-		m_Roll = rotation.z; // optional, even if unused for now
-
+		m_Roll = rotation.z;
 		UpdateViewMatrix();
 	}
 
@@ -70,27 +69,27 @@ namespace Engine
 		m_ViewMatrix = glm::lookAt(m_Position, m_Position + GetForward(), GetUp());
 	}
 
-	Skybox& Camera::GetSkybox()
-	{
-		return *m_Skybox;
-	}
-
 	void Camera::UpdateProjectionMatrix()
 	{
 		switch (m_Projection)
 		{
 		case Projection::Perspective:
 		{
-			m_ProjectionMatrix = glm::perspectiveRH_ZO(m_Perspective_FOV, m_AspectRatio, m_Perspective_Near, m_Perspective_Far); //RH_ZO - right-handed, zero to one. WebGPU uses this convention.
+			m_ProjectionMatrix = glm::perspectiveRH_ZO(m_Perspective.fov, m_AspectRatio, m_Perspective.near, m_Perspective.far); //RH_ZO - right-handed, zero to one. WebGPU uses this convention.
 			break;
 		}
 		case Projection::Orthographic:
 		{
-			float halfWidth = m_Orthographic_Size * m_AspectRatio * 0.5f;
-			float halfHeight = m_Orthographic_Size * 0.5f;
-			m_ProjectionMatrix = glm::orthoRH_ZO(-halfWidth, halfWidth, -halfHeight, halfHeight, m_Orthographic_Near, m_Orthographic_Far);
+			float halfHeight = m_Orthographic.size * 0.5f;
+			float halfWidth = halfHeight * m_AspectRatio;
+			m_ProjectionMatrix = glm::orthoRH_ZO(-halfWidth, halfWidth, -halfHeight, halfHeight, m_Orthographic.near, m_Orthographic.far);
 			break;
 		}
 		}
+	}
+
+	Skybox& Camera::GetSkybox()
+	{
+		return *m_Skybox;
 	}
 }

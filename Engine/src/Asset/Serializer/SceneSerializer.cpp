@@ -2,248 +2,309 @@
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
-#include <yaml-cpp/yaml.h>
+#include "Engine/Graphics/Camera.h"
+#include "Engine/Audio/AudioClip.h"
+#include "Engine/Utility/Yaml.h"
 
 namespace Engine
 {
-	/////////////////////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////// HELPERS //////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
-		return out;
-	}
-
-
-	static glm::vec3 ReadVec3(const YAML::Node& node)
-	{
-		return glm::vec3(
-			node[0].as<float>(),
-			node[1].as<float>(),
-			node[2].as<float>()
-		);
-	}
-
-	//static glm::vec4 ReadVec4(const YAML::Node& node)
-	//{
-	//	return glm::vec4(
-	//		node[0].as<float>(),
-	//		node[1].as<float>(),
-	//		node[2].as<float>(),
-	//		node[3].as<float>()
-	//	);
-	//}
-
-	/////////////////////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////// SERIALIZATION ////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////
-
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
-		out << YAML::BeginMap; // Entity
+		Engine::Yaml::Map entityMap(out);
 
 		// Identity
-		auto& identityComponent = entity.GetComponent<IdentityComponent>();
-		auto& id = identityComponent.id;
-		auto& enabled = identityComponent.enabled;
+		const auto& identityComponent = entity.GetComponent<IdentityComponent>();
 
-		out << YAML::Key << "ID" << YAML::Value << id;
-		out << YAML::Key << "Enabled" << YAML::Value << enabled;
+		Engine::Yaml::Write(out, "ID", identityComponent.id);
+		Engine::Yaml::Write(out, "Enabled", identityComponent.enabled);
 
 		// Name
-		auto& nameComponent = entity.GetComponent<NameComponent>();
-		out << YAML::Key << "Name" << YAML::Value << nameComponent.name;
+		Engine::Yaml::Write(out, "Name", entity.GetComponent<NameComponent>().name);
 
 		// Transform
-		auto& transformComponent = entity.GetComponent<TransformComponent>();
+		const auto& transformComponent = entity.GetComponent<TransformComponent>();
+		{
+			Engine::Yaml::Map transformMap(out, "Transform");
 
-		out << YAML::Key << "Transform";
-		out << YAML::BeginMap;
-
-		out << YAML::Key << "Translation" << YAML::Value << transformComponent.position;
-		out << YAML::Key << "Rotation" << YAML::Value << transformComponent.rotation;
-		out << YAML::Key << "Scale" << YAML::Value << transformComponent.scale;
-
-		out << YAML::EndMap; // Transform
+			Engine::Yaml::Write(out, "Position", transformComponent.position);
+			Engine::Yaml::Write(out, "Rotation", transformComponent.rotation);
+			Engine::Yaml::Write(out, "Scale", transformComponent.scale);
+		}
 
 		// Mesh
-		if(entity.HasComponent<MeshComponent>())
+		if (entity.HasComponent<MeshComponent>())
 		{
-			auto& meshComponent = entity.GetComponent<MeshComponent>();
-			auto& mesh = meshComponent.mesh;
-			auto& material = meshComponent.material;
+			const auto& component = entity.GetComponent<MeshComponent>();
+			const auto& mesh = component.mesh;
+			const auto& material = component.material;
 
-			out << YAML::Key << "MeshComponent";
-			out << YAML::BeginMap;
+			Engine::Yaml::Map meshMap(out, "MeshComponent");
 
-			if(mesh) { out << YAML::Key << "Mesh" << YAML::Value << mesh->id; }
-
-			if (material) { out << YAML::Key << "Material" << YAML::Value << material->id; }
-
-			out << YAML::EndMap; // MeshComponent
+			if (mesh) Engine::Yaml::Write(out, "Mesh", mesh->id);
+			if (material) Engine::Yaml::Write(out, "Material", material->id);
 		}
 
 		// Camera
-		//if (entity.HasComponent<CameraComponent>())
-		//{
-		//	auto& cameraComponent = entity.GetComponent<CameraComponent>();
-		//	auto& camera = cameraComponent.Camera;
-		//}
+		if (entity.HasComponent<CameraComponent>())
+		{
+			const auto& component = entity.GetComponent<CameraComponent>();
+			Camera* camera = component.camera;
+
+			Engine::Yaml::Map cameraMap(out, "CameraComponent");
+			Engine::Yaml::Write(out, "Projection", static_cast<uint32_t>(camera->GetProjection())); //TODO: serialize string
+			Engine::Yaml::Write(out, "AspectRatio", camera->GetAspectRatio());
+
+			{
+				Engine::Yaml::Map perspectiveMap(out, "Perspective");
+
+				const auto& perspective = camera->Perspective();
+				Engine::Yaml::Write(out, "FOV", perspective.fov);
+				Engine::Yaml::Write(out, "Near", perspective.near);
+				Engine::Yaml::Write(out, "Far", perspective.far);
+			}
+
+			{
+				Engine::Yaml::Map orthographicMap(out, "Orthographic");
+
+				const auto& orthographic = camera->Orthographic();
+				Engine::Yaml::Write(out, "Size", orthographic.size);
+				Engine::Yaml::Write(out, "Near", orthographic.near);
+				Engine::Yaml::Write(out, "Far", orthographic.far);
+			}
+
+			Engine::Yaml::Write(out, "Background", static_cast<uint32_t>(camera->GetBackground())); //TODO: serialize string
+			Engine::Yaml::Write(out, "ClearColor", camera->GetClearColor());
+
+			//TODO: serialize environment (skybox/sphere)
+		}
 
 
 		// Light
-		// ...
+		if (entity.HasComponent<LightComponent>())
+		{
+			const auto& component = entity.GetComponent<LightComponent>();
 
-		out << YAML::EndMap; // Entity
+			Engine::Yaml::Map cameraMap(out, "LightComponent");
+			Engine::Yaml::Write(out, "Type", static_cast<uint32_t>(component.type)); //TODO: serialize string
+			Engine::Yaml::Write(out, "Color", component.color);
+			Engine::Yaml::Write(out, "Intensity", component.intensity);
+			Engine::Yaml::Write(out, "Range", component.range);
+			Engine::Yaml::Write(out, "Angle", component.angle);
+		}
+
+		// AudioSource
+		if (entity.HasComponent<AudioSourceComponent>())
+		{
+			const auto& component = entity.GetComponent<AudioSourceComponent>();
+
+			Engine::Yaml::Map cameraMap(out, "AudioSourceComponent");
+			if (component.clip) Engine::Yaml::Write(out, "AudioClip", component.clip->id);
+			Engine::Yaml::Write(out, "Volume", component.volume);
+			Engine::Yaml::Write(out, "Loop", component.loop);
+			Engine::Yaml::Write(out, "PlayOnAwake", component.playOnAwake);
+		}
+
+		// AudioListener
+		if (entity.HasComponent<AudioListenerComponent>())
+		{
+			//const auto& component = entity.GetComponent<AudioListenerComponent>();
+
+			Engine::Yaml::Map cameraMap(out, "AudioListenerComponent");
+			//TODO...
+		}
+
+		// Script
+		if (entity.HasComponent<ScriptComponent>())
+		{
+			//const auto& component = entity.GetComponent<ScriptComponent>();
+
+			Engine::Yaml::Map cameraMap(out, "ScriptComponent");
+			//TODO...
+		}
 	}
 
 	void SceneSerializer::Serialize(Scene* scene, const std::filesystem::path& path)
 	{
-		if(!scene)
+		if (!scene)
 		{
-			LOG_ERROR("Scene is null, cannot serialize.");
+			LOG_ERROR("Scene is null, cannot serialize");
 			return;
 		}
 
-		if(path.extension() != ".scene")
+		if (path.extension() != ".scene")
 		{
-			LOG_ERROR("SceneSerializer::Serialize - Expected .scene extension, got {0}", path.extension().string());
+			LOG_ERROR("Expected '.scene' extension, got '{}'", path.extension().string());
 			return;
 		}
-
-		std::string title = path.stem().string();
 
 		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "Scene" << YAML::Value << title;
-		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
-		const std::vector<Entity>& entities = scene->GetEntities(true);
-		for(auto ent : entities)
 		{
-			SerializeEntity(out, ent);
+			Engine::Yaml::Seq seq(out);
+			const auto& entities = scene->GetEntities(true);
+			for (const Entity& entity : entities)
+			{
+				SerializeEntity(out, entity);
+			}
 		}
-
-		out << YAML::EndSeq;
-		out << YAML::EndMap;
 
 		std::ofstream fout(path);
 		fout << out.c_str();
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////// DESERIALIZATION //////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////
 
 	Scene* SceneSerializer::Deserialize(const std::filesystem::path& path)
 	{
 		if (path.extension() != ".scene")
 		{
-			LOG_ERROR("SceneSerializer::Deserialize - Expected .scene extension, got {0}", path.extension().string());
+			LOG_ERROR("Expected '.scene' extension, got '{}'", path.extension().string());
 			return nullptr;
 		}
 
-		YAML::Node data;
+		YAML::Node root;
 		try
 		{
-			data = YAML::LoadFile(path.string());
+			root = YAML::LoadFile(path.string());
 		}
 		catch (const YAML::ParserException& e)
 		{
-			LOG_ERROR("SceneSerializer::Deserialize - Failed to load scene file '{0}': {1}", path.string(), e.what());
+			LOG_ERROR("Failed to load scene file '{}': {}", path, e.what());
 			return nullptr;
 		}
 
-		if (!data["Scene"])
-		{
-			LOG_ERROR("SceneSerializer::Deserialize - Missing 'Scene' node in file {0}", path.string());
-			return nullptr;
-		}
-
-		std::string sceneName = data["Scene"].as<std::string>();
-		LOG_INFO("Deserializing scene '{0}'", sceneName);
-
+		//std::string sceneName = path.stem().string();
 		auto scene = new Scene();
 
-		// Entities
-		auto entities = data["Entities"];
-		if (entities)
+		for (auto entityNode : root)
 		{
-			for (auto entityNode : entities)
+			Entity entity = scene->CreateEntity();
+
+			// Identity
+			uint64_t uuid = entityNode["ID"].as<uint64_t>();
+			bool enabled = entityNode["Enabled"].as<bool>(true);
+			auto& identity = entity.GetComponent<IdentityComponent>();
+			identity.id = uuid;
+			identity.enabled = enabled;
+
+			// Name
+			if (entityNode["Name"])
 			{
-				// Identity
-				uint64_t uuid = entityNode["ID"].as<uint64_t>();
-				bool enabled = entityNode["Enabled"].as<bool>(true);
+				auto& nameComp = entity.GetComponent<NameComponent>();
+				nameComp.name = entityNode["Name"].as<std::string>();
+			}
 
-				Entity entity = scene->CreateEntity(uuid);
+			// Transform
+			if (entityNode["Transform"])
+			{
+				auto& transform = entity.GetComponent<TransformComponent>();
+				auto transformNode = entityNode["Transform"];
 
-				// Identity component
-				auto& identity = entity.GetComponent<IdentityComponent>();
-				identity.id = uuid;
-				identity.enabled = enabled;
+				Engine::Yaml::Read(transformNode["Position"], transform.position);
+				Engine::Yaml::Read(transformNode["Rotation"], transform.rotation);
+				Engine::Yaml::Read(transformNode["Scale"], transform.scale);
+			}
 
-				// Name
-				if (entityNode["Name"])
+			// Mesh
+			if (auto meshNode = entityNode["MeshComponent"]; meshNode)
+			{
+				auto& component = entity.AddComponent<MeshComponent>();
+				uint64_t id;
+				if (Engine::Yaml::Read<uint64_t>(meshNode, "Mesh", id))
 				{
-					auto& nameComp = entity.GetComponent<NameComponent>();
-					nameComp.name = entityNode["Name"].as<std::string>();
+					component.mesh = AssetManager::GetAsset<Mesh>(id);
 				}
 
-				// Transform
-				if (entityNode["Transform"])
+				if (Engine::Yaml::Read<uint64_t>(meshNode, "Material", id))
 				{
-					auto& transform = entity.GetComponent<TransformComponent>();
-					auto transformNode = entityNode["Transform"];
+					component.material = AssetManager::GetAsset<Material>(id);
+				}
+			}
 
-					if (transformNode["Translation"])
-						transform.position = ReadVec3(transformNode["Translation"]);
+			// Camera
+			if(auto camNode = entityNode["CameraComponent"]; camNode)
+			{
+				auto& component = entity.AddComponent<CameraComponent>();
+				std::unique_ptr<Camera> camera = std::make_unique<Camera>();
 
-					if (transformNode["Rotation"])
-						transform.rotation = ReadVec3(transformNode["Rotation"]);
-
-					if (transformNode["Scale"])
-						transform.scale = ReadVec3(transformNode["Scale"]);
+				if(uint32_t projection; Engine::Yaml::Read(camNode, "Projection", projection))
+				{
+					camera->SetProjection(static_cast<Camera::Projection>(projection));
 				}
 
-				// Mesh
-				if (entityNode["MeshComponent"])
+				if (float ratio; Engine::Yaml::Read(camNode, "AspectRatio", ratio))
 				{
-					auto& meshComp = entity.AddComponent<MeshComponent>();
-					auto meshNode = entityNode["MeshComponent"];
-
-					if (meshNode["Mesh"])
-					{
-						uint64_t meshID = meshNode["Mesh"].as<uint64_t>();
-						meshComp.mesh = AssetManager::GetAsset<Mesh>(meshID);
-					}
-
-					if (meshNode["Material"])
-					{
-						uint64_t materialID = meshNode["Material"].as<uint64_t>();
-						meshComp.material = AssetManager::GetAsset<Material>(materialID);
-					}
+					camera->SetAspectRatio(ratio);
 				}
 
-				// TODO: Camera, Light, Audio, etc.
+				auto perspectiveNode = camNode["Perspective"];
+				auto& perspective = camera->Perspective();
+
+				Engine::Yaml::Read(perspectiveNode, "FOV", perspective.fov);
+				Engine::Yaml::Read(perspectiveNode, "Near", perspective.near);
+				Engine::Yaml::Read(perspectiveNode, "Far", perspective.far);
+
+				auto orthographicNode = camNode["Orthographic"];
+				auto& orthographic = camera->Orthographic();
+
+				Engine::Yaml::Read(orthographicNode, "FOV", orthographic.size);
+				Engine::Yaml::Read(orthographicNode, "Near", orthographic.near);
+				Engine::Yaml::Read(orthographicNode, "Far", orthographic.far);
+
+				if (uint32_t background; Engine::Yaml::Read(camNode, "Background", background))
+				{
+					camera->SetBackground(static_cast<Camera::Background>(background));
+				}
+
+				if (glm::vec4 color; Engine::Yaml::Read(camNode["ClearColor"], color))
+				{
+					camera->SetClearColor(color);
+				}
+
+				component.camera = camera.release(); // pass ownership to the component, TODO: possible memory leak later :p
+			}
+
+			// Light
+			if (auto lightNode = entityNode["LightComponent"]; lightNode)
+			{
+				auto& component = entity.AddComponent<LightComponent>();
+
+				if (uint32_t type; Engine::Yaml::Read(lightNode, "Type", type))
+				{
+					component.type = static_cast<LightType>(type);
+				}
+
+				Engine::Yaml::Read(lightNode["Color"], component.color);
+				Engine::Yaml::Read(lightNode, "Intensity", component.intensity);
+				Engine::Yaml::Read(lightNode, "Range", component.range);
+				Engine::Yaml::Read(lightNode, "Angle", component.angle);
+			}
+
+			// Audio Source
+			if (auto audioSourceNode = entityNode["AudioSourceComponent"]; audioSourceNode)
+			{
+				auto& component = entity.AddComponent<AudioSourceComponent>();
+
+				if (uint64_t id; Engine::Yaml::Read<uint64_t>(audioSourceNode, "AudioClip", id))
+				{
+					component.clip = AssetManager::GetAsset<AudioClip>(id);
+				}
+
+				Engine::Yaml::Read(audioSourceNode, "Volume", component.volume);
+				Engine::Yaml::Read(audioSourceNode, "Loop", component.loop);
+				Engine::Yaml::Read(audioSourceNode, "PlayOnAwake", component.playOnAwake);
+			}
+
+			// Audio Listener
+			{
+
+			}
+
+			// Script
+			{
+
 			}
 		}
 

@@ -4,7 +4,6 @@
 #include "Editor/Windows/Utility/Property.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Command/TransformEntity.h"
-#include "Editor/Core/EditorContext.h"
 
 #include "Engine/Scene/Components.h"
 #include "Engine/Asset/AssetManager.h"
@@ -97,7 +96,7 @@ namespace Editor
 
 		auto& tc = m_Entity.GetComponent<Engine::TransformComponent>();
 
-		PropertyEditResult result;
+		EditResult result;
 		static TransformData s_TransformBefore;
 
 		PropertyTable table;
@@ -274,12 +273,8 @@ namespace Editor
 		if (component.type == Engine::LightType::Spot)
 		{
 			{
-				PropertyRow row("Inner Angle");
-				FloatField("Inner Angle", component.innerAngle, 0.0f, 90.0f);
-			}
-			{
-				PropertyRow row("Outer Angle");
-				FloatField("Outer Angle", component.outerAngle, 0.0f, 90.0f);
+				PropertyRow row("Angle");
+				FloatField("Angle", component.angle, 0.0f, 180.0f);
 			}
 		}
 	}

@@ -97,13 +97,4 @@ namespace Engine::GraphicsContext
 	{
 		return s_Queue;
 	}
-
-	ENGINE_API GraphicsHandles* GetGraphicsHandles()
-	{
-		static GraphicsHandles handles;
-		handles.instance = s_Instance;
-		handles.device = s_Device;
-		handles.queue = s_Queue;
-		return &handles;
-	}
 }

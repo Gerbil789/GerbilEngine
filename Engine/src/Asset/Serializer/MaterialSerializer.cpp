@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/Serializer/YamlUtils.h"
+#include "Engine/Utility/Yaml.h"
 
 namespace Engine
 {

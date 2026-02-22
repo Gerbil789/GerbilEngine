@@ -1,6 +1,6 @@
 #include "InspectorWindow.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Editor/Core/EditorContext.h"
+#include "Editor/Core/EditorSelection.h"
 #include "Engine/Audio/AudioClip.h"
 #include <imgui.h>
 
@@ -10,8 +10,8 @@ namespace Editor
 	{
 		ImGui::Begin("Inspector");
 
-		auto& entities = EditorContext::Entities();
-		auto& assets = EditorContext::Assets();
+		auto& entities = EditorSelection::Entities();
+		auto& assets = EditorSelection::Assets();
 
 		if (!entities.Empty())
 		{

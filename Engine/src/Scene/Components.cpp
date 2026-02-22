@@ -34,12 +34,12 @@ namespace Engine
     Audio::Stop(clip);
 	}
 
-  void AudioSourceComponent::SetVolume(float volume)
+  void AudioSourceComponent::SetVolume(float value)
   {
-    Audio::SetVolume(clip, volume);
+    Audio::SetVolume(clip, value);
   }
-  void AudioSourceComponent::SetLooping(bool loop)
+  void AudioSourceComponent::SetLooping(bool value)
   {
-    Audio::SetLooping(clip, loop);
+    Audio::SetLooping(clip, value);
   }
 }

@@ -2,7 +2,7 @@
 
 #include "Editor/Command/ICommand.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Editor/Core/EditorContext.h"
+#include "Editor/Core/EditorSelection.h"
 
 namespace Editor
 {
@@ -15,7 +15,7 @@ namespace Editor
     {
       if (m_Entity)
       {
-				EditorContext::Entities().Clear();
+				EditorSelection::Entities().Clear();
         m_Entity.Destroy();
       }
     }
@@ -23,7 +23,7 @@ namespace Editor
     void Undo() override
     {
       m_Entity = Engine::SceneManager::GetActiveScene()->CreateEntity(m_Name);
-			EditorContext::Entities().Select(m_Entity);
+			EditorSelection::Entities().Select(m_Entity);
     }
 
   private:

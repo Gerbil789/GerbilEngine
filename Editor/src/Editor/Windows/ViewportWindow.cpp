@@ -1,10 +1,9 @@
 #include "ViewportWindow.h"
 
 #include "Editor/Windows/Utility/ScopedStyle.h"
-#include "Editor/Core/EditorContext.h"
+#include "Editor/Core/EditorSelection.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Command/TransformEntity.h"
-#include "Engine/Core/Runtime.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Core/Input.h"
@@ -21,6 +20,8 @@
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+
+#include "Editor/Core/EditorRuntime.h"
 
 namespace Editor
 {
@@ -61,6 +62,7 @@ namespace Editor
 		Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene* scene)
 			{
 				m_Scene = scene;
+				EditorSelection::Entities().Clear();
 				m_Renderer.SetScene(m_Scene);
 			});
 	}
@@ -109,10 +111,17 @@ namespace Editor
 		ImGui::SetCursorScreenPos(ImVec2(viewportMin.x + (-viewportMin.x + viewportMax.x) / 2.0f - 30.0f, viewportMin.y + 4.0f));
 
 		ImGui::SetNextItemWidth(60.0f);
-		if (ImGui::Button("Play"))
+
+
+		if(EditorRuntime::GetState() == EditorState::Edit)
 		{
-			Engine::Runtime::Start();
+			if (ImGui::Button("Play")) EditorRuntime::SetEditorState(EditorState::Play);
 		}
+		else
+		{
+			if (ImGui::Button("Stop")) EditorRuntime::SetEditorState(EditorState::Edit);
+		}
+	
 
 		ImGui::SetCursorScreenPos(ImVec2(viewportMax.x - 120.0f - 8.0f, viewportMin.y + 4.0f));
 
@@ -165,11 +174,11 @@ namespace Editor
 		{
 			if (m_HoveredEntity)
 			{
-				EditorContext::Entities().Select(m_HoveredEntity, Engine::Input::IsKeyPressed(Engine::Key::LeftControl) || Engine::Input::IsKeyPressed(Engine::Key::LeftShift));
+				EditorSelection::Entities().Select(m_HoveredEntity, Engine::Input::IsKeyPressed(Engine::Key::LeftControl) || Engine::Input::IsKeyPressed(Engine::Key::LeftShift));
 			}
 			else
 			{
-				EditorContext::Entities().Clear();
+				EditorSelection::Entities().Clear();
 			}
 		}
 	}
@@ -204,7 +213,7 @@ namespace Editor
 			return;
 		}
 
-		Engine::Entity selectedEntity = EditorContext::Entities().GetPrimary();
+		Engine::Entity selectedEntity = EditorSelection::Entities().GetPrimary();
 
 		if (!selectedEntity)
 		{
@@ -237,7 +246,7 @@ namespace Editor
 		{
 			m_InitialWorldTransforms.clear();
 
-			auto& selection = EditorContext::Entities().GetAll();
+			auto& selection = EditorSelection::Entities().GetAll();
 
 			for (auto entity : selection)
 			{
@@ -254,7 +263,7 @@ namespace Editor
 			glm::mat4 newPrimaryWorld = worldTransform;
 			glm::mat4 delta = newPrimaryWorld * glm::inverse(m_InitialPrimaryWorld);
 
-			for (auto entity : EditorContext::Entities().GetAll())
+			for (auto entity : EditorSelection::Entities().GetAll())
 			{
 				auto& tc = entity.GetComponent<Engine::TransformComponent>();
 
@@ -284,7 +293,7 @@ namespace Editor
 
 		if (!isUsing && m_GizmoPreviouslyUsed)
 		{
-			auto& selection = EditorContext::Entities().GetAll();
+			auto& selection = EditorSelection::Entities().GetAll();
 
 			std::vector<TransformData> before, after;
 

@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Graphics/RenderPass/EntityIdPass.h"
 #include "Engine/Scene/Entity.h"
-#include "Engine/Utils/File.h"
+#include "Engine/Utility/File.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Graphics/WebGPUUtils.h"
@@ -131,8 +131,6 @@ namespace Engine
 		}
 		const uint64_t* pixel = reinterpret_cast<const uint64_t*>(mapped);
 		Engine::Uuid id(*pixel);
-
-		readbackBuffer.release(); //TODO: must this be?
 
 		return id;
 	}

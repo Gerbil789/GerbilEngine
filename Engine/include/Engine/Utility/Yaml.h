@@ -12,15 +12,30 @@ namespace Engine::Yaml
   struct Map
   {
     YAML::Emitter& out;
-    explicit Map(YAML::Emitter& e) : out(e) { out << YAML::BeginMap; }
+
+    Map(YAML::Emitter& e) : out(e)
+    {
+      out << YAML::BeginMap;
+    }
+    Map(YAML::Emitter& e, std::string_view key) : out(e)
+    { 
+      out << YAML::Key << key << YAML::Value;
+      out << YAML::BeginMap; 
+    }
     ~Map() { out << YAML::EndMap; }
   };
 
   struct Seq
   {
     YAML::Emitter& out;
-    explicit Seq(YAML::Emitter& e, bool flow = false) : out(e)
+    Seq(YAML::Emitter& e, bool flow = false) : out(e)
     {
+      if (flow) out << YAML::Flow;
+      out << YAML::BeginSeq;
+    }
+    Seq(YAML::Emitter& e, std::string_view key, bool flow = false) : out(e)
+    {
+      out << YAML::Key << key << YAML::Value;
       if (flow) out << YAML::Flow;
       out << YAML::BeginSeq;
     }

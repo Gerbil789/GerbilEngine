@@ -20,15 +20,16 @@ namespace Engine
 		auto view = srcRegistry.view<IdentityComponent>();
 		for (auto srcEntity : view)
 		{
-			const auto& id = srcRegistry.get<IdentityComponent>(srcEntity);
-			const auto& name = srcRegistry.get<NameComponent>(srcEntity);
+			const auto& id = srcRegistry.get<IdentityComponent>(srcEntity).id;
+			const auto& name = srcRegistry.get<NameComponent>(srcEntity).name;
 
-			Entity newEntity = newScene->CreateEntity(id.id, name.name);
+			Entity newEntity = newScene->CreateEntity(name);
+			newEntity.GetComponent<IdentityComponent>().id = id;
 
 			const auto& transform = srcRegistry.get<TransformComponent>(srcEntity);
 			newEntity.GetComponent<TransformComponent>() = transform;
 
-			uuidToEntityMap[id.id] = newEntity.Handle();
+			uuidToEntityMap[id] = newEntity.Handle();
 		}
 
 		auto copyComponent = [&](auto typeTag)
@@ -63,13 +64,8 @@ namespace Engine
 
 	Entity Scene::CreateEntity(const std::string& name)
 	{
-		return CreateEntity(Uuid(), name);
-	}
-
-	Entity Scene::CreateEntity(Uuid uuid, const std::string& name)
-	{
 		entt::entity handle = m_Registry.create();
-		m_Registry.emplace<IdentityComponent>(handle, uuid, true);
+		m_Registry.emplace<IdentityComponent>(handle, Uuid(), true);
 		m_Registry.emplace<NameComponent>(handle, name);
 		m_Registry.emplace<TransformComponent>(handle);
 		return Entity{ handle, &m_Registry };

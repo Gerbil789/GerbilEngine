@@ -69,16 +69,15 @@ namespace Engine
 		Camera* camera = nullptr;
 	};
 
-	enum class LightType { Point = 0, Directional = 1, Spot = 2 }; //TODO: move to the light system
+	enum class LightType : std::uint8_t { Point = 0, Directional = 1, Spot = 2 };
+
 	struct ENGINE_API LightComponent
 	{
-		LightType type = LightType::Point;
 		glm::vec3 color = { 1.0f, 1.0f, 1.0f };
 		float intensity = 1.0f;
 		float range = 10.0f;
-		float innerAngle = 30.0f;
-		float outerAngle = 50.0f;
-		glm::vec3 attenuation = { 1.0f, 0.09f, 0.032f }; // Constant, Linear, Quadratic
+		float angle = 45.0f;
+		LightType type = LightType::Point;
 
 		void Reset()
 		{
@@ -86,9 +85,7 @@ namespace Engine
 			color = { 1.0f, 1.0f, 1.0f };
 			intensity = 1.0f;
 			range = 10.0f;
-			innerAngle = 30.0f;
-			outerAngle = 50.0f;
-			attenuation = { 1.0f, 0.09f, 0.032f };
+			angle = 45.0f;
 		}
 	};
 
@@ -109,8 +106,8 @@ namespace Engine
 
 		void Play();
 		void Stop();
-		void SetVolume(float volume);
-		void SetLooping(bool loop);
+		void SetVolume(float value);
+		void SetLooping(bool value);
 
 	};
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Engine/Scene/Scene.h"
-
 namespace Engine
 {
+	class Scene;
+
 	class SceneSerializer
 	{
 	public:

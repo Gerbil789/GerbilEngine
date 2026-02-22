@@ -3,7 +3,7 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Utils/File.h"
+#include "Engine/Utility/File.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 
 namespace Engine
@@ -60,7 +60,7 @@ namespace Engine
 		pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
 		pipelineDesc.primitive.stripIndexFormat = wgpu::IndexFormat::Undefined;
 		pipelineDesc.primitive.frontFace = wgpu::FrontFace::CCW;
-		pipelineDesc.primitive.cullMode = wgpu::CullMode::None; //TODO: Add culling later
+		pipelineDesc.primitive.cullMode = wgpu::CullMode::None;
 
 		wgpu::BlendState blendState;
 		blendState.color.srcFactor = wgpu::BlendFactor::SrcAlpha;

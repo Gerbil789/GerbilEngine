@@ -1,5 +1,5 @@
 #include "enginepch.h"
-#include "Engine/Asset/Serializer/YamlUtils.h"
+#include "Engine/Utility/Yaml.h"
 
 namespace Engine::Yaml
 {

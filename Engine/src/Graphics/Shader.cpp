@@ -50,7 +50,6 @@ namespace Engine
 		pipelineDesc.vertex.constants = nullptr;
 
 		pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
-		pipelineDesc.primitive.stripIndexFormat = wgpu::IndexFormat::Undefined; // only for strip topologies
 		pipelineDesc.primitive.frontFace = wgpu::FrontFace::CCW;
 		pipelineDesc.primitive.cullMode = wgpu::CullMode::Back; //TODO: Configure in material?
 

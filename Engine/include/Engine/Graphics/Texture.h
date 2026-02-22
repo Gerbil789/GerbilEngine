@@ -1,8 +1,6 @@
 #pragma once
 
-#include "Engine/Core/API.h"
 #include "Engine/Asset/Asset.h"
-#include "Engine/Core/Core.h"
 #include <webgpu/webgpu.hpp>
 #include <glm/glm.hpp>
 

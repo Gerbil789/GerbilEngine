@@ -65,9 +65,6 @@ Assets:
   - ID: 15608668046686712752
     Path: Meshes\sphere.glb
     Type: Mesh
-  - ID: 16538296205849696160
-    Path: Scenes\MyScene.scene
-    Type: Scene
   - ID: 1532821608029403520
     Path: Textures\background.png
     Type: Texture

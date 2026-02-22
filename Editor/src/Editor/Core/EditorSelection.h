@@ -6,7 +6,7 @@
 
 namespace Editor
 {
-  class EditorContext
+  class EditorSelection
   {
   public:
     static EntitySelection& Entities() { return m_EntitySelection; }
@@ -37,6 +37,6 @@ namespace Editor
     inline static EntitySelection m_EntitySelection;
     inline static AssetSelection  m_AssetSelection;
 
-    inline static Project* m_Project = nullptr;
+    inline static Project* m_Project = nullptr; //TODO: remove from here
   };
 }

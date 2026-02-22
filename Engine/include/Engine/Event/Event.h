@@ -2,7 +2,6 @@
 
 #include <string>
 #include <functional>
-//#include <ostream>
 
 namespace Engine
 {

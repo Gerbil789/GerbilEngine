@@ -1,20 +1,27 @@
 #pragma once
 
-#include "Engine/Graphics/Texture.h"
 #include <string>
 #include <imgui.h>
 #include <glm/glm.hpp>
+#include <limits>
+
+namespace Engine { class Texture2D; }
 
 namespace Editor
 {
-	struct PropertyEditResult
+	constexpr float fltMin = std::numeric_limits<float>::lowest();
+	constexpr float fltMax = std::numeric_limits<float>::max();
+	constexpr int intMin = std::numeric_limits<int>::lowest();
+	constexpr int intMax = std::numeric_limits<int>::max();
+
+	struct EditResult
 	{
 		bool changed = false;		// value changed this frame
 		bool active = false;		// currently being edited
 		bool started = false;		// first frame of interaction
 		bool finished = false;	// released after edit
 
-		PropertyEditResult& operator |= (const PropertyEditResult& other)
+		EditResult& operator |= (const EditResult& other)
 		{
 			changed |= other.changed;
 			active |= other.active;
@@ -73,11 +80,13 @@ namespace Editor
 		template<typename Fn>
 		void Accept(const char* type, Fn&& fn)
 		{
+			static_assert(std::is_invocable_v<Fn, void*>, "Accept() requires callable(void*)");
+
 			if (!active) return;
 
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(type))
 			{
-				fn(payload->Data);
+				std::forward<Fn>(fn)(payload->Data);
 			}
 		}
 
@@ -85,15 +94,15 @@ namespace Editor
 		bool active = false;
 	};
 
-	PropertyEditResult TextureField(const std::string& label, Engine::Texture2D*& texture);
-	PropertyEditResult IntField(const std::string& label, int& value, int min = INT_MIN, int max = INT_MAX);
-	PropertyEditResult FloatField(const std::string& label, float& value, float min = FLT_MIN, float max = FLT_MAX, float speed = 0.05f);
-	PropertyEditResult FloatSliderField(const std::string& label, float& value, float min = FLT_MIN, float max = FLT_MAX);
-	PropertyEditResult Vec2Field(const std::string& label, glm::vec2& value);
-	PropertyEditResult Vec3Field(const std::string& label, glm::vec3& value);
-	PropertyEditResult BoolField(const std::string& label, bool& value);
-	PropertyEditResult ColorField(const std::string& label, glm::vec4& color);
-	PropertyEditResult ColorField(const std::string& label, glm::vec3& color);
-	PropertyEditResult EnumField(const std::string& label, int& value, const std::vector<std::string>& options);
-	PropertyEditResult TextField(const std::string& label, std::string& text);
+	EditResult TextureField(const std::string& label, Engine::Texture2D*& texture);
+	EditResult IntField(const std::string& label, int& value, int min = intMin, int max = intMax);
+	EditResult FloatField(const std::string& label, float& value, float min = fltMin, float max = fltMax, float speed = 0.05f);
+	EditResult FloatSliderField(const std::string& label, float& value, float min = 0, float max = 1);
+	EditResult Vec2Field(const std::string& label, glm::vec2& value);
+	EditResult Vec3Field(const std::string& label, glm::vec3& value, float min = fltMin, float max = fltMax, float speed = 0.01f);
+	EditResult BoolField(const std::string& label, bool& value);
+	EditResult ColorField(const std::string& label, glm::vec4& color);
+	EditResult ColorField(const std::string& label, glm::vec3& color);
+	EditResult EnumField(const std::string& label, int& value, const std::vector<std::string>& options);
+	EditResult TextField(const std::string& label, std::string& text);
 }
