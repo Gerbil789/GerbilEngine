@@ -1,6 +1,7 @@
 #include "Property.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Graphics/Texture.h"
+#include "Engine/Audio/AudioClip.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
 
@@ -54,6 +55,61 @@ namespace Editor
 			if (ImGui::MenuItem("Remove Texture"))
 			{
 				texture = nullptr;
+				result.changed = true;
+			}
+			ImGui::EndPopup();
+		}
+
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+
+		ImGui::PopID();
+		return result;
+	}
+
+	EditResult AudioClipField(const std::string& label, Engine::AudioClip*& audioClip)
+	{
+		EditResult result;
+
+		ImGui::PushID(label.c_str());
+
+		std::string buttonText = audioClip != nullptr ? Engine::AssetManager::GetAssetName(audioClip->id) : "##Clip";
+
+		ImGui::Button(buttonText.c_str(), ImVec2(-FLT_MIN, 0));
+
+		if (audioClip)
+		{
+			if (ImGui::BeginDragDropSource())
+			{
+				Engine::Uuid uuid = audioClip->id;
+				ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
+				ImGui::Text("%llu", static_cast<unsigned long long>((uint64_t)audioClip->id));
+				ImGui::EndDragDropSource();
+			}
+		}
+
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
+			{
+				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
+				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Audio)
+				{
+					audioClip = Engine::AssetManager::GetAsset<Engine::AudioClip>(droppedUUID);
+					result.changed = true;
+				}
+
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+		if (audioClip && ImGui::BeginPopupContextItem("Options"))
+		{
+			if (ImGui::MenuItem("Remove"))
+			{
+				audioClip = nullptr;
 				result.changed = true;
 			}
 			ImGui::EndPopup();
@@ -237,7 +293,7 @@ namespace Editor
 		EditResult result;
 		ImGui::PushID(label.c_str());
 
-		if (ImGui::BeginCombo("##value", options[value].c_str()))
+		if (ImGui::BeginCombo("##value", value >= 0 ? options[value].c_str() : nullptr))
 		{
 			for (int i = 0; i < static_cast<int>(options.size()); i++)
 			{

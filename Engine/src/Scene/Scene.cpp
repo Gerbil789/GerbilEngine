@@ -21,11 +21,12 @@ namespace Engine
 		for (auto srcEntity : view)
 		{
 			const auto& id = srcRegistry.get<IdentityComponent>(srcEntity).id;
+			const auto& enabled = srcRegistry.get<IdentityComponent>(srcEntity).enabled;
 			const auto& name = srcRegistry.get<NameComponent>(srcEntity).name;
 
 			Entity newEntity = newScene->CreateEntity(name);
 			newEntity.GetComponent<IdentityComponent>().id = id;
-
+			newEntity.GetComponent<IdentityComponent>().enabled = enabled;
 			const auto& transform = srcRegistry.get<TransformComponent>(srcEntity);
 			newEntity.GetComponent<TransformComponent>() = transform;
 

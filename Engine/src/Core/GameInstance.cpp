@@ -7,7 +7,6 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Script/Script.h"
-#include "Engine/Core/Time.h"
 
 namespace Engine
 {
@@ -57,7 +56,6 @@ namespace Engine
 	{
 		if (m_GameWindow->IsMinimized()) return;
 
-		float delta = Engine::Time::DeltaTime();
 
 		// update scripts
 		for (auto& ent : m_ActiveScene->GetEntities<Engine::ScriptComponent>())
@@ -65,7 +63,7 @@ namespace Engine
 			auto& scriptComp = ent.GetComponent<Engine::ScriptComponent>();
 			if (scriptComp.instance)
 			{
-				scriptComp.instance->OnUpdate(delta);
+				scriptComp.instance->OnUpdate();
 			}
 		}
 

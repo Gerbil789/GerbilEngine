@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <limits>
 
-namespace Engine { class Texture2D; }
+namespace Engine { class Texture2D; class AudioClip; }
 
 namespace Editor
 {
@@ -95,6 +95,7 @@ namespace Editor
 	};
 
 	EditResult TextureField(const std::string& label, Engine::Texture2D*& texture);
+	EditResult AudioClipField(const std::string& label, Engine::AudioClip*& audioClip);
 	EditResult IntField(const std::string& label, int& value, int min = intMin, int max = intMax);
 	EditResult FloatField(const std::string& label, float& value, float min = fltMin, float max = fltMax, float speed = 0.05f);
 	EditResult FloatSliderField(const std::string& label, float& value, float min = 0, float max = 1);

@@ -10,15 +10,15 @@ extern "C"
 {
   GAME_API void RegisterScripts(Engine::ScriptRegistry& registry)
   {
-    std::vector<ScriptField> fields
-    {
-        { "MoveSpeed", ScriptFieldType::Float, offsetof(PlayerController, MoveSpeed) },
-        { "RotateSpeed", ScriptFieldType::Float, offsetof(PlayerController, RotateSpeed) },
-        { "Rotate", ScriptFieldType::Bool, offsetof(PlayerController, Rotate) },
-				{ "TestTexture", ScriptFieldType::Texture, offsetof(PlayerController, TestTexture) }
-    };
+    //std::initializer_list<ScriptField> fields
+    //{
+    //    { "MoveSpeed", ScriptFieldType::Float, offsetof(PlayerController, MoveSpeed) },
+    //    { "RotateSpeed", ScriptFieldType::Float, offsetof(PlayerController, RotateSpeed) },
+    //    { "Rotate", ScriptFieldType::Bool, offsetof(PlayerController, Rotate) },
+				//{ "TestTexture", ScriptFieldType::Texture, offsetof(PlayerController, TestTexture) }
+    //};
     
-    registry.Register<PlayerController>(fields);
-    registry.Register<RandomMovement>({});
+    registry.Register<PlayerController>();
+    registry.Register<RandomMovement>();
   }
 }

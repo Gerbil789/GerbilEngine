@@ -6,25 +6,26 @@
 #include "Engine/Scene/Components.h"
 #include "Engine/Audio/AudioClip.h"
 #include "Engine/Audio/Audio.h"
+#include "Engine/Core/Time.h"
 
 using namespace Engine;
 
 void PlayerController::OnCreate()
 {
-	auto& component = Self.AddComponent<AudioSourceComponent>();
-	AudioClip* clip = AssetManager::GetAsset<AudioClip>(6350057269135839349);
-	if(!clip)
-	{
-		LOG_ERROR("Audio clip not found");
-		return;
-	}
+	//auto& component = Self.AddComponent<AudioSourceComponent>();
+	//AudioClip* clip = AssetManager::GetAsset<AudioClip>(6350057269135839349);
+	//if(!clip)
+	//{
+	//	LOG_ERROR("Audio clip not found");
+	//	return;
+	//}
 
-	component.clip = clip;
+	//component.clip = clip;
 }
 
-void PlayerController::OnUpdate(float delta)
+void PlayerController::OnUpdate()
 {
-	ProcessInput(delta);
+	ProcessInput(Time::DeltaTime());
 
 	if (Input::IsKeyPressed(Key::Tab))
 	{
@@ -37,13 +38,15 @@ void PlayerController::OnUpdate(float delta)
 	if (Input::IsKeyPressed(Key::P))
 	{
 		LOG_TRACE("Playing audio");
-		Self.GetComponent<AudioSourceComponent>().Play();
+		Audio::Play(clip);
+		//Self.GetComponent<AudioSourceComponent>().Play();
 	}
 
 	if (Input::IsKeyPressed(Key::O))
 	{
 		LOG_TRACE("Stopping audio");
-		Self.GetComponent<AudioSourceComponent>().Stop();
+		Audio::Stop(clip);
+		//Self.GetComponent<AudioSourceComponent>().Stop();
 	}
 
 }

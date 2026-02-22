@@ -5,8 +5,6 @@
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Script/Script.h"
-#include "Engine/Script/ScriptRegistry.h"
-#include "Engine/Core/Time.h"
 #include <Windows.h>
 
 namespace Editor
@@ -79,17 +77,13 @@ namespace Editor
 		m_RuntimeScene = Engine::Scene::Copy(m_EditorScene);
 		Engine::SceneManager::SetActiveScene(m_RuntimeScene);
 
-		auto& registry = Engine::ScriptRegistry::Get();
+
 
 		auto entities = m_RuntimeScene->GetEntities<Engine::ScriptComponent>();
 		for(auto ent : entities)
 		{
 			auto& sc = ent.GetComponent<Engine::ScriptComponent>();
-
-			const auto& desc = registry.GetDescriptor(sc.id);
-			//sc.instance = desc.factory();
 			sc.instance->Self = ent;
-			//sc.instance->OnCreate();
 		}
 
 		/*if (m_GameInstance)
@@ -129,7 +123,7 @@ namespace Editor
 			auto& scriptComp = ent.GetComponent<Engine::ScriptComponent>();
 			if (scriptComp.instance)
 			{
-				scriptComp.instance->OnUpdate(Engine::Time::DeltaTime());
+				scriptComp.instance->OnUpdate();
 			}
 		}
 

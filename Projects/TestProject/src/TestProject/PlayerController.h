@@ -1,20 +1,30 @@
 #pragma once
 
 #include "Engine/Script/Script.h"
-#include "Engine/Graphics/Texture.h"
 
 class PlayerController : public Engine::Script
 {
-public:
-  float MoveSpeed = 10.0f;
-	float RotateSpeed = 50.0f;
-	bool Rotate = true;
+	SCRIPT_CLASS(PlayerController)
 
-	Engine::Texture2D* TestTexture = nullptr;
+public:
+
+  PROPERTY(MoveSpeed, "Move Speed")
+    float MoveSpeed = 10.0f;
+
+  PROPERTY(RotateSpeed, "Rotate Speed")
+    float RotateSpeed = 50.0f;
+
+  PROPERTY(Rotate, "Rotate")
+    bool Rotate = true;
+
+  PROPERTY(TestTexture, "TEST")
+    Engine::Texture2D* TestTexture = nullptr;
+
+  PROPERTY(clip, "Audio test")
+    Engine::AudioClip* clip = nullptr;
 
 	void OnCreate() override;
-
-	void OnUpdate(float delta) override;
+	void OnUpdate() override;
 
 private:
 	void ProcessInput(float delta);

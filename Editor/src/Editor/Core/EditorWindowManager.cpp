@@ -234,9 +234,6 @@ namespace Editor
 
 		ImGui::Render();
 
-		//ImGui::UpdatePlatformWindows();
-		//ImGui::RenderPlatformWindowsDefault();
-
 		wgpu::SurfaceTexture surfaceTexture;
 		s_Surface.getCurrentTexture(&surfaceTexture);
 		if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal)

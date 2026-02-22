@@ -15,7 +15,7 @@
 
 namespace Engine
 {
-  enum class ScriptFieldType { Float, Int, Bool, Texture };
+  enum class ScriptFieldType { Float, Int, Bool, Texture, AudioClip };
 
   struct ScriptField
   {
@@ -57,14 +57,14 @@ namespace Engine
     }
 
     template<typename T>
-    void Register(std::vector<ScriptField> fields)
+    void Register()
     {
       auto name = ScriptName(typeid(T).name());
 
       ScriptDescriptor desc;
       desc.name = name;
       desc.factory = [] { return new T(); };
-      desc.fields = std::move(fields);
+      desc.fields = T::GetProperties();
       m_Registry.emplace(name, std::move(desc));
     }
 
@@ -79,6 +79,15 @@ namespace Engine
         result.push_back(&desc);
 
       return result;
+    }
+
+    std::vector<std::string> GetAllScriptNames() 
+    {
+      std::vector<std::string> scriptNames; //TODO: cache this, this is getting called every frame
+      scriptNames.reserve(m_Registry.size());
+      for (const auto& [_, desc] : m_Registry)
+        scriptNames.push_back(desc.name);
+      return scriptNames;
     }
 
     void Clear()
@@ -96,6 +105,4 @@ namespace Engine
 extern "C"
 {
   GAME_API void RegisterScripts(Engine::ScriptRegistry& registry);
-
-  //GAME_API void OnLoad(GameContext* context);
 }

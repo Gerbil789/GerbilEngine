@@ -25,6 +25,8 @@
 #include "Editor/Command/AddComponentCommand.h"
 #include "Editor/Command/RemoveComponentCommand.h"
 
+#include <memory>
+
 namespace Editor
 {
 	struct EntityHeader
@@ -37,7 +39,7 @@ namespace Editor
 			ImGui::SameLine();
 
 			std::string& name = entity.GetComponent<Engine::NameComponent>().name;
-			if(TextField("Name", name).finished)
+			if (TextField("Name", name).finished)
 			{
 				//TODO: somehow store the original name
 				//EditorCommandManager::ModifyComponent<Engine::NameComponent>(entity, { name }, { name });
@@ -264,7 +266,7 @@ namespace Editor
 			FloatField("Intensity", component.intensity, 0.0f);
 		}
 
-		if(component.type != Engine::LightType::Directional)
+		if (component.type != Engine::LightType::Directional)
 		{
 			PropertyRow row("Range");
 			FloatField("Range", component.range, 0.0f);
@@ -335,7 +337,7 @@ namespace Editor
 
 		{
 			PropertyRow row("Looping");
-			if(BoolField("Looping", component.loop).changed)
+			if (BoolField("Looping", component.loop).changed)
 			{
 				component.SetLooping(component.loop);
 			}
@@ -343,7 +345,7 @@ namespace Editor
 
 		{
 			PropertyRow row("Volume");
-			if(FloatField("Volume", component.volume, 0.0f, 1.0f, 0.01f).changed)
+			if (FloatField("Volume", component.volume, 0.0f, 1.0f, 0.01f).changed)
 			{
 				component.SetVolume(component.volume);
 			}
@@ -354,9 +356,11 @@ namespace Editor
 	{
 		if (!m_Entity.HasComponent<Engine::ScriptComponent>()) return;
 
+		static int id = -1;
+
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
-			{ "Reset", [this] {auto before = m_Entity.GetComponent<Engine::ScriptComponent>(); auto after = before; after.Reset();
+			{ "Reset", [this] {id = -1; auto before = m_Entity.GetComponent<Engine::ScriptComponent>(); auto after = before; after.Reset();
 						EditorCommandManager::ModifyComponent<Engine::ScriptComponent>(m_Entity, before, after); } },
 
 			{ "Remove", [this] {EditorCommandManager::RemoveComponent<Engine::ScriptComponent>(m_Entity); } }
@@ -371,37 +375,42 @@ namespace Editor
 		Engine::ScriptRegistry& registry = Engine::ScriptRegistry::Get();
 		Engine::ScriptComponent& component = m_Entity.GetComponent<Engine::ScriptComponent>();
 
+		const auto& scriptNames = registry.GetAllScriptNames();
+
 		{
 			PropertyRow row("Script");
-			std::vector<const Engine::ScriptDescriptor*> scripts = registry.GetAllDescriptors();
-			std::vector<std::string> scriptNames;
-			scriptNames.reserve(scripts.size());
-			for (const auto* desc : scripts)
-				scriptNames.push_back(desc->name);
-			int current = 0;
-			int index = 0;
-			for(auto name : scriptNames)
-			{
-				if (name == component.id)
-				{
-					index = current;
-					break;
-				}
-				current++;
-			}
 
-			if (EnumField("Script", index, scriptNames).changed && index >= 0)
+			if (ImGui::BeginCombo("##Combo", id >= 0 ? scriptNames[id].c_str() : nullptr, ImGuiComboFlags_NoArrowButton))
 			{
-				const Engine::ScriptDescriptor* desc = scripts[index];
-				component.id = desc->name;
-				component.instance = desc->factory();
-				component.instance->Self = m_Entity;
-				component.instance->OnCreate();
+				static ImGuiTextFilter filter; 
+				if (ImGui::IsWindowAppearing()) 
+				{ 
+					ImGui::SetKeyboardFocusHere(); 
+					filter.Clear(); 
+				} 
+				
+				filter.Draw("##Filter", -FLT_MIN); 
+				for (int n = 0; n < scriptNames.size(); n++)
+				{ 
+					const bool is_selected = (id == n); 
+					if (filter.PassFilter(scriptNames[n].c_str()))
+					{ 
+						if (ImGui::Selectable(scriptNames[n].c_str(), is_selected)) 
+						{ 
+							id = n;
+							const Engine::ScriptDescriptor& desc = registry.GetDescriptor(scriptNames[n]);
+							component.id = desc.name;
+							component.instance = desc.factory();
+							component.instance->Self = m_Entity;
+							component.instance->OnCreate();
+						} 
+					} 
+				}
+				ImGui::EndCombo();
 			}
 		}
 
-		if (!component.instance)
-			return;
+		if (!component.instance) return;
 
 		ImGui::Separator();
 
@@ -444,32 +453,19 @@ namespace Editor
 				break;
 			}
 
+			case Engine::ScriptFieldType::AudioClip:
+			{
+				Engine::AudioClip*& audioClip = *reinterpret_cast<Engine::AudioClip**>(fieldPtr);
+				AudioClipField(field.name, audioClip);
+				break;
+			}
+
 			}
 		}
 	}
 
 	void EntityInspectorPanel::DrawAddComponentButton()
 	{
-		ImGui::Separator();
-
-		ScopedStyle style
-		{
-			{ ImGuiStyleVar_FramePadding, ImVec2(20, 5) },
-			{ ImGuiStyleVar_FrameRounding, 7.5f }
-		};
-
-		const float buttonWidth = 200.0f;
-		float cursorX = (ImGui::GetContentRegionAvail().x - buttonWidth) * 0.5f;
-		if (cursorX > 0.0f)
-		{
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + cursorX);
-		}
-
-		if (ImGui::Button("Add Component", { buttonWidth, 30.0f }))
-		{
-			ImGui::OpenPopup("AddComponent");
-		}
-
 		struct AddComponentEntry
 		{
 			const char* name;
@@ -478,7 +474,7 @@ namespace Editor
 
 		static constexpr std::array<AddComponentEntry, 6> entries
 		{
-			AddComponentEntry{ "Camera",        [](Engine::Entity e) { auto& component = e.AddComponent<Engine::CameraComponent>(); component.camera = new Engine::Camera(); }},
+			AddComponentEntry{ "Camera",        [](Engine::Entity e) { auto& component = e.AddComponent<Engine::CameraComponent>(); component.camera = std::make_unique<Engine::Camera>().release(); }},
 			AddComponentEntry{ "Mesh",          [](Engine::Entity e) { e.AddComponent<Engine::MeshComponent>(); } },
 			AddComponentEntry{ "Light",         [](Engine::Entity e) { e.AddComponent<Engine::LightComponent>(); } },
 			AddComponentEntry{ "AudioSource",   [](Engine::Entity e) { e.AddComponent<Engine::AudioSourceComponent>(); } },
@@ -486,16 +482,43 @@ namespace Editor
 			AddComponentEntry{ "Script",				[](Engine::Entity e) { e.AddComponent<Engine::ScriptComponent>(); } }
 		};
 
-		if (ImGui::BeginPopup("AddComponent"))
+		ImGui::Separator();
+
+		const float buttonWidth = 200.0f;
+		float cursorX = (ImGui::GetContentRegionAvail().x - buttonWidth) * 0.5f;
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + cursorX);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10);
+
+		if (ImGui::Button("Add Component", { buttonWidth, 30.0f }))
 		{
-			for (auto& entry : entries)
+			ImGui::OpenPopup("AddComponentPopup");
+		}
+
+		ImGui::SetNextWindowSize({ 300, 200 });
+		ImGui::SetNextWindowPos(ImVec2(ImGui::GetCursorScreenPos().x + (ImGui::GetContentRegionAvail().x - 300) * 0.5f, ImGui::GetCursorScreenPos().y), ImGuiCond_Always);
+
+		if (ImGui::BeginPopup("AddComponentPopup"))
+		{
+			static ImGuiTextFilter filter;
+			if (ImGui::IsWindowAppearing())
 			{
-				if (ImGui::MenuItem(entry.name))
+				ImGui::SetKeyboardFocusHere();
+				filter.Clear();
+			}
+			filter.Draw("##Filter", -FLT_MIN);
+
+			for (int n = 0; n < entries.size(); n++)
+			{
+				if (filter.PassFilter(entries[n].name))
 				{
-					entry.add(m_Entity);
-					ImGui::CloseCurrentPopup();
+					if (ImGui::Selectable(entries[n].name))
+					{
+						entries[n].add(m_Entity);
+						ImGui::CloseCurrentPopup();
+					}
 				}
 			}
+
 			ImGui::EndPopup();
 		}
 	}
