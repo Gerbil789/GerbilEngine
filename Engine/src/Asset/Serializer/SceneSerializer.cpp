@@ -7,11 +7,13 @@
 #include "Engine/Graphics/Material.h"
 #include "Engine/Graphics/Camera.h"
 #include "Engine/Audio/AudioClip.h"
+#include "Engine/Script/Script.h"
+#include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Utility/Yaml.h"
 
 namespace Engine
 {
-	static void SerializeEntity(YAML::Emitter& out, Entity entity)
+	static void SerializeEntity(YAML::Emitter& out, Entity entity, ScriptRegistry& registry)
 	{
 		Engine::Yaml::Map entityMap(out);
 
@@ -119,14 +121,57 @@ namespace Engine
 		// Script
 		if (entity.HasComponent<ScriptComponent>())
 		{
-			//const auto& component = entity.GetComponent<ScriptComponent>();
+			const auto& component = entity.GetComponent<ScriptComponent>();
+
+			auto& desc = registry.GetDescriptor(component.id);
+
+
+
+			const auto& fields = desc.fields;
+
+			std::byte* base = reinterpret_cast<std::byte*>(component.instance);
 
 			Engine::Yaml::Map cameraMap(out, "ScriptComponent");
-			//TODO...
+
+			for (const auto& field : fields)
+			{
+
+				void* fieldPtr = base + field.offset;
+
+				switch (field.type)
+				{
+				case ScriptFieldType::Bool:
+				{
+					auto& value = *reinterpret_cast<bool*>(fieldPtr);
+					Engine::Yaml::Write(out, field.name, value);
+					break;
+				}
+				case ScriptFieldType::Int:
+				{
+					auto& value = *reinterpret_cast<int*>(fieldPtr);
+					Engine::Yaml::Write(out, field.name, value);
+					break;
+				}
+				case ScriptFieldType::Float:
+				{
+					auto& value = *reinterpret_cast<float*>(fieldPtr);
+					Engine::Yaml::Write(out, field.name, value);
+					break;
+				}
+				case ScriptFieldType::Texture:
+				{
+
+				}
+				case ScriptFieldType::AudioClip:
+				{
+
+				}
+				}
+			}
 		}
 	}
 
-	void SceneSerializer::Serialize(Scene* scene, const std::filesystem::path& path)
+	void SceneSerializer::Serialize(Scene* scene, const std::filesystem::path& path, ScriptRegistry& registry)
 	{
 		if (!scene)
 		{
@@ -147,7 +192,7 @@ namespace Engine
 			const auto& entities = scene->GetEntities(true);
 			for (const Entity& entity : entities)
 			{
-				SerializeEntity(out, entity);
+				SerializeEntity(out, entity, registry);
 			}
 		}
 
@@ -304,7 +349,16 @@ namespace Engine
 
 			// Script
 			{
+				//auto& component = entity.AddComponent<ScriptComponent>();
 
+				//if (uint64_t id; Engine::Yaml::Read<uint64_t>(audioSourceNode, "AudioClip", id))
+				//{
+				//	component.clip = AssetManager::GetAsset<AudioClip>(id);
+				//}
+
+				//Engine::Yaml::Read(audioSourceNode, "Volume", component.volume);
+				//Engine::Yaml::Read(audioSourceNode, "Loop", component.loop);
+				//Engine::Yaml::Read(audioSourceNode, "PlayOnAwake", component.playOnAwake);
 			}
 		}
 

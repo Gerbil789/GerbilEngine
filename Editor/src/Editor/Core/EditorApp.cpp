@@ -26,6 +26,7 @@
 #include "Engine/Core/EngineContext.h"
 #include "Engine/Scene/Scene.h"
 #include "Editor/Core/EditorRuntime.h"
+#include "Engine/Scene/SceneManager.h"
 
 namespace Editor
 {
@@ -71,6 +72,8 @@ namespace Editor
 
 		EditorRuntime::Initialize();
 		EditorRuntime::LoadScripts(registry, dllPath);
+
+		Engine::SceneManager::Initialize(registry);
 
 		
 		if (auto id = EditorSelection::GetProject().GetStartSceneID(); id)

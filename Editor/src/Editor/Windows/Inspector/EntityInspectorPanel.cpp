@@ -428,7 +428,7 @@ namespace Editor
 			case Engine::ScriptFieldType::Float:
 			{
 				float& value = *reinterpret_cast<float*>(fieldPtr);
-				FloatField(field.name.c_str(), value, FLT_MIN, FLT_MAX);
+				FloatField(field.name.c_str(), value);
 				break;
 			}
 
@@ -494,8 +494,10 @@ namespace Editor
 			ImGui::OpenPopup("AddComponentPopup");
 		}
 
-		ImGui::SetNextWindowSize({ 300, 200 });
-		ImGui::SetNextWindowPos(ImVec2(ImGui::GetCursorScreenPos().x + (ImGui::GetContentRegionAvail().x - 300) * 0.5f, ImGui::GetCursorScreenPos().y), ImGuiCond_Always);
+		ImGui::SetNextWindowSizeConstraints(
+			ImVec2(300.0f, 0.0f),        // min size
+			ImVec2(300.0f, 200.0f)       // max size
+		);
 
 		if (ImGui::BeginPopup("AddComponentPopup"))
 		{

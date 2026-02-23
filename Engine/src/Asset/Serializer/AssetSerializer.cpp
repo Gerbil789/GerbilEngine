@@ -5,6 +5,7 @@
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
 #include "Engine/Scene/Scene.h"
+#include "Engine/Script/ScriptRegistry.h"
 #include <map>
 
 namespace Engine
@@ -13,7 +14,7 @@ namespace Engine
 	using AssetDeserializeFunction = std::function<Asset*(const std::filesystem::path&)>;
 
 	static std::map<AssetType, AssetSerializeFunction> s_AssetSerializeFunctions = {
-		{ AssetType::Scene, [](Asset* asset, const std::filesystem::path& path) { SceneSerializer::Serialize(static_cast<Scene*>(asset), path); }},
+		{ AssetType::Scene, [](Asset* asset, const std::filesystem::path& path) { SceneSerializer::Serialize(static_cast<Scene*>(asset), path, ScriptRegistry::Get()); }},
 		{ AssetType::Material, [](Asset* asset, const std::filesystem::path& path) { MaterialSerializer::Serialize(static_cast<Material*>(asset), path); }}
 	};
 

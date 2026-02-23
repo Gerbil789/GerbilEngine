@@ -2,11 +2,11 @@
   Enabled: true
   Name: Player
   Transform:
-    Position: [0, 0, 0]
-    Rotation: [0, 0, 0]
+    Position: [0, 5.111175, 0]
+    Rotation: [0, -0, 0]
     Scale: [1, 1, 1]
   MeshComponent:
-    Mesh: 9153350241491098746
+    Mesh: 15608668046686712752
     Material: 9667627839419811388
   AudioSourceComponent:
     AudioClip: 6350057269135839349
@@ -14,7 +14,12 @@
     Loop: false
     PlayOnAwake: false
   ScriptComponent:
-    {}
+    Move Speed: 10
+    Rotate Speed: 50
+    Ground Level: -2
+    Gravity Strength: 10
+    Jump Strength: 2
+    Rotate: true
 - ID: 10199165476046124790
   Enabled: true
   Name: Camera
@@ -153,3 +158,13 @@
     Volume: 0.63
     Loop: true
     PlayOnAwake: false
+- ID: 13017856045607090437
+  Enabled: true
+  Name: Ground
+  Transform:
+    Position: [-2.3841858e-07, -3, 1.9590797]
+    Rotation: [0, -0, 0]
+    Scale: [10, 10, 10]
+  MeshComponent:
+    Mesh: 16263461787928416772
+    Material: 4524766446218326838
