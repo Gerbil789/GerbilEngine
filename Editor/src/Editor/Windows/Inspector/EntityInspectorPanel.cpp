@@ -199,7 +199,7 @@ namespace Editor
 		auto& component = m_Entity.GetComponent<Engine::MeshComponent>();
 
 		std::string meshText = component.mesh != nullptr ? Engine::AssetManager::GetAssetName(component.mesh->id) : "##Mesh";
-		std::string materialText = component.material != nullptr ? Engine::AssetManager::GetAssetName(component.material->id) : "##Material";
+
 
 		PropertyTable table;
 		if (!table) return;
@@ -215,15 +215,28 @@ namespace Editor
 				});
 		}
 
+		if (!component.mesh) return;
+
+		auto materials = component.mesh->GetMaterials();
+		for (int i = 0; i < materials.size(); ++i)
 		{
+			auto material = materials[i];
+			std::string text = "##Material";
+			if(material->id)
+			{
+				text = Engine::AssetManager::GetAssetName(material->id);
+			}
+
 			PropertyRow row("Material");
-			ImGui::Button(materialText.c_str(), ImVec2(-FLT_MIN, 0));
+			ImGui::PushID(i);
+			ImGui::Button(text.c_str(), ImVec2(-FLT_MIN, 0));
 			DragDropTarget{}.Accept("UUID", [&](const void* data) {
 				Engine::Uuid id = *static_cast<const Engine::Uuid*>(data);
 				if (Engine::AssetManager::GetAssetType(id) == Engine::AssetType::Material) {
-					component.material = Engine::AssetManager::GetAsset<Engine::Material>(id);
+					component.mesh->SetMaterial(i, Engine::AssetManager::GetAsset<Engine::Material>(id));
 				}
 				});
+			ImGui::PopID();
 		}
 	}
 
@@ -459,7 +472,6 @@ namespace Editor
 				AudioClipField(field.name, audioClip);
 				break;
 			}
-
 			}
 		}
 	}

@@ -10,8 +10,10 @@ namespace Engine
 	struct DrawItem
 	{
 		Entity entity;
+		//Mesh* mesh;
 		Mesh* mesh;
-		Material* material;
+		const SubMesh* subMesh;
+		//Material* material;
 		uint32_t modelIndex; // index into model buffer
 	};
 
@@ -37,18 +39,19 @@ namespace Engine
 					continue;
 				}
 
-				Material* material = mc.material ? mc.material : Material::GetDefault();
-
-				list.items.push_back({ entity, mc.mesh, material, modelIndex++ });
+				for(const auto& subMesh : mc.mesh->GetSubMeshes())
+				{
+					list.items.push_back({ entity, mc.mesh, &subMesh, modelIndex++ });
+				}
 			}
 
 			std::sort(list.items.begin(), list.items.end(), [](const DrawItem& a, const DrawItem& b)
 				{
-					if (a.material != b.material)
+					if (a.subMesh->materialIndex != b.subMesh->materialIndex)
 					{
-						return a.material < b.material;
+						return a.subMesh->materialIndex < b.subMesh->materialIndex;
 					}
-					return a.mesh < b.mesh;
+					return a.subMesh < b.subMesh;
 				});
 
 			return list;

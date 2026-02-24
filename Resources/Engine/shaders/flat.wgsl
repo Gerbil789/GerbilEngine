@@ -6,6 +6,7 @@ struct VertexInput {
 
 struct VertexOutput {
 	@builtin(position) position: vec4f,
+	@location(0) uv: vec2f,
 };
 
 struct FrameUniforms {
@@ -19,14 +20,13 @@ struct ModelUniforms {
 	model: mat4x4f,
 };
 
-struct WireframeUniforms {
-    color: vec4f,
+struct MaterialUniforms {
+	color: vec4f,
 };
-
 
 @group(0) @binding(0) var<uniform> uFrame: FrameUniforms;
 @group(1) @binding(0) var<uniform> uModel: ModelUniforms;
-@group(2) @binding(0) var<uniform> uWireframe: WireframeUniforms;
+@group(2) @binding(0) var<uniform> uMaterial: MaterialUniforms;
 
 @vertex
 fn vs_main(in: VertexInput) -> VertexOutput 
@@ -39,5 +39,5 @@ fn vs_main(in: VertexInput) -> VertexOutput
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4f 
 {
-	return uWireframe.color;
+	return uMaterial.color;
 }

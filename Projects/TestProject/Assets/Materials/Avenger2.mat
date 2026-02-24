@@ -1,0 +1,8 @@
+Shader: 9538445625437357667
+Sampler:
+  Filter: 1
+  Wrap: 0
+Attributes:
+  color: [1, 1, 1, 1]
+Textures:
+  {}

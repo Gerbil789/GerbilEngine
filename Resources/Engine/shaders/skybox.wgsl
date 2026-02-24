@@ -5,7 +5,7 @@ struct FrameUniforms {
 	_padding: f32,
 };
 
-@group(0) @binding(0) var<uniform> uFrameUniforms: FrameUniforms;
+@group(0) @binding(0) var<uniform> uFrame: FrameUniforms;
 @group(1) @binding(0) var skyboxSampler: sampler;
 @group(1) @binding(1) var skyboxTexture: texture_cube<f32>;
 
@@ -43,13 +43,13 @@ fn vs_main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
   out.dir = pos;
 
  	let viewNoTranslation = mat4x4f(
-        vec4f(uFrameUniforms.view[0].xyz, 0.0),
-        vec4f(uFrameUniforms.view[1].xyz, 0.0),
-        vec4f(uFrameUniforms.view[2].xyz, 0.0),
+        vec4f(uFrame.view[0].xyz, 0.0),
+        vec4f(uFrame.view[1].xyz, 0.0),
+        vec4f(uFrame.view[2].xyz, 0.0),
         vec4f(0.0, 0.0, 0.0, 1.0)
     );
 
-  let clip = uFrameUniforms.projection * viewNoTranslation * vec4f(pos, 1.0);
+  let clip = uFrame.projection * viewNoTranslation * vec4f(pos, 1.0);
 
   // push to far plane (avoid clipping at z=1.0)
   out.position = vec4f(clip.xy, clip.w, clip.w);

@@ -4,13 +4,6 @@
 #include "Engine/Graphics/ShaderSpecification.h"
 #include <webgpu/webgpu.hpp>
 
-namespace GroupID //TODO: remove / refactor
-{
-	constexpr int Frame = 0;
-	constexpr int Model = 1;
-	constexpr int Material = 2;
-}
-
 namespace Engine 
 {
 	class Shader : public Asset

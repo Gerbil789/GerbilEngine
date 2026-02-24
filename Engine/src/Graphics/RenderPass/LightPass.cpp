@@ -253,12 +253,12 @@ namespace Engine
 			{
 				mesh = draw.mesh;
 				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
-				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, mesh->GetIndexBuffer().getSize());
+				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetIndexBuffer().getSize());
 			}
 
 			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
 			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
-			pass.drawIndexed(mesh->GetIndexCount(), 1, 0, 0, 0);
+			pass.drawIndexed(static_cast<uint32_t>(mesh->GetIndexBuffer().getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
 		}
 		pass.end();
 	}

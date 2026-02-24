@@ -20,14 +20,14 @@ struct ModelUniforms {
 };
 
 
-@group(0) @binding(0) var<uniform> uFrameUniforms: FrameUniforms;
-@group(1) @binding(0) var<uniform> uModelUniforms: ModelUniforms;
+@group(0) @binding(0) var<uniform> uFrame: FrameUniforms;
+@group(1) @binding(0) var<uniform> uModel: ModelUniforms;
 @group(2) @binding(0) var<uniform> u_EntityID : vec2<u32>;
 
 @vertex
 fn vs_main(in: VertexInput) -> VertexOutput {
 	var out: VertexOutput; 
-	out.position = uFrameUniforms.projection * uFrameUniforms.view * uModelUniforms.model * vec4f(in.position, 1.0);
+	out.position = uFrame.projection * uFrame.view * uModel.model * vec4f(in.position, 1.0);
 	return out;
 }
 

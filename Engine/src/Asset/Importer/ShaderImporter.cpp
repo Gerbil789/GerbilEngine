@@ -1,5 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Asset/Importer/ShaderImporter.h"
+#include "Engine/Asset/AssetRecord.h"
 #include "Engine/Core/Engine.h"
 #include "Engine/Asset/Serializer/ShaderParser.h"
 #include "Engine/Utility/File.h"

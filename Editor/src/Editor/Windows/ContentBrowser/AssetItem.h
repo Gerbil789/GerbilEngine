@@ -11,7 +11,7 @@ namespace Editor
 		static const std::unordered_map<std::string, Icon> map = {
 				{".png", Icon::Image},
 				{".scene", Icon::Landscape},
-				{".material", Icon::File},
+				{".mat", Icon::File},
 				{".glb", Icon::Mesh},
 				{".wav", Icon::Audio},
 				{".mp3", Icon::Audio},
@@ -51,7 +51,7 @@ namespace Editor
 			{
 				Thumbnail = Engine::AssetManager::GetAsset<Engine::Texture2D>(uuid)->GetTextureView();
 			}
-			else if (ext == ".material")
+			else if (ext == ".mat")
 			{
 				auto thumbnailRenderer = ThumbnailRenderer();
 				thumbnailRenderer.Initialize();

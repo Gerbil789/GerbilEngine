@@ -18,7 +18,7 @@ namespace Engine
 				{ ".jpeg",			AssetType::Texture2D },
 				{ ".gltf",			AssetType::Mesh },
 				{ ".glb",				AssetType::Mesh },
-				{ ".material",  AssetType::Material },
+				{ ".mat",				AssetType::Material },
 				{ ".wav",				AssetType::Audio },
 				{ ".mp3",				AssetType::Audio },
 				{ ".scene",			AssetType::Scene },

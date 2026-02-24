@@ -110,7 +110,7 @@ namespace Engine
 
 
 		template<typename T>
-		static std::vector<T*> GetAssetsOfType(const AssetType& type)
+		static std::vector<T*> GetAssetsOfType(const AssetType& type) //TODO: this is not very efficient, we should have a map of type to records in the registry
 		{
 			std::vector<T*> assets;
 			auto records = m_AssetRegistry.GetAllRecords();

@@ -187,7 +187,7 @@ namespace Engine
 			return it->second.path;
 		}
 
-		LOG_ERROR("AssetRegistry::GetPath - UUID '{}' not found in registry.", id);
+		LOG_ERROR("UUID '{}' not found in registry.", id);
 		return emptyPath;
 	}
 

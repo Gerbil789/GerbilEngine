@@ -51,15 +51,13 @@ namespace Engine
 
 	struct ENGINE_API MeshComponent
 	{
-		Material* material = nullptr;
 		Mesh* mesh = nullptr;
 
 		MeshComponent() = default;
-		MeshComponent(Material* material, Mesh* mesh) : material(material), mesh(mesh) {}
+		MeshComponent(Mesh* mesh) : mesh(mesh) {}
 
 		void Reset()
 		{
-			material = nullptr;
 			mesh = nullptr;
 		}
 	};

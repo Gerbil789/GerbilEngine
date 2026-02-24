@@ -41,12 +41,26 @@ namespace Engine
 		{
 			const auto& component = entity.GetComponent<MeshComponent>();
 			const auto& mesh = component.mesh;
-			const auto& material = component.material;
+			//const auto& material = component.material;
 
 			Engine::Yaml::Map meshMap(out, "MeshComponent");
 
-			if (mesh) Engine::Yaml::Write(out, "Mesh", mesh->id);
-			if (material) Engine::Yaml::Write(out, "Material", material->id);
+			if (mesh)
+			{
+				Engine::Yaml::Write(out, "Mesh", mesh->id);
+
+				{
+					Engine::Yaml::Seq materialSeq(out, "Materials", true);
+					for (const auto& material : mesh->GetMaterials())
+					{
+						if (material) 
+						{
+							out << material->id;
+						}
+						
+					}
+				}
+			}
 		}
 
 		// Camera
@@ -256,16 +270,26 @@ namespace Engine
 			if (auto meshNode = entityNode["MeshComponent"]; meshNode)
 			{
 				auto& component = entity.AddComponent<MeshComponent>();
-				uint64_t id;
-				if (Engine::Yaml::Read<uint64_t>(meshNode, "Mesh", id))
+
+				if (uint64_t id; Engine::Yaml::Read<uint64_t>(meshNode, "Mesh", id))
 				{
 					component.mesh = AssetManager::GetAsset<Mesh>(id);
 				}
 
-				if (Engine::Yaml::Read<uint64_t>(meshNode, "Material", id))
+				// Materials
+				auto materialsNode = meshNode["Materials"];
+				if (materialsNode)
 				{
-					component.material = AssetManager::GetAsset<Material>(id);
+					int i = 0;
+					for (const auto& materialNode : materialsNode)
+					{
+						uint64_t materialId = materialNode.as<uint64_t>();
+						Material* material = AssetManager::GetAsset<Material>(materialId);
+						component.mesh->SetMaterial(i++, material);
+					}
 				}
+
+
 			}
 
 			// Camera

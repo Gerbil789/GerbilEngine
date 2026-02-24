@@ -3,6 +3,7 @@ Sampler:
   Filter: 0
   Wrap: 2
 Attributes:
-  Color: [1, 1, 1, 1]
+  color: [1, 1, 1, 1]
+  brightness: 0
 Textures:
   Albedo: 1532821608029403520

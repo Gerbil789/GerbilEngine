@@ -50,30 +50,31 @@ namespace Engine
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
 		pass.setPipeline(m_EntityIdPipeline);
 
-		pass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
+		pass.setBindGroup(0, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
-		Mesh* currentMesh = nullptr;
+		Mesh* mesh = nullptr;
 
 		for (const DrawItem& draw : drawList.items)
 		{
 			if (!draw.mesh) continue;
 
-			if (draw.mesh != currentMesh)
+			if (draw.mesh != mesh)
 			{
-				pass.setVertexBuffer(0, draw.mesh->GetVertexBuffer(), 0, draw.mesh->GetVertexBuffer().getSize());
-				pass.setIndexBuffer(draw.mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, draw.mesh->GetIndexBuffer().getSize());
-				currentMesh = draw.mesh;
+				mesh = draw.mesh;
+				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
+				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetIndexBuffer().getSize());
 			}
 
 			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
-			pass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
+			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
 
 
 			Engine::Uuid uuid = draw.entity.GetUUID();
 			GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, dynamicOffset, &uuid, sizeof(Engine::Uuid));
 			pass.setBindGroup(2, m_BindGroup, 1, &dynamicOffset);
 
-			pass.drawIndexed(currentMesh->GetIndexCount(), 1, 0, 0, 0);
+			const SubMesh* sub = draw.subMesh;
+			pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);
 		}
 
 		pass.end();

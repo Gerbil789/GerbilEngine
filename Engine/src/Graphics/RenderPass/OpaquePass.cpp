@@ -111,27 +111,31 @@ namespace Engine
 
 		for (const DrawItem& draw : drawList.items)
 		{
-			if (!draw.mesh) continue;
-
-			if (draw.material != material)
-			{
-				material = draw.material;
-				GraphicsContext::GetQueue().writeBuffer(material->GetUniformBuffer(), 0, material->GetUniformData().data(), material->GetUniformData().size());
-				pass.setBindGroup(2, material->GetBindGroup(), 0, nullptr);
-				pass.setPipeline(material->GetShader()->GetRenderPipeline());
-			}
+			if (draw.mesh == nullptr) continue;
 
 			if (draw.mesh != mesh)
 			{
 				mesh = draw.mesh;
 				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
-				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint16, 0, mesh->GetIndexBuffer().getSize());
+				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetIndexBuffer().getSize());
+			}
+			const SubMesh* sub = draw.subMesh;
+
+			auto meshMaterials = draw.mesh->GetMaterials(); //TODO: dont call this every draw
+			auto subMaterial = meshMaterials[sub->materialIndex];
+
+			if (subMaterial && (subMaterial != material))
+			{
+				material = subMaterial;
+				GraphicsContext::GetQueue().writeBuffer(material->GetUniformBuffer(), 0, material->GetUniformData().data(), material->GetUniformData().size());
+				pass.setBindGroup(2, material->GetBindGroup(), 0, nullptr);
+				pass.setPipeline(material->GetShader()->GetRenderPipeline());
 			}
 
 			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
 			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
 
-			pass.drawIndexed(mesh->GetIndexCount(), 1, 0, 0, 0);
+			pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);
 		}
 
 		pass.end();

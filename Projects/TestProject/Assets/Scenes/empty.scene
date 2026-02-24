@@ -1,25 +1,31 @@
-- ID: 8348957107591477546
+- ID: 13017856045607090437
   Enabled: true
-  Name: Player
+  Name: Ground
   Transform:
-    Position: [0, 5.111175, 0]
+    Position: [-2.3841858e-07, -3, 1.9590797]
+    Rotation: [0, -0, 0]
+    Scale: [10, 10, 10]
+  MeshComponent:
+    Mesh: 16263461787928416772
+    Materials: [4524766446218326838]
+- ID: 7150985087517490007
+  Enabled: true
+  Name: Light
+  Transform:
+    Position: [0, 0, 0]
     Rotation: [0, -0, 0]
     Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Material: 9667627839419811388
+  LightComponent:
+    Type: 0
+    Color: [0, 1, 0]
+    Intensity: 2.184
+    Range: 12
+    Angle: 67
   AudioSourceComponent:
     AudioClip: 6350057269135839349
-    Volume: 1
-    Loop: false
+    Volume: 0.63
+    Loop: true
     PlayOnAwake: false
-  ScriptComponent:
-    Move Speed: 10
-    Rotate Speed: 50
-    Ground Level: -2
-    Gravity Strength: 10
-    Jump Strength: 2
-    Rotate: true
 - ID: 10199165476046124790
   Enabled: true
   Name: Camera
@@ -40,131 +46,18 @@
       Far: 100
     Background: 1
     ClearColor: [1, 0, 0, 1]
-- ID: 10792694279963768609
+- ID: 8348957107591477546
   Enabled: true
-  Name: GridCube
+  Name: Player
   Transform:
-    Position: [12, 0, -30]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 9153350241491098746
-    Material: 9667627839419811388
-- ID: 8701641953859053429
-  Enabled: true
-  Name: GridCube
-  Transform:
-    Position: [9, 0, -30]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 9153350241491098746
-    Material: 9667627839419811388
-- ID: 3559734798662888981
-  Enabled: true
-  Name: GridCube
-  Transform:
-    Position: [6, 0, -30]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 9153350241491098746
-    Material: 9667627839419811388
-- ID: 13119326641035957111
-  Enabled: true
-  Name: GridCube
-  Transform:
-    Position: [3, 0, -30]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 9153350241491098746
-    Material: 9667627839419811388
-- ID: 10971135557833004744
-  Enabled: true
-  Name: GridCube
-  Transform:
-    Position: [0, 0, -30]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 9153350241491098746
-    Material: 9667627839419811388
-- ID: 3204832894260489018
-  Enabled: true
-  Name: GridCube
-  Transform:
-    Position: [-3, 0, -30]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 9153350241491098746
-    Material: 9667627839419811388
-- ID: 4884074136097251314
-  Enabled: true
-  Name: GridCube
-  Transform:
-    Position: [-6, 0, -30]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 9153350241491098746
-    Material: 9667627839419811388
-- ID: 2777857719236945682
-  Enabled: true
-  Name: GridCube
-  Transform:
-    Position: [-9, 0, -30]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 9153350241491098746
-    Material: 9667627839419811388
-- ID: 424730193343095935
-  Enabled: true
-  Name: GridCube
-  Transform:
-    Position: [-12, 0, -30]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 9153350241491098746
-    Material: 9667627839419811388
-- ID: 10851565958551536522
-  Enabled: true
-  Name: GridCube
-  Transform:
-    Position: [-15, 0, -30]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 9153350241491098746
-    Material: 9667627839419811388
-- ID: 7150985087517490007
-  Enabled: true
-  Name: Light
-  Transform:
-    Position: [0, 0, 0]
+    Position: [-0.026061982, 5.111175, 0.5417197]
     Rotation: [0, -0, 0]
-    Scale: [1, 1, 1]
-  LightComponent:
-    Type: 0
-    Color: [0, 1, 0]
-    Intensity: 2.184
-    Range: 12
-    Angle: 67
+    Scale: [0.1, 0.1, 0.1]
+  MeshComponent:
+    Mesh: 4054887255351190265
+    Materials: [9062395416670711803, 9905515824125768949, 16641363256174755972, 12590626766011146814, 6243627826504047792]
   AudioSourceComponent:
     AudioClip: 6350057269135839349
-    Volume: 0.63
-    Loop: true
+    Volume: 1
+    Loop: false
     PlayOnAwake: false
-- ID: 13017856045607090437
-  Enabled: true
-  Name: Ground
-  Transform:
-    Position: [-2.3841858e-07, -3, 1.9590797]
-    Rotation: [0, -0, 0]
-    Scale: [10, 10, 10]
-  MeshComponent:
-    Mesh: 16263461787928416772
-    Material: 4524766446218326838

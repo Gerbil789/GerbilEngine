@@ -25,7 +25,7 @@ namespace Engine
 
 	void AssetSerializer::SerializeAsset(Asset* asset, const AssetRecord& record)
 	{
-		AssetType assetType = record.type;
+		AssetType assetType = GetAssetTypeFromExtension(record.path.extension().string());
 
 		if (s_AssetSerializeFunctions.find(assetType) == s_AssetSerializeFunctions.end())
 		{

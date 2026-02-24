@@ -160,6 +160,7 @@ namespace Editor
 
 				if (ImGui::MenuItem("Material"))
 				{
+					Engine::Materials::CreateMaterial(m_CurrentDirectory, "newMaterial");
 					RefreshDirectory();
 				}
 

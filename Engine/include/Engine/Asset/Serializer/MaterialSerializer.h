@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	class MaterialSerializer
+	class ENGINE_API MaterialSerializer
 	{
 	public:
 		static void Serialize(Material* material, const std::filesystem::path& path);

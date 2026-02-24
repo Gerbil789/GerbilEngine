@@ -45,10 +45,10 @@ namespace Engine
 
 	void Material::SetFloat(const std::string& paramName, float value)
 	{
-		auto binding = GetBinding(GetMaterialBindings(m_Shader->GetSpecification()), "uMaterialUniforms");
+		auto binding = GetBinding(GetMaterialBindings(m_Shader->GetSpecification()), "uMaterial");
 		if (binding.type != BindingType::UniformBuffer)
 		{
-			LOG_WARNING("Material::SetFloat - Parameter 'uMaterialUniforms' is not a uniform buffer!");
+			LOG_WARNING("Parameter 'uMaterial' is not a uniform buffer!");
 			return;
 		}
 
@@ -56,7 +56,7 @@ namespace Engine
 
 		if (it == binding.parameters.end() || it->type != ShaderValueType::Float)
 		{
-			LOG_WARNING("Material::SetFloat - Parameter '{}' not found or not a float!", paramName);
+			LOG_WARNING("Parameter '{}' not found or not a float!", paramName);
 			return;
 		}
 
@@ -66,10 +66,10 @@ namespace Engine
 	void Material::SetVec4(const std::string& paramName, const glm::vec4& value)
 	{
 		auto materialBindings = GetMaterialBindings(m_Shader->GetSpecification());
-		auto binding = GetBinding(materialBindings, "uMaterialUniforms");
+		auto binding = GetBinding(materialBindings, "uMaterial");
 		if (binding.type != BindingType::UniformBuffer)
 		{
-			LOG_WARNING("Material::SetFloat - Parameter '{}' is not a uniform buffer!", "uMaterialUniforms");
+			LOG_WARNING("Parameter '{}' is not a uniform buffer!", "uMaterial");
 			return;
 		}
 
@@ -77,7 +77,7 @@ namespace Engine
 
 		if (it == binding.parameters.end() || it->type != ShaderValueType::Vec4)
 		{
-			LOG_WARNING("Material::SetFloat - Parameter '{}' not found or not a float!", paramName);
+			LOG_WARNING("Parameter '{}' not found or not a float!", paramName);
 			return;
 		}
 
@@ -88,7 +88,7 @@ namespace Engine
 	{
 		if (!texture)
 		{
-			LOG_WARNING("Material::SetTexture - Texture is null!");
+			LOG_WARNING("Texture is null!");
 			texture = Texture2D::GetDefault();
 		}
 
@@ -98,7 +98,7 @@ namespace Engine
 
 		if (binding.type != BindingType::Texture2D)
 		{
-			LOG_WARNING("Material::SetTexture - Parameter '{}' is not a texture!", name);
+			LOG_WARNING("Parameter '{}' is not a texture!", name);
 			return;
 		}
 
@@ -171,14 +171,16 @@ namespace Engine
 
 		m_BindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
 	}
+}
 
-
-	Material* Material::GetDefault()
+namespace Engine::Materials
+{
+	Material* GetDefault()
 	{
 		if (!s_DefaultMaterial)
 		{
 			MaterialSpecification spec;
-			spec.shader = ShaderImporter::LoadShader("Resources/Engine/Shaders/unlit.wgsl");
+			spec.shader = ShaderImporter::LoadShader("Resources/Engine/Shaders/flat.wgsl");
 			s_DefaultMaterial = new Material(spec);
 			s_DefaultMaterial->SetVec4("color", glm::vec4{ 1.0f, 0.0f, 1.0f, 1.0f });
 		}
@@ -186,4 +188,14 @@ namespace Engine
 		return s_DefaultMaterial;
 	}
 
+	ENGINE_API Material* CreateMaterial(const std::filesystem::path& path, const std::string& name)
+	{
+		MaterialSpecification spec;
+
+		const auto& shaders = AssetManager::GetAssetsOfType<Shader>(AssetType::Shader);
+		spec.shader = shaders[0]; //TODO: better way to specify shader for material
+
+		auto material = Engine::AssetManager::CreateAsset<Engine::Material>(path / (name + ".mat"), spec);
+		return material;
+	}
 }

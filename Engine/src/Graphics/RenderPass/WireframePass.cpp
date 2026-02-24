@@ -181,28 +181,28 @@ namespace Engine
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
 		pass.setPipeline(m_WireframePipeline);
 
-		pass.setBindGroup(GroupID::Frame, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
+		pass.setBindGroup(0, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
 		const WireframeUniform uniformData { glm::vec4(0.0f, 1.0f, 0.0f, 1.0f) }; // Green color for wireframe
 		GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, 0, &uniformData, sizeof(uniformData));
-		pass.setBindGroup(GroupID::Material, m_BindGroup, 0, nullptr);
+		pass.setBindGroup(2, m_BindGroup, 0, nullptr);
 
-		Mesh* currentMesh = nullptr;
+		Mesh* mesh = nullptr;
 
 		for (const DrawItem& draw : drawList.items)
 		{
 			if (!draw.mesh) continue;
 
-			if (draw.mesh != currentMesh)
+			if (draw.mesh != mesh)
 			{
-				pass.setVertexBuffer(0, draw.mesh->GetVertexBuffer(), 0, draw.mesh->GetVertexBuffer().getSize());
-				pass.setIndexBuffer(draw.mesh->GetEdgeBuffer(), wgpu::IndexFormat::Uint16, 0, draw.mesh->GetEdgeBuffer().getSize());
-				currentMesh = draw.mesh;
+				mesh = draw.mesh;
+				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
+				pass.setIndexBuffer(mesh->GetEdgeBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetEdgeBuffer().getSize());
 			}
 
 			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
-			pass.setBindGroup(GroupID::Model, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
-			pass.drawIndexed(currentMesh->GetEdgeIndexCount(), 1, 0, 0, 0);
+			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
+			pass.drawIndexed(static_cast<uint32_t>(mesh->GetEdgeBuffer().getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
 		}
 		pass.end();
 	}

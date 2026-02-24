@@ -9,6 +9,11 @@ namespace Engine
 	{
 		for (const auto& param : binding.parameters)
 		{
+			if (!param.name.empty() && param.name[0] == '_') // skip padding parameters
+			{
+				continue;
+			}
+
 			switch (param.type)
 			{
 			case ShaderValueType::Float:
@@ -90,7 +95,11 @@ namespace Engine
 					if (binding.type != BindingType::Texture2D) continue;
 
 					auto texture = material->GetTexture(binding.name);
-					Engine::Yaml::Write(out, binding.name, texture ? texture->id : Uuid{0});
+					if(texture->id)
+					{
+						Engine::Yaml::Write(out, binding.name, texture->id);
+					}
+
 				}
 			}
 		}
@@ -115,7 +124,7 @@ namespace Engine
 		}
 		catch (const YAML::Exception& e)
 		{
-			LOG_ERROR("MaterialSerializer::Deserialize - YAML parse error in {}: {}", path, e.what());
+			LOG_ERROR("YAML parse error in {}: {}", path, e.what());
 			return nullptr;
 		}
 
@@ -123,7 +132,7 @@ namespace Engine
 
 		if(!shader)
 		{
-			LOG_ERROR("MaterialSerializer::Deserialize - Failed to load shader with ID: {}", data["Shader"].as<uint64_t>());
+			LOG_ERROR("Failed to load shader with ID: {}", data["Shader"].as<uint64_t>());
 			return nullptr;
 		}
 		MaterialSpecification spec;
@@ -140,14 +149,14 @@ namespace Engine
 			for (auto it : attributes)
 			{
 				std::string name = it.first.as<std::string>();
-				const YAML::Node& node = it.second;
+				YAML::Node& node = it.second;
 
 				float f;
 				glm::vec4 v;
 
-				if (Yaml::Read(node, name, f))
+				if (node.IsScalar())
 				{
-					spec.floatDefaults[name] = f;
+					spec.floatDefaults[name] = node.as<float>();
 				}
 				else if (Yaml::Read(node, v))
 				{

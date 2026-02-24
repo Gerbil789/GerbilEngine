@@ -24,24 +24,25 @@ struct MaterialUniforms {
 	color: vec4f,
 };
 
-@group(0) @binding(0) var<uniform> uFrameUniforms: FrameUniforms;
-@group(1) @binding(0) var<uniform> uModelUniforms: ModelUniforms;
-@group(2) @binding(0) var<uniform> uMaterialUniforms: MaterialUniforms;
+@group(0) @binding(0) var<uniform> uFrame: FrameUniforms;
+@group(1) @binding(0) var<uniform> uModel: ModelUniforms;
+@group(2) @binding(0) var<uniform> uMaterial: MaterialUniforms;
 @group(2) @binding(1) var Sampler: sampler;
 @group(2) @binding(2) var albedoTexture: texture_2d<f32>;
 
 @vertex
-fn vs_main(in: VertexInput) -> VertexOutput {
+fn vs_main(in: VertexInput) -> VertexOutput 
+{
 	var out: VertexOutput; 
-	out.position = uFrameUniforms.projection * uFrameUniforms.view * uModelUniforms.model * vec4f(in.position, 1.0);
+	out.position = uFrame.projection * uFrame.view * uModel.model * vec4f(in.position, 1.0);
 	out.uv = in.uv;
 	return out;
 }
 
 @fragment
-fn fs_main(in: VertexOutput) -> @location(0) vec4f {
+fn fs_main(in: VertexOutput) -> @location(0) vec4f 
+{
 	let texelCoords = vec2i(in.uv * vec2f(textureDimensions(albedoTexture)));
-  let color = textureLoad(albedoTexture, texelCoords, 0).rgb * uMaterialUniforms.color.rgb;
-	let corrected_color = pow(color, vec3f(2.2));
-	return vec4f(corrected_color, uMaterialUniforms.color.a);
+  let color = textureLoad(albedoTexture, texelCoords, 0).rgb * uMaterial.color.rgb;
+	return vec4f(color, uMaterialUniforms.color.a);
 }
