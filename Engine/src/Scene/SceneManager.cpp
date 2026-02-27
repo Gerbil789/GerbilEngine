@@ -70,7 +70,7 @@ namespace Engine::SceneManager
 
 		auto path = Engine::GetAssetsDirectory() / assetPath;
 
-		SceneSerializer::Serialize(s_ActiveScene, path, *m_Registry);
+		SceneSerializer::Serialize(s_ActiveScene, path);
 
 		LOG_INFO("Scene {} saved to file {}", s_ActiveScene->id, path);
 	}

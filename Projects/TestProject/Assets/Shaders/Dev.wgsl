@@ -23,9 +23,8 @@ struct ModelUniforms {
 
 struct MaterialUniforms {
 	color: vec4f,
-	_pad: vec3f,
-	brightness: f32,
-
+	_pad: vec2f,
+	tiling: vec2f,
 };
 
 @group(0) @binding(0) var<uniform> uFrame: FrameUniforms;
@@ -33,7 +32,6 @@ struct MaterialUniforms {
 @group(2) @binding(0) var<uniform> uMaterial: MaterialUniforms;
 @group(2) @binding(1) var Sampler: sampler;
 @group(2) @binding(2) var Albedo: texture_2d<f32>;
-@group(2) @binding(3) var Ambient: texture_2d<f32>;
 
 @vertex
 fn vs_main(in: VertexInput) -> VertexOutput 
@@ -48,8 +46,9 @@ fn vs_main(in: VertexInput) -> VertexOutput
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4f 
 {
-	let amb = textureSample(Ambient, Sampler, in.uv).rgb * uMaterial.brightness;
-  let color = textureSample(Albedo, Sampler, in.uv).rgb * uMaterial.color.rgb + amb;
+	let uv = in.uv * uMaterial.tiling;
+
+  let color = textureSample(Albedo, Sampler, uv).rgb * uMaterial.color.rgb;
   return vec4f(color, uMaterial.color.a);
 }
 

@@ -13,7 +13,15 @@
 
 namespace Engine
 {
-	static void SerializeEntity(YAML::Emitter& out, Entity entity, ScriptRegistry& registry)
+	ScriptRegistry* m_Registry = nullptr;
+
+	void SceneSerializer::Initialize(ScriptRegistry& registry)
+	{
+		m_Registry = &registry;
+	}
+
+
+	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
 		Engine::Yaml::Map entityMap(out);
 
@@ -111,35 +119,12 @@ namespace Engine
 			Engine::Yaml::Write(out, "Angle", component.angle);
 		}
 
-		// AudioSource
-		if (entity.HasComponent<AudioSourceComponent>())
-		{
-			const auto& component = entity.GetComponent<AudioSourceComponent>();
-
-			Engine::Yaml::Map cameraMap(out, "AudioSourceComponent");
-			if (component.clip) Engine::Yaml::Write(out, "AudioClip", component.clip->id);
-			Engine::Yaml::Write(out, "Volume", component.volume);
-			Engine::Yaml::Write(out, "Loop", component.loop);
-			Engine::Yaml::Write(out, "PlayOnAwake", component.playOnAwake);
-		}
-
-		// AudioListener
-		if (entity.HasComponent<AudioListenerComponent>())
-		{
-			//const auto& component = entity.GetComponent<AudioListenerComponent>();
-
-			Engine::Yaml::Map cameraMap(out, "AudioListenerComponent");
-			//TODO...
-		}
-
 		// Script
 		if (entity.HasComponent<ScriptComponent>())
 		{
 			const auto& component = entity.GetComponent<ScriptComponent>();
 
-			auto& desc = registry.GetDescriptor(component.id);
-
-
+			auto& desc = m_Registry->GetDescriptor(component.id);
 
 			const auto& fields = desc.fields;
 
@@ -147,9 +132,10 @@ namespace Engine
 
 			Engine::Yaml::Map cameraMap(out, "ScriptComponent");
 
+			Engine::Yaml::Write(out, "Script", desc.name);
+
 			for (const auto& field : fields)
 			{
-
 				void* fieldPtr = base + field.offset;
 
 				switch (field.type)
@@ -174,18 +160,23 @@ namespace Engine
 				}
 				case ScriptFieldType::Texture:
 				{
+					auto& texture = *reinterpret_cast<Texture2D**>(fieldPtr);
+					Engine::Yaml::Write(out, field.name, texture ? static_cast<uint64_t>(texture->id) : 0);
+					break;
 
 				}
 				case ScriptFieldType::AudioClip:
 				{
-
+					auto& clip = *reinterpret_cast<AudioClip**>(fieldPtr);
+					Engine::Yaml::Write(out, field.name, clip ? static_cast<uint64_t>(clip->id) : 0);
+					break;
 				}
 				}
 			}
 		}
 	}
 
-	void SceneSerializer::Serialize(Scene* scene, const std::filesystem::path& path, ScriptRegistry& registry)
+	void SceneSerializer::Serialize(Scene* scene, const std::filesystem::path& path)
 	{
 		if (!scene)
 		{
@@ -206,7 +197,7 @@ namespace Engine
 			const auto& entities = scene->GetEntities(true);
 			for (const Entity& entity : entities)
 			{
-				SerializeEntity(out, entity, registry);
+				SerializeEntity(out, entity);
 			}
 		}
 
@@ -351,38 +342,65 @@ namespace Engine
 				Engine::Yaml::Read(lightNode, "Angle", component.angle);
 			}
 
-			// Audio Source
-			if (auto audioSourceNode = entityNode["AudioSourceComponent"]; audioSourceNode)
-			{
-				auto& component = entity.AddComponent<AudioSourceComponent>();
-
-				if (uint64_t id; Engine::Yaml::Read<uint64_t>(audioSourceNode, "AudioClip", id))
-				{
-					component.clip = AssetManager::GetAsset<AudioClip>(id);
-				}
-
-				Engine::Yaml::Read(audioSourceNode, "Volume", component.volume);
-				Engine::Yaml::Read(audioSourceNode, "Loop", component.loop);
-				Engine::Yaml::Read(audioSourceNode, "PlayOnAwake", component.playOnAwake);
-			}
-
-			// Audio Listener
-			{
-
-			}
-
 			// Script
+			if(auto scriptNode = entityNode["ScriptComponent"]; scriptNode)
 			{
-				//auto& component = entity.AddComponent<ScriptComponent>();
+				auto& component = entity.AddComponent<ScriptComponent>();
 
-				//if (uint64_t id; Engine::Yaml::Read<uint64_t>(audioSourceNode, "AudioClip", id))
-				//{
-				//	component.clip = AssetManager::GetAsset<AudioClip>(id);
-				//}
+				std::string scriptName = scriptNode["Script"].as<std::string>();
+				auto desc = m_Registry->GetDescriptor(scriptName);
 
-				//Engine::Yaml::Read(audioSourceNode, "Volume", component.volume);
-				//Engine::Yaml::Read(audioSourceNode, "Loop", component.loop);
-				//Engine::Yaml::Read(audioSourceNode, "PlayOnAwake", component.playOnAwake);
+				component.id = desc.name;
+				component.instance = desc.factory();
+				component.instance->Self = entity;
+				component.instance->OnCreate();
+
+				std::byte* base = reinterpret_cast<std::byte*>(component.instance);
+
+				for (const auto& field : desc.fields)
+				{
+					void* fieldPtr = base + field.offset;
+					switch (field.type)
+					{
+					case ScriptFieldType::Bool:
+					{
+						bool value = false;
+						Engine::Yaml::Read(scriptNode, field.name, value);
+						*reinterpret_cast<bool*>(fieldPtr) = value;
+						break;
+					}
+					case ScriptFieldType::Int:
+					{
+						int value = 0;
+						Engine::Yaml::Read(scriptNode, field.name, value);
+						*reinterpret_cast<int*>(fieldPtr) = value;
+						break;
+					}
+					case ScriptFieldType::Float:
+					{
+						float value = 0.0f;
+						Engine::Yaml::Read(scriptNode, field.name, value);
+						*reinterpret_cast<float*>(fieldPtr) = value;
+						break;
+					}
+					case ScriptFieldType::Texture:
+					{
+						uint64_t textureId = 0;
+						Engine::Yaml::Read(scriptNode, field.name, textureId);
+						Texture2D* texture = AssetManager::GetAsset<Texture2D>(textureId);
+						*reinterpret_cast<Texture2D**>(fieldPtr) = texture;
+						break;
+					}
+					case ScriptFieldType::AudioClip:
+					{
+						uint64_t clipId = 0;
+						Engine::Yaml::Read(scriptNode, field.name, clipId);
+						AudioClip* clip = AssetManager::GetAsset<AudioClip>(clipId);
+						*reinterpret_cast<AudioClip**>(fieldPtr) = clip;
+						break;
+					}
+					}
+				}
 			}
 		}
 

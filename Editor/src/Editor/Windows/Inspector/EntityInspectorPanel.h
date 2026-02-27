@@ -14,8 +14,6 @@ namespace Editor
 		void DrawCamera();
 		void DrawMesh();
 		void DrawLight();
-		void DrawAudioListener();
-		void DrawAudioSource();
 		void DrawScript();
 		void DrawAddComponentButton();
 

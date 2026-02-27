@@ -87,33 +87,6 @@ namespace Engine
 		}
 	};
 
-	struct ENGINE_API AudioSourceComponent
-	{
-		AudioClip* clip = nullptr;
-		float volume = 1.0f;
-		bool loop = false;
-		bool playOnAwake = false;
-
-		void Reset()
-		{
-			clip = nullptr;
-			volume = 1.0f;
-			loop = false;
-			playOnAwake = false;
-		}
-
-		void Play();
-		void Stop();
-		void SetVolume(float value);
-		void SetLooping(bool value);
-
-	};
-
-	struct ENGINE_API AudioListenerComponent
-	{
-		bool isActive = true;
-	};
-
 	struct ENGINE_API ScriptComponent
 	{
 		std::string id;

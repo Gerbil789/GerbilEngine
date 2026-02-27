@@ -104,6 +104,16 @@ namespace Editor
 							break;
 						}
 
+						case Engine::ShaderValueType::Vec2:
+						{
+							glm::vec2 value;
+							auto data = material->GetUniformData();
+							memcpy(&value, data.data() + param.offset, sizeof(glm::vec2));
+							if (Vec2Field(param.name.c_str(), value).changed)
+								material->SetVec2(param.name, value);
+							break;
+						}
+
 						case Engine::ShaderValueType::Vec4:
 						{
 							glm::vec4 value;

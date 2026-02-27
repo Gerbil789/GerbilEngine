@@ -23,23 +23,4 @@ namespace Engine
     }
     return local;
   }
-
-  void AudioSourceComponent::Play()
-  {
-    Audio::Play(clip);
-	}
-
-  void AudioSourceComponent::Stop()
-  {
-    Audio::Stop(clip);
-	}
-
-  void AudioSourceComponent::SetVolume(float value)
-  {
-    Audio::SetVolume(clip, value);
-  }
-  void AudioSourceComponent::SetLooping(bool value)
-  {
-    Audio::SetLooping(clip, value);
-  }
 }

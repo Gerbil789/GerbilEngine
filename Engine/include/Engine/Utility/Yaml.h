@@ -42,9 +42,8 @@ namespace Engine::Yaml
     ~Seq() { out << YAML::EndSeq; }
   };
 
-  // ------------------------------------------------------------
-  // Write helpers
-  // ------------------------------------------------------------
+
+
 
   template<typename T>
   void Write(YAML::Emitter& out, const std::string& key, const T& value)
@@ -52,12 +51,12 @@ namespace Engine::Yaml
     out << YAML::Key << key << YAML::Value << value;
   }
 
+  void Write(YAML::Emitter& out, const std::string& key, const glm::vec2& v);
   void Write(YAML::Emitter& out, const std::string& key, const glm::vec3& v);
   void Write(YAML::Emitter& out, const std::string& key, const glm::vec4& v);
 
-  // ------------------------------------------------------------
-  // Read helpers
-  // ------------------------------------------------------------
+
+
 
   template<typename T>
   bool Read(const YAML::Node& node, const std::string& key, T& out)
@@ -68,6 +67,7 @@ namespace Engine::Yaml
     return true;
   }
 
+	bool Read(const YAML::Node& node, glm::vec2& out);
   bool Read(const YAML::Node& node, glm::vec3& out);
   bool Read(const YAML::Node& node, glm::vec4& out);
 }

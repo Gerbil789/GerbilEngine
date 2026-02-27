@@ -22,6 +22,9 @@ namespace Engine
 		for (auto& [name, value] : spec.floatDefaults)
 			SetFloat(name, value);
 
+		for (auto& [name, value] : spec.vec2Defaults)
+			SetVec2(name, value);
+
 		for (auto& [name, value] : spec.vec4Defaults)
 			SetVec4(name, value);
 
@@ -63,6 +66,27 @@ namespace Engine
 		std::memcpy(m_UniformData.data() + it->offset, &value, sizeof(float));
 	}
 
+	void Material::SetVec2(const std::string& paramName, const glm::vec2& value)
+	{
+		auto materialBindings = GetMaterialBindings(m_Shader->GetSpecification());
+		auto binding = GetBinding(materialBindings, "uMaterial");
+		if (binding.type != BindingType::UniformBuffer)
+		{
+			LOG_WARNING("Parameter '{}' is not a uniform buffer!", "uMaterial");
+			return;
+		}
+
+		auto it = std::find_if(binding.parameters.begin(), binding.parameters.end(), [&](const ShaderParameter& p) { return p.name == paramName; });
+
+		if (it == binding.parameters.end() || it->type != ShaderValueType::Vec2)
+		{
+			LOG_WARNING("Parameter '{}' not found or not a vec2!", paramName);
+			return;
+		}
+
+		std::memcpy(m_UniformData.data() + it->offset, &value, sizeof(glm::vec2));
+	}
+
 	void Material::SetVec4(const std::string& paramName, const glm::vec4& value)
 	{
 		auto materialBindings = GetMaterialBindings(m_Shader->GetSpecification());
@@ -77,7 +101,7 @@ namespace Engine
 
 		if (it == binding.parameters.end() || it->type != ShaderValueType::Vec4)
 		{
-			LOG_WARNING("Parameter '{}' not found or not a float!", paramName);
+			LOG_WARNING("Parameter '{}' not found or not a vec4!", paramName);
 			return;
 		}
 

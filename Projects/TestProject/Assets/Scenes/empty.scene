@@ -4,7 +4,7 @@
   Transform:
     Position: [-2.3841858e-07, -3, 1.9590797]
     Rotation: [0, -0, 0]
-    Scale: [10, 10, 10]
+    Scale: [100, 100, 100]
   MeshComponent:
     Mesh: 16263461787928416772
     Materials: [4524766446218326838]
@@ -21,11 +21,6 @@
     Intensity: 2.184
     Range: 12
     Angle: 67
-  AudioSourceComponent:
-    AudioClip: 6350057269135839349
-    Volume: 0.63
-    Loop: true
-    PlayOnAwake: false
 - ID: 10199165476046124790
   Enabled: true
   Name: Camera
@@ -56,8 +51,7 @@
   MeshComponent:
     Mesh: 4054887255351190265
     Materials: [9062395416670711803, 9905515824125768949, 16641363256174755972, 12590626766011146814, 6243627826504047792]
-  AudioSourceComponent:
-    AudioClip: 6350057269135839349
-    Volume: 1
-    Loop: false
-    PlayOnAwake: false
+  ScriptComponent:
+    Script: AudioPlayer
+    Audio Clip: 3164677566141441093
+    Play On Awake: true

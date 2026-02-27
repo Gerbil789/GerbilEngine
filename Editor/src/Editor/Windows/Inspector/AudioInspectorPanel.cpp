@@ -25,7 +25,7 @@ namespace Editor
 		{
 			if (ImGui::Button("Play"))
 			{
-				Engine::Audio::Play(clip);
+				Engine::Audio::Play(clip, false);
 			}
 		}
 

@@ -26,7 +26,7 @@
 #include "Engine/Core/EngineContext.h"
 #include "Engine/Scene/Scene.h"
 #include "Editor/Core/EditorRuntime.h"
-#include "Engine/Scene/SceneManager.h"
+#include "Engine/Asset/Serializer/SceneSerializer.h"
 
 namespace Editor
 {
@@ -72,6 +72,8 @@ namespace Editor
 
 		EditorRuntime::Initialize();
 		EditorRuntime::LoadScripts(registry, dllPath);
+
+		Engine::SceneSerializer::Initialize(registry);
 
 		Engine::SceneManager::Initialize(registry);
 
@@ -162,7 +164,6 @@ namespace Editor
 			{
 				EditorRuntime::Update();
 			}
-
 		}
 	}
 

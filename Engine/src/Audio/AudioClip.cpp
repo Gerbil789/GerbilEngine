@@ -17,6 +17,13 @@ namespace Engine
 		{
 			LOG_ERROR("Failed to load audio from file: {}", path);
 		}
+
+		ma_sound_set_spatialization_enabled(&m_Impl->sound, MA_TRUE);
+		ma_sound_set_attenuation_model(&m_Impl->sound, ma_attenuation_model_linear);
+
+		ma_sound_set_min_distance(&m_Impl->sound, 10.0f);
+		ma_sound_set_max_distance(&m_Impl->sound, 200.0f);
+		ma_sound_set_rolloff(&m_Impl->sound, 1.0f);
 	}
 
 	AudioClip::~AudioClip()

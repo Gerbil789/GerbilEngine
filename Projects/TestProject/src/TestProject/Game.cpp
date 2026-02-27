@@ -3,22 +3,14 @@
 
 #include "TestProject/PlayerController.h"
 #include "TestProject/RandomMovement.h"
-
-using namespace Engine;
+#include "TestProject/AudioPlayer.h"
 
 extern "C"
 {
   GAME_API void RegisterScripts(Engine::ScriptRegistry& registry)
   {
-    //std::initializer_list<ScriptField> fields
-    //{
-    //    { "MoveSpeed", ScriptFieldType::Float, offsetof(PlayerController, MoveSpeed) },
-    //    { "RotateSpeed", ScriptFieldType::Float, offsetof(PlayerController, RotateSpeed) },
-    //    { "Rotate", ScriptFieldType::Bool, offsetof(PlayerController, Rotate) },
-				//{ "TestTexture", ScriptFieldType::Texture, offsetof(PlayerController, TestTexture) }
-    //};
-    
     registry.Register<PlayerController>();
     registry.Register<RandomMovement>();
+		registry.Register<AudioPlayer>();
   }
 }

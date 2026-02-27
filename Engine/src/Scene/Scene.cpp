@@ -53,7 +53,6 @@ namespace Engine
 		copyComponent(LightComponent{});
 		copyComponent(CameraComponent{});
 
-
 		if (other->m_ActiveCamera != entt::null)
 		{
 			const auto& id = srcRegistry.get<IdentityComponent>(other->m_ActiveCamera);

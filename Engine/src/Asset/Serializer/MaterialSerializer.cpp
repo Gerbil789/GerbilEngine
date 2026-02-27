@@ -23,6 +23,13 @@ namespace Engine
 				Engine::Yaml::Write(out, param.name, value);
 				break;
 			}
+			case ShaderValueType::Vec2:
+			{
+				glm::vec2 value;
+				std::memcpy(&value, data.data() + param.offset, sizeof(glm::vec2));
+				Engine::Yaml::Write(out, param.name, value);
+				break;
+			}
 			case ShaderValueType::Vec3:
 			{
 				glm::vec3 value;
@@ -151,16 +158,20 @@ namespace Engine
 				std::string name = it.first.as<std::string>();
 				YAML::Node& node = it.second;
 
-				float f;
-				glm::vec4 v;
+				glm::vec2 v2;
+				glm::vec4 v4;
 
 				if (node.IsScalar())
 				{
 					spec.floatDefaults[name] = node.as<float>();
 				}
-				else if (Yaml::Read(node, v))
+				else if (Yaml::Read(node, v2))
 				{
-					spec.vec4Defaults[name] = v;
+					spec.vec2Defaults[name] = v2;
+				}
+				else if (Yaml::Read(node, v4))
+				{
+					spec.vec4Defaults[name] = v4;
 				}
 				else
 				{

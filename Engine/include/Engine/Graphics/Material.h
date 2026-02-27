@@ -15,6 +15,7 @@ namespace Engine
 		TextureWrap wrap = TextureWrap::Repeat;
 
 		std::unordered_map<std::string, float> floatDefaults;
+		std::unordered_map<std::string, glm::vec2> vec2Defaults;
 		std::unordered_map<std::string, glm::vec4> vec4Defaults;
 		std::unordered_map<std::string, Uuid> textureDefaults;
 	};
@@ -28,6 +29,7 @@ namespace Engine
 		void SetShader(Shader* shader);
 
 		void SetFloat(const std::string& paramName, float value);
+		void SetVec2(const std::string& paramName, const glm::vec2& value);
 		void SetVec4(const std::string& paramName, const glm::vec4& value);
 
 		void SetTextureFilter(TextureFilter filter) { m_TextureFilter = filter; CreateBindGroup(); }

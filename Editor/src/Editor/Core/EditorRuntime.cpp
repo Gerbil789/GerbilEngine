@@ -5,6 +5,8 @@
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Script/Script.h"
+#include "Engine/Audio/Audio.h"
+#include "Engine/Graphics/Camera.h"
 #include <Windows.h>
 
 namespace Editor
@@ -77,42 +79,23 @@ namespace Editor
 		m_RuntimeScene = Engine::Scene::Copy(m_EditorScene);
 		Engine::SceneManager::SetActiveScene(m_RuntimeScene);
 
-
-
-		auto entities = m_RuntimeScene->GetEntities<Engine::ScriptComponent>();
-		for(auto ent : entities)
+		for(const auto& ent : m_RuntimeScene->GetEntities<Engine::ScriptComponent>())
 		{
 			auto& sc = ent.GetComponent<Engine::ScriptComponent>();
-			sc.instance->Self = ent;
+			if(sc.instance)
+			{
+				sc.instance->Self = ent;
+				sc.instance->OnStart();
+			}
 		}
-
-		/*if (m_GameInstance)
-		{
-			LOG_WARNING("Runtime already started");
-			return;
-		}
-
-		m_GameInstance = std::make_unique<GameInstance>();
-
-		m_GameInstance->OnExit = []() { m_GameInstance.reset(); };
-		Engine::Scene* activeScene = Engine::SceneManager::GetActiveScene();
-		m_GameInstance->Initialize(activeScene);*/
 	}
 
 	void EditorRuntime::Stop()
 	{
+		Engine::Audio::StopAll();
 		Engine::SceneManager::SetActiveScene(m_EditorScene);
 		delete m_RuntimeScene;
 		m_RuntimeScene = nullptr;
-
-		/*if (!m_GameInstance)
-		{
-			LOG_WARNING("Runtime not running");
-			return;
-		}
-
-		m_GameInstance->Close();
-		m_GameInstance.reset();*/
 	}
 
 	void EditorRuntime::Update()
@@ -127,15 +110,14 @@ namespace Editor
 			}
 		}
 
-
-		//Engine::Camera* camera = m_ActiveCameraEntity.GetComponent<Engine::CameraComponent>().camera;
-		//camera->SetPosition(m_ActiveCameraEntity.GetComponent<Engine::TransformComponent>().position);
-		//camera->SetRotation(m_ActiveCameraEntity.GetComponent<Engine::TransformComponent>().rotation);
-
-
-		/*if (m_GameInstance)
+		// update audio listener
+		for (auto& ent : m_RuntimeScene->GetEntities<Engine::CameraComponent>())
 		{
-			m_GameInstance->Update();
-		}*/
+			Engine::Camera* cam = ent.GetComponent<Engine::CameraComponent>().camera;
+			const auto& pos = ent.GetComponent<Engine::TransformComponent>().position;
+			const auto& forward = cam->GetForward();
+			const auto& up = cam->GetUp();
+			Engine::Audio::SetListener(pos.x, pos.y, pos.z, forward.x, forward.y, forward.z, up.x, up.y, up.z);
+		}
 	}
 }

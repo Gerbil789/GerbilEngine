@@ -294,77 +294,6 @@ namespace Editor
 		}
 	}
 
-	void EntityInspectorPanel::DrawAudioListener()
-	{
-		if (!m_Entity.HasComponent<Engine::AudioListenerComponent>()) return;
-
-		ComponentHeader header("AudioListener");
-		if (!header.open) return;
-
-		auto& component = m_Entity.GetComponent<Engine::AudioListenerComponent>();
-
-		PropertyTable table;
-		if (!table) return;
-
-		{
-			PropertyRow row("Is Active");
-			BoolField("Is Active", component.isActive);
-		}
-	}
-
-	void EntityInspectorPanel::DrawAudioSource()
-	{
-		if (!m_Entity.HasComponent<Engine::AudioSourceComponent>()) return;
-
-		ComponentHeader header("AudioSource");
-		if (!header.open) return;
-
-		auto& component = m_Entity.GetComponent<Engine::AudioSourceComponent>();
-
-		PropertyTable table;
-		if (!table) return;
-
-		{
-			PropertyRow row("Audio Clip");
-			std::string audioClipButtonText = component.clip != nullptr ? Engine::AssetManager::GetAssetName(component.clip->id) : "##AudioClip";
-			ImGui::Button(audioClipButtonText.c_str(), ImVec2(-FLT_MIN, 0.0f));
-			DragDropTarget{}.Accept("UUID", [&](const void* data) {
-				Engine::Uuid id = *static_cast<const Engine::Uuid*>(data);
-				if (Engine::AssetManager::GetAssetType(id) == Engine::AssetType::Audio) {
-					component.clip = Engine::AssetManager::GetAsset<Engine::AudioClip>(id);
-				}
-				});
-		}
-
-		{
-			PropertyRow row("Play on awake");
-			BoolField("PlayOnAwake", component.playOnAwake);
-
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::BeginTooltip();
-				ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Not implemented");
-				ImGui::EndTooltip();
-			}
-		}
-
-		{
-			PropertyRow row("Looping");
-			if (BoolField("Looping", component.loop).changed)
-			{
-				component.SetLooping(component.loop);
-			}
-		}
-
-		{
-			PropertyRow row("Volume");
-			if (FloatField("Volume", component.volume, 0.0f, 1.0f, 0.01f).changed)
-			{
-				component.SetVolume(component.volume);
-			}
-		}
-	}
-
 	void EntityInspectorPanel::DrawScript()
 	{
 		if (!m_Entity.HasComponent<Engine::ScriptComponent>()) return;
@@ -484,13 +413,11 @@ namespace Editor
 			void (*add)(Engine::Entity);
 		};
 
-		static constexpr std::array<AddComponentEntry, 6> entries
+		static constexpr std::array<AddComponentEntry, 4> entries
 		{
 			AddComponentEntry{ "Camera",        [](Engine::Entity e) { auto& component = e.AddComponent<Engine::CameraComponent>(); component.camera = std::make_unique<Engine::Camera>().release(); }},
 			AddComponentEntry{ "Mesh",          [](Engine::Entity e) { e.AddComponent<Engine::MeshComponent>(); } },
 			AddComponentEntry{ "Light",         [](Engine::Entity e) { e.AddComponent<Engine::LightComponent>(); } },
-			AddComponentEntry{ "AudioSource",   [](Engine::Entity e) { e.AddComponent<Engine::AudioSourceComponent>(); } },
-			AddComponentEntry{ "AudioListener", [](Engine::Entity e) { e.AddComponent<Engine::AudioListenerComponent>(); } },
 			AddComponentEntry{ "Script",				[](Engine::Entity e) { e.AddComponent<Engine::ScriptComponent>(); } }
 		};
 
@@ -548,8 +475,6 @@ namespace Editor
 		DrawCamera();
 		DrawMesh();
 		DrawLight();
-		DrawAudioListener();
-		DrawAudioSource();
 		DrawScript();
 
 		DrawAddComponentButton();

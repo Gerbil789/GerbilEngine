@@ -20,12 +20,6 @@ public:
   PROPERTY(m_JumpStrength, "Jump Strength")
     float m_JumpStrength = 2.0f;
 
-  PROPERTY(m_Texture, "Texture test")
-    Engine::Texture2D* m_Texture = nullptr;
-
-  PROPERTY(m_Clip, "Audio test")
-    Engine::AudioClip* m_Clip = nullptr;
-
 	void OnCreate() override;
 	void OnUpdate() override;
 };
