@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <functional>
 
-struct GLFWwindow; // forward declaration
+struct GLFWwindow;
 
 namespace GLFW
 {
@@ -32,8 +32,6 @@ namespace Engine
 	public:
 		Window(const WindowSpecification& specification);
 		~Window();
-
-		void OnUpdate();
 
 		uint32_t GetWidth() const { return m_Data.width; }
 		uint32_t GetHeight() const { return m_Data.height; }

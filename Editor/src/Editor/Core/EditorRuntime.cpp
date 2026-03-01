@@ -100,6 +100,8 @@ namespace Editor
 
 	void EditorRuntime::Update()
 	{
+		if (m_State != EditorState::Play) return;
+
 		// update scripts
 		for (auto& ent : m_RuntimeScene->GetEntities<Engine::ScriptComponent>())
 		{

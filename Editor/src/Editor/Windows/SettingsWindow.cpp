@@ -6,7 +6,7 @@ namespace Editor
 {
 	void SettingsWindow::Draw()
 	{
-		if(!m_IsVisible) return;
+		/*if(!m_IsVisible) return;
 
 		ImGui::Begin("Settings", &m_IsVisible);
 
@@ -22,6 +22,6 @@ namespace Editor
 			ImGui::SaveIniSettingsToDisk("Resources/Editor/layouts/default.ini");
 		}
 
-		ImGui::End();
+		ImGui::End();*/
 	}
 }

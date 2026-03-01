@@ -50,7 +50,7 @@ namespace Engine
 		pipelineDesc.vertex.constants = nullptr;
 
 		pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
-		pipelineDesc.primitive.frontFace = wgpu::FrontFace::CCW;
+		pipelineDesc.primitive.frontFace = wgpu::FrontFace::CW;
 		pipelineDesc.primitive.cullMode = wgpu::CullMode::Back; //TODO: Configure in material?
 
 		wgpu::BlendState blendState;

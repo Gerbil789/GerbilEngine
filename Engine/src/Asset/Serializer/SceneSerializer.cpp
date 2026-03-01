@@ -225,7 +225,6 @@ namespace Engine
 			return nullptr;
 		}
 
-		//std::string sceneName = path.stem().string();
 		auto scene = new Scene();
 
 		for (auto entityNode : root)

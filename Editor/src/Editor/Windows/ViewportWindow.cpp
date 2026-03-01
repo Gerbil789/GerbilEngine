@@ -15,11 +15,9 @@
 #include "Engine/Graphics/RenderPass/NormalPass.h"
 #include "Engine/Graphics/RenderPass/EntityIdPass.h"
 #include "Engine/Graphics/RenderPass/LightPass.h"
-
-#include <imgui.h>
+#include "Editor/Core/EditorCameraController.h"
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
 
 #include "Editor/Core/EditorRuntime.h"
 
@@ -33,37 +31,47 @@ namespace Editor
 	static Engine::NormalPass* s_NormalPass = nullptr;
 	static Engine::LightPass* s_LightPass = nullptr;
 
-	ViewportWindow::ViewportWindow()
-	{
-		auto camera = &m_CameraController.GetCamera();
-		camera->SetBackground(Engine::Camera::Background::Skybox);
-		m_Renderer.SetCamera(camera);
+	static Engine::Renderer* m_Renderer = nullptr;
+	static EditorCameraController* m_CameraController = nullptr;
 
-		m_Renderer.AddPass(new Engine::BackgroundPass());
+	void ViewportWindow::Initialize()
+	{
+		ImGuizmo::AllowAxisFlip(false);
+		ImGuizmo::SetGizmoSizeClipSpace(0.2f);
+
+		m_Renderer = new Engine::Renderer();
+		m_CameraController = new EditorCameraController();
+
+		Engine::Camera& camera = m_CameraController->GetCamera();
+		camera.SetBackground(Engine::Camera::Background::Skybox);
+		camera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
+		m_Renderer->SetCamera(&camera);
+
+		m_Renderer->AddPass(new Engine::BackgroundPass());
 
 		s_OpaquePass = new Engine::OpaquePass();
-		m_Renderer.AddPass(s_OpaquePass);
+		m_Renderer->AddPass(s_OpaquePass);
 
 		s_EntityIdPass = new Engine::EntityIdPass();
-		m_Renderer.AddPass(s_EntityIdPass);
+		m_Renderer->AddPass(s_EntityIdPass);
 
 		s_LightPass = new Engine::LightPass();
 		s_LightPass->m_Enabled = false;
-		m_Renderer.AddPass(s_LightPass);
+		m_Renderer->AddPass(s_LightPass);
 
 		s_NormalPass = new Engine::NormalPass();
 		s_NormalPass->m_Enabled = false;
-		m_Renderer.AddPass(s_NormalPass);
+		m_Renderer->AddPass(s_NormalPass);
 
 		s_WireframePass = new Engine::WireframePass();
 		s_WireframePass->m_Enabled = false;
-		m_Renderer.AddPass(s_WireframePass);
+		m_Renderer->AddPass(s_WireframePass);
 
 		Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene* scene)
 			{
 				m_Scene = scene;
 				EditorSelection::Entities().Clear();
-				m_Renderer.SetScene(m_Scene);
+				m_Renderer->SetScene(m_Scene);
 			});
 	}
 
@@ -84,7 +92,7 @@ namespace Editor
 		m_ViewportFocused = ImGui::IsWindowFocused();
 
 		// Render scene
-		m_Renderer.RenderScene();
+		m_Renderer->RenderScene();
 
 		ImVec2 mousePos = ImGui::GetMousePos();
 		float mx = mousePos.x - m_ViewportBounds[0].x;
@@ -103,7 +111,7 @@ namespace Editor
 		ImVec2 viewportSize = ImVec2(m_ViewportSize.x, m_ViewportSize.y);
 		ImVec2 viewportMax = ImVec2(viewportMin.x + viewportSize.x, viewportMin.y + viewportSize.y);
 
-		ImGui::Image(static_cast<WGPUTextureView>(m_Renderer.GetTextureView()), viewportSize);
+		ImGui::Image(static_cast<WGPUTextureView>(m_Renderer->GetTextureView()), viewportSize);
 
 		DrawGizmos();
 
@@ -138,6 +146,27 @@ namespace Editor
 		}
 
 		ImGui::End();
+
+
+		if(Engine::Input::IsKeyPressedOnce(Engine::KeyCode::Q)) gizmoType = (ImGuizmo::OPERATION)0;
+		if(Engine::Input::IsKeyPressedOnce(Engine::KeyCode::W)) gizmoType = ImGuizmo::OPERATION::TRANSLATE;
+		if(Engine::Input::IsKeyPressedOnce(Engine::KeyCode::E)) gizmoType = ImGuizmo::OPERATION::ROTATE;
+		if(Engine::Input::IsKeyPressedOnce(Engine::KeyCode::R)) gizmoType = ImGuizmo::OPERATION::SCALE;
+
+		if(Engine::Input::IsMouseButtonPressed(Engine::MouseCode::ButtonLeft))
+		{
+			if (m_ViewportHovered && !ImGuizmo::IsOver())
+			{
+				if (m_HoveredEntity)
+				{
+					EditorSelection::Entities().Select(m_HoveredEntity, Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl) || Engine::Input::IsKeyDown(Engine::KeyCode::LeftShift));
+				}
+				else
+				{
+					EditorSelection::Entities().Clear();
+				}
+			}
+		}
 	}
 
 
@@ -145,41 +174,7 @@ namespace Editor
 	{
 		if (m_ViewportFocused || m_ViewportHovered)
 		{
-			m_CameraController.OnEvent(e);
-		}
-
-		Engine::EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<Engine::KeyPressedEvent>([this](auto e) {OnKeyPressed(e); });
-		dispatcher.Dispatch<Engine::MouseButtonPressedEvent>([this](auto e) {OnMouseButtonPressed(e); });
-	}
-
-	void ViewportWindow::OnKeyPressed(Engine::KeyPressedEvent& e)
-	{
-		if (e.GetRepeatCount() > 0) return;
-
-		switch (e.GetKey())
-		{
-		case Engine::Key::Q: gizmoType = (ImGuizmo::OPERATION)0; break;
-		case Engine::Key::W: gizmoType = ImGuizmo::OPERATION::TRANSLATE; break;
-		case Engine::Key::E: gizmoType = ImGuizmo::OPERATION::ROTATE; break;
-		case Engine::Key::R: gizmoType = ImGuizmo::OPERATION::SCALE; break;
-		}
-	}
-
-	void ViewportWindow::OnMouseButtonPressed(Engine::MouseButtonPressedEvent& e)
-	{
-		if (e.GetMouseButton() != Engine::Mouse::ButtonLeft) return;
-	
-		if (m_ViewportHovered && !ImGuizmo::IsOver())
-		{
-			if (m_HoveredEntity)
-			{
-				EditorSelection::Entities().Select(m_HoveredEntity, Engine::Input::IsKeyPressed(Engine::Key::LeftControl) || Engine::Input::IsKeyPressed(Engine::Key::LeftShift));
-			}
-			else
-			{
-				EditorSelection::Entities().Clear();
-			}
+			m_CameraController->OnEvent(e);
 		}
 	}
 
@@ -190,11 +185,11 @@ namespace Editor
 		if (newSize.x != m_ViewportSize.x || newSize.y != m_ViewportSize.y)
 		{
 			m_ViewportSize = { newSize.x, newSize.y };
-			m_CameraController.SetViewportSize(m_ViewportSize);
+			m_CameraController->SetViewportSize(m_ViewportSize);
 
 			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
 			{
-				m_Renderer.Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+				m_Renderer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			}
 		}
 
@@ -224,14 +219,14 @@ namespace Editor
 
 		ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
-		const glm::mat4& cameraProjection = m_CameraController.GetCamera().GetProjectionMatrix();
-		glm::mat4 cameraView = m_CameraController.GetCamera().GetViewMatrix();
+		const glm::mat4& cameraProjection = m_CameraController->GetCamera().GetProjectionMatrix();
+		glm::mat4 cameraView = m_CameraController->GetCamera().GetViewMatrix();
 
 		auto& transformComponent = selectedEntity.GetComponent<Engine::TransformComponent>();
 		glm::mat4 worldTransform = transformComponent.GetWorldMatrix(m_Scene->Registry());
 
 		float* snapValue = nullptr;
-		if(Engine::Input::IsKeyPressed(Engine::Key::LeftControl))
+		if(Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl))
 		{
 			static float snapTranslateScale[3] = { 0.5f, 0.5f, 0.5f };
 			static float snapRotate[3] = { 45.0f, 45.0f, 45.0f };
@@ -279,14 +274,17 @@ namespace Editor
 
 				glm::mat4 newLocal = glm::inverse(parentWorld) * newWorld;
 
-				glm::vec3 skew;
-				glm::vec4 perspective;
-				glm::quat rot;
+				//glm::vec3 skew;
+				//glm::vec4 perspective;
+				glm::vec3 rot;
 				glm::vec3 trans, scale;
-				glm::decompose(newLocal, scale, rot, trans, skew, perspective);
+				//glm::decompose(newLocal, scale, rot, trans, skew, perspective);
+
+
+				ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(newLocal), glm::value_ptr(trans), glm::value_ptr(rot), glm::value_ptr(scale));
 
 				tc.position = trans;
-				tc.rotation = glm::degrees(glm::eulerAngles(rot));
+				tc.rotation = rot;
 				tc.scale = scale;
 			}
 		}
@@ -308,13 +306,22 @@ namespace Editor
 						parentWorld = parent.GetComponent<Engine::TransformComponent>().GetWorldMatrix(m_Scene->Registry());
 					}
 					glm::mat4 initialLocal = glm::inverse(parentWorld) * initialWorld;
-					glm::vec3 skew;
-					glm::vec4 perspective;
-					glm::quat rot;
-					glm::vec3 trans, scale;
-					glm::decompose(initialLocal, scale, rot, trans, skew, perspective);
+					//glm::vec3 skew;
+					//glm::vec4 perspective;
+					//glm::quat rot;
+					//glm::vec3 trans, scale;
+					//glm::decompose(initialLocal, scale, rot, trans, skew, perspective);
 
-					before.push_back({ trans, glm::degrees(glm::eulerAngles(rot)), scale });
+					//glm::vec3 skew;
+//glm::vec4 perspective;
+					glm::vec3 rot;
+					glm::vec3 trans, scale;
+					//glm::decompose(newLocal, scale, rot, trans, skew, perspective);
+
+
+					ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(initialLocal), glm::value_ptr(trans), glm::value_ptr(rot), glm::value_ptr(scale));
+
+					before.push_back({ trans, rot, scale });
 				}
 			}
 

@@ -45,13 +45,16 @@
   Enabled: true
   Name: Player
   Transform:
-    Position: [-0.026061982, 5.111175, 0.5417197]
+    Position: [0, 0, 0]
     Rotation: [0, -0, 0]
     Scale: [0.1, 0.1, 0.1]
   MeshComponent:
     Mesh: 4054887255351190265
     Materials: [9062395416670711803, 9905515824125768949, 16641363256174755972, 12590626766011146814, 6243627826504047792]
   ScriptComponent:
-    Script: AudioPlayer
-    Audio Clip: 3164677566141441093
-    Play On Awake: true
+    Script: PlayerController
+    Move Speed: 10
+    Ground Level: -2
+    Gravity Strength: 10
+    Jump Strength: 2
+    Jump Sound: 16437370415965019686

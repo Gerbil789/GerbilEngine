@@ -46,4 +46,13 @@ namespace Engine
 		EVENT_CLASS_TYPE(WindowClose)
 			EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
+
+
+	class WindowFocusEvent : public Event
+	{
+	public:
+		WindowFocusEvent() {}
+		EVENT_CLASS_TYPE(WindowFocus)
+			EVENT_CLASS_CATEGORY(EventCategoryApplication) //TODO: change category
+	};
 }

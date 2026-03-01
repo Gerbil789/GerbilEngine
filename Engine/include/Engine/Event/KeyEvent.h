@@ -1,13 +1,14 @@
 #pragma once
 
 #include "Engine/Event/Event.h"
+#include "Engine/Core/KeyCodes.h"
 
 namespace Engine 
 {
 	class KeyEvent : public Event
 	{
 	public:
-		inline int GetKey() const { return m_Key; }
+		inline KeyCode GetKey() const { return static_cast<KeyCode>(m_Key); }
 
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 	protected:

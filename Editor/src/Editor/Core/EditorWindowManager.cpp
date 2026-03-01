@@ -1,23 +1,19 @@
 
-#include <webgpu/webgpu.hpp>
-
 #include "EditorWindowManager.h"
 #include "Engine/Core/Window.h"
 #include "Engine/Utility/File.h"
-#include "Engine/Graphics/GraphicsContext.h"
 #include "Editor/Windows/MenuBar.h"
+#include "Editor/Core/PopupWindowManager.h"
 #include "Editor/Windows/ContentBrowser/ContentBrowserWindow.h"
 #include "Editor/Windows/Inspector/InspectorWindow.h"
 #include "Editor/Windows/SceneHierarchyWindow.h"
-#include "Editor/Windows/SettingsWindow.h"
 #include "Editor/Windows/StatisticsWindow.h"
 #include "Editor/Windows/ViewportWindow.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Editor/Windows/PopUp/NewProjectPopupWindow.h"
+
 #include <backends/imgui_impl_wgpu.h>
 #include <backends/imgui_impl_glfw.h>
-
-#include "Editor/Core/PopupWindowManager.h"
 #include <GLFW/glfw3.h>
 
 //TODO: move to style file or something
@@ -83,7 +79,8 @@ static void SetupImGuiStyle()
 	colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.45f, 0.45f, 0.55f, 1.00f);
 
 	// Style tweaks
-	style.WindowRounding = 5.0f;
+	style.WindowRounding = 0.0f;
+	style.WindowBorderSize = 0.0f;
 	style.FrameRounding = 5.0f;
 	style.GrabRounding = 5.0f;
 	style.TabRounding = 5.0f;
@@ -97,53 +94,50 @@ static void SetupImGuiStyle()
 
 namespace Editor
 {
-	static wgpu::Device s_Device;
-	static wgpu::Surface s_Surface;
-	static wgpu::Queue s_Queue;
+	wgpu::Surface m_Surface;
 
 	MenuBar m_MenuBar;
-	std::vector<IEditorWindow*> m_Windows;
-	NewProjectPopupWindow newProjectPopup;
+	NewProjectPopupWindow m_NewProjectPopup;
+
+	SceneHierarchyWindow m_SceneHierarchyWindow;
+	ViewportWindow m_ViewportWindow;
+	ContentBrowserWindow m_ContentBrowserWindow;
+	InspectorWindow m_InspectorWindow;
+	StatisticsWindow m_StatisticsWindow;
 
 	void EditorWindowManager::Initialize(Engine::Window& window)
 	{
-		s_Device = Engine::GraphicsContext::GetDevice();
-		s_Queue = Engine::GraphicsContext::GetQueue();
-		s_Surface = *static_cast<wgpu::Surface*>(window.GetSurface());
+		m_Surface = *static_cast<wgpu::Surface*>(window.GetSurface());
 
-		PopupManager::Register(&newProjectPopup);
+		PopupManager::Register(&m_NewProjectPopup);
 
-		//TODO: dont heap allocate the windows
-		m_Windows = {
-			new SceneHierarchyWindow(),
-			new ViewportWindow(),
-			new ContentBrowserWindow(),
-			new InspectorWindow(),
-			new StatisticsWindow()
-		};
+		m_SceneHierarchyWindow.Initialize();
+		m_ViewportWindow.Initialize();
+		m_ContentBrowserWindow.Initialize();
+		m_InspectorWindow.Initialize();
+		m_StatisticsWindow.Initialize();
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 
-		const std::string imgui_ini = "Resources/Editor/layouts/imgui.ini";
+		constexpr const char* imgui_ini = "Resources/Editor/layouts/imgui.ini";
 		if (!std::filesystem::exists(imgui_ini))
 		{
 			ResetLayout();
-			ImGui::SaveIniSettingsToDisk(imgui_ini.c_str());
+			ImGui::SaveIniSettingsToDisk(imgui_ini);
 		}
 
 		ImGuiIO& io = ImGui::GetIO();
-		io.IniFilename = "Resources/Editor/layouts/imgui.ini";
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows //TODO: this is not working correctly, webgpu backend issue?
+		io.IniFilename = imgui_ini;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Engine/fonts/roboto/Roboto-Regular.ttf", 18.0f);
 		SetupImGuiStyle();
 
 		ImGui_ImplGlfw_InitForOther(static_cast<GLFWwindow*>(window.GetNativeWindow()), true);
 
 		ImGui_ImplWGPU_InitInfo initInfo;
-		initInfo.Device = s_Device;
+		initInfo.Device = Engine::GraphicsContext::GetDevice();
 		initInfo.RenderTargetFormat = wgpu::TextureFormat::RGBA8Unorm;
 		initInfo.DepthStencilFormat = wgpu::TextureFormat::Undefined;
 		ImGui_ImplWGPU_Init(&initInfo);
@@ -151,12 +145,6 @@ namespace Editor
 
 	void EditorWindowManager::Shutdown()
 	{
-		for (auto* window : m_Windows)
-		{
-			delete window;
-		}
-		m_Windows.clear();
-
 		ImGui_ImplWGPU_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
@@ -171,10 +159,11 @@ namespace Editor
 
 		PopupManager::Draw();
 
-		for (auto& window : m_Windows)
-		{
-			window->Draw();
-		}
+		m_SceneHierarchyWindow.Draw();
+		m_ViewportWindow.Draw();
+		m_ContentBrowserWindow.Draw();
+		m_InspectorWindow.Draw();
+		m_StatisticsWindow.Draw();
 
 		//bool showDemoWindow = true;
 		//ImGui::ShowDemoWindow(&showDemoWindow);
@@ -184,11 +173,7 @@ namespace Editor
 
 	void EditorWindowManager::OnEvent(Engine::Event& e)
 	{
-		ENGINE_PROFILE_FUNCTION();
-		for (auto& window : m_Windows)
-		{
-			window->OnEvent(e);
-		}
+		m_ViewportWindow.OnEvent(e);
 	}
 
 	void EditorWindowManager::ResetLayout()
@@ -210,8 +195,6 @@ namespace Editor
 
 		ScopedStyle style
 		{
-			{ ImGuiStyleVar_WindowRounding, 0.0f },
-			{ ImGuiStyleVar_WindowBorderSize, 0.0f },
 			{ ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f)}
 		};
 
@@ -235,7 +218,7 @@ namespace Editor
 		ImGui::Render();
 
 		wgpu::SurfaceTexture surfaceTexture;
-		s_Surface.getCurrentTexture(&surfaceTexture);
+		m_Surface.getCurrentTexture(&surfaceTexture);
 		if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal)
 		{
 			LOG_ERROR("Failed to get current surface texture. status: {}", (int)surfaceTexture.status);
@@ -251,18 +234,18 @@ namespace Editor
 			return;
 		}
 
-		wgpu::CommandEncoderDescriptor encoderDesc {};
+		wgpu::CommandEncoderDescriptor encoderDesc{};
 		encoderDesc.label = { "ImGuiCommandEncoderDescriptor", WGPU_STRLEN };
-		wgpu::CommandEncoder encoder = s_Device.createCommandEncoder(encoderDesc);
+		wgpu::CommandEncoder encoder = Engine::GraphicsContext::GetDevice().createCommandEncoder(encoderDesc);
 
-		wgpu::RenderPassColorAttachment color = {};
+		wgpu::RenderPassColorAttachment color{};
 		color.view = targetView;
 		color.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 		color.loadOp = wgpu::LoadOp::Clear;
 		color.storeOp = wgpu::StoreOp::Store;
 		color.clearValue = wgpu::Color{ 0.9, 0.1, 0.2, 1.0 };
 
-		wgpu::RenderPassDescriptor passDesc {};
+		wgpu::RenderPassDescriptor passDesc{};
 		passDesc.label = { "ImGuiRenderPassDescriptor", WGPU_STRLEN };
 		passDesc.colorAttachmentCount = 1;
 		passDesc.colorAttachments = &color;
@@ -271,12 +254,12 @@ namespace Editor
 		ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), pass);
 		pass.end();
 
-		wgpu::CommandBufferDescriptor commandBufferDesc {};
-		commandBufferDesc.label = { "ImGuiCommandBuffer", WGPU_STRLEN };
+		wgpu::CommandBufferDescriptor commandBufferDesc{};
+		commandBufferDesc.label = { "ImGuiCommandBufferDescriptor", WGPU_STRLEN };
 		commandBufferDesc.nextInChain = nullptr;
 		wgpu::CommandBuffer commandBuffer = encoder.finish(commandBufferDesc);
 
-		s_Queue.submit(1, &commandBuffer);
-		s_Surface.present();
+		Engine::GraphicsContext::GetQueue().submit(1, &commandBuffer);
+		m_Surface.present();
 	}
 }

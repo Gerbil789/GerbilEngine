@@ -30,8 +30,7 @@ namespace Editor
 		bool m_RotateDragging = false;
 		bool m_PanDragging = false;
 
-		//TODO: Expose these in editor settings
-		float m_MouseSensitivity = 0.08f;
+		float m_MouseSensitivity = 0.12f;
 		float m_ScrollSensitivity = 1.0f;
 		float m_PanSpeed = 0.1f;
 	};

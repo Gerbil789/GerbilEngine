@@ -1,6 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Camera.h"
 #include "Engine/Graphics/Skybox.h"
+#include <glm/gtx/quaternion.hpp>
 
 namespace Engine
 {
@@ -29,7 +30,7 @@ namespace Engine
 
 	const glm::vec3 Camera::GetForward() const
 	{
-		return GetOrientation() * glm::vec3(0.0f, 0.0f, -1.0f);
+		return GetOrientation() * glm::vec3(0.0f, 0.0f, 1.0f);
 	}
 
 	const glm::vec3 Camera::GetRight() const
@@ -66,7 +67,7 @@ namespace Engine
 
 	void Camera::UpdateViewMatrix()
 	{
-		m_ViewMatrix = glm::lookAt(m_Position, m_Position + GetForward(), GetUp());
+		m_ViewMatrix = glm::lookAtLH(m_Position, m_Position + GetForward(), GetUp());
 	}
 
 	void Camera::UpdateProjectionMatrix()
@@ -75,14 +76,14 @@ namespace Engine
 		{
 		case Projection::Perspective:
 		{
-			m_ProjectionMatrix = glm::perspectiveRH_ZO(m_Perspective.fov, m_AspectRatio, m_Perspective.near, m_Perspective.far); //RH_ZO - right-handed, zero to one. WebGPU uses this convention.
+			m_ProjectionMatrix = glm::perspectiveLH_ZO(m_Perspective.fov, m_AspectRatio, m_Perspective.near, m_Perspective.far); //LH_ZO - left-handed, zero to one. WebGPU uses this convention.
 			break;
 		}
 		case Projection::Orthographic:
 		{
 			float halfHeight = m_Orthographic.size * 0.5f;
 			float halfWidth = halfHeight * m_AspectRatio;
-			m_ProjectionMatrix = glm::orthoRH_ZO(-halfWidth, halfWidth, -halfHeight, halfHeight, m_Orthographic.near, m_Orthographic.far);
+			m_ProjectionMatrix = glm::orthoLH_ZO(-halfWidth, halfWidth, -halfHeight, halfHeight, m_Orthographic.near, m_Orthographic.far);
 			break;
 		}
 		}

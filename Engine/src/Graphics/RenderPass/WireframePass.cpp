@@ -105,7 +105,7 @@ namespace Engine
 
 		pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::LineList;
 		pipelineDesc.primitive.stripIndexFormat = wgpu::IndexFormat::Undefined;
-		pipelineDesc.primitive.frontFace = wgpu::FrontFace::CCW;
+		pipelineDesc.primitive.frontFace = wgpu::FrontFace::CW;
 		pipelineDesc.primitive.cullMode = wgpu::CullMode::None;
 
 		wgpu::ColorTargetState colorTarget;
@@ -113,14 +113,14 @@ namespace Engine
 		//colorTarget.blend = &blendState;
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 
-		//wgpu::DepthStencilState depthStencil{};
-		//depthStencil.format = wgpu::TextureFormat::Depth24Plus;
-		//depthStencil.depthWriteEnabled = wgpu::OptionalBool::False;
-		//depthStencil.depthCompare = wgpu::CompareFunction::LessEqual;
-		//depthStencil.stencilFront = {};
-		//depthStencil.stencilBack = {};
-		//depthStencil.stencilReadMask = 0;
-		//depthStencil.stencilWriteMask = 0;
+		wgpu::DepthStencilState depthStencil{};
+		depthStencil.format = wgpu::TextureFormat::Depth24Plus;
+		depthStencil.depthWriteEnabled = wgpu::OptionalBool::False;
+		depthStencil.depthCompare = wgpu::CompareFunction::Less;
+		depthStencil.stencilFront = {};
+		depthStencil.stencilBack = {};
+		depthStencil.stencilReadMask = 0;
+		depthStencil.stencilWriteMask = 0;
 
 		wgpu::FragmentState fragmentState;
 		fragmentState.module = shaderModule;
@@ -129,7 +129,7 @@ namespace Engine
 		fragmentState.constants = nullptr;
 		fragmentState.targetCount = 1;
 		fragmentState.targets = &colorTarget;
-		pipelineDesc.depthStencil = nullptr; // No depth for wireframe
+		pipelineDesc.depthStencil = &depthStencil;
 		pipelineDesc.fragment = &fragmentState;
 
 		pipelineDesc.multisample.count = 1;
@@ -161,22 +161,23 @@ namespace Engine
 		color.loadOp = wgpu::LoadOp::Load;
 		color.storeOp = wgpu::StoreOp::Store;
 
-		//wgpu::RenderPassDepthStencilAttachment depth{};
-		//depth.view = context.depthTarget;
-		//depth.depthClearValue = 1.0f;
-		//depth.depthLoadOp = wgpu::LoadOp::Clear;
-		//depth.depthStoreOp = wgpu::StoreOp::Store;
-		//depth.depthReadOnly = false;
-		//depth.stencilClearValue = 0;
-		//depth.stencilLoadOp = wgpu::LoadOp::Undefined;
-		//depth.stencilStoreOp = wgpu::StoreOp::Undefined;
-		//depth.stencilReadOnly = true;
+		wgpu::RenderPassDepthStencilAttachment depth{};
+		depth.view = context.depthTarget;
+		depth.depthClearValue = 1.0f;
+		depth.depthLoadOp = wgpu::LoadOp::Undefined;
+		depth.depthStoreOp = wgpu::StoreOp::Undefined;
+		depth.depthReadOnly = true;
+		depth.stencilClearValue = 0;
+		depth.stencilLoadOp = wgpu::LoadOp::Undefined;
+		depth.stencilStoreOp = wgpu::StoreOp::Undefined;
+		depth.stencilReadOnly = true;
 
 		wgpu::RenderPassDescriptor passDescriptor{};
 		passDescriptor.label = { "WireframeRenderPass", WGPU_STRLEN };
 		passDescriptor.colorAttachmentCount = 1;
 		passDescriptor.colorAttachments = &color;
-		//passDescriptor.depthStencilAttachment = &depth;
+		passDescriptor.depthStencilAttachment = &depth;
+		passDescriptor.depthStencilAttachment = &depth;
 
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
 		pass.setPipeline(m_WireframePipeline);

@@ -8,7 +8,27 @@
 namespace Engine
 {
 	static ma_engine s_AudioEngine;
-	static std::vector<AudioClip*> s_AllClips;
+
+	struct Voice
+	{
+		ma_sound sound{};
+		bool active = false;
+	};
+
+	static constexpr uint32_t MaxVoices = 32;
+	static Voice s_Voices[MaxVoices];
+
+	static Voice* AcquireVoice()
+	{
+		for (uint32_t i = 0; i < MaxVoices; i++)
+		{
+			if (!s_Voices[i].active)
+			{
+				return &s_Voices[i];
+			}
+		}
+		return nullptr; // no free voices
+	}
 
 	void Audio::Initialize()
 	{
@@ -24,31 +44,45 @@ namespace Engine
 		auto clips = AssetManager::GetAssetsOfType<AudioClip>(AssetType::Audio);
 
 		ma_fence fence;
-
 		if(ma_fence_init(&fence) != MA_SUCCESS)
 		{
-			LOG_ERROR("Failed to initialize fence");
+			throw std::runtime_error("Failed to initialize fence");
 		}
 
 		auto records = AssetManager::GetAllAssetRecordsOfType(AssetType::Audio);
 
 		for(auto record : records)
 		{
-			AudioClip* clip = AssetManager::LoadAsset<AudioClip>(*record, record->path, (void*)&fence);
-			if (clip)
+			auto clip = AssetManager::LoadAsset<AudioClip>(*record, record->path, (void*)&fence);
+			if(!clip)
 			{
-				s_AllClips.push_back(clip);
+				LOG_ERROR("Failed to load audio clip: {}", record->path);
 			}
-
 		}
 
 		ma_fence_wait(&fence); // Wait for all sounds to finish loading
-		LOG_INFO("Loaded {} audio files", records.size());
 	}
 
 	void Audio::Shutdown()
 	{
 		ma_engine_uninit(&s_AudioEngine);
+	}
+
+	void Audio::Update()
+	{
+		for (uint32_t i = 0; i < MaxVoices; i++)
+		{
+			Voice& voice = s_Voices[i];
+
+			if (!voice.active)
+				continue;
+
+			if (!ma_sound_is_playing(&voice.sound))
+			{
+				ma_sound_uninit(&voice.sound);
+				voice.active = false;
+			}
+		}
 	}
 
 	ma_engine& Audio::GetAudioEngine()
@@ -59,7 +93,7 @@ namespace Engine
 	void Audio::SetListener(float px, float py, float pz, float fx, float fy, float fz, float ux, float uy, float uz)
 	{
 		ma_engine_listener_set_position(&s_AudioEngine, 0, px, py, pz);
-		ma_engine_listener_set_direction(&s_AudioEngine, 0, fx, fy, fz);
+		ma_engine_listener_set_direction(&s_AudioEngine, 0, -fx, -fy, -fz);
 		ma_engine_listener_set_world_up(&s_AudioEngine, 0, ux, uy, uz);
 	}
 
@@ -69,30 +103,74 @@ namespace Engine
 		ma_sound_set_position(&clip->GetSound(), x, y, z);
 	}
 
-	void Audio::Play(AudioClip* clip, bool spatial, float x, float y, float z)
+	void Audio::Play2D(AudioClip* clip)
+	{
+		if (!clip)
+		{
+			LOG_WARNING("AudioClip is null");
+			return;
+		}
+
+		Voice* voice = AcquireVoice();
+		if (!voice)
+		{
+			LOG_WARNING("No available audio voices");
+			return;
+		}
+
+		if (ma_sound_init_copy(&s_AudioEngine, &clip->GetSound(), 0, nullptr, &voice->sound) != MA_SUCCESS)
+		{
+			LOG_ERROR("Failed to initialize audio voice");
+			return;
+		}
+
+		if (ma_sound_start(&voice->sound) != MA_SUCCESS)
+		{
+			LOG_ERROR("Failed to start audio voice");
+			return;
+		}
+
+		voice->active = true;
+	}
+
+	void Audio::Play3D(AudioClip* clip, float x, float y, float z)
 	{
 		if(!clip)
 		{
-			LOG_WARNING("AudioClip is null.");
+			LOG_WARNING("AudioClip is null");
 			return;
 		}
-		ma_sound& sound = clip->GetSound();
 
-		ma_sound_set_position(&sound, x, y, z);
-		ma_sound_set_spatialization_enabled(&sound, spatial ? MA_TRUE : MA_FALSE);
-
-		ma_sound_set_fade_in_pcm_frames(&sound, 0, 1, 128);
-		if (ma_sound_start(&sound) != MA_SUCCESS)
+		Voice* voice = AcquireVoice();
+		if (!voice)
 		{
-			LOG_ERROR("Failed to start audio.");
+			LOG_WARNING("No available audio voices");
+			return;
 		}
+
+		if (ma_sound_init_copy(&s_AudioEngine, &clip->GetSound(), 0, nullptr, &voice->sound) != MA_SUCCESS)
+		{
+			LOG_ERROR("Failed to initialize audio voice");
+			return;
+		}
+
+		ma_sound_set_position(&voice->sound, x, y, z);
+		ma_sound_set_spatialization_enabled(&voice->sound, MA_TRUE);
+
+		if (ma_sound_start(&voice->sound) != MA_SUCCESS)
+		{
+			LOG_ERROR("Failed to start audio voice");
+			return;
+		}
+
+		voice->active = true;
 	}
 
 	void Audio::Stop(AudioClip* clip)
 	{
 		if (!clip)
 		{
-			LOG_WARNING("AudioClip is null.");
+			LOG_WARNING("AudioClip is null");
 			return;
 		}
 
@@ -100,7 +178,7 @@ namespace Engine
 
 		if (ma_sound_stop(&sound) != MA_SUCCESS)
 		{
-			LOG_ERROR("Failed to stop audio.");
+			LOG_ERROR("Failed to stop audio");
 		}
 	}
 
@@ -108,7 +186,7 @@ namespace Engine
 	{
 		if (!clip)
 		{
-			LOG_ERROR("AudioClip is null.");
+			LOG_ERROR("AudioClip is null");
 			return false;
 		}
 
@@ -119,7 +197,7 @@ namespace Engine
 	{
 		if (!clip)
 		{
-			LOG_ERROR("AudioClip is null.");
+			LOG_ERROR("AudioClip is null");
 			return;
 		}
 
@@ -130,7 +208,7 @@ namespace Engine
 	{
 		if (!clip)
 		{
-			LOG_ERROR("AudioClip is null.");
+			LOG_ERROR("AudioClip is null");
 			return;
 		}
 
@@ -139,14 +217,15 @@ namespace Engine
 
 	void Audio::StopAll()
 	{
-		for (auto* clip : s_AllClips)
+		for (uint32_t i = 0; i < MaxVoices; i++)
 		{
-			if (!clip) continue;
+			Voice& voice = s_Voices[i];
 
-			ma_sound& sound = clip->GetSound();
+			if (!voice.active) continue;
 
-			ma_sound_stop(&sound);
-			ma_sound_seek_to_pcm_frame(&sound, 0);
+			ma_sound_stop(&voice.sound);
+			ma_sound_uninit(&voice.sound);
+			voice.active = false;
 		}
 	}
 }

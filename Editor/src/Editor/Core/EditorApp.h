@@ -40,7 +40,7 @@ namespace Editor
 		void OnEvent(Engine::Event& e);
 
 		Engine::Window* m_Window;
-		bool m_Running = true;
+		bool m_Running = false;
 
 		std::queue<std::unique_ptr<Engine::FileEvent>> m_FileEventQueue;
 		std::mutex m_FileEventMutex;

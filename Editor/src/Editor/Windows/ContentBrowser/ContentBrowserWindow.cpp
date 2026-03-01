@@ -5,55 +5,28 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Utility/File.h"
 #include "Editor/Core/EditorSelection.h"
+#include "Editor/Windows/Utility/SelectionWithDeletion.h"
+#include "AssetItem.h"
 //#include <GLFW/glfw3.h>
 
 namespace Editor
 {
-	ContentBrowserWindow::ContentBrowserWindow()
-	{
-		m_CurrentDirectory = EditorSelection::GetProject().GetAssetsDirectory();
+	float IconSize = 64.0f;
+	ImVec2 m_LayoutItemSize;
+	ImVec2 m_LayoutItemStep;
+	float LayoutOuterPadding = 0.0f;
+	int m_LayoutColumnCount = 0;
+	int LayoutLineCount = 0;
+	float ZoomWheelAccum = 0.0f;
+	bool m_RequestDelete = false;
 
-		/*glfwSetDropCallback(static_cast<GLFWwindow*>(Engine::Application::GetWindow().GetNativeWindow()), [](GLFWwindow*, int count, const char* paths[])
-			{
-				for (int i = 0; i < count; i++)
-				{
-					std::filesystem::path path = paths[i];
-					if (std::filesystem::is_directory(path))
-					{
-						LOG_INFO("Dropped directory: {0}", path);
-					}
-					else
-					{
-						LOG_INFO("Dropped file: {0}", path);
-					}
-				}
-			});*/
+	SelectionWithDeletion m_Selection;
+	std::filesystem::path m_CurrentDirectory;
+	int directoryToOpenIndex = -1;
 
-		OpenDirectory(m_CurrentDirectory);
-	}
+	std::vector<AssetItem> m_Items;
 
-	void ContentBrowserWindow::Draw()
-	{
-		ImGui::Begin("Content Browser", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-		DrawNavigationBar();
-		DrawMainContent();
-		ImGui::End();
-
-		if (directoryToOpenIndex != -1)
-		{
-			auto& item = m_Items[directoryToOpenIndex];
-			OpenDirectory(item.Path);
-			directoryToOpenIndex = -1;
-		}
-	}
-
-	void ContentBrowserWindow::OpenDirectory(const std::filesystem::path& path)
-	{
-		m_CurrentDirectory = path;
-		RefreshDirectory();
-	}
-
-	void ContentBrowserWindow::RefreshDirectory()
+	void RefreshDirectory()
 	{
 		m_Items.clear();
 		m_Selection.Clear();
@@ -69,35 +42,41 @@ namespace Editor
 		}
 
 		// then find files
-		for (auto& meta : Engine::AssetManager::GetAllAssetRecords())
+		for (auto& record : Engine::AssetManager::GetAllAssetRecords())
 		{
-			if (meta->path.parent_path() == m_CurrentDirectory)
+			if (record->path.parent_path() == m_CurrentDirectory)
 			{
-				m_Items.emplace_back(meta->id, meta->path);
+				m_Items.emplace_back(record->id, record->path);
 			}
 		}
 	}
 
-	void ContentBrowserWindow::UpdateLayoutSizes(float avail_width)
+
+	void OpenDirectory(const std::filesystem::path& path)
 	{
-		const float itemSpacing = 10.0f;
-
-		m_LayoutItemSize = ImVec2(floorf(IconSize), floorf(IconSize) + 20.0f);
-		m_LayoutColumnCount = std::max((int)(avail_width / (m_LayoutItemSize.x + itemSpacing)), 1);
-		LayoutLineCount = (static_cast<int>(m_Items.size()) + m_LayoutColumnCount - 1) / m_LayoutColumnCount;
-
-		m_LayoutItemStep = ImVec2(m_LayoutItemSize.x + itemSpacing, m_LayoutItemSize.y + itemSpacing);
-		LayoutSelectableSpacing = std::max(floorf(itemSpacing) - 4, 0.0f);
-		LayoutOuterPadding = floorf(itemSpacing * 0.5f);
+		m_CurrentDirectory = path;
+		RefreshDirectory();
 	}
 
-	void ContentBrowserWindow::DrawNavigationBar()
+	void UpdateLayoutSizes()
 	{
-		ScopedStyle style({
-			{ ImGuiStyleVar_FramePadding, ImVec2(4, 4) }
-			});
+		constexpr float itemSpacing = 10.0f;
 
-		ImGui::BeginChild("NavBar", ImVec2(0, 24), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		m_LayoutItemSize = ImVec2(IconSize, IconSize + 20.0f);
+		m_LayoutColumnCount = std::max(static_cast<int>(ImGui::GetContentRegionAvail().x / (m_LayoutItemSize.x + itemSpacing)), 1);
+		LayoutLineCount = static_cast<int>((m_Items.size()) + m_LayoutColumnCount - 1) / m_LayoutColumnCount;
+		m_LayoutItemStep = ImVec2(m_LayoutItemSize.x + itemSpacing, m_LayoutItemSize.y + itemSpacing);
+		LayoutOuterPadding = itemSpacing * 0.5f;
+	}
+
+	void DrawNavigationBar()
+	{
+		ScopedStyle style
+		{
+			{ ImGuiStyleVar_FramePadding, ImVec2(4, 4) }
+		};
+
+		ImGui::BeginChild("NavBar", ImVec2(0, 24), ImGuiChildFlags_None, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
 		auto relativePath = std::filesystem::relative(m_CurrentDirectory, EditorSelection::GetProject().GetAssetsDirectory());
 
@@ -139,7 +118,7 @@ namespace Editor
 		ImGui::EndChild();
 	}
 
-	void ContentBrowserWindow::ContentBrowserContextMenu()
+	void ContentBrowserContextMenu()
 	{
 		if (ImGui::BeginPopupContextWindow("ContentBrowserContextMenu", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
 		{
@@ -178,7 +157,7 @@ namespace Editor
 		}
 	}
 
-	void ContentBrowserWindow::ItemContextMenu()
+	void ItemContextMenu()
 	{
 		if (ImGui::BeginPopupContextItem("ItemContextMenu"))
 		{
@@ -197,24 +176,78 @@ namespace Editor
 		}
 	}
 
-	void ContentBrowserWindow::DrawMainContent()
+	void DrawItem(const AssetItem& item_data, int item_idx, ImDrawList* draw_list, const ImVec2& pos, const ImU32 label_col)
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		ImGui::BeginChild("MainContent", ImVec2(0, ImGui::GetContentRegionAvail().y), false);
+		ImVec2 box_min(pos.x - 1, pos.y - 1);
+		ImVec2 box_max(box_min.x + m_LayoutItemSize.x + 2, box_min.y + m_LayoutItemSize.y + 2);
 
-		UpdateLayoutSizes(ImGui::GetContentRegionAvail().x);
+		if (item_data.Thumbnail != nullptr)
+		{
+			// thumbnail
+			draw_list->AddImage(
+				(ImTextureID)(intptr_t)(WGPUTextureView)item_data.Thumbnail,
+				box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
+				ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f)
+			);
+		}
+		else
+		{
+			// icon
+			draw_list->AddImage(
+				(ImTextureID)(intptr_t)(WGPUTextureView)item_data.Icon->GetTexture()->GetTextureView(),
+				box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
+				ImVec2(item_data.Icon->GetUVMin().x, item_data.Icon->GetUVMin().y),
+				ImVec2(item_data.Icon->GetUVMax().x, item_data.Icon->GetUVMax().y)
+			);
+		}
+
+		// label
+		const float padding = 4.0f;
+		const float textHeight = ImGui::GetFontSize();
+
+		ImVec2 labelMin(
+			box_min.x + padding,
+			box_max.y - textHeight
+		);
+		ImVec2 labelMax(
+			box_max.x - padding,
+			box_max.y
+		);
+
+		draw_list->PushClipRect(labelMin, labelMax, true);
+
+		draw_list->AddText(ImVec2(
+			box_min.x + m_LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data.Name.c_str()).x / 2, box_max.y - ImGui::GetFontSize()),
+			label_col,
+			item_data.Name.c_str());
+
+		draw_list->PopClipRect();
+
+		if (item_data.IsDirectory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+		{
+			directoryToOpenIndex = item_idx;
+		}
+
+		ItemContextMenu();
+	}
+
+	void DrawMainContent()
+	{
+		ImGui::BeginChild("MainContent");
+
+		UpdateLayoutSizes();
 
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 		ImVec2 start_pos = ImGui::GetCursorScreenPos();
-		start_pos = ImVec2(start_pos.x + LayoutOuterPadding, start_pos.y + LayoutOuterPadding);
+		start_pos = {start_pos.x + LayoutOuterPadding, start_pos.y + LayoutOuterPadding};
 		ImGui::SetCursorScreenPos(start_pos);
 
 		ImGuiMultiSelectFlags ms_flags = ImGuiMultiSelectFlags_ClearOnEscape | ImGuiMultiSelectFlags_ClearOnClickVoid | ImGuiMultiSelectFlags_BoxSelect2d | ImGuiMultiSelectFlags_SelectOnClickRelease;
 		ImGuiMultiSelectIO* ms_io = ImGui::BeginMultiSelect(ms_flags, m_Selection.Size, static_cast<int>(m_Items.size()));
 
 		// Use custom selection adapter: store ID in selection (recommended)
-		m_Selection.UserData = this;
-		m_Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { ContentBrowserWindow* self = (ContentBrowserWindow*)self_->UserData; return (unsigned int)self->m_Items[idx].UUID; };
+		m_Selection.UserData = nullptr;
+		m_Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { return (unsigned int)m_Items[idx].UUID; };
 		m_Selection.ApplyRequests(ms_io);
 
 		const bool want_delete = (ImGui::Shortcut(ImGuiKey_Delete, ImGuiInputFlags_Repeat) && (m_Selection.Size > 0)) || m_RequestDelete;
@@ -316,7 +349,7 @@ namespace Editor
 		{
 			ZoomWheelAccum = 0.0f;
 		}
-
+		ImGuiIO& io = ImGui::GetIO();
 		if (ImGui::IsWindowHovered() && io.MouseWheel != 0.0f && ImGui::IsKeyDown(ImGuiMod_Ctrl) && ImGui::IsAnyItemActive() == false)
 		{
 			ZoomWheelAccum += io.MouseWheel;
@@ -330,7 +363,7 @@ namespace Editor
 				IconSize *= powf(1.1f, (float)(int)ZoomWheelAccum);
 				IconSize = std::clamp(IconSize, 32.0f, 128.0f);
 				ZoomWheelAccum -= (int)ZoomWheelAccum;
-				UpdateLayoutSizes(ImGui::GetContentRegionAvail().x);
+				UpdateLayoutSizes();
 
 				float hovered_item_rel_pos_y = ((float)(hovered_item_idx / m_LayoutColumnCount) + fmodf(hovered_item_ny, 1.0f)) * m_LayoutItemStep.y;
 				hovered_item_rel_pos_y += ImGui::GetStyle().WindowPadding.y;
@@ -342,59 +375,41 @@ namespace Editor
 		ImGui::EndChild(); // end Main Content
 	}
 
-	void ContentBrowserWindow::DrawItem(const AssetItem& item_data, int item_idx, ImDrawList* draw_list, const ImVec2& pos, const ImU32 label_col)
+	void ContentBrowserWindow::Initialize()
 	{
-		ImVec2 box_min(pos.x - 1, pos.y - 1);
-		ImVec2 box_max(box_min.x + m_LayoutItemSize.x + 2, box_min.y + m_LayoutItemSize.y + 2);
+		m_CurrentDirectory = EditorSelection::GetProject().GetAssetsDirectory();
+		RefreshDirectory();
 
-		if (item_data.Thumbnail != nullptr)
-		{
-			// thumbnail
-			draw_list->AddImage(
-				(ImTextureID)(intptr_t)(WGPUTextureView)item_data.Thumbnail,
-				box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
-				ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f)
-			);
-		}
-		else
-		{
-			// icon
-			draw_list->AddImage(
-				(ImTextureID)(intptr_t)(WGPUTextureView)item_data.Icon->GetTexture()->GetTextureView(),
-				box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
-				ImVec2(item_data.Icon->GetUVMin().x, item_data.Icon->GetUVMin().y),
-				ImVec2(item_data.Icon->GetUVMax().x, item_data.Icon->GetUVMax().y)
-			);
-		}
-
-		// label
-		const float padding = 4.0f;
-		const float textHeight = ImGui::GetFontSize();
-
-		ImVec2 labelMin(
-			box_min.x + padding,
-			box_max.y - textHeight
-		);
-		ImVec2 labelMax(
-			box_max.x - padding,
-			box_max.y
-		);
-
-		draw_list->PushClipRect(labelMin, labelMax, true);
-
-		draw_list->AddText(ImVec2(
-			box_min.x + m_LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data.Name.c_str()).x / 2, box_max.y - ImGui::GetFontSize()),
-			label_col, 
-			item_data.Name.c_str());
-
-		draw_list->PopClipRect();
-
-		if (item_data.IsDirectory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-		{
-			directoryToOpenIndex = item_idx;
-		}
-
-		ItemContextMenu();
+		/*glfwSetDropCallback(static_cast<GLFWwindow*>(Engine::Application::GetWindow().GetNativeWindow()), [](GLFWwindow*, int count, const char* paths[])
+			{
+				for (int i = 0; i < count; i++)
+				{
+					std::filesystem::path path = paths[i];
+					if (std::filesystem::is_directory(path))
+					{
+						LOG_INFO("Dropped directory: {0}", path);
+					}
+					else
+					{
+						LOG_INFO("Dropped file: {0}", path);
+					}
+				}
+			});*/
 	}
 
+	void ContentBrowserWindow::Draw()
+	{
+		ImGui::Begin("Content Browser", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		DrawNavigationBar();
+		DrawMainContent();
+		ImGui::End();
+
+		if (directoryToOpenIndex != -1)
+		{
+			m_CurrentDirectory = m_Items[directoryToOpenIndex].Path;
+			RefreshDirectory();
+
+			directoryToOpenIndex = -1;
+		}
+	}
 }

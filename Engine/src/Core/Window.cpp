@@ -93,11 +93,6 @@ namespace Engine
 		glfwDestroyWindow(m_Window);
 	}
 
-	void Window::OnUpdate()
-	{
-		glfwPollEvents();
-	}
-
 	void* Window::GetSurface() const
 	{
 		return static_cast<void*>(&m_Surface);

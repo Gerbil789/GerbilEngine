@@ -12,7 +12,8 @@ namespace Engine
 		std::string lower = extension; //TODO: optimize, dont create a new string
 		std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 
-		static const std::unordered_map<std::string, AssetType> extensionToType = {
+		static const std::unordered_map<std::string, AssetType> extensionToType 
+		{
 				{ ".png",				AssetType::Texture2D },
 				{ ".jpg",				AssetType::Texture2D },
 				{ ".jpeg",			AssetType::Texture2D },
@@ -67,6 +68,4 @@ namespace Engine
 		std::filesystem::path path;
 		AssetType type;
 	};
-
-
 };

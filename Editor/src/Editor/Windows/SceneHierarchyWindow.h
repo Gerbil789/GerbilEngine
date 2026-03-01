@@ -9,7 +9,7 @@ namespace Editor
 	class SceneHierarchyWindow : public IEditorWindow
 	{
 	public:
-		SceneHierarchyWindow();
+		void Initialize() override;
 		void Draw() override;
 
 	private:

@@ -8,13 +8,14 @@
 #include "Engine/Scene/SceneManager.h"
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
+#include "Engine/Core/KeyCodes.h"
 #include <imgui_internal.h>
 
 namespace Editor
 {
 	using namespace Engine;
 
-	SceneHierarchyWindow::SceneHierarchyWindow()
+	void SceneHierarchyWindow::Initialize()
 	{
 		SceneManager::RegisterOnSceneChanged([this](Scene* scene) {m_Scene = scene; });
 	}
@@ -90,7 +91,7 @@ namespace Editor
 		// Handle selection
 		if (ImGui::IsItemClicked())
 		{
-			bool additive = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::LeftShift);
+			bool additive = Input::IsKeyDown(Engine::KeyCode::LeftControl) || Input::IsKeyDown(Engine::KeyCode::LeftShift);
 			EditorSelection::Select(entity, additive);
 		}
 

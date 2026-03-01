@@ -20,6 +20,9 @@ public:
   PROPERTY(m_JumpStrength, "Jump Strength")
     float m_JumpStrength = 2.0f;
 
+  PROPERTY(m_Sound, "Jump Sound")
+    Engine::AudioClip* m_Sound = nullptr;
+
 	void OnCreate() override;
 	void OnUpdate() override;
 };

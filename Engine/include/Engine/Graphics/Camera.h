@@ -2,7 +2,6 @@
 
 #include "Engine/Core/API.h"
 #include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 namespace Engine
 {
@@ -100,7 +99,7 @@ namespace Engine
 		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
 
 		float m_Pitch = 0.0f;
-		float m_Yaw = 180.0f;
+		float m_Yaw = 0.0f;
 		float m_Roll = 0.0f;
 
 

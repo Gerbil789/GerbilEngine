@@ -4,6 +4,7 @@
 #include "Engine/Asset/Importer/MeshImporter.h"
 #include "Engine/Graphics/RenderPass/OpaquePass.h"
 #include "Engine/Graphics/RenderPass/BackgroundPass.h"
+#include "Engine/Graphics/Material.h"
 
 namespace Editor
 {
@@ -16,9 +17,8 @@ namespace Editor
 		Engine::Scene* scene = new Engine::Scene();
 		Engine::Camera* camera = new Engine::Camera();
 		camera->SetBackground(Engine::Camera::Background::Color);
-		constexpr float aspectRatio = 64.0f / 64.0f;
-		camera->SetAspectRatio(aspectRatio);
-		camera->SetPosition({ 0.0f, 0.0f, 3.0f });
+		camera->SetAspectRatio(1.0f);
+		camera->SetPosition({ 0.0f, 0.0f, -3.0f });
 		camera->SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
 
 		m_PreviewMesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/sphere.glb");
@@ -26,6 +26,8 @@ namespace Editor
 		m_Entity = scene->CreateEntity("PreviewEntity");
 		auto& mc = m_Entity.AddComponent<Engine::MeshComponent>();
 		mc.mesh = m_PreviewMesh;
+
+		m_Entity.GetComponent<Engine::TransformComponent>().rotation.y = 90.0f;
 
 		m_Renderer = new Engine::Renderer;
 		m_Renderer->Resize(64, 64);

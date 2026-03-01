@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Engine/Graphics/Material.h"
+#include <webgpu/webgpu.hpp>
+
+namespace Engine { class Material; }
 
 namespace Editor
 {

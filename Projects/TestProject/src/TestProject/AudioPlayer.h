@@ -21,8 +21,8 @@ public:
   {
     if (m_PlayOnAwake && m_Clip)
     {
-      auto pos = Self.GetComponent<Engine::TransformComponent>().position;
-      Engine::Audio::Play(m_Clip, true, pos.x, pos.y, pos.z);
+      const auto& pos = Self.GetComponent<Engine::TransformComponent>().position;
+      Engine::Audio::Play3D(m_Clip, pos.x, pos.y, pos.z);
     }
 	}
 
@@ -30,11 +30,18 @@ public:
   {
     if (!m_Clip) return;
 
-    if (Engine::Input::IsKeyPressed(Engine::Key::Space) && !Engine::Audio::IsPlaying(m_Clip))
+    if(Engine::Audio::IsPlaying(m_Clip))
     {
-      auto pos = Self.GetComponent<Engine::TransformComponent>().position;
-
-      Engine::Audio::Play(m_Clip, true, pos.x, pos.y, pos.z);
+      const auto& pos = Self.GetComponent<Engine::TransformComponent>().position;
+      Engine::Audio::SetSourcePosition(m_Clip, pos.x, pos.y, pos.z);
 		}
+
+
+  //  if (Engine::Input::IsKeyPressedOnce(Engine::KeyCode::Space) && !Engine::Audio::IsPlaying(m_Clip))
+  //  {
+  //    auto pos = Self.GetComponent<Engine::TransformComponent>().position;
+
+  //    Engine::Audio::Play3D(m_Clip, pos.x, pos.y, pos.z);
+		//}
   }
 };

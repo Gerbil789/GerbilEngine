@@ -2,6 +2,7 @@
 
 #include "Editor/Core/IconManager.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Graphics/Texture.h"
 #include "ThumbnailRenderer.h"
 
 namespace Editor

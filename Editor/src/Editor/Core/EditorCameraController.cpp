@@ -24,7 +24,7 @@ namespace Editor
 
 	bool EditorCameraController::OnKeyPressed(KeyPressedEvent& e)
 	{
-		if(e.GetKey() == Key::F) //Focus
+		if(e.GetKey() == Engine::KeyCode::F) //Focus
 		{
 			if(EditorSelection::Entities().Empty())
 			{
@@ -53,12 +53,12 @@ namespace Editor
 
 	bool EditorCameraController::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		if(e.GetMouseButton() == Mouse::ButtonRight)
+		if(e.GetMouseButton() == Engine::MouseCode::ButtonRight)
 		{
 			m_RotateDragging = true;
 			m_StartMousePosition = Input::GetMousePosition();
 		}
-		else if (e.GetMouseButton() == Mouse::ButtonMiddle)
+		else if (e.GetMouseButton() == Engine::MouseCode::ButtonMiddle)
 		{
 			m_PanDragging = true;
 			m_StartMousePosition = Input::GetMousePosition();
@@ -68,11 +68,11 @@ namespace Editor
 
 	bool EditorCameraController::OnMouseButtonReleased(MouseButtonReleasedEvent& e)
 	{
-		if (e.GetMouseButton() == Mouse::ButtonRight)
+		if (e.GetMouseButton() == Engine::MouseCode::ButtonRight)
 		{
 			m_RotateDragging = false;
 		}
-		else if (e.GetMouseButton() == Mouse::ButtonMiddle)
+		else if (e.GetMouseButton() == Engine::MouseCode::ButtonMiddle)
 		{
 			m_PanDragging = false;
 		}
@@ -89,8 +89,8 @@ namespace Editor
 
 		if (m_RotateDragging)
 		{
-			float yaw = m_Camera.GetYaw() - delta.x;
-			float pitch = m_Camera.GetPitch() - delta.y;
+			float yaw = m_Camera.GetYaw() + delta.x;
+			float pitch = m_Camera.GetPitch() + delta.y;
 			m_Camera.SetRotation(pitch, yaw);
 
 		}
