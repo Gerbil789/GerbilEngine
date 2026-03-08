@@ -3,7 +3,9 @@ Sampler:
   Filter: 1
   Wrap: 0
 Attributes:
-  color: [0.49779737, 0.7677036, 1, 1]
-  tiling: [10, 10]
+  albedo: [0.49779737, 0.7677036, 1, 1]
+  roughness: 0
+  metallic: 0
+  tiling: [-10, 10]
 Textures:
-  Albedo: 4778876615403193581
+  AlbedoTexture: 4778876615403193581

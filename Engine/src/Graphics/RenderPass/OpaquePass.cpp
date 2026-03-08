@@ -6,74 +6,6 @@
 
 namespace Engine
 {
-	//static AABB TransformAABB(const AABB& local, const glm::mat4& m)
-//{
-//	glm::vec3 center = (local.min + local.max) * 0.5f;
-//	glm::vec3 extent = (local.max - local.min) * 0.5f;
-
-//	glm::vec3 worldCenter = glm::vec3(m * glm::vec4(center, 1.0f));
-
-//	glm::mat3 absMat = glm::mat3(
-//		glm::abs(m[0]),
-//		glm::abs(m[1]),
-//		glm::abs(m[2])
-//	);
-
-//	glm::vec3 worldExtent = absMat * extent;
-
-//	return {
-//			worldCenter - worldExtent,
-//			worldCenter + worldExtent
-//	};
-//}
-
-//struct Frustum
-//{
-//	glm::vec4 planes[6]; // (normal.xyz, distance)
-//};
-
-//static Frustum ExtractFrustum(const glm::mat4& vp)
-//{
-//	Frustum f;
-
-//	// vp = projection * view
-//	f.planes[0] = vp[3] + vp[0]; // Left
-//	f.planes[1] = vp[3] - vp[0]; // Right
-//	f.planes[2] = vp[3] + vp[1]; // Bottom
-//	f.planes[3] = vp[3] - vp[1]; // Top
-//	f.planes[4] = vp[3] + vp[2]; // Near
-//	f.planes[5] = vp[3] - vp[2]; // Far
-
-//	// Normalize planes
-//	for (auto& p : f.planes)
-//	{
-//		float len = glm::length(glm::vec3(p));
-//		p = -p / len; // flip so normal points into frustum
-//	}
-
-//	return f;
-//}
-
-//static bool IsVisible(const Frustum& f, const AABB& aabb)
-//{
-//	for (const auto& plane : f.planes)
-//	{
-//		glm::vec3 normal = glm::vec3(plane);
-
-//		glm::vec3 p = aabb.min;
-//		if (plane.x >= 0) p.x = aabb.max.x;
-//		if (plane.y >= 0) p.y = aabb.max.y;
-//		if (plane.z >= 0) p.z = aabb.max.z;
-
-//		if (glm::dot(normal, p) + plane.w < 0.001f)
-//		{
-//			return false;
-//		}
-//	}
-
-//	return true;
-//}
-
 	void OpaquePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)
 	{
 		if (!m_Enabled) return;
@@ -121,7 +53,7 @@ namespace Engine
 			}
 			const SubMesh* sub = draw.subMesh;
 
-			auto meshMaterials = draw.mesh->GetMaterials(); //TODO: dont call this every draw
+			auto meshMaterials = draw.entity.GetComponent<MeshComponent>().materials;
 			auto subMaterial = meshMaterials[sub->materialIndex];
 
 			if (subMaterial && (subMaterial != material))

@@ -10,10 +10,8 @@ namespace Engine
 	struct DrawItem
 	{
 		Entity entity;
-		//Mesh* mesh;
 		Mesh* mesh;
 		const SubMesh* subMesh;
-		//Material* material;
 		uint32_t modelIndex; // index into model buffer
 	};
 

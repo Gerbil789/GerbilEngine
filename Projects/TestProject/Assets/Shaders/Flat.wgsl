@@ -21,7 +21,7 @@ struct ModelUniforms {
 };
 
 struct MaterialUniforms {
-	color: vec4f,
+	albedo: vec4f,
 };
 
 @group(0) @binding(0) var<uniform> uFrame: FrameUniforms;
@@ -40,5 +40,5 @@ fn vs_main(in: VertexInput) -> VertexOutput
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4f 
 {
-	return uMaterial.color;
+	return uMaterial.albedo;
 }

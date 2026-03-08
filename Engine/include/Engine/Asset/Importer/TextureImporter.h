@@ -1,10 +1,13 @@
 #pragma once
 
-#include "Engine/Asset/AssetRecord.h"
-#include "Engine/Graphics/Texture.h"
+#include "Engine/Core/API.h"
 
 namespace Engine
 {
+	class Texture2D;
+	class CubeMapTexture;
+	struct AssetRecord;
+
 	class ENGINE_API TextureImporter
 	{
 	public:

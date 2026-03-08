@@ -3,6 +3,8 @@
 #include "Engine/Scene/Entity.h"
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Graphics/Texture.h"
+#include "Engine/Graphics/Mesh.h"
+#include "Engine/Graphics/Material.h"
 #include "Engine/Audio/AudioClip.h"
 
 namespace Engine 
@@ -30,6 +32,13 @@ namespace Engine
     static constexpr ScriptFieldType value = ScriptFieldType::AudioClip;
 	};
 
+	template<> struct ScriptFieldTypeMap<Mesh*> {
+    static constexpr ScriptFieldType value = ScriptFieldType::Mesh;
+	};
+
+  template<> struct ScriptFieldTypeMap<Material*> {
+    static constexpr ScriptFieldType value = ScriptFieldType::Material;
+	};
 }
 
 namespace Engine

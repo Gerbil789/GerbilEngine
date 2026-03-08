@@ -16,6 +16,7 @@ namespace Editor
 				{".glb", Icon::Mesh},
 				{".wav", Icon::Audio},
 				{".mp3", Icon::Audio},
+				{".exr", Icon::Image},
 		};
 
 		if (auto it = map.find(ext); it != map.end())
@@ -48,7 +49,12 @@ namespace Editor
 			std::string ext = path.extension().string();
 			Icon = IconManager::GetIcon(GetIconForExtension(ext));
 
-			if (ext == ".png" || ext == ".jpg")
+			if (ext == ".exr") 
+			{
+				return;
+			}
+
+			if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
 			{
 				Thumbnail = Engine::AssetManager::GetAsset<Engine::Texture2D>(uuid)->GetTextureView();
 			}

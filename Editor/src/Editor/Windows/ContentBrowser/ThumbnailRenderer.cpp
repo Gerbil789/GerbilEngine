@@ -39,7 +39,7 @@ namespace Editor
 
 	wgpu::TextureView ThumbnailRenderer::Render(Engine::Material* material)
 	{
-		m_Entity.GetComponent<Engine::MeshComponent>().mesh->SetMaterial(0, material);
+		m_Entity.GetComponent<Engine::MeshComponent>().SetMaterial(0, material);
 		m_Renderer->RenderScene();
 
 		return m_Renderer->GetTextureView();

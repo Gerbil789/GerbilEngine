@@ -77,6 +77,15 @@ namespace Editor
 	void EditorRuntime::Start()
 	{
 		m_RuntimeScene = Engine::Scene::Copy(m_EditorScene);
+
+		// find and set active camera
+		auto cameras = m_RuntimeScene->GetEntities<Engine::CameraComponent>();
+		if (!cameras.empty())
+		{
+			m_RuntimeScene->SetActiveCamera(cameras[0]);
+		}
+
+
 		Engine::SceneManager::SetActiveScene(m_RuntimeScene);
 
 		for(const auto& ent : m_RuntimeScene->GetEntities<Engine::ScriptComponent>())
@@ -112,7 +121,9 @@ namespace Editor
 			}
 		}
 
-		// update audio listener
+		
+
+		// update camera & audio listener
 		for (auto& ent : m_RuntimeScene->GetEntities<Engine::CameraComponent>())
 		{
 			Engine::Camera* cam = ent.GetComponent<Engine::CameraComponent>().camera;
@@ -120,6 +131,7 @@ namespace Editor
 			const auto& forward = cam->GetForward();
 			const auto& up = cam->GetUp();
 			Engine::Audio::SetListener(pos.x, pos.y, pos.z, forward.x, forward.y, forward.z, up.x, up.y, up.z);
+			cam->SetPosition(pos);
 		}
 	}
 }

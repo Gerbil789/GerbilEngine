@@ -6,16 +6,21 @@
 
 namespace Engine
 {
-	wgpu::RenderPipeline m_WireframePipeline;
-	wgpu::BindGroup m_BindGroup;
-	wgpu::Buffer m_UniformBuffer;
-
 	struct WireframeUniform
 	{
 		glm::vec4 color;
+		float thickness;
+		float falloff;
+		float padding[2];
 	};
 	static_assert(sizeof(WireframeUniform) % 16 == 0);
 
+	namespace
+	{
+		wgpu::RenderPipeline m_WireframePipeline;
+		wgpu::BindGroup m_BindGroup;
+		wgpu::Buffer m_UniformBuffer;
+	}
 
 	WireframePass::WireframePass()
 	{
@@ -116,7 +121,7 @@ namespace Engine
 		wgpu::DepthStencilState depthStencil{};
 		depthStencil.format = wgpu::TextureFormat::Depth24Plus;
 		depthStencil.depthWriteEnabled = wgpu::OptionalBool::False;
-		depthStencil.depthCompare = wgpu::CompareFunction::Less;
+		depthStencil.depthCompare = wgpu::CompareFunction::LessEqual;
 		depthStencil.stencilFront = {};
 		depthStencil.stencilBack = {};
 		depthStencil.stencilReadMask = 0;
@@ -131,6 +136,7 @@ namespace Engine
 		fragmentState.targets = &colorTarget;
 		pipelineDesc.depthStencil = &depthStencil;
 		pipelineDesc.fragment = &fragmentState;
+
 
 		pipelineDesc.multisample.count = 1;
 		pipelineDesc.multisample.mask = ~0u; // Default value for the mask, meaning "all bits on"
@@ -184,8 +190,12 @@ namespace Engine
 
 		pass.setBindGroup(0, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
-		const WireframeUniform uniformData { glm::vec4(0.0f, 1.0f, 0.0f, 1.0f) }; // Green color for wireframe
-		GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, 0, &uniformData, sizeof(uniformData));
+		WireframeUniform wireframeData;
+		wireframeData.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+		wireframeData.thickness = 2.5f;
+		wireframeData.falloff = 1.0f;
+
+		GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, 0, &wireframeData, sizeof(WireframeUniform));
 		pass.setBindGroup(2, m_BindGroup, 0, nullptr);
 
 		Mesh* mesh = nullptr;
@@ -198,12 +208,17 @@ namespace Engine
 			{
 				mesh = draw.mesh;
 				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
-				pass.setIndexBuffer(mesh->GetEdgeBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetEdgeBuffer().getSize());
+				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetIndexBuffer().getSize());
 			}
+
+			const SubMesh* sub = draw.subMesh;
 
 			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
 			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
-			pass.drawIndexed(static_cast<uint32_t>(mesh->GetEdgeBuffer().getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
+
+			pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);
+
+
 		}
 		pass.end();
 	}

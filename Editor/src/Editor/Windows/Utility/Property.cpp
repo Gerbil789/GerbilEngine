@@ -2,6 +2,8 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Graphics/Texture.h"
 #include "Engine/Audio/AudioClip.h"
+#include "Engine/Graphics/Mesh.h"
+#include "Engine/Graphics/Material.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
 
@@ -110,6 +112,113 @@ namespace Editor
 			if (ImGui::MenuItem("Remove"))
 			{
 				audioClip = nullptr;
+				result.changed = true;
+			}
+			ImGui::EndPopup();
+		}
+
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+
+		ImGui::PopID();
+		return result;
+	}
+
+	EditResult MeshField(const std::string& label, Engine::Mesh*& mesh)
+	{
+		EditResult result;
+
+		ImGui::PushID(label.c_str());
+
+		std::string buttonText = mesh != nullptr ? Engine::AssetManager::GetAssetName(mesh->id) : "##Mesh";
+		ImGui::Button(buttonText.c_str(), ImVec2(-FLT_MIN, 0));
+
+		if (mesh)
+		{
+			if (ImGui::BeginDragDropSource())
+			{
+				Engine::Uuid uuid = mesh->id;
+				ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
+				ImGui::Text("%llu", static_cast<unsigned long long>((uint64_t)mesh->id));
+				ImGui::EndDragDropSource();
+			}
+		}
+
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
+			{
+				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
+				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Mesh)
+				{
+					mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(droppedUUID);
+					result.changed = true;
+				}
+
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+		if (mesh && ImGui::BeginPopupContextItem("Options"))
+		{
+			if (ImGui::MenuItem("Remove"))
+			{
+				mesh = nullptr;
+				result.changed = true;
+			}
+			ImGui::EndPopup();
+		}
+
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+
+		ImGui::PopID();
+		return result;
+	}
+
+	EditResult MaterialField(const std::string& label, Engine::Material*& material)
+	{
+		EditResult result;
+
+		ImGui::PushID(label.c_str());
+
+		std::string buttonText = material != nullptr ? Engine::AssetManager::GetAssetName(material->id) : "##Material";
+		ImGui::Button(buttonText.c_str(), ImVec2(-FLT_MIN, 0));
+
+		if (material)
+		{
+			if (ImGui::BeginDragDropSource())
+			{
+				Engine::Uuid uuid = material->id;
+				ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
+				ImGui::Text("%llu", static_cast<unsigned long long>((uint64_t)material->id));
+				ImGui::EndDragDropSource();
+			}
+		}
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
+			{
+				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
+				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Material)
+				{
+					material = Engine::AssetManager::GetAsset<Engine::Material>(droppedUUID);
+					result.changed = true;
+				}
+
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+		if (material && ImGui::BeginPopupContextItem("Options"))
+		{
+			if (ImGui::MenuItem("Remove"))
+			{
+				material = nullptr;
 				result.changed = true;
 			}
 			ImGui::EndPopup();

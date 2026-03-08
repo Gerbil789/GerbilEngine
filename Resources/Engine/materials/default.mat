@@ -1,3 +1,0 @@
-Shader: resources/shaders/testshader.wgsl
-Properties:
-  Value: 1

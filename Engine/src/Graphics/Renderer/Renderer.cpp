@@ -3,6 +3,7 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Graphics/Renderer/DrawList.h"
+#include <execution>
 
 namespace Engine
 {
@@ -93,8 +94,6 @@ namespace Engine
 
 	void Renderer::RenderScene()
 	{
-		ENGINE_PROFILE_FUNCTION();
-
 		//TODO: Move frame uniforms somewhere else...
 		RenderGlobals::FrameUniforms frameUniforms;
 		frameUniforms.view = m_RenderContext.camera->GetViewMatrix();
@@ -108,13 +107,17 @@ namespace Engine
 
 		const DrawList& list = DrawList::CreateFromScene(m_RenderContext.scene);
 
+		std::vector<glm::mat4> models(list.items.size());
+
+		std::for_each(std::execution::par, list.items.begin(), list.items.end(), [&](const DrawItem& item)
+			{
+				models[item.modelIndex] = item.entity.GetComponent<TransformComponent>().GetWorldMatrix(m_RenderContext.scene->Registry());
+			});
+
 		for (const DrawItem& item : list.items)
 		{
-			glm::mat4 model = item.entity.GetComponent<TransformComponent>().GetWorldMatrix(m_RenderContext.scene->Registry());
-
 			uint32_t offset = item.modelIndex * RenderGlobals::GetModelUniformStride();
-
-			GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetModelUniformBuffer(), offset, &model, sizeof(glm::mat4));
+			GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetModelUniformBuffer(), offset, &models[item.modelIndex], sizeof(glm::mat4));
 		}
 
 		for(auto pass : m_Passes)

@@ -16,10 +16,11 @@
 #include "Engine/Graphics/RenderPass/EntityIdPass.h"
 #include "Engine/Graphics/RenderPass/LightPass.h"
 #include "Editor/Core/EditorCameraController.h"
-#include <ImGuizmo.h>
-#include <glm/gtc/type_ptr.hpp>
 
 #include "Editor/Core/EditorRuntime.h"
+
+#include <ImGuizmo.h>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace Editor
 {
@@ -72,6 +73,20 @@ namespace Editor
 				m_Scene = scene;
 				EditorSelection::Entities().Clear();
 				m_Renderer->SetScene(m_Scene);
+
+				if (EditorRuntime::GetState() == EditorState::Edit)
+				{
+					m_Renderer->SetCamera(&m_CameraController->GetCamera());
+				}
+				else if (EditorRuntime::GetState() == EditorState::Play)
+				{
+					auto cameraEntity = m_Scene->GetActiveCamera();
+					if (cameraEntity)
+					{
+						m_Renderer->SetCamera(cameraEntity.GetComponent<Engine::CameraComponent>().camera);
+					}
+				}
+
 			});
 	}
 

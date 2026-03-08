@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	enum class AssetType { Unknown = 0, Texture2D, CubeMap, Mesh, Shader, Material, Audio, Scene, Script, Other };
+	enum class AssetType { Unknown = 0, Texture2D, HDR, CubeMap, Mesh, Shader, Material, Audio, Scene, Script, Other };
 
 	inline AssetType GetAssetTypeFromExtension(const std::string& extension)
 	{
@@ -14,18 +14,19 @@ namespace Engine
 
 		static const std::unordered_map<std::string, AssetType> extensionToType 
 		{
-				{ ".png",				AssetType::Texture2D },
-				{ ".jpg",				AssetType::Texture2D },
-				{ ".jpeg",			AssetType::Texture2D },
-				{ ".gltf",			AssetType::Mesh },
-				{ ".glb",				AssetType::Mesh },
-				{ ".mat",				AssetType::Material },
-				{ ".wav",				AssetType::Audio },
-				{ ".mp3",				AssetType::Audio },
-				{ ".scene",			AssetType::Scene },
-				{ ".wgsl",			AssetType::Shader},
-				{ ".hdr",				AssetType::CubeMap},
-				{ ".txt",				AssetType::Other}
+				{ ".png",		AssetType::Texture2D },
+				{ ".jpg",		AssetType::Texture2D },
+				{ ".jpeg",	AssetType::Texture2D },
+				{ ".exr",		AssetType::HDR },
+				{ ".gltf",	AssetType::Mesh },
+				{ ".glb",		AssetType::Mesh },
+				{ ".mat",		AssetType::Material },
+				{ ".wav",		AssetType::Audio },
+				{ ".mp3",		AssetType::Audio },
+				{ ".scene",	AssetType::Scene },
+				{ ".wgsl",	AssetType::Shader},
+				{ ".hdr",		AssetType::CubeMap},
+				{ ".txt",		AssetType::Other}
 		};
 
 		if (auto it = extensionToType.find(lower); it != extensionToType.end())

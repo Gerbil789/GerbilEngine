@@ -9,6 +9,7 @@
 #include "Engine/Core/Time.h"
 #include "Engine/Utility/Color.h"
 #include "Engine/Graphics/Mesh.h"
+#include "Engine/Scene/SceneManager.h"
 
 using namespace Engine;
 
@@ -37,18 +38,45 @@ void PlayerController::OnUpdate()
 		transform.position.y = m_Ground;
 	}
 
-	// sound test
-	if(Input::IsKeyPressedOnce(KeyCode::M) || Input::IsMouseButtonPressed(MouseCode::ButtonLeft))
+	// shoot
+	if(Input::IsKeyPressedOnce(KeyCode::M))
 	{
-		if(m_Sound)
+		if (!m_Sound || !m_BulletMesh || !m_BulletMaterial)
 		{
-			auto pos = Self.GetComponent<TransformComponent>().position;
-			Audio::Play3D(m_Sound, pos.x, pos.y, pos.z);
+			LOG_WARNING("Missing shoot components!");
+			return;
 		}
-		else
-		{
-			LOG_WARNING("No jump sound assigned!");
-		}
+
+		auto scene = SceneManager::GetActiveScene();
+
+		auto pos = Self.GetComponent<TransformComponent>().position;
+		Audio::Play3D(m_Sound, pos.x, pos.y, pos.z);
+
+
+		Entity bullet = scene->CreateEntity("Bullet");
+		bullet.GetComponent<TransformComponent>().position = pos;
+		bullet.AddComponent<MeshComponent>(m_BulletMesh).SetMaterial(0, m_BulletMaterial);
+
+		auto& scriptComponent = bullet.AddComponent<ScriptComponent>();
+		scriptComponent.id = "Bullet";
+		scriptComponent.instance = new Bullet(glm::vec3(0.0f, 0.0f, 1.0f));
+		scriptComponent.instance->Self = bullet;
+
 	}
 }
 
+
+void Bullet::OnUpdate()
+{
+	auto& transform = Self.GetComponent<TransformComponent>();
+
+	transform.position += m_Direction * m_Speed * Time::DeltaTime();
+
+	//m_Time -= Time::DeltaTime();
+
+	//if(m_Time <= 0.0f)
+	//{
+	//	Self.RemoveComponent<Engine::MeshComponent>();
+	//	Self.RemoveComponent<Engine::MaterialComponent>();
+	//}
+}

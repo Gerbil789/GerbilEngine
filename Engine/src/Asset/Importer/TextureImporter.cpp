@@ -1,5 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
+#include "Engine/Graphics/Texture.h"
+#include "Engine/Asset/AssetRecord.h"
 #include "Engine/Core/Engine.h"
 #include <stb_image.h>
 
@@ -13,19 +15,29 @@ namespace Engine
 	Texture2D* TextureImporter::LoadTexture2D(const std::filesystem::path& path)
 	{
 		int width, height, channels;
-		unsigned char* data = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
+		void* data;
+		TextureSpecification spec;
+
+		if (stbi_is_hdr(path.string().c_str()))
+		{
+			data = stbi_loadf(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
+			spec.format = wgpu::TextureFormat::RGBA32Float;
+		}
+		else
+		{
+			data = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
+			spec.format = wgpu::TextureFormat::RGBA8Unorm;
+		}
 
 		if (!data)
 		{
 			LOG_ERROR("Failed to load texture at: {}", path);
+			LOG_ERROR("stb_image error: {}", stbi_failure_reason());
 			return nullptr;
 		}
 
-		TextureSpecification spec;
 		spec.width = static_cast<uint32_t>(width);
 		spec.height = static_cast<uint32_t>(height);
-		spec.format = wgpu::TextureFormat::RGBA8Unorm;
-
 		Texture2D* texture = new Texture2D(spec, data);
 		stbi_image_free(data);
 		return texture;

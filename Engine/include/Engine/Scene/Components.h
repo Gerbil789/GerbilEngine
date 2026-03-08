@@ -52,9 +52,28 @@ namespace Engine
 	struct ENGINE_API MeshComponent
 	{
 		Mesh* mesh = nullptr;
+		std::vector<Material*> materials;
 
 		MeshComponent() = default;
 		MeshComponent(Mesh* mesh) : mesh(mesh) {}
+
+		Material* GetMaterial(uint32_t index)
+		{
+			if (index >= materials.size())
+			{
+				return nullptr;
+			}
+			return materials[index];
+		}
+
+		void SetMaterial(uint32_t index, Material* material)
+		{
+			if (index >= materials.size())
+			{
+				materials.resize(index + 1);
+			}
+			materials[index] = material;
+		}
 
 		void Reset()
 		{

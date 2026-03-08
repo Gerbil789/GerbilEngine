@@ -1,6 +1,10 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Graphics/SamplerPool.h"
+#include "Engine/Asset/Importer/TextureImporter.h"
+#include "Engine/Graphics/Texture.h"
+#include "Engine/Core/Engine.h"
 
 namespace Engine::RenderGlobals
 {
@@ -77,16 +81,43 @@ namespace Engine::RenderGlobals
 
 		// Frame 
 		{
-			wgpu::BindGroupLayoutEntry bindGroupLayoutEntry = wgpu::Default;
-			bindGroupLayoutEntry.binding = 0;
-			bindGroupLayoutEntry.visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
-			bindGroupLayoutEntry.buffer.type = wgpu::BufferBindingType::Uniform;
-			bindGroupLayoutEntry.buffer.minBindingSize = sizeof(FrameUniforms);
+			wgpu::BindGroupLayoutEntry entries[5]{};
+
+			// Frame uniforms
+			entries[0].binding = 0;
+			entries[0].visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
+			entries[0].buffer.type = wgpu::BufferBindingType::Uniform;
+			entries[0].buffer.minBindingSize = sizeof(FrameUniforms);
+
+			// Environment sampler
+			entries[1].binding = 1;
+			entries[1].visibility = wgpu::ShaderStage::Fragment;
+			entries[1].sampler.type = wgpu::SamplerBindingType::NonFiltering;
+
+			// Irradiance texture
+			entries[2].binding = 2;
+			entries[2].visibility = wgpu::ShaderStage::Fragment;
+			entries[2].texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
+			entries[2].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+			entries[2].texture.multisampled = false;
+
+			entries[3].binding = 3;
+			entries[3].visibility = wgpu::ShaderStage::Fragment;
+			entries[3].texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
+			entries[3].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+			entries[3].texture.multisampled = false;
+
+			entries[4].binding = 4;
+			entries[4].visibility = wgpu::ShaderStage::Fragment;
+			entries[4].texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
+			entries[4].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+			entries[4].texture.multisampled = false;
 
 			wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc{};
 			bindGroupLayoutDesc.label = { "FrameBindGroupLayout", WGPU_STRLEN };
-			bindGroupLayoutDesc.entryCount = 1;
-			bindGroupLayoutDesc.entries = &bindGroupLayoutEntry;
+			bindGroupLayoutDesc.entryCount = 5;
+			bindGroupLayoutDesc.entries = entries;
+
 			s_FrameBindGroupLayout = device.createBindGroupLayout(bindGroupLayoutDesc);
 
 			wgpu::BufferDescriptor bufferDesc{};
@@ -96,17 +127,34 @@ namespace Engine::RenderGlobals
 
 			s_FrameUniformBuffer = device.createBuffer(bufferDesc);
 
-			wgpu::BindGroupEntry bindGroupEntry{};
-			bindGroupEntry.binding = 0;
-			bindGroupEntry.buffer = s_FrameUniformBuffer;
-			bindGroupEntry.offset = 0;
-			bindGroupEntry.size = sizeof(FrameUniforms);
+			wgpu::BindGroupEntry bgEntries[5]{};
+
+			bgEntries[0].binding = 0;
+			bgEntries[0].buffer = s_FrameUniformBuffer;
+			bgEntries[0].offset = 0;
+			bgEntries[0].size = sizeof(FrameUniforms);
+
+			bgEntries[1].binding = 1;
+			bgEntries[1].sampler = SamplerPool::GetSampler(TextureFilter::Point, TextureWrap::Clamp);
+
+			auto irrTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/PG2/lebombo_irradiance_map.hdr");
+			bgEntries[2].binding = 2;
+			bgEntries[2].textureView = irrTexture->GetTextureView();
+
+			auto brdfTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/PG2/brdf_integration_map_ct_ggx.hdr");
+			bgEntries[3].binding = 3;
+			bgEntries[3].textureView = brdfTexture->GetTextureView();
+
+			auto prefEnvTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_500.hdr");
+			bgEntries[4].binding = 4;
+			bgEntries[4].textureView = prefEnvTexture->GetTextureView();
+
 
 			wgpu::BindGroupDescriptor bindGroupDesc{};
 			bindGroupDesc.label = { "FrameBindGroup", WGPU_STRLEN };
 			bindGroupDesc.layout = s_FrameBindGroupLayout;
-			bindGroupDesc.entryCount = 1;
-			bindGroupDesc.entries = &bindGroupEntry;
+			bindGroupDesc.entryCount = 5;
+			bindGroupDesc.entries = bgEntries;
 			s_FrameBindGroup = device.createBindGroup(bindGroupDesc);
 		}
 	}

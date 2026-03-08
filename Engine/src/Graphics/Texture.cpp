@@ -12,6 +12,12 @@ namespace Engine
 		m_Height = specification.height;
 		m_TextureFormat = specification.format;
 
+		uint32_t bytesPerPixel = 4;
+		if(m_TextureFormat == wgpu::TextureFormat::RGBA32Float)
+		{
+			bytesPerPixel = 16;
+		}
+
 		wgpu::TextureDescriptor textureDesc;
 		textureDesc.dimension = wgpu::TextureDimension::_2D;
 		textureDesc.format = m_TextureFormat;
@@ -31,12 +37,12 @@ namespace Engine
 
 		wgpu::TexelCopyBufferLayout layout{};
 		layout.offset = 0;
-		layout.bytesPerRow = m_Width * 4; // 4 bytes per pixel (RGBA8) TODO: support other formats
+		layout.bytesPerRow = m_Width * bytesPerPixel;
 		layout.rowsPerImage = m_Height;
 
 		wgpu::Extent3D size = { m_Width, m_Height, 1 };
 
-		GraphicsContext::GetQueue().writeTexture(dst, data, m_Width * m_Height * 4, layout, size);
+		GraphicsContext::GetQueue().writeTexture(dst, data, m_Width * m_Height * bytesPerPixel, layout, size);
 
 		wgpu::TextureViewDescriptor viewDesc{};
 		viewDesc.format = m_TextureFormat;

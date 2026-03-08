@@ -18,11 +18,18 @@ namespace Engine
 		{ AssetType::Material, MaterialImporter::ImportMaterial },
 		{ AssetType::Scene, SceneImporter::ImportScene },
 		{ AssetType::Shader, ShaderImporter::ImportShader },
-		{ AssetType::Audio, AudioImporter::ImportAudio }
+		{ AssetType::Audio, AudioImporter::ImportAudio },
+		{ AssetType::HDR, TextureImporter::ImportTexture2D }
 	};
 
 	Asset* AssetImporter::ImportAsset(const AssetRecord& record)
 	{
+		if (record.path.empty() || !std::filesystem::exists(record.path))
+		{
+			LOG_ERROR("Invalid asset path: {}", record.path);
+			return nullptr;
+		}
+
 		AssetType assetType = record.type;
 
 		if (s_AssetImportFunctions.find(assetType) == s_AssetImportFunctions.end())

@@ -243,12 +243,6 @@ namespace Engine
 			ProcessNode(model, node, glm::mat4(1.0f), vertices, indices, wireIndices, subMeshes);
 		}
 
-		std::vector<std::string> materialNames;
-		for (auto mat : model.materials)
-		{
-			materialNames.push_back(mat.name);
-		}
-
-		return new Mesh({ vertices, indices, wireIndices, subMeshes, materialNames });
+		return new Mesh({ vertices, indices, /*wireIndices,*/ subMeshes });
 	}
 }

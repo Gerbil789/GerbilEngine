@@ -217,7 +217,7 @@ namespace Editor
 
 		if (!component.mesh) return;
 
-		auto materials = component.mesh->GetMaterials();
+		auto materials = component.materials;
 		for (int i = 0; i < materials.size(); ++i)
 		{
 			auto material = materials[i];
@@ -233,7 +233,7 @@ namespace Editor
 			DragDropTarget{}.Accept("UUID", [&](const void* data) {
 				Engine::Uuid id = *static_cast<const Engine::Uuid*>(data);
 				if (Engine::AssetManager::GetAssetType(id) == Engine::AssetType::Material) {
-					component.mesh->SetMaterial(i, Engine::AssetManager::GetAsset<Engine::Material>(id));
+					component.SetMaterial(i, Engine::AssetManager::GetAsset<Engine::Material>(id));
 				}
 				});
 			ImGui::PopID();
@@ -399,6 +399,20 @@ namespace Editor
 			{
 				Engine::AudioClip*& audioClip = *reinterpret_cast<Engine::AudioClip**>(fieldPtr);
 				AudioClipField(field.name, audioClip);
+				break;
+			}
+
+			case Engine::ScriptFieldType::Mesh:
+			{
+				Engine::Mesh*& mesh = *reinterpret_cast<Engine::Mesh**>(fieldPtr);
+				MeshField(field.name, mesh);
+				break;
+			}
+
+			case Engine::ScriptFieldType::Material:
+			{
+				Engine::Material*& material = *reinterpret_cast<Engine::Material**>(fieldPtr);
+				MaterialField(field.name, material);
 				break;
 			}
 			}

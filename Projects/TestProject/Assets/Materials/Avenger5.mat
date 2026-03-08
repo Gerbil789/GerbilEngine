@@ -1,8 +1,11 @@
-Shader: 9538445625437357667
+Shader: 10614378585745839232
 Sampler:
   Filter: 1
   Wrap: 0
 Attributes:
-  color: [0.12156863, 1, 0, 0.31718063]
+  albedo: [0.12156863, 1, 0, 0.31718063]
+  roughness: 0
+  metallic: 0
+  tiling: [0, 0]
 Textures:
   {}

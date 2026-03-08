@@ -63,8 +63,8 @@ namespace Editor
 		Engine::Audio::Initialize();
 		IconManager::Load("Resources/Editor/icons/icons.png");
 
-
 		m_FileWatcher = new FileWatcher(EditorSelection::GetProject().GetAssetsDirectory(), [this](std::unique_ptr<Engine::FileEvent> e) {PushFileEvent(std::move(e)); });
+
 
 		const Project& project = EditorSelection::GetProject();
 		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / BUILD_CONFIG / (project.GetTitle() + ".dll");
@@ -89,7 +89,28 @@ namespace Editor
 
 		LOG_INFO("--- Editor initialization complete ---");
 
-		//Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
+		Engine::Scene* scene = Engine::SceneManager::GetActiveScene();
+		Engine::Mesh* mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(15608668046686712752);
+		Engine::Shader* shader = Engine::AssetManager::GetAsset<Engine::Shader>(10614378585745839232);
+		
+
+		for (int x = 0; x < 5; x++)
+		{
+			for (int z = 0; z < 5; z++)
+			{
+				auto sphere = scene->CreateEntity("Sphere");
+				sphere.GetComponent<Engine::TransformComponent>().position = { static_cast<float>(x) * 4.0f, 0.0f, static_cast<float>(z) * 4.0f };
+				auto& meshComponent = sphere.AddComponent<Engine::MeshComponent>(mesh);
+
+				//Engine::MaterialSpecification spec;
+				//spec.shader = shader;
+				//
+
+				meshComponent.SetMaterial(0, Engine::Materials::GetDefault());
+
+			}
+		}
+
 
 		//TODO: NEVER HARDCODE ASSETS LIKE THIS, THIS IS JUST FOR TESTING PURPOSES
 		//Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(9667627839419811388);
