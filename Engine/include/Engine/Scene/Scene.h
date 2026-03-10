@@ -22,8 +22,6 @@ namespace Engine
 		Entity GetActiveCamera();
 		void SetActiveCamera(Entity entity);
 
-		entt::registry& Registry() { return m_Registry; }
-
 		template<typename... Components>
 		std::vector<Entity> GetEntities(bool includeDisabled = false)
 		{

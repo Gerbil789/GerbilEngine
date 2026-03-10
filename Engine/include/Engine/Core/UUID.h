@@ -19,7 +19,6 @@ namespace Engine
 
   private:
     uint64_t m_Value{};
-
   };
 }
 

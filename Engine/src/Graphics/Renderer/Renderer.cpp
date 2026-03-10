@@ -38,8 +38,6 @@ namespace Engine
 
 	void Renderer::Resize(uint32_t width, uint32_t height)
 	{
-		ENGINE_PROFILE_FUNCTION();
-
 		m_RenderContext.width = width;
 		m_RenderContext.height = height;
 
@@ -101,7 +99,7 @@ namespace Engine
 		frameUniforms.cameraPosition = m_RenderContext.camera->GetPosition();
 		GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetFrameUniformBuffer(), 0, &frameUniforms, sizeof(frameUniforms));
 
-		wgpu::CommandEncoderDescriptor encoderDesc = {};
+		wgpu::CommandEncoderDescriptor encoderDesc{};
 		encoderDesc.label = { "RendererCommandEncoder", WGPU_STRLEN };
 		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder(encoderDesc);
 
@@ -111,7 +109,7 @@ namespace Engine
 
 		std::for_each(std::execution::par, list.items.begin(), list.items.end(), [&](const DrawItem& item)
 			{
-				models[item.modelIndex] = item.entity.GetComponent<TransformComponent>().GetWorldMatrix(m_RenderContext.scene->Registry());
+				models[item.modelIndex] = item.entity.Get<TransformComponent>().GetWorldMatrix();
 			});
 
 		for (const DrawItem& item : list.items)

@@ -13,17 +13,17 @@ namespace Editor
 
     void Execute() override
     {
-      if (!m_Entity.HasComponent<T>())
+      if (!m_Entity.Has<T>())
       {
-        m_Entity.AddComponent<T>(m_Initial);
+        m_Entity.Add<T>(m_Initial);
       }
     }
 
     void Undo() override
     {
-      if (m_Entity.HasComponent<T>())
+      if (m_Entity.Has<T>())
       {
-        m_Entity.RemoveComponent<T>();
+        m_Entity.Remove<T>();
       }
     }
 

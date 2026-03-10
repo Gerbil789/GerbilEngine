@@ -2,6 +2,7 @@
 #include "Engine/Core/Input.h"
 #include "Engine/Scene/Entity.h"
 #include "Editor/Core/EditorSelection.h"
+#include "Engine/Scene/Components.h"
 
 namespace Editor
 {
@@ -34,7 +35,7 @@ namespace Editor
 			auto entity = EditorSelection::Entities().GetPrimary();
 			if (!entity) return false; //TODO: must return bool?
 
-			glm::vec3 focusPoint = entity.GetComponent<TransformComponent>().position;
+			glm::vec3 focusPoint = entity.Get<TransformComponent>().position;
 			FocusOnPoint(focusPoint); //TODO: does this even work? xd
 		}
 

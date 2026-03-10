@@ -40,7 +40,7 @@ namespace Editor
 		for(size_t i = 0; i < entities.size(); ++i)
 		{
 			Entity entity = entities[i];
-			if(entity.GetComponent<TransformComponent>().parent == entt::null)
+			if(!entity.Get<TransformComponent>().parent)
 			{
 				DrawReorderDropTarget(Engine::Entity::Null(), i);
 				DrawEntityNode(entity);
@@ -126,15 +126,14 @@ namespace Editor
 
 		if (opened)
 		{
-			entt::entity child = entity.GetComponent<TransformComponent>().firstChild;
+			Engine::Entity child = entity.Get<TransformComponent>().firstChild;
 			size_t i = 0;
 
-			while (child != entt::null)
+			while (child)
 			{
-				Engine::Entity childEntity{ child, &m_Scene->Registry() };
 				DrawReorderDropTarget(entity, i);
-				DrawEntityNode(childEntity);
-				child = childEntity.GetComponent<TransformComponent>().nextSibling;
+				DrawEntityNode(child);
+				child = child.Get<TransformComponent>().nextSibling;
 				i++;
 			}
 			DrawReorderDropTarget(entity, i);
@@ -159,9 +158,8 @@ namespace Editor
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY"))
 			{
-				entt::entity dropped = *(entt::entity*)payload->Data;
-				Entity droppedEntity{ dropped, &m_Scene->Registry() };
-				droppedEntity.SetParent(parent);
+				Engine::Entity dropped = *(Engine::Entity*)payload->Data;
+				dropped.SetParent(parent);
 			}
 			ImGui::EndDragDropTarget();
 		}

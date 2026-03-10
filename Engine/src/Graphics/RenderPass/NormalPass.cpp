@@ -3,6 +3,7 @@
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Utility/File.h"
+#include "Engine/Graphics/GraphicsContext.h"
 
 namespace Engine
 {

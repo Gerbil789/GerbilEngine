@@ -19,7 +19,7 @@ void PlayerController::OnUpdate()
 {
 	float delta = Time::DeltaTime();
 
-	auto& transform = Self.GetComponent<TransformComponent>();
+	auto& transform = Self.Get<TransformComponent>();
 
 	// movement
 	if (Input::IsKeyDown(KeyCode::A)) transform.position.x -= m_MoveSpeed * delta;
@@ -49,15 +49,15 @@ void PlayerController::OnUpdate()
 
 		auto scene = SceneManager::GetActiveScene();
 
-		auto pos = Self.GetComponent<TransformComponent>().position;
+		auto pos = Self.Get<TransformComponent>().position;
 		Audio::Play3D(m_Sound, pos.x, pos.y, pos.z);
 
 
 		Entity bullet = scene->CreateEntity("Bullet");
-		bullet.GetComponent<TransformComponent>().position = pos;
-		bullet.AddComponent<MeshComponent>(m_BulletMesh).SetMaterial(0, m_BulletMaterial);
+		bullet.Get<TransformComponent>().position = pos;
+		bullet.Add<MeshComponent>(m_BulletMesh).SetMaterial(0, m_BulletMaterial);
 
-		auto& scriptComponent = bullet.AddComponent<ScriptComponent>();
+		auto& scriptComponent = bullet.Add<ScriptComponent>();
 		scriptComponent.id = "Bullet";
 		scriptComponent.instance = new Bullet(glm::vec3(0.0f, 0.0f, 1.0f));
 		scriptComponent.instance->Self = bullet;
@@ -68,7 +68,7 @@ void PlayerController::OnUpdate()
 
 void Bullet::OnUpdate()
 {
-	auto& transform = Self.GetComponent<TransformComponent>();
+	auto& transform = Self.Get<TransformComponent>();
 
 	transform.position += m_Direction * m_Speed * Time::DeltaTime();
 

@@ -3,6 +3,8 @@
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Utility/File.h"
+#include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Scene/Scene.h"
 
 namespace Engine
 {
@@ -226,8 +228,8 @@ namespace Engine
 		int i = 0;
 		for (auto entity : lightEntities)
 		{
-			auto& lightComponent = entity.GetComponent<LightComponent>();
-			auto& transform = entity.GetComponent<TransformComponent>();
+			auto& lightComponent = entity.Get<LightComponent>();
+			auto& transform = entity.Get<TransformComponent>();
 
 			Light light{
 				.position = transform.position,

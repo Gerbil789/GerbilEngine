@@ -42,11 +42,23 @@ namespace Engine::GraphicsContext
 			LOG_TRACE("DeviceID 0x{:X}", info.deviceID);
 		}
 
+		wgpu::Limits limits{};
+
+		limits.maxBufferSize = 1024ull * 1024ull * 1024ull; // request 1 GB
+
+		if (!adapter.getLimits(&limits))
+		{
+			throw std::runtime_error("Failed to query adapter limits");
+		}
+
+		LOG_TRACE("Adapter maxBufferSize: {}", limits.maxBufferSize);
+
 		// Request device
 		wgpu::DeviceDescriptor deviceDesc{};
 		deviceDesc.label = { "MainDevice", WGPU_STRLEN };
 		deviceDesc.requiredFeatureCount = 0;
 		deviceDesc.defaultQueue.label = { "DefaultQueue", WGPU_STRLEN };
+		deviceDesc.requiredLimits = &limits;
 
 		deviceDesc.deviceLostCallbackInfo.mode = wgpu::CallbackMode::AllowSpontaneous;
 		deviceDesc.deviceLostCallbackInfo.callback = [](WGPUDevice const*, WGPUDeviceLostReason reason, WGPUStringView message, void*, void*)

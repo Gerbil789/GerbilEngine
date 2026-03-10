@@ -3,6 +3,7 @@
 #include "Engine/Core/UUID.h"
 #include "Engine/Core/GameContext.h"
 
+
 #ifdef ENGINE_PLATFORM_WINDOWS
 #ifdef GAME_BUILD_DLL
 #define GAME_API  __declspec(dllexport)
@@ -15,6 +16,7 @@
 
 namespace Engine
 {
+  class Script;
   enum class ScriptFieldType { Float, Int, Bool, Texture, AudioClip, Mesh, Material };
 
   struct ScriptField

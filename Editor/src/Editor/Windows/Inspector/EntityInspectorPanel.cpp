@@ -35,10 +35,10 @@ namespace Editor
 		{
 			ImGui::PushID(static_cast<int>(entity.GetUUID()));
 
-			BoolField("Enabled", entity.GetComponent<Engine::IdentityComponent>().enabled);
+			BoolField("Enabled", entity.Get<Engine::IdentityComponent>().enabled);
 			ImGui::SameLine();
 
-			std::string& name = entity.GetComponent<Engine::NameComponent>().name;
+			std::string& name = entity.Get<Engine::NameComponent>().name;
 			if (TextField("Name", name).finished)
 			{
 				//TODO: somehow store the original name
@@ -85,18 +85,18 @@ namespace Editor
 
 	void EntityInspectorPanel::DrawTransform()
 	{
-		if (!m_Entity.HasComponent<Engine::TransformComponent>()) return;
+		if (!m_Entity.Has<Engine::TransformComponent>()) return;
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
-			{ "Reset", [this] {auto before = m_Entity.GetComponent<Engine::TransformComponent>(); auto after = before; after.Reset();
+			{ "Reset", [this] {auto before = m_Entity.Get<Engine::TransformComponent>(); auto after = before; after.Reset();
 						EditorCommandManager::ModifyComponent<Engine::TransformComponent>(m_Entity, before, after); } },
 		};
 
 		ComponentHeader header("Transform", menuActions);
 		if (!header.open) return;
 
-		auto& tc = m_Entity.GetComponent<Engine::TransformComponent>();
+		auto& tc = m_Entity.Get<Engine::TransformComponent>();
 
 		EditResult result;
 		static TransformData s_TransformBefore;
@@ -136,12 +136,12 @@ namespace Editor
 
 	void EntityInspectorPanel::DrawCamera()
 	{
-		if (!m_Entity.HasComponent<Engine::CameraComponent>()) return;
+		if (!m_Entity.Has<Engine::CameraComponent>()) return;
 
 		ComponentHeader header("Camera");
 		if (!header.open) return;
 
-		auto& component = m_Entity.GetComponent<Engine::CameraComponent>();
+		auto& component = m_Entity.Get<Engine::CameraComponent>();
 		Engine::Camera* camera = component.camera;
 
 		PropertyTable table;
@@ -183,11 +183,11 @@ namespace Editor
 
 	void EntityInspectorPanel::DrawMesh()
 	{
-		if (!m_Entity.HasComponent<Engine::MeshComponent>()) return;
+		if (!m_Entity.Has<Engine::MeshComponent>()) return;
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
-			{ "Reset", [this] {auto before = m_Entity.GetComponent<Engine::MeshComponent>(); auto after = before; after.Reset();
+			{ "Reset", [this] {auto before = m_Entity.Get<Engine::MeshComponent>(); auto after = before; after.Reset();
 						EditorCommandManager::ModifyComponent<Engine::MeshComponent>(m_Entity, before, after); } },
 
 			{ "Remove", [this] {EditorCommandManager::RemoveComponent<Engine::MeshComponent>(m_Entity); } }
@@ -196,7 +196,7 @@ namespace Editor
 		ComponentHeader header("Mesh", menuActions);
 		if (!header.open) return;
 
-		auto& component = m_Entity.GetComponent<Engine::MeshComponent>();
+		auto& component = m_Entity.Get<Engine::MeshComponent>();
 
 		std::string meshText = component.mesh != nullptr ? Engine::AssetManager::GetAssetName(component.mesh->id) : "##Mesh";
 
@@ -242,12 +242,12 @@ namespace Editor
 
 	void EntityInspectorPanel::DrawLight()
 	{
-		if (!m_Entity.HasComponent<Engine::LightComponent>()) return;
-		auto& component = m_Entity.GetComponent<Engine::LightComponent>();
+		if (!m_Entity.Has<Engine::LightComponent>()) return;
+		auto& component = m_Entity.Get<Engine::LightComponent>();
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
-			{ "Reset", [this] {auto before = m_Entity.GetComponent<Engine::LightComponent>(); auto after = before; after.Reset();
+			{ "Reset", [this] {auto before = m_Entity.Get<Engine::LightComponent>(); auto after = before; after.Reset();
 						EditorCommandManager::ModifyComponent<Engine::LightComponent>(m_Entity, before, after); } },
 
 			{ "Remove", [this] {EditorCommandManager::RemoveComponent<Engine::LightComponent>(m_Entity); } }
@@ -296,13 +296,13 @@ namespace Editor
 
 	void EntityInspectorPanel::DrawScript()
 	{
-		if (!m_Entity.HasComponent<Engine::ScriptComponent>()) return;
+		if (!m_Entity.Has<Engine::ScriptComponent>()) return;
 
 		static int id = -1;
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
-			{ "Reset", [this] {id = -1; auto before = m_Entity.GetComponent<Engine::ScriptComponent>(); auto after = before; after.Reset();
+			{ "Reset", [this] {id = -1; auto before = m_Entity.Get<Engine::ScriptComponent>(); auto after = before; after.Reset();
 						EditorCommandManager::ModifyComponent<Engine::ScriptComponent>(m_Entity, before, after); } },
 
 			{ "Remove", [this] {EditorCommandManager::RemoveComponent<Engine::ScriptComponent>(m_Entity); } }
@@ -315,7 +315,7 @@ namespace Editor
 		if (!table) return;
 
 		Engine::ScriptRegistry& registry = Engine::ScriptRegistry::Get();
-		Engine::ScriptComponent& component = m_Entity.GetComponent<Engine::ScriptComponent>();
+		Engine::ScriptComponent& component = m_Entity.Get<Engine::ScriptComponent>();
 
 		const auto& scriptNames = registry.GetAllScriptNames();
 
@@ -429,10 +429,10 @@ namespace Editor
 
 		static constexpr std::array<AddComponentEntry, 4> entries
 		{
-			AddComponentEntry{ "Camera",        [](Engine::Entity e) { auto& component = e.AddComponent<Engine::CameraComponent>(); component.camera = std::make_unique<Engine::Camera>().release(); }},
-			AddComponentEntry{ "Mesh",          [](Engine::Entity e) { e.AddComponent<Engine::MeshComponent>(); } },
-			AddComponentEntry{ "Light",         [](Engine::Entity e) { e.AddComponent<Engine::LightComponent>(); } },
-			AddComponentEntry{ "Script",				[](Engine::Entity e) { e.AddComponent<Engine::ScriptComponent>(); } }
+			AddComponentEntry{ "Camera",        [](Engine::Entity e) { auto& component = e.Add<Engine::CameraComponent>(); component.camera = std::make_unique<Engine::Camera>().release(); }},
+			AddComponentEntry{ "Mesh",          [](Engine::Entity e) { e.Add<Engine::MeshComponent>(); } },
+			AddComponentEntry{ "Light",         [](Engine::Entity e) { e.Add<Engine::LightComponent>(); } },
+			AddComponentEntry{ "Script",				[](Engine::Entity e) { e.Add<Engine::ScriptComponent>(); } }
 		};
 
 		ImGui::Separator();

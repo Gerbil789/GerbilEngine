@@ -3,6 +3,7 @@
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
+#include "Engine/Scene/Components.h"
 
 namespace Engine
 {
@@ -53,7 +54,7 @@ namespace Engine
 			}
 			const SubMesh* sub = draw.subMesh;
 
-			auto meshMaterials = draw.entity.GetComponent<MeshComponent>().materials;
+			auto meshMaterials = draw.entity.Get<MeshComponent>().materials;
 			auto subMaterial = meshMaterials[sub->materialIndex];
 
 			if (subMaterial && (subMaterial != material))

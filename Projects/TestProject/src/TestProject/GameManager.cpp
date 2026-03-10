@@ -18,16 +18,16 @@ void GameManager::OnStart()
 	auto scene = SceneManager::GetActiveScene();
 
 
-	for(int x = 0; x < 5; x++)
-	{
-		for(int z = 0; z < 5; z++)
-		{
-			auto sphere = scene->CreateEntity("Sphere");
-			sphere.GetComponent<TransformComponent>().position = { static_cast<float>(x) * 2.0f, 0.0f, static_cast<float>(z) * 2.0f };
-			sphere.AddComponent<MeshComponent>(m_Mesh);
-			
-		}
-	}
+	//for(int x = 0; x < 5; x++)
+	//{
+	//	for(int z = 0; z < 5; z++)
+	//	{
+	//		auto sphere = scene->CreateEntity("Sphere");
+	//		sphere.GetComponent<TransformComponent>().position = { static_cast<float>(x) * 2.0f, 0.0f, static_cast<float>(z) * 2.0f };
+	//		sphere.AddComponent<MeshComponent>(m_Mesh);
+	//		
+	//	}
+	//}
 
 
 }

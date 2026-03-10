@@ -32,7 +32,7 @@ namespace Editor
   private:
     void Apply(const TransformData& data)
     {
-      auto& tc = m_Entity.GetComponent<Engine::TransformComponent>();
+      auto& tc = m_Entity.Get<Engine::TransformComponent>();
       tc.position = data.Position;
       tc.rotation = data.Rotation;
       tc.scale = data.Scale;
@@ -65,7 +65,7 @@ namespace Editor
     {
       for (size_t i = 0; i < m_Entities.size(); i++)
       {
-        auto& tc = m_Entities[i].GetComponent<Engine::TransformComponent>();
+        auto& tc = m_Entities[i].Get<Engine::TransformComponent>();
         tc.position = data[i].Position;
         tc.rotation = data[i].Rotation;
         tc.scale = data[i].Scale;

@@ -1,8 +1,6 @@
 #pragma once
 
-#include "Engine/Core/API.h"
-#include "Engine/Core/UUID.h"
-#include <entt.hpp>
+#include "Engine/Scene/Entity.h"
 #include <glm/glm.hpp>
 
 namespace Engine
@@ -30,16 +28,16 @@ namespace Engine
 		glm::vec3 rotation = { 0.0f, 0.0f, 0.0f }; 
 		glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
 
-		entt::entity parent = entt::null;
-		entt::entity firstChild = entt::null;
-		entt::entity nextSibling = entt::null;
-		entt::entity prevSibling = entt::null;
+		Entity parent;
+		Entity firstChild;
+		Entity nextSibling;
+		Entity prevSibling;
 
 		TransformComponent() = default;
 		TransformComponent(const glm::vec3& position) : position(position) {}
 
 		glm::mat4 GetLocalMatrix() const;
-		glm::mat4 GetWorldMatrix(const entt::registry& registry) const; //TODO: passing registry is not ideal
+		glm::mat4 GetWorldMatrix() const;
 
 		void Reset()
 		{
@@ -78,6 +76,7 @@ namespace Engine
 		void Reset()
 		{
 			mesh = nullptr;
+			materials.clear();
 		}
 	};
 
@@ -108,7 +107,7 @@ namespace Engine
 
 	struct ENGINE_API ScriptComponent
 	{
-		std::string id;
+		std::string id; //TODO: dont use string as id
 		Script* instance = nullptr;
 
 		void Reset()

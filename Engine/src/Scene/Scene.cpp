@@ -25,10 +25,10 @@ namespace Engine
 			const auto& name = srcRegistry.get<NameComponent>(srcEntity).name;
 
 			Entity newEntity = newScene->CreateEntity(name);
-			newEntity.GetComponent<IdentityComponent>().id = id;
-			newEntity.GetComponent<IdentityComponent>().enabled = enabled;
+			newEntity.Get<IdentityComponent>().id = id;
+			newEntity.Get<IdentityComponent>().enabled = enabled;
 			const auto& transform = srcRegistry.get<TransformComponent>(srcEntity);
-			newEntity.GetComponent<TransformComponent>() = transform;
+			newEntity.Get<TransformComponent>() = transform;
 
 			uuidToEntityMap[id] = newEntity.Handle();
 		}
@@ -83,7 +83,7 @@ namespace Engine
 
 	void Scene::SetActiveCamera(Entity entity)
 	{
-		if (!entity.HasComponent<CameraComponent>())
+		if (!entity.Has<CameraComponent>())
 		{
 			LOG_WARNING("Setting active camera to entity without CameraComponent!");
 			return;

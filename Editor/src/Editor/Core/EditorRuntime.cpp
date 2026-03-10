@@ -90,7 +90,7 @@ namespace Editor
 
 		for(const auto& ent : m_RuntimeScene->GetEntities<Engine::ScriptComponent>())
 		{
-			auto& sc = ent.GetComponent<Engine::ScriptComponent>();
+			auto& sc = ent.Get<Engine::ScriptComponent>();
 			if(sc.instance)
 			{
 				sc.instance->Self = ent;
@@ -114,7 +114,7 @@ namespace Editor
 		// update scripts
 		for (auto& ent : m_RuntimeScene->GetEntities<Engine::ScriptComponent>())
 		{
-			auto& scriptComp = ent.GetComponent<Engine::ScriptComponent>();
+			auto& scriptComp = ent.Get<Engine::ScriptComponent>();
 			if (scriptComp.instance)
 			{
 				scriptComp.instance->OnUpdate();
@@ -126,8 +126,8 @@ namespace Editor
 		// update camera & audio listener
 		for (auto& ent : m_RuntimeScene->GetEntities<Engine::CameraComponent>())
 		{
-			Engine::Camera* cam = ent.GetComponent<Engine::CameraComponent>().camera;
-			const auto& pos = ent.GetComponent<Engine::TransformComponent>().position;
+			Engine::Camera* cam = ent.Get<Engine::CameraComponent>().camera;
+			const auto& pos = ent.Get<Engine::TransformComponent>().position;
 			const auto& forward = cam->GetForward();
 			const auto& up = cam->GetUp();
 			Engine::Audio::SetListener(pos.x, pos.y, pos.z, forward.x, forward.y, forward.z, up.x, up.y, up.z);

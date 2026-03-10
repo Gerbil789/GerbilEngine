@@ -21,7 +21,7 @@ public:
   {
     if (m_PlayOnAwake && m_Clip)
     {
-      const auto& pos = Self.GetComponent<Engine::TransformComponent>().position;
+      const auto& pos = Self.Get<Engine::TransformComponent>().position;
       Engine::Audio::Play3D(m_Clip, pos.x, pos.y, pos.z);
     }
 	}
@@ -32,7 +32,7 @@ public:
 
     if(Engine::Audio::IsPlaying(m_Clip))
     {
-      const auto& pos = Self.GetComponent<Engine::TransformComponent>().position;
+      const auto& pos = Self.Get<Engine::TransformComponent>().position;
       Engine::Audio::SetSourcePosition(m_Clip, pos.x, pos.y, pos.z);
 		}
 

@@ -26,16 +26,16 @@ namespace Engine
 		Engine::Yaml::Map entityMap(out);
 
 		// Identity
-		const auto& identityComponent = entity.GetComponent<IdentityComponent>();
+		const auto& identityComponent = entity.Get<IdentityComponent>();
 
 		Engine::Yaml::Write(out, "ID", identityComponent.id);
 		Engine::Yaml::Write(out, "Enabled", identityComponent.enabled);
 
 		// Name
-		Engine::Yaml::Write(out, "Name", entity.GetComponent<NameComponent>().name);
+		Engine::Yaml::Write(out, "Name", entity.Get<NameComponent>().name);
 
 		// Transform
-		const auto& transformComponent = entity.GetComponent<TransformComponent>();
+		const auto& transformComponent = entity.Get<TransformComponent>();
 		{
 			Engine::Yaml::Map transformMap(out, "Transform");
 
@@ -45,9 +45,9 @@ namespace Engine
 		}
 
 		// Mesh
-		if (entity.HasComponent<MeshComponent>())
+		if (entity.Has<MeshComponent>())
 		{
-			const auto& component = entity.GetComponent<MeshComponent>();
+			const auto& component = entity.Get<MeshComponent>();
 			const auto& mesh = component.mesh;
 			const auto& materials = component.materials;
 
@@ -72,9 +72,9 @@ namespace Engine
 		}
 
 		// Camera
-		if (entity.HasComponent<CameraComponent>())
+		if (entity.Has<CameraComponent>())
 		{
-			const auto& component = entity.GetComponent<CameraComponent>();
+			const auto& component = entity.Get<CameraComponent>();
 			Camera* camera = component.camera;
 
 			Engine::Yaml::Map cameraMap(out, "CameraComponent");
@@ -107,9 +107,9 @@ namespace Engine
 
 
 		// Light
-		if (entity.HasComponent<LightComponent>())
+		if (entity.Has<LightComponent>())
 		{
-			const auto& component = entity.GetComponent<LightComponent>();
+			const auto& component = entity.Get<LightComponent>();
 
 			Engine::Yaml::Map cameraMap(out, "LightComponent");
 			Engine::Yaml::Write(out, "Type", static_cast<uint32_t>(component.type)); //TODO: serialize string
@@ -120,9 +120,9 @@ namespace Engine
 		}
 
 		// Script
-		if (entity.HasComponent<ScriptComponent>())
+		if (entity.Has<ScriptComponent>())
 		{
-			const auto& component = entity.GetComponent<ScriptComponent>();
+			const auto& component = entity.Get<ScriptComponent>();
 
 			auto& desc = m_Registry->GetDescriptor(component.id);
 
@@ -247,21 +247,21 @@ namespace Engine
 			// Identity
 			uint64_t uuid = entityNode["ID"].as<uint64_t>();
 			bool enabled = entityNode["Enabled"].as<bool>(true);
-			auto& identity = entity.GetComponent<IdentityComponent>();
+			auto& identity = entity.Get<IdentityComponent>();
 			identity.id = uuid;
 			identity.enabled = enabled;
 
 			// Name
 			if (entityNode["Name"])
 			{
-				auto& nameComp = entity.GetComponent<NameComponent>();
+				auto& nameComp = entity.Get<NameComponent>();
 				nameComp.name = entityNode["Name"].as<std::string>();
 			}
 
 			// Transform
 			if (entityNode["Transform"])
 			{
-				auto& transform = entity.GetComponent<TransformComponent>();
+				auto& transform = entity.Get<TransformComponent>();
 				auto transformNode = entityNode["Transform"];
 
 				Engine::Yaml::Read(transformNode["Position"], transform.position);
@@ -272,7 +272,7 @@ namespace Engine
 			// Mesh
 			if (auto meshNode = entityNode["MeshComponent"]; meshNode)
 			{
-				auto& component = entity.AddComponent<MeshComponent>();
+				auto& component = entity.Add<MeshComponent>();
 
 				if (uint64_t id; Engine::Yaml::Read<uint64_t>(meshNode, "Mesh", id))
 				{
@@ -298,7 +298,7 @@ namespace Engine
 			// Camera
 			if(auto camNode = entityNode["CameraComponent"]; camNode)
 			{
-				auto& component = entity.AddComponent<CameraComponent>();
+				auto& component = entity.Add<CameraComponent>();
 				std::unique_ptr<Camera> camera = std::make_unique<Camera>();
 
 				if(uint32_t projection; Engine::Yaml::Read(camNode, "Projection", projection))
@@ -341,7 +341,7 @@ namespace Engine
 			// Light
 			if (auto lightNode = entityNode["LightComponent"]; lightNode)
 			{
-				auto& component = entity.AddComponent<LightComponent>();
+				auto& component = entity.Add<LightComponent>();
 
 				if (uint32_t type; Engine::Yaml::Read(lightNode, "Type", type))
 				{
@@ -357,7 +357,7 @@ namespace Engine
 			// Script
 			if (auto scriptNode = entityNode["ScriptComponent"]; scriptNode)
 			{
-				auto& component = entity.AddComponent<ScriptComponent>();
+				auto& component = entity.Add<ScriptComponent>();
 
 				std::string scriptName = scriptNode["Script"].as<std::string>();
 				auto desc = m_Registry->GetDescriptor(scriptName);

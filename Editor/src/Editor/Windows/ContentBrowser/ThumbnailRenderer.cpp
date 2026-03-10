@@ -24,10 +24,10 @@ namespace Editor
 		m_PreviewMesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/sphere.glb");
 
 		m_Entity = scene->CreateEntity("PreviewEntity");
-		auto& mc = m_Entity.AddComponent<Engine::MeshComponent>();
+		auto& mc = m_Entity.Add<Engine::MeshComponent>();
 		mc.mesh = m_PreviewMesh;
 
-		m_Entity.GetComponent<Engine::TransformComponent>().rotation.y = 90.0f;
+		m_Entity.Get<Engine::TransformComponent>().rotation.y = 90.0f;
 
 		m_Renderer = new Engine::Renderer;
 		m_Renderer->Resize(64, 64);
@@ -39,7 +39,7 @@ namespace Editor
 
 	wgpu::TextureView ThumbnailRenderer::Render(Engine::Material* material)
 	{
-		m_Entity.GetComponent<Engine::MeshComponent>().SetMaterial(0, material);
+		m_Entity.Get<Engine::MeshComponent>().SetMaterial(0, material);
 		m_Renderer->RenderScene();
 
 		return m_Renderer->GetTextureView();

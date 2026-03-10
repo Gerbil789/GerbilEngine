@@ -99,8 +99,8 @@ namespace Editor
 			for (int z = 0; z < 5; z++)
 			{
 				auto sphere = scene->CreateEntity("Sphere");
-				sphere.GetComponent<Engine::TransformComponent>().position = { static_cast<float>(x) * 4.0f, 0.0f, static_cast<float>(z) * 4.0f };
-				auto& meshComponent = sphere.AddComponent<Engine::MeshComponent>(mesh);
+				sphere.Get<Engine::TransformComponent>().position = { static_cast<float>(x) * 4.0f, 0.0f, static_cast<float>(z) * 4.0f };
+				auto& meshComponent = sphere.Add<Engine::MeshComponent>(mesh);
 
 				//Engine::MaterialSpecification spec;
 				//spec.shader = shader;

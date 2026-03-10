@@ -48,7 +48,7 @@ namespace Engine
 		m_Renderer.SetScene(m_ActiveScene);
 
 		m_ActiveCameraEntity = m_ActiveScene->GetActiveCamera();
-		auto& cameraComponent = m_ActiveCameraEntity.GetComponent<Engine::CameraComponent>();
+		auto& cameraComponent = m_ActiveCameraEntity.Get<Engine::CameraComponent>();
 		m_Renderer.SetCamera(cameraComponent.camera);
 	}
 
@@ -60,7 +60,7 @@ namespace Engine
 		// update scripts
 		for (auto& ent : m_ActiveScene->GetEntities<Engine::ScriptComponent>())
 		{
-			auto& scriptComp = ent.GetComponent<Engine::ScriptComponent>();
+			auto& scriptComp = ent.Get<Engine::ScriptComponent>();
 			if (scriptComp.instance)
 			{
 				scriptComp.instance->OnUpdate();
@@ -68,9 +68,9 @@ namespace Engine
 		}
 
 
-		Engine::Camera* camera = m_ActiveCameraEntity.GetComponent<Engine::CameraComponent>().camera;
-		camera->SetPosition(m_ActiveCameraEntity.GetComponent<Engine::TransformComponent>().position);
-		camera->SetRotation(m_ActiveCameraEntity.GetComponent<Engine::TransformComponent>().rotation);
+		Engine::Camera* camera = m_ActiveCameraEntity.Get<Engine::CameraComponent>().camera;
+		camera->SetPosition(m_ActiveCameraEntity.Get<Engine::TransformComponent>().position);
+		camera->SetRotation(m_ActiveCameraEntity.Get<Engine::TransformComponent>().rotation);
 
 		wgpu::SurfaceTexture surfaceTexture;
 

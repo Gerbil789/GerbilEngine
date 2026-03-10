@@ -28,7 +28,7 @@ namespace Engine
 		if (context.camera->GetProjection() == Camera::Projection::Perspective && context.camera->GetBackground() == Camera::Background::Skybox)
 		{
 			auto& skybox = context.camera->GetSkybox();
-			pass.setPipeline(skybox.GetShader().GetRenderPipeline());
+			pass.setPipeline(skybox.GetEnvironmentShader().GetRenderPipeline());
 			pass.setBindGroup(1, skybox.GetBindGroup(), 0, nullptr);
 			pass.draw(36, 1, 0, 0);
 		}

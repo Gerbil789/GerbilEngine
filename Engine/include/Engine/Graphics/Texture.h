@@ -58,6 +58,4 @@ namespace Engine
 	public:
 		CubeMapTexture(const TextureSpecification& specification, const std::array<const void*, 6>& data);
 	};
-
-
 }

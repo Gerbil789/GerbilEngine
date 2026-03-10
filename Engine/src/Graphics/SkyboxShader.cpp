@@ -102,7 +102,7 @@ namespace Engine
 			wgpu::BindGroupLayoutEntry entry = wgpu::Default;
 			entry.binding = 0;
 			entry.visibility = wgpu::ShaderStage::Fragment;
-			entry.sampler.type = wgpu::SamplerBindingType::Filtering;
+			entry.sampler.type = wgpu::SamplerBindingType::NonFiltering;
 			layoutEntries[0] = entry;
 		}
 
@@ -110,8 +110,8 @@ namespace Engine
 			wgpu::BindGroupLayoutEntry entry = wgpu::Default;
 			entry.binding = 1;
 			entry.visibility = wgpu::ShaderStage::Fragment;
-			entry.texture.sampleType = wgpu::TextureSampleType::Float;
-			entry.texture.viewDimension = wgpu::TextureViewDimension::Cube;
+			entry.texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
+			entry.texture.viewDimension = wgpu::TextureViewDimension::_2D;
 			entry.texture.multisampled = false;
 			layoutEntries[1] = entry;
 		}

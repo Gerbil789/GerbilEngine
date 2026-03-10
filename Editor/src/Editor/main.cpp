@@ -1,6 +1,5 @@
 #include "Engine/Core/Log.h"
 #include "Editor/Core/EditorApp.h"
-#include "Engine/Core/Core.h"
 
 int main(int argc, char** argv)
 {
@@ -12,16 +11,15 @@ int main(int argc, char** argv)
 
   try
   {
-    ENGINE_PROFILE_BEGIN("Editor initialization", "profile_init.json");
+    //ENGINE_PROFILE_BEGIN("Editor initialization", "profile_init.json");
     auto app = Editor::EditorApp({ argc, argv });
-    ENGINE_PROFILE_END();
+    //ENGINE_PROFILE_END();
 
-    ENGINE_PROFILE_BEGIN("Editor runtime", "profile_runtime.json");
+    //ENGINE_PROFILE_BEGIN("Editor runtime", "profile_runtime.json");
     app.Run();
-    ENGINE_PROFILE_END();
+    //ENGINE_PROFILE_END();
 
-    ENGINE_PROFILE_BEGIN("Editor shutdown", "profile_shutdown.json");
-		// app will be destroyed here as it goes out of scope, which will call its destructor and shutdown the engine
+    //ENGINE_PROFILE_BEGIN("Editor shutdown", "profile_shutdown.json");
   }
   catch (const std::exception& e)
   {
@@ -29,5 +27,5 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
-  ENGINE_PROFILE_END();
+  //ENGINE_PROFILE_END();
 }

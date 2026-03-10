@@ -5,6 +5,7 @@
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Graphics/WebGPUUtils.h"
+#include "Engine/Graphics/GraphicsContext.h"
 
 namespace Engine
 {

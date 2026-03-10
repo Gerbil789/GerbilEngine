@@ -152,7 +152,6 @@ namespace Editor
 
 	void EditorWindowManager::OnUpdate()
 	{
-		ENGINE_PROFILE_FUNCTION();
 		BeginFrame();
 
 		m_MenuBar.Draw();

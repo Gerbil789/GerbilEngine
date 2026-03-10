@@ -1,11 +1,14 @@
 #pragma once
 
 #include "Engine/Core/API.h"
-#include "Engine/Core/Core.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/Assert.h"
+#include <entt.hpp> //TODO: dont include entt in the headers
 
 namespace Engine
 {
+	struct IdentityComponent;
+	struct TransformComponent;
+
 	class ENGINE_API Entity
 	{
 	public:
@@ -16,65 +19,70 @@ namespace Engine
 		static Entity Null() { return {}; }
 
 		template<typename T>
-		bool HasComponent() const
+		bool Has() const
 		{
 			return m_Registry && m_Registry->any_of<T>(m_Handle);
 		}
 
 		template<typename T>
-		T& GetComponent()
+		T& Get()
 		{
-			ASSERT(HasComponent<T>(), std::format("Entity does not have component of type {}", typeid(T).name()).c_str());
+			ASSERT(Has<T>(), std::format("Entity does not have component of type {}", typeid(T).name()));
 			return m_Registry->get<T>(m_Handle);
 		}
 
 		template<typename T>
-		const T& GetComponent() const
+		const T& Get() const
 		{
-			ASSERT(HasComponent<T>(), std::format("Entity does not have component of type {}", typeid(T).name()).c_str());
+			ASSERT(Has<T>(), std::format("Entity does not have component of type {}", typeid(T).name()));
 			return m_Registry->get<T>(m_Handle);
 		}
 
 		template<typename T>
-		T* TryGetComponent()
+		T* TryGet()
 		{
 			return m_Registry ? m_Registry->try_get<T>(m_Handle) : nullptr;
 		}
 
 		template<typename T>
-		const T* TryGetComponent() const
+		const T* TryGet() const
 		{
 			return m_Registry ? m_Registry->try_get<T>(m_Handle) : nullptr;
 		}
 
 		template<typename T, typename... Args>
-		T& AddComponent(Args&&... args)
+		T& Add(Args&&... args)
 		{
 			return m_Registry->get_or_emplace<T>(m_Handle, std::forward<Args>(args)...);
 		}
 
 		template<typename T>
-		void RemoveComponent()
+		void Remove()
 		{
+			static_assert(!std::is_same_v<T, IdentityComponent>, "IdentityComponent cannot be removed");
+			static_assert(!std::is_same_v<T, TransformComponent>, "TransformComponent cannot be removed");
+
 			m_Registry->remove<T>(m_Handle);
 		}
 
-		void SetName(const std::string& name) { GetComponent<NameComponent>().name = name; }
-		const std::string& GetName() const { return GetComponent<NameComponent>().name; }
+		void Destroy();
 
-		void SetActive(bool active) { GetComponent<IdentityComponent>().enabled = active; }
-		bool IsActive() const { return GetComponent<IdentityComponent>().enabled; }
+		void SetName(const std::string& name);
+		const std::string& GetName() const;
 
-		Uuid GetUUID() { return GetComponent<IdentityComponent>().id; }
-		const Uuid GetUUID() const { return GetComponent<IdentityComponent>().id; }
+		void SetActive(bool active);
+		bool IsActive() const;
+
+		Uuid GetUUID();
+		const Uuid GetUUID() const;
 
 		void SetParent(Entity newParent, bool keepWorld = true);
 		void RemoveParent(bool keepWorld = true);
 		void AddChild(Entity child, bool keepWorld = true);
 		void RemoveChild(Entity child);
-		std::vector<Entity> GetChildren() const;
+
 		Entity GetParent() const;
-		void Destroy();
+		std::vector<Entity> GetChildren() const;
 
 		operator bool() const { return m_Registry && m_Registry->valid(m_Handle); }
 		entt::entity Handle() const { return m_Handle; }
