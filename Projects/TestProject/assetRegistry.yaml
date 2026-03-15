@@ -131,6 +131,9 @@ Assets:
   - ID: 15507889340687193263
     Path: Textures\concrete_pillar\roughness.png
     Type: Texture
+  - ID: 5882001555446725752
+    Path: tmp\tmp_1.mat
+    Type: Material
   - ID: 9893828857169588856
     Path: Textures\vsb.png
     Type: Texture
@@ -164,6 +167,9 @@ Assets:
   - ID: 13918419986824729683
     Path: Textures\rocks\Normal.png
     Type: Texture
+  - ID: 9635202617578757737
+    Path: tmp\tmp_4.mat
+    Type: Material
   - ID: 13160371051266020969
     Path: Textures\skull.png
     Type: Texture
@@ -227,9 +233,15 @@ Assets:
   - ID: 8199734786058176694
     Path: Textures\metal_plates\color.png
     Type: Texture
+  - ID: 7377522615092688566
+    Path: tmp\tmp_22.mat
+    Type: Material
   - ID: 16943406036181205513
     Path: Textures\metal_plates\height.png
     Type: Texture
+  - ID: 3485043846884477961
+    Path: tmp\tmp_2.mat
+    Type: Material
   - ID: 5003089672303639438
     Path: Textures\metal_plates\metallic.png
     Type: Texture
@@ -245,6 +257,9 @@ Assets:
   - ID: 13698906005399543115
     Path: Textures\skull.png
     Type: Texture
+  - ID: 11553378684387674443
+    Path: tmp\tmp_17.mat
+    Type: Material
   - ID: 16139434238335653539
     Path: Textures\spritesheet.png
     Type: Texture
@@ -317,6 +332,9 @@ Assets:
   - ID: 10693493725111661005
     Path: Textures\mood.png
     Type: Texture
+  - ID: 1406708675193523661
+    Path: tmp\tmp_18.mat
+    Type: Material
   - ID: 12168482785014835665
     Path: Textures\rocks\Color.png
     Type: Texture
@@ -386,3 +404,60 @@ Assets:
   - ID: 1868125527395385586
     Path: Textures\Prototype\texture_13.png
     Type: Texture
+  - ID: 9488472307569764677
+    Path: tmp\tmp_0.mat
+    Type: Material
+  - ID: 15842635830503710603
+    Path: tmp\tmp_3.mat
+    Type: Material
+  - ID: 9676901469011200935
+    Path: tmp\tmp_5.mat
+    Type: Material
+  - ID: 16330761688813768408
+    Path: tmp\tmp_6.mat
+    Type: Material
+  - ID: 18360241992750419559
+    Path: tmp\tmp_7.mat
+    Type: Material
+  - ID: 11196258241537320957
+    Path: tmp\tmp_8.mat
+    Type: Material
+  - ID: 3670201092206298823
+    Path: tmp\tmp_9.mat
+    Type: Material
+  - ID: 6098938587811130114
+    Path: tmp\tmp_10.mat
+    Type: Material
+  - ID: 16061887294320829618
+    Path: tmp\tmp_11.mat
+    Type: Material
+  - ID: 3155576095494554348
+    Path: tmp\tmp_12.mat
+    Type: Material
+  - ID: 968914385543311112
+    Path: tmp\tmp_13.mat
+    Type: Material
+  - ID: 2627678454245838906
+    Path: tmp\tmp_14.mat
+    Type: Material
+  - ID: 13375846360581784880
+    Path: tmp\tmp_15.mat
+    Type: Material
+  - ID: 6533753879390816959
+    Path: tmp\tmp_16.mat
+    Type: Material
+  - ID: 16005810716555630816
+    Path: tmp\tmp_19.mat
+    Type: Material
+  - ID: 1762653181102723443
+    Path: tmp\tmp_20.mat
+    Type: Material
+  - ID: 14879432998011637409
+    Path: tmp\tmp_21.mat
+    Type: Material
+  - ID: 14963845545177915761
+    Path: tmp\tmp_23.mat
+    Type: Material
+  - ID: 13967996873226248034
+    Path: tmp\tmp_24.mat
+    Type: Material

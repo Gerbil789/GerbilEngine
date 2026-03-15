@@ -52,7 +52,7 @@ namespace Engine
 		Mesh* mesh = nullptr;
 		std::vector<Material*> materials;
 
-		MeshComponent() = default;
+		MeshComponent();
 		MeshComponent(Mesh* mesh) : mesh(mesh) {}
 
 		Material* GetMaterial(uint32_t index)

@@ -81,7 +81,7 @@ namespace Engine::RenderGlobals
 
 		// Frame 
 		{
-			wgpu::BindGroupLayoutEntry entries[5]{};
+			wgpu::BindGroupLayoutEntry entries[13]{};
 
 			// Frame uniforms
 			entries[0].binding = 0;
@@ -101,21 +101,33 @@ namespace Engine::RenderGlobals
 			entries[2].texture.viewDimension = wgpu::TextureViewDimension::_2D;
 			entries[2].texture.multisampled = false;
 
+			// BRDF integration texture
 			entries[3].binding = 3;
 			entries[3].visibility = wgpu::ShaderStage::Fragment;
 			entries[3].texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
 			entries[3].texture.viewDimension = wgpu::TextureViewDimension::_2D;
 			entries[3].texture.multisampled = false;
 
-			entries[4].binding = 4;
-			entries[4].visibility = wgpu::ShaderStage::Fragment;
-			entries[4].texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
-			entries[4].texture.viewDimension = wgpu::TextureViewDimension::_2D;
-			entries[4].texture.multisampled = false;
+			// Prefiltered environment texture
+			//entries[4].binding = 4;
+			//entries[4].visibility = wgpu::ShaderStage::Fragment;
+			//entries[4].texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
+			//entries[4].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+			//entries[4].texture.multisampled = false;
+
+			// Prefiltered environment textures
+			for (uint32_t i = 0; i < 9; i++)
+			{
+				entries[4 + i].binding = 4 + i;
+				entries[4 + i].visibility = wgpu::ShaderStage::Fragment;
+				entries[4 + i].texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
+				entries[4 + i].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+				entries[4 + i].texture.multisampled = false;
+			}
 
 			wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc{};
 			bindGroupLayoutDesc.label = { "FrameBindGroupLayout", WGPU_STRLEN };
-			bindGroupLayoutDesc.entryCount = 5;
+			bindGroupLayoutDesc.entryCount = 13;
 			bindGroupLayoutDesc.entries = entries;
 
 			s_FrameBindGroupLayout = device.createBindGroupLayout(bindGroupLayoutDesc);
@@ -127,7 +139,7 @@ namespace Engine::RenderGlobals
 
 			s_FrameUniformBuffer = device.createBuffer(bufferDesc);
 
-			wgpu::BindGroupEntry bgEntries[5]{};
+			wgpu::BindGroupEntry bgEntries[13]{};
 
 			bgEntries[0].binding = 0;
 			bgEntries[0].buffer = s_FrameUniformBuffer;
@@ -145,15 +157,35 @@ namespace Engine::RenderGlobals
 			bgEntries[3].binding = 3;
 			bgEntries[3].textureView = brdfTexture->GetTextureView();
 
-			auto prefEnvTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_500.hdr");
-			bgEntries[4].binding = 4;
-			bgEntries[4].textureView = prefEnvTexture->GetTextureView();
+			//auto prefEnvTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_001.hdr");
+			//bgEntries[4].binding = 4;
+			//bgEntries[4].textureView = prefEnvTexture->GetTextureView();
+
+			std::array<std::string, 9> paths
+			{
+				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_001.hdr",
+				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_125.hdr",
+				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_250.hdr",
+				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_375.hdr",
+				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_500.hdr",
+				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_625.hdr",
+				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_750.hdr",
+				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_875.hdr",
+				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_999.hdr"
+			};
+
+			for (uint32_t i = 0; i < 9; i++)
+			{
+				auto tex = TextureImporter::LoadTexture2D(paths[i]);
+				bgEntries[4 + i].binding = 4 + i;
+				bgEntries[4 + i].textureView = tex->GetTextureView();
+			}
 
 
 			wgpu::BindGroupDescriptor bindGroupDesc{};
 			bindGroupDesc.label = { "FrameBindGroup", WGPU_STRLEN };
 			bindGroupDesc.layout = s_FrameBindGroupLayout;
-			bindGroupDesc.entryCount = 5;
+			bindGroupDesc.entryCount = 13;
 			bindGroupDesc.entries = bgEntries;
 			s_FrameBindGroup = device.createBindGroup(bindGroupDesc);
 		}

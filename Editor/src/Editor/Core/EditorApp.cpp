@@ -65,7 +65,6 @@ namespace Editor
 
 		m_FileWatcher = new FileWatcher(EditorSelection::GetProject().GetAssetsDirectory(), [this](std::unique_ptr<Engine::FileEvent> e) {PushFileEvent(std::move(e)); });
 
-
 		const Project& project = EditorSelection::GetProject();
 		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / BUILD_CONFIG / (project.GetTitle() + ".dll");
 		Engine::ScriptRegistry& registry = Engine::ScriptRegistry::Get();
@@ -94,6 +93,7 @@ namespace Editor
 		Engine::Shader* shader = Engine::AssetManager::GetAsset<Engine::Shader>(10614378585745839232);
 		
 
+		int i = 0;
 		for (int x = 0; x < 5; x++)
 		{
 			for (int z = 0; z < 5; z++)
@@ -102,12 +102,15 @@ namespace Editor
 				sphere.Get<Engine::TransformComponent>().position = { static_cast<float>(x) * 4.0f, 0.0f, static_cast<float>(z) * 4.0f };
 				auto& meshComponent = sphere.Add<Engine::MeshComponent>(mesh);
 
-				//Engine::MaterialSpecification spec;
-				//spec.shader = shader;
-				//
+				
+				Engine::MaterialSpecification spec{};
+				spec.shader = shader;
+				auto mat = Engine::AssetManager::CreateAsset<Engine::Material>(Engine::GetAssetsDirectory() / std::format("tmp/tmp_{}.mat", i++), spec);
+				mat->SetFloat("metallic", static_cast<float>(x) / 4.0f);
+				mat->SetFloat("roughness", static_cast<float>(z) / 4.0f);
+				mat->SetVec4("albedo", { 1.0f, 1.0f, 1.0f, 1.0f });
 
-				meshComponent.SetMaterial(0, Engine::Materials::GetDefault());
-
+				meshComponent.SetMaterial(0, mat);
 			}
 		}
 

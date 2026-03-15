@@ -79,7 +79,15 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 {
 	let dir = normalize(in.dir);
 	let uv = DirectionToEquirectUV(dir);
-  let color = textureSample(Texture, Sampler, uv);
-  return vec4f(color.rgb, 1.0);
-  //return textureSample(skyboxTexture, skyboxSampler, dir);
+
+	let hdr = textureSample(Texture, Sampler, uv).rgb;
+
+  let exposure: f32 = 1.0;
+  let mapped = hdr * exposure;
+
+  let toneMapped = mapped / (mapped + vec3f(1.0));
+
+  let gamma = pow(toneMapped, vec3f(1.0 / 2.2));
+
+  return vec4f(gamma, 1.0);
 }

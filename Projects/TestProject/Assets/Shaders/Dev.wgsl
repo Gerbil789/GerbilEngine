@@ -35,8 +35,19 @@ const PI: f32 = 3.14159265;
 @group(0) @binding(1) var EnvSampler: sampler;
 @group(0) @binding(2) var IrradianceMap: texture_2d<f32>;
 @group(0) @binding(3) var BRDFIntMap: texture_2d<f32>;
-@group(0) @binding(4) var PrefilteredEnvMap: texture_2d<f32>;
+// @group(0) @binding(4) var PrefilteredEnvMap: array<texture_2d<f32>, 9>;
+@group(0) @binding(4) var PrefilteredEnvMap0: texture_2d<f32>;
+@group(0) @binding(5) var PrefilteredEnvMap1: texture_2d<f32>;
+@group(0) @binding(6) var PrefilteredEnvMap2: texture_2d<f32>;
+@group(0) @binding(7) var PrefilteredEnvMap3: texture_2d<f32>;
+@group(0) @binding(8) var PrefilteredEnvMap4: texture_2d<f32>;
+@group(0) @binding(9) var PrefilteredEnvMap5: texture_2d<f32>;
+@group(0) @binding(10) var PrefilteredEnvMap6: texture_2d<f32>;
+@group(0) @binding(11) var PrefilteredEnvMap7: texture_2d<f32>;
+@group(0) @binding(12) var PrefilteredEnvMap8: texture_2d<f32>;
+
 @group(1) @binding(0) var<uniform> uModel: ModelUniforms;
+
 @group(2) @binding(0) var<uniform> uMaterial: MaterialUniforms;
 @group(2) @binding(1) var Sampler: sampler;
 @group(2) @binding(2) var AlbedoTexture: texture_2d<f32>;
@@ -59,6 +70,20 @@ fn FresnelSchlick(cosTheta: f32, F0: vec3f) -> vec3f
     return F0 + (vec3f(1.0) - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
+fn SamplePrefilter(level: i32, uv: vec2<f32>) -> vec3<f32> {
+    switch(level) {
+        case 0: { return textureSample(PrefilteredEnvMap0, EnvSampler, uv).rgb; }
+        case 1: { return textureSample(PrefilteredEnvMap1, EnvSampler, uv).rgb; }
+        case 2: { return textureSample(PrefilteredEnvMap2, EnvSampler, uv).rgb; }
+        case 3: { return textureSample(PrefilteredEnvMap3, EnvSampler, uv).rgb; }
+        case 4: { return textureSample(PrefilteredEnvMap4, EnvSampler, uv).rgb; }
+        case 5: { return textureSample(PrefilteredEnvMap5, EnvSampler, uv).rgb; }
+        case 6: { return textureSample(PrefilteredEnvMap6, EnvSampler, uv).rgb; }
+        case 7: { return textureSample(PrefilteredEnvMap7, EnvSampler, uv).rgb; }
+        default: { return textureSample(PrefilteredEnvMap8, EnvSampler, uv).rgb; }
+    }
+}
+
 @vertex
 fn vs_main(in: VertexInput) -> VertexOutput 
 {
@@ -66,12 +91,12 @@ fn vs_main(in: VertexInput) -> VertexOutput
 	out.position = uFrame.projection * uFrame.view * uModel.model * vec4f(in.position, 1.0);
 	out.normal = normalize((uModel.model * vec4f(in.normal, 0.0)).xyz);
 	out.uv = in.uv;
-	out.worldPos = (uModel.model * vec4f(in.position,1)).xyz;
+	out.worldPos = (uModel.model * vec4f(in.position, 1)).xyz;
 	return out;
 }
 
 @fragment
-fn fs_main(in: VertexOutput) -> @location(0) vec4f 
+fn fs_main(in: VertexOutput) -> @location(0) vec4f
 {
     let uv = in.uv * uMaterial.tiling;
 
@@ -82,36 +107,28 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
     let V = normalize(uFrame.cameraPosition - in.worldPos);
     let NdotV = max(dot(N, V), 0.0);
 
-    // base reflectivity
     let F0 = mix(vec3f(0.04), albedo, uMaterial.metallic);
-
-    // Fresnel
     let F = FresnelSchlick(NdotV, F0);
-
-    // diffuse energy conservation
     let Fd = (vec3f(1.0) - F) * (1.0 - uMaterial.metallic);
 
-    // ---------- DIFFUSE IBL ----------
-    let irradianceUV = DirectionToEquirectUV(N);
-    let irradiance = textureSample(IrradianceMap, EnvSampler, irradianceUV).rgb;
-
+    let hdr_uv = DirectionToEquirectUV(N);
+    let irradiance = textureSample(IrradianceMap, EnvSampler, hdr_uv).rgb;
     let diffuse = Fd * (albedo / PI) * irradiance;
 
-    // ---------- SPECULAR IBL ----------
+
     let R = reflect(-V, N);
     let specUV = DirectionToEquirectUV(R);
+    //let prefiltered = textureSample(PrefilteredEnvMap[0], EnvSampler, specUV).rgb;
 
-    // prefiltered environment lookup
-    let prefiltered = textureSample(PrefilteredEnvMap, EnvSampler, specUV).rgb;
 
-    // BRDF lookup
-    let brdf = textureSample(
-        BRDFIntMap,
-        EnvSampler,
-        vec2(NdotV, uMaterial.roughness)
-    ).rg;
+		let levelCount: f32 = 9.0;
+		let index = i32(clamp(floor(uMaterial.roughness * levelCount), 0.0, levelCount - 1.0));
 
-    let specular = prefiltered * (F * brdf.x + brdf.y);
+		let prefiltered = SamplePrefilter(index, specUV);
+
+    let brdf = textureSample(BRDFIntMap, EnvSampler, vec2(NdotV, uMaterial.roughness)).rg;
+
+    let specular = prefiltered * (F * brdf.r + brdf.g);
 
     let color = diffuse + specular;
 

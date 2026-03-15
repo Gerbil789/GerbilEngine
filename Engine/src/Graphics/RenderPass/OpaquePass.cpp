@@ -55,6 +55,11 @@ namespace Engine
 			const SubMesh* sub = draw.subMesh;
 
 			auto meshMaterials = draw.entity.Get<MeshComponent>().materials;
+			if(meshMaterials.size() < 1)
+			{
+				continue;
+			}
+
 			auto subMaterial = meshMaterials[sub->materialIndex];
 
 			if (subMaterial && (subMaterial != material))

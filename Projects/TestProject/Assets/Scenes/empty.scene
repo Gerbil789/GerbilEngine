@@ -1,22 +1,39 @@
-- ID: 8348957107591477546
+- ID: 2013531313257941667
   Enabled: true
-  Name: Player
+  Name: Empty
   Transform:
-    Position: [0, 5, 0]
+    Position: [10.784703, 0, 0]
     Rotation: [0, -0, 0]
-    Scale: [0.1, 0.1, 0.1]
+    Scale: [5, 5, 5]
   MeshComponent:
-    Mesh: 4054887255351190265
-    Materials: [9062395416670711803, 9905515824125768949, 16641363256174755972, 12590626766011146814, 6243627826504047792]
+    Mesh: 15608668046686712752
+    Materials: [9062395416670711803]
+- ID: 13017856045607090437
+  Enabled: false
+  Name: Ground
+  Transform:
+    Position: [-2.3841858e-07, -3, 1.9590797]
+    Rotation: [0, -0, 0]
+    Scale: [100, 100, 100]
+  MeshComponent:
+    Mesh: 16263461787928416772
+    Materials: [4524766446218326838]
   ScriptComponent:
-    Script: PlayerController
-    Move Speed: 10
-    Ground Level: -2
-    Gravity Strength: 10
-    Jump Strength: 2
-    Shoot Sound: 16291733256000547131
-    Bullet Mesh: 15608668046686712752
-    Bullet Material: 9667627839419811388
+    Script: GameManager
+    Mesh: 15608668046686712752
+- ID: 7150985087517490007
+  Enabled: true
+  Name: Light
+  Transform:
+    Position: [0, 0, 0]
+    Rotation: [0, -0, 0]
+    Scale: [1, 1, 1]
+  LightComponent:
+    Type: 0
+    Color: [0, 1, 0]
+    Intensity: 2.184
+    Range: 12
+    Angle: 67
 - ID: 10199165476046124790
   Enabled: true
   Name: Camera
@@ -37,29 +54,22 @@
       Far: 100
     Background: 1
     ClearColor: [1, 0, 0, 1]
-- ID: 7150985087517490007
+- ID: 8348957107591477546
   Enabled: true
-  Name: Light
+  Name: Player
   Transform:
-    Position: [0, 0, 0]
+    Position: [0, 5, 0]
     Rotation: [0, -0, 0]
-    Scale: [1, 1, 1]
-  LightComponent:
-    Type: 0
-    Color: [0, 1, 0]
-    Intensity: 2.184
-    Range: 12
-    Angle: 67
-- ID: 13017856045607090437
-  Enabled: true
-  Name: Ground
-  Transform:
-    Position: [-2.3841858e-07, -3, 1.9590797]
-    Rotation: [0, -0, 0]
-    Scale: [100, 100, 100]
+    Scale: [0.1, 0.1, 0.1]
   MeshComponent:
-    Mesh: 16263461787928416772
-    Materials: [4524766446218326838]
+    Mesh: 4054887255351190265
+    Materials: [9062395416670711803, 9905515824125768949, 16641363256174755972, 12590626766011146814, 6243627826504047792]
   ScriptComponent:
-    Script: GameManager
-    Mesh: 15608668046686712752
+    Script: PlayerController
+    Move Speed: 10
+    Ground Level: -2
+    Gravity Strength: 10
+    Jump Strength: 2
+    Shoot Sound: 16291733256000547131
+    Bullet Mesh: 15608668046686712752
+    Bullet Material: 9667627839419811388
