@@ -109,8 +109,6 @@ namespace Engine
 
 	void NormalPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)
 	{
-		if (!m_Enabled) return;
-
 		wgpu::RenderPassColorAttachment color{};
 		color.view = context.colorTarget;
 		color.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;

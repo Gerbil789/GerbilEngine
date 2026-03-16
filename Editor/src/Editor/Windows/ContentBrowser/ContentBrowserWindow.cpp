@@ -139,7 +139,7 @@ namespace Editor
 
 				if (ImGui::MenuItem("Material"))
 				{
-					Engine::Materials::CreateMaterial(m_CurrentDirectory, "newMaterial");
+					Engine::Materials::CreateMaterial(m_CurrentDirectory / "newMaterial.mat");
 					RefreshDirectory();
 				}
 

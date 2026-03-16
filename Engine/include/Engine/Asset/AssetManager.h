@@ -143,7 +143,7 @@ namespace Engine
 		template<typename T, typename... Args>
 		static T* CreateAsset(const std::filesystem::path& path, Args&&... args)
 		{
-			auto record = m_AssetRegistry.Create(path);
+			auto record = m_AssetRegistry.Create(Engine::GetAssetsDirectory() /  path);
 			if (!record)
 			{
 				LOG_ERROR("Failed to add record in registry '{}'", path);

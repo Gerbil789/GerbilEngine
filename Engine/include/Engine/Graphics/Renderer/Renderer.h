@@ -16,6 +16,7 @@ namespace Engine
 		~Renderer();
 
 		void AddPass(RenderPass* pass);
+		void RemovePass(RenderPass* pass);
 
 		void SetScene(Scene* scene);
 		void SetCamera(Camera* camera);

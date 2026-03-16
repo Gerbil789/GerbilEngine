@@ -28,6 +28,10 @@ void PlayerController::OnUpdate()
 	if (Input::IsKeyDown(KeyCode::S)) transform.position.z -= m_MoveSpeed * delta;
 	if (Input::IsKeyDown(KeyCode::Space)) transform.position.y += m_JumpStrength * delta;
 
+
+	if (Input::IsKeyDown(KeyCode::Q)) transform.rotation.y -= m_RotateSpeed * delta;
+	if (Input::IsKeyDown(KeyCode::E)) transform.rotation.y += m_RotateSpeed * delta;
+
 	// gravity
 	if(transform.position.y > m_Ground)
 	{

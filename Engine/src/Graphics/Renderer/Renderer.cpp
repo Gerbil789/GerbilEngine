@@ -24,7 +24,17 @@ namespace Engine
 	void Renderer::AddPass(RenderPass* pass)
 	{
 		m_Passes.push_back(pass);
-	}	
+	}
+
+	void Renderer::RemovePass(RenderPass* pass)
+	{
+		auto it = std::find(m_Passes.begin(), m_Passes.end(), pass);
+		if(it != m_Passes.end())
+		{
+			m_Passes.erase(it);
+		}
+	}
+
 
 	void Renderer::SetScene(Scene* scene)
 	{

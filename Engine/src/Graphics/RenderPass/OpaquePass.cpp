@@ -9,16 +9,14 @@ namespace Engine
 {
 	void OpaquePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)
 	{
-		if (!m_Enabled) return;
-
-		wgpu::RenderPassColorAttachment color{};
+		wgpu::RenderPassColorAttachment color;
 		color.view = context.colorTarget;
 		color.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 		color.loadOp = wgpu::LoadOp::Load;
 		color.storeOp = wgpu::StoreOp::Store;
 		color.clearValue = wgpu::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
-		wgpu::RenderPassDepthStencilAttachment depth{};
+		wgpu::RenderPassDepthStencilAttachment depth;
 		depth.view = context.depthTarget;
 		depth.depthClearValue = 1.0f;
 		depth.depthLoadOp = wgpu::LoadOp::Clear;
@@ -29,7 +27,7 @@ namespace Engine
 		depth.stencilStoreOp = wgpu::StoreOp::Undefined;
 		depth.stencilReadOnly = true;
 
-		wgpu::RenderPassDescriptor passDescriptor{};
+		wgpu::RenderPassDescriptor passDescriptor;
 		passDescriptor.label = { "OpaqueRenderPass", WGPU_STRLEN };
 		passDescriptor.colorAttachmentCount = 1;
 		passDescriptor.colorAttachments = &color;

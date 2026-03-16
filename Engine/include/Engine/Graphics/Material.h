@@ -66,5 +66,5 @@ namespace Engine
 namespace Engine::Materials
 {
 	ENGINE_API Material* GetDefault();
-	ENGINE_API Material* CreateMaterial(const std::filesystem::path& path, const std::string& name);
+	ENGINE_API Material* CreateMaterial(const std::filesystem::path& path);
 }

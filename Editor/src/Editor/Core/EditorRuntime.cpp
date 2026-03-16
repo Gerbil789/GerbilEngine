@@ -132,6 +132,9 @@ namespace Editor
 			const auto& up = cam->GetUp();
 			Engine::Audio::SetListener(pos.x, pos.y, pos.z, forward.x, forward.y, forward.z, up.x, up.y, up.z);
 			cam->SetPosition(pos);
+
+			const auto& rot = ent.Get<Engine::TransformComponent>().rotation;
+			cam->SetRotation(rot);
 		}
 	}
 }

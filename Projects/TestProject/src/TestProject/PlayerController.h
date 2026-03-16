@@ -25,6 +25,9 @@ public:
   PROPERTY(m_MoveSpeed, "Move Speed")
     float m_MoveSpeed = 10.0f;
 
+  PROPERTY(m_RotateSpeed, "Rotate Speed")
+    float m_RotateSpeed = 100.0f;
+
   PROPERTY(m_Ground, "Ground Level")
     float m_Ground = -2.0f;
 

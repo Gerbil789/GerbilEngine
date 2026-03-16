@@ -212,14 +212,20 @@ namespace Engine::Materials
 		return s_DefaultMaterial;
 	}
 
-	ENGINE_API Material* CreateMaterial(const std::filesystem::path& path, const std::string& name)
+	ENGINE_API Material* CreateMaterial(const std::filesystem::path& path)
 	{
 		MaterialSpecification spec;
 
 		const auto& shaders = AssetManager::GetAssetsOfType<Shader>(AssetType::Shader);
+
+		if (shaders.size() == 0)
+		{
+			throw std::runtime_error("No shaders found! Cannot create material '" + path.string() + "'");
+		}
+
 		spec.shader = shaders[0]; //TODO: better way to specify shader for material
 
-		auto material = Engine::AssetManager::CreateAsset<Engine::Material>(path / (name + ".mat"), spec);
+		auto material = Engine::AssetManager::CreateAsset<Engine::Material>(path, spec);
 		return material;
 	}
 }

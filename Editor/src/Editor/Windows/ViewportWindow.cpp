@@ -35,6 +35,11 @@ namespace Editor
 	static Engine::Renderer* m_Renderer = nullptr;
 	static EditorCameraController* m_CameraController = nullptr;
 
+	static bool enableOpaquePass = true;
+	static bool enableNormalPass = false;
+	static bool enableWireframePass = false;
+	static bool enableLightPass = false;
+
 	void ViewportWindow::Initialize()
 	{
 		ImGuizmo::AllowAxisFlip(false);
@@ -57,16 +62,8 @@ namespace Editor
 		m_Renderer->AddPass(s_EntityIdPass);
 
 		s_LightPass = new Engine::LightPass();
-		s_LightPass->m_Enabled = false;
-		m_Renderer->AddPass(s_LightPass);
-
 		s_NormalPass = new Engine::NormalPass();
-		s_NormalPass->m_Enabled = false;
-		m_Renderer->AddPass(s_NormalPass);
-
 		s_WireframePass = new Engine::WireframePass();
-		s_WireframePass->m_Enabled = false;
-		m_Renderer->AddPass(s_WireframePass);
 
 		Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene* scene)
 			{
@@ -152,11 +149,26 @@ namespace Editor
 
 		if (ImGui::BeginCombo("##ViewportOptions", "Passes"))
 		{
-			ImGui::Checkbox("Opaque", &s_OpaquePass->m_Enabled);
-			ImGui::Checkbox("Light", &s_LightPass->m_Enabled);
-			ImGui::Checkbox("Normal", &s_NormalPass->m_Enabled);
-			ImGui::Checkbox("Wireframe", &s_WireframePass->m_Enabled);
-			//ImGui::Checkbox("Debug");
+			if(ImGui::Checkbox("Opaque", &enableOpaquePass))
+			{
+				enableOpaquePass ? m_Renderer->AddPass(s_OpaquePass) : m_Renderer->RemovePass(s_OpaquePass);
+			}
+
+			if (ImGui::Checkbox("Light", &enableLightPass))
+			{
+				enableLightPass ? m_Renderer->AddPass(s_LightPass) : m_Renderer->RemovePass(s_LightPass);
+			}
+
+			if (ImGui::Checkbox("Normal", &enableNormalPass))
+			{
+				enableNormalPass ? m_Renderer->AddPass(s_NormalPass) : m_Renderer->RemovePass(s_NormalPass);
+			}
+
+			if (ImGui::Checkbox("Wireframe", &enableWireframePass))
+			{
+				enableWireframePass ? m_Renderer->AddPass(s_WireframePass) : m_Renderer->RemovePass(s_WireframePass);
+			}
+
 			ImGui::EndCombo();
 		}
 

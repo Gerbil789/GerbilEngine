@@ -105,7 +105,7 @@ namespace Editor
 				
 				Engine::MaterialSpecification spec{};
 				spec.shader = shader;
-				auto mat = Engine::AssetManager::CreateAsset<Engine::Material>(Engine::GetAssetsDirectory() / std::format("tmp/tmp_{}.mat", i++), spec);
+				auto mat = Engine::AssetManager::CreateAsset<Engine::Material>(std::format("tmp/tmp_{}.mat", i++), spec);
 				mat->SetFloat("metallic", static_cast<float>(x) / 4.0f);
 				mat->SetFloat("roughness", static_cast<float>(z) / 4.0f);
 				mat->SetVec4("albedo", { 1.0f, 1.0f, 1.0f, 1.0f });

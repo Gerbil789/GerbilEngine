@@ -1,187 +1,193 @@
 Assets:
   - ID: 11011451737965804997
-    Path: Textures\metal_plates\height.png
+    Path: textures\metal_plates\height.png
     Type: Texture
-  - ID: 3164677566141441093
-    Path: Audio\Music\SO TIRED ROCK.wav
-    Type: Audio
   - ID: 4324168109164950597
     Path: Scenes\empty.scene
     Type: Scene
+  - ID: 3164677566141441093
+    Path: Audio\Music\SO TIRED ROCK.wav
+    Type: Audio
   - ID: 12132468192444966871
     Path: Audio\Music\Ievan Polkka.mp3
     Type: Audio
-  - ID: 14458945646892837975
-    Path: Textures\gerbil.jpg
+  - ID: 16021381774665062487
+    Path: textures\Prototype\texture_09.png
     Type: Texture
-  - ID: 10975628317494508874
-    Path: Textures\spritesheet.png
+  - ID: 14458945646892837975
+    Path: textures\gerbil.jpg
     Type: Texture
   - ID: 9153350241491098746
     Path: Meshes\cube.glb
     Type: Mesh
+  - ID: 10975628317494508874
+    Path: textures\spritesheet.png
+    Type: Texture
+  - ID: 13715123166120170876
+    Path: textures\bricks_wall\height.png
+    Type: Texture
   - ID: 9667627839419811388
     Path: Materials\Test.mat
     Type: Material
-  - ID: 13715123166120170876
-    Path: Textures\bricks_wall\height.png
+  - ID: 13428705016315603756
+    Path: textures\favorite.png
     Type: Texture
   - ID: 4470025388309489132
-    Path: Textures\metal_plates\normal.png
+    Path: textures\metal_plates\normal.png
     Type: Texture
   - ID: 3088373566504746988
     Path: Meshes\bad cube.glb
     Type: Mesh
-  - ID: 13428705016315603756
-    Path: Textures\favorite.png
-    Type: Texture
   - ID: 9802921481971375387
     Path: Meshes\bad cube 2.glb
     Type: Mesh
   - ID: 2873530127775231289
     Path: Meshes\cone.glb
     Type: Mesh
+  - ID: 5673680266398117148
+    Path: textures\bricks_wall\normal.png
+    Type: Texture
   - ID: 5906759997218235868
     Path: Meshes\Rocks\rock_1.glb
     Type: Mesh
-  - ID: 5673680266398117148
-    Path: Textures\bricks_wall\normal.png
-    Type: Texture
   - ID: 1903245682125825534
-    Path: Textures\SwordddV2.png
+    Path: textures\SwordddV2.png
     Type: Texture
   - ID: 337363563088221182
     Path: Meshes\Rocks\rock_2.glb
     Type: Mesh
+  - ID: 6168044906402137882
+    Path: textures\metal_plates\roughness.png
+    Type: Texture
   - ID: 838677727696996058
     Path: Meshes\Rocks\rock_3.glb
     Type: Mesh
-  - ID: 6168044906402137882
-    Path: Textures\metal_plates\roughness.png
+  - ID: 7346751248309590408
+    Path: textures\tile.png
     Type: Texture
   - ID: 8403485442075291592
     Path: Meshes\Rocks\rock_4.glb
     Type: Mesh
-  - ID: 7346751248309590408
-    Path: Textures\tile.png
-    Type: Texture
   - ID: 13061213637319697236
     Path: Meshes\Rocks\rock_5.glb
     Type: Mesh
+  - ID: 15420442079635448030
+    Path: tmp\tmp_23.mat
+    Type: Material
+  - ID: 3917323067370885854
+    Path: tmp\tmp_9.mat
+    Type: Material
   - ID: 5655554086556983518
     Path: Meshes\Rocks\rock_6.glb
     Type: Mesh
-  - ID: 6948789603862314032
-    Path: Textures\bricks_wall\roughness.png
-    Type: Texture
   - ID: 15608668046686712752
     Path: Meshes\sphere.glb
     Type: Mesh
+  - ID: 6948789603862314032
+    Path: textures\bricks_wall\roughness.png
+    Type: Texture
+  - ID: 1532821608029403520
+    Path: textures\background.png
+    Type: Texture
   - ID: 10614378585745839232
     Path: Shaders\Dev.wgsl
     Type: Shader
-  - ID: 1532821608029403520
-    Path: Textures\background.png
-    Type: Texture
   - ID: 9538445625437357667
     Path: Shaders\Flat.wgsl
     Type: Shader
   - ID: 7013352085917778227
-    Path: Textures\mood.png
+    Path: textures\mood.png
+    Type: Texture
+  - ID: 5360640591292890293
+    Path: textures\concrete_pillar\normal.png
+    Type: Texture
+  - ID: 11191491332555772085
+    Path: textures\bricks_wall\albedo.png
     Type: Texture
   - ID: 6350057269135839349
     Path: Audio\Music\The Power.wav
     Type: Audio
   - ID: 11318940169550059125
-    Path: Textures\bricks_wall\height.png
-    Type: Texture
-  - ID: 5360640591292890293
-    Path: Textures\concrete_pillar\normal.png
-    Type: Texture
-  - ID: 11191491332555772085
-    Path: Textures\bricks_wall\albedo.png
-    Type: Texture
-  - ID: 11167953401946863704
-    Path: Textures\bricks_wall\ambient.png
+    Path: textures\bricks_wall\height.png
     Type: Texture
   - ID: 18379026084475814552
-    Path: Textures\metal_plates\normal.png
+    Path: textures\metal_plates\normal.png
+    Type: Texture
+  - ID: 17945906130099463256
+    Path: textures\metal_plates\normal.png
+    Type: Texture
+  - ID: 11167953401946863704
+    Path: textures\bricks_wall\ambient.png
     Type: Texture
   - ID: 2667654944998561291
-    Path: Textures\bricks_wall\roughness.png
+    Path: textures\bricks_wall\roughness.png
     Type: Texture
   - ID: 17636335620445898322
-    Path: Textures\concrete_pillar\ambient.png
-    Type: Texture
-  - ID: 3932435452252890858
-    Path: Textures\concrete_pillar\color.png
+    Path: textures\concrete_pillar\ambient.png
     Type: Texture
   - ID: 13374189058442281770
-    Path: Textures\concrete_pillar\normal.png
+    Path: textures\concrete_pillar\normal.png
+    Type: Texture
+  - ID: 3932435452252890858
+    Path: textures\concrete_pillar\color.png
     Type: Texture
   - ID: 14561975446468220054
-    Path: Textures\concrete_pillar\height.png
+    Path: textures\concrete_pillar\height.png
     Type: Texture
   - ID: 434009349952294550
     Path: Audio\Sounds\shoot3.mp3
     Type: Audio
+  - ID: 15507889340687193263
+    Path: textures\concrete_pillar\roughness.png
+    Type: Texture
   - ID: 3424245490164057647
     Path: Audio\Music\Welcome_to_3D_Software.wav
     Type: Audio
-  - ID: 15507889340687193263
-    Path: Textures\concrete_pillar\roughness.png
-    Type: Texture
-  - ID: 5882001555446725752
-    Path: tmp\tmp_1.mat
-    Type: Material
   - ID: 9893828857169588856
-    Path: Textures\vsb.png
+    Path: textures\vsb.png
     Type: Texture
   - ID: 11638066502827325560
-    Path: Textures\metal_plates\ambient.png
+    Path: textures\metal_plates\ambient.png
+    Type: Texture
+  - ID: 14249517376791106852
+    Path: textures\metal_plates\color.png
     Type: Texture
   - ID: 7545116859162442980
     Path: Audio\Sounds\reload.mp3
     Type: Audio
-  - ID: 14249517376791106852
-    Path: Textures\metal_plates\color.png
-    Type: Texture
   - ID: 4828050970429260459
-    Path: Textures\metal_plates\metallic.png
+    Path: textures\metal_plates\metallic.png
     Type: Texture
   - ID: 8954710679301395093
-    Path: Textures\mood.png
-    Type: Texture
-  - ID: 10633858430527991924
-    Path: Textures\rocks\Color.png
+    Path: textures\mood.png
     Type: Texture
   - ID: 17493723337394065268
-    Path: Textures\concrete_pillar\height.png
+    Path: textures\concrete_pillar\height.png
     Type: Texture
   - ID: 15119983366604146548
     Path: Audio\Music\Glorious_Morning.wav
     Type: Audio
-  - ID: 5156805240299570835
-    Path: Textures\bricks_wall\normal.png
+  - ID: 10633858430527991924
+    Path: textures\rocks\Color.png
     Type: Texture
   - ID: 13918419986824729683
-    Path: Textures\rocks\Normal.png
+    Path: textures\rocks\Normal.png
     Type: Texture
-  - ID: 9635202617578757737
-    Path: tmp\tmp_4.mat
-    Type: Material
+  - ID: 5156805240299570835
+    Path: textures\bricks_wall\normal.png
+    Type: Texture
   - ID: 13160371051266020969
-    Path: Textures\skull.png
+    Path: textures\skull.png
     Type: Texture
   - ID: 6220569197958428367
-    Path: Textures\SwordddV2.png
-    Type: Texture
-  - ID: 17142594802528662029
-    Path: Textures\background.png
+    Path: textures\SwordddV2.png
     Type: Texture
   - ID: 14362726469785008781
     Path: Audio\Music\100_Bills.wav
     Type: Audio
+  - ID: 17142594802528662029
+    Path: textures\background.png
+    Type: Texture
   - ID: 128163365224568895
     Path: Audio\Music\music.mp3
     Type: Audio
@@ -195,79 +201,70 @@ Assets:
     Path: Audio\Sounds\shoot2.mp3
     Type: Audio
   - ID: 109125964354346600
-    Path: Textures\bricks_wall\albedo.png
+    Path: textures\bricks_wall\albedo.png
     Type: Texture
   - ID: 16642232958899968558
-    Path: Textures\bricks_wall\ambient.png
-    Type: Texture
-  - ID: 11821652352984236833
-    Path: Textures\Prototype\texture_09.png
+    Path: textures\bricks_wall\ambient.png
     Type: Texture
   - ID: 5682456324726901537
-    Path: Textures\concrete_pillar\ambient.png
+    Path: textures\concrete_pillar\ambient.png
+    Type: Texture
+  - ID: 11821652352984236833
+    Path: textures\Prototype\texture_09.png
     Type: Texture
   - ID: 1166473561676301809
-    Path: Textures\concrete_pillar\color.png
+    Path: textures\concrete_pillar\color.png
     Type: Texture
   - ID: 10227938592557234628
-    Path: Textures\concrete_pillar\height.png
-    Type: Texture
-  - ID: 1455129734612613855
-    Path: Textures\metal_plates\roughness.png
+    Path: textures\concrete_pillar\height.png
     Type: Texture
   - ID: 11033136450826185439
-    Path: Textures\concrete_pillar\normal.png
+    Path: textures\concrete_pillar\normal.png
+    Type: Texture
+  - ID: 1455129734612613855
+    Path: textures\metal_plates\roughness.png
     Type: Texture
   - ID: 9672253413596520105
-    Path: Textures\concrete_pillar\roughness.png
+    Path: textures\concrete_pillar\roughness.png
     Type: Texture
   - ID: 546720037482117722
-    Path: Textures\favorite.png
+    Path: textures\favorite.png
     Type: Texture
   - ID: 1632812005719940422
-    Path: Textures\gerbil.jpg
+    Path: textures\gerbil.jpg
     Type: Texture
   - ID: 3914534830390779165
-    Path: Textures\metal_plates\ambient.png
+    Path: textures\metal_plates\ambient.png
     Type: Texture
   - ID: 8199734786058176694
-    Path: Textures\metal_plates\color.png
+    Path: textures\metal_plates\color.png
     Type: Texture
-  - ID: 7377522615092688566
-    Path: tmp\tmp_22.mat
-    Type: Material
   - ID: 16943406036181205513
-    Path: Textures\metal_plates\height.png
+    Path: textures\metal_plates\height.png
     Type: Texture
-  - ID: 3485043846884477961
-    Path: tmp\tmp_2.mat
-    Type: Material
   - ID: 5003089672303639438
-    Path: Textures\metal_plates\metallic.png
+    Path: textures\metal_plates\metallic.png
     Type: Texture
   - ID: 11085604503889633127
-    Path: Textures\metal_plates\normal.png
+    Path: textures\metal_plates\normal.png
     Type: Texture
   - ID: 12394583387387141561
-    Path: Textures\rocks\Color.png
+    Path: textures\rocks\Color.png
     Type: Texture
   - ID: 15614211578049727558
-    Path: Textures\rocks\Normal.png
+    Path: textures\rocks\Normal.png
     Type: Texture
   - ID: 13698906005399543115
-    Path: Textures\skull.png
+    Path: textures\skull.png
     Type: Texture
-  - ID: 11553378684387674443
-    Path: tmp\tmp_17.mat
-    Type: Material
   - ID: 16139434238335653539
-    Path: Textures\spritesheet.png
+    Path: textures\spritesheet.png
     Type: Texture
   - ID: 113841847694757378
-    Path: Textures\SwordddV2.png
+    Path: textures\SwordddV2.png
     Type: Texture
   - ID: 12705402735273693071
-    Path: Textures\tile.png
+    Path: textures\tile.png
     Type: Texture
   - ID: 4524766446218326838
     Path: Materials\Grid.mat
@@ -279,73 +276,82 @@ Assets:
     Path: Meshes\avenger.glb
     Type: Mesh
   - ID: 7984823618532122629
-    Path: Textures\background.png
+    Path: textures\background.png
     Type: Texture
   - ID: 17165908023128386009
-    Path: Textures\bricks_wall\albedo.png
+    Path: textures\bricks_wall\albedo.png
     Type: Texture
   - ID: 12427258211777723331
-    Path: Textures\bricks_wall\ambient.png
+    Path: textures\bricks_wall\ambient.png
     Type: Texture
   - ID: 17927136152292008806
-    Path: Textures\bricks_wall\height.png
+    Path: textures\bricks_wall\height.png
     Type: Texture
   - ID: 775812304013085990
-    Path: Textures\bricks_wall\normal.png
+    Path: textures\bricks_wall\normal.png
     Type: Texture
   - ID: 7909336429297460591
-    Path: Textures\bricks_wall\roughness.png
+    Path: textures\bricks_wall\roughness.png
     Type: Texture
   - ID: 17174816459849841663
-    Path: Textures\concrete_pillar\ambient.png
+    Path: textures\concrete_pillar\ambient.png
     Type: Texture
   - ID: 14721347364154639704
-    Path: Textures\concrete_pillar\color.png
+    Path: textures\concrete_pillar\color.png
     Type: Texture
   - ID: 8507729368483226865
-    Path: Textures\concrete_pillar\roughness.png
-    Type: Texture
-  - ID: 11007869590644693406
-    Path: Textures\metal_plates\roughness.png
+    Path: textures\concrete_pillar\roughness.png
     Type: Texture
   - ID: 4923234410783858078
-    Path: Textures\favorite.png
+    Path: textures\favorite.png
+    Type: Texture
+  - ID: 11007869590644693406
+    Path: textures\metal_plates\roughness.png
     Type: Texture
   - ID: 3196366518727432473
-    Path: Textures\gerbil.jpg
+    Path: textures\gerbil.jpg
+    Type: Texture
+  - ID: 9579822105794628594
+    Path: textures\background.png
     Type: Texture
   - ID: 9508447927040620530
-    Path: Textures\metal_plates\ambient.png
+    Path: textures\metal_plates\ambient.png
     Type: Texture
   - ID: 3610164049950954706
-    Path: Textures\metal_plates\color.png
+    Path: textures\metal_plates\color.png
     Type: Texture
   - ID: 2189378017013120246
-    Path: Textures\metal_plates\height.png
-    Type: Texture
-  - ID: 13231755360521008376
-    Path: Textures\rocks\Normal.png
+    Path: textures\metal_plates\height.png
     Type: Texture
   - ID: 12464504933822945528
-    Path: Textures\metal_plates\metallic.png
+    Path: textures\metal_plates\metallic.png
+    Type: Texture
+  - ID: 13231755360521008376
+    Path: textures\rocks\Normal.png
+    Type: Texture
+  - ID: 4952383543982234061
+    Path: textures\rocks\Color.png
     Type: Texture
   - ID: 10693493725111661005
-    Path: Textures\mood.png
+    Path: textures\mood.png
     Type: Texture
-  - ID: 1406708675193523661
-    Path: tmp\tmp_18.mat
-    Type: Material
+  - ID: 15173054281184109521
+    Path: textures\concrete_pillar\height.png
+    Type: Texture
   - ID: 12168482785014835665
-    Path: Textures\rocks\Color.png
+    Path: textures\rocks\Color.png
     Type: Texture
   - ID: 6055189142491214783
-    Path: Textures\skull.png
+    Path: textures\skull.png
     Type: Texture
   - ID: 17708827352136862086
-    Path: Textures\spritesheet.png
+    Path: textures\spritesheet.png
     Type: Texture
   - ID: 8661956684510641220
-    Path: Textures\tile.png
+    Path: textures\tile.png
+    Type: Texture
+  - ID: 10038720724767616507
+    Path: textures\spritesheet.png
     Type: Texture
   - ID: 9062395416670711803
     Path: Materials\Avenger1.mat
@@ -363,101 +369,221 @@ Assets:
     Path: Materials\Avenger5.mat
     Type: Material
   - ID: 8123456720985273470
-    Path: Textures\3069bp13.jpg
+    Path: textures\3069bp13.jpg
     Type: Texture
   - ID: 1453805156906467867
-    Path: Textures\4150p04.jpg
+    Path: textures\4150p04.jpg
     Type: Texture
   - ID: 17579751257910315876
-    Path: Textures\coin.png
+    Path: textures\coin.png
     Type: Texture
   - ID: 2441413869457295361
-    Path: Textures\Prototype\texture_01.png
+    Path: textures\Prototype\texture_01.png
     Type: Texture
   - ID: 7797657547740846668
-    Path: Textures\Prototype\texture_02.png
+    Path: textures\Prototype\texture_02.png
     Type: Texture
   - ID: 18244464697190258749
-    Path: Textures\Prototype\texture_03.png
+    Path: textures\Prototype\texture_03.png
     Type: Texture
   - ID: 17676381297096446847
-    Path: Textures\Prototype\texture_04.png
+    Path: textures\Prototype\texture_04.png
     Type: Texture
   - ID: 2240213264745544980
-    Path: Textures\Prototype\texture_05.png
+    Path: textures\Prototype\texture_05.png
     Type: Texture
   - ID: 15688183183129165794
-    Path: Textures\Prototype\texture_06.png
+    Path: textures\Prototype\texture_06.png
     Type: Texture
-  - ID: 267173112426190704
-    Path: Textures\Prototype\texture_07.png
-    Type: Texture
-  - ID: 5082708353570715644
-    Path: Textures\Prototype\texture_10.png
-    Type: Texture
-  - ID: 3776807288322352437
-    Path: Textures\Prototype\texture_11.png
-    Type: Texture
-  - ID: 4778876615403193581
-    Path: Textures\Prototype\texture_12.png
-    Type: Texture
-  - ID: 1868125527395385586
-    Path: Textures\Prototype\texture_13.png
-    Type: Texture
-  - ID: 9488472307569764677
-    Path: tmp\tmp_0.mat
-    Type: Material
-  - ID: 15842635830503710603
-    Path: tmp\tmp_3.mat
-    Type: Material
-  - ID: 9676901469011200935
-    Path: tmp\tmp_5.mat
-    Type: Material
-  - ID: 16330761688813768408
-    Path: tmp\tmp_6.mat
-    Type: Material
-  - ID: 18360241992750419559
-    Path: tmp\tmp_7.mat
-    Type: Material
-  - ID: 11196258241537320957
-    Path: tmp\tmp_8.mat
-    Type: Material
-  - ID: 3670201092206298823
-    Path: tmp\tmp_9.mat
-    Type: Material
-  - ID: 6098938587811130114
-    Path: tmp\tmp_10.mat
-    Type: Material
-  - ID: 16061887294320829618
-    Path: tmp\tmp_11.mat
-    Type: Material
-  - ID: 3155576095494554348
-    Path: tmp\tmp_12.mat
-    Type: Material
-  - ID: 968914385543311112
-    Path: tmp\tmp_13.mat
-    Type: Material
-  - ID: 2627678454245838906
-    Path: tmp\tmp_14.mat
-    Type: Material
-  - ID: 13375846360581784880
-    Path: tmp\tmp_15.mat
-    Type: Material
-  - ID: 6533753879390816959
-    Path: tmp\tmp_16.mat
-    Type: Material
-  - ID: 16005810716555630816
-    Path: tmp\tmp_19.mat
-    Type: Material
-  - ID: 1762653181102723443
+  - ID: 4081624249093562338
     Path: tmp\tmp_20.mat
     Type: Material
-  - ID: 14879432998011637409
+  - ID: 267173112426190704
+    Path: textures\Prototype\texture_07.png
+    Type: Texture
+  - ID: 5082708353570715644
+    Path: textures\Prototype\texture_10.png
+    Type: Texture
+  - ID: 3776807288322352437
+    Path: textures\Prototype\texture_11.png
+    Type: Texture
+  - ID: 4778876615403193581
+    Path: textures\Prototype\texture_12.png
+    Type: Texture
+  - ID: 1868125527395385586
+    Path: textures\Prototype\texture_13.png
+    Type: Texture
+  - ID: 9426982743866662132
+    Path: textures\3069bp13.jpg
+    Type: Texture
+  - ID: 6524026675847766734
+    Path: textures\4150p04.jpg
+    Type: Texture
+  - ID: 12785859738241832776
+    Path: textures\bricks_wall\albedo.png
+    Type: Texture
+  - ID: 297898688434557339
+    Path: textures\bricks_wall\ambient.png
+    Type: Texture
+  - ID: 16027200638608288923
+    Path: textures\bricks_wall\height.png
+    Type: Texture
+  - ID: 6734003974510163028
+    Path: textures\bricks_wall\normal.png
+    Type: Texture
+  - ID: 7742239552576461739
+    Path: textures\bricks_wall\roughness.png
+    Type: Texture
+  - ID: 14604845378978989603
+    Path: textures\coin.png
+    Type: Texture
+  - ID: 15361371712911152637
+    Path: textures\concrete_pillar\ambient.png
+    Type: Texture
+  - ID: 14271088859862093309
+    Path: tmp\tmp_22.mat
+    Type: Material
+  - ID: 16195009195817127728
+    Path: textures\concrete_pillar\color.png
+    Type: Texture
+  - ID: 13875710594805778087
+    Path: textures\concrete_pillar\normal.png
+    Type: Texture
+  - ID: 522753387429330221
+    Path: textures\concrete_pillar\roughness.png
+    Type: Texture
+  - ID: 15054125562805087388
+    Path: textures\favorite.png
+    Type: Texture
+  - ID: 14270187859732074093
+    Path: textures\gerbil.jpg
+    Type: Texture
+  - ID: 14040463285618347255
+    Path: textures\metal_plates\ambient.png
+    Type: Texture
+  - ID: 2442411626137172876
+    Path: textures\metal_plates\color.png
+    Type: Texture
+  - ID: 1723225910701693219
+    Path: textures\metal_plates\height.png
+    Type: Texture
+  - ID: 15614224066513736065
+    Path: textures\metal_plates\metallic.png
+    Type: Texture
+  - ID: 7505838854361743487
+    Path: textures\metal_plates\roughness.png
+    Type: Texture
+  - ID: 14086959775499406535
+    Path: textures\mood.png
+    Type: Texture
+  - ID: 14675571195161140193
+    Path: textures\Prototype\texture_01.png
+    Type: Texture
+  - ID: 17258657920140561812
+    Path: textures\Prototype\texture_02.png
+    Type: Texture
+  - ID: 5068881910144785516
+    Path: textures\Prototype\texture_03.png
+    Type: Texture
+  - ID: 1590609141763278470
+    Path: textures\Prototype\texture_04.png
+    Type: Texture
+  - ID: 16736194719169145257
+    Path: textures\Prototype\texture_05.png
+    Type: Texture
+  - ID: 10340985277020436342
+    Path: textures\Prototype\texture_06.png
+    Type: Texture
+  - ID: 7023945361893873045
+    Path: textures\Prototype\texture_07.png
+    Type: Texture
+  - ID: 516259659604116892
+    Path: textures\Prototype\texture_10.png
+    Type: Texture
+  - ID: 13450713912436113266
+    Path: textures\Prototype\texture_11.png
+    Type: Texture
+  - ID: 16496847198332931466
+    Path: textures\Prototype\texture_12.png
+    Type: Texture
+  - ID: 16930474196248493130
+    Path: textures\Prototype\texture_13.png
+    Type: Texture
+  - ID: 17286595405715129930
+    Path: tmp\tmp_19.mat
+    Type: Material
+  - ID: 16933148170523719377
+    Path: textures\rocks\Normal.png
+    Type: Texture
+  - ID: 18214915358259466449
+    Path: tmp\tmp_5.mat
+    Type: Material
+  - ID: 14927119150707331953
+    Path: textures\skull.png
+    Type: Texture
+  - ID: 18173736123845970268
+    Path: textures\SwordddV2.png
+    Type: Texture
+  - ID: 1190562071435741471
+    Path: textures\tile.png
+    Type: Texture
+  - ID: 4602482462013014141
+    Path: textures\vsb.png
+    Type: Texture
+  - ID: 1996459253582605967
+    Path: tmp\tmp_0.mat
+    Type: Material
+  - ID: 15699744969565633053
+    Path: tmp\tmp_1.mat
+    Type: Material
+  - ID: 8496260393453878813
     Path: tmp\tmp_21.mat
     Type: Material
-  - ID: 14963845545177915761
-    Path: tmp\tmp_23.mat
+  - ID: 13579045662078082631
+    Path: tmp\tmp_2.mat
     Type: Material
-  - ID: 13967996873226248034
+  - ID: 6697304609557636085
+    Path: tmp\tmp_3.mat
+    Type: Material
+  - ID: 6420737745447128053
+    Path: tmp\tmp_12.mat
+    Type: Material
+  - ID: 15388406335680235062
+    Path: tmp\tmp_4.mat
+    Type: Material
+  - ID: 15336003854671780286
+    Path: tmp\tmp_6.mat
+    Type: Material
+  - ID: 15676324839833293052
+    Path: tmp\tmp_7.mat
+    Type: Material
+  - ID: 11338229386382074790
+    Path: tmp\tmp_8.mat
+    Type: Material
+  - ID: 7267305591147661222
+    Path: tmp\tmp_10.mat
+    Type: Material
+  - ID: 13612887118892729250
+    Path: tmp\tmp_11.mat
+    Type: Material
+  - ID: 2240798008467000122
+    Path: tmp\tmp_13.mat
+    Type: Material
+  - ID: 10110901189992253051
+    Path: tmp\tmp_14.mat
+    Type: Material
+  - ID: 7619436097422543333
+    Path: tmp\tmp_15.mat
+    Type: Material
+  - ID: 18207209538454066267
+    Path: tmp\tmp_16.mat
+    Type: Material
+  - ID: 7754810028909415072
+    Path: tmp\tmp_17.mat
+    Type: Material
+  - ID: 12131057463189080297
+    Path: tmp\tmp_18.mat
+    Type: Material
+  - ID: 16307921651454057929
     Path: tmp\tmp_24.mat
     Type: Material

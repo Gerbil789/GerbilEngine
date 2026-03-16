@@ -121,10 +121,10 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
     //let prefiltered = textureSample(PrefilteredEnvMap[0], EnvSampler, specUV).rgb;
 
 
-		let levelCount: f32 = 9.0;
-		let index = i32(clamp(floor(uMaterial.roughness * levelCount), 0.0, levelCount - 1.0));
+	let levelCount: f32 = 9.0;
+	let index = i32(clamp(floor(pow(uMaterial.roughness, 2) * levelCount), 0.0, levelCount - 1.0));
 
-		let prefiltered = SamplePrefilter(index, specUV);
+	let prefiltered = SamplePrefilter(index, specUV);
 
     let brdf = textureSample(BRDFIntMap, EnvSampler, vec2(NdotV, uMaterial.roughness)).rg;
 
