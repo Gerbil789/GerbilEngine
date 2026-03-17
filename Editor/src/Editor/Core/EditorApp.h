@@ -1,15 +1,7 @@
 #pragma once
 
 #include "Engine/Core/Window.h"
-#include "Engine/Event/Event.h"
-#include "Engine/Event/FileEvent.h"
-#include <queue>
-#include <mutex>
-
-//namespace Engine
-//{
-//	class Event;
-//}
+#include <optional>
 
 namespace Editor
 {
@@ -33,19 +25,10 @@ namespace Editor
 	public:
 		EditorApp(const ApplicationCommandLineArgs& args);
 		~EditorApp();
-
 		void Run();
 
 	private:
-		void OnEvent(Engine::Event& e);
-
-		Engine::Window* m_Window;
-		bool m_Running = false;
-
-		std::queue<std::unique_ptr<Engine::FileEvent>> m_FileEventQueue;
-		std::mutex m_FileEventMutex;
-
-		void PushFileEvent(std::unique_ptr<Engine::FileEvent> e);
-		void ProcessFileEvents();
+		std::optional<Engine::Window> m_Window;
+		bool m_Running = true;
 	};
 }

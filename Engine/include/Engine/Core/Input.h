@@ -11,7 +11,7 @@ namespace Engine::Input
 {
 	ENGINE_API void SetActiveWindow(GLFWwindow& window);
 	ENGINE_API void Update();
-	ENGINE_API void OnEvent(Event& e);
+	//ENGINE_API void OnEvent(Event& e);
 
 	ENGINE_API bool IsKeyDown(KeyCode key);
 	ENGINE_API bool IsKeyPressedOnce(KeyCode key);
@@ -19,4 +19,7 @@ namespace Engine::Input
 
 	ENGINE_API bool IsMouseButtonPressed(MouseCode button);
 	ENGINE_API glm::vec2 GetMousePosition();
+
+
+	//TODO: mouse scroll, ...
 }

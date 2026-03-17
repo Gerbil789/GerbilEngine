@@ -24,10 +24,10 @@ namespace Editor
 			ImGui::SameLine();
 			if(ImGui::Button("Browse"))
 			{
-				std::string dir = Engine::OpenDirectory();
+				std::filesystem::path dir = Engine::OpenDirectory();
 				if (!dir.empty())
 				{
-					strncpy_s(m_Path, dir.c_str(), sizeof(m_Path));
+					strncpy_s(m_Path, dir.string().c_str(), sizeof(m_Path));
 				}
 			}
 

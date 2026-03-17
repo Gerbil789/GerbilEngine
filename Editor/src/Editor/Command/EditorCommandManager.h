@@ -12,6 +12,7 @@ namespace Editor
   class EditorCommandManager 
   {
   public:
+		static void Initialize();
     static void CreateEntity(const std::string& name = "Empty");
     static void DeleteEntity(Engine::Entity entity);
 

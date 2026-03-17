@@ -1,9 +1,23 @@
 #include "EditorCommandManager.h"
 #include "Editor/Command/CreateEntity.h"
 #include "Editor/Command/DeleteEntity.h"
+#include "Engine/Event/EventBus.h"
+#include "Engine/Event/KeyEvent.h"
+#include "Engine/Core/Input.h"
 
 namespace Editor
 {
+  void EditorCommandManager::Initialize()
+  {
+		Engine::EventBus::Get().Subscribe<Engine::KeyPressedEvent>([](auto e) 
+      {
+        if ((e.GetKey() == Engine::KeyCode::Z || e.GetKey() == Engine::KeyCode::Y) && Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl))
+        {
+          (!Engine::Input::IsKeyDown(Engine::KeyCode::LeftShift) ? Undo() : Redo());
+        }
+      });
+  }
+
 	void EditorCommandManager::CreateEntity(const std::string& name)
   {
     Enqueue(std::make_unique<CreateEntityCommand>(name));

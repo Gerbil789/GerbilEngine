@@ -1,8 +1,5 @@
 #pragma once
 
-#include <string>
-#include <functional>
-
 namespace Engine
 {
 	enum class EventType
@@ -36,30 +33,10 @@ namespace Engine
 
 	class Event
 	{
-		friend class EventDispatcher;
-
 	public:
 		bool Handled = false;
 
 		virtual EventType GetEventType() const = 0;
 		virtual int GetCategoryFlags() const = 0;
-
-	};
-
-	class EventDispatcher
-	{
-	public:
-		EventDispatcher(Event& event) : m_Event(event) {}
-
-		template<typename T>
-		void Dispatch(std::function<void(T&)> func)
-		{
-			if (m_Event.GetEventType() == T::GetStaticType())
-			{
-				func(static_cast<T&>(m_Event));
-			}
-		}
-	private:
-		Event& m_Event;
 	};
 }

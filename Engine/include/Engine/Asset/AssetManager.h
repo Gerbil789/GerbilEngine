@@ -24,36 +24,36 @@ namespace Engine
 			m_AssetRegistry.Clear();
 			m_LoadedAssets.clear();
 		}
-
-		static void OnEvent(Event& e)
-		{
-			switch (e.GetEventType())
-			{
-			case EventType::FileAdded:
-			{
-				auto& event = static_cast<FileAddedEvent&>(e);
-				LOG_INFO("File added: {}", event.GetPath());
-				CreateAsset(event.GetPath());
-				break;
-			}
-			case EventType::FileRemoved:
-			{
-				auto& event = static_cast<FileRemovedEvent&>(e);
-				LOG_INFO("File removed: {}", event.GetPath());
-				//TODO: handle file removal (unload asset, remove from registry, etc...)
-				break;
-			}
-			case EventType::FileModified:
-			{
-				auto& event = static_cast<FileModifiedEvent&>(e);
-				LOG_INFO("File modified: {}", event.GetPath());
-				//TODO: handle file modification (reload asset, etc...)
-				break;
-			}
-			default:
-				break;
-			}
-		}
+		//TODO: handle runtime hot reloading of assets
+		//static void OnEvent(Event& e)
+		//{
+		//	switch (e.GetEventType())
+		//	{
+		//	case EventType::FileAdded:
+		//	{
+		//		auto& event = static_cast<FileAddedEvent&>(e);
+		//		LOG_INFO("File added: {}", event.GetPath());
+		//		CreateAsset(event.GetPath());
+		//		break;
+		//	}
+		//	case EventType::FileRemoved:
+		//	{
+		//		auto& event = static_cast<FileRemovedEvent&>(e);
+		//		LOG_INFO("File removed: {}", event.GetPath());
+		//		//TODO: handle file removal (unload asset, remove from registry, etc...)
+		//		break;
+		//	}
+		//	case EventType::FileModified:
+		//	{
+		//		auto& event = static_cast<FileModifiedEvent&>(e);
+		//		LOG_INFO("File modified: {}", event.GetPath());
+		//		//TODO: handle file modification (reload asset, etc...)
+		//		break;
+		//	}
+		//	default:
+		//		break;
+		//	}
+		//}
 
 		template<typename T>
 		static T* GetAsset(Uuid id)

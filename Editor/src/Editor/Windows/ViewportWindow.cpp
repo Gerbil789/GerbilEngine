@@ -16,14 +16,34 @@
 #include "Engine/Graphics/RenderPass/EntityIdPass.h"
 #include "Engine/Graphics/RenderPass/LightPass.h"
 #include "Editor/Core/EditorCameraController.h"
-
+#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Editor/Core/EditorRuntime.h"
 
+#include "Engine/Scene/Scene.h"
+#include <glm/glm.hpp>
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
 
 namespace Editor
 {
+	namespace
+	{
+		Engine::Scene* m_Scene = nullptr;
+
+		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
+		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
+
+		Engine::Entity m_HoveredEntity;
+
+		bool m_ViewportFocused = false;
+		bool m_ViewportHovered = false;
+
+		bool m_GizmoPreviouslyUsed = false;
+
+		std::unordered_map<Engine::Entity, glm::mat4> m_InitialWorldTransforms;
+		glm::mat4 m_InitialPrimaryWorld = glm::mat4(1.0f);
+	}
+
 	static ImGuizmo::OPERATION gizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
 	static Engine::EntityIdPass* s_EntityIdPass = nullptr;
@@ -33,12 +53,175 @@ namespace Editor
 	static Engine::LightPass* s_LightPass = nullptr;
 
 	static Engine::Renderer* m_Renderer = nullptr;
-	static EditorCameraController* m_CameraController = nullptr;
+	static Engine::Camera* m_Camera = nullptr;
 
 	static bool enableOpaquePass = true;
 	static bool enableNormalPass = false;
 	static bool enableWireframePass = false;
 	static bool enableLightPass = false;
+
+	void UpdateViewportSize()
+	{
+		ImVec2 newSize = ImGui::GetContentRegionAvail();
+
+		if (newSize.x != m_ViewportSize.x || newSize.y != m_ViewportSize.y)
+		{
+			m_ViewportSize = { newSize.x, newSize.y };
+			//m_CameraController->SetViewportSize(m_ViewportSize);
+			m_Camera->SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
+
+			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
+			{
+				m_Renderer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			}
+		}
+
+		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+		auto viewportOffset = ImGui::GetWindowPos();
+
+		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+	}
+
+	void DrawGizmos()
+	{
+		if (gizmoType == 0)
+		{
+			return;
+		}
+
+		Engine::Entity selectedEntity = EditorSelection::Entities().GetPrimary();
+
+		if (!selectedEntity)
+		{
+			return;
+		}
+
+		ImGuizmo::SetDrawlist();
+
+		ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
+
+		const glm::mat4& cameraProjection = m_Camera->GetProjectionMatrix();
+		glm::mat4 cameraView = m_Camera->GetViewMatrix();
+
+		auto& transformComponent = selectedEntity.Get<Engine::TransformComponent>();
+		glm::mat4 worldTransform = transformComponent.GetWorldMatrix();
+
+		float* snapValue = nullptr;
+		if (Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl))
+		{
+			static float snapTranslateScale[3] = { 0.5f, 0.5f, 0.5f };
+			static float snapRotate[3] = { 45.0f, 45.0f, 45.0f };
+			snapValue = (gizmoType == ImGuizmo::OPERATION::ROTATE) ? snapRotate : snapTranslateScale;
+		}
+
+		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), gizmoType, ImGuizmo::MODE::LOCAL, glm::value_ptr(worldTransform), nullptr, snapValue);
+
+		bool isUsing = ImGuizmo::IsUsing();
+
+		if (isUsing && !m_GizmoPreviouslyUsed)
+		{
+			m_InitialWorldTransforms.clear();
+
+			auto& selection = EditorSelection::Entities().GetAll();
+
+			for (auto entity : selection)
+			{
+				auto& tc = entity.Get<Engine::TransformComponent>();
+				m_InitialWorldTransforms[entity] = tc.GetWorldMatrix();
+			}
+
+			m_InitialPrimaryWorld = m_InitialWorldTransforms[selectedEntity];
+		}
+
+		if (isUsing)
+		{
+
+			glm::mat4 newPrimaryWorld = worldTransform;
+			glm::mat4 delta = newPrimaryWorld * glm::inverse(m_InitialPrimaryWorld);
+
+			for (auto entity : EditorSelection::Entities().GetAll())
+			{
+				auto& tc = entity.Get<Engine::TransformComponent>();
+
+				glm::mat4 originalWorld = m_InitialWorldTransforms[entity];
+				glm::mat4 newWorld = delta * originalWorld;
+
+				glm::mat4 parentWorld = glm::mat4(1.0f);
+				if (tc.parent)
+				{
+					parentWorld = tc.parent.Get<Engine::TransformComponent>().GetWorldMatrix();
+				}
+
+				glm::mat4 newLocal = glm::inverse(parentWorld) * newWorld;
+
+				//glm::vec3 skew;
+				//glm::vec4 perspective;
+				glm::vec3 rot;
+				glm::vec3 trans, scale;
+				//glm::decompose(newLocal, scale, rot, trans, skew, perspective);
+
+
+				ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(newLocal), glm::value_ptr(trans), glm::value_ptr(rot), glm::value_ptr(scale));
+
+				tc.position = trans;
+				tc.rotation = rot;
+				tc.scale = scale;
+			}
+		}
+
+		if (!isUsing && m_GizmoPreviouslyUsed)
+		{
+			auto& selection = EditorSelection::Entities().GetAll();
+
+			std::vector<TransformData> before, after;
+
+			for (auto& [entity, initialWorld] : m_InitialWorldTransforms)
+			{
+				auto& tc = entity.Get<Engine::TransformComponent>();
+				{
+					glm::mat4 parentWorld = glm::mat4(1.0f);
+					if (tc.parent)
+					{
+						parentWorld = tc.parent.Get<Engine::TransformComponent>().GetWorldMatrix();
+					}
+					glm::mat4 initialLocal = glm::inverse(parentWorld) * initialWorld;
+					//glm::vec3 skew;
+					//glm::vec4 perspective;
+					//glm::quat rot;
+					//glm::vec3 trans, scale;
+					//glm::decompose(initialLocal, scale, rot, trans, skew, perspective);
+
+					//glm::vec3 skew;
+//glm::vec4 perspective;
+					glm::vec3 rot;
+					glm::vec3 trans, scale;
+					//glm::decompose(newLocal, scale, rot, trans, skew, perspective);
+
+
+					ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(initialLocal), glm::value_ptr(trans), glm::value_ptr(rot), glm::value_ptr(scale));
+
+					before.push_back({ trans, rot, scale });
+				}
+			}
+
+			for (auto entity : selection)
+			{
+				auto& tc = entity.Get<Engine::TransformComponent>();
+				TransformData afterData;
+				afterData.Position = tc.position;
+				afterData.Rotation = tc.rotation;
+				afterData.Scale = tc.scale;
+				after.push_back(afterData);
+			}
+
+			EditorCommandManager::Enqueue(std::make_unique<TransformEntitiesCommand>(selection, before, after));
+
+		}
+
+		m_GizmoPreviouslyUsed = isUsing;
+	}
 
 	void ViewportWindow::Initialize()
 	{
@@ -46,12 +229,15 @@ namespace Editor
 		ImGuizmo::SetGizmoSizeClipSpace(0.2f);
 
 		m_Renderer = new Engine::Renderer();
-		m_CameraController = new EditorCameraController();
 
-		Engine::Camera& camera = m_CameraController->GetCamera();
-		camera.SetBackground(Engine::Camera::Background::Skybox);
-		camera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
-		m_Renderer->SetCamera(&camera);
+
+		m_Camera = new Engine::Camera();
+		m_Camera->SetBackground(Engine::Camera::Background::Skybox);
+		m_Camera->SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
+
+		SetCameraController(new EditorCameraController(m_Camera));
+
+		m_Renderer->SetCamera(m_Camera);
 
 		m_Renderer->AddPass(new Engine::BackgroundPass());
 
@@ -73,7 +259,7 @@ namespace Editor
 
 				if (EditorRuntime::GetState() == EditorState::Edit)
 				{
-					m_Renderer->SetCamera(&m_CameraController->GetCamera());
+					m_Renderer->SetCamera(m_Camera);
 				}
 				else if (EditorRuntime::GetState() == EditorState::Play)
 				{
@@ -195,176 +381,4 @@ namespace Editor
 			}
 		}
 	}
-
-
-	void ViewportWindow::OnEvent(Engine::Event& e)
-	{
-		if (m_ViewportFocused || m_ViewportHovered)
-		{
-			m_CameraController->OnEvent(e);
-		}
-	}
-
-	void ViewportWindow::UpdateViewportSize()
-	{
-		ImVec2 newSize = ImGui::GetContentRegionAvail();
-
-		if (newSize.x != m_ViewportSize.x || newSize.y != m_ViewportSize.y)
-		{
-			m_ViewportSize = { newSize.x, newSize.y };
-			m_CameraController->SetViewportSize(m_ViewportSize);
-
-			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
-			{
-				m_Renderer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			}
-		}
-
-		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
-		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-		auto viewportOffset = ImGui::GetWindowPos();
-
-		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
-	}
-
-	void ViewportWindow::DrawGizmos()
-	{
-		if(gizmoType == 0)
-		{
-			return;
-		}
-
-		Engine::Entity selectedEntity = EditorSelection::Entities().GetPrimary();
-
-		if (!selectedEntity)
-		{
-			return;
-		}
-
-		ImGuizmo::SetDrawlist();
-
-		ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
-
-		const glm::mat4& cameraProjection = m_CameraController->GetCamera().GetProjectionMatrix();
-		glm::mat4 cameraView = m_CameraController->GetCamera().GetViewMatrix();
-
-		auto& transformComponent = selectedEntity.Get<Engine::TransformComponent>();
-		glm::mat4 worldTransform = transformComponent.GetWorldMatrix();
-
-		float* snapValue = nullptr;
-		if(Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl))
-		{
-			static float snapTranslateScale[3] = { 0.5f, 0.5f, 0.5f };
-			static float snapRotate[3] = { 45.0f, 45.0f, 45.0f };
-			snapValue = (gizmoType == ImGuizmo::OPERATION::ROTATE) ? snapRotate : snapTranslateScale;
-		}
-
-		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), gizmoType, ImGuizmo::MODE::LOCAL, glm::value_ptr(worldTransform), nullptr, snapValue);
-
-		bool isUsing = ImGuizmo::IsUsing();
-
-		if (isUsing && !m_GizmoPreviouslyUsed)
-		{
-			m_InitialWorldTransforms.clear();
-
-			auto& selection = EditorSelection::Entities().GetAll();
-
-			for (auto entity : selection)
-			{
-				auto& tc = entity.Get<Engine::TransformComponent>();
-				m_InitialWorldTransforms[entity] = tc.GetWorldMatrix();
-			}
-
-			m_InitialPrimaryWorld = m_InitialWorldTransforms[selectedEntity];
-		}
-
-		if (isUsing)
-		{
-
-			glm::mat4 newPrimaryWorld = worldTransform;
-			glm::mat4 delta = newPrimaryWorld * glm::inverse(m_InitialPrimaryWorld);
-
-			for (auto entity : EditorSelection::Entities().GetAll())
-			{
-				auto& tc = entity.Get<Engine::TransformComponent>();
-
-				glm::mat4 originalWorld = m_InitialWorldTransforms[entity];
-				glm::mat4 newWorld = delta * originalWorld;
-
-				glm::mat4 parentWorld = glm::mat4(1.0f);
-				if (tc.parent)
-				{
-					parentWorld = tc.parent.Get<Engine::TransformComponent>().GetWorldMatrix();
-				}
-
-				glm::mat4 newLocal = glm::inverse(parentWorld) * newWorld;
-
-				//glm::vec3 skew;
-				//glm::vec4 perspective;
-				glm::vec3 rot;
-				glm::vec3 trans, scale;
-				//glm::decompose(newLocal, scale, rot, trans, skew, perspective);
-
-
-				ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(newLocal), glm::value_ptr(trans), glm::value_ptr(rot), glm::value_ptr(scale));
-
-				tc.position = trans;
-				tc.rotation = rot;
-				tc.scale = scale;
-			}
-		}
-
-		if (!isUsing && m_GizmoPreviouslyUsed)
-		{
-			auto& selection = EditorSelection::Entities().GetAll();
-
-			std::vector<TransformData> before, after;
-
-			for (auto& [entity, initialWorld] : m_InitialWorldTransforms)
-			{
-				auto& tc = entity.Get<Engine::TransformComponent>();
-				{
-					glm::mat4 parentWorld = glm::mat4(1.0f);
-					if (tc.parent)
-					{
-						parentWorld = tc.parent.Get<Engine::TransformComponent>().GetWorldMatrix();
-					}
-					glm::mat4 initialLocal = glm::inverse(parentWorld) * initialWorld;
-					//glm::vec3 skew;
-					//glm::vec4 perspective;
-					//glm::quat rot;
-					//glm::vec3 trans, scale;
-					//glm::decompose(initialLocal, scale, rot, trans, skew, perspective);
-
-					//glm::vec3 skew;
-//glm::vec4 perspective;
-					glm::vec3 rot;
-					glm::vec3 trans, scale;
-					//glm::decompose(newLocal, scale, rot, trans, skew, perspective);
-
-
-					ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(initialLocal), glm::value_ptr(trans), glm::value_ptr(rot), glm::value_ptr(scale));
-
-					before.push_back({ trans, rot, scale });
-				}
-			}
-
-			for (auto entity : selection)
-			{
-				auto& tc = entity.Get<Engine::TransformComponent>();
-				TransformData afterData;
-				afterData.Position = tc.position;
-				afterData.Rotation = tc.rotation;
-				afterData.Scale = tc.scale;
-				after.push_back(afterData);
-			}
-
-			EditorCommandManager::Enqueue(std::make_unique<TransformEntitiesCommand>(selection, before, after));
-
-		}
-
-		m_GizmoPreviouslyUsed = isUsing;
-	}
-
 }

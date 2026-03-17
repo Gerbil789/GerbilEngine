@@ -5,14 +5,15 @@ int main(int argc, char** argv)
 {
   Engine::Log::Initialize();
 
-#if defined(_MSC_VER)
-  LOG_TRACE("Compiler: MSVC {}.{} | C++ std: {}", _MSC_VER / 100, _MSC_VER % 100, _MSVC_LANG);
-#endif
+//#if defined(_MSC_VER)
+//  LOG_TRACE("Compiler: MSVC {}.{} | C++ std: {}", _MSC_VER / 100, _MSC_VER % 100, _MSVC_LANG);
+//#endif
 
   try
   {
     //ENGINE_PROFILE_BEGIN("Editor initialization", "profile_init.json");
     auto app = Editor::EditorApp({ argc, argv });
+    LOG_INFO("--- Editor initialization complete ---");
     //ENGINE_PROFILE_END();
 
     //ENGINE_PROFILE_BEGIN("Editor runtime", "profile_runtime.json");

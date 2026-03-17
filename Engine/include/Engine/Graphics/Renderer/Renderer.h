@@ -1,14 +1,15 @@
 #pragma once
 
 #include "Engine/Core/API.h"
-#include "Engine/Scene/Scene.h"
-#include "Engine/Graphics/Camera.h"
 #include "Engine/Graphics/RenderPass/RenderPass.h"
 #include "Engine/Graphics/Renderer/RenderContext.h"
 #include <webgpu/webgpu.hpp>
 
 namespace Engine
 {
+	class Camera;
+	class Scene;
+
 	class ENGINE_API Renderer
 	{
 	public:

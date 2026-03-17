@@ -78,7 +78,7 @@ namespace Engine
 			throw std::runtime_error("Could not create GLFW window!");
 		}
 
-		m_Data.window = this;
+		m_Data.self = this;
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 
 		SetEventCallbacks();
@@ -132,6 +132,18 @@ namespace Engine
 		return m_Mode;
 	}
 
+	void Window::ToggleFullscreen()
+	{
+		if (m_Mode == WindowMode::BorderlessFullscreen)
+		{
+			SetMode(WindowMode::Windowed);
+		}
+		else
+		{
+			SetMode(WindowMode::BorderlessFullscreen);
+		}
+	}
+
 	void Window::SetEventCallbacks()
 	{
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
@@ -140,8 +152,7 @@ namespace Engine
 				data.width = width;
 				data.height = height;
 
-				Window* self = static_cast<Window*>(data.window);
-				self->ConfigureSurface(width, height);
+				data.self->ConfigureSurface(width, height);
 
 				WindowResizeEvent event(width, height);
 				data.callback(event);
@@ -162,6 +173,11 @@ namespace Engine
 				{
 				case GLFW_PRESS:
 				{
+					if (key == GLFW_KEY_F11)
+					{
+						data.self->ToggleFullscreen();
+					}
+
 					KeyPressedEvent event(key, 0);
 					data.callback(event);
 					break;
@@ -229,8 +245,7 @@ namespace Engine
 		glfwSetWindowIconifyCallback(m_Window, [](GLFWwindow* window, int iconified)
 			{
 				Window::WindowData& data = *(Window::WindowData*)glfwGetWindowUserPointer(window);
-				Window* self = static_cast<Window*>(data.window);
-				self->m_Minimized = iconified != 0;
+				data.self->m_Minimized = iconified != 0;
 			});
 	}
 
@@ -251,14 +266,14 @@ namespace Engine
 		m_Surface.configure(config);
 	}
 
-	void Window::SetWindowIcon(const std::filesystem::path& iconPath)
+	void Window::SetWindowIcon(const std::filesystem::path& path)
 	{
 		int iconWidth, iconHeight, channels;
-		unsigned char* iconPixels = stbi_load(iconPath.string().c_str(), &iconWidth, &iconHeight, &channels, STBI_rgb_alpha);
+		unsigned char* iconPixels = stbi_load(path.string().c_str(), &iconWidth, &iconHeight, &channels, STBI_rgb_alpha);
 
 		if (!iconPixels)
 		{
-			LOG_ERROR("Failed to load icon from path: {}", iconPath);
+			LOG_ERROR("Failed to load icon from path: {}", path);
 			return;
 		}
 

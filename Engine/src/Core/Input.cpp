@@ -1,9 +1,9 @@
 #include "enginepch.h"
 #include "Engine/Core/Input.h"
-#include "Engine/Event/Event.h"
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Event/WindowEvent.h"
+#include "Engine/Event/EventBus.h"
 #include <GLFW/glfw3.h>
 
 namespace Engine::Input
@@ -26,48 +26,31 @@ namespace Engine::Input
 	void SetActiveWindow(GLFWwindow& window)
 	{
 		s_ActiveWindow = &window;
-	}
-
-	void Update()
-	{
-		for (auto& [window, state] : s_States)
-		{
-			state.KeyPressed.fill(false);
-			state.KeyReleased.fill(false);
-		}
-
-		glfwPollEvents();
-	}
-
-	void OnEvent(Event& e)
-	{
-		if (!s_ActiveWindow) return;
-
 		auto& state = s_States[s_ActiveWindow];
 
-		Engine::EventDispatcher dispatcher(e);
+		//TODO: subscribe only once, not every time we set active window
 
-		dispatcher.Dispatch<Engine::KeyPressedEvent>([&state](auto& e)
+		EventBus::Get().Subscribe<KeyPressedEvent>([&state](auto& e) 
 			{
 				int key = static_cast<int>(e.GetKey());
 				if (!state.KeyDown[key]) state.KeyPressed[key] = true;
 				state.KeyDown[key] = true;
 			});
 
-		dispatcher.Dispatch<Engine::KeyReleasedEvent>([&state](auto& e)
+		EventBus::Get().Subscribe<KeyReleasedEvent>([&state](auto& e)
 			{
 				int key = static_cast<int>(e.GetKey());
 				state.KeyDown[key] = false;
 				state.KeyReleased[key] = true;
 			});
 
-		dispatcher.Dispatch<Engine::MouseButtonPressedEvent>([&state](auto& e)
+		EventBus::Get().Subscribe<MouseButtonPressedEvent>([&state](auto& e)
 			{
 				int button = static_cast<int>(e.GetMouseButton());
 				state.MouseDown[button] = true;
 			});
 
-		dispatcher.Dispatch<Engine::MouseButtonReleasedEvent>([&state](auto& e)
+		EventBus::Get().Subscribe<MouseButtonReleasedEvent>([&state](auto& e)
 			{
 				int button = static_cast<int>(e.GetMouseButton());
 				state.MouseDown[button] = false;
@@ -80,6 +63,17 @@ namespace Engine::Input
 		//	if (ev.IsFocused())
 		//		s_ActiveWindow = ev.GetWindow();
 		//}
+	}
+
+	void Update()
+	{
+		for (auto& [window, state] : s_States)
+		{
+			state.KeyPressed.fill(false);
+			state.KeyReleased.fill(false);
+		}
+
+		glfwPollEvents();
 	}
 
 	bool IsKeyDown(KeyCode key)

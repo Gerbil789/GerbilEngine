@@ -1,5 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
+#include "Engine/Scene/Scene.h"
+#include "Engine/Graphics/Camera.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Graphics/Renderer/DrawList.h"

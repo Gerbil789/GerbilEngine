@@ -11,7 +11,7 @@ namespace Engine
 	std::string ENGINE_API OpenFile();
 	std::string	ENGINE_API SaveFile();
 
-	std::string ENGINE_API OpenDirectory();
+	std::filesystem::path ENGINE_API OpenDirectory();
 
 	void ENGINE_API OpenFileExplorer(const std::filesystem::path& path);
 }

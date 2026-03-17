@@ -105,7 +105,7 @@ namespace Editor
 	InspectorWindow m_InspectorWindow;
 	StatisticsWindow m_StatisticsWindow;
 
-	void EditorWindowManager::Initialize(Engine::Window& window)
+	void EditorWindowManager::Initialize(const Engine::Window& window)
 	{
 		m_Surface = *static_cast<wgpu::Surface*>(window.GetSurface());
 
@@ -150,7 +150,7 @@ namespace Editor
 		ImGui::DestroyContext();
 	}
 
-	void EditorWindowManager::OnUpdate()
+	void EditorWindowManager::Update()
 	{
 		BeginFrame();
 
@@ -170,10 +170,10 @@ namespace Editor
 		EndFrame();
 	}
 
-	void EditorWindowManager::OnEvent(Engine::Event& e)
-	{
-		m_ViewportWindow.OnEvent(e);
-	}
+	//void EditorWindowManager::OnEvent(Engine::Event& e)
+	//{
+	//	m_ViewportWindow.OnEvent(e);
+	//}
 
 	void EditorWindowManager::ResetLayout()
 	{

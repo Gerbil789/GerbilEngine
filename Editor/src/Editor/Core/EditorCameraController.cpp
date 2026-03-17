@@ -3,31 +3,37 @@
 #include "Engine/Scene/Entity.h"
 #include "Editor/Core/EditorSelection.h"
 #include "Engine/Scene/Components.h"
+#include "Engine/Event/EventBus.h"
 
 namespace Editor
 {
-	using namespace Engine;
-
-	void EditorCameraController::SetViewportSize(const glm::vec2& size)
+	namespace
 	{
-		m_Camera.SetAspectRatio(size.x / size.y);
+		EditorCameraController* s_Controller = nullptr;
 	}
 
-	void EditorCameraController::OnEvent(Event& e)
-	{
-		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<KeyPressedEvent>([this](auto e) {OnKeyPressed(e); });
-		dispatcher.Dispatch<MouseScrolledEvent>([this](auto e) {OnMouseScroll(e); });
-		dispatcher.Dispatch<MouseButtonPressedEvent>([this](auto e) {OnMouseButtonPressed(e); });
-		dispatcher.Dispatch<MouseButtonReleasedEvent>([this](auto e) {OnMouseButtonReleased(e); });
-		dispatcher.Dispatch<MouseMovedEvent>([this](auto e) {OnMouseMoved(e); });
+	EditorCameraController& GetCameraController() {
+		return *s_Controller;
 	}
 
-	bool EditorCameraController::OnKeyPressed(KeyPressedEvent& e)
+	void SetCameraController(EditorCameraController* controller) {
+		s_Controller = controller;
+	}
+
+	EditorCameraController::EditorCameraController(Engine::Camera* camera) : m_Camera(camera)
 	{
-		if(e.GetKey() == Engine::KeyCode::F) //Focus
+		Engine::EventBus::Get().Subscribe<Engine::KeyPressedEvent>([this](auto e) {OnKeyPressed(e); });
+		Engine::EventBus::Get().Subscribe<Engine::MouseScrolledEvent>([this](auto e) {OnMouseScroll(e); });
+		Engine::EventBus::Get().Subscribe<Engine::MouseButtonPressedEvent>([this](auto e) {OnMouseButtonPressed(e); });
+		Engine::EventBus::Get().Subscribe<Engine::MouseButtonReleasedEvent>([this](auto e) {OnMouseButtonReleased(e); });
+		Engine::EventBus::Get().Subscribe<Engine::MouseMovedEvent>([this](auto e) {OnMouseMoved(e); });
+	}
+
+	bool EditorCameraController::OnKeyPressed(Engine::KeyPressedEvent& e)
+	{
+		if (e.GetKey() == Engine::KeyCode::F) //Focus
 		{
-			if(EditorSelection::Entities().Empty())
+			if (EditorSelection::Entities().Empty())
 			{
 				return false;
 			}
@@ -35,8 +41,8 @@ namespace Editor
 			auto entity = EditorSelection::Entities().GetPrimary();
 			if (!entity) return false; //TODO: must return bool?
 
-			glm::vec3 focusPoint = entity.Get<TransformComponent>().position;
-			FocusOnPoint(focusPoint); //TODO: does this even work? xd
+			glm::vec3 focusPoint = entity.Get<Engine::TransformComponent>().position;
+			FocusOnPoint(focusPoint);
 		}
 
 		return false;
@@ -44,30 +50,30 @@ namespace Editor
 
 
 
-	bool EditorCameraController::OnMouseScroll(MouseScrolledEvent& e)
+	bool EditorCameraController::OnMouseScroll(Engine::MouseScrolledEvent& e)
 	{
 		float delta = e.GetYOffset() * m_ScrollSensitivity;
-		glm::vec3 position = m_Camera.GetPosition();
-		m_Camera.SetPosition(position + m_Camera.GetForward() * delta * m_ScrollSensitivity);
+		glm::vec3 position = m_Camera->GetPosition();
+		m_Camera->SetPosition(position + m_Camera->GetForward() * delta * m_ScrollSensitivity);
 		return false;
 	}
 
-	bool EditorCameraController::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+	bool EditorCameraController::OnMouseButtonPressed(Engine::MouseButtonPressedEvent& e)
 	{
-		if(e.GetMouseButton() == Engine::MouseCode::ButtonRight)
+		if (e.GetMouseButton() == Engine::MouseCode::ButtonRight)
 		{
 			m_RotateDragging = true;
-			m_StartMousePosition = Input::GetMousePosition();
+			m_StartMousePosition = Engine::Input::GetMousePosition();
 		}
 		else if (e.GetMouseButton() == Engine::MouseCode::ButtonMiddle)
 		{
 			m_PanDragging = true;
-			m_StartMousePosition = Input::GetMousePosition();
+			m_StartMousePosition = Engine::Input::GetMousePosition();
 		}
 		return false;
 	}
 
-	bool EditorCameraController::OnMouseButtonReleased(MouseButtonReleasedEvent& e)
+	bool EditorCameraController::OnMouseButtonReleased(Engine::MouseButtonReleasedEvent& e)
 	{
 		if (e.GetMouseButton() == Engine::MouseCode::ButtonRight)
 		{
@@ -80,7 +86,7 @@ namespace Editor
 		return false;
 	}
 
-	bool EditorCameraController::OnMouseMoved(MouseMovedEvent& e)
+	bool EditorCameraController::OnMouseMoved(Engine::MouseMovedEvent& e)
 	{
 		if (!m_RotateDragging && !m_PanDragging) return false;
 
@@ -90,29 +96,26 @@ namespace Editor
 
 		if (m_RotateDragging)
 		{
-			float yaw = m_Camera.GetYaw() + delta.x;
-			float pitch = m_Camera.GetPitch() + delta.y;
-			m_Camera.SetRotation(pitch, yaw);
+			float yaw = m_Camera->GetYaw() + delta.x;
+			float pitch = m_Camera->GetPitch() + delta.y;
+			m_Camera->SetRotation(pitch, yaw);
 
 		}
 		else if (m_PanDragging)
 		{
-			glm::vec3 position = m_Camera.GetPosition();
-			glm::vec3 right = m_Camera.GetRight();
-			glm::vec3 up = m_Camera.GetUp();
+			glm::vec3 position = m_Camera->GetPosition();
+			glm::vec3 right = m_Camera->GetRight();
+			glm::vec3 up = m_Camera->GetUp();
 			position -= right * delta.x * m_PanSpeed;
 			position += up * delta.y * m_PanSpeed;
-			m_Camera.SetPosition(position);
+			m_Camera->SetPosition(position);
 		}
 		return false;
 	}
 
 	void EditorCameraController::FocusOnPoint(const glm::vec3& point, float distance)
 	{
-		glm::vec3 position = point - m_Camera.GetForward() * distance;
-		m_Camera.SetPosition(position);
+		glm::vec3 position = point - m_Camera->GetForward() * distance;
+		m_Camera->SetPosition(position);
 	}
-
 }
-
-

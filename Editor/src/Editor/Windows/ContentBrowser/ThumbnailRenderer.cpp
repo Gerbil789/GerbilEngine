@@ -5,6 +5,8 @@
 #include "Engine/Graphics/RenderPass/OpaquePass.h"
 #include "Engine/Graphics/RenderPass/BackgroundPass.h"
 #include "Engine/Graphics/Material.h"
+#include "Engine/Scene/Scene.h"
+#include "Engine/Graphics/Camera.h"
 
 namespace Editor
 {

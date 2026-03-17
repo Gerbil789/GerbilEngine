@@ -7,6 +7,7 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Script/Script.h"
+#include "Engine/Graphics/Camera.h"
 
 namespace Engine
 {
@@ -101,9 +102,9 @@ namespace Engine
 
 	void GameInstance::OnEvent(Engine::Event& event)
 	{
-		Engine::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Engine::WindowCloseEvent>([this](auto&) {Close(); });
-		dispatcher.Dispatch<Engine::WindowResizeEvent>([this](auto& e) {OnWindowResize(e); });
+		//Engine::EventDispatcher dispatcher(event);
+		//dispatcher.Dispatch<Engine::WindowCloseEvent>([this](auto&) {Close(); });
+		//dispatcher.Dispatch<Engine::WindowResizeEvent>([this](auto& e) {OnWindowResize(e); });
 	}
 
 	void GameInstance::Close()

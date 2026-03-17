@@ -7,6 +7,8 @@
 
 namespace Editor
 {
+	static ThumbnailRenderer* renderer = nullptr;
+
 	inline Icon GetIconForExtension(const std::string& ext)
 	{
 		static const std::unordered_map<std::string, Icon> map = {
@@ -60,9 +62,12 @@ namespace Editor
 			}
 			else if (ext == ".mat")
 			{
-				auto thumbnailRenderer = ThumbnailRenderer();
-				thumbnailRenderer.Initialize();
-				Thumbnail = thumbnailRenderer.Render(Engine::AssetManager::GetAsset<Engine::Material>(uuid));
+				if(!renderer)
+				{
+					renderer = new ThumbnailRenderer();
+					renderer->Initialize();
+				}
+				Thumbnail = renderer->Render(Engine::AssetManager::GetAsset<Engine::Material>(uuid));
 			}
 		}
 	};

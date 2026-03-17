@@ -3,7 +3,6 @@
 #include "Engine/Core/UUID.h"
 #include "Engine/Core/GameContext.h"
 
-
 #ifdef ENGINE_PLATFORM_WINDOWS
 #ifdef GAME_BUILD_DLL
 #define GAME_API  __declspec(dllexport)
@@ -102,7 +101,6 @@ namespace Engine
 		std::unordered_map<std::string, ScriptDescriptor> m_Registry;
   };
 }
-
 
 extern "C"
 {

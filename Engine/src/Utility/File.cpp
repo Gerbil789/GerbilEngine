@@ -29,10 +29,10 @@ namespace Engine
 		return result;
 	}
 
-	std::string OpenDirectory()
+	std::filesystem::path OpenDirectory()
 	{
 		auto result = pfd::select_folder("Select Directory", ".").result();
-		return result.empty() ? "" : result;
+		return result.empty() ? std::filesystem::path() : std::filesystem::path(result);
 	}
 
 	void OpenFileExplorer(const std::filesystem::path& path)

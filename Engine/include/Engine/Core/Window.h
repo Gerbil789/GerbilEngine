@@ -30,6 +30,7 @@ namespace Engine
 	class ENGINE_API Window
 	{
 	public:
+		Window() = default;
 		Window(const WindowSpecification& specification);
 		~Window();
 
@@ -42,13 +43,13 @@ namespace Engine
 
 		void SetMode(WindowMode mode);
 		WindowMode GetMode() const;
-
+		void ToggleFullscreen();
 		bool IsMinimized() const { return m_Minimized; }
 
 	private:
 		void SetEventCallbacks();
 		void ConfigureSurface(uint32_t width, uint32_t height);
-		void SetWindowIcon(const std::filesystem::path& iconPath);
+		void SetWindowIcon(const std::filesystem::path& path);
 
 	private:
 		GLFWwindow* m_Window = nullptr;
@@ -64,7 +65,7 @@ namespace Engine
 		{
 			uint32_t width = 1600, height = 900;
 			std::function<void(Event&)> callback;
-			Window* window = nullptr;
+			Window* self = nullptr;
 		} m_Data;
 	};
 } 
