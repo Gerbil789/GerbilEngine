@@ -24,11 +24,14 @@
 #include "Editor/Core/EditorRuntime.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Event/EventBus.h"
+#include "Editor/Utility/RenderDoc.h"
 
 namespace Editor
 {
 	EditorApp::EditorApp(const ApplicationCommandLineArgs& args)
 	{
+		RenderDoc::Initialize();
+
 		std::filesystem::path projectPath = (args.Count > 1) ? std::filesystem::path(args[1]) : Engine::OpenDirectory();
 		EditorSelection::SetProject(Project::Load(projectPath));  //TODO: why editor selection owns project????
 		std::filesystem::current_path(GetExecutableDir());

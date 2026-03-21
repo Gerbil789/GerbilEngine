@@ -9,11 +9,6 @@
 
 namespace Engine
 {
-	Renderer::Renderer()
-	{
-		Resize(1, 1);
-	}
-
 	Renderer::~Renderer()
 	{
 		for (auto pass : m_Passes)
@@ -55,20 +50,20 @@ namespace Engine
 
 		// Color
 		{
-			wgpu::TextureDescriptor color{};
-			color.label = { "RendererColorTexture", WGPU_STRLEN };
-			color.dimension = wgpu::TextureDimension::_2D;
-			color.format = wgpu::TextureFormat::RGBA8Unorm;
-			color.size = { width, height, 1 };
-			color.mipLevelCount = 1;
-			color.sampleCount = 1;
-			color.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
-			wgpu::Texture colorTexture = GraphicsContext::GetDevice().createTexture(color);
+			wgpu::TextureDescriptor desc{};
+			desc.label = { "RendererColorTexture", WGPU_STRLEN };
+			desc.dimension = wgpu::TextureDimension::_2D;
+			desc.format = wgpu::TextureFormat::RGBA8Unorm;
+			desc.size = { width, height, 1 };
+			desc.mipLevelCount = 1;
+			desc.sampleCount = 1;
+			desc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
+			wgpu::Texture colorTexture = GraphicsContext::GetDevice().createTexture(desc);
 
 			wgpu::TextureViewDescriptor view{};
 			view.label = { "RendererColorTextureView", WGPU_STRLEN };
 			view.dimension = wgpu::TextureViewDimension::_2D;
-			view.format = color.format;
+			view.format = desc.format;
 			view.baseMipLevel = 0;
 			view.mipLevelCount = 1;
 			view.baseArrayLayer = 0;
@@ -78,17 +73,17 @@ namespace Engine
 
 		// Depth
 		{
-			wgpu::TextureDescriptor depth;
-			depth.label = { "RendererDepthTextureView", WGPU_STRLEN };
-			depth.dimension = wgpu::TextureDimension::_2D;
-			depth.format = wgpu::TextureFormat::Depth24Plus;
-			depth.mipLevelCount = 1;
-			depth.sampleCount = 1;
-			depth.size = { width, height, 1 };
-			depth.usage = wgpu::TextureUsage::RenderAttachment;
-			depth.viewFormatCount = 1;
-			depth.viewFormats = &wgpu::TextureFormat::Depth24Plus;
-			wgpu::Texture depthTexture = GraphicsContext::GetDevice().createTexture(depth);
+			wgpu::TextureDescriptor desc;
+			desc.label = { "RendererDepthTextureView", WGPU_STRLEN };
+			desc.dimension = wgpu::TextureDimension::_2D;
+			desc.format = wgpu::TextureFormat::Depth24Plus;
+			desc.mipLevelCount = 1;
+			desc.sampleCount = 1;
+			desc.size = { width, height, 1 };
+			desc.usage = wgpu::TextureUsage::RenderAttachment;
+			desc.viewFormatCount = 1;
+			desc.viewFormats = &wgpu::TextureFormat::Depth24Plus;
+			wgpu::Texture depthTexture = GraphicsContext::GetDevice().createTexture(desc);
 
 			wgpu::TextureViewDescriptor view;
 			view.aspect = wgpu::TextureAspect::DepthOnly;

@@ -29,6 +29,7 @@ externalincludedirs
 	"%{wks.location}/vendor/imgui",
 	"%{wks.location}/vendor/ImGuizmo",
 	"%{wks.location}/vendor/yaml-cpp/include",
+	"%{wks.location}/vendor/renderdoc"
 }
 
 links
@@ -48,7 +49,8 @@ libdirs
 postbuildcommands 
 {
 	"{COPY} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
-	"{COPY} %{wks.location}/Resources %{cfg.targetdir}/Resources"
+	"{COPY} %{wks.location}/Resources %{cfg.targetdir}/Resources",
+	"{COPY} %{wks.location}/vendor/renderdoc/renderdoc.dll %{cfg.targetdir}"
 }
 
 postbuildmessage "Copying dependencies..."

@@ -6,6 +6,8 @@
 #include "Engine/Graphics/Texture.h"
 #include "Engine/Core/Engine.h"
 
+#include "Engine/Graphics/RenderPass/ShadowPass.h"
+
 namespace Engine::RenderGlobals
 {
 	// Model bind group
@@ -18,12 +20,20 @@ namespace Engine::RenderGlobals
 	static wgpu::BindGroupLayout s_FrameBindGroupLayout = nullptr;
 	static wgpu::BindGroup s_FrameBindGroup = nullptr;
 	static wgpu::Buffer s_FrameUniformBuffer = nullptr;
+	static wgpu::Buffer s_ShadowUniformBuffer = nullptr;
+
 
 	struct alignas(16) ModelUniforms
 	{
 		glm::mat4 modelMatrix;
 	};
 	static_assert(sizeof(ModelUniforms) % 16 == 0);
+
+	struct alignas(16) ShadowUniforms
+	{
+		glm::mat4 lightViewProj;
+	};
+	static_assert(sizeof(ShadowUniforms) % 16 == 0);
 
 	static uint32_t CeilToNextMultiple(uint32_t value, uint32_t step)
 	{
@@ -81,7 +91,8 @@ namespace Engine::RenderGlobals
 
 		// Frame 
 		{
-			wgpu::BindGroupLayoutEntry entries[13]{};
+			std::array<wgpu::BindGroupLayoutEntry, 16> entries;
+			//wgpu::BindGroupLayoutEntry entries[16]{};
 
 			// Frame uniforms
 			entries[0].binding = 0;
@@ -125,10 +136,30 @@ namespace Engine::RenderGlobals
 				entries[4 + i].texture.multisampled = false;
 			}
 
+			// Shadow map texture
+			entries[13].binding = 13;
+			entries[13].visibility = wgpu::ShaderStage::Fragment;
+			entries[13].texture.sampleType = wgpu::TextureSampleType::Depth;
+			entries[13].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+			entries[13].texture.multisampled = false;
+
+			// Shadow map sampler
+			entries[14].binding = 14;
+			entries[14].visibility = wgpu::ShaderStage::Fragment;
+			entries[14].sampler.type = wgpu::SamplerBindingType::Comparison;
+
+			// Shadow uniforms
+			entries[15].binding = 15;
+			entries[15].visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
+			entries[15].buffer.type = wgpu::BufferBindingType::Uniform;
+			entries[15].buffer.minBindingSize = sizeof(ShadowUniforms);
+
+
+
 			wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc{};
 			bindGroupLayoutDesc.label = { "FrameBindGroupLayout", WGPU_STRLEN };
-			bindGroupLayoutDesc.entryCount = 13;
-			bindGroupLayoutDesc.entries = entries;
+			bindGroupLayoutDesc.entryCount = entries.size();
+			bindGroupLayoutDesc.entries = entries.data();
 
 			s_FrameBindGroupLayout = device.createBindGroupLayout(bindGroupLayoutDesc);
 
@@ -139,7 +170,7 @@ namespace Engine::RenderGlobals
 
 			s_FrameUniformBuffer = device.createBuffer(bufferDesc);
 
-			wgpu::BindGroupEntry bgEntries[13]{};
+			wgpu::BindGroupEntry bgEntries[16]{};
 
 			bgEntries[0].binding = 0;
 			bgEntries[0].buffer = s_FrameUniformBuffer;
@@ -181,11 +212,42 @@ namespace Engine::RenderGlobals
 				bgEntries[4 + i].textureView = tex->GetTextureView();
 			}
 
+			ShadowPass::Initialize(); //TODO: this is tmp
+
+			bgEntries[13].binding = 13;
+			bgEntries[13].textureView = ShadowPass::GetShadowMap();
+
+			wgpu::SamplerDescriptor desc;
+			desc.label = { "ShadowSampler", WGPU_STRLEN };
+			desc.compare = wgpu::CompareFunction::LessEqual;
+			desc.minFilter = wgpu::FilterMode::Linear;
+			desc.magFilter = wgpu::FilterMode::Linear;
+			desc.maxAnisotropy = 1;
+
+			wgpu::Sampler shadowSampler = device.createSampler(desc);
+
+			bgEntries[14].binding = 14;
+			bgEntries[14].sampler = shadowSampler;
+
+			ShadowUniforms shadowUniforms;
+			shadowUniforms.lightViewProj = glm::mat4(1.0f);
+
+			wgpu::BufferDescriptor shadowBufferDesc{};
+			shadowBufferDesc.label = { "ShadowUniformBuffer", WGPU_STRLEN };
+			shadowBufferDesc.size = sizeof(ShadowUniforms);
+			shadowBufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
+			s_ShadowUniformBuffer = device.createBuffer(shadowBufferDesc);
+
+			bgEntries[15].binding = 15;
+			bgEntries[15].buffer = s_ShadowUniformBuffer;
+			bgEntries[15].offset = 0;
+			bgEntries[15].size = sizeof(ShadowUniforms);
+
 
 			wgpu::BindGroupDescriptor bindGroupDesc{};
 			bindGroupDesc.label = { "FrameBindGroup", WGPU_STRLEN };
 			bindGroupDesc.layout = s_FrameBindGroupLayout;
-			bindGroupDesc.entryCount = 13;
+			bindGroupDesc.entryCount = 16;
 			bindGroupDesc.entries = bgEntries;
 			s_FrameBindGroup = device.createBindGroup(bindGroupDesc);
 		}

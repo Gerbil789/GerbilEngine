@@ -5,6 +5,7 @@
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Scene/Components.h"
 
+
 namespace Engine
 {
 	void OpaquePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)

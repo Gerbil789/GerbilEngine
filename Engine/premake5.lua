@@ -34,7 +34,8 @@ externalincludedirs
 	"%{wks.location}/vendor/tinygltf",
 	"%{wks.location}/vendor/portable-file-dialogs",
 	"%{wks.location}/vendor/yaml-cpp/include",
-	"%{wks.location}/vendor/miniaudio"
+	"%{wks.location}/vendor/miniaudio",
+	"%{wks.location}/vendor/renderdoc"
 }
 
 links

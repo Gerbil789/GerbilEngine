@@ -29,9 +29,6 @@ namespace Engine
 			//return device.createSampler(desc);
 
 
-
-
-
 			wgpu::BindGroupEntry entry{};
 			entry.binding = 0;
 			entry.sampler = SamplerPool::GetSampler(TextureFilter::Point, TextureWrap::Clamp);

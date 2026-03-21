@@ -5,7 +5,7 @@
 My custom WebGPU based game engine
 
 #### Prerequisites
- - Windows machine (linux support is comming)
+ - Windows machine
  - Visual Studio 2022 (C++ 23)
 
 #### Setup
@@ -39,7 +39,7 @@ My custom WebGPU based game engine
 | **[yaml-cpp](https://github.com/jbeder/yaml-cpp)**                               | YAML serialization							  |
 | **[miniaudio](https://github.com/mackron/miniaudio)**                            | Audio playback    							  |
 | **[portable-file-dialogs](https://github.com/samhocevar/portable-file-dialogs)** | Native file dialogs              |
-
+| **[RenderDoc](https://github.com/baldurk/renderdoc)** 													 | Graphics debbuger	              |
 
 ---
 

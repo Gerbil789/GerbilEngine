@@ -10,40 +10,40 @@
 
 namespace Editor
 {
-	Engine::Renderer* m_Renderer = nullptr;
-	Engine::Entity m_Entity;
-	Engine::Mesh* m_PreviewMesh = nullptr;
+	namespace
+	{
+		Engine::Entity m_Entity;
+		Engine::Scene m_Scene;
+		Engine::Camera* m_Camera = nullptr; //TODO: dont heap allocated the camera, but now it must be because skybox initialization inside the camera, fix it when skybox/environment is improved
+	}
 
 	void ThumbnailRenderer::Initialize()
 	{
-		Engine::Scene* scene = new Engine::Scene();
-		Engine::Camera* camera = new Engine::Camera();
-		camera->SetBackground(Engine::Camera::Background::Color);
-		camera->SetAspectRatio(1.0f);
-		camera->SetPosition({ 0.0f, 0.0f, -3.0f });
-		camera->SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+		m_Camera = new Engine::Camera();
+		m_Camera->SetBackground(Engine::Camera::Background::Color);
+		m_Camera->SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+		m_Camera->SetAspectRatio(1.0f);
+		m_Camera->SetPosition({ 0.0f, 0.0f, 3.0f });
+		m_Camera->SetRotation({ 0.0f, 180.0f, 0.0f });
 
-		m_PreviewMesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/sphere.glb");
-
-		m_Entity = scene->CreateEntity("PreviewEntity");
+		m_Entity = m_Scene.CreateEntity("PreviewEntity");
 		auto& mc = m_Entity.Add<Engine::MeshComponent>();
-		mc.mesh = m_PreviewMesh;
-
-		m_Entity.Get<Engine::TransformComponent>().rotation.y = 90.0f;
-
-		m_Renderer = new Engine::Renderer;
-		m_Renderer->Resize(64, 64);
-		m_Renderer->AddPass(new Engine::BackgroundPass());
-		m_Renderer->AddPass(new Engine::OpaquePass());
-		m_Renderer->SetCamera(camera);
-		m_Renderer->SetScene(scene);
+		mc.mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/sphere.glb");
 	}
 
 	wgpu::TextureView ThumbnailRenderer::Render(Engine::Material* material)
 	{
 		m_Entity.Get<Engine::MeshComponent>().SetMaterial(0, material);
-		m_Renderer->RenderScene();
 
-		return m_Renderer->GetTextureView();
+		Engine::Renderer renderer;
+
+		renderer.Resize(64, 64);
+		renderer.AddPass(new Engine::BackgroundPass());
+		renderer.AddPass(new Engine::OpaquePass());
+		renderer.SetCamera(m_Camera);
+		renderer.SetScene(&m_Scene);
+		renderer.RenderScene();
+
+		return renderer.GetTextureView();
 	}
 }

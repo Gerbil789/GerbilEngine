@@ -13,7 +13,6 @@ namespace Engine
 	class ENGINE_API Renderer
 	{
 	public:
-		Renderer();
 		~Renderer();
 
 		void AddPass(RenderPass* pass);

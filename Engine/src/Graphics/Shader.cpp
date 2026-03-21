@@ -39,7 +39,7 @@ namespace Engine
 		vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
 
 		wgpu::RenderPipelineDescriptor pipelineDesc;
-		std::string pipelineLabel = m_Name + "ShaderPipeline";
+		std::string pipelineLabel = std::format("{} Shader Pipeline", m_Name);
 		pipelineDesc.label = { pipelineLabel.c_str(), WGPU_STRLEN};
 
 		pipelineDesc.vertex.bufferCount = 1;

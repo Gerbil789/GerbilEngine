@@ -15,6 +15,7 @@
 #include "Engine/Graphics/RenderPass/NormalPass.h"
 #include "Engine/Graphics/RenderPass/EntityIdPass.h"
 #include "Engine/Graphics/RenderPass/LightPass.h"
+#include "Engine/Graphics/RenderPass/ShadowPass.h"
 #include "Editor/Core/EditorCameraController.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Editor/Core/EditorRuntime.h"
@@ -23,6 +24,7 @@
 #include <glm/glm.hpp>
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
+
 
 namespace Editor
 {
@@ -44,6 +46,7 @@ namespace Editor
 		glm::mat4 m_InitialPrimaryWorld = glm::mat4(1.0f);
 	}
 
+
 	static ImGuizmo::OPERATION gizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
 	static Engine::EntityIdPass* s_EntityIdPass = nullptr;
@@ -51,6 +54,7 @@ namespace Editor
 	static Engine::WireframePass* s_WireframePass = nullptr;
 	static Engine::NormalPass* s_NormalPass = nullptr;
 	static Engine::LightPass* s_LightPass = nullptr;
+	static Engine::ShadowPass* s_ShadowPass = nullptr;
 
 	static Engine::Renderer* m_Renderer = nullptr;
 	static Engine::Camera* m_Camera = nullptr;
@@ -229,7 +233,7 @@ namespace Editor
 		ImGuizmo::SetGizmoSizeClipSpace(0.2f);
 
 		m_Renderer = new Engine::Renderer();
-
+		m_Renderer->Resize(1, 1);
 
 		m_Camera = new Engine::Camera();
 		m_Camera->SetBackground(Engine::Camera::Background::Skybox);
@@ -241,6 +245,9 @@ namespace Editor
 
 		m_Renderer->AddPass(new Engine::BackgroundPass());
 
+		s_ShadowPass = new Engine::ShadowPass();
+		m_Renderer->AddPass(s_ShadowPass);
+
 		s_OpaquePass = new Engine::OpaquePass();
 		m_Renderer->AddPass(s_OpaquePass);
 
@@ -250,6 +257,7 @@ namespace Editor
 		s_LightPass = new Engine::LightPass();
 		s_NormalPass = new Engine::NormalPass();
 		s_WireframePass = new Engine::WireframePass();
+
 
 		Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene* scene)
 			{
