@@ -25,6 +25,7 @@
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
 
+//TODO: clean up this file
 
 namespace Editor
 {
@@ -44,25 +45,24 @@ namespace Editor
 
 		std::unordered_map<Engine::Entity, glm::mat4> m_InitialWorldTransforms;
 		glm::mat4 m_InitialPrimaryWorld = glm::mat4(1.0f);
+
+		static ImGuizmo::OPERATION gizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+		static Engine::EntityIdPass* s_EntityIdPass = nullptr;
+		static Engine::OpaquePass* s_OpaquePass = nullptr;
+		static Engine::WireframePass* s_WireframePass = nullptr;
+		static Engine::NormalPass* s_NormalPass = nullptr;
+		static Engine::LightPass* s_LightPass = nullptr;
+		static Engine::ShadowPass* s_ShadowPass = nullptr;
+
+		static Engine::Renderer m_Renderer;
+		static Engine::Camera* m_Camera = nullptr;
+
+		static bool enableOpaquePass = true;
+		static bool enableNormalPass = false;
+		static bool enableWireframePass = false;
+		static bool enableLightPass = false;
 	}
-
-
-	static ImGuizmo::OPERATION gizmoType = ImGuizmo::OPERATION::TRANSLATE;
-
-	static Engine::EntityIdPass* s_EntityIdPass = nullptr;
-	static Engine::OpaquePass* s_OpaquePass = nullptr;
-	static Engine::WireframePass* s_WireframePass = nullptr;
-	static Engine::NormalPass* s_NormalPass = nullptr;
-	static Engine::LightPass* s_LightPass = nullptr;
-	static Engine::ShadowPass* s_ShadowPass = nullptr;
-
-	static Engine::Renderer* m_Renderer = nullptr;
-	static Engine::Camera* m_Camera = nullptr;
-
-	static bool enableOpaquePass = true;
-	static bool enableNormalPass = false;
-	static bool enableWireframePass = false;
-	static bool enableLightPass = false;
 
 	void UpdateViewportSize()
 	{
@@ -71,12 +71,11 @@ namespace Editor
 		if (newSize.x != m_ViewportSize.x || newSize.y != m_ViewportSize.y)
 		{
 			m_ViewportSize = { newSize.x, newSize.y };
-			//m_CameraController->SetViewportSize(m_ViewportSize);
 			m_Camera->SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
 
 			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
 			{
-				m_Renderer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+				m_Renderer.Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			}
 		}
 
@@ -230,29 +229,26 @@ namespace Editor
 	void ViewportWindow::Initialize()
 	{
 		ImGuizmo::AllowAxisFlip(false);
-		ImGuizmo::SetGizmoSizeClipSpace(0.2f);
-
-		m_Renderer = new Engine::Renderer();
-		m_Renderer->Resize(1, 1);
+		ImGuizmo::SetGizmoSizeClipSpace(0.15f);
 
 		m_Camera = new Engine::Camera();
 		m_Camera->SetBackground(Engine::Camera::Background::Skybox);
 		m_Camera->SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
 
-		SetCameraController(new EditorCameraController(m_Camera));
+		SetCameraController(new EditorCameraController(m_Camera)); //TODO: this api is weird, make controller static?
 
-		m_Renderer->SetCamera(m_Camera);
+		m_Renderer.SetCamera(m_Camera);
 
-		m_Renderer->AddPass(new Engine::BackgroundPass());
+		m_Renderer.AddPass(new Engine::BackgroundPass());
 
 		s_ShadowPass = new Engine::ShadowPass();
-		m_Renderer->AddPass(s_ShadowPass);
+		m_Renderer.AddPass(s_ShadowPass);
 
 		s_OpaquePass = new Engine::OpaquePass();
-		m_Renderer->AddPass(s_OpaquePass);
+		m_Renderer.AddPass(s_OpaquePass);
 
 		s_EntityIdPass = new Engine::EntityIdPass();
-		m_Renderer->AddPass(s_EntityIdPass);
+		m_Renderer.AddPass(s_EntityIdPass);
 
 		s_LightPass = new Engine::LightPass();
 		s_NormalPass = new Engine::NormalPass();
@@ -263,18 +259,18 @@ namespace Editor
 			{
 				m_Scene = scene;
 				EditorSelection::Entities().Clear();
-				m_Renderer->SetScene(m_Scene);
+				m_Renderer.SetScene(m_Scene);
 
 				if (EditorRuntime::GetState() == EditorState::Edit)
 				{
-					m_Renderer->SetCamera(m_Camera);
+					m_Renderer.SetCamera(m_Camera);
 				}
 				else if (EditorRuntime::GetState() == EditorState::Play)
 				{
 					auto cameraEntity = m_Scene->GetActiveCamera();
 					if (cameraEntity)
 					{
-						m_Renderer->SetCamera(cameraEntity.Get<Engine::CameraComponent>().camera);
+						m_Renderer.SetCamera(cameraEntity.Get<Engine::CameraComponent>().camera);
 					}
 				}
 
@@ -298,7 +294,7 @@ namespace Editor
 		m_ViewportFocused = ImGui::IsWindowFocused();
 
 		// Render scene
-		m_Renderer->RenderScene();
+		m_Renderer.RenderScene();
 
 		ImVec2 mousePos = ImGui::GetMousePos();
 		float mx = mousePos.x - m_ViewportBounds[0].x;
@@ -317,7 +313,7 @@ namespace Editor
 		ImVec2 viewportSize = ImVec2(m_ViewportSize.x, m_ViewportSize.y);
 		ImVec2 viewportMax = ImVec2(viewportMin.x + viewportSize.x, viewportMin.y + viewportSize.y);
 
-		ImGui::Image(static_cast<WGPUTextureView>(m_Renderer->GetTextureView()), viewportSize);
+		ImGui::Image(static_cast<WGPUTextureView>(m_Renderer.GetTextureView()), viewportSize);
 
 		DrawGizmos();
 
@@ -345,29 +341,28 @@ namespace Editor
 		{
 			if(ImGui::Checkbox("Opaque", &enableOpaquePass))
 			{
-				enableOpaquePass ? m_Renderer->AddPass(s_OpaquePass) : m_Renderer->RemovePass(s_OpaquePass);
+				enableOpaquePass ? m_Renderer.AddPass(s_OpaquePass) : m_Renderer.RemovePass(s_OpaquePass);
 			}
 
 			if (ImGui::Checkbox("Light", &enableLightPass))
 			{
-				enableLightPass ? m_Renderer->AddPass(s_LightPass) : m_Renderer->RemovePass(s_LightPass);
+				enableLightPass ? m_Renderer.AddPass(s_LightPass) : m_Renderer.RemovePass(s_LightPass);
 			}
 
 			if (ImGui::Checkbox("Normal", &enableNormalPass))
 			{
-				enableNormalPass ? m_Renderer->AddPass(s_NormalPass) : m_Renderer->RemovePass(s_NormalPass);
+				enableNormalPass ? m_Renderer.AddPass(s_NormalPass) : m_Renderer.RemovePass(s_NormalPass);
 			}
 
 			if (ImGui::Checkbox("Wireframe", &enableWireframePass))
 			{
-				enableWireframePass ? m_Renderer->AddPass(s_WireframePass) : m_Renderer->RemovePass(s_WireframePass);
+				enableWireframePass ? m_Renderer.AddPass(s_WireframePass) : m_Renderer.RemovePass(s_WireframePass);
 			}
 
 			ImGui::EndCombo();
 		}
 
 		ImGui::End();
-
 
 		if(Engine::Input::IsKeyPressedOnce(Engine::KeyCode::Q)) gizmoType = (ImGuizmo::OPERATION)0;
 		if(Engine::Input::IsKeyPressedOnce(Engine::KeyCode::W)) gizmoType = ImGuizmo::OPERATION::TRANSLATE;

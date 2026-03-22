@@ -29,11 +29,6 @@ namespace Engine::RenderGlobals
 	};
 	static_assert(sizeof(ModelUniforms) % 16 == 0);
 
-	struct alignas(16) ShadowUniforms
-	{
-		glm::mat4 lightViewProj;
-	};
-	static_assert(sizeof(ShadowUniforms) % 16 == 0);
 
 	static uint32_t CeilToNextMultiple(uint32_t value, uint32_t step)
 	{
@@ -220,8 +215,8 @@ namespace Engine::RenderGlobals
 			wgpu::SamplerDescriptor desc;
 			desc.label = { "ShadowSampler", WGPU_STRLEN };
 			desc.compare = wgpu::CompareFunction::LessEqual;
-			desc.minFilter = wgpu::FilterMode::Linear;
-			desc.magFilter = wgpu::FilterMode::Linear;
+			desc.minFilter = wgpu::FilterMode::Nearest;
+			desc.magFilter = wgpu::FilterMode::Nearest;
 			desc.maxAnisotropy = 1;
 
 			wgpu::Sampler shadowSampler = device.createSampler(desc);
@@ -267,6 +262,11 @@ namespace Engine::RenderGlobals
 	wgpu::Buffer GetFrameUniformBuffer()
 	{
 		return s_FrameUniformBuffer;
+	}
+
+	wgpu::Buffer GetShadowUniformBuffer()
+	{
+		return s_ShadowUniformBuffer;
 	}
 
 	wgpu::BindGroupLayout GetModelLayout()

@@ -2,7 +2,6 @@
 #include "Engine/Graphics/RenderPass/ShadowPass.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
-#include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Utility/File.h"
@@ -14,13 +13,8 @@ namespace Engine
 	{
 		wgpu::RenderPipeline m_ShadowPipeline;
 		wgpu::BindGroup m_BindGroup;
-		wgpu::Buffer m_UniformBuffer;
 		static wgpu::TextureView m_DepthTextureView;
-
-		struct ShadowUniforms
-		{
-			glm::mat4 lightViewProj;
-		};
+		static RenderGlobals::ShadowUniforms s_ShadowUniforms;
 	}
 
 	void ShadowPass::Initialize()
@@ -33,19 +27,20 @@ namespace Engine
 		textureDesc.mipLevelCount = 1;
 		textureDesc.sampleCount = 1;
 		textureDesc.size = { 1024, 1024, 1 };
-		textureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment;
+		textureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
 		textureDesc.viewFormatCount = 0;
 		textureDesc.viewFormats = nullptr;
 		wgpu::Texture texture = GraphicsContext::GetDevice().createTexture(textureDesc);
 
-		wgpu::TextureViewDescriptor viewDesc{};
+		wgpu::TextureViewDescriptor viewDesc;
 		viewDesc.format = format;
+		viewDesc.aspect = wgpu::TextureAspect::DepthOnly;
 		viewDesc.dimension = wgpu::TextureViewDimension::_2D;
 		viewDesc.baseMipLevel = 0;
 		viewDesc.mipLevelCount = 1;
 		viewDesc.baseArrayLayer = 0;
 		viewDesc.arrayLayerCount = 1;
-		viewDesc.aspect = wgpu::TextureAspect::All;
+
 		m_DepthTextureView = texture.createView(viewDesc);
 	}
 
@@ -74,18 +69,28 @@ namespace Engine
 	{
 		wgpu::ShaderModule shaderModule = CreateShaderModule();
 
-		std::array<wgpu::VertexAttribute, 1> vertexAttribs;
+		std::array<wgpu::VertexAttribute, 3> vertexAttribs;
 
 		// Position
 		vertexAttribs[0].shaderLocation = 0; // @location(0)
 		vertexAttribs[0].format = wgpu::VertexFormat::Float32x3;
 		vertexAttribs[0].offset = 0;
 
+		// Normal
+		vertexAttribs[1].shaderLocation = 1; // @location(1)
+		vertexAttribs[1].format = wgpu::VertexFormat::Float32x3;
+		vertexAttribs[1].offset = 3 * sizeof(float);
+
+		// UV
+		vertexAttribs[2].shaderLocation = 2; // @location(2)
+		vertexAttribs[2].format = wgpu::VertexFormat::Float32x2;
+		vertexAttribs[2].offset = 6 * sizeof(float);
+
 		wgpu::VertexBufferLayout vertexBufferLayout;
 
 		vertexBufferLayout.attributeCount = static_cast<uint32_t>(vertexAttribs.size());
 		vertexBufferLayout.attributes = vertexAttribs.data();
-		vertexBufferLayout.arrayStride = 3 * sizeof(float);
+		vertexBufferLayout.arrayStride = 8 * sizeof(float);
 		vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
 
 
@@ -111,8 +116,7 @@ namespace Engine
 		blendState.alpha.dstFactor = wgpu::BlendFactor::One;
 		blendState.alpha.operation = wgpu::BlendOperation::Add;
 
-
-		pipelineDesc.fragment = nullptr; // no fragment shader, no color output
+		pipelineDesc.fragment = nullptr; // no fragment shader
 
 		wgpu::DepthStencilState depthStencilState;
 		depthStencilState.depthCompare = wgpu::CompareFunction::Less;
@@ -120,11 +124,9 @@ namespace Engine
 		depthStencilState.format = wgpu::TextureFormat::Depth24Plus;
 		depthStencilState.stencilReadMask = 0xFFFFFFFF;
 		depthStencilState.stencilWriteMask = 0xFFFFFFFF;
-		
-		// I want to see how it looks when this is disabled, i will enable it later
-		//depthStencilState.depthBias = 2;
-		//depthStencilState.depthBiasSlopeScale = 2.0f;
-		//depthStencilState.depthBiasClamp = 0.0f;
+		depthStencilState.depthBias = 2;
+		depthStencilState.depthBiasSlopeScale = 2.0f;
+		depthStencilState.depthBiasClamp = 0.0f;
 
 		pipelineDesc.depthStencil = &depthStencilState;
 
@@ -132,14 +134,12 @@ namespace Engine
 		pipelineDesc.multisample.mask = ~0u;	// all samples enabled
 		pipelineDesc.multisample.alphaToCoverageEnabled = false;
 
-
-
 		wgpu::BindGroupLayoutEntry bindGroupLayoutEntry = wgpu::Default;
 		bindGroupLayoutEntry.binding = 0;
 		bindGroupLayoutEntry.visibility = wgpu::ShaderStage::Vertex;
 		bindGroupLayoutEntry.buffer.hasDynamicOffset = false;
 		bindGroupLayoutEntry.buffer.type = wgpu::BufferBindingType::Uniform;
-		bindGroupLayoutEntry.buffer.minBindingSize = sizeof(ShadowUniforms);
+		bindGroupLayoutEntry.buffer.minBindingSize = sizeof(RenderGlobals::ShadowUniforms);
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
 		bindGroupLayoutDesc.label = { "shadowBindGroupLayout", WGPU_STRLEN };
@@ -154,19 +154,12 @@ namespace Engine
 			RenderGlobals::GetModelLayout()
 		};	
 
-		// Crate buffer
 		{
-			wgpu::BufferDescriptor bufferDesc;
-			bufferDesc.label = { "ShadowUniformBuffer", WGPU_STRLEN };
-			bufferDesc.size = sizeof(ShadowUniforms);
-			bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-			m_UniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
-
 			wgpu::BindGroupEntry bindGroupEntry;
 			bindGroupEntry.binding = 0;
-			bindGroupEntry.buffer = m_UniformBuffer;
+			bindGroupEntry.buffer = RenderGlobals::GetShadowUniformBuffer();
 			bindGroupEntry.offset = 0;
-			bindGroupEntry.size = sizeof(ShadowUniforms);
+			bindGroupEntry.size = sizeof(RenderGlobals::ShadowUniforms);
 
 			wgpu::BindGroupDescriptor bindGroupDesc{};
 			bindGroupDesc.label = { "ShadowBindGroup", WGPU_STRLEN };
@@ -186,11 +179,6 @@ namespace Engine
 
 		m_ShadowPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
 
-
-
-
-
-
 	}
 
 	void ShadowPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)
@@ -200,58 +188,61 @@ namespace Engine
 		depth.depthClearValue = 1.0f;
 		depth.depthLoadOp = wgpu::LoadOp::Clear;
 		depth.depthStoreOp = wgpu::StoreOp::Store;
-		depth.depthReadOnly = false;
+		depth.depthReadOnly = wgpu::OptionalBool::False;
 		depth.stencilClearValue = 0;
 		depth.stencilLoadOp = wgpu::LoadOp::Undefined;
 		depth.stencilStoreOp = wgpu::StoreOp::Undefined;
-		depth.stencilReadOnly = true;
+		depth.stencilReadOnly = wgpu::OptionalBool::True;
 
-		wgpu::RenderPassDescriptor passDescriptor;
-		passDescriptor.label = { "ShadowRenderPass", WGPU_STRLEN };
-		passDescriptor.colorAttachmentCount = 0;
-		passDescriptor.colorAttachments = nullptr;
-		passDescriptor.depthStencilAttachment = &depth;
+		wgpu::RenderPassDescriptor desc;
+		desc.label = { "ShadowRenderPass", WGPU_STRLEN };
+		desc.colorAttachmentCount = 0;
+		desc.colorAttachments = nullptr;
+		desc.depthStencilAttachment = &depth;
 
-		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
+		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(desc);
 
 		pass.setPipeline(m_ShadowPipeline);
 
-
-		pass.setBindGroup(0, m_BindGroup, 0, nullptr);
-
-		Scene* scene = context.scene;
-		const auto& lights = scene->GetEntities<LightComponent>();
-
-		if (lights.empty()) 
+		for(const auto& lightEntitiy : context.scene->GetEntities<LightComponent>())
 		{
-			pass.end();
-			return;
+			const auto& light = lightEntitiy.Get<LightComponent>();
+			const auto& transform = lightEntitiy.Get<TransformComponent>();
+
+			switch(light.type)
+			{
+			case LightType::Directional:
+			{
+				glm::quat q = glm::quat(glm::radians(transform.rotation));
+				glm::vec3 forward = q * glm::vec3(0, 0, 1);
+
+				glm::vec3 dir = glm::normalize(forward);
+				glm::vec3 target = transform.position + dir;
+
+				glm::vec3 up = q* glm::vec3(0, 1, 0);
+
+				glm::mat4 view = glm::lookAtLH(transform.position, target, up);
+				glm::mat4 proj = glm::orthoLH_ZO(-10.0f, 10.0f, -10.0f, 10.0f, -1000.0f, 1000.0f);
+
+				s_ShadowUniforms.lightViewProj = proj * view;
+				break;
+			}
+			case LightType::Spot:
+			{
+				break;
+			}
+			case LightType::Point:
+			{
+				break;
+			}
+			}
 		}
 
-		const Entity& lightEntity = lights[0];
-		const auto& transform = lightEntity.Get<TransformComponent>();
-
-		glm::vec3 forward = glm::normalize(glm::vec3(
-			cos(glm::radians(transform.rotation.y)) * cos(glm::radians(transform.rotation.x)),
-			sin(glm::radians(transform.rotation.x)),
-			sin(glm::radians(transform.rotation.y)) * cos(glm::radians(transform.rotation.x))
-		));
-
-		glm::vec3 up = glm::vec3(0, 1, 0);
+		pass.setBindGroup(0, m_BindGroup, 0, nullptr);
+		GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetShadowUniformBuffer(), 0, &s_ShadowUniforms, sizeof(s_ShadowUniforms));
 
 
-		glm::mat4 lightView = glm::lookAtLH(transform.position, transform.position + forward, up);
-
-		glm::mat4 lightProj = glm::orthoLH(
-			-20.0f, 20.0f,
-			-20.0f, 20.0f,
-			0.1f, 100.0f
-		);
-
-		ShadowUniforms uniforms;
-		uniforms.lightViewProj = lightProj * lightView;
-
-		GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, 0, &uniforms, sizeof(uniforms));
+		GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetShadowUniformBuffer(), 0, &s_ShadowUniforms, sizeof(s_ShadowUniforms));
 		
 		Mesh* mesh = nullptr;
 
@@ -279,5 +270,9 @@ namespace Engine
 	wgpu::TextureView ShadowPass::GetShadowMap()
 	{
 		return m_DepthTextureView;
+	}
+	RenderGlobals::ShadowUniforms ShadowPass::GetShadowUniforms()
+	{
+		return s_ShadowUniforms;
 	}
 }

@@ -4,8 +4,8 @@ Sampler:
   Wrap: 0
 Attributes:
   albedo: [1, 1, 1, 1]
-  roughness: 0
+  roughness: 1
   metallic: 0
-  tiling: [0, 0]
+  tiling: [1, 1]
 Textures:
   {}

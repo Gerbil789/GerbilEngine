@@ -1,6 +1,8 @@
 struct VertexInput 
 {
 	@location(0) position: vec3f,
+	@location(1) normal: vec3f,
+	@location(2) uv: vec2f,
 };
 
 struct VertexOutput 
@@ -15,7 +17,7 @@ struct ModelUniforms
 
 struct ShadowUniforms
 {
-  lightViewProj : mat4x4<f32>,
+  modelLightViewProj : mat4x4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> uShadow : ShadowUniforms;
@@ -26,8 +28,8 @@ fn vs_main(in: VertexInput) -> VertexOutput
 {
 	var out: VertexOutput;
 
-	let worldPos = uModel.model * vec4<f32>(in.position, 1.0);
-  out.position = uShadow.lightViewProj * worldPos;
+	let worldPos = uModel.model * vec4f(in.position, 1.0);
+  out.position = uShadow.modelLightViewProj * worldPos;
 
 	return out;
 }

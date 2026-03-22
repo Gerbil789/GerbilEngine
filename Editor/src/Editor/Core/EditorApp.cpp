@@ -28,6 +28,8 @@
 
 namespace Editor
 {
+	bool firstFrame = true;
+
 	EditorApp::EditorApp(const ApplicationCommandLineArgs& args)
 	{
 		RenderDoc::Initialize();
@@ -96,6 +98,8 @@ namespace Editor
 
 	void EditorApp::Run()
 	{
+		RenderDoc::StartFrameCapture();
+
 		while (m_Running)
 		{
 			Engine::Time::BeginFrame();
@@ -107,6 +111,12 @@ namespace Editor
 			EditorWindowManager::Update();		// update editor UI, render viewport, ...
 			EditorCommandManager::Flush();		// execute queued commands
 			EditorRuntime::Update();					// update runtime (scripts, audio listener, etc...)
+
+			if(firstFrame)
+			{
+				firstFrame = false;
+				RenderDoc::EndFrameCapture();
+			}
 		}
 	}
 }

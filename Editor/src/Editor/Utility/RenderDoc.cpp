@@ -42,6 +42,22 @@ namespace RenderDoc
 			rdoc_api->SetCaptureFilePathTemplate("captures/frame");
 		}
 	}
+
+	void StartFrameCapture()
+	{
+		if (rdoc_api)
+		{
+			rdoc_api->StartFrameCapture(nullptr, nullptr);
+		}
+	}
+
+	void EndFrameCapture()
+	{
+		if (rdoc_api)
+		{
+			rdoc_api->EndFrameCapture(nullptr, nullptr);
+		}
+	}
 }
 
 

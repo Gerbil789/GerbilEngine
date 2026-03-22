@@ -5,22 +5,18 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Graphics/Renderer/DrawList.h"
+#include "Engine/Graphics/RenderPass/ShadowPass.h"
 #include <execution>
+#include <glm/gtx/quaternion.hpp>
+#include "Engine/Scene/Components.h"
 
 namespace Engine
 {
-	Renderer::~Renderer()
-	{
-		for (auto pass : m_Passes)
-		{
-			delete pass;
-		}
-		m_Passes.clear();
-	}
-
 	void Renderer::AddPass(RenderPass* pass)
 	{
 		m_Passes.push_back(pass);
+
+		LOG_WARNING("Added render pass: {}, count: {}", typeid(*pass).name(), m_Passes.size());
 	}
 
 	void Renderer::RemovePass(RenderPass* pass)
@@ -50,7 +46,7 @@ namespace Engine
 
 		// Color
 		{
-			wgpu::TextureDescriptor desc{};
+			wgpu::TextureDescriptor desc;
 			desc.label = { "RendererColorTexture", WGPU_STRLEN };
 			desc.dimension = wgpu::TextureDimension::_2D;
 			desc.format = wgpu::TextureFormat::RGBA8Unorm;
@@ -60,7 +56,7 @@ namespace Engine
 			desc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
 			wgpu::Texture colorTexture = GraphicsContext::GetDevice().createTexture(desc);
 
-			wgpu::TextureViewDescriptor view{};
+			wgpu::TextureViewDescriptor view;
 			view.label = { "RendererColorTextureView", WGPU_STRLEN };
 			view.dimension = wgpu::TextureViewDimension::_2D;
 			view.format = desc.format;
@@ -97,18 +93,20 @@ namespace Engine
 		}
 	}
 
+	void Renderer::SetColorTarget(wgpu::TextureView color)
+	{
+		m_RenderContext.colorTarget = color;
+	}
+
 	void Renderer::RenderScene()
 	{
-		//TODO: Move frame uniforms somewhere else...
 		RenderGlobals::FrameUniforms frameUniforms;
 		frameUniforms.view = m_RenderContext.camera->GetViewMatrix();
 		frameUniforms.projection = m_RenderContext.camera->GetProjectionMatrix();
 		frameUniforms.cameraPosition = m_RenderContext.camera->GetPosition();
 		GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetFrameUniformBuffer(), 0, &frameUniforms, sizeof(frameUniforms));
 
-		wgpu::CommandEncoderDescriptor encoderDesc{};
-		encoderDesc.label = { "RendererCommandEncoder", WGPU_STRLEN };
-		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder(encoderDesc);
+		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder();
 
 		const DrawList& list = DrawList::CreateFromScene(m_RenderContext.scene);
 
@@ -137,10 +135,5 @@ namespace Engine
 	wgpu::TextureView Renderer::GetTextureView() const
 	{
 		return m_RenderContext.colorTarget;
-	}
-
-	void Renderer::SetColorTarget(wgpu::TextureView color)
-	{
-		m_RenderContext.colorTarget = color;
 	}
 }

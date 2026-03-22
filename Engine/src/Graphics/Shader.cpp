@@ -81,6 +81,12 @@ namespace Engine
 		depthStencilState.format = wgpu::TextureFormat::Depth24Plus;
 		depthStencilState.stencilReadMask = 0xFFFFFFFF;
 		depthStencilState.stencilWriteMask = 0xFFFFFFFF;
+
+		//depthStencilState.depthBias = 2;
+		//depthStencilState.depthBiasSlopeScale = 2.0f;
+		//depthStencilState.depthBiasClamp = 0.0f;
+
+
 		pipelineDesc.depthStencil = &depthStencilState;
 
 		pipelineDesc.multisample.count = 1;		// no multisampling

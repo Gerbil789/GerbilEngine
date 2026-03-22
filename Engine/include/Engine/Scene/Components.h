@@ -85,23 +85,51 @@ namespace Engine
 		Camera* camera = nullptr;
 	};
 
-	enum class LightType : std::uint8_t { Point = 0, Directional = 1, Spot = 2 };
+	enum class LightType { Directional = 0, Spot, Point };
 
 	struct ENGINE_API LightComponent
 	{
+		LightType type = LightType::Directional;
+
+		// common
 		glm::vec3 color = { 1.0f, 1.0f, 1.0f };
 		float intensity = 1.0f;
-		float range = 10.0f;
-		float angle = 45.0f;
-		LightType type = LightType::Point;
+
+		// shadowing
+		bool castsShadows = true;
+		float nearPlane = 0.1f;
+		float farPlane = 100.0f;
+
+
+
+		float range = 50.0f; // for point and spot lights, ignored for directional
+		float angle;
+
+		// type-specific
+		union
+		{
+			struct // Directional
+			{
+			} directional;
+
+			struct // Spot
+			{
+				float fov;      // radians
+				float aspect;   // usually 1 for shadow map
+			} spot;
+
+			struct // Point
+			{
+				// no extra params needed beyond position + range
+			} point;
+		};
 
 		void Reset()
 		{
-			type = LightType::Point;
+			type = LightType::Directional;
 			color = { 1.0f, 1.0f, 1.0f };
 			intensity = 1.0f;
-			range = 10.0f;
-			angle = 45.0f;
+
 		}
 	};
 

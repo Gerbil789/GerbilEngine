@@ -1,11 +1,11 @@
 Shader: 10614378585745839232
 Sampler:
-  Filter: 0
+  Filter: 1
   Wrap: 2
 Attributes:
-  albedo: [0.9, 0.1, 0.2, 1]
-  roughness: 0
-  metallic: 0
+  albedo: [1, 1, 1, 1]
+  roughness: 1
+  metallic: 1
   tiling: [1, 1]
 Textures:
-  AlbedoTexture: 13428705016315603756
+  AlbedoTexture: 13918419986824729683

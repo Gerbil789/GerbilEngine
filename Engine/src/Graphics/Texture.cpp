@@ -29,13 +29,13 @@ namespace Engine
 		textureDesc.viewFormats = nullptr;
 		wgpu::Texture texture = GraphicsContext::GetDevice().createTexture(textureDesc);
 
-		wgpu::TexelCopyTextureInfo dst{};
+		wgpu::TexelCopyTextureInfo dst;
 		dst.texture = texture;
 		dst.mipLevel = 0;
 		dst.origin = { 0, 0, 0 };
 		dst.aspect = wgpu::TextureAspect::All;
 
-		wgpu::TexelCopyBufferLayout layout{};
+		wgpu::TexelCopyBufferLayout layout;
 		layout.offset = 0;
 		layout.bytesPerRow = m_Width * bytesPerPixel;
 		layout.rowsPerImage = m_Height;

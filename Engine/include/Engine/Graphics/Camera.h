@@ -17,8 +17,8 @@ namespace Engine
 	struct OrthographicParams 
 	{
 		float size = 10.0f;
-		float near = -100.0f;
-		float far = 100.0f;
+		float near = -1.0f;
+		float far = 1000.0f;
 	};
 
 	class ENGINE_API Camera

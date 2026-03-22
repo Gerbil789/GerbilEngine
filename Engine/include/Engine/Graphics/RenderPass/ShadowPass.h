@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Graphics/RenderPass/RenderPass.h"
+#include "Engine/Graphics/Renderer/RenderGlobals.h"
 
 namespace Engine
 {
@@ -13,5 +14,7 @@ namespace Engine
 		static void Initialize();
 
 		static wgpu::TextureView GetShadowMap();
+
+		static RenderGlobals::ShadowUniforms GetShadowUniforms();
 	};
 }
