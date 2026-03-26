@@ -153,7 +153,7 @@ namespace Engine
 
 			const SubMesh* sub = draw.subMesh;
 
-			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
+			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::UniformStride;
 			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
 			pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);
 		}

@@ -6,7 +6,7 @@
 namespace Engine
 {
 	enum class BindingType {Undefined, UniformBuffer, StorageBuffer, Sampler, Texture2D, Texture3D };
-	enum class ShaderValueType { Bool, Int, UInt, Float, Vec2, Vec3, Vec4, Mat3, Mat4 };
+	enum class ShaderValueType { Bool, Int, UInt, Float, Vec2, Vec3, Vec4, Mat3, Mat4, ArrayMat4, ArrayFloat };
 
 	struct ShaderParameter
 	{

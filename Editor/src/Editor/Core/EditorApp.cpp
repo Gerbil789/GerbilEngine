@@ -28,11 +28,9 @@
 
 namespace Editor
 {
-	bool firstFrame = true;
-
 	EditorApp::EditorApp(const ApplicationCommandLineArgs& args)
 	{
-		RenderDoc::Initialize();
+		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
 
 		std::filesystem::path projectPath = (args.Count > 1) ? std::filesystem::path(args[1]) : Engine::OpenDirectory();
 		EditorSelection::SetProject(Project::Load(projectPath));  //TODO: why editor selection owns project????
@@ -98,25 +96,17 @@ namespace Editor
 
 	void EditorApp::Run()
 	{
-		RenderDoc::StartFrameCapture();
-
 		while (m_Running)
 		{
-			Engine::Time::BeginFrame();
+			Engine::Time::BeginFrame();				// update delta time and FPS counters
 			Engine::Input::Update();					// poll input events
 			Engine::Audio::Update();					// release finished audio voices back to pool
 
 			if (m_Window->IsMinimized()) continue;
 
 			EditorWindowManager::Update();		// update editor UI, render viewport, ...
-			EditorCommandManager::Flush();		// execute queued commands
+			EditorCommandManager::Flush();		// execute queued commands (deffered execution)
 			EditorRuntime::Update();					// update runtime (scripts, audio listener, etc...)
-
-			if(firstFrame)
-			{
-				firstFrame = false;
-				RenderDoc::EndFrameCapture();
-			}
 		}
 	}
 }

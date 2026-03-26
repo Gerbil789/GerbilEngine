@@ -106,6 +106,8 @@ namespace Engine
 		frameUniforms.cameraPosition = m_RenderContext.camera->GetPosition();
 		GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetFrameUniformBuffer(), 0, &frameUniforms, sizeof(frameUniforms));
 
+
+
 		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder();
 
 		const DrawList& list = DrawList::CreateFromScene(m_RenderContext.scene);
@@ -119,7 +121,7 @@ namespace Engine
 
 		for (const DrawItem& item : list.items)
 		{
-			uint32_t offset = item.modelIndex * RenderGlobals::GetModelUniformStride();
+			uint32_t offset = item.modelIndex * RenderGlobals::UniformStride;
 			GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetModelUniformBuffer(), offset, &models[item.modelIndex], sizeof(glm::mat4));
 		}
 

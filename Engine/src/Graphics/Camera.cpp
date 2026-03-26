@@ -154,4 +154,29 @@ namespace Engine
 	{
 		return *m_Skybox;
 	}
+
+	std::array<glm::vec3, 8> Camera::GetFrustumCornersWorld(float near, float far) const
+	{
+		glm::mat4 invView = glm::inverse(GetViewMatrix());
+
+		std::array<glm::vec3, 8> corners;
+
+		corners[0] = { glm::tan(m_Perspective.fov * 0.5f) * near * m_AspectRatio, glm::tan(m_Perspective.fov * 0.5f) * near, near };
+		corners[1] = { -corners[0].x, corners[0].y, corners[0].z };
+		corners[2] = { -corners[0].x, -corners[0].y, corners[0].z };
+		corners[3] = { corners[0].x, -corners[0].y, corners[0].z };
+
+		corners[4] = { glm::tan(m_Perspective.fov * 0.5f) * far * m_AspectRatio, glm::tan(m_Perspective.fov * 0.5f) * far, far };
+		corners[5] = { -corners[4].x, corners[4].y, corners[4].z };
+		corners[6] = { -corners[4].x, -corners[4].y, corners[4].z };
+		corners[7] = { corners[4].x, -corners[4].y, corners[4].z };
+
+		for (auto& corner : corners)
+		{
+			corner = glm::vec3(invView * glm::vec4(corner, 1.0f));
+		}
+
+		return corners;
+
+	}
 }

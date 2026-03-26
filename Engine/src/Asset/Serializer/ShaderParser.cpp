@@ -18,8 +18,11 @@ namespace Engine
     if (type == "mat3x3f")   return ShaderValueType::Mat3;
     if (type == "mat4x4f")   return ShaderValueType::Mat4;
 
+		if (type == "array<mat4x4f") return ShaderValueType::ArrayMat4;
+		if (type == "array<f32") return ShaderValueType::ArrayFloat;
+
     // fallback
-		LOG_ERROR("ParseValueType - Unknown type string: {}", type);
+		LOG_WARNING("ParseValueType - Unknown type: {}", type);
     return ShaderValueType::Float;
   }
 
@@ -36,7 +39,10 @@ namespace Engine
     case ShaderValueType::Vec4: return 16;
     case ShaderValueType::Mat3: return 48;
     case ShaderValueType::Mat4: return 64;
+		case ShaderValueType::ArrayMat4: return 64 * 4; //TODO: dont hardcode array size, need to parse it from shader source
+    case ShaderValueType::ArrayFloat: return 4 * 4; //TODO: dont hardcode array size, need to parse it from shader source
     }
+
 
     std::unreachable();
   }
@@ -103,15 +109,29 @@ namespace Engine
       std::vector<ShaderParameter> params;
       size_t offset = 0;
 
-      std::regex memberRegex(R"(\s*(\w+)\s*:\s*([a-zA-Z0-9_]+))");
+      std::regex memberRegex(R"(\s*(\w+)\s*:\s*([a-zA-Z0-9_<>]+))");
+      //std::regex memberRegex(R"(\s*(\w+)\s*:\s*([^;]+))");
+
       std::smatch memberMatch;
       auto mbegin = body.cbegin();
       auto mend = body.cend();
+
+      //auto Trim = [](std::string& s)
+      //  {
+      //    s.erase(0, s.find_first_not_of(" \t\n\r"));
+      //    s.erase(s.find_last_not_of(" \t\n\r") + 1);
+      //  };
 
       while (std::regex_search(mbegin, mend, memberMatch, memberRegex))
       {
         ShaderParameter param;
         param.name = memberMatch[1].str();
+
+        //std::string typeStr = memberMatch[2].str();
+        //Trim(typeStr);
+
+        //param.type = ParseValueType(typeStr);
+
         param.type = ParseValueType(memberMatch[2].str());
         param.offset = offset;
         param.size = GetTypeSize(param.type);

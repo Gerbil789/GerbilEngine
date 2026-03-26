@@ -11,14 +11,14 @@ namespace Engine
 	{
 		float fov = glm::radians(45.0f);
 		float near = 0.1f;
-		float far = 1000.0f;
+		float far = 512.0f;
 	};
 
 	struct OrthographicParams 
 	{
 		float size = 10.0f;
 		float near = -1.0f;
-		float far = 1000.0f;
+		float far = 512.0f;
 	};
 
 	class ENGINE_API Camera
@@ -82,6 +82,8 @@ namespace Engine
 		void SetClearColor(const glm::vec4& color) { m_ClearColor = color; }
 
 		Skybox& GetSkybox();
+
+		std::array<glm::vec3, 8> GetFrustumCornersWorld(float near, float far) const;
 
 	private:
 		void UpdateProjectionMatrix();

@@ -66,7 +66,7 @@ namespace Engine
 				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetIndexBuffer().getSize());
 			}
 
-			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
+			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::UniformStride;
 			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
 
 

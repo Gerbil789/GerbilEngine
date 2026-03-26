@@ -6,15 +6,18 @@
 #include "Engine/Graphics/Texture.h"
 #include "Engine/Core/Engine.h"
 
-#include "Engine/Graphics/RenderPass/ShadowPass.h"
-
 namespace Engine::RenderGlobals
 {
+
+	// Shadow
+	ShadowUniforms s_ShadowUniforms;
+	static std::array<wgpu::TextureView, shadowCascadeCount> m_DepthTextureViews;
+	static wgpu::TextureView m_DepthTextureArrayView;
+
 	// Model bind group
 	static wgpu::BindGroupLayout s_ModelBindGroupLayout = nullptr;
 	static wgpu::BindGroup s_ModelBindGroup = nullptr;
 	static wgpu::Buffer s_ModelUniformBuffer = nullptr;
-	static uint32_t s_ModelUniformStride = 0;
 
 	// Frame bind group
 	static wgpu::BindGroupLayout s_FrameBindGroupLayout = nullptr;
@@ -41,15 +44,60 @@ namespace Engine::RenderGlobals
 	{
 		wgpu::Device device = GraphicsContext::GetDevice();
 
+		wgpu::Limits limits;
+		if(device.getLimits(&limits) != wgpu::Status::Success)
+		{
+			throw std::runtime_error("Failed to get device limits");
+		}
+
+		UniformStride = limits.minUniformBufferOffsetAlignment;
+		StorageStride = limits.minStorageBufferOffsetAlignment;
+
+
+		// Shadow
+		{
+			wgpu::TextureFormat format = wgpu::TextureFormat::Depth24Plus;
+
+			wgpu::TextureDescriptor textureDesc;
+			textureDesc.dimension = wgpu::TextureDimension::_2D;
+			textureDesc.format = format;
+			textureDesc.mipLevelCount = 1;
+			textureDesc.sampleCount = 1;
+			textureDesc.size = { 1024, 1024, RenderGlobals::shadowCascadeCount };
+			textureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
+			textureDesc.viewFormatCount = 0;
+			textureDesc.viewFormats = nullptr;
+			wgpu::Texture texture = GraphicsContext::GetDevice().createTexture(textureDesc);
+
+			for (int i = 0; i < RenderGlobals::shadowCascadeCount; i++)
+			{
+				wgpu::TextureViewDescriptor viewDesc;
+				viewDesc.format = format;
+				viewDesc.aspect = wgpu::TextureAspect::DepthOnly;
+				viewDesc.dimension = wgpu::TextureViewDimension::_2D;
+				viewDesc.baseMipLevel = 0;
+				viewDesc.mipLevelCount = 1;
+				viewDesc.baseArrayLayer = i;
+				viewDesc.arrayLayerCount = 1;
+
+				m_DepthTextureViews[i] = texture.createView(viewDesc);
+			}
+
+			wgpu::TextureViewDescriptor arrayViewDesc;
+			arrayViewDesc.format = format;
+			arrayViewDesc.aspect = wgpu::TextureAspect::DepthOnly;
+			arrayViewDesc.dimension = wgpu::TextureViewDimension::_2DArray;
+			arrayViewDesc.baseMipLevel = 0;
+			arrayViewDesc.mipLevelCount = 1;
+			arrayViewDesc.baseArrayLayer = 0;
+			arrayViewDesc.arrayLayerCount = RenderGlobals::shadowCascadeCount;
+
+			m_DepthTextureArrayView = texture.createView(arrayViewDesc);
+		}
+
 		// Model 
 		{
-			wgpu::Limits limits;
-			device.getLimits(&limits);
-			s_ModelUniformStride = CeilToNextMultiple((uint32_t)sizeof(ModelUniforms), (uint32_t)limits.minUniformBufferOffsetAlignment);
-
-			// stride is probably 256 on most hardware, but could be different on some
-
-			const size_t BufferSize = 1024 * s_ModelUniformStride; // max 1024 unique transforms per frame
+			const size_t BufferSize = 1024 * UniformStride; // max 1024 unique transforms per frame //TODO: make this configurable or dynamic
 
 			wgpu::BindGroupLayoutEntry bindGroupLayoutEntry = wgpu::Default;
 			bindGroupLayoutEntry.binding = 0;
@@ -135,7 +183,7 @@ namespace Engine::RenderGlobals
 			entries[13].binding = 13;
 			entries[13].visibility = wgpu::ShaderStage::Fragment;
 			entries[13].texture.sampleType = wgpu::TextureSampleType::Depth;
-			entries[13].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+			entries[13].texture.viewDimension = wgpu::TextureViewDimension::_2DArray;
 			entries[13].texture.multisampled = false;
 
 			// Shadow map sampler
@@ -207,10 +255,9 @@ namespace Engine::RenderGlobals
 				bgEntries[4 + i].textureView = tex->GetTextureView();
 			}
 
-			ShadowPass::Initialize(); //TODO: this is tmp
 
 			bgEntries[13].binding = 13;
-			bgEntries[13].textureView = ShadowPass::GetShadowMap();
+			bgEntries[13].textureView = m_DepthTextureArrayView;
 
 			wgpu::SamplerDescriptor desc;
 			desc.label = { "ShadowSampler", WGPU_STRLEN };
@@ -224,10 +271,7 @@ namespace Engine::RenderGlobals
 			bgEntries[14].binding = 14;
 			bgEntries[14].sampler = shadowSampler;
 
-			ShadowUniforms shadowUniforms;
-			shadowUniforms.lightViewProj = glm::mat4(1.0f);
-
-			wgpu::BufferDescriptor shadowBufferDesc{};
+			wgpu::BufferDescriptor shadowBufferDesc;
 			shadowBufferDesc.label = { "ShadowUniformBuffer", WGPU_STRLEN };
 			shadowBufferDesc.size = sizeof(ShadowUniforms);
 			shadowBufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
@@ -264,6 +308,12 @@ namespace Engine::RenderGlobals
 		return s_FrameUniformBuffer;
 	}
 
+	wgpu::TextureView GetShadowTextureView(uint32_t cascadeIndex)
+	{
+		assert(cascadeIndex < shadowCascadeCount);
+		return m_DepthTextureViews[cascadeIndex];
+	}
+
 	wgpu::Buffer GetShadowUniformBuffer()
 	{
 		return s_ShadowUniformBuffer;
@@ -282,10 +332,5 @@ namespace Engine::RenderGlobals
 	wgpu::Buffer GetModelUniformBuffer()
 	{
 		return s_ModelUniformBuffer;
-	}
-
-	uint32_t GetModelUniformStride()
-	{
-		return s_ModelUniformStride;
 	}
 }

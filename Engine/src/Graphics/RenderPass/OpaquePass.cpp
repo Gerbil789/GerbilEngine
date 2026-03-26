@@ -5,7 +5,6 @@
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Scene/Components.h"
 
-
 namespace Engine
 {
 	void OpaquePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)
@@ -35,6 +34,7 @@ namespace Engine
 		passDescriptor.depthStencilAttachment = &depth;
 
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
+
 
 		pass.setBindGroup(0, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
@@ -69,7 +69,7 @@ namespace Engine
 				pass.setPipeline(material->GetShader()->GetRenderPipeline());
 			}
 
-			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
+			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::UniformStride;
 			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
 
 			pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);

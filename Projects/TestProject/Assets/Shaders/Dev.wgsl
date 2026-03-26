@@ -11,14 +11,14 @@ struct VertexOutput
 	@location(0) uv: vec2f,
 	@location(1) normal: vec3f,
 	@location(2) worldPos: vec3f,
-	@location(3) lightPos: vec3f,
+	@location(3) viewDepth: f32,
 };
 
 struct FrameUniforms 
 {
 	view: mat4x4f,
 	projection: mat4x4f,
-	cameraPosition: vec3f,	
+	cameraPosition: vec3f,
 	_padding: f32,
 };
 
@@ -35,9 +35,12 @@ struct MaterialUniforms
 	tiling: vec2f,
 };
 
+const NUM_CASCADES: i32 = 4;
+
 struct ShadowUniforms 
 {
-	lightViewProj : mat4x4f,
+	lightViewProj : array<mat4x4f, NUM_CASCADES>,
+	cascadeSplits : array<f32, NUM_CASCADES>,
 };
 
 const PI: f32 = 3.14159265;
@@ -64,7 +67,7 @@ const PI: f32 = 3.14159265;
 @group(2) @binding(2) var AlbedoTexture: texture_2d<f32>;
 
 
-@group(0) @binding(13) var shadowMap : texture_depth_2d;
+@group(0) @binding(13) var shadowMap : texture_depth_2d_array;
 @group(0) @binding(14) var shadowSampler : sampler_comparison;
 @group(0) @binding(15) var<uniform> uShadow : ShadowUniforms;
 
@@ -115,28 +118,77 @@ fn vs_main(in: VertexInput) -> VertexOutput
 	out.uv = in.uv;
 	out.worldPos = worldPos.xyz;
 
-	let tmp = uShadow.lightViewProj * worldPos;
-  out.lightPos = tmp.xyz / tmp.w;
+	//let tmp = uShadow.lightViewProj * worldPos;
+  // out.lightPos = tmp.xyz / tmp.w;
 
+
+	let viewPos = uFrame.view * worldPos;
+	out.viewDepth = viewPos.z;
 	return out;
 }
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4f
 {
-  // convert [-1,1] to [0,1]
-	let u = (in.lightPos.x + 1) * 0.5;
-	let v = -(in.lightPos.y - 1) * 0.5;
-  let light_uv = vec2f(u, v);
-	
-  // depth comparison
-	let depth = in.lightPos.z;
-  let visibility = textureSampleCompare(shadowMap, shadowSampler, light_uv, depth);
+	var cascadeIndex: i32 = 0;
+	let depth = in.viewDepth;
+
+	for (var i: i32 = 0; i < NUM_CASCADES; i = i + 1)
+	{
+    if (depth < uShadow.cascadeSplits[i])
+    {
+        cascadeIndex = i;
+        break;
+    }
+	}
+
+// 	if(cascadeIndex == 0)
+// 	{
+// 		  return vec4f(1.0, 1.0, 1.0, uMaterial.albedo.a);
+// 	}
+
+// 	if(cascadeIndex == 1)
+// 	{
+// 		  return vec4f(1.0, 0.0, 0.0, uMaterial.albedo.a);
+// 	}
+
+// 	if(cascadeIndex == 2)
+// 	{
+// 		  return vec4f(0.0, 1.0, 0.0, uMaterial.albedo.a);
+// 	}
+
+// 	if(cascadeIndex == 3)
+// 	{
+// 		  return vec4f(0.0, 0.0, 1.0, uMaterial.albedo.a);
+// 	}
+
+// return vec4f(1.0, 0.0, 1.0, uMaterial.albedo.a);
+
+	let lightPos4 = uShadow.lightViewProj[cascadeIndex] * vec4f(in.worldPos, 1.0);
+	let lightPos = lightPos4.xyz / lightPos4.w;
+
+
+
+
+	let light_uv = vec2f(
+    (lightPos.x + 1.0) * 0.5,
+    -(lightPos.y - 1.0) * 0.5
+	);
+
+	let visibility = textureSampleCompare(
+    shadowMap,
+    shadowSampler,
+    light_uv,
+    cascadeIndex,
+    lightPos.z
+	);
+
+
 
 	// check bounds
-	let inBounds = 
-		light_uv.x >= 0.0 && light_uv.x <= 1.0 && 
-		light_uv.y >= 0.0 && light_uv.y <= 1.0;
+let inBounds =
+    light_uv.x >= 0.0 && light_uv.x <= 1.0 &&
+    light_uv.y >= 0.0 && light_uv.y <= 1.0;
 
 	// shadow mask
 	let shadow = select(1.0, visibility, inBounds);
@@ -165,7 +217,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 
   let specular = prefiltered * (F * brdf.r + brdf.g);
 
-  let color = (diffuse + specular) * shadow;
+  let color = diffuse * shadow + specular;
 
   return vec4f(color, uMaterial.albedo.a);
 }

@@ -19,7 +19,7 @@ namespace Engine
 	namespace
 	{
 		wgpu::RenderPipeline m_WireframePipeline;
-		wgpu::BindGroup m_BindGroup;
+		wgpu::BindGroup m_ShadowBindGroup;
 		wgpu::Buffer m_UniformBuffer;
 	}
 
@@ -57,7 +57,7 @@ namespace Engine
 		bindGroupDesc.layout = bindGroupLayout;
 		bindGroupDesc.entryCount = 1;
 		bindGroupDesc.entries = &bindGroupEntry;
-		m_BindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+		m_ShadowBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
 
 		std::string content;
 		if (!Engine::ReadFile("Resources/Engine/shaders/wireframe.wgsl", content))
@@ -195,7 +195,7 @@ namespace Engine
 		wireframeData.falloff = 1.0f;
 
 		GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, 0, &wireframeData, sizeof(WireframeUniform));
-		pass.setBindGroup(2, m_BindGroup, 0, nullptr);
+		pass.setBindGroup(2, m_ShadowBindGroup, 0, nullptr);
 
 		Mesh* mesh = nullptr;
 
@@ -212,7 +212,7 @@ namespace Engine
 
 			const SubMesh* sub = draw.subMesh;
 
-			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
+			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::UniformStride;
 			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
 
 			pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);

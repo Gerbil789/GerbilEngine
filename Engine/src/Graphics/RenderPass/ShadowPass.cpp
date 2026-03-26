@@ -1,7 +1,9 @@
 #include "enginepch.h"
 #include "Engine/Graphics/RenderPass/ShadowPass.h"
+#include "Engine/Graphics/Renderer/RenderGlobals.h"
+#include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Mesh.h"
-#include "Engine/Graphics/Material.h"
+#include "Engine/Graphics/Camera.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Utility/File.h"
@@ -12,42 +14,14 @@ namespace Engine
 	namespace 
 	{
 		wgpu::RenderPipeline m_ShadowPipeline;
-		wgpu::BindGroup m_BindGroup;
-		static wgpu::TextureView m_DepthTextureView;
-		static RenderGlobals::ShadowUniforms s_ShadowUniforms;
+		wgpu::BindGroup m_ShadowBindGroup;
+		wgpu::Buffer m_ShadowUniformBuffer;
+		std::array<glm::mat4, RenderGlobals::shadowCascadeCount> m_LightViewProjMatrices;
 	}
 
-	void ShadowPass::Initialize()
+	Engine::ShadowPass::ShadowPass()
 	{
-		wgpu::TextureFormat format = wgpu::TextureFormat::Depth24Plus;
-
-		wgpu::TextureDescriptor textureDesc;
-		textureDesc.dimension = wgpu::TextureDimension::_2D;
-		textureDesc.format = format;
-		textureDesc.mipLevelCount = 1;
-		textureDesc.sampleCount = 1;
-		textureDesc.size = { 1024, 1024, 1 };
-		textureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
-		textureDesc.viewFormatCount = 0;
-		textureDesc.viewFormats = nullptr;
-		wgpu::Texture texture = GraphicsContext::GetDevice().createTexture(textureDesc);
-
-		wgpu::TextureViewDescriptor viewDesc;
-		viewDesc.format = format;
-		viewDesc.aspect = wgpu::TextureAspect::DepthOnly;
-		viewDesc.dimension = wgpu::TextureViewDimension::_2D;
-		viewDesc.baseMipLevel = 0;
-		viewDesc.mipLevelCount = 1;
-		viewDesc.baseArrayLayer = 0;
-		viewDesc.arrayLayerCount = 1;
-
-		m_DepthTextureView = texture.createView(viewDesc);
-	}
-
-
-	wgpu::ShaderModule CreateShaderModule()
-	{
-		std::filesystem::path shaderPath = "Resources/Engine/shaders/shadow.wgsl";
+		const std::filesystem::path shaderPath = "Resources/Engine/shaders/shadow.wgsl";
 		std::string source;
 		if (!Engine::ReadFile(shaderPath, source))
 		{
@@ -61,13 +35,8 @@ namespace Engine
 
 		wgpu::ShaderModuleDescriptor shaderDesc{};
 		shaderDesc.nextInChain = &desc.chain;
-		return GraphicsContext::GetDevice().createShaderModule(shaderDesc);
-	}
+		wgpu::ShaderModule shaderModule = GraphicsContext::GetDevice().createShaderModule(shaderDesc);
 
-
-	Engine::ShadowPass::ShadowPass()
-	{
-		wgpu::ShaderModule shaderModule = CreateShaderModule();
 
 		std::array<wgpu::VertexAttribute, 3> vertexAttribs;
 
@@ -137,9 +106,10 @@ namespace Engine
 		wgpu::BindGroupLayoutEntry bindGroupLayoutEntry = wgpu::Default;
 		bindGroupLayoutEntry.binding = 0;
 		bindGroupLayoutEntry.visibility = wgpu::ShaderStage::Vertex;
-		bindGroupLayoutEntry.buffer.hasDynamicOffset = false;
+		bindGroupLayoutEntry.buffer.hasDynamicOffset = true;
 		bindGroupLayoutEntry.buffer.type = wgpu::BufferBindingType::Uniform;
-		bindGroupLayoutEntry.buffer.minBindingSize = sizeof(RenderGlobals::ShadowUniforms);
+		bindGroupLayoutEntry.buffer.minBindingSize = sizeof(glm::mat4);
+
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
 		bindGroupLayoutDesc.label = { "shadowBindGroupLayout", WGPU_STRLEN };
@@ -155,22 +125,27 @@ namespace Engine
 		};	
 
 		{
+			wgpu::BufferDescriptor shadowBufferDesc;
+			shadowBufferDesc.label = { "ShadowPassUniformBuffer", WGPU_STRLEN };
+			shadowBufferDesc.size = RenderGlobals::UniformStride * RenderGlobals::shadowCascadeCount;
+			shadowBufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
+			m_ShadowUniformBuffer = GraphicsContext::GetDevice().createBuffer(shadowBufferDesc);
+
+
 			wgpu::BindGroupEntry bindGroupEntry;
 			bindGroupEntry.binding = 0;
-			bindGroupEntry.buffer = RenderGlobals::GetShadowUniformBuffer();
+			bindGroupEntry.buffer = m_ShadowUniformBuffer;
 			bindGroupEntry.offset = 0;
-			bindGroupEntry.size = sizeof(RenderGlobals::ShadowUniforms);
+			bindGroupEntry.size = sizeof(glm::mat4);
 
 			wgpu::BindGroupDescriptor bindGroupDesc{};
 			bindGroupDesc.label = { "ShadowBindGroup", WGPU_STRLEN };
 			bindGroupDesc.layout = layout;
 			bindGroupDesc.entryCount = 1;
 			bindGroupDesc.entries = &bindGroupEntry;
-			m_BindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+			m_ShadowBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
 		}
 	
-
-
 		wgpu::PipelineLayoutDescriptor layoutDesc;
 		layoutDesc.label = { "ShadowShaderPipelineLayout", WGPU_STRLEN };
 		layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
@@ -178,13 +153,107 @@ namespace Engine
 		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
 
 		m_ShadowPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
-
 	}
 
 	void ShadowPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)
 	{
+		for (const auto& lightEntitiy : context.scene->GetEntities<LightComponent>())
+		{
+			const auto& light = lightEntitiy.Get<LightComponent>();
+			const auto& transform = lightEntitiy.Get<TransformComponent>();
+
+			switch (light.type)
+			{
+			case LightType::Directional:
+			{
+
+				std::vector<float> splits;
+				splits.resize(RenderGlobals::shadowCascadeCount);
+
+				float near = context.camera->Perspective().near;
+				float far = context.camera->Perspective().far;
+				float lambda = 0.9f; // 0 = linear, 1 = logarithmic
+
+				for (int i = 0; i < RenderGlobals::shadowCascadeCount; i++)
+				{
+					float p = (i + 1) / (float)RenderGlobals::shadowCascadeCount;
+
+					float log = near * std::pow(far / near, p);
+					float lin = near + (far - near) * p;
+
+					splits[i] = glm::mix(lin, log, lambda);
+				}
+
+				glm::quat q = glm::quat(glm::radians(transform.rotation));
+				glm::vec3 forward = q * glm::vec3(0, 0, 1);
+				glm::vec3 up = q * glm::vec3(0, 1, 0);
+
+				for (int i = 0; i < RenderGlobals::shadowCascadeCount; i++)
+				{
+					float prevSplit = (i == 0) ? near : splits[i - 1];
+					float currSplit = splits[i];
+
+					std::array<glm::vec3, 8> corners = context.camera->GetFrustumCornersWorld(prevSplit, currSplit);
+
+					glm::vec3 center(0.0f);
+					for (auto& c : corners)
+						center += c;
+					center /= corners.size();
+
+					glm::vec3 lightPos = center - forward * 100.0f;
+
+					glm::mat4 view = glm::lookAtLH(lightPos, center, up);
+
+					// Compute AABB
+					glm::vec3 min(FLT_MAX);
+					glm::vec3 max(-FLT_MAX);
+
+					for (auto& c : corners)
+					{
+						glm::vec3 v = glm::vec3(view * glm::vec4(c, 1.0f));
+						min = glm::min(min, v);
+						max = glm::max(max, v);
+					}
+
+
+					// fix dissaperaing shadows of objects outside camera view
+
+					float extend = 200.0f; // tune this
+
+					min.z -= extend;
+					max.z += extend;
+
+
+					// Build ortho projection
+					glm::mat4 proj = glm::orthoLH_ZO(min.x, max.x, min.y, max.y, min.z, max.z);
+					m_LightViewProjMatrices[i] = proj * view;
+
+					RenderGlobals::s_ShadowUniforms.lightViewProj[i] = proj * view;
+					RenderGlobals::s_ShadowUniforms.cascadeSplits[i] = currSplit;
+				}
+
+				break;
+			}
+			case LightType::Spot:
+			{
+				break;
+			}
+			case LightType::Point:
+			{
+				break;
+			}
+			}
+		}
+
+
+		for (int i = 0; i < RenderGlobals::shadowCascadeCount; i++)
+		{
+			GraphicsContext::GetQueue().writeBuffer(m_ShadowUniformBuffer, i * RenderGlobals::UniformStride, &m_LightViewProjMatrices[i], sizeof(glm::mat4));
+		}
+
+		GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetShadowUniformBuffer(), 0, &RenderGlobals::s_ShadowUniforms, sizeof(RenderGlobals::s_ShadowUniforms));
+
 		wgpu::RenderPassDepthStencilAttachment depth;
-		depth.view = m_DepthTextureView;
 		depth.depthClearValue = 1.0f;
 		depth.depthLoadOp = wgpu::LoadOp::Clear;
 		depth.depthStoreOp = wgpu::StoreOp::Store;
@@ -200,79 +269,39 @@ namespace Engine
 		desc.colorAttachments = nullptr;
 		desc.depthStencilAttachment = &depth;
 
-		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(desc);
-
-		pass.setPipeline(m_ShadowPipeline);
-
-		for(const auto& lightEntitiy : context.scene->GetEntities<LightComponent>())
+		for (int i = 0; i < RenderGlobals::shadowCascadeCount; i++)
 		{
-			const auto& light = lightEntitiy.Get<LightComponent>();
-			const auto& transform = lightEntitiy.Get<TransformComponent>();
+			depth.view = RenderGlobals::GetShadowTextureView(i);
 
-			switch(light.type)
+			wgpu::RenderPassEncoder pass = encoder.beginRenderPass(desc);
+
+			pass.setPipeline(m_ShadowPipeline);
+
+			uint32_t offset = i * RenderGlobals::UniformStride;
+			pass.setBindGroup(0, m_ShadowBindGroup, 1, &offset);
+
+
+			Mesh* mesh = nullptr;
+
+			for (const DrawItem& draw : drawList.items)
 			{
-			case LightType::Directional:
-			{
-				glm::quat q = glm::quat(glm::radians(transform.rotation));
-				glm::vec3 forward = q * glm::vec3(0, 0, 1);
+				if (draw.mesh == nullptr) continue;
 
-				glm::vec3 dir = glm::normalize(forward);
-				glm::vec3 target = transform.position + dir;
+				if (draw.mesh != mesh)
+				{
+					mesh = draw.mesh;
+					pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
+					pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetIndexBuffer().getSize());
+				}
+				const SubMesh* sub = draw.subMesh;
 
-				glm::vec3 up = q* glm::vec3(0, 1, 0);
+				uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::UniformStride;
+				pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
 
-				glm::mat4 view = glm::lookAtLH(transform.position, target, up);
-				glm::mat4 proj = glm::orthoLH_ZO(-10.0f, 10.0f, -10.0f, 10.0f, -1000.0f, 1000.0f);
+				pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);
+			}
 
-				s_ShadowUniforms.lightViewProj = proj * view;
-				break;
-			}
-			case LightType::Spot:
-			{
-				break;
-			}
-			case LightType::Point:
-			{
-				break;
-			}
-			}
+			pass.end();
 		}
-
-		pass.setBindGroup(0, m_BindGroup, 0, nullptr);
-		GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetShadowUniformBuffer(), 0, &s_ShadowUniforms, sizeof(s_ShadowUniforms));
-
-
-		GraphicsContext::GetQueue().writeBuffer(RenderGlobals::GetShadowUniformBuffer(), 0, &s_ShadowUniforms, sizeof(s_ShadowUniforms));
-		
-		Mesh* mesh = nullptr;
-
-		for (const DrawItem& draw : drawList.items)
-		{
-			if (draw.mesh == nullptr) continue;
-
-			if (draw.mesh != mesh)
-			{
-				mesh = draw.mesh;
-				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
-				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetIndexBuffer().getSize());
-			}
-			const SubMesh* sub = draw.subMesh;
-
-			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::GetModelUniformStride();
-			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
-
-			pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);
-		}
-
-		pass.end();
-	}
-
-	wgpu::TextureView ShadowPass::GetShadowMap()
-	{
-		return m_DepthTextureView;
-	}
-	RenderGlobals::ShadowUniforms ShadowPass::GetShadowUniforms()
-	{
-		return s_ShadowUniforms;
 	}
 }
