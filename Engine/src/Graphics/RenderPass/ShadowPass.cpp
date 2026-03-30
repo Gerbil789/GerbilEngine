@@ -4,6 +4,7 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Camera.h"
+#include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Utility/File.h"
@@ -21,23 +22,6 @@ namespace Engine
 
 	Engine::ShadowPass::ShadowPass()
 	{
-		const std::filesystem::path shaderPath = "Resources/Engine/shaders/shadow.wgsl";
-		std::string source;
-		if (!Engine::ReadFile(shaderPath, source))
-		{
-			throw std::runtime_error("Failed to load shadow shader: " + shaderPath.string());
-		}
-
-		wgpu::ShaderSourceWGSL desc;
-		desc.chain.next = nullptr;
-		desc.chain.sType = wgpu::SType::ShaderSourceWGSL;
-		desc.code = { source.c_str(), WGPU_STRLEN };
-
-		wgpu::ShaderModuleDescriptor shaderDesc{};
-		shaderDesc.nextInChain = &desc.chain;
-		wgpu::ShaderModule shaderModule = GraphicsContext::GetDevice().createShaderModule(shaderDesc);
-
-
 		std::array<wgpu::VertexAttribute, 3> vertexAttribs;
 
 		// Position
@@ -68,7 +52,7 @@ namespace Engine
 
 		pipelineDesc.vertex.bufferCount = 1;
 		pipelineDesc.vertex.buffers = &vertexBufferLayout;
-		pipelineDesc.vertex.module = shaderModule;
+		pipelineDesc.vertex.module = LoadWGSLShader("Resources/Engine/shaders/shadow.wgsl");
 		pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN};
 		pipelineDesc.vertex.constantCount = 0;
 		pipelineDesc.vertex.constants = nullptr;
@@ -138,7 +122,7 @@ namespace Engine
 			bindGroupEntry.offset = 0;
 			bindGroupEntry.size = sizeof(glm::mat4);
 
-			wgpu::BindGroupDescriptor bindGroupDesc{};
+			wgpu::BindGroupDescriptor bindGroupDesc;
 			bindGroupDesc.label = { "ShadowBindGroup", WGPU_STRLEN };
 			bindGroupDesc.layout = layout;
 			bindGroupDesc.entryCount = 1;
@@ -166,13 +150,16 @@ namespace Engine
 			{
 			case LightType::Directional:
 			{
-
 				std::vector<float> splits;
 				splits.resize(RenderGlobals::shadowCascadeCount);
 
 				float near = context.camera->Perspective().near;
 				float far = context.camera->Perspective().far;
 				float lambda = 0.9f; // 0 = linear, 1 = logarithmic
+
+				glm::quat q = glm::quat(glm::radians(transform.rotation));
+				glm::vec3 forward = q * glm::vec3(0, 0, 1);
+				glm::vec3 up = q * glm::vec3(0, 1, 0);
 
 				for (int i = 0; i < RenderGlobals::shadowCascadeCount; i++)
 				{
@@ -184,10 +171,6 @@ namespace Engine
 					splits[i] = glm::mix(lin, log, lambda);
 				}
 
-				glm::quat q = glm::quat(glm::radians(transform.rotation));
-				glm::vec3 forward = q * glm::vec3(0, 0, 1);
-				glm::vec3 up = q * glm::vec3(0, 1, 0);
-
 				for (int i = 0; i < RenderGlobals::shadowCascadeCount; i++)
 				{
 					float prevSplit = (i == 0) ? near : splits[i - 1];
@@ -196,8 +179,10 @@ namespace Engine
 					std::array<glm::vec3, 8> corners = context.camera->GetFrustumCornersWorld(prevSplit, currSplit);
 
 					glm::vec3 center(0.0f);
-					for (auto& c : corners)
+					for (auto& c : corners) {
 						center += c;
+					}
+
 					center /= corners.size();
 
 					glm::vec3 lightPos = center - forward * 100.0f;

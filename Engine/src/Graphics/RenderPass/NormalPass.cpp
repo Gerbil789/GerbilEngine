@@ -2,6 +2,7 @@
 #include "Engine/Graphics/RenderPass/NormalPass.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
+#include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Utility/File.h"
 #include "Engine/Graphics/GraphicsContext.h"
 
@@ -11,21 +12,7 @@ namespace Engine
 
 	NormalPass::NormalPass()
 	{
-		std::string content;
-		if (!Engine::ReadFile("Resources/Engine/shaders/normal.wgsl", content))
-		{
-			throw std::runtime_error("Failed to load normal shader");
-		}
-
-		wgpu::ShaderSourceWGSL shaderCodeDesc;
-		shaderCodeDesc.chain.next = nullptr;
-		shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
-		shaderCodeDesc.code = { content.c_str(), WGPU_STRLEN };
-
-		wgpu::ShaderModuleDescriptor shaderDesc{};
-		shaderDesc.nextInChain = &shaderCodeDesc.chain;
-
-		wgpu::ShaderModule shaderModule = GraphicsContext::GetDevice().createShaderModule(shaderDesc);
+		wgpu::ShaderModule shaderModule = LoadWGSLShader("Resources/Engine/shaders/normal.wgsl");
 		std::array<wgpu::VertexAttribute, 3> vertexAttribs;
 
 		// Position

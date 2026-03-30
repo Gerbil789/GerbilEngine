@@ -1,12 +1,38 @@
 #pragma once
 
 #include "Engine/Core/Log.h" //TODO: remove dependency
+#include "Engine/Utility/File.h"
+#include "Engine/Graphics/GraphicsContext.h"
 #include <webgpu/webgpu.hpp>
 
 //TODO: rename this file to something better, its practicaly just toString() functions for webgpu enums
 
 namespace Engine
 {
+	inline static wgpu::ShaderModule LoadWGSLShader(const std::filesystem::path& path)
+	{
+		std::string source;
+		if (!Engine::ReadFile(path, source))
+		{
+			throw std::runtime_error("Failed to load shader: " + path.string());
+		}
+
+		std::string label = path.filename().string();
+
+		wgpu::ShaderSourceWGSL wgslDesc;
+		wgslDesc.chain.next = nullptr;
+		wgslDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
+		wgslDesc.code = { source.c_str(), WGPU_STRLEN };
+
+		wgpu::ShaderModuleDescriptor shaderDesc;
+		shaderDesc.label = { label.c_str(), WGPU_STRLEN };
+		shaderDesc.nextInChain = &wgslDesc.chain;
+
+		return GraphicsContext::GetDevice().createShaderModule(shaderDesc);
+	}
+
+
+
 	inline static wgpu::VertexFormat StringToVertexFormat(const std::string& str)
 	{
 		static const std::unordered_map<std::string, wgpu::VertexFormat> formatMap = {

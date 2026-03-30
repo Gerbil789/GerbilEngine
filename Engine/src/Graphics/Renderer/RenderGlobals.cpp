@@ -3,6 +3,7 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
+#include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Graphics/Texture.h"
 #include "Engine/Core/Engine.h"
 
@@ -134,7 +135,6 @@ namespace Engine::RenderGlobals
 		// Frame 
 		{
 			std::array<wgpu::BindGroupLayoutEntry, 16> entries;
-			//wgpu::BindGroupLayoutEntry entries[16]{};
 
 			// Frame uniforms
 			entries[0].binding = 0;
@@ -160,13 +160,6 @@ namespace Engine::RenderGlobals
 			entries[3].texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
 			entries[3].texture.viewDimension = wgpu::TextureViewDimension::_2D;
 			entries[3].texture.multisampled = false;
-
-			// Prefiltered environment texture
-			//entries[4].binding = 4;
-			//entries[4].visibility = wgpu::ShaderStage::Fragment;
-			//entries[4].texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
-			//entries[4].texture.viewDimension = wgpu::TextureViewDimension::_2D;
-			//entries[4].texture.multisampled = false;
 
 			// Prefiltered environment textures
 			for (uint32_t i = 0; i < 9; i++)
@@ -195,7 +188,6 @@ namespace Engine::RenderGlobals
 			entries[15].visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
 			entries[15].buffer.type = wgpu::BufferBindingType::Uniform;
 			entries[15].buffer.minBindingSize = sizeof(ShadowUniforms);
-
 
 
 			wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc{};
@@ -229,10 +221,6 @@ namespace Engine::RenderGlobals
 			auto brdfTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/PG2/brdf_integration_map_ct_ggx.hdr");
 			bgEntries[3].binding = 3;
 			bgEntries[3].textureView = brdfTexture->GetTextureView();
-
-			//auto prefEnvTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_001.hdr");
-			//bgEntries[4].binding = 4;
-			//bgEntries[4].textureView = prefEnvTexture->GetTextureView();
 
 			std::array<std::string, 9> paths
 			{

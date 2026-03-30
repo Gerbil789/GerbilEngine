@@ -3,6 +3,7 @@
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Utility/File.h"
+#include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Graphics/GraphicsContext.h"
 
 namespace Engine
@@ -59,21 +60,7 @@ namespace Engine
 		bindGroupDesc.entries = &bindGroupEntry;
 		m_ShadowBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
 
-		std::string content;
-		if (!Engine::ReadFile("Resources/Engine/shaders/wireframe.wgsl", content))
-		{
-			throw std::runtime_error("Failed to load wireframe shader");
-		}
-
-		wgpu::ShaderSourceWGSL shaderCodeDesc;
-		shaderCodeDesc.chain.next = nullptr;
-		shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
-		shaderCodeDesc.code = { content.c_str(), WGPU_STRLEN };
-
-		wgpu::ShaderModuleDescriptor shaderDesc{};
-		shaderDesc.nextInChain = &shaderCodeDesc.chain;
-
-		wgpu::ShaderModule shaderModule = GraphicsContext::GetDevice().createShaderModule(shaderDesc);
+		wgpu::ShaderModule shaderModule = LoadWGSLShader("Resources/Engine/shaders/wireframe.wgsl");
 		std::vector<wgpu::VertexAttribute> vertexAttribs(3);
 
 		// Position

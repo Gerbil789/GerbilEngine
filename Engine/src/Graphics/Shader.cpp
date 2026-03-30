@@ -10,7 +10,6 @@ namespace Engine
 	{
 		m_Specification = specification;
 		m_Name = name;
-		LOG_INFO("Creating shader: {}", m_Name);
 
 		wgpu::ShaderModule shaderModule = CreateShaderModule(source);
 

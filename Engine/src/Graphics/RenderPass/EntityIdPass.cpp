@@ -202,21 +202,8 @@ namespace Engine
 
 	void EntityIdPass::CreatePipeline()
 	{
-		std::string content;
-		if (!Engine::ReadFile("Resources/Engine/shaders/entityId.wgsl", content))
-		{
-			throw std::runtime_error("Failed to load entity id shader");
-		}
+		wgpu::ShaderModule shaderModule = LoadWGSLShader("Resources/Engine/shaders/entityId.wgsl");
 
-		wgpu::ShaderSourceWGSL shaderCodeDesc;
-		shaderCodeDesc.chain.next = nullptr;
-		shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
-		shaderCodeDesc.code = { content.c_str(), WGPU_STRLEN };
-
-		wgpu::ShaderModuleDescriptor shaderDesc{};
-		shaderDesc.nextInChain = &shaderCodeDesc.chain;
-
-		wgpu::ShaderModule shaderModule = GraphicsContext::GetDevice().createShaderModule(shaderDesc);
 		std::vector<wgpu::VertexAttribute> vertexAttribs(3);
 
 		// Position

@@ -110,27 +110,15 @@ namespace Engine
       size_t offset = 0;
 
       std::regex memberRegex(R"(\s*(\w+)\s*:\s*([a-zA-Z0-9_<>]+))");
-      //std::regex memberRegex(R"(\s*(\w+)\s*:\s*([^;]+))");
 
       std::smatch memberMatch;
       auto mbegin = body.cbegin();
       auto mend = body.cend();
 
-      //auto Trim = [](std::string& s)
-      //  {
-      //    s.erase(0, s.find_first_not_of(" \t\n\r"));
-      //    s.erase(s.find_last_not_of(" \t\n\r") + 1);
-      //  };
-
       while (std::regex_search(mbegin, mend, memberMatch, memberRegex))
       {
         ShaderParameter param;
         param.name = memberMatch[1].str();
-
-        //std::string typeStr = memberMatch[2].str();
-        //Trim(typeStr);
-
-        //param.type = ParseValueType(typeStr);
 
         param.type = ParseValueType(memberMatch[2].str());
         param.offset = offset;

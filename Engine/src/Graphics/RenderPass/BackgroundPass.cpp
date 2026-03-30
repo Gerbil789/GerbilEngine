@@ -8,7 +8,7 @@ namespace Engine
 {
 	void BackgroundPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList&)
 	{
-		wgpu::RenderPassColorAttachment color{};
+		wgpu::RenderPassColorAttachment color;
 		color.view = context.colorTarget;
 		color.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 		color.loadOp = wgpu::LoadOp::Clear;
@@ -25,12 +25,15 @@ namespace Engine
 
 		pass.setBindGroup(0, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
 
-		if (context.camera->GetProjection() == Camera::Projection::Perspective && context.camera->GetBackground() == Camera::Background::Skybox)
+		if (context.camera->GetProjection() == Camera::Projection::Perspective)
 		{
-			auto& skybox = context.camera->GetSkybox();
-			pass.setPipeline(skybox.GetEnvironmentShader().GetRenderPipeline());
-			pass.setBindGroup(1, skybox.GetBindGroup(), 0, nullptr);
-			pass.draw(36, 1, 0, 0);
+			if(context.camera->GetBackground() == Camera::Background::Skybox)
+			{
+				const auto& skybox = context.camera->GetSkybox();
+				pass.setPipeline(skybox.GetEnvironmentShader().GetRenderPipeline());
+				pass.setBindGroup(1, skybox.GetBindGroup(), 0, nullptr);
+				pass.draw(36, 1, 0, 0);
+			}
 		}
 
 		pass.end();
