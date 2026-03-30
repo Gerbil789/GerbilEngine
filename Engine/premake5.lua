@@ -31,6 +31,7 @@ externalincludedirs
 	"%{wks.location}/vendor/glfw/include",
 	"%{wks.location}/vendor/glm",
 	"%{wks.location}/vendor/entt/include",
+	"%{wks.location}/vendor/imgui",
 	"%{wks.location}/vendor/tinygltf",
 	"%{wks.location}/vendor/portable-file-dialogs",
 	"%{wks.location}/vendor/yaml-cpp/include",
@@ -41,6 +42,7 @@ externalincludedirs
 links
 {
 	"glfw",
+	"ImGui",
 	"webgpu_dawn",
 	"yaml-cpp",
 	"miniaudio"

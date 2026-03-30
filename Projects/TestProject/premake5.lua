@@ -26,23 +26,14 @@ includedirs
 
 externalincludedirs
 {
-	-- "%{wks.location}/vendor/glfw/include",
 	"%{wks.location}/vendor/dawn/include",
 	"%{wks.location}/vendor/glm",
 	"%{wks.location}/vendor/entt/include",
-	-- "%{wks.location}/vendor/tinygltf",
-	-- "%{wks.location}/vendor/portable-file-dialogs",
-	-- "%{wks.location}/vendor/yaml-cpp/include",
-	-- "%{wks.location}/vendor/miniaudio"
 }
 
 links
 {
 	"Engine",
-	-- "glfw",
-	-- "webgpu_dawn",
-	-- "yaml-cpp",
-	-- "miniaudio"
 }
 
 libdirs 
@@ -63,7 +54,6 @@ filter "system:windows"
 	{
 		"ENGINE_PLATFORM_WINDOWS",
 		"GLFW_INCLUDE_NONE",
-		-- "YAML_CPP_STATIC_DEFINE",
 		"GAME_BUILD_DLL"
 	}
 

@@ -60,6 +60,8 @@ namespace Engine
 		x11Desc.window = glfwGetX11Window(window);
 		surfaceDesc.nextInChain = &x11Desc.chain;
 #endif
+
+
 		return GraphicsContext::GetInstance().createSurface(surfaceDesc);
 	}
 
@@ -257,7 +259,7 @@ namespace Engine
 		config.device = GraphicsContext::GetDevice();
 		config.format = wgpu::TextureFormat::RGBA8Unorm;
 		config.usage = wgpu::TextureUsage::RenderAttachment;
-		config.presentMode = wgpu::PresentMode::Fifo;
+		config.presentMode = wgpu::PresentMode::Immediate;
 		config.alphaMode = wgpu::CompositeAlphaMode::Opaque;
 		config.viewFormatCount = 0;
 		config.viewFormats = nullptr;

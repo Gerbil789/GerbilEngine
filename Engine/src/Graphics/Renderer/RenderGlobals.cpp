@@ -8,7 +8,6 @@
 
 namespace Engine::RenderGlobals
 {
-
 	// Shadow
 	ShadowUniforms s_ShadowUniforms;
 	static std::array<wgpu::TextureView, shadowCascadeCount> m_DepthTextureViews;

@@ -22,6 +22,7 @@ struct FrameUniforms
 	_padding: f32,
 };
 
+// uses dynamic offset
 struct ModelUniforms 
 {
 	model: mat4x4f,
@@ -33,6 +34,23 @@ struct MaterialUniforms
 	roughness: f32,
 	metallic: f32,
 	tiling: vec2f,
+};
+
+const LIGHT_TYPE_DIRECTIONAL: u32 = 0u;
+const LIGHT_TYPE_POINT: u32       = 1u;
+const LIGHT_TYPE_SPOT: u32        = 2u;
+
+struct LightUniforms
+{
+    position: vec3f,   // point/spot
+    lightType: u32,
+    direction: vec3f,  // directional/spot
+    range: f32,        // point/spot
+    color: vec3f,
+    intensity: f32,
+    spotAngle: f32,    // spot (cos angle or radians)
+    spotBlend: f32,    // soft edge
+    _pad: vec2f,
 };
 
 const NUM_CASCADES: i32 = 4;
@@ -49,7 +67,7 @@ const PI: f32 = 3.14159265;
 @group(0) @binding(1) var EnvSampler: sampler;
 @group(0) @binding(2) var IrradianceMap: texture_2d<f32>;
 @group(0) @binding(3) var BRDFIntMap: texture_2d<f32>;
-// @group(0) @binding(4) var PrefilteredEnvMap: array<texture_2d<f32>, 9>;
+
 @group(0) @binding(4) var PrefilteredEnvMap0: texture_2d<f32>;
 @group(0) @binding(5) var PrefilteredEnvMap1: texture_2d<f32>;
 @group(0) @binding(6) var PrefilteredEnvMap2: texture_2d<f32>;
@@ -70,6 +88,8 @@ const PI: f32 = 3.14159265;
 @group(0) @binding(13) var shadowMap : texture_depth_2d_array;
 @group(0) @binding(14) var shadowSampler : sampler_comparison;
 @group(0) @binding(15) var<uniform> uShadow : ShadowUniforms;
+
+@group(0) @binding(16) var<uniform> uLight: LightUniforms;
 
 
 fn DirectionToEquirectUV(dir: vec3f) -> vec2f
@@ -118,9 +138,6 @@ fn vs_main(in: VertexInput) -> VertexOutput
 	out.uv = in.uv;
 	out.worldPos = worldPos.xyz;
 
-	//let tmp = uShadow.lightViewProj * worldPos;
-  // out.lightPos = tmp.xyz / tmp.w;
-
 
 	let viewPos = uFrame.view * worldPos;
 	out.viewDepth = viewPos.z;
@@ -166,8 +183,6 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 
 	let lightPos4 = uShadow.lightViewProj[cascadeIndex] * vec4f(in.worldPos, 1.0);
 	let lightPos = lightPos4.xyz / lightPos4.w;
-
-
 
 
 	let light_uv = vec2f(

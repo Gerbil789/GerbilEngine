@@ -263,7 +263,7 @@ namespace Editor
 			PropertyRow row("Type");
 			Engine::LightType type = component.type;
 			int current = static_cast<int>(type);
-			if (EnumField("Type", current, { "Point", "Directional", "Spot" }).changed)
+			if (EnumField("Type", current, { "Directional", "Spot", "Point" }).changed)
 			{
 				component.type = static_cast<Engine::LightType>(current);
 			}
@@ -277,12 +277,6 @@ namespace Editor
 		{
 			PropertyRow row("Intensity");
 			FloatField("Intensity", component.intensity, 0.0f);
-		}
-
-		if (component.type != Engine::LightType::Directional)
-		{
-			PropertyRow row("Range");
-			FloatField("Range", component.range, 0.0f);
 		}
 
 		if (component.type == Engine::LightType::Spot)
