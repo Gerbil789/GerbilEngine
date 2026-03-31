@@ -26,6 +26,9 @@
 #include "Engine/Event/EventBus.h"
 #include "Editor/Utility/RenderDoc.h"
 
+#include "Engine/Compute/ComputePass.h"
+#include "Engine/Graphics/GraphicsContext.h"
+
 namespace Editor
 {
 	EditorApp::EditorApp(const ApplicationCommandLineArgs& args)
@@ -79,6 +82,9 @@ namespace Editor
 		}
 
 		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
+
+		Engine::ComputePass computePass;
+		computePass.Execute();
 	}
 
 	EditorApp::~EditorApp()

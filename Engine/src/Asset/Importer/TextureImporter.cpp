@@ -2,6 +2,7 @@
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Graphics/Texture.h"
 #include "Engine/Asset/AssetRecord.h"
+#include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Core/Engine.h"
 #include <stb_image.h>
 
@@ -42,6 +43,117 @@ namespace Engine
 		stbi_image_free(data);
 		return texture;
 	}
+
+  wgpu::TextureView TextureImporter::LoadTexture2DWithMipMaps(const std::vector<std::filesystem::path>& paths)
+  {
+    struct MipData
+    {
+      void* data;
+      int width;
+      int height;
+    };
+
+    std::vector<MipData> mips;
+    mips.reserve(paths.size());
+
+    int channels = 0;
+    wgpu::TextureFormat format;
+
+    for (size_t i = 0; i < paths.size(); i++)
+    {
+			// check if path is valid
+			if (!std::filesystem::exists(paths[i]))
+			{
+				LOG_ERROR("Texture path does not exist: {}", paths[i]);
+				return nullptr;
+			}
+
+      int width, height;
+      void* data = nullptr;
+
+      if (stbi_is_hdr(paths[i].string().c_str()))
+      {
+        data = stbi_loadf(paths[i].string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
+        format = wgpu::TextureFormat::RGBA32Float;
+      }
+      else
+      {
+        data = stbi_load(paths[i].string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
+        format = wgpu::TextureFormat::RGBA8Unorm;
+      }
+
+      if (!data)
+      {
+        LOG_ERROR("Failed to load texture: {}", paths[i]);
+        return nullptr;
+      }
+
+      if (i > 0)
+      {
+        if (width != mips[i - 1].width / 2 || height != mips[i - 1].height / 2)
+        {
+          LOG_ERROR("Invalid mip chain at level {}", i);
+          return nullptr;
+        }
+      }
+
+      mips.push_back({ data, width, height });
+    }
+
+    uint32_t mipCount = (uint32_t)mips.size();
+    uint32_t baseWidth = mips[0].width;
+    uint32_t baseHeight = mips[0].height;
+
+    uint32_t bytesPerPixel = (format == wgpu::TextureFormat::RGBA32Float) ? 16 : 4;
+
+    wgpu::TextureDescriptor desc;
+		desc.label = { "Texture2DWithMipMaps", WGPU_STRLEN };
+    desc.dimension = wgpu::TextureDimension::_2D;
+    desc.size = { baseWidth, baseHeight, 1 };
+    desc.mipLevelCount = mipCount;
+    desc.sampleCount = 1;
+    desc.format = format;
+    desc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
+		desc.viewFormatCount = 0;
+		desc.viewFormats = nullptr;
+
+    wgpu::Texture texture = GraphicsContext::GetDevice().createTexture(desc);
+
+    for (uint32_t mip = 0; mip < mipCount; mip++)
+    {
+      const auto& m = mips[mip];
+
+      wgpu::TexelCopyTextureInfo dst;
+      dst.texture = texture;
+      dst.mipLevel = mip;
+      dst.origin = { 0, 0, 0 };
+			dst.aspect = wgpu::TextureAspect::All;
+
+      wgpu::TexelCopyBufferLayout layout;
+      layout.offset = 0;
+      layout.bytesPerRow = m.width * bytesPerPixel;
+      layout.rowsPerImage = m.height;
+
+      wgpu::Extent3D size = { (uint32_t)m.width, (uint32_t)m.height, 1 };
+
+      GraphicsContext::GetQueue().writeTexture(dst, m.data, (size_t)(m.width * m.height * bytesPerPixel), layout, size);
+			stbi_image_free(m.data);
+    }
+
+
+    // create view 
+    wgpu::TextureViewDescriptor viewDesc;
+    viewDesc.dimension = wgpu::TextureViewDimension::_2D;
+    viewDesc.format = format;
+    viewDesc.baseMipLevel = 0;
+    viewDesc.mipLevelCount = mipCount;
+		viewDesc.baseArrayLayer = 0;
+		viewDesc.arrayLayerCount = 1;
+    viewDesc.aspect = wgpu::TextureAspect::All;
+
+    wgpu::TextureView view = texture.createView(viewDesc);
+    return view;
+  }
 
 	CubeMapTexture* TextureImporter::ImportCubeMapTexture(const AssetRecord& record)
 	{

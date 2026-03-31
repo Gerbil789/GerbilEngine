@@ -15,8 +15,6 @@ namespace Engine
 	void Renderer::AddPass(RenderPass* pass)
 	{
 		m_Passes.push_back(pass);
-
-		LOG_WARNING("Added render pass: {}, count: {}", typeid(*pass).name(), m_Passes.size());
 	}
 
 	void Renderer::RemovePass(RenderPass* pass)
@@ -27,7 +25,6 @@ namespace Engine
 			m_Passes.erase(it);
 		}
 	}
-
 
 	void Renderer::SetScene(Scene* scene)
 	{

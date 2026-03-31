@@ -60,7 +60,7 @@
   Transform:
     Position: [0, -2, 0]
     Rotation: [0, -0, 0]
-    Scale: [25, 25, 25]
+    Scale: [100, 100, 100]
   MeshComponent:
     Mesh: 16263461787928416772
     Materials: [4524766446218326838]
@@ -292,7 +292,7 @@
     Rotation: [0, 0, 0]
     Scale: [1, 1, 1]
   MeshComponent:
-    Mesh: 15608668046686712752
+    Mesh: 9153350241491098746
     Materials: [14271088859862093309]
 - ID: 10411314405147299532
   Enabled: true

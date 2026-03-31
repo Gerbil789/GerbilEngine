@@ -81,10 +81,9 @@ namespace Engine
 		depthStencilState.stencilReadMask = 0xFFFFFFFF;
 		depthStencilState.stencilWriteMask = 0xFFFFFFFF;
 
-		//depthStencilState.depthBias = 2;
-		//depthStencilState.depthBiasSlopeScale = 2.0f;
-		//depthStencilState.depthBiasClamp = 0.0f;
-
+		depthStencilState.depthBias = 2;
+		depthStencilState.depthBiasSlopeScale = 2.0f;
+		depthStencilState.depthBiasClamp = 0.0f;
 
 		pipelineDesc.depthStencil = &depthStencilState;
 
@@ -94,22 +93,21 @@ namespace Engine
 
 		m_MaterialBindGroupLayout = CreateMaterialBindGroupLayout(specification);
 
-		wgpu::BindGroupLayout bindGroupLayouts[] = {
+		std::array<wgpu::BindGroupLayout, 3> bindGroupLayouts
+		{
 			RenderGlobals::GetFrameLayout(),
 			RenderGlobals::GetModelLayout(),
 			m_MaterialBindGroupLayout
 		};
 
-		wgpu::PipelineLayoutDescriptor layoutDesc{};
-		std::string label = m_Name + "ShaderPipelineLayout";
+		wgpu::PipelineLayoutDescriptor layoutDesc;
+		std::string label = std::format("{} Shader Pipeline Layout", m_Name);
 		layoutDesc.label = { label.c_str(), WGPU_STRLEN};
-		layoutDesc.bindGroupLayoutCount = 3;
-		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayouts;
+		layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
+		layoutDesc.bindGroupLayouts = reinterpret_cast<WGPUBindGroupLayout*>(bindGroupLayouts.data());
 		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
 
 		m_RenderPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
-
-		shaderModule.release();
 	}
 
 	wgpu::ShaderModule Shader::CreateShaderModule(const std::string& source)
@@ -117,7 +115,7 @@ namespace Engine
 		const char* shaderSource = source.c_str();
 
 		wgpu::ShaderModuleDescriptor shaderDesc;
-		std::string label = m_Name + "ShaderModule";
+		std::string label = std::format("{} Shader Module", m_Name);
 		shaderDesc.label = { label.c_str(), WGPU_STRLEN };
 
 		wgpu::ShaderSourceWGSL shaderCodeDesc;

@@ -72,11 +72,21 @@ namespace Engine::GraphicsContext
 				LOG_ERROR("WebGPU Uncaptured error [type: {}]: {}", ErrorTypeToString(type), message.data);
 			};
 
+		deviceDesc.requiredFeatureCount = 1;
+		wgpu::FeatureName features[]
+		{
+			wgpu::FeatureName::Float32Filterable
+		};
+		deviceDesc.requiredFeatures = (WGPUFeatureName*)features;
+
 		s_Device = adapter.requestDevice(deviceDesc);
 		if(!s_Device)
 		{
 			throw std::runtime_error("Failed to request WGPU device");
 		}
+
+		bool hasFloat32Filterable = s_Device.hasFeature(wgpu::FeatureName::Float32Filterable);
+		LOG_WARNING("Float32Filterable: {}", hasFloat32Filterable ? "YES" : "NO");
 
 		adapter.release();
 

@@ -45,7 +45,7 @@ namespace Engine::RenderGlobals
 		wgpu::Device device = GraphicsContext::GetDevice();
 
 		wgpu::Limits limits;
-		if(device.getLimits(&limits) != wgpu::Status::Success)
+		if (device.getLimits(&limits) != wgpu::Status::Success)
 		{
 			throw std::runtime_error("Failed to get device limits");
 		}
@@ -134,7 +134,7 @@ namespace Engine::RenderGlobals
 
 		// Frame 
 		{
-			std::array<wgpu::BindGroupLayoutEntry, 16> entries;
+			std::array<wgpu::BindGroupLayoutEntry, 8> entries;
 
 			// Frame uniforms
 			entries[0].binding = 0;
@@ -145,52 +145,49 @@ namespace Engine::RenderGlobals
 			// Environment sampler
 			entries[1].binding = 1;
 			entries[1].visibility = wgpu::ShaderStage::Fragment;
-			entries[1].sampler.type = wgpu::SamplerBindingType::NonFiltering;
+			entries[1].sampler.type = wgpu::SamplerBindingType::Filtering;
 
 			// Irradiance texture
 			entries[2].binding = 2;
 			entries[2].visibility = wgpu::ShaderStage::Fragment;
-			entries[2].texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
+			entries[2].texture.sampleType = wgpu::TextureSampleType::Float;
 			entries[2].texture.viewDimension = wgpu::TextureViewDimension::_2D;
 			entries[2].texture.multisampled = false;
 
 			// BRDF integration texture
 			entries[3].binding = 3;
 			entries[3].visibility = wgpu::ShaderStage::Fragment;
-			entries[3].texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
+			entries[3].texture.sampleType = wgpu::TextureSampleType::Float;
 			entries[3].texture.viewDimension = wgpu::TextureViewDimension::_2D;
 			entries[3].texture.multisampled = false;
 
-			// Prefiltered environment textures
-			for (uint32_t i = 0; i < 9; i++)
-			{
-				entries[4 + i].binding = 4 + i;
-				entries[4 + i].visibility = wgpu::ShaderStage::Fragment;
-				entries[4 + i].texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
-				entries[4 + i].texture.viewDimension = wgpu::TextureViewDimension::_2D;
-				entries[4 + i].texture.multisampled = false;
-			}
+			// Prefiltered environment texture
+			entries[4].binding = 4;
+			entries[4].visibility = wgpu::ShaderStage::Fragment;
+			entries[4].texture.sampleType = wgpu::TextureSampleType::Float;
+			entries[4].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+			entries[4].texture.multisampled = false;
 
 			// Shadow map texture
-			entries[13].binding = 13;
-			entries[13].visibility = wgpu::ShaderStage::Fragment;
-			entries[13].texture.sampleType = wgpu::TextureSampleType::Depth;
-			entries[13].texture.viewDimension = wgpu::TextureViewDimension::_2DArray;
-			entries[13].texture.multisampled = false;
+			entries[5].binding = 5;
+			entries[5].visibility = wgpu::ShaderStage::Fragment;
+			entries[5].texture.sampleType = wgpu::TextureSampleType::Depth;
+			entries[5].texture.viewDimension = wgpu::TextureViewDimension::_2DArray;
+			entries[5].texture.multisampled = false;
 
 			// Shadow map sampler
-			entries[14].binding = 14;
-			entries[14].visibility = wgpu::ShaderStage::Fragment;
-			entries[14].sampler.type = wgpu::SamplerBindingType::Comparison;
+			entries[6].binding = 6;
+			entries[6].visibility = wgpu::ShaderStage::Fragment;
+			entries[6].sampler.type = wgpu::SamplerBindingType::Comparison;
 
 			// Shadow uniforms
-			entries[15].binding = 15;
-			entries[15].visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
-			entries[15].buffer.type = wgpu::BufferBindingType::Uniform;
-			entries[15].buffer.minBindingSize = sizeof(ShadowUniforms);
+			entries[7].binding = 7;
+			entries[7].visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
+			entries[7].buffer.type = wgpu::BufferBindingType::Uniform;
+			entries[7].buffer.minBindingSize = sizeof(ShadowUniforms);
 
 
-			wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc{};
+			wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
 			bindGroupLayoutDesc.label = { "FrameBindGroupLayout", WGPU_STRLEN };
 			bindGroupLayoutDesc.entryCount = entries.size();
 			bindGroupLayoutDesc.entries = entries.data();
@@ -204,15 +201,23 @@ namespace Engine::RenderGlobals
 
 			s_FrameUniformBuffer = device.createBuffer(bufferDesc);
 
-			wgpu::BindGroupEntry bgEntries[16]{};
+			std::array<wgpu::BindGroupEntry, 8> bgEntries;
 
 			bgEntries[0].binding = 0;
 			bgEntries[0].buffer = s_FrameUniformBuffer;
 			bgEntries[0].offset = 0;
 			bgEntries[0].size = sizeof(FrameUniforms);
 
+			wgpu::SamplerDescriptor envSamplerDesc;
+			envSamplerDesc.label = { "EnvironmentSampler", WGPU_STRLEN };
+			envSamplerDesc.minFilter = wgpu::FilterMode::Linear;
+			envSamplerDesc.magFilter = wgpu::FilterMode::Linear;
+			envSamplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
+			envSamplerDesc.maxAnisotropy = 1;
+
+			wgpu::Sampler envSampler = device.createSampler(envSamplerDesc);
 			bgEntries[1].binding = 1;
-			bgEntries[1].sampler = SamplerPool::GetSampler(TextureFilter::Point, TextureWrap::Clamp);
+			bgEntries[1].sampler = envSampler;
 
 			auto irrTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/PG2/lebombo_irradiance_map.hdr");
 			bgEntries[2].binding = 2;
@@ -222,7 +227,7 @@ namespace Engine::RenderGlobals
 			bgEntries[3].binding = 3;
 			bgEntries[3].textureView = brdfTexture->GetTextureView();
 
-			std::array<std::string, 9> paths
+			std::vector<std::filesystem::path> paths
 			{
 				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_001.hdr",
 				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_125.hdr",
@@ -235,28 +240,35 @@ namespace Engine::RenderGlobals
 				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_999.hdr"
 			};
 
-			for (uint32_t i = 0; i < 9; i++)
-			{
-				auto tex = TextureImporter::LoadTexture2D(paths[i]);
-				bgEntries[4 + i].binding = 4 + i;
-				bgEntries[4 + i].textureView = tex->GetTextureView();
-			}
+			//std::vector<std::filesystem::path> paths
+			//{
+			//	"Resources/Engine/hdr/PG2/tmp/lebombo_1.png",
+			//	"Resources/Engine/hdr/PG2/tmp/lebombo_2.png",
+			//	"Resources/Engine/hdr/PG2/tmp/lebombo_3.png",
+			//	"Resources/Engine/hdr/PG2/tmp/lebombo_4.png",
+			//	"Resources/Engine/hdr/PG2/tmp/lebombo_5.png",
+			//	"Resources/Engine/hdr/PG2/tmp/lebombo_6.png"
+			//};
+
+			auto view = TextureImporter::LoadTexture2DWithMipMaps(paths);
+			bgEntries[4].binding = 4;
+			bgEntries[4].textureView = view;
 
 
-			bgEntries[13].binding = 13;
-			bgEntries[13].textureView = m_DepthTextureArrayView;
+			bgEntries[5].binding = 5;
+			bgEntries[5].textureView = m_DepthTextureArrayView;
 
 			wgpu::SamplerDescriptor desc;
 			desc.label = { "ShadowSampler", WGPU_STRLEN };
 			desc.compare = wgpu::CompareFunction::LessEqual;
-			desc.minFilter = wgpu::FilterMode::Nearest;
-			desc.magFilter = wgpu::FilterMode::Nearest;
+			desc.minFilter = wgpu::FilterMode::Linear;
+			desc.magFilter = wgpu::FilterMode::Linear;
 			desc.maxAnisotropy = 1;
 
 			wgpu::Sampler shadowSampler = device.createSampler(desc);
 
-			bgEntries[14].binding = 14;
-			bgEntries[14].sampler = shadowSampler;
+			bgEntries[6].binding = 6;
+			bgEntries[6].sampler = shadowSampler;
 
 			wgpu::BufferDescriptor shadowBufferDesc;
 			shadowBufferDesc.label = { "ShadowUniformBuffer", WGPU_STRLEN };
@@ -264,17 +276,16 @@ namespace Engine::RenderGlobals
 			shadowBufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 			s_ShadowUniformBuffer = device.createBuffer(shadowBufferDesc);
 
-			bgEntries[15].binding = 15;
-			bgEntries[15].buffer = s_ShadowUniformBuffer;
-			bgEntries[15].offset = 0;
-			bgEntries[15].size = sizeof(ShadowUniforms);
+			bgEntries[7].binding = 7;
+			bgEntries[7].buffer = s_ShadowUniformBuffer;
+			bgEntries[7].offset = 0;
+			bgEntries[7].size = sizeof(ShadowUniforms);
 
-
-			wgpu::BindGroupDescriptor bindGroupDesc{};
+			wgpu::BindGroupDescriptor bindGroupDesc;
 			bindGroupDesc.label = { "FrameBindGroup", WGPU_STRLEN };
 			bindGroupDesc.layout = s_FrameBindGroupLayout;
-			bindGroupDesc.entryCount = 16;
-			bindGroupDesc.entries = bgEntries;
+			bindGroupDesc.entryCount = bgEntries.size();
+			bindGroupDesc.entries = bgEntries.data();
 			s_FrameBindGroup = device.createBindGroup(bindGroupDesc);
 		}
 	}
