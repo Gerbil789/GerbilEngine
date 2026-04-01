@@ -4,33 +4,57 @@
 
 namespace Engine
 {
-	static Texture2D* s_DefaultWhiteTexture = nullptr;
+	namespace
+	{
+		static Texture2D* s_DefaultWhiteTexture = nullptr;
+
+		uint32_t getMaxMipLevelCount(const wgpu::Extent3D& textureSize)
+		{
+			return std::bit_width(std::max(textureSize.width, textureSize.height));
+		}
+	}
+
+
+
 
 	Texture2D::Texture2D(const TextureSpecification& specification, const void* data)
 	{
 		m_Width = specification.width;
 		m_Height = specification.height;
 		m_TextureFormat = specification.format;
+		uint32_t mipCount = 1;
+
+
+
+		if (specification.generateMips)
+		{
+			mipCount = getMaxMipLevelCount({ m_Width , m_Height , 1 });
+		}
 
 		uint32_t bytesPerPixel = 4;
-		if(m_TextureFormat == wgpu::TextureFormat::RGBA32Float)
+		if (m_TextureFormat == wgpu::TextureFormat::RGBA32Float)
 		{
 			bytesPerPixel = 16;
+		}
+
+		if(m_TextureFormat == wgpu::TextureFormat::RGBA16Float)
+		{
+			bytesPerPixel = 8;
 		}
 
 		wgpu::TextureDescriptor textureDesc;
 		textureDesc.dimension = wgpu::TextureDimension::_2D;
 		textureDesc.format = m_TextureFormat;
-		textureDesc.mipLevelCount = 1;
+		textureDesc.mipLevelCount = mipCount;
 		textureDesc.sampleCount = 1;
 		textureDesc.size = { m_Width, m_Height, 1 };
-		textureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
+		textureDesc.usage = specification.usage;
 		textureDesc.viewFormatCount = 0;
 		textureDesc.viewFormats = nullptr;
-		wgpu::Texture texture = GraphicsContext::GetDevice().createTexture(textureDesc);
+		m_Texture = GraphicsContext::GetDevice().createTexture(textureDesc);
 
 		wgpu::TexelCopyTextureInfo dst;
-		dst.texture = texture;
+		dst.texture = m_Texture;
 		dst.mipLevel = 0;
 		dst.origin = { 0, 0, 0 };
 		dst.aspect = wgpu::TextureAspect::All;
@@ -44,7 +68,8 @@ namespace Engine
 
 		GraphicsContext::GetQueue().writeTexture(dst, data, m_Width * m_Height * bytesPerPixel, layout, size);
 
-		wgpu::TextureViewDescriptor viewDesc{};
+		wgpu::TextureViewDescriptor viewDesc;
+		viewDesc.label = { "Texture2DView", WGPU_STRLEN };
 		viewDesc.format = m_TextureFormat;
 		viewDesc.dimension = wgpu::TextureViewDimension::_2D;
 		viewDesc.baseMipLevel = 0;
@@ -52,14 +77,14 @@ namespace Engine
 		viewDesc.baseArrayLayer = 0;
 		viewDesc.arrayLayerCount = 1;
 		viewDesc.aspect = wgpu::TextureAspect::All;
-		m_TextureView = texture.createView(viewDesc);
+		m_TextureView = m_Texture.createView(viewDesc);
 	}
 
 	Texture2D* Texture2D::GetDefault()
 	{
-		if(!s_DefaultWhiteTexture)
+		if (!s_DefaultWhiteTexture)
 		{
-			TextureSpecification spec{};
+			TextureSpecification spec;
 			spec.width = 1;
 			spec.height = 1;
 			spec.format = wgpu::TextureFormat::RGBA8Unorm;
@@ -93,48 +118,48 @@ namespace Engine
 
 	CubeMapTexture::CubeMapTexture(const TextureSpecification& specification, const std::array<const void*, 6>& data)
 	{
-    m_Width = specification.width;
-    m_Height = specification.height;
-    m_TextureFormat = specification.format;
+		m_Width = specification.width;
+		m_Height = specification.height;
+		m_TextureFormat = specification.format;
 
-    wgpu::TextureDescriptor textureDesc{};
-    textureDesc.dimension = wgpu::TextureDimension::_2D;
-    textureDesc.format = m_TextureFormat;
-    textureDesc.mipLevelCount = 1;
-    textureDesc.sampleCount = 1;
-    textureDesc.size = { m_Width, m_Height, 6 };
-    textureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
-    textureDesc.viewFormatCount = 0;
-    textureDesc.viewFormats = nullptr;
+		wgpu::TextureDescriptor textureDesc;
+		textureDesc.dimension = wgpu::TextureDimension::_2D;
+		textureDesc.format = m_TextureFormat;
+		textureDesc.mipLevelCount = 1;
+		textureDesc.sampleCount = 1;
+		textureDesc.size = { m_Width, m_Height, 6 };
+		textureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
+		textureDesc.viewFormatCount = 0;
+		textureDesc.viewFormats = nullptr;
 		wgpu::Texture texture = GraphicsContext::GetDevice().createTexture(textureDesc);
 
 
-    for (uint32_t layer = 0; layer < 6; ++layer)
-    {
-      wgpu::TexelCopyTextureInfo dst{};
-      dst.texture = texture;
-      dst.mipLevel = 0;
-      dst.origin = { 0, 0, layer };
-      dst.aspect = wgpu::TextureAspect::All;
+		for (uint32_t layer = 0; layer < 6; ++layer)
+		{
+			wgpu::TexelCopyTextureInfo dst;
+			dst.texture = texture;
+			dst.mipLevel = 0;
+			dst.origin = { 0, 0, layer };
+			dst.aspect = wgpu::TextureAspect::All;
 
-      wgpu::TexelCopyBufferLayout layout{};
-      layout.offset = 0; 
-      layout.bytesPerRow = m_Width * 4;
-      layout.rowsPerImage = m_Height;
+			wgpu::TexelCopyBufferLayout layout;
+			layout.offset = 0;
+			layout.bytesPerRow = m_Width * 4;
+			layout.rowsPerImage = m_Height;
 
-      wgpu::Extent3D size = { m_Width, m_Height, 1 };
-      GraphicsContext::GetQueue().writeTexture(dst, data[layer], m_Width * m_Height * 4, layout, size);
-    }
+			wgpu::Extent3D size = { m_Width, m_Height, 1 };
+			GraphicsContext::GetQueue().writeTexture(dst, data[layer], m_Width * m_Height * 4, layout, size);
+		}
 
-    wgpu::TextureViewDescriptor viewDesc{};
-    viewDesc.format = m_TextureFormat;
-    viewDesc.dimension = wgpu::TextureViewDimension::Cube;
-    viewDesc.baseMipLevel = 0;
-    viewDesc.mipLevelCount = 1;
-    viewDesc.baseArrayLayer = 0;
-    viewDesc.arrayLayerCount = 6;
-    viewDesc.aspect = wgpu::TextureAspect::All;
+		wgpu::TextureViewDescriptor viewDesc;
+		viewDesc.format = m_TextureFormat;
+		viewDesc.dimension = wgpu::TextureViewDimension::Cube;
+		viewDesc.baseMipLevel = 0;
+		viewDesc.mipLevelCount = 1;
+		viewDesc.baseArrayLayer = 0;
+		viewDesc.arrayLayerCount = 6;
+		viewDesc.aspect = wgpu::TextureAspect::All;
 
-    m_TextureView = texture.createView(viewDesc);
+		m_TextureView = texture.createView(viewDesc);
 	}
 }

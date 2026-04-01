@@ -240,16 +240,6 @@ namespace Engine::RenderGlobals
 				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_999.hdr"
 			};
 
-			//std::vector<std::filesystem::path> paths
-			//{
-			//	"Resources/Engine/hdr/PG2/tmp/lebombo_1.png",
-			//	"Resources/Engine/hdr/PG2/tmp/lebombo_2.png",
-			//	"Resources/Engine/hdr/PG2/tmp/lebombo_3.png",
-			//	"Resources/Engine/hdr/PG2/tmp/lebombo_4.png",
-			//	"Resources/Engine/hdr/PG2/tmp/lebombo_5.png",
-			//	"Resources/Engine/hdr/PG2/tmp/lebombo_6.png"
-			//};
-
 			auto view = TextureImporter::LoadTexture2DWithMipMaps(paths);
 			bgEntries[4].binding = 4;
 			bgEntries[4].textureView = view;

@@ -23,6 +23,9 @@ Assets:
   - ID: 9153350241491098746
     Path: Meshes\cube.glb
     Type: Mesh
+  - ID: 16556381417515180874
+    Path: Textures\tmp\mip4.png
+    Type: Texture
   - ID: 10975628317494508874
     Path: Textures\spritesheet.png
     Type: Texture
@@ -56,6 +59,9 @@ Assets:
   - ID: 9802921481971375387
     Path: Meshes\bad cube 2.glb
     Type: Mesh
+  - ID: 1159630092946722105
+    Path: Textures\tmp\mip7.png
+    Type: Texture
   - ID: 9444807739676329273
     Path: Textures\Prototype\texture_06.png
     Type: Texture
@@ -313,6 +319,9 @@ Assets:
     Type: Texture
   - ID: 13698906005399543115
     Path: Textures\skull.png
+    Type: Texture
+  - ID: 15816988190056155467
+    Path: Textures\tmp\mip2.png
     Type: Texture
   - ID: 16139434238335653539
     Path: Textures\spritesheet.png
@@ -662,6 +671,9 @@ Assets:
   - ID: 6697304609557636085
     Path: tmp\tmp_3.mat
     Type: Material
+  - ID: 11173220942995425269
+    Path: Textures\tmp\mip6.png
+    Type: Texture
   - ID: 15388406335680235062
     Path: tmp\tmp_4.mat
     Type: Material
@@ -842,8 +854,14 @@ Assets:
   - ID: 918067446061474636
     Path: Textures\metal_plates\color.png
     Type: Texture
+  - ID: 16541535713376504140
+    Path: Textures\tmp\mip8.png
+    Type: Texture
   - ID: 5624263593718275023
     Path: Textures\metal_plates\metallic.png
+    Type: Texture
+  - ID: 16001615300406710735
+    Path: Textures\tmp\mip1.png
     Type: Texture
   - ID: 2628749614390944510
     Path: Textures\Prototype\texture_13.png
@@ -964,4 +982,16 @@ Assets:
     Type: Texture
   - ID: 15792887575412307719
     Path: Textures\vsb.png
+    Type: Texture
+  - ID: 10678146075097392240
+    Path: Textures\input.jpg
+    Type: Texture
+  - ID: 17794197254695787399
+    Path: Textures\tmp\mip3.png
+    Type: Texture
+  - ID: 10285163638962092466
+    Path: Textures\tmp\mip5.png
+    Type: Texture
+  - ID: 15036501895680724908
+    Path: Textures\tmp\mip9.png
     Type: Texture

@@ -13,11 +13,10 @@ namespace Engine
 		return LoadTexture2D(Engine::GetAssetsDirectory() / record.path);
 	}
 
-	Texture2D* TextureImporter::LoadTexture2D(const std::filesystem::path& path)
+	Texture2D* TextureImporter::LoadTexture2D(const std::filesystem::path& path, TextureSpecification spec)
 	{
 		int width, height, channels;
 		void* data;
-		TextureSpecification spec;
 
 		if (stbi_is_hdr(path.string().c_str()))
 		{
@@ -42,6 +41,22 @@ namespace Engine
 		Texture2D* texture = new Texture2D(spec, data);
 		stbi_image_free(data);
 		return texture;
+	}
+
+	uint16_t FloatToHalf(float f)
+	{
+		uint32_t x = *(uint32_t*)&f;
+
+		uint32_t sign = (x >> 16) & 0x8000;
+		uint32_t mantissa = x & 0x7fffff;
+		int exp = ((x >> 23) & 0xff) - 127 + 15;
+
+		if (exp <= 0)
+			return (uint16_t)sign;
+		if (exp >= 31)
+			return (uint16_t)(sign | 0x7c00);
+
+		return (uint16_t)(sign | (exp << 10) | (mantissa >> 13));
 	}
 
   wgpu::TextureView TextureImporter::LoadTexture2DWithMipMaps(const std::vector<std::filesystem::path>& paths)
@@ -74,7 +89,7 @@ namespace Engine
       if (stbi_is_hdr(paths[i].string().c_str()))
       {
         data = stbi_loadf(paths[i].string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
-        format = wgpu::TextureFormat::RGBA32Float;
+        format = wgpu::TextureFormat::RGBA16Float;
       }
       else
       {
@@ -104,7 +119,9 @@ namespace Engine
     uint32_t baseWidth = mips[0].width;
     uint32_t baseHeight = mips[0].height;
 
-    uint32_t bytesPerPixel = (format == wgpu::TextureFormat::RGBA32Float) ? 16 : 4;
+		uint32_t bytesPerPixel = 4; 
+		if (format == wgpu::TextureFormat::RGBA16Float) bytesPerPixel = 8;
+		if (format == wgpu::TextureFormat::RGBA32Float) bytesPerPixel = 16;
 
     wgpu::TextureDescriptor desc;
 		desc.label = { "Texture2DWithMipMaps", WGPU_STRLEN };
@@ -121,22 +138,49 @@ namespace Engine
 
     for (uint32_t mip = 0; mip < mipCount; mip++)
     {
-      const auto& m = mips[mip];
+			const auto& m = mips[mip];
 
-      wgpu::TexelCopyTextureInfo dst;
-      dst.texture = texture;
-      dst.mipLevel = mip;
-      dst.origin = { 0, 0, 0 };
+			wgpu::TexelCopyTextureInfo dst;
+			dst.texture = texture;
+			dst.mipLevel = mip;
+			dst.origin = { 0, 0, 0 };
 			dst.aspect = wgpu::TextureAspect::All;
 
-      wgpu::TexelCopyBufferLayout layout;
-      layout.offset = 0;
-      layout.bytesPerRow = m.width * bytesPerPixel;
-      layout.rowsPerImage = m.height;
+			wgpu::TexelCopyBufferLayout layout;
+			layout.offset = 0;
+			layout.bytesPerRow = m.width * bytesPerPixel;
+			layout.rowsPerImage = m.height;
 
-      wgpu::Extent3D size = { (uint32_t)m.width, (uint32_t)m.height, 1 };
 
-      GraphicsContext::GetQueue().writeTexture(dst, m.data, (size_t)(m.width * m.height * bytesPerPixel), layout, size);
+			wgpu::Extent3D size = { (uint32_t)m.width, (uint32_t)m.height, 1 };
+
+			if (format == wgpu::TextureFormat::RGBA16Float)
+			{
+				float* src = (float*)m.data;
+				size_t pixelCount = m.width * m.height * 4;
+
+				std::vector<uint16_t> converted(pixelCount);
+
+				for (size_t i = 0; i < pixelCount; i++)
+					converted[i] = FloatToHalf(src[i]);
+
+				layout.bytesPerRow = m.width * 8;
+
+				GraphicsContext::GetQueue().writeTexture(
+					dst,
+					converted.data(),
+					converted.size() * sizeof(uint16_t),
+					layout,
+					size
+				);
+			}
+			else
+			{
+				// your existing path
+				GraphicsContext::GetQueue().writeTexture(dst, m.data, (size_t)(m.width* m.height* bytesPerPixel), layout, size);
+			}
+
+
 			stbi_image_free(m.data);
     }
 

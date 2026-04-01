@@ -207,12 +207,15 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
    let R = reflect(-V, N);
    let specUV = DirectionToEquirectUV(R);
 
+	 
+
 	//let roughness = textureSample(RoughnessTexture, Sampler, uv).r; * uMaterial.roughness;
 	let roughness = uMaterial.roughness;
 	// let maxMipLevel: f32 = 6.0;
 	// let lod = pow(roughness, 2.0) * maxMipLevel;
 
-	return vec4f(textureSampleLevel(PrefilteredEnvMap, EnvSampler, specUV, roughness));
+	return vec4f(textureSampleLevel(PrefilteredEnvMap, EnvSampler, specUV, 6.0));
+
 // sample directly from mip chain
 	// let prefiltered = textureSampleLevel(PrefilteredEnvMap, EnvSampler, specUV, 8.0).rgb;
 

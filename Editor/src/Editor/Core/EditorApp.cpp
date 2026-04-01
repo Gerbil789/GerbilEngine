@@ -28,6 +28,7 @@
 
 #include "Engine/Compute/ComputePass.h"
 #include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Compute/MipMap.h"
 
 namespace Editor
 {
@@ -83,8 +84,10 @@ namespace Editor
 
 		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
 
-		Engine::ComputePass computePass;
-		computePass.Execute();
+		//Engine::ComputePass computePass;
+		//computePass.Execute();
+
+		Engine::MipMap mipMap;
 	}
 
 	EditorApp::~EditorApp()
