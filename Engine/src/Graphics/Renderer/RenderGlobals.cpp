@@ -32,14 +32,6 @@ namespace Engine::RenderGlobals
 	};
 	static_assert(sizeof(ModelUniforms) % 16 == 0);
 
-
-	static uint32_t CeilToNextMultiple(uint32_t value, uint32_t step)
-	{
-		uint32_t divide_and_ceil = value / step + (value % step == 0 ? 0 : 1);
-		return step * divide_and_ceil;
-	}
-
-
 	void Initialize()
 	{
 		wgpu::Device device = GraphicsContext::GetDevice();
@@ -165,7 +157,7 @@ namespace Engine::RenderGlobals
 			entries[4].binding = 4;
 			entries[4].visibility = wgpu::ShaderStage::Fragment;
 			entries[4].texture.sampleType = wgpu::TextureSampleType::Float;
-			entries[4].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+			entries[4].texture.viewDimension = wgpu::TextureViewDimension::Cube;
 			entries[4].texture.multisampled = false;
 
 			// Shadow map texture
@@ -227,22 +219,26 @@ namespace Engine::RenderGlobals
 			bgEntries[3].binding = 3;
 			bgEntries[3].textureView = brdfTexture->GetTextureView();
 
-			std::vector<std::filesystem::path> paths
-			{
-				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_001.hdr",
-				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_125.hdr",
-				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_250.hdr",
-				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_375.hdr",
-				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_500.hdr",
-				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_625.hdr",
-				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_750.hdr",
-				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_875.hdr",
-				"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_999.hdr"
-			};
+			//std::vector<std::filesystem::path> paths
+			//{
+			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_001.hdr",
+			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_125.hdr",
+			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_250.hdr",
+			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_375.hdr",
+			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_500.hdr",
+			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_625.hdr",
+			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_750.hdr",
+			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_875.hdr",
+			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_999.hdr"
+			//};
 
-			auto view = TextureImporter::LoadTexture2DWithMipMaps(paths);
+			//auto view = TextureImporter::LoadTexture2DWithMipMaps(paths);
+
+			Engine::CubeMapTexture* cubemap = Engine::TextureImporter::LoadCubeMapTexture("Resources/Engine/hdr/lebombo_4k.hdr");
+
+
 			bgEntries[4].binding = 4;
-			bgEntries[4].textureView = view;
+			bgEntries[4].textureView = cubemap->GetTextureView();
 
 
 			bgEntries[5].binding = 5;

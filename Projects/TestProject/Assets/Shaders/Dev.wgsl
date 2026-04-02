@@ -68,7 +68,8 @@ const PI: f32 = 3.14159265;
 @group(0) @binding(1) var EnvSampler: sampler;
 @group(0) @binding(2) var IrradianceMap: texture_2d<f32>;
 @group(0) @binding(3) var BRDFIntMap: texture_2d<f32>;
-@group(0) @binding(4) var PrefilteredEnvMap: texture_2d<f32>;
+// @group(0) @binding(4) var PrefilteredEnvMap: texture_2d<f32>;
+@group(0) @binding(4) var PrefilteredEnvMap: texture_cube<f32>;
 
 @group(0) @binding(5) var shadowMap : texture_depth_2d_array;
 @group(0) @binding(6) var shadowSampler : sampler_comparison;
@@ -205,7 +206,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 //   let irradiance = textureSample(IrradianceMap, EnvSampler, hdr_uv).rgb;
 //   let diffuse = Fd * (albedo / PI) * irradiance;
    let R = reflect(-V, N);
-   let specUV = DirectionToEquirectUV(R);
+  //  let specUV = DirectionToEquirectUV(R);
 
 	 
 
@@ -214,7 +215,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 	// let maxMipLevel: f32 = 6.0;
 	// let lod = pow(roughness, 2.0) * maxMipLevel;
 
-	return vec4f(textureSampleLevel(PrefilteredEnvMap, EnvSampler, specUV, 6.0));
+	return textureSampleLevel(PrefilteredEnvMap, EnvSampler, R, roughness);
 
 // sample directly from mip chain
 	// let prefiltered = textureSampleLevel(PrefilteredEnvMap, EnvSampler, specUV, 8.0).rgb;

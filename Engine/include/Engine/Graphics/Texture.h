@@ -59,6 +59,6 @@ namespace Engine
 	class ENGINE_API CubeMapTexture : public Texture
 	{
 	public:
-		CubeMapTexture(const TextureSpecification& specification, const std::array<const void*, 6>& data);
+		CubeMapTexture(const TextureSpecification& specification, const void* data);
 	};
 }

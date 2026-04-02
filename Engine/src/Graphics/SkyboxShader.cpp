@@ -2,50 +2,13 @@
 #include "Engine/Graphics/SkyboxShader.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Utility/File.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 
 namespace Engine
 {
-	wgpu::ShaderModule CreateShaderModule(const std::string& source)
-	{
-		const char* shaderSource = source.c_str();
-
-		wgpu::ShaderModuleDescriptor shaderDesc;
-		shaderDesc.label = { "SkyboxShaderModule", WGPU_STRLEN };
-
-		wgpu::ShaderSourceWGSL shaderCodeDesc;
-		shaderCodeDesc.chain.next = nullptr;
-		shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
-		shaderDesc.nextInChain = &shaderCodeDesc.chain;
-		shaderCodeDesc.code = { shaderSource, WGPU_STRLEN };
-		return GraphicsContext::GetDevice().createShaderModule(shaderDesc);
-	}
-
-
 	Engine::SkyboxShader::SkyboxShader(const std::filesystem::path& path)
 	{
-		std::string source;
-		if (!Engine::ReadFile(path, source))
-		{
-			LOG_ERROR("Failed to read shader file. %s", path);
-			return;
-		}
-
-		wgpu::ShaderModule shaderModule = CreateShaderModule(source);
-
-		//std::array<wgpu::VertexAttribute, 1> vertexAttribs;
-
-		//vertexAttribs[0].format = wgpu::VertexFormat::Float32x3;
-		//vertexAttribs[0].offset = 0;
-		//vertexAttribs[0].shaderLocation = 0;
-
-		//wgpu::VertexBufferLayout vertexBufferLayout;
-		//vertexBufferLayout.attributeCount = 1;
-		//vertexBufferLayout.attributes = vertexAttribs.data();
-		//vertexBufferLayout.arrayStride = sizeof(glm::vec3);
-		//vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
+		wgpu::ShaderModule shaderModule = LoadWGSLShader(path);
 
 		wgpu::RenderPipelineDescriptor pipelineDesc;
 		pipelineDesc.label = { "SkyboxShaderPipeline", WGPU_STRLEN };
@@ -111,31 +74,30 @@ namespace Engine
 			entry.binding = 1;
 			entry.visibility = wgpu::ShaderStage::Fragment;
 			entry.texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
-			entry.texture.viewDimension = wgpu::TextureViewDimension::_2D;
+			entry.texture.viewDimension = wgpu::TextureViewDimension::Cube;
 			entry.texture.multisampled = false;
 			layoutEntries[1] = entry;
 		}
 
-		wgpu::BindGroupLayoutDescriptor desc{};
+		wgpu::BindGroupLayoutDescriptor desc;
 		desc.label = { "SkyboxBindGroupLayout", WGPU_STRLEN };
-		desc.entryCount = 2;
+		desc.entryCount = layoutEntries.size();
 		desc.entries = layoutEntries.data();
 
 		m_BindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(desc);
 
-		wgpu::BindGroupLayout bindGroupLayouts[] = {
+		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts
+		{
 			RenderGlobals::GetFrameLayout(),
 			m_BindGroupLayout
 		};
 
-		wgpu::PipelineLayoutDescriptor layoutDesc{};
+		wgpu::PipelineLayoutDescriptor layoutDesc;
 		layoutDesc.label = { "SkyboxPipelineLayout", WGPU_STRLEN };
-		layoutDesc.bindGroupLayoutCount = 2;
+		layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
 		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayouts;
 		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
 
 		m_RenderPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
-
-		shaderModule.release();
 	}
 }

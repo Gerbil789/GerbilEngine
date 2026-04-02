@@ -30,11 +30,14 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Compute/MipMap.h"
 
+#include "Engine/Graphics/Texture.h"
+#include "Engine/Asset/Importer/TextureImporter.h"
+
 namespace Editor
 {
 	EditorApp::EditorApp(const ApplicationCommandLineArgs& args)
 	{
-		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
+		RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
 
 		std::filesystem::path projectPath = (args.Count > 1) ? std::filesystem::path(args[1]) : Engine::OpenDirectory();
 		EditorSelection::SetProject(Project::Load(projectPath));  //TODO: why editor selection owns project????
@@ -87,7 +90,9 @@ namespace Editor
 		//Engine::ComputePass computePass;
 		//computePass.Execute();
 
-		Engine::MipMap mipMap;
+		//Engine::MipMap mipMap;
+
+		
 	}
 
 	EditorApp::~EditorApp()
@@ -105,6 +110,11 @@ namespace Editor
 
 	void EditorApp::Run()
 	{
+		//RenderDoc::StartFrameCapture();
+		//Engine::CubeMapTexture* cubemap = Engine::TextureImporter::LoadCubeMapTexture(Engine::GetAssetsDirectory() / "Textures/neon_photostudio_2k.hdr");
+		//RenderDoc::EndFrameCapture();
+
+
 		while (m_Running)
 		{
 			Engine::Time::BeginFrame();				// update delta time and FPS counters

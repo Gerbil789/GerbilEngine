@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Graphics/ShaderSpecification.h"
 #include <filesystem>
 #include <webgpu/webgpu.hpp>
 
