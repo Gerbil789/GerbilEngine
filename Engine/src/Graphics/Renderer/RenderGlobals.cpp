@@ -143,7 +143,7 @@ namespace Engine::RenderGlobals
 			entries[2].binding = 2;
 			entries[2].visibility = wgpu::ShaderStage::Fragment;
 			entries[2].texture.sampleType = wgpu::TextureSampleType::Float;
-			entries[2].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+			entries[2].texture.viewDimension = wgpu::TextureViewDimension::Cube;
 			entries[2].texture.multisampled = false;
 
 			// BRDF integration texture
@@ -205,43 +205,25 @@ namespace Engine::RenderGlobals
 			envSamplerDesc.minFilter = wgpu::FilterMode::Linear;
 			envSamplerDesc.magFilter = wgpu::FilterMode::Linear;
 			envSamplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
-			envSamplerDesc.lodMinClamp = 0.0f;
-			envSamplerDesc.lodMaxClamp = 1000.0f;
 			envSamplerDesc.maxAnisotropy = 1;
 
 			wgpu::Sampler envSampler = device.createSampler(envSamplerDesc);
 			bgEntries[1].binding = 1;
 			bgEntries[1].sampler = envSampler;
 
-			auto irrTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/PG2/lebombo_irradiance_map.hdr");
+			Engine::CubeMapTexture* irrCubemap = Engine::TextureImporter::LoadCubeMapTexture("Resources/Engine/hdr/PG2/lebombo_irradiance_map.hdr");
+
+			//auto irrTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/PG2/lebombo_irradiance_map.hdr");
 			bgEntries[2].binding = 2;
-			bgEntries[2].textureView = irrTexture->GetTextureView();
+			bgEntries[2].textureView = irrCubemap->GetTextureView();
 
 			auto brdfTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/PG2/brdf_integration_map_ct_ggx.hdr");
 			bgEntries[3].binding = 3;
 			bgEntries[3].textureView = brdfTexture->GetTextureView();
 
-			//std::vector<std::filesystem::path> paths
-			//{
-			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_001.hdr",
-			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_125.hdr",
-			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_250.hdr",
-			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_375.hdr",
-			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_500.hdr",
-			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_625.hdr",
-			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_750.hdr",
-			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_875.hdr",
-			//	"Resources/Engine/hdr/PG2/lebombo_prefiltered_env_map_999.hdr"
-			//};
-
-			//auto view = TextureImporter::LoadTexture2DWithMipMaps(paths);
-
-			Engine::CubeMapTexture* cubemap = Engine::TextureImporter::LoadCubeMapTexture("Resources/Engine/hdr/lebombo_4k.hdr");
-
-
+			Engine::CubeMapTexture* environmentCubemap = Engine::TextureImporter::LoadCubeMapTexture("Resources/Engine/hdr/PG2/lebombo_8k.hdr");
 			bgEntries[4].binding = 4;
-			bgEntries[4].textureView = cubemap->GetTextureView();
-
+			bgEntries[4].textureView = environmentCubemap->GetTextureView();
 
 			bgEntries[5].binding = 5;
 			bgEntries[5].textureView = m_DepthTextureArrayView;

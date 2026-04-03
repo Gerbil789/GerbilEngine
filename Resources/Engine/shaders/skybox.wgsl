@@ -35,6 +35,15 @@ const cubeVertices: array<vec3f, 36> = array<vec3f, 36>(
 );
 
 
+fn tonemapACES(color: vec3f) -> vec3f {
+    let a = 2.51;
+    let b = 0.03;
+    let c = 2.43;
+    let d = 0.59;
+    let e = 0.14;
+    return clamp((color * (a * color + b)) / (color * (c * color + d) + e), vec3f(0.0), vec3f(1.0));
+}
+
 @vertex
 fn vs_main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
 	var out: VertexOutput; 
@@ -59,6 +68,25 @@ fn vs_main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4f {
-	let dir = normalize(in.dir);
-  return textureSample(skyboxTexture, skyboxSampler, dir);
+    let dir = normalize(in.dir);
+    
+    // 1. Sample the HDR environment map
+    var color = textureSample(skyboxTexture, skyboxSampler, dir).rgb;
+
+    // 2. Apply Exposure (Adjust this value! Lower = darker, Higher = brighter)
+    // You can eventually pass this in via your FrameUniforms so you can tweak it in C++
+    let exposure = 1.0; 
+    color = color * exposure;
+
+    // 3. Apply ACES Tonemapping
+    // This squashes the infinite HDR range into 0.0 -> 1.0 beautifully
+    color = tonemapACES(color);
+
+    // 4. Gamma Correction
+    // IMPORTANT: If your WebGPU swapchain format is standard BGRA8Unorm (NOT BGRA8UnormSrgb),
+    // you must manually apply gamma correction here so it doesn't look overly dark.
+    // Uncomment the line below if you aren't using an -srgb swapchain format.
+    // color = pow(color, vec3f(1.0 / 2.2));
+
+    return vec4f(color, 1.0);
 }

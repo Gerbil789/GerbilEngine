@@ -24,12 +24,14 @@ namespace Engine
 		}
 
 		{
-			CubeMapTexture* cubemap = Engine::TextureImporter::LoadCubeMapTexture("Resources/Engine/hdr/lebombo_4k.hdr");
+			CubeMapTexture* cubemap = Engine::TextureImporter::LoadCubeMapTexture("Resources/Engine/hdr/PG2/lebombo_8k.hdr");
 
 			wgpu::BindGroupEntry entry;
 			entry.binding = 1;
 			entry.textureView = cubemap->GetTextureView();
 			entries[1] = entry;
+
+			delete cubemap;
 		}
 
 		wgpu::BindGroupDescriptor bindGroupDesc;

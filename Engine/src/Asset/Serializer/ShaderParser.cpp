@@ -188,8 +188,10 @@ namespace Engine
         binding.type = BindingType::UniformBuffer;
       else if (varKind == "storage")
         binding.type = BindingType::StorageBuffer;
-      else if (typeName.rfind("texture", 0) == 0)
-        binding.type = BindingType::Texture2D; // TODO: detect 2D/3D
+      else if (typeName.rfind("texture_2d", 0) == 0)
+        binding.type = BindingType::Texture2D;
+      else if (typeName.rfind("texture_cube", 0) == 0)
+        binding.type = BindingType::TextureCube;
       else if (typeName == "sampler")
         binding.type = BindingType::Sampler;
 

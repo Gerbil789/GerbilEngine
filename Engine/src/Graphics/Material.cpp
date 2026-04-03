@@ -34,6 +34,27 @@ namespace Engine
 				SetTexture(name, tex);
 		}
 
+
+		auto shaderSpec = m_Shader->GetSpecification();
+
+		for (const auto& binding : shaderSpec.bindings)
+		{
+			if(binding.group == 0)
+			{
+				continue; // skip frame bindings
+			}
+
+			if (binding.type == BindingType::Texture2D)
+			{
+				auto it = spec.textureDefaults.find(binding.name);
+				if (it == spec.textureDefaults.end())
+				{
+					SetTexture(binding.name, nullptr);
+				}
+			}
+		}
+
+
 		CreateBindGroup();
 	}
 
@@ -112,8 +133,14 @@ namespace Engine
 	{
 		if (!texture)
 		{
-			LOG_WARNING("Texture is null!");
-			texture = Texture2D::GetDefault();
+			if (name.find("Normal") != std::string::npos)
+			{
+				texture = Texture2D::GetDefaultNormal(); // Blue 1x1 px
+			}
+			else
+			{
+				texture = Texture2D::GetDefault(); //White 1x1 px
+			}
 		}
 
 		const auto materialBindings = GetMaterialBindings(m_Shader->GetSpecification());

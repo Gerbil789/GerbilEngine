@@ -1,13 +1,289 @@
-- ID: 8348957107591477546
+- ID: 10232879204256431706
   Enabled: true
-  Name: Player
+  Name: Sphere
   Transform:
-    Position: [-11.194913, 5.000046, 3]
-    Rotation: [0, -0, 0]
-    Scale: [0.1, 0.1, 0.1]
+    Position: [15.999661, 0.00038528442, 15.999696]
+    Rotation: [-14.075795, -7.8271675, 37.4822]
+    Scale: [0.99999577, 0.999969, 1.0000268]
   MeshComponent:
-    Mesh: 4054887255351190265
-    Materials: [9062395416670711803, 9905515824125768949, 16641363256174755972, 12590626766011146814, 6243627826504047792]
+    Mesh: 2873530127775231289
+    Materials: [16307921651454057929]
+- ID: 10411314405147299532
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [34.5, 0, 12]
+    Rotation: [0, -0, 0]
+    Scale: [8, 3, 8]
+  MeshComponent:
+    Mesh: 9153350241491098746
+    Materials: [15420442079635448030]
+- ID: 5035431560302200696
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [39.367245, 2.4298198, 5.7769938]
+    Rotation: [0, -47.37909, 0]
+    Scale: [4.999997, 4.999999, 4.999997]
+  MeshComponent:
+    Mesh: 9153350241491098746
+    Materials: [14271088859862093309]
+- ID: 10419314148164250282
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [16, 0, 4]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [8496260393453878813]
+- ID: 8139658228052313786
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [16, 0, 0]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [4081624249093562338]
+- ID: 3273880496074712033
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [12, 0, 16]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [17286595405715129930]
+- ID: 9432398298484079886
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [12, 0, 12]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [12131057463189080297]
+- ID: 12389583892332128770
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [12, 0, 8]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [7754810028909415072]
+- ID: 5856410415377495849
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [12, 0, 4]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [18207209538454066267]
+- ID: 15830639203553112494
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [12, 0, 0]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [7619436097422543333]
+- ID: 3086801180621983517
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [8, 0, 16]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [10110901189992253051]
+- ID: 8172047342344053202
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [8, 0, 12]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [2240798008467000122]
+- ID: 8259810380564748440
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [8, 0, 8]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [6420737745447128053]
+- ID: 11322113965525269091
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [8, 0, 4]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [13612887118892729250]
+- ID: 7011050500357913975
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [8, 0, 0]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [7267305591147661222]
+- ID: 6619031557454780055
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [3.9999762, 0, 16.000004]
+    Rotation: [-0.00071570044, 49.14418, 0.0126070725]
+    Scale: [0.9999929, 1, 0.9999958]
+  MeshComponent:
+    Mesh: 5906759997218235868
+    Materials: [3917323067370885854]
+- ID: 13126301125867873310
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [4, 0, 12]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [11338229386382074790]
+- ID: 15440613000085219870
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [4, 0, 8]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [15676324839833293052]
+- ID: 10050883766811257380
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [4, 0, 4]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [15336003854671780286]
+- ID: 7595510319564696268
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [4, 0, 0]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [18214915358259466449]
+- ID: 5876967340589998269
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [0, 0, 16]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [15388406335680235062]
+- ID: 2202831766788744772
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [0, 0, 12]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [6697304609557636085]
+- ID: 12905062926474392229
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [0, 0, 8]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [13579045662078082631]
+- ID: 4789723939497359664
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [0, 0, 4]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [15699744969565633053]
+- ID: 10245648827745755225
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [0, 0, 0]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [1996459253582605967]
+- ID: 12535351768315973585
+  Enabled: true
+  Name: Ground
+  Transform:
+    Position: [0, -2, 0]
+    Rotation: [0, -0, 0]
+    Scale: [100, 100, 100]
+  MeshComponent:
+    Mesh: 16263461787928416772
+    Materials: [4524766446218326838]
+- ID: 13017856045607090437
+  Enabled: false
+  Name: Ground
+  Transform:
+    Position: [-2.3841858e-07, -3, 1.9590797]
+    Rotation: [0, -0, 0]
+    Scale: [100, 100, 100]
+  MeshComponent:
+    Mesh: 16263461787928416772
+    Materials: [4524766446218326838]
+  ScriptComponent:
+    Script: GameManager
+    Mesh: 15608668046686712752
+- ID: 7150985087517490007
+  Enabled: true
+  Name: Light
+  Transform:
+    Position: [-0.88852024, 13.806403, -7.6293945e-06]
+    Rotation: [-164.33511, 69.08971, 63.365143]
+    Scale: [1.0000045, 0.9999956, 0.99985635]
+  LightComponent:
+    Type: 0
+    Color: [1, 1, 1]
+    Intensity: 1
+    Range: 12
+    Angle: 67
 - ID: 10199165476046124790
   Enabled: true
   Name: Camera
@@ -28,289 +304,13 @@
       Far: 100
     Background: 1
     ClearColor: [1, 0, 0, 1]
-- ID: 7150985087517490007
+- ID: 8348957107591477546
   Enabled: true
-  Name: Light
+  Name: Player
   Transform:
-    Position: [-0.8886504, 13.806906, -9.346008e-05]
-    Rotation: [101.439995, 0, -9.94]
-    Scale: [0.9999856, 0.999971, 0.9998438]
-  LightComponent:
-    Type: 0
-    Color: [1, 1, 1]
-    Intensity: 1
-    Range: 12
-    Angle: 67
-- ID: 13017856045607090437
-  Enabled: false
-  Name: Ground
-  Transform:
-    Position: [-2.3841858e-07, -3, 1.9590797]
-    Rotation: [0, -0, 0]
-    Scale: [100, 100, 100]
+    Position: [-11.194513, 8.202295, -6.499764]
+    Rotation: [-51.269135, 61.52042, -74.87653]
+    Scale: [0.10000532, 0.10000349, 0.10000219]
   MeshComponent:
-    Mesh: 16263461787928416772
-    Materials: [4524766446218326838]
-  ScriptComponent:
-    Script: GameManager
-    Mesh: 15608668046686712752
-- ID: 12535351768315973585
-  Enabled: true
-  Name: Ground
-  Transform:
-    Position: [0, -2, 0]
-    Rotation: [0, -0, 0]
-    Scale: [100, 100, 100]
-  MeshComponent:
-    Mesh: 16263461787928416772
-    Materials: [4524766446218326838]
-- ID: 10245648827745755225
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [0, 0, 0]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [1996459253582605967]
-- ID: 4789723939497359664
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [0, 0, 4]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [15699744969565633053]
-- ID: 12905062926474392229
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [0, 0, 8]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [13579045662078082631]
-- ID: 2202831766788744772
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [0, 0, 12]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [6697304609557636085]
-- ID: 5876967340589998269
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [0, 0, 16]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [15388406335680235062]
-- ID: 7595510319564696268
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [4, 0, 0]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [18214915358259466449]
-- ID: 10050883766811257380
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [4, 0, 4]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [15336003854671780286]
-- ID: 15440613000085219870
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [4, 0, 8]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [15676324839833293052]
-- ID: 13126301125867873310
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [4, 0, 12]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [11338229386382074790]
-- ID: 6619031557454780055
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [4, 0, 16]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [3917323067370885854]
-- ID: 7011050500357913975
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [8, 0, 0]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [7267305591147661222]
-- ID: 11322113965525269091
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [8, 0, 4]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [13612887118892729250]
-- ID: 8259810380564748440
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [8, 0, 8]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [6420737745447128053]
-- ID: 8172047342344053202
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [8, 0, 12]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [2240798008467000122]
-- ID: 3086801180621983517
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [8, 0, 16]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [10110901189992253051]
-- ID: 15830639203553112494
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [12, 0, 0]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [7619436097422543333]
-- ID: 5856410415377495849
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [12, 0, 4]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [18207209538454066267]
-- ID: 12389583892332128770
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [12, 0, 8]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [7754810028909415072]
-- ID: 9432398298484079886
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [12, 0, 12]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [12131057463189080297]
-- ID: 3273880496074712033
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [12, 0, 16]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [17286595405715129930]
-- ID: 8139658228052313786
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [16, 0, 0]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [4081624249093562338]
-- ID: 10419314148164250282
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [16, 0, 4]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [8496260393453878813]
-- ID: 5035431560302200696
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [16, 0, 8]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 9153350241491098746
-    Materials: [14271088859862093309]
-- ID: 10411314405147299532
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [16, 0, 12]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [15420442079635448030]
-- ID: 10232879204256431706
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [15.999661, 0.00038528442, 15.999696]
-    Rotation: [-14.075795, -7.8271675, 37.4822]
-    Scale: [0.99999577, 0.999969, 1.0000268]
-  MeshComponent:
-    Mesh: 2873530127775231289
-    Materials: [16307921651454057929]
+    Mesh: 4054887255351190265
+    Materials: [9062395416670711803, 9905515824125768949, 16641363256174755972, 12590626766011146814, 6243627826504047792]

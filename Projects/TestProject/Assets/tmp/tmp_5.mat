@@ -6,6 +6,6 @@ Attributes:
   albedo: [1, 1, 1, 1]
   roughness: 0
   metallic: 0.25
-  tiling: [0, 0]
+  tiling: [1, 1]
 Textures:
   {}

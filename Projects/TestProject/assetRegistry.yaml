@@ -227,9 +227,6 @@ Assets:
   - ID: 5571018790047348782
     Path: Textures\background.png
     Type: Texture
-  - ID: 11821652352984236833
-    Path: Textures\Prototype\texture_09.png
-    Type: Texture
   - ID: 5682456324726901537
     Path: Textures\concrete_pillar\ambient.png
     Type: Texture
@@ -679,9 +676,6 @@ Assets:
     Type: Texture
   - ID: 1923002114457807390
     Path: Textures\skull.png
-    Type: Texture
-  - ID: 10217357371413942814
-    Path: Textures\Prototype\texture_09.png
     Type: Texture
   - ID: 17313085612630303774
     Path: Textures\tile.png

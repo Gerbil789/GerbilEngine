@@ -7,7 +7,8 @@ fn computeMipMap(@builtin(global_invocation_id) id: vec3<u32>)
 {
     let size = textureDimensions(nextMipLevel);
 
-    if (id.x >= size.x || id.y >= size.y || id.z >= 6u) {
+    if (id.x >= size.x || id.y >= size.y || id.z >= 6u) 
+		{
         return;
     }
 
