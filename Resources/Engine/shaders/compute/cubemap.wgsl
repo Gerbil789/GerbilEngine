@@ -30,16 +30,9 @@ fn dirToEquirectUV(dir: vec3f) -> vec2f
     return vec2f(u, v);
 }
 
-// @compute @workgroup_size(4, 4, 6)
-// fn computeMipMap(@builtin(global_invocation_id) id: vec3<u32>) 
-// {
-//    let color =  textureLoad(inputTexture, id.xy, 0);
-// 		let layer = id.z;
-// 		textureStore(outputTexture, id.xy, layer, color);
-// }
 
 @compute @workgroup_size(4, 4, 1)
-fn main(@builtin(global_invocation_id) id: vec3<u32>) 
+fn equirectToCubemap(@builtin(global_invocation_id) id: vec3<u32>) 
 {
   let size = textureDimensions(outputTexture);
   if (id.x >= size.x || id.y >= size.y || id.z >= 6u) 

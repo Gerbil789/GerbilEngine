@@ -68,7 +68,6 @@ const PI: f32 = 3.14159265;
 @group(0) @binding(1) var EnvSampler: sampler;
 @group(0) @binding(2) var IrradianceMap: texture_2d<f32>;
 @group(0) @binding(3) var BRDFIntMap: texture_2d<f32>;
-// @group(0) @binding(4) var PrefilteredEnvMap: texture_2d<f32>;
 @group(0) @binding(4) var PrefilteredEnvMap: texture_cube<f32>;
 
 @group(0) @binding(5) var shadowMap : texture_depth_2d_array;
@@ -212,10 +211,10 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 
 	//let roughness = textureSample(RoughnessTexture, Sampler, uv).r; * uMaterial.roughness;
 	let roughness = uMaterial.roughness;
-	// let maxMipLevel: f32 = 6.0;
-	// let lod = pow(roughness, 2.0) * maxMipLevel;
-
-	return textureSampleLevel(PrefilteredEnvMap, EnvSampler, R, roughness);
+	let maxMipLevel = f32(textureNumLevels(PrefilteredEnvMap)) - 1.0;
+	let lod = pow(roughness, 2.0) * maxMipLevel;
+	
+	return textureSampleLevel(PrefilteredEnvMap, EnvSampler, R, lod);
 
 // sample directly from mip chain
 	// let prefiltered = textureSampleLevel(PrefilteredEnvMap, EnvSampler, specUV, 8.0).rgb;

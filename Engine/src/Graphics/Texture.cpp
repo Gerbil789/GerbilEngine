@@ -11,10 +11,134 @@ namespace Engine
 	{
 		static Texture2D* s_DefaultWhiteTexture = nullptr;
 
+		//TODO: make this better
 		uint32_t getMaxMipLevelCount(const wgpu::Extent3D& textureSize)
 		{
 			return std::bit_width(std::max(textureSize.width, textureSize.height));
 		}
+	}
+
+
+
+
+	void GenerateMipmaps(wgpu::Texture& texture)
+	{
+		std::vector<wgpu::TextureView> textureMipViews;
+		std::vector<wgpu::Extent3D> textureMipSizes;
+
+		wgpu::TextureFormat format = texture.getFormat();
+
+		wgpu::Extent3D baseSize = { texture.getWidth(), texture.getHeight(), 1 };
+		auto mipCount = getMaxMipLevelCount(baseSize);
+
+		wgpu::TextureViewDescriptor textureViewDesc;
+		textureViewDesc.nextInChain = nullptr;
+		textureViewDesc.aspect = wgpu::TextureAspect::All;
+		textureViewDesc.baseArrayLayer = 0;
+		textureViewDesc.arrayLayerCount = 6;
+		textureViewDesc.dimension = wgpu::TextureViewDimension::_2DArray;
+		textureViewDesc.format = format;
+		textureViewDesc.mipLevelCount = 1;
+
+
+		textureMipSizes.resize(mipCount);
+		textureMipViews.reserve(mipCount);
+
+		textureMipSizes[0] = baseSize;
+
+		for (uint32_t level = 0; level < mipCount; ++level)
+		{
+			std::string label = "MIP level #" + std::to_string(level);
+			textureViewDesc.label = { label.c_str(), WGPU_STRLEN };
+			textureViewDesc.baseMipLevel = level;
+			textureMipViews.push_back(texture.createView(textureViewDesc));
+
+			if (level > 0)
+			{
+				wgpu::Extent3D previousSize = textureMipSizes[level - 1];
+				textureMipSizes[level] = { previousSize.width / 2, previousSize.height / 2, 6 };
+			}
+		}
+
+
+		wgpu::ShaderModule computeShaderModule = LoadWGSLShader("Resources/Engine/shaders/compute/mipmap.wgsl");
+
+		// Create bind group layout
+		std::array<wgpu::BindGroupLayoutEntry, 2> bindings = { wgpu::Default, wgpu::Default };
+
+		bindings[0].binding = 0;
+		bindings[0].texture.sampleType = wgpu::TextureSampleType::Float;
+		bindings[0].texture.viewDimension = wgpu::TextureViewDimension::_2DArray;
+		bindings[0].visibility = wgpu::ShaderStage::Compute;
+
+		bindings[1].binding = 1;
+		bindings[1].storageTexture.access = wgpu::StorageTextureAccess::WriteOnly;
+		bindings[1].storageTexture.format = format;
+		bindings[1].storageTexture.viewDimension = wgpu::TextureViewDimension::_2DArray;
+		bindings[1].visibility = wgpu::ShaderStage::Compute;
+
+		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
+		bindGroupLayoutDesc.entryCount = bindings.size();
+		bindGroupLayoutDesc.entries = bindings.data();
+		wgpu::BindGroupLayout bindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
+
+		// Create compute pipeline layout
+		wgpu::PipelineLayoutDescriptor pipelineLayoutDesc;
+		pipelineLayoutDesc.bindGroupLayoutCount = 1;
+		pipelineLayoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayout;
+		wgpu::PipelineLayout pipelineLayout = GraphicsContext::GetDevice().createPipelineLayout(pipelineLayoutDesc);
+
+		// Create compute pipeline;
+		wgpu::ComputePipelineDescriptor computePipelineDesc = wgpu::Default;
+		computePipelineDesc.compute.entryPoint = { "computeMipMap", WGPU_STRLEN };
+		computePipelineDesc.compute.module = computeShaderModule;
+		computePipelineDesc.layout = pipelineLayout;
+		wgpu::ComputePipeline computeMipmapPipeline = GraphicsContext::GetDevice().createComputePipeline(computePipelineDesc);
+
+
+		auto CreateBindGroup = [&](uint32_t nextLevel)
+			{
+				std::array<wgpu::BindGroupEntry, 2> entries = { wgpu::Default, wgpu::Default };
+
+				entries[0].binding = 0;
+				entries[0].textureView = textureMipViews[nextLevel - 1];
+
+				entries[1].binding = 1;
+				entries[1].textureView = textureMipViews[nextLevel];
+
+				wgpu::BindGroupDescriptor bindGroupDesc;
+				bindGroupDesc.layout = bindGroupLayout;
+				bindGroupDesc.entryCount = (uint32_t)entries.size();
+				bindGroupDesc.entries = (WGPUBindGroupEntry*)entries.data();
+				wgpu::BindGroup bindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+				return bindGroup;
+			};
+
+		auto encoder = Engine::GraphicsContext::GetDevice().createCommandEncoder();
+
+		wgpu::ComputePassDescriptor computePassDesc;
+		computePassDesc.timestampWrites = nullptr;
+		wgpu::ComputePassEncoder computePass = encoder.beginComputePass(computePassDesc);
+
+		computePass.setPipeline(computeMipmapPipeline);
+
+
+		for (uint32_t nextLevel = 1; nextLevel < mipCount; ++nextLevel)
+		{
+			computePass.setBindGroup(0, CreateBindGroup(nextLevel), 0, nullptr);
+
+			uint32_t invocationCountX = textureMipSizes[nextLevel].width;
+			uint32_t invocationCountY = textureMipSizes[nextLevel].height;
+			uint32_t workgroupSizePerDim = 8;
+			uint32_t workgroupCountX = (invocationCountX + workgroupSizePerDim - 1) / workgroupSizePerDim;
+			uint32_t workgroupCountY = (invocationCountY + workgroupSizePerDim - 1) / workgroupSizePerDim;
+			computePass.dispatchWorkgroups(workgroupCountX, workgroupCountY, 6);
+		}
+
+		computePass.end();
+
+		wgpu::CommandBuffer commandBuffer = encoder.finish();
+		Engine::GraphicsContext::GetQueue().submit(1, &commandBuffer);
 	}
 
 
@@ -26,7 +150,6 @@ namespace Engine
 		m_Height = specification.height;
 		m_TextureFormat = specification.format;
 		uint32_t mipCount = 1;
-
 
 
 		if (specification.generateMips)
@@ -51,7 +174,15 @@ namespace Engine
 		textureDesc.mipLevelCount = mipCount;
 		textureDesc.sampleCount = 1;
 		textureDesc.size = { m_Width, m_Height, 1 };
-		textureDesc.usage = specification.usage;
+
+		//TODO: write more elegantly
+		wgpu::TextureUsage usage = specification.usage;
+		if(specification.generateMips)
+		{
+			usage = specification.usage | wgpu::TextureUsage::StorageBinding;
+		}
+
+		textureDesc.usage = usage;
 		textureDesc.viewFormatCount = 0;
 		textureDesc.viewFormats = nullptr;
 		m_Texture = GraphicsContext::GetDevice().createTexture(textureDesc);
@@ -70,6 +201,13 @@ namespace Engine
 		wgpu::Extent3D size = { m_Width, m_Height, 1 };
 
 		GraphicsContext::GetQueue().writeTexture(dst, data, m_Width * m_Height * bytesPerPixel, layout, size);
+
+
+		if (specification.generateMips)
+		{
+			GenerateMipmaps(m_Texture);
+		}
+
 
 		wgpu::TextureViewDescriptor viewDesc;
 		viewDesc.label = { "Texture2DView", WGPU_STRLEN };
@@ -119,6 +257,12 @@ namespace Engine
 		return new SubTexture2D(texture, min, max);
 	}
 
+
+
+
+
+
+
 	CubeMapTexture::CubeMapTexture(const TextureSpecification& specification, const void* data)
 	{
 		m_Width = specification.width;
@@ -163,35 +307,40 @@ namespace Engine
 
 
 		uint32_t faceSize = m_Height / 2;
+		uint32_t mipCount = getMaxMipLevelCount({ faceSize, faceSize, 1 });
+
 		textureDesc.size = { faceSize, faceSize, 6 };
+		textureDesc.mipLevelCount = mipCount;
 		textureDesc.usage = wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::TextureBinding;
 		m_Texture = GraphicsContext::GetDevice().createTexture(textureDesc);
 
-
-		std::array<wgpu::TextureView, 6> m_outputTextureLayers = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-
+		std::vector<wgpu::TextureView> m_cubemapTextureMips;
 
 		wgpu::TextureViewDescriptor viewDesc;
 		viewDesc.format = m_TextureFormat;
-		viewDesc.dimension = wgpu::TextureViewDimension::Cube;
-		viewDesc.baseMipLevel = 0;
+		viewDesc.dimension = wgpu::TextureViewDimension::_2DArray;
 		viewDesc.mipLevelCount = 1;
+		viewDesc.baseArrayLayer = 0;
 		viewDesc.arrayLayerCount = 6;
 		viewDesc.aspect = wgpu::TextureAspect::All;
+		m_cubemapTextureMips.resize(mipCount, nullptr);
+		for (uint32_t level = 0; level < mipCount; ++level)
+		{
+			viewDesc.baseMipLevel = level;
+			m_cubemapTextureMips[level] = m_Texture.createView(viewDesc);
+		}
 
-		viewDesc.baseArrayLayer = 0;
 		viewDesc.arrayLayerCount = 1;
+		viewDesc.baseMipLevel = 0;
 		viewDesc.dimension = wgpu::TextureViewDimension::_2D;
-		wgpu::TextureView m_inputTextureView = inputTexture.createView(viewDesc);
-
-
-		viewDesc.baseArrayLayer = 0;
-		viewDesc.arrayLayerCount = 6;
-		viewDesc.dimension = wgpu::TextureViewDimension::_2DArray;
-		wgpu::TextureView m_outputTextureView = m_Texture.createView(viewDesc);
+		wgpu::TextureView inputTextureView = inputTexture.createView(viewDesc);
 
 
 		viewDesc.dimension = wgpu::TextureViewDimension::Cube;
+		viewDesc.baseArrayLayer = 0;
+		viewDesc.arrayLayerCount = 6;
+		viewDesc.baseMipLevel = 0;
+		viewDesc.mipLevelCount = mipCount;
 		m_TextureView = m_Texture.createView(viewDesc);
 
 		wgpu::ShaderModule computeShaderModule = LoadWGSLShader("Resources/Engine/shaders/compute/cubemap.wgsl");
@@ -227,34 +376,26 @@ namespace Engine
 
 		// Create compute pipeline;
 		wgpu::ComputePipelineDescriptor computePipelineDesc = wgpu::Default;
-		computePipelineDesc.compute.entryPoint = { "main", WGPU_STRLEN };
+		computePipelineDesc.compute.entryPoint = { "equirectToCubemap", WGPU_STRLEN };
 		computePipelineDesc.compute.module = computeShaderModule;
 		computePipelineDesc.layout = pipelineLayout;
 		wgpu::ComputePipeline computePipeline = GraphicsContext::GetDevice().createComputePipeline(computePipelineDesc);
 
 
-		// Create compute bind group
+		std::vector<wgpu::BindGroup> m_bindGroups;
+
+		m_bindGroups.resize(mipCount, nullptr);
+
 		std::vector<wgpu::BindGroupEntry> entries(3, wgpu::Default);
-
-
-		//wgpu::SamplerDescriptor envSamplerDesc;
-		//envSamplerDesc.label = { "EnvironmentSampler", WGPU_STRLEN };
-		//envSamplerDesc.minFilter = wgpu::FilterMode::Linear;
-		//envSamplerDesc.magFilter = wgpu::FilterMode::Linear;
-		//envSamplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
-		//envSamplerDesc.maxAnisotropy = 1;
-
-		//wgpu::Sampler envSampler = device.createSampler(envSamplerDesc);
 
 		entries[0].binding = 0;
 		entries[0].sampler = GraphicsContext::GetDevice().createSampler();
 
-
 		entries[1].binding = 1;
-		entries[1].textureView = m_inputTextureView;
+		entries[1].textureView = inputTextureView;
 
 		entries[2].binding = 2;
-		entries[2].textureView = m_outputTextureView;
+		entries[2].textureView = m_cubemapTextureMips[0];
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
 		bindGroupDesc.layout = bindGroupLayout;
@@ -273,8 +414,8 @@ namespace Engine
 
 		computePass.setBindGroup(0, bindGroup, 0, nullptr);
 
-		uint32_t invocationCountX = m_Texture.getWidth();
-		uint32_t invocationCountY = m_Texture.getHeight();
+		uint32_t invocationCountX = faceSize;
+		uint32_t invocationCountY = faceSize;
 		uint32_t workgroupSizePerDim = 4;
 
 		uint32_t workgroupCountX = (invocationCountX + workgroupSizePerDim - 1) / workgroupSizePerDim;
@@ -286,7 +427,6 @@ namespace Engine
 		Engine::GraphicsContext::GetQueue().submit(1, &commandBuffer);
 
 
-		//auto outPath = Engine::GetAssetsDirectory() / ("Textures/tmp/cubemap.png");
-		//saveTexture(outPath, outputTexture, 0);
+		GenerateMipmaps(m_Texture);
 	}
 }

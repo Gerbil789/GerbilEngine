@@ -205,6 +205,8 @@ namespace Engine::RenderGlobals
 			envSamplerDesc.minFilter = wgpu::FilterMode::Linear;
 			envSamplerDesc.magFilter = wgpu::FilterMode::Linear;
 			envSamplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
+			envSamplerDesc.lodMinClamp = 0.0f;
+			envSamplerDesc.lodMaxClamp = 1000.0f;
 			envSamplerDesc.maxAnisotropy = 1;
 
 			wgpu::Sampler envSampler = device.createSampler(envSamplerDesc);

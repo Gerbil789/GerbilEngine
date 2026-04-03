@@ -92,7 +92,7 @@ namespace Editor
 
 		//Engine::MipMap mipMap;
 
-		
+
 	}
 
 	EditorApp::~EditorApp()
@@ -113,6 +113,17 @@ namespace Editor
 		//RenderDoc::StartFrameCapture();
 		//Engine::CubeMapTexture* cubemap = Engine::TextureImporter::LoadCubeMapTexture(Engine::GetAssetsDirectory() / "Textures/neon_photostudio_2k.hdr");
 		//RenderDoc::EndFrameCapture();
+
+		//RenderDoc::StartFrameCapture();
+		///*Engine::TextureSpecification spec;
+		//spec.generateMips = true;
+		//Engine::Texture2D* texture = Engine::TextureImporter::LoadTexture2D(Engine::GetAssetsDirectory() / "Textures/gerbil.jpg", spec);*/
+		//Engine::CubeMapTexture* cubemap = Engine::TextureImporter::LoadCubeMapTexture("Resources/Engine/hdr/lebombo_4k.hdr");
+		////Engine::CubeMapTexture* cubemap = Engine::TextureImporter::LoadCubeMapTexture(Engine::GetAssetsDirectory() / "Textures/neon_photostudio_2k.hdr");
+		//RenderDoc::EndFrameCapture();
+
+
+
 
 
 		while (m_Running)
