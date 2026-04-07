@@ -3,22 +3,31 @@
 #include "Engine/Core/UUID.h"
 #include <filesystem>
 
-namespace Editor
+//TODO: 
+// 1. keep track of last opened project, so it can auto load on startup
+
+
+namespace Engine
 {
-	class Project
+	class ENGINE_API Project
 	{
 	public:
 		static Project* New(const std::string& title, const std::filesystem::path& path);
-		static Project* Load(const std::filesystem::path& path);
+		static std::shared_ptr<Project> Load(const std::filesystem::path& path);
 
-		void Save();
+		static std::shared_ptr<Project> GetActive() { return s_ActiveProject; }
+
+		void Save(); //TODO
 
 		const std::filesystem::path& GetProjectDirectory() const { return m_ProjectDirectory; }
 		const std::filesystem::path& GetAssetsDirectory() const { return m_AssetsDirectory; }
+		std::filesystem::path& GetAssetsDirectory() { return m_AssetsDirectory; }
 		const std::string& GetTitle() const { return m_Title; }
 		const Engine::Uuid& GetStartSceneID() const { return m_StartSceneID; }
 
 	private:
+		inline static std::shared_ptr<Project> s_ActiveProject;
+
 		std::filesystem::path m_ProjectDirectory;
 		std::filesystem::path m_AssetsDirectory;
 		std::string m_Title = "Untitled";

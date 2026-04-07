@@ -1,5 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
+#include "Engine/Graphics/Material.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Utility/Yaml.h"
 

@@ -1,11 +1,11 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/AssetSerializer.h"
-
-#include "Engine/Core/Engine.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Script/ScriptRegistry.h"
+#include "Engine/Core/Project.h"
+#include "Engine/Graphics/Material.h"
 #include <map>
 
 namespace Engine
@@ -33,7 +33,7 @@ namespace Engine
 			return;
 		}
 
-		return s_AssetSerializeFunctions.at(assetType)(asset, Engine::GetAssetsDirectory() / record.path);
+		return s_AssetSerializeFunctions.at(assetType)(asset, Engine::Project::GetActive()->GetAssetsDirectory() / record.path);
 	}
 
 	Asset* AssetSerializer::DeserializeAsset(const AssetRecord& record)
@@ -46,7 +46,7 @@ namespace Engine
 			return nullptr;
 		}
 
-		return s_AssetDeserializeFunctions.at(assetType)(Engine::GetAssetsDirectory() / record.path);
+		return s_AssetDeserializeFunctions.at(assetType)(Engine::Project::GetActive()->GetAssetsDirectory() / record.path);
 	}
 
 }

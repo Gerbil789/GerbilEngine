@@ -53,10 +53,11 @@ libdirs
 	"%{wks.location}/vendor/dawn"
 }
 
-postbuildcommands
-{
-    '{COPY} "%{cfg.buildtarget.abspath}" "%{wks.location}/bin/' .. outputdir .. '/Editor/"'
-}
+-- postbuildcommands
+-- {
+--     '{COPY} "%{cfg.buildtarget.abspath}" "%{wks.location}/bin/' .. outputdir .. '/Editor/"',
+-- 		'{COPY} "%{cfg.buildtarget.abspath}" "%{wks.location}/bin/' .. outputdir .. '/Template/"'
+-- }
 
 postbuildmessage "Copying Engine.dll to Editor directory"
 

@@ -3,10 +3,10 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
 #include <stb_image.h>
-#include "Engine/Core/Engine.h"
 #include "Engine/Graphics/Texture.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Compute/save_texture.h"
+#include "Engine/Core/Project.h"
 
 namespace Engine
 {
@@ -52,12 +52,15 @@ namespace Engine
 
 	MipMap::MipMap()
 	{
-		auto path = Engine::GetAssetsDirectory() / "Textures/input.jpg";
+		auto path = Engine::Project::GetActive()->GetAssetsDirectory() / "Textures/input.jpg";
 
+		//NOTE: this does not work
 		TextureSpecification spec;
 		spec.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc;
 		spec.generateMips = true;
-		Texture* texture = TextureImporter::LoadTexture2D(path, spec);
+
+
+		Texture* texture = TextureImporter::LoadTexture2D(path);
 
 		wgpu::Extent3D baseSize = { texture->GetWidth(), texture->GetHeight(), 1 };
 		auto mipCount = getMaxMipLevelCount(baseSize);
@@ -163,14 +166,10 @@ namespace Engine
 		wgpu::CommandBuffer commandBuffer = encoder.finish();
 		Engine::GraphicsContext::GetQueue().submit(1, &commandBuffer);
 
-
 		for (uint32_t nextLevel = 1; nextLevel < m_textureMipSizes.size(); ++nextLevel) 
 		{
-			auto outPath = Engine::GetAssetsDirectory() / ("Textures/tmp/mip" + std::to_string(nextLevel) + ".png");
+			auto outPath = Engine::Project::GetActive()->GetAssetsDirectory() / ("Textures/tmp/mip" + std::to_string(nextLevel) + ".png");
 			saveTexture(outPath, m_texture, nextLevel);
 		}
-
-
 	}
-
 }

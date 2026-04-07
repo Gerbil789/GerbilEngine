@@ -3,7 +3,7 @@
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Core/PopupWindowManager.h"
 #include "Engine/Utility/File.h"
-#include "Editor/Core/Project.h"
+#include "Engine/Core/Project.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Graphics/Material.h"
@@ -61,8 +61,13 @@ namespace Editor
 	static const MenuEntry ProjectMenu[]
 	{
 		{"New", "", [] { PopupManager::Open("New Project"); }},
-		{"Open", "", [] { Editor::Project::Load(Engine::OpenDirectory()); }},
+		{"Open", "", [] { Engine::Project::Load(Engine::OpenDirectory()); }},
 		{"Settings", "", [] { LOG_WARNING("Project Settings - not implemented"); }},
+	};
+
+	static const MenuEntry DebugMenu[]
+	{
+		{"RenderDoc", "", [] {} }
 	};
 
 	void MenuBar::Draw()
@@ -95,6 +100,17 @@ namespace Editor
 			if (ScopedMenu project{ "Project" })
 			{
 				for (auto& e : ProjectMenu)
+				{
+					if (ImGui::MenuItem(e.label, e.shortcut))
+					{
+						e.action();
+					}
+				}
+			}
+
+			if (ScopedMenu debug{ "Debug" })
+			{
+				for (auto& e : DebugMenu)
 				{
 					if (ImGui::MenuItem(e.label, e.shortcut))
 					{

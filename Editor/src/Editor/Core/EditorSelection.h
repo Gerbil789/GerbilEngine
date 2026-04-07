@@ -2,7 +2,6 @@
 
 #include "AssetSelection.h"
 #include "EntitySelection.h"
-#include "Editor/Core/Project.h"
 
 namespace Editor
 {
@@ -30,13 +29,8 @@ namespace Editor
       m_AssetSelection.Clear();
     }
 
-		static void SetProject(Project* project) { m_Project = project; }
-    static Project& GetProject() { return *m_Project; }
-
   private:
     inline static EntitySelection m_EntitySelection;
     inline static AssetSelection  m_AssetSelection;
-
-    inline static Project* m_Project = nullptr; //TODO: remove from here
   };
 }

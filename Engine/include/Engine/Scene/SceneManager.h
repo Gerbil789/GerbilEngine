@@ -6,12 +6,9 @@
 namespace Engine
 {
 	class Scene;
-	class ScriptRegistry;
 
 	namespace SceneManager
 	{
-		ENGINE_API void Initialize(ScriptRegistry& registry);
-
 		ENGINE_API void RegisterOnSceneChanged(const std::function<void(Scene*)>& callback);
 		ENGINE_API void NotifySceneChanged();
 

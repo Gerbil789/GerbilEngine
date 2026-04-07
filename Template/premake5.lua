@@ -1,4 +1,12 @@
-project "Editor"
+newoption 
+{
+   trigger     = "project_name",
+   value       = "Name",
+   description = "The name of the output executable"
+}
+
+
+project (_OPTIONS["project_name"] or "Template")
 kind "ConsoleApp"
 language "C++"
 cppdialect "C++23"
@@ -6,12 +14,11 @@ staticruntime "off"
 conformancemode "On"
 externalwarnings "Off"
 warnings "Extra"
--- fatalwarnings { "All" }
 
 files
 {
-	"src/Editor/**.h",
-	"src/Editor/**.cpp"
+	"src/**.h",
+	"src/**.cpp"
 }
 
 includedirs
@@ -29,7 +36,6 @@ externalincludedirs
 	"%{wks.location}/vendor/imgui",
 	"%{wks.location}/vendor/ImGuizmo",
 	"%{wks.location}/vendor/yaml-cpp/include",
-	"%{wks.location}/vendor/renderdoc"
 }
 
 LinkEngine() -- This pulls in the links, includes, and DLL copy commands
@@ -48,13 +54,10 @@ libdirs
 	"%{wks.location}/vendor/dawn"
 }
 
-
-
 postbuildcommands 
 {
-	-- "{COPY} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
+	"{COPY} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
 	"{COPY} %{wks.location}/Resources %{cfg.targetdir}/Resources",
-	"{COPY} %{wks.location}/vendor/renderdoc/renderdoc.dll %{cfg.targetdir}"
 }
 
 postbuildmessage "Copying dependencies..."

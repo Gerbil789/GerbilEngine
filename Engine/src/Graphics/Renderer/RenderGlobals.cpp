@@ -5,7 +5,6 @@
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Graphics/Texture.h"
-#include "Engine/Core/Engine.h"
 
 namespace Engine::RenderGlobals
 {

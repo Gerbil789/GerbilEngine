@@ -2,7 +2,6 @@
 #include "Engine/Graphics/Texture.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
-#include "Engine/Core/Engine.h"
 #include "Engine/Compute/save_texture.h"
 
 namespace Engine
@@ -11,6 +10,7 @@ namespace Engine
 	{
 		static Texture2D* s_DefaultWhiteTexture = nullptr;
 		static Texture2D* s_DefaultNormalTexture = nullptr;
+		static Texture2D* s_DefaultAmbientTexture = nullptr;
 
 		//TODO: make this better
 		uint32_t getMaxMipLevelCount(const wgpu::Extent3D& textureSize)
@@ -391,13 +391,27 @@ namespace Engine
 			spec.width = 1;
 			spec.height = 1;
 			spec.format = wgpu::TextureFormat::RGBA8Unorm;
-			//uint32_t bluePixel = 0xFF8080FF;
 			constexpr uint8_t normalPixel[4] = { 128, 128, 255, 255 }; // Blue-ish
 
 			s_DefaultNormalTexture = new Texture2D(spec, &normalPixel);
 		}
 
 		return s_DefaultNormalTexture;
+	}
+
+	Texture2D* Texture2D::GetDefaultAmbient()
+	{
+		if (!s_DefaultAmbientTexture)
+		{
+			TextureSpecification spec;
+			spec.width = 1;
+			spec.height = 1;
+			spec.format = wgpu::TextureFormat::RGBA8Unorm;
+			constexpr uint8_t ambientPixel[4] = { 10, 10, 10, 255 };
+			s_DefaultAmbientTexture = new Texture2D(spec, &ambientPixel);
+		}
+		return s_DefaultAmbientTexture;
+
 	}
 
 	SubTexture2D::SubTexture2D(Texture2D* texture, const glm::vec2& min, const glm::vec2& max) : m_Texture(texture), m_UVMin(min), m_UVMax(max) {}

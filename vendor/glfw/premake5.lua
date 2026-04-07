@@ -42,10 +42,10 @@ defines
 	"_GLFW_BUILD_DLL"
 }
 
-postbuildcommands
-{
-  '{COPY} "%{cfg.buildtarget.abspath}" "%{wks.location}/bin/' .. outputdir .. '/Editor/"'
-}
+-- postbuildcommands
+-- {
+--   '{COPY} "%{cfg.buildtarget.abspath}" "%{wks.location}/bin/' .. outputdir .. '/Editor/"'
+-- }
 
 filter "configurations:Debug"
 	runtime "Debug"

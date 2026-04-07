@@ -1,9 +1,10 @@
-#include "Project.h"
+#include "enginepch.h"
+#include "Engine/Core/Project.h"
 #include "Engine/Core/Log.h"
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 
-namespace Editor
+namespace Engine
 {
 	Project* Project::New(const std::string& title, const std::filesystem::path& path)
 	{
@@ -26,14 +27,14 @@ namespace Editor
 		return newProject;
 	}
 
-	Project* Project::Load(const std::filesystem::path& path)
+	std::shared_ptr<Project> Project::Load(const std::filesystem::path& path)
 	{
 		std::filesystem::path configPath = path / "project.yaml";
 
 		if (!std::filesystem::exists(configPath))
 		{
-			//TODO: better error handling, when loading fails, show error message to user, but don't crash
-			throw std::runtime_error("Project::Load - Config file not found at " + configPath.string());
+			LOG_ERROR("Project::Load - Config file not found at {}", configPath);
+			return nullptr;
 		}
 
 		YAML::Node data;
@@ -47,7 +48,7 @@ namespace Editor
 			return nullptr;
 		}
 
-		Project* project = new Project();
+		auto project = std::make_shared<Project>();
 		project->m_ProjectDirectory = path;
 		project->m_AssetsDirectory = project->m_ProjectDirectory / "Assets";
 
@@ -60,6 +61,7 @@ namespace Editor
 		project->m_StartSceneID = Engine::Uuid(id);
 		
 		LOG_INFO("Loaded project '{}' from {}", project->m_Title, configPath);
+		s_ActiveProject = project;
 		return project;
 	}
 

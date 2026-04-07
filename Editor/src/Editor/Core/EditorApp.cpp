@@ -10,7 +10,6 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Engine/Audio/Audio.h"
-#include "Engine/Core/Engine.h"
 #include "Engine/Core/GameContext.h"
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Script/Script.h"
@@ -19,19 +18,13 @@
 #include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Utility/Path.h"
-#include "Engine/Core/EngineContext.h"
 #include "Engine/Scene/Scene.h"
 #include "Editor/Core/EditorRuntime.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Event/EventBus.h"
 #include "Editor/Utility/RenderDoc.h"
-
-#include "Engine/Compute/ComputePass.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Compute/MipMap.h"
-
-#include "Engine/Graphics/Texture.h"
-#include "Engine/Asset/Importer/TextureImporter.h"
+#include "Engine/Core/Project.h"
 
 namespace Editor
 {
@@ -40,7 +33,8 @@ namespace Editor
 		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
 
 		std::filesystem::path projectPath = (args.Count > 1) ? std::filesystem::path(args[1]) : Engine::OpenDirectory();
-		EditorSelection::SetProject(Project::Load(projectPath));  //TODO: why editor selection owns project????
+		auto project = Engine::Project::Load(projectPath);
+
 		std::filesystem::current_path(GetExecutableDir());
 
 		Engine::GraphicsContext::Initialize();
@@ -56,32 +50,25 @@ namespace Editor
 		Engine::Time::Initialize();
 
 		EditorCommandManager::Initialize();
-		FileWatcher::WatchDirectory(EditorSelection::GetProject().GetAssetsDirectory());
+		FileWatcher::WatchDirectory(project->GetAssetsDirectory());
 
-		Engine::EngineContext context;
-		context.ProjectDirectory = EditorSelection::GetProject().GetProjectDirectory();
-		context.AssetsDirectory = EditorSelection::GetProject().GetAssetsDirectory();
-		Engine::InitializeEngine(context); //TODO: improve engine context
-
-		Engine::AssetManager::Initialize();
+		Engine::AssetManager::Initialize(project->GetProjectDirectory());
 		Engine::Audio::Initialize();
 		IconManager::Load("Resources/Editor/icons/icons.png");
 
-		const Project& project = EditorSelection::GetProject();
-		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / BUILD_CONFIG / (project.GetTitle() + ".dll");
+		std::filesystem::path dllPath = project->GetProjectDirectory() / "bin/windows/" / BUILD_CONFIG / (project->GetTitle() + ".dll");
 		Engine::ScriptRegistry& registry = Engine::ScriptRegistry::Get();
 
 		EditorRuntime::Initialize();
 		EditorRuntime::LoadScripts(registry, dllPath);
 
 		Engine::SceneSerializer::Initialize(registry); //TODO: dont pass registry like this...
-		Engine::SceneManager::Initialize(registry);
 
 		EditorWindowManager::Initialize(*m_Window);
 
-		if (auto id = EditorSelection::GetProject().GetStartSceneID(); id)
+		Engine::Scene* scene = Engine::AssetManager::GetAsset<Engine::Scene>(project->GetStartSceneID());
+		if(scene)
 		{
-			Engine::Scene* scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
 			Engine::SceneManager::SetActiveScene(scene);
 		}
 

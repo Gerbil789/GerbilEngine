@@ -1,5 +1,5 @@
 #include "NewProjectPopupWindow.h"
-#include "Editor/Core/Project.h"
+#include "Engine/Core/Project.h"
 #include "Engine/Utility/File.h"
 #include <imgui.h>
 
@@ -33,7 +33,7 @@ namespace Editor
 
 			if (ImGui::Button("Create"))
 			{
-				Editor::Project::New(m_Name, m_Path);
+				Engine::Project::New(m_Name, m_Path);
 				ImGui::CloseCurrentPopup();
 			}
 

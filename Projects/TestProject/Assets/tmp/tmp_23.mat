@@ -10,3 +10,5 @@ Attributes:
 Textures:
   AlbedoTexture: 11191491332555772085
   NormalTexture: 5673680266398117148
+  RoughnessTexture: 6948789603862314032
+  AmbientTexture: 11167953401946863704

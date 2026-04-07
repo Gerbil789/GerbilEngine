@@ -80,6 +80,7 @@ struct ShadowUniforms
 @group(2) @binding(2) var AlbedoTexture: texture_2d<f32>;
 @group(2) @binding(3) var NormalTexture: texture_2d<f32>;
 @group(2) @binding(4) var RoughnessTexture: texture_2d<f32>;
+@group(2) @binding(5) var AmbientTexture: texture_2d<f32>;
 
 fn FresnelSchlick(cosTheta: f32, F0: vec3f) -> vec3f
 {
@@ -136,8 +137,6 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
     lightPos.z
 	);
 
-
-
 	// check bounds
 	let inBounds =
     light_uv.x >= 0.0 && light_uv.x <= 1.0 &&
@@ -147,44 +146,39 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 	let shadow = select(1.0, visibility, inBounds);
 
   let uv = in.uv * uMaterial.tiling;
-  let albedoTex = textureSample(AlbedoTexture, MaterialSampler, uv).rgb;
-  let albedo = albedoTex * uMaterial.albedo.rgb;
+  let albedo = textureSample(AlbedoTexture, MaterialSampler, uv).rgb * uMaterial.albedo.rgb;
+	let metallic = uMaterial.metallic;
+	let roughness = textureSample(RoughnessTexture, MaterialSampler, uv).r * uMaterial.roughness;
+	let ao = textureSample(AmbientTexture, MaterialSampler, uv).r;
+	let normal = in.normal;
 
-	// 1. Get the base geometry normal
-	let geomNormal = normalize(in.normal);
-
-	// 2. Sample the normal map and unpack it from [0, 1] to [-1, 1]
+	// Sample the normal map and unpack it from [0, 1] to [-1, 1]
 	let sampledNormal = textureSample(NormalTexture, MaterialSampler, uv).rgb;
 	let tangentNormal = sampledNormal * 2.0 - vec3f(1.0);
 
-	// 3. Calculate screen-space derivatives
+	// Calculate screen-space derivatives
 	let dp1 = dpdx(in.worldPos);
 	let dp2 = dpdy(in.worldPos);
 	let duv1 = dpdx(uv);
 	let duv2 = dpdy(uv);
 
-	// 4. Calculate Tangent and Bitangent vectors
-	let dp2perp = cross(dp2, geomNormal);
-	let dp1perp = cross(geomNormal, dp1);
+	// Calculate Tangent and Bitangent vectors
+	let dp2perp = cross(dp2, normal);
+	let dp1perp = cross(normal, dp1);
 	let T = dp2perp * duv1.x + dp1perp * duv2.x;
 	let B = dp2perp * duv1.y + dp1perp * duv2.y;
 
-	// 5. Construct the TBN (Tangent, Bitangent, Normal) matrix
 	let invmax = inverseSqrt(max(dot(T,T), dot(B,B)));
-	let TBN = mat3x3f(T * invmax, B * invmax, geomNormal);
+	let TBN = mat3x3f(T * invmax, B * invmax, normal);
 
-	// 6. Transform the tangent-space normal to world-space
+
 	let N = normalize(TBN * tangentNormal);
-
-
-	let roughness = textureSample(RoughnessTexture, MaterialSampler, uv).r * uMaterial.roughness;
-
-  let V = normalize(uFrame.cameraPosition - in.worldPos);
+  let V = normalize(uFrame.cameraPosition - in.worldPos); // direction from surface to camera
 	let R = reflect(-V, N);
   let NdotV = max(dot(N, V), 0.0);
-  let F0 = mix(vec3f(0.04), albedo, uMaterial.metallic);
-  let F = FresnelSchlick(NdotV, F0);
-  let Fd = (vec3f(1.0) - F) * (1.0 - uMaterial.metallic);
+  let F0 = mix(vec3f(0.04), albedo, metallic);
+  let Fd = (vec3f(1.0) - FresnelSchlick(NdotV, F0)) * (1.0 - metallic);
+
   let irradiance = textureSample(IrradianceMap, EnvSampler, N).rgb;
   let diffuse = Fd * (albedo / PI) * irradiance;
 
@@ -197,7 +191,8 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 
   let specular = env * (F0 * brdf.r + brdf.g);
 
-  let color = diffuse + specular * shadow;
+  let color = ((diffuse + specular) * shadow) * ao;
+	
 	let gammaCorrected = pow(color, vec3f(1.0 / 2.2));
   return vec4f(gammaCorrected, uMaterial.albedo.a);
 }

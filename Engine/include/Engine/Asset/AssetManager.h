@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Engine/Core/Log.h"
-#include "Engine/Core/Engine.h"
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Asset/Importer/AssetImporter.h"
 #include "Engine/Asset/Serializer/AssetSerializer.h"
@@ -13,9 +12,9 @@ namespace Engine
 	class ENGINE_API AssetManager
 	{
 	public:
-		static void Initialize()
+		static void Initialize(const std::filesystem::path& projectDirectory)
 		{
-			m_AssetRegistry.Load(Engine::GetProjectDirectory() / "assetRegistry.yaml");
+			m_AssetRegistry.Load(projectDirectory / "assetRegistry.yaml");
 		}
 
 		static void Shutdown()
@@ -143,7 +142,7 @@ namespace Engine
 		template<typename T, typename... Args>
 		static T* CreateAsset(const std::filesystem::path& path, Args&&... args)
 		{
-			auto record = m_AssetRegistry.Create(Engine::GetAssetsDirectory() /  path);
+			auto record = m_AssetRegistry.Create(path);
 			if (!record)
 			{
 				LOG_ERROR("Failed to add record in registry '{}'", path);

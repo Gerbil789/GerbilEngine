@@ -3,19 +3,12 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
-#include "Engine/Script/ScriptRegistry.h"
+#include "Engine/Core/Project.h"
 
 namespace Engine::SceneManager
 {
-
 	Scene* s_ActiveScene = nullptr;
 	static std::vector<std::function<void(Scene*)>> s_Callbacks;
-	ScriptRegistry* m_Registry = nullptr;
-
-	void Initialize(ScriptRegistry& registry)
-	{
-		m_Registry = &registry;
-	}
 
 	void RegisterOnSceneChanged(const std::function<void(Scene*)>& callback)
 	{
@@ -68,7 +61,7 @@ namespace Engine::SceneManager
 			return;
 		}
 
-		auto path = Engine::GetAssetsDirectory() / assetPath;
+		auto path = Engine::Project::GetActive()->GetAssetsDirectory() / assetPath;
 
 		SceneSerializer::Serialize(s_ActiveScene, path);
 

@@ -1,4 +1,5 @@
 #include "enginepch.h"
+#include "Engine/Core/Project.h"
 #include "Engine/Asset/Importer/AssetImporter.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/Importer/MeshImporter.h"
@@ -6,12 +7,18 @@
 #include "Engine/Asset/Importer/MaterialImporter.h"
 #include "Engine/Asset/Importer/SceneImporter.h"
 #include "Engine/Asset/Importer/AudioImporter.h"
+#include "Engine/Asset/AssetRecord.h"
+#include "Engine/Graphics/Mesh.h"
+#include "Engine/Graphics/Material.h"
+#include "Engine/Scene/Scene.h"
+#include "Engine/Audio/AudioClip.h"
 
 namespace Engine
 {
-	using AssetImportFunction = std::function<Asset*(const AssetRecord&)>;
+	using AssetImportFunction = std::function<Asset*(const std::filesystem::path&)>;
 
-	static std::map<AssetType, AssetImportFunction> s_AssetImportFunctions = {
+	static std::map<AssetType, AssetImportFunction> s_AssetImportFunctions
+	{
 		{ AssetType::Texture2D, TextureImporter::ImportTexture2D },
 		{ AssetType::CubeMap, TextureImporter::ImportCubeMapTexture },
 		{ AssetType::Mesh, MeshImporter::ImportMesh },
@@ -37,7 +44,10 @@ namespace Engine
 			LOG_ERROR("No importer available for asset type: {}", AssetTypeToString(assetType));
 			return nullptr;
 		}
-		Asset* asset = s_AssetImportFunctions.at(assetType)(record);
+
+		auto path = Engine::Project::GetActive()->GetAssetsDirectory() / record.path;
+
+		Asset* asset = s_AssetImportFunctions.at(assetType)(path);
 		asset->id = record.id;
 		return asset;
 	}

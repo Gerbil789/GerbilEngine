@@ -137,6 +137,10 @@ namespace Engine
 			{
 				texture = Texture2D::GetDefaultNormal(); // Blue 1x1 px
 			}
+			//else if(name.find("Ambient") != std::string::npos)
+			//{
+			//	texture = Texture2D::GetDefaultAmbient(); // Dark gray 1x1 px
+			//}
 			else
 			{
 				texture = Texture2D::GetDefault(); //White 1x1 px

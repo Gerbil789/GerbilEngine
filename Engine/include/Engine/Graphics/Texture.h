@@ -38,6 +38,7 @@ namespace Engine
 		Texture2D(const TextureSpecification& specification, const void* data);
 		static Texture2D* GetDefault();
 		static Texture2D* GetDefaultNormal();
+		static Texture2D* GetDefaultAmbient();
 	};
 
 	class ENGINE_API SubTexture2D

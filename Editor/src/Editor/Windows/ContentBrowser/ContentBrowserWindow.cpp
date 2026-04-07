@@ -8,6 +8,7 @@
 #include "Editor/Windows/Utility/SelectionWithDeletion.h"
 #include "AssetItem.h"
 //#include <GLFW/glfw3.h>
+#include "Engine/Core/Project.h"
 
 namespace Editor
 {
@@ -78,16 +79,16 @@ namespace Editor
 
 		ImGui::BeginChild("NavBar", ImVec2(0, 24), ImGuiChildFlags_None, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-		auto relativePath = std::filesystem::relative(m_CurrentDirectory, EditorSelection::GetProject().GetAssetsDirectory());
+		auto relativePath = std::filesystem::relative(m_CurrentDirectory, Engine::Project::GetActive()->GetAssetsDirectory());
 
-		std::filesystem::path pathSoFar = EditorSelection::GetProject().GetAssetsDirectory();
+		std::filesystem::path pathSoFar = Engine::Project::GetActive()->GetAssetsDirectory();
 
 		if (ImGui::Button("Assets"))
 		{
-			OpenDirectory(EditorSelection::GetProject().GetAssetsDirectory());
+			OpenDirectory(Engine::Project::GetActive()->GetAssetsDirectory());
 		}
 
-		if (m_CurrentDirectory != EditorSelection::GetProject().GetAssetsDirectory())
+		if (m_CurrentDirectory != Engine::Project::GetActive()->GetAssetsDirectory())
 		{
 			for (const auto& component : relativePath)
 			{
@@ -377,7 +378,7 @@ namespace Editor
 
 	void ContentBrowserWindow::Initialize()
 	{
-		m_CurrentDirectory = EditorSelection::GetProject().GetAssetsDirectory();
+		m_CurrentDirectory = Engine::Project::GetActive()->GetAssetsDirectory();
 		RefreshDirectory();
 
 		/*glfwSetDropCallback(static_cast<GLFWwindow*>(Engine::Application::GetWindow().GetNativeWindow()), [](GLFWwindow*, int count, const char* paths[])

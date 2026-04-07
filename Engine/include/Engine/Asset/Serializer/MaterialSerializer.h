@@ -1,9 +1,11 @@
 #pragma once
 
-#include "Engine/Graphics/Material.h"
+//#include "Engine/Graphics/Material.h"
 
 namespace Engine
 {
+	class Material;
+
 	class ENGINE_API MaterialSerializer
 	{
 	public:

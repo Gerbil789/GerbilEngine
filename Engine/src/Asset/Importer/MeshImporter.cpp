@@ -1,6 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Asset/Importer/MeshImporter.h"
-#include "Engine/Core/Engine.h"
+#include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -207,12 +207,11 @@ namespace Engine
 		{
 			ProcessNode(model, child, transform, vertices, indices, wireIndices, subMeshes);
 		}
-
 	}
 
-	Mesh* MeshImporter::ImportMesh(const AssetRecord& metadata)
+	Mesh* MeshImporter::ImportMesh(const std::filesystem::path& path)
 	{
-		return LoadMesh(Engine::GetAssetsDirectory() / metadata.path);
+		return LoadMesh(path);
 	}
 
 	Mesh* MeshImporter::LoadMesh(const std::filesystem::path& path)
