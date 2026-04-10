@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	enum class AssetType { Unknown = 0, Texture2D, HDR, CubeMap, Mesh, Shader, Material, Audio, Scene, Script, Other };
+	enum class AssetType { Unknown = 0, Texture2D, HDR, CubeMap, Mesh, Shader, Material, Audio, Scene, Script, Other, Directory, EmptyDirectory }; //TODO: reorder this, and regenerate the registry
 
 	inline AssetType GetAssetTypeFromExtension(const std::string& extension)
 	{
@@ -67,6 +67,6 @@ namespace Engine
 	{
 		Uuid id;
 		std::filesystem::path path;
-		AssetType type;
+		AssetType type = AssetType::Unknown;
 	};
 };

@@ -9,7 +9,7 @@ namespace Engine
 		AppTick, AppUpdate, AppRender,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled,
-		FileAdded, FileRemoved, FileModified
+		FileAdded, FileRemoved, FileModified,
 	};
 
 	enum EventCategory

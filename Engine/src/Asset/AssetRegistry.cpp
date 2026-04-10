@@ -24,6 +24,7 @@ namespace Engine
 
 		auto assetsDir = Engine::Project::GetActive()->GetAssetsDirectory();
 		m_Records.clear();
+
 		for (const auto& entry : data["Assets"])
 		{
 			AssetRecord record;
@@ -31,13 +32,6 @@ namespace Engine
 			std::filesystem::path relativePath = entry["Path"].as<std::string>();
 			record.path = assetsDir / relativePath;
 			record.type = AssetTypeFromString(entry["Type"].as<std::string>());
-
-			//auto type = GetAssetTypeFromExtension(record.path.extension().string());
-			//if (type == AssetType::Unknown)
-			//{
-			//	LOG_ERROR("Asset '{}' has unknown type, skipping.", record.path);
-			//	continue;
-			//}
 
 			if (record.type == AssetType::Other)
 			{
@@ -47,6 +41,23 @@ namespace Engine
 			if (!std::filesystem::exists(record.path))
 			{
 				LOG_WARNING("Asset '{}' not found on disk, skipping.", record.path);
+				continue;
+			}
+
+			//check for duplicate paths
+			bool duplicate = false;
+			for (const auto& [id, existingRecord] : m_Records)
+			{
+				if (existingRecord.path == record.path)
+				{
+					LOG_WARNING("Duplicate asset path '{}' found in registry, skipping.", record.path);
+					duplicate = true;
+					break;
+				}
+			}
+
+			if (duplicate)
+			{
 				continue;
 			}
 

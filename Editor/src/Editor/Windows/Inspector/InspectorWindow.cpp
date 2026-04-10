@@ -1,26 +1,53 @@
 #include "InspectorWindow.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Editor/Core/EditorSelection.h"
+#include "Editor/Core/SelectionManager.h"
 #include "Engine/Audio/AudioClip.h"
 #include <imgui.h>
 
 namespace Editor
 {
+	namespace
+	{
+		Engine::Uuid m_SelectedEntityId = Engine::Uuid{ 0 };
+		Engine::Uuid m_SelectedAssetId = Engine::Uuid{ 0 };
+	}
+
+	void InspectorWindow::Initialize()
+	{
+		SelectionManager::Subscribe([this](const std::vector<SelectionEntry>& selections) 
+			{ 
+				auto id = selections.empty() ? Engine::Uuid{ 0 } : selections.back().id;
+				if (!id) 
+				{
+					m_SelectedEntityId = Engine::Uuid{ 0 };
+					m_SelectedAssetId = Engine::Uuid{ 0 };
+					return; 
+				}
+
+				if (selections.back().Is(SelectionType::Entity))
+				{
+					m_SelectedEntityId = id;
+					m_SelectedAssetId = Engine::Uuid{ 0 };
+				}
+				else if (selections.back().Is(SelectionType::Asset))
+				{
+					m_SelectedAssetId = id;
+					m_SelectedEntityId = Engine::Uuid{ 0 };
+				}
+			});
+	}
+
 	void InspectorWindow::Draw()
 	{
 		ImGui::Begin("Inspector");
 
-		auto& entities = EditorSelection::Entities();
-		auto& assets = EditorSelection::Assets();
-
-		if (!entities.Empty())
+		if(m_SelectedEntityId)
 		{
-			m_EntityInspector.Draw(entities.GetPrimary());
+			m_EntityInspector.Draw(m_SelectedEntityId);
 		}
-		else if (!assets.Empty())
+		else if(m_SelectedAssetId)
 		{
-			DrawAssetPanel(assets.GetPrimary());
-
+			DrawAssetPanel(m_SelectedAssetId);
 		}
 		else
 		{
@@ -47,23 +74,14 @@ namespace Editor
 			m_ShaderInspector.Draw(Engine::AssetManager::GetAsset<Engine::Shader>(assetID));
 			break;
 		}
-
-		case Engine::AssetType::Material:
-		{
-			m_MaterialInspector.Draw(Engine::AssetManager::GetAsset<Engine::Material>(assetID));
-			break;
-		}
-
 		case Engine::AssetType::Audio:
 		{
 			m_AudioInspector.Draw(Engine::AssetManager::GetAsset<Engine::AudioClip>(assetID));
 			break;
 		}
-
-
 		default:
 		{
-			ImGui::Text("Unsupported asset type selected");
+			ImGui::Text("View not implemented :)");
 		}
 		}
 	}

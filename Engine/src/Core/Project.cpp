@@ -33,7 +33,7 @@ namespace Engine
 
 		if (!std::filesystem::exists(configPath))
 		{
-			LOG_ERROR("Project::Load - Config file not found at {}", configPath);
+			LOG_ERROR("Config file not found at {}", configPath);
 			return nullptr;
 		}
 
@@ -44,7 +44,7 @@ namespace Engine
 		}
 		catch (const YAML::ParserException& e)
 		{
-			LOG_ERROR("Project::Load - Failed to parse YAML: {}", e.what());
+			LOG_ERROR("Failed to parse YAML : {}", e.what());
 			return nullptr;
 		}
 

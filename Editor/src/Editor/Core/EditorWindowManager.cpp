@@ -8,9 +8,11 @@
 #include "Editor/Windows/Inspector/InspectorWindow.h"
 #include "Editor/Windows/SceneHierarchyWindow.h"
 #include "Editor/Windows/StatisticsWindow.h"
-#include "Editor/Windows/ViewportWindow.h"
+#include "Editor/Windows/MaterialEditorWindow.h"
+#include "Editor/Windows/Viewport/ViewportWindow.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Editor/Windows/PopUp/NewProjectPopupWindow.h"
+#include "Engine/Graphics/GraphicsContext.h"
 
 #include <backends/imgui_impl_wgpu.h>
 #include <backends/imgui_impl_glfw.h>
@@ -104,6 +106,7 @@ namespace Editor
 	ContentBrowserWindow m_ContentBrowserWindow;
 	InspectorWindow m_InspectorWindow;
 	StatisticsWindow m_StatisticsWindow;
+	MaterialEditorWindow m_MaterialEditorWindow;
 
 	void EditorWindowManager::Initialize(const Engine::Window& window)
 	{
@@ -163,6 +166,7 @@ namespace Editor
 		m_ContentBrowserWindow.Draw();
 		m_InspectorWindow.Draw();
 		m_StatisticsWindow.Draw();
+		m_MaterialEditorWindow.Draw();
 
 		//bool showDemoWindow = true;
 		//ImGui::ShowDemoWindow(&showDemoWindow);

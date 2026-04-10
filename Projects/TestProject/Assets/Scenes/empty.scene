@@ -82,8 +82,8 @@
     Rotation: [0, 0, 0]
     Scale: [1, 1, 1]
   MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [15699744969565633053]
+    Mesh: 10193106360623915242
+    Materials: [7940381457507135126]
 - ID: 12905062926474392229
   Enabled: true
   Name: Sphere

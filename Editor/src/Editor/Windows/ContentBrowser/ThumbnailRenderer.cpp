@@ -7,43 +7,70 @@
 #include "Engine/Graphics/Material.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Camera.h"
+#include "Engine/Asset/AssetManager.h"
 
 namespace Editor
 {
 	namespace
 	{
-		Engine::Entity m_Entity;
-		Engine::Scene m_Scene;
-		Engine::Camera* m_Camera = nullptr; //TODO: dont heap allocated the camera, but now it must be because skybox initialization inside the camera, fix it when skybox/environment is improved
+		struct ThumbnailData 
+		{
+			Engine::Scene scene;
+			Engine::Entity entity;
+			Engine::Camera camera;
+		};
+
+		ThumbnailData& GetData() 
+		{
+			static ThumbnailData data;
+			return data;
+		}
+
+		std::unordered_map<Engine::Uuid, wgpu::TextureView> m_ThumbnailCache;
 	}
 
 	void ThumbnailRenderer::Initialize()
 	{
-		m_Camera = new Engine::Camera();
-		m_Camera->SetBackground(Engine::Camera::Background::Color);
-		m_Camera->SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
-		m_Camera->SetAspectRatio(1.0f);
-		m_Camera->SetPosition({ 0.0f, 0.0f, 3.0f });
-		m_Camera->SetRotation({ 0.0f, 180.0f, 0.0f });
+		auto& data = GetData();
 
-		m_Entity = m_Scene.CreateEntity("PreviewEntity");
-		auto& mc = m_Entity.Add<Engine::MeshComponent>();
+		data.camera.SetBackground(Engine::Camera::Background::Color);
+		data.camera.SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+		data.camera.SetAspectRatio(1.0f);
+		data.camera.SetPosition({ 0.0f, 0.0f, 3.0f });
+		data.camera.SetRotation({ 0.0f, 180.0f, 0.0f });
+
+		data.entity = data.scene.CreateEntity("PreviewEntity");
+		auto& mc = data.entity.Add<Engine::MeshComponent>();
 		mc.mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/sphere.glb");
 	}
 
-	wgpu::TextureView ThumbnailRenderer::Render(Engine::Material* material)
+	wgpu::TextureView Render(Engine::Material* material)
 	{
-		m_Entity.Get<Engine::MeshComponent>().SetMaterial(0, material);
+		auto& data = GetData();
+		data.entity.Get<Engine::MeshComponent>().SetMaterial(0, material);
 
 		Engine::Renderer renderer;
 
 		renderer.Resize(64, 64);
 		renderer.AddPass(new Engine::BackgroundPass());
 		renderer.AddPass(new Engine::OpaquePass());
-		renderer.SetCamera(m_Camera);
-		renderer.SetScene(&m_Scene);
+		renderer.SetCamera(&data.camera);
+		renderer.SetScene(&data.scene);
 		renderer.RenderScene();
 
 		return renderer.GetTextureView();
+	}
+
+	wgpu::TextureView ThumbnailRenderer::GetThumbnail(Engine::Uuid id)
+	{
+		if (m_ThumbnailCache.contains(id))
+		{
+			return m_ThumbnailCache[id];
+		}
+
+		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(id);
+		wgpu::TextureView newView = Render(material);
+		m_ThumbnailCache[id] = newView;
+		return newView;
 	}
 }

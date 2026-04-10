@@ -3,7 +3,7 @@
 #include "Engine/Scene/Components.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Engine/Core/Input.h"
-#include "Editor/Core/EditorSelection.h"
+#include "Editor/Core/SelectionManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Engine/Scene/SceneManager.h"
 #include <imgui.h>
@@ -51,7 +51,7 @@ namespace Editor
 		// deselect on empty space click
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
 		{
-			EditorSelection::Entities().Clear();
+			SelectionManager::Clear(SelectionType::Entity);
 		}
 
 		// right-click context menu
@@ -76,8 +76,7 @@ namespace Editor
 		{
 			flags |= ImGuiTreeNodeFlags_Leaf;
 		}
-
-		bool selected = EditorSelection::Entities().IsSelected(entity);
+		bool selected = SelectionManager::IsSelected(SelectionType::Entity, entity.GetUUID());
 
 		if (selected)
 		{
@@ -92,7 +91,7 @@ namespace Editor
 		if (ImGui::IsItemClicked())
 		{
 			bool additive = Input::IsKeyDown(Engine::KeyCode::LeftControl) || Input::IsKeyDown(Engine::KeyCode::LeftShift);
-			EditorSelection::Select(entity, additive);
+			SelectionManager::Select(SelectionType::Entity, entity.GetUUID(), additive);
 		}
 
 		// Drag source

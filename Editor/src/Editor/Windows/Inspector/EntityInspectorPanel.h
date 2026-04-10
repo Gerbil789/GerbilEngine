@@ -7,7 +7,7 @@ namespace Editor
 	class EntityInspectorPanel
 	{
 	public:
-		void Draw(Engine::Entity entity);
+		void Draw(Engine::Uuid entityId);
 
 	private:
 		void DrawTransform();

@@ -2,7 +2,7 @@
 #define WEBGPU_CPP_IMPLEMENTATION
 #include "Editor/Core/EditorWindowManager.h"
 #include "Editor/Core/IconManager.h"
-#include "Editor/Core/EditorSelection.h"
+#include "Editor/Core/SelectionManager.h"
 #include "Editor/Utility/FileWatcher.h"
 #include "Engine/Core/Time.h"
 #include "Engine/Utility/File.h"
@@ -22,9 +22,10 @@
 #include "Editor/Core/EditorRuntime.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Event/EventBus.h"
-#include "Editor/Utility/RenderDoc.h"
+#include "Engine/Debug/RenderDoc.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Core/Project.h"
+#include "Editor/Core/EditorSettings.h"
 
 namespace Editor
 {
@@ -32,8 +33,22 @@ namespace Editor
 	{
 		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
 
-		std::filesystem::path projectPath = (args.Count > 1) ? std::filesystem::path(args[1]) : Engine::OpenDirectory();
-		auto project = Engine::Project::Load(projectPath);
+		EditorSettings::Load();
+
+		if(args.Count > 1)
+		{
+			EditorSettings::projectDirectory = args[1];
+		}
+		else
+		{
+			if(EditorSettings::projectDirectory.empty())
+			{
+				EditorSettings::projectDirectory = Engine::OpenDirectory();
+			}
+		}
+
+		auto project = Engine::Project::Load(EditorSettings::projectDirectory);
+		EditorSettings::Save();
 
 		std::filesystem::current_path(GetExecutableDir());
 
@@ -67,10 +82,7 @@ namespace Editor
 		EditorWindowManager::Initialize(*m_Window);
 
 		Engine::Scene* scene = Engine::AssetManager::GetAsset<Engine::Scene>(project->GetStartSceneID());
-		if(scene)
-		{
-			Engine::SceneManager::SetActiveScene(scene);
-		}
+		if(scene) { Engine::SceneManager::SetActiveScene(scene); }
 
 		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
 	}

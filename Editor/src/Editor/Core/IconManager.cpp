@@ -1,6 +1,7 @@
 #include "IconManager.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Graphics/Texture.h"
+#include "Engine/Asset/AssetRecord.h"
 #include <glm/glm.hpp>
 #include <array>
 
@@ -51,5 +52,26 @@ namespace Editor
   Engine::SubTexture2D* IconManager::GetIcon(Icon icon)
   {
     return s_Icons[static_cast<size_t>(icon)];
+  }
+
+  Engine::SubTexture2D* IconManager::GetIcon(Engine::AssetType assetType)
+  {
+    static const std::unordered_map<Engine::AssetType, Icon> map
+    {
+    {Engine::AssetType::Directory, Icon::Folder},
+    {Engine::AssetType::EmptyDirectory, Icon::EmptyFolder},
+    {Engine::AssetType::Texture2D, Icon::Image},
+    {Engine::AssetType::Scene, Icon::Landscape},
+    {Engine::AssetType::Material, Icon::File},
+    {Engine::AssetType::Mesh, Icon::Mesh},
+    {Engine::AssetType::Audio, Icon::Audio},
+    };
+
+    if (auto it = map.find(assetType); it != map.end())
+    {
+      return GetIcon(it->second);
+    }
+
+    return GetIcon(Icon::File);
   }
 }

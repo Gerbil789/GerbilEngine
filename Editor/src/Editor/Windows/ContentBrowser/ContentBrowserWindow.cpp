@@ -4,28 +4,33 @@
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Utility/File.h"
-#include "Editor/Core/EditorSelection.h"
-#include "Editor/Windows/Utility/SelectionWithDeletion.h"
-#include "AssetItem.h"
-//#include <GLFW/glfw3.h>
+#include "Editor/Core/SelectionManager.h"
+#include "Editor/Windows/ContentBrowser/SelectionWithDeletion.h"
 #include "Engine/Core/Project.h"
+#include "ThumbnailRenderer.h"
+#include "Editor/Core/IconManager.h"
+#include "Engine/Asset/AssetRecord.h"
+//#include <GLFW/glfw3.h>
 
 namespace Editor
 {
-	float IconSize = 64.0f;
-	ImVec2 m_LayoutItemSize;
-	ImVec2 m_LayoutItemStep;
-	float LayoutOuterPadding = 0.0f;
-	int m_LayoutColumnCount = 0;
-	int LayoutLineCount = 0;
-	float ZoomWheelAccum = 0.0f;
-	bool m_RequestDelete = false;
+	namespace
+	{
+		ThumbnailRenderer m_Renderer;
 
-	SelectionWithDeletion m_Selection;
-	std::filesystem::path m_CurrentDirectory;
-	int directoryToOpenIndex = -1;
+		float m_IconSize = 64.0f;
+		ImVec2 m_LayoutItemSize;
+		ImVec2 m_LayoutItemStep;
+		float m_LayoutOuterPadding = 0.0f;
+		int m_LayoutColumnCount = 0;
+		int m_LayoutLineCount = 0;
+		bool m_RequestDelete = false;
 
-	std::vector<AssetItem> m_Items;
+		SelectionWithDeletion m_Selection;
+		std::filesystem::path m_CurrentDirectory;
+
+		std::vector<Engine::AssetRecord> m_Items;
+	}
 
 	void RefreshDirectory()
 	{
@@ -38,7 +43,14 @@ namespace Editor
 			auto& path = entry.path();
 			if (entry.is_directory())
 			{
-				m_Items.emplace_back(Engine::Uuid(), path); // UUID optional for folder
+				if(std::filesystem::is_empty(path))
+				{
+					m_Items.emplace_back(Engine::Uuid{}, path, Engine::AssetType::EmptyDirectory);
+				}
+				else
+				{
+					m_Items.emplace_back(Engine::Uuid{}, path, Engine::AssetType::Directory);
+				}
 			}
 		}
 
@@ -47,11 +59,10 @@ namespace Editor
 		{
 			if (record->path.parent_path() == m_CurrentDirectory)
 			{
-				m_Items.emplace_back(record->id, record->path);
+				m_Items.emplace_back(record->id, record->path, record->type);
 			}
 		}
 	}
-
 
 	void OpenDirectory(const std::filesystem::path& path)
 	{
@@ -63,11 +74,11 @@ namespace Editor
 	{
 		constexpr float itemSpacing = 10.0f;
 
-		m_LayoutItemSize = ImVec2(IconSize, IconSize + 20.0f);
+		m_LayoutItemSize = ImVec2(m_IconSize, m_IconSize + 20.0f);
 		m_LayoutColumnCount = std::max(static_cast<int>(ImGui::GetContentRegionAvail().x / (m_LayoutItemSize.x + itemSpacing)), 1);
-		LayoutLineCount = static_cast<int>((m_Items.size()) + m_LayoutColumnCount - 1) / m_LayoutColumnCount;
+		m_LayoutLineCount = static_cast<int>((m_Items.size()) + m_LayoutColumnCount - 1) / m_LayoutColumnCount;
 		m_LayoutItemStep = ImVec2(m_LayoutItemSize.x + itemSpacing, m_LayoutItemSize.y + itemSpacing);
-		LayoutOuterPadding = itemSpacing * 0.5f;
+		m_LayoutOuterPadding = itemSpacing * 0.5f;
 	}
 
 	void DrawNavigationBar()
@@ -105,18 +116,69 @@ namespace Editor
 			}
 		}
 
-		ImGui::SameLine();
-		char buffer[64];
-		snprintf(buffer, sizeof(buffer), "Selected: %d/%d items", m_Selection.Size, (int)m_Items.size());
-
-		float textWidth = ImGui::CalcTextSize(buffer).x;
+		std::string text = std::format("Selected: {}/{} items", m_Selection.Size, m_Items.size());
+		float textWidth = ImGui::CalcTextSize(text.c_str()).x;
 		float regionMaxX = ImGui::GetContentRegionMax().x;
 		float pos = regionMaxX - textWidth;
 
 		ImGui::SameLine(pos);
-		ImGui::TextUnformatted(buffer);
+		ImGui::TextUnformatted(text.c_str());
 
 		ImGui::EndChild();
+	}
+
+	void HandleZooming(ImVec2 start_pos)
+	{
+		static float zoomWheelAccum = 0.0f;
+		if (ImGui::IsWindowAppearing())
+		{
+			zoomWheelAccum = 0.0f;
+		}
+		ImGuiIO& io = ImGui::GetIO();
+		if (ImGui::IsWindowHovered() && io.MouseWheel != 0.0f && ImGui::IsKeyDown(ImGuiMod_Ctrl) && ImGui::IsAnyItemActive() == false)
+		{
+			zoomWheelAccum += io.MouseWheel;
+			if (fabsf(zoomWheelAccum) >= 1.0f)
+			{
+				const float hovered_item_nx = (io.MousePos.x - start_pos.x + 10.0f * 0.5f) / m_LayoutItemStep.x;
+				const float hovered_item_ny = (io.MousePos.y - start_pos.y + 10.0f * 0.5f) / m_LayoutItemStep.y;
+				const int hovered_item_idx = ((int)hovered_item_ny * m_LayoutColumnCount) + (int)hovered_item_nx;
+
+				// Zoom
+				m_IconSize *= powf(1.1f, (float)(int)zoomWheelAccum);
+				m_IconSize = std::clamp(m_IconSize, 32.0f, 128.0f);
+				zoomWheelAccum -= (int)zoomWheelAccum;
+				UpdateLayoutSizes();
+
+				float hovered_item_rel_pos_y = ((float)(hovered_item_idx / m_LayoutColumnCount) + fmodf(hovered_item_ny, 1.0f)) * m_LayoutItemStep.y;
+				hovered_item_rel_pos_y += ImGui::GetStyle().WindowPadding.y;
+				float mouse_local_y = io.MousePos.y - ImGui::GetWindowPos().y;
+				ImGui::SetScrollY(hovered_item_rel_pos_y - mouse_local_y);
+			}
+		}
+	}
+
+	void ProcessDragAndDrop(Engine::AssetRecord* record)
+	{
+		if (ImGui::BeginDragDropSource())
+		{
+			Engine::Uuid uuid = record->id;
+			ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
+			ImGui::Text("%s", record->path.filename().string().c_str());
+			ImGui::EndDragDropSource();
+		}
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
+			{
+				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
+				auto path = Engine::AssetManager::GetAssetPath(droppedUUID);
+
+				LOG_INFO("Dropped file path: {} onto {}", path, record->path.filename().string().c_str());
+			}
+			ImGui::EndDragDropTarget();
+		}
 	}
 
 	void ContentBrowserContextMenu()
@@ -140,7 +202,7 @@ namespace Editor
 
 				if (ImGui::MenuItem("Material"))
 				{
-					Engine::Materials::CreateMaterial(m_CurrentDirectory / "newMaterial.mat");
+					Engine::Materials::CreateMaterial(m_CurrentDirectory / "newMaterial.mat"); //TODO: this is just bad
 					RefreshDirectory();
 				}
 
@@ -154,7 +216,7 @@ namespace Editor
 				Engine::OpenFileExplorer(m_CurrentDirectory);
 			}
 
-			ImGui::EndPopup(); 
+			ImGui::EndPopup();
 		}
 	}
 
@@ -177,114 +239,123 @@ namespace Editor
 		}
 	}
 
-	void DrawItem(const AssetItem& item_data, int item_idx, ImDrawList* draw_list, const ImVec2& pos, const ImU32 label_col)
+	bool DrawItem(const Engine::AssetRecord& record, int item_idx, ImDrawList* draw_list, const ImVec2& pos, const ImU32 label_col)
 	{
 		ImVec2 box_min(pos.x - 1, pos.y - 1);
 		ImVec2 box_max(box_min.x + m_LayoutItemSize.x + 2, box_min.y + m_LayoutItemSize.y + 2);
+		ImVec2 uv_min(0.0f, 0.0f);
+		ImVec2 uv_max(1.0f, 1.0f);
+		wgpu::TextureView view;
+		bool openRequested = false;
 
-		if (item_data.Thumbnail != nullptr)
+		switch (record.type)
 		{
-			// thumbnail
-			draw_list->AddImage(
-				(ImTextureID)(intptr_t)(WGPUTextureView)item_data.Thumbnail,
-				box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
-				ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f)
-			);
+		case Engine::AssetType::Texture2D:
+			view = Engine::AssetManager::GetAsset<Engine::Texture2D>(record.id)->GetTextureView();
+
+			break;
+		case Engine::AssetType::Material:
+			view = m_Renderer.GetThumbnail(record.id);
+			break;
+		default:
+			auto icon = IconManager::GetIcon(record.type);
+
+			if (icon)
+			{
+				view = icon->GetTexture()->GetTextureView();
+				uv_min = ImVec2(icon->GetUVMin().x, icon->GetUVMin().y);
+				uv_max = ImVec2(icon->GetUVMax().x, icon->GetUVMax().y);
+			}
+			break;
 		}
-		else
-		{
-			// icon
-			draw_list->AddImage(
-				(ImTextureID)(intptr_t)(WGPUTextureView)item_data.Icon->GetTexture()->GetTextureView(),
-				box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
-				ImVec2(item_data.Icon->GetUVMin().x, item_data.Icon->GetUVMin().y),
-				ImVec2(item_data.Icon->GetUVMax().x, item_data.Icon->GetUVMax().y)
-			);
-		}
+
+		draw_list->AddImage(
+			static_cast<ImTextureRef>(static_cast<WGPUTextureView>(view)),
+			box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
+			uv_min, uv_max
+		);
+
 
 		// label
 		const float padding = 4.0f;
 		const float textHeight = ImGui::GetFontSize();
-
-		ImVec2 labelMin(
-			box_min.x + padding,
-			box_max.y - textHeight
-		);
-		ImVec2 labelMax(
-			box_max.x - padding,
-			box_max.y
-		);
+		ImVec2 labelMin { box_min.x + padding, box_max.y - textHeight };
+		ImVec2 labelMax { box_max.x - padding, box_max.y };
 
 		draw_list->PushClipRect(labelMin, labelMax, true);
 
-		draw_list->AddText(ImVec2(
-			box_min.x + m_LayoutItemSize.x / 2 - ImGui::CalcTextSize(item_data.Name.c_str()).x / 2, box_max.y - ImGui::GetFontSize()),
+		draw_list->AddText(
+			ImVec2(box_min.x + m_LayoutItemSize.x / 2 - ImGui::CalcTextSize(record.path.filename().string().c_str()).x / 2, box_max.y - ImGui::GetFontSize()),
 			label_col,
-			item_data.Name.c_str());
+			record.path.filename().string().c_str());
 
 		draw_list->PopClipRect();
 
-		if (item_data.IsDirectory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+		if (record.type == Engine::AssetType::Directory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 		{
-			directoryToOpenIndex = item_idx;
+			openRequested = true;
 		}
 
 		ItemContextMenu();
+		return openRequested;
 	}
 
-	void DrawMainContent()
+	std::optional<std::filesystem::path> DrawMainContent()
 	{
+		std::optional<std::filesystem::path> nextDirectory;
+
 		ImGui::BeginChild("MainContent");
 
 		UpdateLayoutSizes();
 
-		ImDrawList* draw_list = ImGui::GetWindowDrawList();
-		ImVec2 start_pos = ImGui::GetCursorScreenPos();
-		start_pos = {start_pos.x + LayoutOuterPadding, start_pos.y + LayoutOuterPadding};
-		ImGui::SetCursorScreenPos(start_pos);
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		ImVec2 startPos = ImGui::GetCursorScreenPos();
+		startPos = { startPos.x + m_LayoutOuterPadding, startPos.y + m_LayoutOuterPadding };
 
-		ImGuiMultiSelectFlags ms_flags = ImGuiMultiSelectFlags_ClearOnEscape | ImGuiMultiSelectFlags_ClearOnClickVoid | ImGuiMultiSelectFlags_BoxSelect2d | ImGuiMultiSelectFlags_SelectOnClickRelease;
-		ImGuiMultiSelectIO* ms_io = ImGui::BeginMultiSelect(ms_flags, m_Selection.Size, static_cast<int>(m_Items.size()));
+		ImGui::SetCursorScreenPos(startPos);
 
-		// Use custom selection adapter: store ID in selection (recommended)
+		ImGuiMultiSelectFlags flags = ImGuiMultiSelectFlags_ClearOnEscape | ImGuiMultiSelectFlags_ClearOnClickVoid | ImGuiMultiSelectFlags_BoxSelect2d | ImGuiMultiSelectFlags_SelectOnClickRelease;
+		ImGuiMultiSelectIO* io = ImGui::BeginMultiSelect(flags, m_Selection.Size, static_cast<int>(m_Items.size()));
+
+		// Use custom selection adapter: store ID in selection
 		m_Selection.UserData = nullptr;
-		m_Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { return (unsigned int)m_Items[idx].UUID; };
-		m_Selection.ApplyRequests(ms_io);
+		m_Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage*, int idx) { return static_cast<unsigned int>(static_cast<uint64_t>(m_Items[idx].id)); };
+		m_Selection.ApplyRequests(io);
 
-		const bool want_delete = (ImGui::Shortcut(ImGuiKey_Delete, ImGuiInputFlags_Repeat) && (m_Selection.Size > 0)) || m_RequestDelete;
-		const int item_curr_idx_to_focus = want_delete ? m_Selection.ApplyDeletionPreLoop(ms_io, static_cast<int>(m_Items.size())) : -1;
-		m_RequestDelete = false;
+		m_RequestDelete |= (ImGui::Shortcut(ImGuiKey_Delete, ImGuiInputFlags_Repeat) && (m_Selection.Size > 0));
+		const int item_curr_idx_to_focus = m_RequestDelete ? m_Selection.ApplyDeletionPreLoop(io, static_cast<int>(m_Items.size())) : -1;
 
-		const int column_count = m_LayoutColumnCount;
 		ImGuiListClipper clipper;
-		clipper.Begin(LayoutLineCount, m_LayoutItemStep.y);
+		clipper.Begin(m_LayoutLineCount, m_LayoutItemStep.y);
+
 		if (item_curr_idx_to_focus != -1)
 		{
-			clipper.IncludeItemByIndex(item_curr_idx_to_focus / column_count); // Ensure focused item line is not clipped.
+			clipper.IncludeItemByIndex(item_curr_idx_to_focus / m_LayoutColumnCount); // Ensure focused item line is not clipped.
 		}
-		if (ms_io->RangeSrcItem != -1)
+
+		if (io->RangeSrcItem != -1)
 		{
-			clipper.IncludeItemByIndex(static_cast<int>(ms_io->RangeSrcItem) / column_count); // Ensure RangeSrc item line is not clipped.
+			clipper.IncludeItemByIndex(static_cast<int>(io->RangeSrcItem) / m_LayoutColumnCount); // Ensure RangeSrc item line is not clipped.
 		}
-			
+
 		while (clipper.Step())
 		{
 			for (int line_idx = clipper.DisplayStart; line_idx < clipper.DisplayEnd; line_idx++)
 			{
-				const int item_min_idx_for_current_line = line_idx * column_count;
-				const int item_max_idx_for_current_line = std::min((line_idx + 1) * column_count, static_cast<int>(m_Items.size()));
+				const int item_min_idx_for_current_line = line_idx * m_LayoutColumnCount;
+				const int item_max_idx_for_current_line = std::min((line_idx + 1) * m_LayoutColumnCount, static_cast<int>(m_Items.size()));
 
 				for (int item_idx = item_min_idx_for_current_line; item_idx < item_max_idx_for_current_line; ++item_idx)
 				{
-					AssetItem* item_data = &m_Items[item_idx];
-					ImGui::PushID((unsigned int)item_data->UUID);
+					Engine::AssetRecord* assetRecord = &m_Items[item_idx]; //TODO: delete asset item, use asset record
+					ImGui::PushID(static_cast<unsigned int>(static_cast<uint64_t>(assetRecord->id)));
 
 					// Position item
-					ImVec2 pos = ImVec2(start_pos.x + (item_idx % column_count) * m_LayoutItemStep.x, start_pos.y + line_idx * m_LayoutItemStep.y);
+					ImVec2 pos = ImVec2(startPos.x + (item_idx % m_LayoutColumnCount) * m_LayoutItemStep.x, startPos.y + line_idx * m_LayoutItemStep.y);
 					ImGui::SetCursorScreenPos(pos);
 
 					ImGui::SetNextItemSelectionUserData(item_idx);
-					bool item_is_selected = m_Selection.Contains((unsigned int)item_data->UUID);
+					bool item_is_selected = m_Selection.Contains(static_cast<unsigned int>(static_cast<uint64_t>(assetRecord->id)));
 					bool item_is_visible = ImGui::IsRectVisible(m_LayoutItemSize);
 					ImGui::Selectable("##unique_id", item_is_selected, ImGuiSelectableFlags_None, m_LayoutItemSize);
 
@@ -292,10 +363,10 @@ namespace Editor
 					{
 						item_is_selected = !item_is_selected;
 
-						if (item_is_selected && !item_data->IsDirectory)
+						if (item_is_selected && assetRecord->type != Engine::AssetType::Directory)
 						{
 							// User selected this asset
-							EditorSelection::Select(item_data->UUID);
+							SelectionManager::Select(SelectionType::Asset, assetRecord->id);
 						}
 					}
 
@@ -304,29 +375,17 @@ namespace Editor
 						ImGui::SetKeyboardFocusHere(-1);
 					}
 
-					if (ImGui::BeginDragDropSource())
-					{
-						Engine::Uuid uuid = item_data->UUID;
-						ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
-						ImGui::Text("%s", item_data->Name.c_str());
-						ImGui::EndDragDropSource();
-					}
-
-					if (ImGui::BeginDragDropTarget()) 
-					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID")) 
-						{
-							Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-							auto path = Engine::AssetManager::GetAssetPath(droppedUUID);
-							LOG_INFO("Dropped file path: {0}", path);
-						}
-						ImGui::EndDragDropTarget();
-					}
+					ProcessDragAndDrop(assetRecord);
 
 					if (item_is_visible)
 					{
 						ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
-						DrawItem(*item_data, item_idx, draw_list, pos, label_col);
+						DrawItem(*assetRecord, item_idx, drawList, pos, label_col);
+
+						if (DrawItem(*assetRecord, item_idx, drawList, pos, label_col))
+						{
+							nextDirectory = assetRecord->path;
+						}
 					}
 
 					ImGui::PopID();
@@ -337,47 +396,29 @@ namespace Editor
 		clipper.End();
 		ContentBrowserContextMenu();
 
-		ms_io = ImGui::EndMultiSelect();
-		m_Selection.ApplyRequests(ms_io);
-		if (want_delete)
+		io = ImGui::EndMultiSelect();
+		m_Selection.ApplyRequests(io);
+		if (m_RequestDelete)
 		{
-			m_Selection.ApplyDeletionPostLoop(ms_io, m_Items, item_curr_idx_to_focus);
+			m_Selection.ApplyDeletionPostLoop(io, m_Items, item_curr_idx_to_focus);
+			m_RequestDelete = false;
+
+			LOG_WARNING("Delete functionality is not implemented yet");
 			//TODO: actually delete files from disk
 		}
 
 		// Zooming with CTRL+Wheel
-		if (ImGui::IsWindowAppearing())
-		{
-			ZoomWheelAccum = 0.0f;
-		}
-		ImGuiIO& io = ImGui::GetIO();
-		if (ImGui::IsWindowHovered() && io.MouseWheel != 0.0f && ImGui::IsKeyDown(ImGuiMod_Ctrl) && ImGui::IsAnyItemActive() == false)
-		{
-			ZoomWheelAccum += io.MouseWheel;
-			if (fabsf(ZoomWheelAccum) >= 1.0f)
-			{
-				const float hovered_item_nx = (io.MousePos.x - start_pos.x + 10.0f * 0.5f) / m_LayoutItemStep.x;
-				const float hovered_item_ny = (io.MousePos.y - start_pos.y + 10.0f * 0.5f) / m_LayoutItemStep.y;
-				const int hovered_item_idx = ((int)hovered_item_ny * m_LayoutColumnCount) + (int)hovered_item_nx;
-
-				// Zoom
-				IconSize *= powf(1.1f, (float)(int)ZoomWheelAccum);
-				IconSize = std::clamp(IconSize, 32.0f, 128.0f);
-				ZoomWheelAccum -= (int)ZoomWheelAccum;
-				UpdateLayoutSizes();
-
-				float hovered_item_rel_pos_y = ((float)(hovered_item_idx / m_LayoutColumnCount) + fmodf(hovered_item_ny, 1.0f)) * m_LayoutItemStep.y;
-				hovered_item_rel_pos_y += ImGui::GetStyle().WindowPadding.y;
-				float mouse_local_y = io.MousePos.y - ImGui::GetWindowPos().y;
-				ImGui::SetScrollY(hovered_item_rel_pos_y - mouse_local_y);
-			}
-		}
+		HandleZooming(startPos);
 
 		ImGui::EndChild(); // end Main Content
+
+		return nextDirectory;
 	}
 
 	void ContentBrowserWindow::Initialize()
 	{
+		m_Renderer.Initialize();
+
 		m_CurrentDirectory = Engine::Project::GetActive()->GetAssetsDirectory();
 		RefreshDirectory();
 
@@ -402,15 +443,12 @@ namespace Editor
 	{
 		ImGui::Begin("Content Browser", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 		DrawNavigationBar();
-		DrawMainContent();
+		std::optional<std::filesystem::path> nextDir = DrawMainContent();
 		ImGui::End();
 
-		if (directoryToOpenIndex != -1)
+		if (nextDir.has_value())
 		{
-			m_CurrentDirectory = m_Items[directoryToOpenIndex].Path;
-			RefreshDirectory();
-
-			directoryToOpenIndex = -1;
+			OpenDirectory(nextDir.value());
 		}
 	}
 }

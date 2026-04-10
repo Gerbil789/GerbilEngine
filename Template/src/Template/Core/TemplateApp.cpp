@@ -5,7 +5,6 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Audio/Audio.h"
-#include "Engine/Core/Engine.h"
 #include "Engine/Core/GameContext.h"
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Script/Script.h"
@@ -14,7 +13,6 @@
 #include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Utility/Path.h"
-#include "Engine/Core/EngineContext.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Event/EventBus.h"
@@ -50,7 +48,7 @@ namespace Template
 		//context.AssetsDirectory = EditorSelection::GetProject().GetAssetsDirectory();
 		//Engine::InitializeEngine(context); //TODO: improve engine context
 
-		Engine::AssetManager::Initialize();
+		//Engine::AssetManager::Initialize();
 		Engine::Audio::Initialize();
 
 		//const Project& project = EditorSelection::GetProject();

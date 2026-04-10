@@ -6,16 +6,15 @@
 #include "Editor/Command/TransformEntity.h"
 
 #include "Engine/Scene/Components.h"
+#include "Engine/Scene/SceneManager.h"
+#include "Engine/Scene/Scene.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Graphics/Camera.h"
 #include "Engine/Audio/AudioClip.h"
 
-#include <imgui.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <imgui_internal.h>
-#include <functional>
+
 
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Script/Script.h"
@@ -25,6 +24,10 @@
 #include "Editor/Command/AddComponentCommand.h"
 #include "Editor/Command/RemoveComponentCommand.h"
 
+#include <imgui.h>
+#include <glm/gtc/type_ptr.hpp>
+#include <imgui_internal.h>
+#include <functional>
 #include <memory>
 
 namespace Editor
@@ -472,8 +475,9 @@ namespace Editor
 		}
 	}
 
-	void EntityInspectorPanel::Draw(Engine::Entity entity)
+	void EntityInspectorPanel::Draw(Engine::Uuid entityId)
 	{
+		auto entity = Engine::SceneManager::GetActiveScene()->GetEntity(entityId);
 		if (!entity) return;
 		m_Entity = entity;
 

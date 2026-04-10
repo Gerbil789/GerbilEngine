@@ -92,8 +92,8 @@ namespace Engine
 		bool operator!=(const Entity& other) const { return !(*this == other); }
 
 	private:
-		entt::entity m_Handle{ entt::null };
 		entt::registry* m_Registry{ nullptr };
+		entt::entity m_Handle{ entt::null };
 	};
 }
 

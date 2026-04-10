@@ -3,6 +3,11 @@
 
 namespace Engine::Yaml
 {
+	void Write(YAML::Emitter& out, const std::string& key, const Uuid& uuid)
+	{
+		out << YAML::Key << key << YAML::Value << static_cast<uint64_t>(uuid);
+	}
+
 	void Write(YAML::Emitter& out, const std::string& key, const glm::vec2& v)
 	{
 		out << YAML::Key << key << YAML::Value;

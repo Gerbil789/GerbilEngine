@@ -63,7 +63,7 @@ namespace Engine
 					{
 						if (material) 
 						{
-							out << material->id;
+							out << static_cast<uint64_t>(material->id);
 						}
 						
 					}

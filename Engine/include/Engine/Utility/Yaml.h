@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Engine/Core/UUID.h"
 #include <yaml-cpp/yaml.h>
 #include <glm/glm.hpp>
 
@@ -51,6 +52,7 @@ namespace Engine::Yaml
     out << YAML::Key << key << YAML::Value << value;
   }
 
+  void Write(YAML::Emitter& out, const std::string& key, const Uuid& uuid);
   void Write(YAML::Emitter& out, const std::string& key, const glm::vec2& v);
   void Write(YAML::Emitter& out, const std::string& key, const glm::vec3& v);
   void Write(YAML::Emitter& out, const std::string& key, const glm::vec4& v);

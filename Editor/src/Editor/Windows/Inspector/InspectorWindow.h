@@ -2,7 +2,6 @@
 
 #include "Editor/Windows/IEditorWindow.h"
 #include "EntityInspectorPanel.h"
-#include "MaterialInspectorPanel.h"
 #include "ShaderInspectorPanel.h"
 #include "AudioInspectorPanel.h"
 
@@ -11,6 +10,7 @@ namespace Editor
 	class InspectorWindow : public IEditorWindow
 	{
 	public:
+		void Initialize() override;
 		void Draw() override;
 
 	private:
@@ -18,7 +18,6 @@ namespace Editor
 
 	private:
 		EntityInspectorPanel m_EntityInspector;
-		MaterialInspectorPanel m_MaterialInspector;
 		ShaderInspectorPanel m_ShaderInspector;
 		AudioInspectorPanel m_AudioInspector;
 	};

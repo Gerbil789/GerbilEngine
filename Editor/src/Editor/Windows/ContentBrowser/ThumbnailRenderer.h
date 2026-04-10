@@ -2,7 +2,7 @@
 
 #include <webgpu/webgpu.hpp>
 
-namespace Engine { class Material; }
+namespace Engine { class Uuid; }
 
 namespace Editor
 {
@@ -10,6 +10,7 @@ namespace Editor
 	{
 	public:
 		void Initialize();
-		wgpu::TextureView Render(Engine::Material* material);
+		wgpu::TextureView GetThumbnail(Engine::Uuid id);
 	};
+
 }

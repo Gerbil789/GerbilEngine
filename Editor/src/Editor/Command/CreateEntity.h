@@ -3,7 +3,7 @@
 #include "Editor/Command/ICommand.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Scene.h"
-#include "Editor/Core/EditorSelection.h"
+#include "Editor/Core/SelectionManager.h"
 
 namespace Editor
 {
@@ -15,14 +15,14 @@ namespace Editor
     void Execute() override 
     {
       m_Entity = Engine::SceneManager::GetActiveScene()->CreateEntity(m_Name);
-			EditorSelection::Entities().Select(m_Entity);
+			SelectionManager::Select(SelectionType::Entity, m_Entity.GetUUID());
     }
 
     void Undo() override 
     {
       if (m_Entity)
       {
-				EditorSelection::Entities().Clear();
+				SelectionManager::Clear(SelectionType::Entity);
         m_Entity.Destroy();
       }
     }
@@ -30,6 +30,5 @@ namespace Editor
   private:
     std::string m_Name;
     Engine::Entity m_Entity;
-
   };
 }
