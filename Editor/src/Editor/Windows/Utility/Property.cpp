@@ -42,9 +42,9 @@ namespace Editor
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
 				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Texture2D)
+				if (Engine::g_AssetManager->GetAssetType(droppedUUID) == Engine::AssetType::Texture2D)
 				{
-					texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(droppedUUID);
+					texture = Engine::g_AssetManager->GetAsset<Engine::Texture2D>(droppedUUID);
 					result.changed = true;
 				}
 
@@ -76,7 +76,7 @@ namespace Editor
 
 		ImGui::PushID(label.c_str());
 
-		std::string buttonText = audioClip != nullptr ? Engine::AssetManager::GetAssetName(audioClip->id) : "##Clip";
+		std::string buttonText = audioClip != nullptr ? Engine::g_AssetManager->GetAssetName(audioClip->id) : "##Clip";
 
 		ImGui::Button(buttonText.c_str(), ImVec2(-FLT_MIN, 0));
 
@@ -97,9 +97,9 @@ namespace Editor
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
 				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Audio)
+				if (Engine::g_AssetManager->GetAssetType(droppedUUID) == Engine::AssetType::Audio)
 				{
-					audioClip = Engine::AssetManager::GetAsset<Engine::AudioClip>(droppedUUID);
+					audioClip = Engine::g_AssetManager->GetAsset<Engine::AudioClip>(droppedUUID);
 					result.changed = true;
 				}
 
@@ -131,7 +131,7 @@ namespace Editor
 
 		ImGui::PushID(label.c_str());
 
-		std::string buttonText = mesh != nullptr ? Engine::AssetManager::GetAssetName(mesh->id) : "##Mesh";
+		std::string buttonText = mesh != nullptr ? Engine::g_AssetManager->GetAssetName(mesh->id) : "##Mesh";
 		ImGui::Button(buttonText.c_str(), ImVec2(-FLT_MIN, 0));
 
 		if (mesh)
@@ -151,9 +151,9 @@ namespace Editor
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
 				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Mesh)
+				if (Engine::g_AssetManager->GetAssetType(droppedUUID) == Engine::AssetType::Mesh)
 				{
-					mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(droppedUUID);
+					mesh = Engine::g_AssetManager->GetAsset<Engine::Mesh>(droppedUUID);
 					result.changed = true;
 				}
 
@@ -185,7 +185,7 @@ namespace Editor
 
 		ImGui::PushID(label.c_str());
 
-		std::string buttonText = material != nullptr ? Engine::AssetManager::GetAssetName(material->id) : "##Material";
+		std::string buttonText = material != nullptr ? Engine::g_AssetManager->GetAssetName(material->id) : "##Material";
 		ImGui::Button(buttonText.c_str(), ImVec2(-FLT_MIN, 0));
 
 		if (material)
@@ -204,9 +204,9 @@ namespace Editor
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
 				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				if (Engine::AssetManager::GetAssetType(droppedUUID) == Engine::AssetType::Material)
+				if (Engine::g_AssetManager->GetAssetType(droppedUUID) == Engine::AssetType::Material)
 				{
-					material = Engine::AssetManager::GetAsset<Engine::Material>(droppedUUID);
+					material = Engine::g_AssetManager->GetAsset<Engine::Material>(droppedUUID);
 					result.changed = true;
 				}
 
@@ -488,10 +488,15 @@ namespace Editor
 
 	EditResult TextField(const std::string& label, std::string& text)
 	{
-		static std::array<char, 256> buffer{};
+		std::array<char, 256> buffer{};
+
+		std::strncpy(buffer.data(), text.c_str(), buffer.size());
+		buffer[buffer.size() - 1] = '\0'; // Ensure null-termination
+
+		auto formattedLabel = std::format("##{}", label);
 
 		EditResult result;
-		ImGui::PushID(label.c_str());
+		ImGui::PushID(formattedLabel.c_str());
 		ImGui::PushItemWidth(-1);
 
 		if (buffer[0] == '\0')
@@ -499,7 +504,7 @@ namespace Editor
 			std::snprintf(buffer.data(), buffer.size(), "%s", text.c_str());
 		}
 
-		if (ImGui::InputText("##Text", buffer.data(), buffer.size())) 
+		if (ImGui::InputText(formattedLabel.c_str(), buffer.data(), buffer.size()))
 		{ 
 			text = buffer.data(); 
 			result.changed = true;
@@ -508,6 +513,7 @@ namespace Editor
 		result.active = ImGui::IsItemActive();
 		result.started = ImGui::IsItemActivated();
 		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+
 		ImGui::PopItemWidth();
 		ImGui::PopID();
 		return result;

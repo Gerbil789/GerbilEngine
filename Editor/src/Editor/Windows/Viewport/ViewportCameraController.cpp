@@ -14,11 +14,13 @@ namespace Editor
 		ViewportCameraController* s_Controller = nullptr;
 	}
 
-	ViewportCameraController& GetCameraController() {
+	ViewportCameraController& GetCameraController() 
+	{
 		return *s_Controller;
 	}
 
-	void SetCameraController(ViewportCameraController* controller) {
+	void SetCameraController(ViewportCameraController* controller) 
+	{
 		s_Controller = controller;
 	}
 
@@ -31,32 +33,28 @@ namespace Editor
 		Engine::EventBus::Get().Subscribe<Engine::MouseMovedEvent>([this](auto e) {OnMouseMoved(e); });
 	}
 
-	bool ViewportCameraController::OnKeyPressed(Engine::KeyPressedEvent& e)
+	void ViewportCameraController::OnKeyPressed(Engine::KeyPressedEvent& e)
 	{
 		if (e.GetKey() == Engine::KeyCode::F) //Focus
 		{
 			auto entity = Engine::SceneManager::GetActiveScene()->GetEntity(SelectionManager::GetPrimary(SelectionType::Entity));
-
-			if (!entity) return false; //TODO: must return bool?
+			if (!entity) return;
 
 			glm::vec3 focusPoint = entity.Get<Engine::TransformComponent>().position;
 			FocusOnPoint(focusPoint);
 		}
-
-		return false;
 	}
 
 
 
-	bool ViewportCameraController::OnMouseScroll(Engine::MouseScrolledEvent& e)
+	void ViewportCameraController::OnMouseScroll(Engine::MouseScrolledEvent& e)
 	{
 		float delta = e.GetYOffset() * m_ScrollSensitivity;
 		glm::vec3 position = m_Camera->GetPosition();
 		m_Camera->SetPosition(position + m_Camera->GetForward() * delta * m_ScrollSensitivity);
-		return false;
 	}
 
-	bool ViewportCameraController::OnMouseButtonPressed(Engine::MouseButtonPressedEvent& e)
+	void ViewportCameraController::OnMouseButtonPressed(Engine::MouseButtonPressedEvent& e)
 	{
 		if (e.GetMouseButton() == Engine::MouseCode::ButtonRight)
 		{
@@ -68,10 +66,9 @@ namespace Editor
 			m_PanDragging = true;
 			m_StartMousePosition = Engine::Input::GetMousePosition();
 		}
-		return false;
 	}
 
-	bool ViewportCameraController::OnMouseButtonReleased(Engine::MouseButtonReleasedEvent& e)
+	void ViewportCameraController::OnMouseButtonReleased(Engine::MouseButtonReleasedEvent& e)
 	{
 		if (e.GetMouseButton() == Engine::MouseCode::ButtonRight)
 		{
@@ -81,12 +78,11 @@ namespace Editor
 		{
 			m_PanDragging = false;
 		}
-		return false;
 	}
 
-	bool ViewportCameraController::OnMouseMoved(Engine::MouseMovedEvent& e)
+	void ViewportCameraController::OnMouseMoved(Engine::MouseMovedEvent& e)
 	{
-		if (!m_RotateDragging && !m_PanDragging) return false;
+		if (!m_RotateDragging && !m_PanDragging) return;
 
 		glm::vec2 mouse = { e.GetX(), e.GetY() };
 		glm::vec2 delta = (mouse - m_StartMousePosition) * m_MouseSensitivity;
@@ -108,7 +104,6 @@ namespace Editor
 			position += up * delta.y * m_PanSpeed;
 			m_Camera->SetPosition(position);
 		}
-		return false;
 	}
 
 	void ViewportCameraController::FocusOnPoint(const glm::vec3& point, float distance)

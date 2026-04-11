@@ -136,7 +136,7 @@ namespace Engine
 			return nullptr;
 		}
 
-		auto shader = AssetManager::GetAsset<Shader>(Uuid(data["Shader"].as<uint64_t>()));
+		auto shader = Engine::g_AssetManager->GetAsset<Shader>(Uuid(data["Shader"].as<uint64_t>()));
 
 		if(!shader)
 		{

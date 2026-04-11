@@ -5,8 +5,10 @@
 
 namespace Engine
 {
+	//TODO: remove "Other, Cubemap"
 	enum class AssetType { Unknown = 0, Texture2D, HDR, CubeMap, Mesh, Shader, Material, Audio, Scene, Script, Other, Directory, EmptyDirectory }; //TODO: reorder this, and regenerate the registry
 
+	//TODO: move implementaitions to .cpp file
 	inline AssetType GetAssetTypeFromExtension(const std::string& extension)
 	{
 		std::string lower = extension; //TODO: optimize, dont create a new string
@@ -18,6 +20,7 @@ namespace Engine
 				{ ".jpg",		AssetType::Texture2D },
 				{ ".jpeg",	AssetType::Texture2D },
 				{ ".exr",		AssetType::HDR },
+				{ ".hdr",		AssetType::HDR },
 				{ ".gltf",	AssetType::Mesh },
 				{ ".glb",		AssetType::Mesh },
 				{ ".mat",		AssetType::Material },
@@ -25,7 +28,6 @@ namespace Engine
 				{ ".mp3",		AssetType::Audio },
 				{ ".scene",	AssetType::Scene },
 				{ ".wgsl",	AssetType::Shader},
-				{ ".hdr",		AssetType::CubeMap},
 				{ ".txt",		AssetType::Other}
 		};
 
@@ -65,8 +67,11 @@ namespace Engine
 
 	struct AssetRecord
 	{
-		Uuid id;
-		std::filesystem::path path;
+		Uuid id = Uuid{ 0 };
+		std::filesystem::path path = {};
 		AssetType type = AssetType::Unknown;
+
+		std::string GetName() const { return path.stem().string(); }
+		bool IsValid() const { return id; }
 	};
 };

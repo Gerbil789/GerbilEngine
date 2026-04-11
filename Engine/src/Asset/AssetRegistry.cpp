@@ -4,15 +4,15 @@
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 
+//TODO: also keep track of directories
+
 namespace Engine
 {
-	std::unordered_map<Uuid, AssetRecord> m_Records;
-
 	void AssetRegistry::Load(const std::filesystem::path& path) //TODO: split into functions (load from file, scan directory, ...) and make better logs
 	{
 		if (!std::filesystem::exists(path))
 		{
-			LOG_WARNING("Asset registry file '{}' does not exist.", path);
+			LOG_ERROR("Asset registry file '{}' does not exist.", path);
 			return;
 		}
 
@@ -145,51 +145,26 @@ namespace Engine
 		fout << out.c_str();
 	}
 
-	bool AssetRegistry::IsUUIDValid(const Uuid& id) const
-	{
-		return id && m_Records.find(id) != m_Records.end();
-	}
 
 	const AssetRecord* AssetRegistry::Create(const std::filesystem::path& path)
 	{
 		auto assetsDir = Engine::Project::GetActive()->GetAssetsDirectory();
 
-		Uuid id = GetUUIDFromPath(path);
-		if (id)
+		for (const auto& [uuid, record] : m_Records)
 		{
-			LOG_WARNING("Asset '{}' already exists in registry.", path);
-			return GetRecord(id);
+			if (record.path == path)
+			{
+				LOG_WARNING("Asset '{}' already exists in registry.", path);
+				return &record;
+			}
 		}
 
-		id = Uuid();
-
+		auto id = Uuid(); // generate new UUID
 		auto [it, inserted] = m_Records.try_emplace(id, AssetRecord{id, assetsDir / path, GetAssetTypeFromExtension(path.extension().string())});
 
 		Save(Engine::Project::GetActive()->GetProjectDirectory() / "assetRegistry.yaml");
 		LOG_TRACE("Added asset '{}' to registry.", path);
 		return &it->second;
-	}
-
-	const Uuid AssetRegistry::GetUUIDFromPath(const std::filesystem::path& path) const
-	{
-		for (const auto& [uuid, record] : m_Records)
-		{
-			if (record.path == path)
-			{
-				return record.id;
-			}
-		}
-		static Uuid id(0);
-		return id;
-	}
-
-	const AssetRecord* AssetRegistry::GetRecord(const Uuid& id) const
-	{
-		if (auto it = m_Records.find(id); it != m_Records.end())
-		{
-			return &it->second;
-		}
-		return nullptr;
 	}
 
 	std::filesystem::path AssetRegistry::GetPath(const Uuid& id) const

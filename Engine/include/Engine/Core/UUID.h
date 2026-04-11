@@ -11,12 +11,10 @@ namespace Engine
   public:
     Uuid(); // generates a new UUID
     Uuid(uint64_t value) : m_Value(value) {}
-		Uuid(const Uuid&) = default;
 
     bool operator==(const Uuid& other) const { return m_Value == other.m_Value; }
     bool operator!=(const Uuid& other) const { return m_Value != other.m_Value; }
 		operator uint64_t() const { return m_Value; }
-
     operator bool() const { return m_Value != 0; }
 
   private:
@@ -32,7 +30,7 @@ namespace std
   {
     size_t operator()(const Engine::Uuid& uuid) const noexcept
     {
-      return static_cast<size_t>(uuid);
+      return std::hash<uint64_t>{}(uuid);
     }
   };
 }

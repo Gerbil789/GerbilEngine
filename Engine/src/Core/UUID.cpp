@@ -4,20 +4,14 @@
 
 namespace Engine
 {
-	static uint64_t GenerateUUID()
+	Uuid::Uuid()
 	{
-		static std::random_device rd;
-		static std::mt19937_64 gen(rd());
-		static std::uniform_int_distribution<uint64_t> dis;
+		thread_local std::random_device rd;
+		thread_local std::mt19937_64 gen(rd());
+		thread_local std::uniform_int_distribution<uint64_t> dis;
 
-		uint64_t value = 0;
-		do
-		{
-			value = dis(gen);
-		} while (value == 0); // reserve 0 as invalid
-
-		return value;
+		m_Value = 0;
+		do { m_Value = dis(gen); } 
+		while (m_Value == 0); // reserve 0 as invalid
 	}
-
-	Uuid::Uuid(): m_Value(GenerateUUID()){}
 }

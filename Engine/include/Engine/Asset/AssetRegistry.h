@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Core/API.h"
 #include <Engine/Asset/AssetRecord.h>
 
 namespace Engine
@@ -11,16 +10,27 @@ namespace Engine
 		void Load(const std::filesystem::path& path);
 		void Save(const std::filesystem::path& path);
 
-		bool IsUUIDValid(const Uuid& id) const;
 		const AssetRecord* Create(const std::filesystem::path& path);
 
-		const Uuid GetUUIDFromPath(const std::filesystem::path& path) const;
-		const AssetRecord* GetRecord(const Uuid& id) const;
+		template<typename Self>
+		AssetRecord& GetRecord(this Self&& self, Uuid id)
+		{
+			if (auto it = self.m_Records.find(id); it != self.m_Records.end())
+			{
+				return it->second;
+			}
+
+			static AssetRecord invalidRecord;
+			return invalidRecord;
+		}
 
 		std::filesystem::path GetPath(const Uuid& id) const;
 		std::filesystem::path GetRelativePath(const Uuid& id) const;
 
 		std::vector<const AssetRecord*> GetAllRecords() const;
 		void Clear();
+
+	private:
+		std::unordered_map<Uuid, AssetRecord> m_Records;
 	};
 }

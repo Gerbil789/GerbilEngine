@@ -52,6 +52,9 @@ namespace Editor
 
 		std::filesystem::current_path(GetExecutableDir());
 
+		Engine::g_AssetManager = new Engine::AssetManager();
+		Engine::g_AssetManager->Initialize(project->GetProjectDirectory());
+
 		Engine::GraphicsContext::Initialize();
 		GLFW::Initialize();
 
@@ -67,7 +70,7 @@ namespace Editor
 		EditorCommandManager::Initialize();
 		FileWatcher::WatchDirectory(project->GetAssetsDirectory());
 
-		Engine::AssetManager::Initialize(project->GetProjectDirectory());
+
 		Engine::Audio::Initialize();
 		IconManager::Load("Resources/Editor/icons/icons.png");
 
@@ -81,7 +84,7 @@ namespace Editor
 
 		EditorWindowManager::Initialize(*m_Window);
 
-		Engine::Scene* scene = Engine::AssetManager::GetAsset<Engine::Scene>(project->GetStartSceneID());
+		Engine::Scene* scene = Engine::g_AssetManager->GetAsset<Engine::Scene>(project->GetStartSceneID());
 		if(scene) { Engine::SceneManager::SetActiveScene(scene); }
 
 		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
@@ -93,7 +96,7 @@ namespace Editor
 		Engine::Audio::Shutdown();
 		EditorWindowManager::Shutdown();
 		IconManager::Unload();
-		Engine::AssetManager::Shutdown();
+		Engine::g_AssetManager->Shutdown();
 		Engine::SamplerPool::Shutdown();
 		m_Window.reset();
 		GLFW::Shutdown();

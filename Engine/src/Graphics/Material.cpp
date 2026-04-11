@@ -30,7 +30,7 @@ namespace Engine
 
 		for (auto& [name, uuid] : spec.textureDefaults)
 		{
-			if (auto tex = AssetManager::GetAsset<Texture2D>(uuid))
+			if (auto tex = Engine::g_AssetManager->GetAsset<Texture2D>(uuid))
 				SetTexture(name, tex);
 		}
 
@@ -247,7 +247,7 @@ namespace Engine::Materials
 	{
 		MaterialSpecification spec;
 
-		const auto& shaders = AssetManager::GetAssetsOfType<Shader>(AssetType::Shader);
+		const auto& shaders = Engine::g_AssetManager->GetAssetsOfType<Shader>(AssetType::Shader);
 
 		if (shaders.size() == 0)
 		{
@@ -256,7 +256,7 @@ namespace Engine::Materials
 
 		spec.shader = shaders[0]; //TODO: better way to specify shader for material
 
-		auto material = Engine::AssetManager::CreateAsset<Engine::Material>(path, spec);
+		auto material = Engine::g_AssetManager->CreateAsset<Engine::Material>(path, spec);
 		return material;
 	}
 }

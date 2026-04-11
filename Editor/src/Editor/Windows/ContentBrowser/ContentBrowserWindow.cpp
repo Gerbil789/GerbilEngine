@@ -55,7 +55,7 @@ namespace Editor
 		}
 
 		// then find files
-		for (auto& record : Engine::AssetManager::GetAllAssetRecords())
+		for (auto& record : Engine::g_AssetManager->GetAllAssetRecords())
 		{
 			if (record->path.parent_path() == m_CurrentDirectory)
 			{
@@ -173,7 +173,7 @@ namespace Editor
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
 				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				auto path = Engine::AssetManager::GetAssetPath(droppedUUID);
+				auto path = Engine::g_AssetManager->GetAssetPath(droppedUUID);
 
 				LOG_INFO("Dropped file path: {} onto {}", path, record->path.filename().string().c_str());
 			}
@@ -251,7 +251,7 @@ namespace Editor
 		switch (record.type)
 		{
 		case Engine::AssetType::Texture2D:
-			view = Engine::AssetManager::GetAsset<Engine::Texture2D>(record.id)->GetTextureView();
+			view = Engine::g_AssetManager->GetAsset<Engine::Texture2D>(record.id)->GetTextureView(); //TODO: use downscaled texture for thumbnail
 
 			break;
 		case Engine::AssetType::Material:
@@ -347,7 +347,7 @@ namespace Editor
 
 				for (int item_idx = item_min_idx_for_current_line; item_idx < item_max_idx_for_current_line; ++item_idx)
 				{
-					Engine::AssetRecord* assetRecord = &m_Items[item_idx]; //TODO: delete asset item, use asset record
+					Engine::AssetRecord* assetRecord = &m_Items[item_idx];
 					ImGui::PushID(static_cast<unsigned int>(static_cast<uint64_t>(assetRecord->id)));
 
 					// Position item

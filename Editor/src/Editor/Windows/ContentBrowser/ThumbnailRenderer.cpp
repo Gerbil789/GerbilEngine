@@ -68,7 +68,7 @@ namespace Editor
 			return m_ThumbnailCache[id];
 		}
 
-		Engine::Material* material = Engine::AssetManager::GetAsset<Engine::Material>(id);
+		Engine::Material* material = Engine::g_AssetManager->GetAsset<Engine::Material>(id);
 		wgpu::TextureView newView = Render(material);
 		m_ThumbnailCache[id] = newView;
 		return newView;

@@ -276,7 +276,7 @@ namespace Engine
 
 				if (uint64_t id; Engine::Yaml::Read<uint64_t>(meshNode, "Mesh", id))
 				{
-					component.mesh = AssetManager::GetAsset<Mesh>(id);
+					component.mesh = Engine::g_AssetManager->GetAsset<Mesh>(id);
 				}
 
 				// Materials
@@ -287,7 +287,7 @@ namespace Engine
 					for (const auto& materialNode : materialsNode)
 					{
 						uint64_t materialId = materialNode.as<uint64_t>();
-						Material* material = AssetManager::GetAsset<Material>(materialId);
+						Material* material = Engine::g_AssetManager->GetAsset<Material>(materialId);
 						component.SetMaterial(i++, material);
 					}
 				}
@@ -399,7 +399,7 @@ namespace Engine
 					{
 						uint64_t textureId = 0;
 						Engine::Yaml::Read(scriptNode, field.name, textureId);
-						Texture2D* texture = AssetManager::GetAsset<Texture2D>(textureId);
+						Texture2D* texture = Engine::g_AssetManager->GetAsset<Texture2D>(textureId);
 						*reinterpret_cast<Texture2D**>(fieldPtr) = texture;
 						break;
 					}
@@ -407,7 +407,7 @@ namespace Engine
 					{
 						uint64_t clipId = 0;
 						Engine::Yaml::Read(scriptNode, field.name, clipId);
-						AudioClip* clip = AssetManager::GetAsset<AudioClip>(clipId);
+						AudioClip* clip = Engine::g_AssetManager->GetAsset<AudioClip>(clipId);
 						*reinterpret_cast<AudioClip**>(fieldPtr) = clip;
 						break;
 					}
@@ -415,7 +415,7 @@ namespace Engine
 					{
 						uint64_t meshId = 0;
 						Engine::Yaml::Read(scriptNode, field.name, meshId);
-						Mesh* mesh = AssetManager::GetAsset<Mesh>(meshId);
+						Mesh* mesh = Engine::g_AssetManager->GetAsset<Mesh>(meshId);
 						*reinterpret_cast<Mesh**>(fieldPtr) = mesh;
 						break;
 					}
@@ -423,7 +423,7 @@ namespace Engine
 					{
 						uint64_t materialId = 0;
 						Engine::Yaml::Read(scriptNode, field.name, materialId);
-						Material* material = AssetManager::GetAsset<Material>(materialId);
+						Material* material = Engine::g_AssetManager->GetAsset<Material>(materialId);
 						*reinterpret_cast<Material**>(fieldPtr) = material;
 						break;
 					}

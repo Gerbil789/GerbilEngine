@@ -15,9 +15,9 @@ namespace Editor
 	void MaterialEditorWindow::Draw()
 	{
 		auto id = SelectionManager::GetPrimary(SelectionType::Asset);
-		if (Engine::AssetManager::GetAssetType(id) == Engine::AssetType::Material)
+		if (Engine::g_AssetManager->GetAssetType(id) == Engine::AssetType::Material)
 		{
-			m_Material = Engine::AssetManager::GetAsset<Engine::Material>(id);
+			m_Material = Engine::g_AssetManager->GetAsset<Engine::Material>(id);
 		}
 
 		ImGui::Begin("Material");
@@ -40,7 +40,7 @@ namespace Editor
 
 		if (s_AllShaders.empty())
 		{
-			auto shaders = Engine::AssetManager::GetAssetsOfType<Engine::Shader>(Engine::AssetType::Shader);
+			auto shaders = Engine::g_AssetManager->GetAssetsOfType<Engine::Shader>(Engine::AssetType::Shader);
 
 			s_AllShaders.resize(shaders.size());
 			for (size_t i = 0; i < shaders.size(); i++)
@@ -65,7 +65,15 @@ namespace Editor
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0);
 
-			ImGui::Text("%s", Engine::AssetManager::GetAssetRecord(m_Material->id)->path.stem().string().c_str());
+			Engine::AssetRecord& record = Engine::g_AssetManager->GetAssetRecord(m_Material->id);
+
+			std::string name = record.GetName();
+			if (TextField("MaterialName", name).finished)
+			{
+				record.path = record.path.parent_path() / (name + record.path.extension().string());
+				//TODO: SAVE CHANGE
+			}
+
 
 			ImGui::TableSetColumnIndex(1);
 			ImGui::SetNextItemWidth(-FLT_MIN); // fill full column
@@ -200,6 +208,11 @@ namespace Editor
 		}
 
 		ImGui::End();
+	}
+
+	void MaterialEditorWindow::SetMaterial(Engine::Material* material)
+	{
+		m_Material = material;
 	}
 
 

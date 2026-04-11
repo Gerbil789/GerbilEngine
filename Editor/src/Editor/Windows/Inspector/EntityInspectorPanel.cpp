@@ -14,7 +14,8 @@
 #include "Engine/Graphics/Camera.h"
 #include "Engine/Audio/AudioClip.h"
 
-
+#include "Editor/Core/SelectionManager.h"
+#include "Editor/Windows/MaterialEditorWindow.h"
 
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Script/Script.h"
@@ -201,7 +202,7 @@ namespace Editor
 
 		auto& component = m_Entity.Get<Engine::MeshComponent>();
 
-		std::string meshText = component.mesh != nullptr ? Engine::AssetManager::GetAssetName(component.mesh->id) : "##Mesh";
+		std::string meshText = component.mesh != nullptr ? Engine::g_AssetManager->GetAssetName(component.mesh->id) : "##Mesh";
 
 
 		PropertyTable table;
@@ -212,8 +213,8 @@ namespace Editor
 			ImGui::Button(meshText.c_str(), ImVec2(-FLT_MIN, 0));
 			DragDropTarget{}.Accept("UUID", [&](const void* data) {
 				Engine::Uuid id = *static_cast<const Engine::Uuid*>(data);
-				if (Engine::AssetManager::GetAssetType(id) == Engine::AssetType::Mesh) {
-					component.mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(id);
+				if (Engine::g_AssetManager->GetAssetType(id) == Engine::AssetType::Mesh) {
+					component.mesh = Engine::g_AssetManager->GetAsset<Engine::Mesh>(id);
 				}
 				});
 		}
@@ -227,16 +228,19 @@ namespace Editor
 			std::string text = "##Material";
 			if(material->id)
 			{
-				text = Engine::AssetManager::GetAssetName(material->id);
+				text = Engine::g_AssetManager->GetAssetName(material->id);
 			}
 
 			PropertyRow row("Material");
 			ImGui::PushID(i);
-			ImGui::Button(text.c_str(), ImVec2(-FLT_MIN, 0));
+			if(ImGui::Button(text.c_str(), ImVec2(-FLT_MIN, 0)))
+			{
+				MaterialEditorWindow::SetMaterial(material);
+			}
 			DragDropTarget{}.Accept("UUID", [&](const void* data) {
 				Engine::Uuid id = *static_cast<const Engine::Uuid*>(data);
-				if (Engine::AssetManager::GetAssetType(id) == Engine::AssetType::Material) {
-					component.SetMaterial(i, Engine::AssetManager::GetAsset<Engine::Material>(id));
+				if (Engine::g_AssetManager->GetAssetType(id) == Engine::AssetType::Material) {
+					component.SetMaterial(i, Engine::g_AssetManager->GetAsset<Engine::Material>(id));
 				}
 				});
 			ImGui::PopID();

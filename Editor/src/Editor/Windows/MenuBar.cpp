@@ -42,11 +42,11 @@ namespace Editor
 		{"Open", "Ctrl+O", [] { LOG_WARNING("Open File - not implemented");} },
 		{"Save", "Ctrl+S", [] {
 			Engine::SceneManager::SaveScene();
-			auto materials = Engine::AssetManager::GetAssetsOfType<Engine::Material>(Engine::AssetType::Material);
+			auto materials = Engine::g_AssetManager->GetAssetsOfType<Engine::Material>(Engine::AssetType::Material);
 
 			for(auto material : materials)
 			{
-				auto path = Engine::AssetManager::GetAssetPath(material->id);
+				auto path = Engine::g_AssetManager->GetAssetPath(material->id);
 				Engine::MaterialSerializer::Serialize(material, path);
 			}
 		}},

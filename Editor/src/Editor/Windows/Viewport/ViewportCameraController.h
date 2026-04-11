@@ -12,11 +12,11 @@ namespace Editor
 		ViewportCameraController(Engine::Camera* camera);
 
 	private:
-		bool OnKeyPressed(Engine::KeyPressedEvent& e);
-		bool OnMouseScroll(Engine::MouseScrolledEvent& e);
-		bool OnMouseButtonPressed(Engine::MouseButtonPressedEvent& e);
-		bool OnMouseButtonReleased(Engine::MouseButtonReleasedEvent& e);
-		bool OnMouseMoved(Engine::MouseMovedEvent& e);
+		void OnKeyPressed(Engine::KeyPressedEvent& e);
+		void OnMouseScroll(Engine::MouseScrolledEvent& e);
+		void OnMouseButtonPressed(Engine::MouseButtonPressedEvent& e);
+		void OnMouseButtonReleased(Engine::MouseButtonReleasedEvent& e);
+		void OnMouseMoved(Engine::MouseMovedEvent& e);
 
 		void FocusOnPoint(const glm::vec3& point, float distance = 10.0f);
 
@@ -34,5 +34,4 @@ namespace Editor
 
 	ViewportCameraController& GetCameraController();
 	void SetCameraController(ViewportCameraController* controller);
-
 }

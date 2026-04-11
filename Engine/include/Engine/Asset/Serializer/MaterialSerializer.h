@@ -1,7 +1,5 @@
 #pragma once
 
-//#include "Engine/Graphics/Material.h"
-
 namespace Engine
 {
 	class Material;

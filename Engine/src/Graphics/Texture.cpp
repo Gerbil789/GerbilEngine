@@ -12,15 +12,13 @@ namespace Engine
 		static Texture2D* s_DefaultNormalTexture = nullptr;
 		static Texture2D* s_DefaultAmbientTexture = nullptr;
 
-		//TODO: make this better
-		uint32_t getMaxMipLevelCount(const wgpu::Extent3D& textureSize)
-		{
-			return std::bit_width(std::max(textureSize.width, textureSize.height));
-		}
 	}
 
 
-
+	uint32_t GetMaxMipLevelCount(const wgpu::Extent3D& textureSize)
+	{
+		return std::bit_width(std::max(textureSize.width, textureSize.height));
+	}
 
 	void GenerateMipmaps(wgpu::Texture& texture)
 	{
@@ -30,7 +28,7 @@ namespace Engine
 		wgpu::TextureFormat format = texture.getFormat();
 
 		wgpu::Extent3D baseSize = { texture.getWidth(), texture.getHeight(), 1 };
-		auto mipCount = getMaxMipLevelCount(baseSize);
+		auto mipCount = GetMaxMipLevelCount(baseSize);
 
 		wgpu::TextureViewDescriptor textureViewDesc;
 		textureViewDesc.nextInChain = nullptr;
@@ -151,7 +149,7 @@ namespace Engine
 		wgpu::TextureFormat format = texture.getFormat();
 
 		wgpu::Extent3D baseSize = { texture.getWidth(), texture.getHeight(), 1 };
-		auto mipCount = getMaxMipLevelCount(baseSize);
+		auto mipCount = GetMaxMipLevelCount(baseSize);
 	
 
 		wgpu::TextureViewDescriptor textureViewDesc;
@@ -287,10 +285,6 @@ namespace Engine
 		Engine::GraphicsContext::GetQueue().submit(1, &commandBuffer);
 	}
 
-
-
-
-
 	Texture2D::Texture2D(const TextureSpecification& specification, const void* data)
 	{
 		m_Width = specification.width;
@@ -301,7 +295,7 @@ namespace Engine
 
 		if (specification.generateMips)
 		{
-			mipCount = getMaxMipLevelCount({ m_Width , m_Height , 1 });
+			mipCount = GetMaxMipLevelCount({ m_Width , m_Height , 1 });
 		}
 
 		uint32_t bytesPerPixel = 4;
@@ -485,7 +479,7 @@ namespace Engine
 
 
 		uint32_t faceSize = m_Height / 2;
-		uint32_t mipCount = getMaxMipLevelCount({ faceSize, faceSize, 1 });
+		uint32_t mipCount = GetMaxMipLevelCount({ faceSize, faceSize, 1 });
 
 		textureDesc.size = { faceSize, faceSize, 6 };
 		textureDesc.mipLevelCount = mipCount;

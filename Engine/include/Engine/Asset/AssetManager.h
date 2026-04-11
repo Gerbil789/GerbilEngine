@@ -12,17 +12,18 @@ namespace Engine
 	class ENGINE_API AssetManager
 	{
 	public:
-		static void Initialize(const std::filesystem::path& projectDirectory)
+		void Initialize(const std::filesystem::path& projectDirectory)
 		{
 			m_AssetRegistry.Load(projectDirectory / "assetRegistry.yaml");
 		}
 
-		static void Shutdown()
+		void Shutdown()
 		{
 			// TODO: release all assets properly
 			m_AssetRegistry.Clear();
 			m_LoadedAssets.clear();
 		}
+
 		//TODO: handle runtime hot reloading of assets
 		//static void OnEvent(Event& e)
 		//{
@@ -55,7 +56,7 @@ namespace Engine
 		//}
 
 		template<typename T>
-		static T* GetAsset(Uuid id)
+		T* GetAsset(Uuid id)
 		{
 			Asset* asset = GetLoadedAsset(id);
 
@@ -64,14 +65,14 @@ namespace Engine
 				return static_cast<T*>(asset);
 			}
 
-			auto record = m_AssetRegistry.GetRecord(id);
-			if (!record)
+			const Engine::AssetRecord& record = m_AssetRegistry.GetRecord(id);
+			if (!record.IsValid())
 			{
 				LOG_ERROR("Failed to load asset '{}', Record not found in registry", id);
 				return nullptr;
 			}
 
-			asset = AssetImporter::ImportAsset(*record);
+			asset = AssetImporter::ImportAsset(record);
 			if (asset)
 			{
 				LOG_TRACE("Loaded asset '{}', '{}'", id, m_AssetRegistry.GetRelativePath(id));
@@ -84,7 +85,7 @@ namespace Engine
 		}
 
 		template<typename T, typename... Args>
-		static T* LoadAsset(const AssetRecord& record, Args&&... args)
+		T* LoadAsset(const AssetRecord& record, Args&&... args)
 		{
 			static_assert(std::is_base_of_v<Asset, T>, "T must derive from Asset");
 
@@ -109,7 +110,7 @@ namespace Engine
 
 
 		template<typename T>
-		static std::vector<T*> GetAssetsOfType(const AssetType& type) //TODO: this is not very efficient, we should have a map of type to records in the registry
+		std::vector<T*> GetAssetsOfType(const AssetType& type) //TODO: this is not very efficient, we should have a map of type to records in the registry
 		{
 			std::vector<T*> assets;
 			auto records = m_AssetRegistry.GetAllRecords();
@@ -140,7 +141,7 @@ namespace Engine
 		}
 
 		template<typename T, typename... Args>
-		static T* CreateAsset(const std::filesystem::path& path, Args&&... args)
+		T* CreateAsset(const std::filesystem::path& path, Args&&... args)
 		{
 			auto record = m_AssetRegistry.Create(path);
 			if (!record)
@@ -164,7 +165,7 @@ namespace Engine
 			return static_cast<T*>(asset);
 		}
 
-		static Asset* GetLoadedAsset(Uuid id)
+		Asset* GetLoadedAsset(Uuid id)
 		{
 			auto it = m_LoadedAssets.find(id);
 			if (it != m_LoadedAssets.end())
@@ -173,22 +174,23 @@ namespace Engine
 			return nullptr;
 		}
 
-		static const AssetRecord* GetAssetRecord(Uuid id)
+		template<typename Self>
+		AssetRecord& GetAssetRecord(this Self&& self, Uuid id)
 		{
-			return m_AssetRegistry.GetRecord(id);
+			return self.m_AssetRegistry.GetRecord(id);
 		}
 
-		static AssetType GetAssetType(Uuid id)
+		AssetType GetAssetType(Uuid id)
 		{
-			auto record = m_AssetRegistry.GetRecord(id);
-			if (!record)
+			const Engine::AssetRecord& record = m_AssetRegistry.GetRecord(id);
+			if (!record.IsValid())
 			{
 				return AssetType::Unknown;
 			}
-			return record->type;
+			return record.type;
 		}
 
-		static Asset* CreateAsset(const std::filesystem::path& filepath)
+		Asset* CreateAsset(const std::filesystem::path& filepath)
 		{
 			auto record = m_AssetRegistry.Create(filepath);
 			if (!record)
@@ -214,22 +216,22 @@ namespace Engine
 			return asset;
 		}
 
-		static inline std::filesystem::path GetAssetPath(Uuid id) // returns relative path to the assets directory
+		inline std::filesystem::path GetAssetPath(Uuid id) // returns relative path to the assets directory
 		{
 			return m_AssetRegistry.GetPath(id);
 		}
 
-		static inline std::string GetAssetName(Uuid id)
+		inline std::string GetAssetName(Uuid id)
 		{
 			return m_AssetRegistry.GetPath(id).stem().string();
 		}
 
-		static std::vector<const AssetRecord*> GetAllAssetRecords()
+		std::vector<const AssetRecord*> GetAllAssetRecords()
 		{
 			return m_AssetRegistry.GetAllRecords();
 		}
 
-		static std::vector<const AssetRecord*> GetAllAssetRecordsOfType(AssetType type)
+		std::vector<const AssetRecord*> GetAllAssetRecordsOfType(AssetType type)
 		{
 			std::vector<const AssetRecord*> allRecords = m_AssetRegistry.GetAllRecords();
 			std::vector<const AssetRecord*> records;
@@ -245,7 +247,9 @@ namespace Engine
 		}
 
 	private:
-		inline static AssetRegistry m_AssetRegistry;
-		inline static std::unordered_map<Uuid, Asset*> m_LoadedAssets;
+		AssetRegistry m_AssetRegistry;
+		std::unordered_map<Uuid, Asset*> m_LoadedAssets;
 	};
+
+	extern ENGINE_API AssetManager* g_AssetManager;
 }

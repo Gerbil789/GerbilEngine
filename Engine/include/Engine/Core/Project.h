@@ -3,10 +3,6 @@
 #include "Engine/Core/UUID.h"
 #include <filesystem>
 
-//TODO: 
-// 1. keep track of last opened project, so it can auto load on startup
-
-
 namespace Engine
 {
 	class ENGINE_API Project

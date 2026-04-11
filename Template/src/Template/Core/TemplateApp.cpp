@@ -16,9 +16,7 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Event/EventBus.h"
-#include "Engine/Compute/ComputePass.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Compute/MipMap.h"
 #include "Engine/Graphics/Texture.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 
@@ -75,7 +73,7 @@ namespace Template
 	TemplateApp::~TemplateApp()
 	{
 		Engine::Audio::Shutdown();
-		Engine::AssetManager::Shutdown();
+		//Engine::AssetManager::Shutdown();
 		Engine::SamplerPool::Shutdown();
 		m_Window.reset();
 		GLFW::Shutdown();

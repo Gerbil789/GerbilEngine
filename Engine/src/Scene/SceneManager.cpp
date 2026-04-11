@@ -53,7 +53,7 @@ namespace Engine::SceneManager
 			return; 
 		}
 
-		auto assetPath = AssetManager::GetAssetPath(s_ActiveScene->id);
+		auto assetPath = Engine::g_AssetManager->GetAssetPath(s_ActiveScene->id);
 
 		if(assetPath.empty())
 		{

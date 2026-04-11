@@ -59,7 +59,7 @@ namespace Editor
 
 	void InspectorWindow::DrawAssetPanel(Engine::Uuid assetID)
 	{
-		auto type = Engine::AssetManager::GetAssetType(assetID);
+		auto type = Engine::g_AssetManager->GetAssetType(assetID);
 
 		switch (type)
 		{
@@ -71,12 +71,12 @@ namespace Editor
 
 		case Engine::AssetType::Shader:
 		{
-			m_ShaderInspector.Draw(Engine::AssetManager::GetAsset<Engine::Shader>(assetID));
+			m_ShaderInspector.Draw(Engine::g_AssetManager->GetAsset<Engine::Shader>(assetID));
 			break;
 		}
 		case Engine::AssetType::Audio:
 		{
-			m_AudioInspector.Draw(Engine::AssetManager::GetAsset<Engine::AudioClip>(assetID));
+			m_AudioInspector.Draw(Engine::g_AssetManager->GetAsset<Engine::AudioClip>(assetID));
 			break;
 		}
 		default:
