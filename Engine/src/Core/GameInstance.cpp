@@ -46,7 +46,7 @@ namespace Engine
 		auto entities = m_ActiveScene->GetEntities(true);
 		LOG_INFO("GameInstance - Initialized with scene ID: {}, containing {} entities", m_ActiveScene->id, entities.size());
 
-		m_Renderer.SetScene(m_ActiveScene);
+		//m_Renderer.SetScene(m_ActiveScene);
 
 		m_ActiveCameraEntity = m_ActiveScene->GetActiveCamera();
 		auto& cameraComponent = m_ActiveCameraEntity.Get<Engine::CameraComponent>();
@@ -95,7 +95,7 @@ namespace Engine
 
 		m_Renderer.SetColorTarget(targetView);
 
-		m_Renderer.RenderScene();
+		m_Renderer.RenderScene(m_ActiveScene);
 
 		surface.present();
 	}

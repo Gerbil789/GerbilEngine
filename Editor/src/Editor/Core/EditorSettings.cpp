@@ -4,9 +4,11 @@
 #include "Engine/Core/Log.h"
 #include <fstream>
 
-namespace EditorSettings
+namespace Editor
 {
-	void Load()
+	EditorSettings g_EditorSettings;
+
+	void LoadEditorSettings()
 	{
 		std::filesystem::path settingsFilePath = GetSettingsFilePath("GerbilEditor");
 
@@ -28,19 +30,19 @@ namespace EditorSettings
 
 		if (data["ProjectDirectory"])
 		{
-			projectDirectory = data["ProjectDirectory"].as<std::string>();
+			g_EditorSettings.projectDirectory = data["ProjectDirectory"].as<std::string>();
 		}
 
 		LOG_INFO("Loaded settings from {}", settingsFilePath);
 		return;
 	}
 
-	void Save()
+	void SaveEditorSettings()
 	{
 		std::filesystem::path settingsFilePath = GetSettingsFilePath("GerbilEditor");
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		Engine::Yaml::Write(out, "ProjectDirectory", projectDirectory.string());
+		Engine::Yaml::Write(out, "ProjectDirectory", g_EditorSettings.projectDirectory.string());
 		out << YAML::EndMap;
 		std::ofstream fout(settingsFilePath);
 		if (!fout.is_open())

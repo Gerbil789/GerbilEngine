@@ -39,9 +39,9 @@ namespace Engine
 
 		for (const auto& binding : shaderSpec.bindings)
 		{
-			if(binding.group == 0)
+			if(binding.group == 0 || binding.group == 1 || binding.group == 3)
 			{
-				continue; // skip frame bindings
+				continue; // skip view and environment and model bindings
 			}
 
 			if (binding.type == BindingType::Texture2D)

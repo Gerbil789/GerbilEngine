@@ -9,6 +9,9 @@ namespace Engine::GraphicsContext
 	static wgpu::Device s_Device;
 	static wgpu::Queue s_Queue;
 
+	static uint32_t s_UniformBufferOffsetAlignment;
+	static uint32_t s_StorageBufferOffsetAlignment;
+
 	void Initialize()
 	{
 		// Initialize WGPU instance
@@ -42,16 +45,17 @@ namespace Engine::GraphicsContext
 			LOG_TRACE("DeviceID 0x{:X}", info.deviceID);
 		}
 
-		wgpu::Limits limits{};
+		wgpu::Limits limits;
 
 		limits.maxBufferSize = 1024ull * 1024ull * 1024ull; // request 1 GB
 
-		if (!adapter.getLimits(&limits))
+		if (adapter.getLimits(&limits) != wgpu::Status::Success)
 		{
 			throw std::runtime_error("Failed to query adapter limits");
 		}
 
-		LOG_TRACE("Adapter maxBufferSize: {}", limits.maxBufferSize);
+		s_UniformBufferOffsetAlignment = limits.minUniformBufferOffsetAlignment;
+		s_StorageBufferOffsetAlignment = limits.minStorageBufferOffsetAlignment;
 
 		// Request device
 		wgpu::DeviceDescriptor deviceDesc{};
@@ -118,5 +122,15 @@ namespace Engine::GraphicsContext
 	const wgpu::Queue& GetQueue()
 	{
 		return s_Queue;
+	}
+
+	ENGINE_API uint32_t GetUniformBufferOffsetAlignment()
+	{
+		return s_UniformBufferOffsetAlignment;
+	}
+
+	ENGINE_API uint32_t GetStorageBufferOffsetAlignment()
+	{
+		return s_StorageBufferOffsetAlignment;
 	}
 }

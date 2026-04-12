@@ -6,6 +6,9 @@ Attributes:
   albedo: [1, 1, 1, 1]
   roughness: 0
   metallic: 1
-  tiling: [1, 1]
+  tiling: [5, 1]
 Textures:
-  {}
+  AlbedoTexture: 3932435452252890858
+  NormalTexture: 5360640591292890293
+  RoughnessTexture: 15507889340687193263
+  AmbientTexture: 17636335620445898322

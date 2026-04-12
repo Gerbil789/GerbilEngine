@@ -3,7 +3,7 @@
 #include "Engine/Scene/Entity.h"
 #include "Engine/Utility/File.h"
 #include "Engine/Graphics/Mesh.h"
-#include "Engine/Graphics/Renderer/RenderGlobals.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Graphics/GraphicsContext.h"
 
@@ -51,7 +51,7 @@ namespace Engine
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
 		pass.setPipeline(m_EntityIdPipeline);
 
-		pass.setBindGroup(0, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
+		pass.setBindGroup(0, context.viewBindGroup, 0, nullptr);
 
 		Mesh* mesh = nullptr;
 
@@ -66,8 +66,8 @@ namespace Engine
 				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetIndexBuffer().getSize());
 			}
 
-			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::UniformStride;
-			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
+			uint32_t dynamicOffset = draw.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();
+			pass.setBindGroup(1, context.modelBindGroup, 1, &dynamicOffset);
 
 
 			Engine::Uuid uuid = draw.entity.GetUUID();
@@ -273,8 +273,8 @@ namespace Engine
 		pipelineDesc.multisample.alphaToCoverageEnabled = false;
 
 		wgpu::BindGroupLayout bindGroupLayouts[] = {
-			RenderGlobals::GetFrameLayout(),
-			RenderGlobals::GetModelLayout(),
+			Renderer::GetViewLayout(),
+			Renderer::GetModelLayout(),
 			m_BindGroupLayout
 		};
 

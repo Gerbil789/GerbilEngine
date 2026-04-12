@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <limits>
 
-namespace Engine { class Texture2D; class AudioClip; class Mesh; class Material; }
+namespace Engine { class Texture2D; class AudioClip; class Mesh; class Material; class CubeMapTexture; }
 
 namespace Editor
 {
@@ -95,6 +95,7 @@ namespace Editor
 	};
 
 	EditResult TextureField(const std::string& label, Engine::Texture2D*& texture);
+	EditResult CubeMapField(const std::string& label, Engine::CubeMapTexture*& texture);
 	EditResult AudioClipField(const std::string& label, Engine::AudioClip*& audioClip);
 	EditResult MeshField(const std::string& label, Engine::Mesh*& mesh);
 	EditResult MaterialField(const std::string& label, Engine::Material*& material);

@@ -12,5 +12,8 @@ namespace Engine::GraphicsContext
 	ENGINE_API const wgpu::Device& GetDevice();
 	ENGINE_API const wgpu::Queue& GetQueue();
 
+	ENGINE_API uint32_t GetUniformBufferOffsetAlignment();
+	ENGINE_API uint32_t GetStorageBufferOffsetAlignment();
+
 	//TODO: add minimum system requirements for the graphics context
 }

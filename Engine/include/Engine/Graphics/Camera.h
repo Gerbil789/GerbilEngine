@@ -81,8 +81,6 @@ namespace Engine
 		const glm::vec4& GetClearColor() const { return m_ClearColor; }
 		void SetClearColor(const glm::vec4& color) { m_ClearColor = color; }
 
-		Skybox& GetSkybox();
-
 		std::array<glm::vec3, 8> GetFrustumCornersWorld(float near, float far) const;
 
 	private:
@@ -95,7 +93,6 @@ namespace Engine
 		PerspectiveParams m_Perspective;
 		OrthographicParams m_Orthographic;
 
-
 		glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
 		glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
 		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
@@ -104,9 +101,7 @@ namespace Engine
 		float m_Yaw = 0.0f;
 		float m_Roll = 0.0f;
 
-
 		glm::vec4 m_ClearColor = { 1.0f, 0.05f, 1.0f, 1.0f };
-		Skybox* m_Skybox = nullptr;
 
 		Background m_Background = Background::Color;
 		bool m_DirtyProjection = true;

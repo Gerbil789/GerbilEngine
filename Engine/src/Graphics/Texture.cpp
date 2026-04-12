@@ -598,6 +598,30 @@ namespace Engine
 		wgpu::CommandBuffer commandBuffer = encoder.finish();
 		Engine::GraphicsContext::GetQueue().submit(1, &commandBuffer);
 
+
+		//create preview view
+		//create preview view
+		wgpu::TextureViewDescriptor previewViewDesc;
+		previewViewDesc.label = { "CubemapPreviewFace0", WGPU_STRLEN };
+		previewViewDesc.format = m_TextureFormat;
+
+		// IMPORTANT: Treat this view as a standard 2D texture, NOT a Cube or 2DArray
+		previewViewDesc.dimension = wgpu::TextureViewDimension::_2D;
+
+		// Just grab Mip 0
+		previewViewDesc.baseMipLevel = 0;
+		previewViewDesc.mipLevelCount = 1;
+
+		// Grab exactly one face. 
+		// 0 = +X (Right), 1 = -X (Left), 2 = +Y (Top), 3 = -Y (Bottom), 4 = +Z (Front), 5 = -Z (Back)
+		previewViewDesc.baseArrayLayer = 0;
+		previewViewDesc.arrayLayerCount = 1; // Only 1 layer!
+
+		previewViewDesc.aspect = wgpu::TextureAspect::All;
+
+		m_PreviewTextureView = m_Texture.createView(previewViewDesc);
+
+
 		ImportanceSample(m_Texture);
 
 		//GenerateMipmaps(m_Texture);

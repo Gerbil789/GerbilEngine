@@ -2,7 +2,7 @@
 #include "Engine/Graphics/RenderPass/OpaquePass.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
-#include "Engine/Graphics/Renderer/RenderGlobals.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Scene/Components.h"
 
 namespace Engine
@@ -35,8 +35,8 @@ namespace Engine
 
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
 
-
-		pass.setBindGroup(0, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
+		pass.setBindGroup(0, context.viewBindGroup, 0, nullptr);
+		pass.setBindGroup(1, context.environmentBindGroup, 0, nullptr);
 
 		Material* material = nullptr;
 		Mesh* mesh = nullptr;
@@ -69,8 +69,8 @@ namespace Engine
 				pass.setPipeline(material->GetShader()->GetRenderPipeline());
 			}
 
-			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::UniformStride;
-			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
+			uint32_t dynamicOffset = draw.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();
+			pass.setBindGroup(3, context.modelBindGroup, 1, &dynamicOffset);
 
 			pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);
 		}

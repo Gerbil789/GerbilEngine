@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Graphics/RenderPass/NormalPass.h"
 #include "Engine/Graphics/Mesh.h"
-#include "Engine/Graphics/Renderer/RenderGlobals.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Utility/File.h"
 #include "Engine/Graphics/GraphicsContext.h"
@@ -81,8 +81,8 @@ namespace Engine
 		pipelineDesc.multisample.alphaToCoverageEnabled = false;
 
 		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = {
-			RenderGlobals::GetFrameLayout(),
-			RenderGlobals::GetModelLayout()
+			Renderer::GetViewLayout(),
+			Renderer::GetModelLayout()
 		};
 
 		wgpu::PipelineLayoutDescriptor layoutDesc{};
@@ -123,7 +123,7 @@ namespace Engine
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(renderPassDescriptor);
 		pass.setPipeline(m_NormalPipeline);
 
-		pass.setBindGroup(0, RenderGlobals::GetFrameBindGroup(), 0, nullptr);
+		pass.setBindGroup(0, context.viewBindGroup, 0, nullptr);
 
 		Mesh* mesh = nullptr;
 
@@ -140,8 +140,8 @@ namespace Engine
 
 			const SubMesh* sub = draw.subMesh;
 
-			uint32_t dynamicOffset = draw.modelIndex * RenderGlobals::UniformStride;
-			pass.setBindGroup(1, RenderGlobals::GetModelBindGroup(), 1, &dynamicOffset);
+			uint32_t dynamicOffset = draw.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();
+			pass.setBindGroup(1, context.modelBindGroup, 1, &dynamicOffset);
 			pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);
 		}
 		pass.end();

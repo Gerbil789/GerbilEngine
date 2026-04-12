@@ -25,6 +25,8 @@
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Engine/Asset/Importer/TextureImporter.h"
+
 //TODO: clean up this file
 
 namespace Editor
@@ -55,8 +57,8 @@ namespace Editor
 		static Engine::LightPass* s_LightPass = nullptr;
 		static Engine::ShadowPass* s_ShadowPass = nullptr;
 
-		static Engine::Renderer m_Renderer;
 		static Engine::Camera* m_Camera = nullptr;
+		static Engine::Renderer m_Renderer;
 
 		static bool enableOpaquePass = true;
 		static bool enableNormalPass = false;
@@ -245,7 +247,9 @@ namespace Editor
 
 		SetCameraController(new ViewportCameraController(m_Camera)); //TODO: this api is weird, make controller static?
 
+		m_Renderer.Initialize();
 		m_Renderer.SetCamera(m_Camera);
+		m_Renderer.SetSkyboxCubemap(Engine::TextureImporter::LoadCubeMapTexture("Resources/Engine/hdr/PG2/lebombo_8k.hdr"));
 
 		m_Renderer.AddPass(new Engine::BackgroundPass());
 
@@ -267,7 +271,6 @@ namespace Editor
 			{
 				m_Scene = scene;
 				SelectionManager::Clear(SelectionType::Entity);
-				m_Renderer.SetScene(m_Scene);
 
 				if (EditorRuntime::GetState() == EditorState::Edit)
 				{
@@ -302,7 +305,7 @@ namespace Editor
 		m_ViewportFocused = ImGui::IsWindowFocused();
 
 		// Render scene
-		m_Renderer.RenderScene();
+		m_Renderer.RenderScene(m_Scene);
 
 		ImVec2 mousePos = ImGui::GetMousePos();
 		float mx = mousePos.x - m_ViewportBounds[0].x;
@@ -392,5 +395,10 @@ namespace Editor
 				}
 			}
 		}
+	}
+
+	Engine::Renderer& ViewportWindow::GetRenderer()
+	{
+		return m_Renderer;
 	}
 }

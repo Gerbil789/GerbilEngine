@@ -8,6 +8,7 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Camera.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/Importer/TextureImporter.h"
 
 namespace Editor
 {
@@ -18,6 +19,8 @@ namespace Editor
 			Engine::Scene scene;
 			Engine::Entity entity;
 			Engine::Camera camera;
+
+			Engine::Renderer renderer;
 		};
 
 		ThumbnailData& GetData() 
@@ -42,6 +45,13 @@ namespace Editor
 		data.entity = data.scene.CreateEntity("PreviewEntity");
 		auto& mc = data.entity.Add<Engine::MeshComponent>();
 		mc.mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/sphere.glb");
+
+
+		data.renderer.Initialize();
+		data.renderer.AddPass(new Engine::BackgroundPass());
+		data.renderer.AddPass(new Engine::OpaquePass());
+		data.renderer.SetCamera(&data.camera);
+		data.renderer.Resize(64, 64);
 	}
 
 	wgpu::TextureView Render(Engine::Material* material)
@@ -49,16 +59,30 @@ namespace Editor
 		auto& data = GetData();
 		data.entity.Get<Engine::MeshComponent>().SetMaterial(0, material);
 
-		Engine::Renderer renderer;
+		wgpu::TextureDescriptor desc;
+		desc.label = { "ThumbnailTexture", WGPU_STRLEN };
+		desc.dimension = wgpu::TextureDimension::_2D;
+		desc.format = wgpu::TextureFormat::RGBA8Unorm;
+		desc.size = { 64, 64, 1 };
+		desc.mipLevelCount = 1;
+		desc.sampleCount = 1;
+		desc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
 
-		renderer.Resize(64, 64);
-		renderer.AddPass(new Engine::BackgroundPass());
-		renderer.AddPass(new Engine::OpaquePass());
-		renderer.SetCamera(&data.camera);
-		renderer.SetScene(&data.scene);
-		renderer.RenderScene();
+		wgpu::Texture thumbnailTexture = Engine::GraphicsContext::GetDevice().createTexture(desc);
 
-		return renderer.GetTextureView();
+		wgpu::TextureViewDescriptor viewDesc;
+		viewDesc.dimension = wgpu::TextureViewDimension::_2D;
+		viewDesc.format = desc.format;
+		viewDesc.arrayLayerCount = 1;
+		viewDesc.mipLevelCount = 1;
+		wgpu::TextureView thumbnailView = thumbnailTexture.createView(viewDesc);
+
+		data.renderer.SetColorTarget(thumbnailView);
+
+
+		data.renderer.RenderScene(&data.scene);
+
+		return thumbnailView;
 	}
 
 	wgpu::TextureView ThumbnailRenderer::GetThumbnail(Engine::Uuid id)

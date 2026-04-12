@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	//TODO: remove "Other, Cubemap"
+	//TODO: remove "Other"
 	enum class AssetType { Unknown = 0, Texture2D, HDR, CubeMap, Mesh, Shader, Material, Audio, Scene, Script, Other, Directory, EmptyDirectory }; //TODO: reorder this, and regenerate the registry
 
 	//TODO: move implementaitions to .cpp file
@@ -19,8 +19,7 @@ namespace Engine
 				{ ".png",		AssetType::Texture2D },
 				{ ".jpg",		AssetType::Texture2D },
 				{ ".jpeg",	AssetType::Texture2D },
-				{ ".exr",		AssetType::HDR },
-				{ ".hdr",		AssetType::HDR },
+				{ ".hdr",		AssetType::CubeMap },
 				{ ".gltf",	AssetType::Mesh },
 				{ ".glb",		AssetType::Mesh },
 				{ ".mat",		AssetType::Material },
@@ -49,6 +48,7 @@ namespace Engine
 		case AssetType::Audio:    return "Audio";
 		case AssetType::Scene:    return "Scene";
 		case AssetType::Script:   return "Script";
+		case AssetType::CubeMap:  return "CubeMap";
 		default:                  return "Unknown";
 		}
 	}
@@ -62,6 +62,7 @@ namespace Engine
 		if (assetType == "Audio")    return AssetType::Audio;
 		if (assetType == "Scene")    return AssetType::Scene;
 		if (assetType == "Script")   return AssetType::Script;
+		if (assetType == "CubeMap") return AssetType::CubeMap;
 		return AssetType::Unknown;
 	}
 

@@ -1,21 +1,16 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Camera.h"
-#include "Engine/Graphics/Skybox.h"
 #include <glm/gtx/quaternion.hpp>
 
 namespace Engine
 {
 	Camera::Camera()
 	{
-		m_Skybox = new Skybox();
 		UpdateViewMatrix();
 		UpdateProjectionMatrix();
 	}
 
-	Camera::~Camera()
-	{
-		delete m_Skybox;
-	}
+	Camera::~Camera() {}
 
 	void Camera::SetAspectRatio(float ratio)
 	{
@@ -150,11 +145,6 @@ namespace Engine
 		}
 	}
 
-	Skybox& Camera::GetSkybox()
-	{
-		return *m_Skybox;
-	}
-
 	std::array<glm::vec3, 8> Camera::GetFrustumCornersWorld(float near, float far) const
 	{
 		glm::mat4 invView = glm::inverse(GetViewMatrix());
@@ -177,6 +167,5 @@ namespace Engine
 		}
 
 		return corners;
-
 	}
 }

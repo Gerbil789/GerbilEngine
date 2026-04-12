@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Editor/Windows/IEditorWindow.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
 
 namespace Editor
 {
@@ -9,5 +10,7 @@ namespace Editor
 	public:
 		void Initialize() override;
 		void Draw() override;
+		
+		static Engine::Renderer& GetRenderer();
 	};
 }

@@ -62,5 +62,9 @@ namespace Engine
 	{
 	public:
 		CubeMapTexture(const TextureSpecification& specification, const void* data);
+		wgpu::TextureView GetPreviewView() const { return m_PreviewTextureView; }
+
+	private:
+		wgpu::TextureView m_PreviewTextureView;
 	};
 }

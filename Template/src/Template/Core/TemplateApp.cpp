@@ -11,7 +11,6 @@
 #include "Engine/Event/WindowEvent.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Graphics/SamplerPool.h"
-#include "Engine/Graphics/Renderer/RenderGlobals.h"
 #include "Engine/Utility/Path.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
@@ -37,7 +36,7 @@ namespace Template
 		Engine::Input::SetActiveWindow(*static_cast<GLFWwindow*>(m_Window->GetNativeWindow()));
 
 		Engine::SamplerPool::Initialize();
-		Engine::RenderGlobals::Initialize();
+		//Engine::RenderGlobals::Initialize();
 		Engine::Time::Initialize();
 
 

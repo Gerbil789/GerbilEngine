@@ -70,6 +70,67 @@ namespace Editor
 		return result;
 	}
 
+	EditResult CubeMapField(const std::string& label, Engine::CubeMapTexture*& texture)
+	{
+		EditResult result;
+		const ImVec2 buttonSize = ImVec2(64, 64);
+
+		ImGui::PushID(label.c_str());
+
+		if (texture == nullptr)
+		{
+			ImGui::Button("empty", buttonSize);
+		}
+		else
+		{
+			ImGui::ImageButton(label.c_str(), (ImTextureID)(intptr_t)(WGPUTextureView)texture->GetPreviewView(), buttonSize);
+		}
+
+		if (texture)
+		{
+			if (ImGui::BeginDragDropSource())
+			{
+				Engine::Uuid uuid = texture->id;
+				ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
+				ImGui::Text("%llu", static_cast<unsigned long long>((uint64_t)texture->id));
+				ImGui::EndDragDropSource();
+			}
+		}
+
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
+			{
+				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
+				if (Engine::g_AssetManager->GetAssetType(droppedUUID) == Engine::AssetType::CubeMap)
+				{
+					texture = Engine::g_AssetManager->GetAsset<Engine::CubeMapTexture>(droppedUUID);
+					result.changed = true;
+				}
+
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+		if (texture && ImGui::BeginPopupContextItem("CubeMapOptions"))
+		{
+			if (ImGui::MenuItem("Remove CubeMap"))
+			{
+				texture = nullptr;
+				result.changed = true;
+			}
+			ImGui::EndPopup();
+		}
+
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+
+		ImGui::PopID();
+		return result;
+	}
+
 	EditResult AudioClipField(const std::string& label, Engine::AudioClip*& audioClip)
 	{
 		EditResult result;

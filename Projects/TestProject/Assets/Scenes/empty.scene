@@ -286,13 +286,13 @@
     Angle: 67
 - ID: 10199165476046124790
   Enabled: true
-  Name: Camera
+  Name: Player
   Transform:
     Position: [8, 10, 8]
-    Rotation: [89.99998, -0, 0]
+    Rotation: [0, -0, 0]
     Scale: [1, 0.99999684, 0.99999684]
   CameraComponent:
-    Projection: 1
+    Projection: 0
     AspectRatio: 1
     Perspective:
       FOV: 0.7853982
@@ -304,13 +304,23 @@
       Far: 100
     Background: 1
     ClearColor: [1, 0, 0, 1]
+  ScriptComponent:
+    Script: PlayerController
+    Move Speed: 10
+    Rotate Speed: 100
+    Ground Level: 0
+    Gravity Strength: 10
+    Jump Strength: 20
+    Shoot Sound: 0
+    Bullet Mesh: 0
+    Bullet Material: 0
 - ID: 8348957107591477546
   Enabled: true
-  Name: Player
+  Name: Avenger
   Transform:
-    Position: [-11.194513, 8.202295, -6.499764]
-    Rotation: [-51.269135, 61.52042, -74.87653]
-    Scale: [0.10000532, 0.10000349, 0.10000219]
+    Position: [-11.191829, 8.202157, -6.50147]
+    Rotation: [-51.931866, 60.10469, -74.75161]
+    Scale: [0.10001433, 0.10000276, 0.09999789]
   MeshComponent:
     Mesh: 4054887255351190265
     Materials: [9062395416670711803, 9905515824125768949, 16641363256174755972, 12590626766011146814, 6243627826504047792]

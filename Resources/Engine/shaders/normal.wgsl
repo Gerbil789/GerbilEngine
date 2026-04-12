@@ -9,7 +9,7 @@ struct VertexOutput {
 	@location(0) normal: vec3f,
 };
 
-struct FrameUniforms {
+struct ViewUniforms {
 	view: mat4x4f,
 	projection: mat4x4f,
 	cameraPosition: vec3f,	
@@ -20,13 +20,13 @@ struct ModelUniforms {
 	model: mat4x4f,
 };
 
-@group(0) @binding(0) var<uniform> uFrame: FrameUniforms;
+@group(0) @binding(0) var<uniform> uView: ViewUniforms;
 @group(1) @binding(0) var<uniform> uModel: ModelUniforms;
 
 @vertex
 fn vs_main(in: VertexInput) -> VertexOutput {
 	var out: VertexOutput; 
-	out.position = uFrame.projection * uFrame.view * uModel.model * vec4f(in.position, 1.0);
+	out.position = uView.projection * uView.view * uModel.model * vec4f(in.position, 1.0);
 	
 	let m = uModel.model;
 	let normalMatrix = mat3x3f(

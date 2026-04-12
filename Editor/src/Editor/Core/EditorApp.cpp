@@ -16,7 +16,7 @@
 #include "Engine/Event/WindowEvent.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Graphics/SamplerPool.h"
-#include "Engine/Graphics/Renderer/RenderGlobals.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Utility/Path.h"
 #include "Engine/Scene/Scene.h"
 #include "Editor/Core/EditorRuntime.h"
@@ -33,22 +33,23 @@ namespace Editor
 	{
 		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
 
-		EditorSettings::Load();
+
+		LoadEditorSettings();
 
 		if(args.Count > 1)
 		{
-			EditorSettings::projectDirectory = args[1];
+			g_EditorSettings.projectDirectory = args[1];
 		}
 		else
 		{
-			if(EditorSettings::projectDirectory.empty())
+			if(g_EditorSettings.projectDirectory.empty())
 			{
-				EditorSettings::projectDirectory = Engine::OpenDirectory();
+				g_EditorSettings.projectDirectory = Engine::OpenDirectory();
 			}
 		}
 
-		auto project = Engine::Project::Load(EditorSettings::projectDirectory);
-		EditorSettings::Save();
+		auto project = Engine::Project::Load(g_EditorSettings.projectDirectory);
+		SaveEditorSettings();
 
 		std::filesystem::current_path(GetExecutableDir());
 
@@ -64,12 +65,11 @@ namespace Editor
 		Engine::Input::SetActiveWindow(*static_cast<GLFWwindow*>(m_Window->GetNativeWindow()));
 
 		Engine::SamplerPool::Initialize();
-		Engine::RenderGlobals::Initialize();
+		Engine::Renderer::InitializeSharedResources();
 		Engine::Time::Initialize();
 
 		EditorCommandManager::Initialize();
 		FileWatcher::WatchDirectory(project->GetAssetsDirectory());
-
 
 		Engine::Audio::Initialize();
 		IconManager::Load("Resources/Editor/icons/icons.png");

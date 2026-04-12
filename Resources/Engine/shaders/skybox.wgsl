@@ -1,18 +1,38 @@
-struct FrameUniforms {
+const NUM_SHADOW_CASCADES: i32 = 4;
+
+struct VertexOutput 
+{
+	@builtin(position) position: vec4f,
+	@location(0) dir: vec3f,
+};
+
+struct ViewUniforms 
+{
 	view: mat4x4f,
 	projection: mat4x4f,
 	cameraPosition: vec3f,	
 	_padding: f32,
 };
 
-@group(0) @binding(0) var<uniform> uFrame: FrameUniforms;
-@group(1) @binding(0) var skyboxSampler: sampler;
-@group(1) @binding(1) var skyboxTexture: texture_cube<f32>;
-
-struct VertexOutput {
-	@builtin(position) position: vec4f,
-	@location(0) dir: vec3f,
+struct EnvironmentUniforms
+{
+	lightViewProj : array<mat4x4f, NUM_SHADOW_CASCADES>,
+	cascadeSplits : array<f32, NUM_SHADOW_CASCADES>,
 };
+
+//view
+@group(0) @binding(0) var<uniform> uView: ViewUniforms;
+//environment
+@group(1) @binding(0) var<uniform> uEnvironment : EnvironmentUniforms;
+@group(1) @binding(1) var EnvSampler: sampler;
+@group(1) @binding(2) var BRDFIntMap: texture_2d<f32>;
+@group(1) @binding(3) var IrradianceMap: texture_cube<f32>;
+@group(1) @binding(4) var PrefilteredEnvMap: texture_cube<f32>;
+@group(1) @binding(5) var shadowSampler : sampler_comparison;
+@group(1) @binding(6) var shadowMap : texture_depth_2d_array;
+
+
+
 
 const cubeVertices: array<vec3f, 36> = array<vec3f, 36>(
     vec3f(-1,-1,-1), vec3f( 1,-1,-1), vec3f( 1, 1,-1),
@@ -45,20 +65,21 @@ fn tonemapACES(color: vec3f) -> vec3f {
 }
 
 @vertex
-fn vs_main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
+fn vs_main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput 
+{
 	var out: VertexOutput; 
 
 	let pos = cubeVertices[vertexIndex];
   out.dir = pos;
 
  	let viewNoTranslation = mat4x4f(
-        vec4f(uFrame.view[0].xyz, 0.0),
-        vec4f(uFrame.view[1].xyz, 0.0),
-        vec4f(uFrame.view[2].xyz, 0.0),
+        vec4f(uView.view[0].xyz, 0.0),
+        vec4f(uView.view[1].xyz, 0.0),
+        vec4f(uView.view[2].xyz, 0.0),
         vec4f(0.0, 0.0, 0.0, 1.0)
     );
 
-  let clip = uFrame.projection * viewNoTranslation * vec4f(pos, 1.0);
+  let clip = uView.projection * viewNoTranslation * vec4f(pos, 1.0);
 
   // push to far plane (avoid clipping at z=1.0)
   out.position = vec4f(clip.xy, clip.w, clip.w);
@@ -67,11 +88,11 @@ fn vs_main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
 }
 
 @fragment
-fn fs_main(in: VertexOutput) -> @location(0) vec4f {
+fn fs_main(in: VertexOutput) -> @location(0) vec4f 
+{
     let dir = normalize(in.dir);
     
-    // 1. Sample the HDR environment map
-    var color = textureSample(skyboxTexture, skyboxSampler, dir).rgb;
+    var color = textureSample(PrefilteredEnvMap, EnvSampler, dir).rgb;
 
     // 2. Apply Exposure (Adjust this value! Lower = darker, Higher = brighter)
     // You can eventually pass this in via your FrameUniforms so you can tweak it in C++

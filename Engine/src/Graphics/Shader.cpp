@@ -2,7 +2,7 @@
 #include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
-#include "Engine/Graphics/Renderer/RenderGlobals.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
 
 namespace Engine
 {
@@ -93,18 +93,19 @@ namespace Engine
 
 		m_MaterialBindGroupLayout = CreateMaterialBindGroupLayout(specification);
 
-		std::array<wgpu::BindGroupLayout, 3> bindGroupLayouts
+		std::array<wgpu::BindGroupLayout, 4> bindGroupLayouts
 		{
-			RenderGlobals::GetFrameLayout(),
-			RenderGlobals::GetModelLayout(),
-			m_MaterialBindGroupLayout
+			Renderer::GetViewLayout(),
+			Renderer::GetEnvironmentLayout(),
+			m_MaterialBindGroupLayout,
+			Renderer::GetModelLayout()
 		};
 
 		wgpu::PipelineLayoutDescriptor layoutDesc;
 		std::string label = std::format("{} Shader Pipeline Layout", m_Name);
 		layoutDesc.label = { label.c_str(), WGPU_STRLEN};
 		layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
-		layoutDesc.bindGroupLayouts = reinterpret_cast<WGPUBindGroupLayout*>(bindGroupLayouts.data());
+		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)bindGroupLayouts.data();
 		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
 
 		m_RenderPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);

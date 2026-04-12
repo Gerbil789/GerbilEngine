@@ -17,7 +17,7 @@ struct VertexOutput
 	@location(3) viewDepth: f32,
 };
 
-struct FrameUniforms 
+struct ViewUniforms
 {
 	view: mat4x4f,
 	projection: mat4x4f,
@@ -25,10 +25,10 @@ struct FrameUniforms
 	_padding: f32,
 };
 
-// uses dynamic offset
-struct ModelUniforms 
+struct EnvironmentUniforms
 {
-	model: mat4x4f,
+	lightViewProj : array<mat4x4f, NUM_SHADOW_CASCADES>,
+	cascadeSplits : array<f32, NUM_SHADOW_CASCADES>,
 };
 
 struct MaterialUniforms 
@@ -39,48 +39,35 @@ struct MaterialUniforms
 	tiling: vec2f,
 };
 
-const LIGHT_TYPE_DIRECTIONAL: u32 = 0u;
-const LIGHT_TYPE_POINT: u32       = 1u;
-const LIGHT_TYPE_SPOT: u32        = 2u;
-
-struct LightUniforms
+// uses dynamic offset
+struct ModelUniforms 
 {
-    position: vec3f,   // point/spot
-    lightType: u32,
-    direction: vec3f,  // directional/spot
-    range: f32,        // point/spot
-    color: vec3f,
-    intensity: f32,
-    spotAngle: f32,    // spot (cos angle or radians)
-    spotBlend: f32,    // soft edge
-    _pad: vec2f,
+	model: mat4x4f,
 };
 
+//view
+@group(0) @binding(0) var<uniform> uView: ViewUniforms;
 
-struct ShadowUniforms 
-{
-	lightViewProj : array<mat4x4f, NUM_SHADOW_CASCADES>,
-	cascadeSplits : array<f32, NUM_SHADOW_CASCADES>,
-};
+//environment
+@group(1) @binding(0) var<uniform> uEnvironment : EnvironmentUniforms;
+@group(1) @binding(1) var EnvSampler: sampler;
+@group(1) @binding(2) var BRDFIntMap: texture_2d<f32>;
+@group(1) @binding(3) var IrradianceMap: texture_cube<f32>;
+@group(1) @binding(4) var PrefilteredEnvMap: texture_cube<f32>;
+@group(1) @binding(5) var shadowSampler : sampler_comparison;
+@group(1) @binding(6) var shadowMap : texture_depth_2d_array;
 
-@group(0) @binding(0) var<uniform> uFrame: FrameUniforms;
-@group(0) @binding(1) var EnvSampler: sampler;
-@group(0) @binding(2) var IrradianceMap: texture_cube<f32>;
-@group(0) @binding(3) var BRDFIntMap: texture_2d<f32>;
-@group(0) @binding(4) var PrefilteredEnvMap: texture_cube<f32>;
-@group(0) @binding(5) var shadowMap : texture_depth_2d_array;
-@group(0) @binding(6) var shadowSampler : sampler_comparison;
-@group(0) @binding(7) var<uniform> uShadow : ShadowUniforms;
-@group(0) @binding(8) var<uniform> uLight: LightUniforms;
-
-@group(1) @binding(0) var<uniform> uModel: ModelUniforms;
-
+//material
 @group(2) @binding(0) var<uniform> uMaterial: MaterialUniforms;
 @group(2) @binding(1) var MaterialSampler: sampler;
 @group(2) @binding(2) var AlbedoTexture: texture_2d<f32>;
 @group(2) @binding(3) var NormalTexture: texture_2d<f32>;
 @group(2) @binding(4) var RoughnessTexture: texture_2d<f32>;
 @group(2) @binding(5) var AmbientTexture: texture_2d<f32>;
+
+//model
+@group(3) @binding(0) var<uniform> uModel: ModelUniforms;
+
 
 fn FresnelSchlick(cosTheta: f32, F0: vec3f) -> vec3f
 {
@@ -94,13 +81,12 @@ fn vs_main(in: VertexInput) -> VertexOutput
 
 	let worldPos = uModel.model * vec4f(in.position, 1.0);
 
-	out.position = uFrame.projection * uFrame.view * worldPos;
+	out.position = uView.projection * uView.view * worldPos;
 	out.normal = normalize((uModel.model * vec4f(in.normal, 0.0)).xyz);
 	out.uv = in.uv;
 	out.worldPos = worldPos.xyz;
 
-
-	let viewPos = uFrame.view * worldPos;
+	let viewPos = uView.view * worldPos;
 	out.viewDepth = viewPos.z;
 	return out;
 }
@@ -113,14 +99,14 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 
 	for (var i: i32 = 0; i < NUM_SHADOW_CASCADES; i = i + 1)
 	{
-    if (depth < uShadow.cascadeSplits[i])
+    if (depth < uEnvironment.cascadeSplits[i])
     {
         cascadeIndex = i;
         break;
     }
 	}
 
-	let lightPos4 = uShadow.lightViewProj[cascadeIndex] * vec4f(in.worldPos, 1.0);
+	let lightPos4 = uEnvironment.lightViewProj[cascadeIndex] * vec4f(in.worldPos, 1.0);
 	let lightPos = lightPos4.xyz / lightPos4.w;
 
 
@@ -173,7 +159,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 
 
 	let N = normalize(TBN * tangentNormal);
-  let V = normalize(uFrame.cameraPosition - in.worldPos); // direction from surface to camera
+  let V = normalize(uView.cameraPosition - in.worldPos); // direction from surface to camera
 	let R = reflect(-V, N);
   let NdotV = max(dot(N, V), 0.0);
   let F0 = mix(vec3f(0.04), albedo, metallic);
