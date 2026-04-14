@@ -2,7 +2,7 @@ const PI: f32 = 3.14159265359;
 
 @group(0) @binding(0) var envSampler: sampler;
 @group(0) @binding(1) var baseCubemap: texture_cube<f32>;
-@group(0) @binding(2) var outputMipLevel: texture_storage_2d_array<rgba32float,write>;
+@group(0) @binding(2) var outputMipLevel: texture_storage_2d_array<rgba16float,write>;
 
 // (Keep your cubemapDirection function here)
 fn cubemapDirection(face: u32, uv: vec2f) -> vec3f 

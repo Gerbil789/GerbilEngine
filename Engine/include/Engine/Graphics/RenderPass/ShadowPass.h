@@ -8,6 +8,6 @@ namespace Engine
 	{
 	public:
 		ShadowPass();
-		virtual void Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList) override;
+		virtual void Execute(wgpu::CommandEncoder& encoder, const RenderContext& context) override;
 	};
 }

@@ -22,7 +22,7 @@ namespace Engine
     std::function<void()> OnExit;
 
   private:
-    void OnWindowResize(Engine::WindowResizeEvent& event);
+    void OnWindowResize(Engine::WindowResizeEvent&);
 
   private:
     bool m_Running = false;

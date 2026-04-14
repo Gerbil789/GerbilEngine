@@ -299,11 +299,6 @@ namespace Engine
 		}
 
 		uint32_t bytesPerPixel = 4;
-		if (m_TextureFormat == wgpu::TextureFormat::RGBA32Float)
-		{
-			bytesPerPixel = 16;
-		}
-
 		if(m_TextureFormat == wgpu::TextureFormat::RGBA16Float)
 		{
 			bytesPerPixel = 8;
@@ -456,10 +451,6 @@ namespace Engine
 		if (m_TextureFormat == wgpu::TextureFormat::RGBA16Float)
 		{
 			bytesPerPixel = 8;
-		}
-		if(m_TextureFormat == wgpu::TextureFormat::RGBA32Float)
-		{
-			bytesPerPixel = 16;
 		}
 
 		wgpu::TexelCopyTextureInfo dst;

@@ -37,9 +37,20 @@ namespace Engine
 			return m_Perspective;
 		}
 
+
+		const PerspectiveParams& Perspective() const
+		{
+			return m_Perspective;
+		}
+
 		OrthographicParams& Orthographic()
 		{
 			m_DirtyProjection = true;
+			return m_Orthographic;
+		}
+
+		const OrthographicParams& Orthographic() const
+		{
 			return m_Orthographic;
 		}
 

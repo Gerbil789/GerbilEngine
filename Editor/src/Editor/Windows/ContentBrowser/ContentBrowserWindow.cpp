@@ -239,7 +239,7 @@ namespace Editor
 		}
 	}
 
-	bool DrawItem(const Engine::AssetRecord& record, int item_idx, ImDrawList* draw_list, const ImVec2& pos, const ImU32 label_col)
+	bool DrawItem(const Engine::AssetRecord& record, ImDrawList* draw_list, const ImVec2& pos, const ImU32 label_col)
 	{
 		ImVec2 box_min(pos.x - 1, pos.y - 1);
 		ImVec2 box_max(box_min.x + m_LayoutItemSize.x + 2, box_min.y + m_LayoutItemSize.y + 2);
@@ -252,7 +252,9 @@ namespace Editor
 		{
 		case Engine::AssetType::Texture2D:
 			view = Engine::g_AssetManager->GetAsset<Engine::Texture2D>(record.id)->GetTextureView(); //TODO: use downscaled texture for thumbnail
-
+			break;
+		case Engine::AssetType::CubeMap:
+			view = Engine::g_AssetManager->GetAsset<Engine::CubeMapTexture>(record.id)->GetPreviewView(); //TODO: use downscaled texture for thumbnail
 			break;
 		case Engine::AssetType::Material:
 			view = m_Renderer.GetThumbnail(record.id);
@@ -380,9 +382,9 @@ namespace Editor
 					if (item_is_visible)
 					{
 						ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
-						DrawItem(*assetRecord, item_idx, drawList, pos, label_col);
+						DrawItem(*assetRecord, drawList, pos, label_col);
 
-						if (DrawItem(*assetRecord, item_idx, drawList, pos, label_col))
+						if (DrawItem(*assetRecord, drawList, pos, label_col))
 						{
 							nextDirectory = assetRecord->path;
 						}

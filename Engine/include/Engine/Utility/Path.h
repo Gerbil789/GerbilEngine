@@ -31,10 +31,13 @@ inline std::filesystem::path GetSettingsFilePath(const std::string& appName)
   std::filesystem::path configDir;
 
 #if defined(_WIN32)
-  // Windows: %APPDATA%\MyAwesomeEditor
-  const char* appData = std::getenv("APPDATA");
-  if (appData) {
+  char* appData = nullptr;
+  size_t len = 0;
+
+  if (_dupenv_s(&appData, &len, "APPDATA") == 0 && appData)
+  {
     configDir = std::filesystem::path(appData) / appName;
+    free(appData);
   }
 #elif defined(__APPLE__)
   // macOS: ~/Library/Application Support/MyAwesomeEditor

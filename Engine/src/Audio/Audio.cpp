@@ -43,24 +43,7 @@ namespace Engine
 
 		auto clips = Engine::g_AssetManager->GetAssetsOfType<AudioClip>(AssetType::Audio);
 
-		ma_fence fence;
-		if(ma_fence_init(&fence) != MA_SUCCESS)
-		{
-			throw std::runtime_error("Failed to initialize fence");
-		}
-
-		auto records = Engine::g_AssetManager->GetAllAssetRecordsOfType(AssetType::Audio);
-
-		for(auto record : records)
-		{
-			auto clip = Engine::g_AssetManager->LoadAsset<AudioClip>(*record, record->path, (void*)&fence);
-			if(!clip)
-			{
-				LOG_ERROR("Failed to load audio clip: {}", record->path);
-			}
-		}
-
-		ma_fence_wait(&fence); // Wait for all sounds to finish loading
+		auto assets = Engine::g_AssetManager->GetAssetsOfType<Asset>(AssetType::Audio);
 	}
 
 	void Audio::Shutdown()

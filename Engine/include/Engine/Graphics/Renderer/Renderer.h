@@ -25,11 +25,11 @@ namespace Engine
 		void RemovePass(RenderPass* pass);
 
 		void SetCamera(Camera* camera);
-		void Resize(uint32_t width, uint32_t height); //TODO: resize should be handled outside of the renderer, by setting new targets
 		void SetColorTarget(wgpu::TextureView colorView);
-		//void SetDepthTarget(wgpu::TextureView depthView);
+		void SetDepthTarget(wgpu::TextureView depthView);
 		CubeMapTexture* GetSkyboxCubemap() const { return m_RenderContext.environmentCubemap; }
 		void SetSkyboxCubemap(CubeMapTexture* cubemap) { m_RenderContext.environmentCubemap = cubemap; CreateEnvironmentBindGroup();}
+		RenderContext GetRenderContext() const { return m_RenderContext; }
 
 		void RenderScene(Scene* scene);
 		wgpu::TextureView GetTextureView() const;

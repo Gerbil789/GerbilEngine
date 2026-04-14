@@ -8,6 +8,6 @@ namespace Engine
 	{
 	public:
 		BackgroundPass();
-		virtual void Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList&) override;
+		virtual void Execute(wgpu::CommandEncoder& encoder, const RenderContext& context) override;
 	};
 }

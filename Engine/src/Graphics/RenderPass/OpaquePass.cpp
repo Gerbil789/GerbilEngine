@@ -7,7 +7,7 @@
 
 namespace Engine
 {
-	void OpaquePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)
+	void OpaquePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
 	{
 		wgpu::RenderPassColorAttachment color;
 		color.view = context.colorTarget;
@@ -41,19 +41,19 @@ namespace Engine
 		Material* material = nullptr;
 		Mesh* mesh = nullptr;
 
-		for (const DrawItem& draw : drawList.items)
+		for (const DrawItem& item : context.drawList)
 		{
-			if (draw.mesh == nullptr) continue;
+			if (item.mesh == nullptr) continue;
 
-			if (draw.mesh != mesh)
+			if (item.mesh != mesh)
 			{
-				mesh = draw.mesh;
+				mesh = item.mesh;
 				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
 				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetIndexBuffer().getSize());
 			}
-			const SubMesh* sub = draw.subMesh;
+			const SubMesh* sub = item.subMesh;
 
-			auto meshMaterials = draw.entity.Get<MeshComponent>().materials;
+			auto meshMaterials = item.entity.Get<MeshComponent>().materials;
 			if(meshMaterials.size() < 1)
 			{
 				continue;
@@ -69,7 +69,7 @@ namespace Engine
 				pass.setPipeline(material->GetShader()->GetRenderPipeline());
 			}
 
-			uint32_t dynamicOffset = draw.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();
+			uint32_t dynamicOffset = item.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();
 			pass.setBindGroup(3, context.modelBindGroup, 1, &dynamicOffset);
 
 			pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);

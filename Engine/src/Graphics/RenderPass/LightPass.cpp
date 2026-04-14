@@ -183,7 +183,7 @@ namespace Engine
 		m_LightPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
 	}
 
-	void LightPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)
+	void LightPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
 	{
 		wgpu::RenderPassColorAttachment color{};
 		color.view = context.colorTarget;
@@ -245,18 +245,18 @@ namespace Engine
 
 		Mesh* mesh = nullptr;
 
-		for (const DrawItem& draw : drawList.items)
+		for (const DrawItem& item : context.drawList)
 		{
-			if (!draw.mesh) continue;
+			if (!item.mesh) continue;
 
-			if (draw.mesh != mesh)
+			if (item.mesh != mesh)
 			{
-				mesh = draw.mesh;
+				mesh = item.mesh;
 				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
 				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetIndexBuffer().getSize());
 			}
 
-			uint32_t dynamicOffset = draw.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();
+			uint32_t dynamicOffset = item.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();
 			pass.setBindGroup(1, context.modelBindGroup, 1, &dynamicOffset);
 			pass.drawIndexed(static_cast<uint32_t>(mesh->GetIndexBuffer().getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
 		}

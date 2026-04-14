@@ -19,8 +19,19 @@ namespace Engine
 	class DrawList
 	{
 	public:
-		std::vector<DrawItem> items;
-
 		static DrawList CreateFromScene(Scene* scene);
+
+		// Non-const iterators
+		auto begin() { return items.begin(); }
+		auto end() { return items.end(); }
+
+		// Const iterators
+		auto begin() const { return items.begin(); }
+		auto end()   const { return items.end(); }
+
+		auto size() const { return items.size(); }
+
+	private:
+		std::vector<DrawItem> items;
 	};
 }

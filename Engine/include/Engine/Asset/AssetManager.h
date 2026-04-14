@@ -58,9 +58,11 @@ namespace Engine
 		template<typename T>
 		T* GetAsset(Uuid id)
 		{
+			static_assert(std::is_base_of_v<Asset, T>, "T must derive from Asset");
+
 			Asset* asset = GetLoadedAsset(id);
 
-			if (asset)
+			if(asset)
 			{
 				return static_cast<T*>(asset);
 			}
@@ -84,36 +86,11 @@ namespace Engine
 			return nullptr;
 		}
 
-		template<typename T, typename... Args>
-		T* LoadAsset(const AssetRecord& record, Args&&... args)
-		{
-			static_assert(std::is_base_of_v<Asset, T>, "T must derive from Asset");
-
-			Asset* asset = GetLoadedAsset(record.id);
-
-			if (asset)
-			{
-				return static_cast<T*>(asset);
-			}
-
-			asset = new T(std::forward<Args>(args)...);
-			if (asset)
-			{
-				LOG_TRACE("Loaded asset '{}', '{}'", record.id, m_AssetRegistry.GetRelativePath(record.id));
-				m_LoadedAssets[record.id] = asset;
-				return static_cast<T*>(asset);
-			}
-
-			LOG_ERROR("asset import failed! '{}'", record.id);
-			return nullptr;
-		}
-
-
 		template<typename T>
 		std::vector<T*> GetAssetsOfType(const AssetType& type) //TODO: this is not very efficient, we should have a map of type to records in the registry
 		{
-			std::vector<T*> assets;
 			auto records = m_AssetRegistry.GetAllRecords();
+			std::vector<T*> assets;
 
 			for (const auto& record : records)
 			{
@@ -143,6 +120,8 @@ namespace Engine
 		template<typename T, typename... Args>
 		T* CreateAsset(const std::filesystem::path& path, Args&&... args)
 		{
+			static_assert(std::is_base_of_v<Asset, T>, "T must derive from Asset");
+
 			auto record = m_AssetRegistry.Create(path);
 			if (!record)
 			{
@@ -177,7 +156,7 @@ namespace Engine
 		template<typename Self>
 		AssetRecord& GetAssetRecord(this Self&& self, Uuid id)
 		{
-			return self.m_AssetRegistry.GetRecord(id);
+			return ((AssetManager&)self).m_AssetRegistry.GetRecord(id);
 		}
 
 		AssetType GetAssetType(Uuid id)
@@ -235,7 +214,6 @@ namespace Engine
 		{
 			std::vector<const AssetRecord*> allRecords = m_AssetRegistry.GetAllRecords();
 			std::vector<const AssetRecord*> records;
-
 
 			for (auto record : allRecords)
 			{

@@ -8,15 +8,14 @@ namespace Engine
 	DrawList DrawList::CreateFromScene(Scene* scene)
 	{
 		DrawList list;
-
 		uint32_t modelIndex = 0;
 
 		const auto& entities = scene->GetEntities<TransformComponent, MeshComponent>();
 		list.items.reserve(entities.size());
 
-		for (auto entity : entities)
+		for (const auto& entity : entities)
 		{
-			auto& mc = entity.Get<MeshComponent>();
+			const auto& mc = entity.Get<MeshComponent>();
 			if (!mc.mesh)
 			{
 				continue;
@@ -24,11 +23,11 @@ namespace Engine
 
 			for (const auto& subMesh : mc.mesh->GetSubMeshes())
 			{
-				list.items.push_back({ entity, mc.mesh, &subMesh, modelIndex++ });
+				list.items.emplace_back(DrawItem{ entity, mc.mesh, &subMesh, modelIndex++ });
 			}
 		}
 
-		std::sort(list.items.begin(), list.items.end(), [](const DrawItem& a, const DrawItem& b)
+		std::sort(list.begin(), list.end(), [](const DrawItem& a, const DrawItem& b)
 			{
 				if (a.subMesh->materialIndex != b.subMesh->materialIndex)
 				{

@@ -2,9 +2,80 @@
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Graphics/Texture.h"
 #include <stb_image.h>
+#include <glm/gtc/packing.hpp>
 
 namespace Engine
 {
+	namespace
+	{
+		struct ImageLoadResult
+		{
+			void* stbiData = nullptr;
+			std::vector<uint16_t> halfFloatData;
+
+			int width = 0;
+			int height = 0;
+			wgpu::TextureFormat format = wgpu::TextureFormat::RGBA8Unorm;
+
+			const void* GetData() const
+			{
+				return halfFloatData.empty() ? stbiData : halfFloatData.data();
+			}
+
+			~ImageLoadResult()
+			{
+				if (stbiData) stbi_image_free(stbiData);
+			}
+
+			bool Load(const std::filesystem::path& path)
+			{
+				if (!std::filesystem::exists(path))
+				{
+					LOG_ERROR("Texture path does not exist: {}", path);
+					return false;
+				}
+
+				std::string pathStr = path.string();
+				int channels = 0;
+
+				if (stbi_is_hdr(pathStr.c_str()))
+				{
+					float* data32 = stbi_loadf(pathStr.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+					stbiData = data32;
+
+					if (data32)
+					{
+						size_t elementCount = width * height * 4;
+						halfFloatData.resize(elementCount);
+
+						const float MAX_HALF_FLOAT = 65504.0f;
+
+						for (size_t i = 0; i < elementCount; ++i)
+						{
+							float safeValue = std::clamp(data32[i], 0.0f, MAX_HALF_FLOAT);
+							halfFloatData[i] = glm::packHalf1x16(safeValue);
+						}
+						format = wgpu::TextureFormat::RGBA16Float;
+					}
+				}
+				else
+				{
+					stbiData = stbi_load(pathStr.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+					format = wgpu::TextureFormat::RGBA8Unorm;
+				}
+
+				if (!stbiData)
+				{
+					LOG_ERROR("Failed to load texture at: {}", path);
+					LOG_ERROR("stb_image error: {}", stbi_failure_reason());
+					return false;
+				}
+
+				return true;
+			}
+		};
+	}
+
 	Texture2D* TextureImporter::ImportTexture2D(const std::filesystem::path& path)
 	{
 		return LoadTexture2D(path);
@@ -12,50 +83,15 @@ namespace Engine
 
 	Texture2D* TextureImporter::LoadTexture2D(const std::filesystem::path& path)
 	{
-		int width, height, channels;
-		void* data;
+		ImageLoadResult image;
+		if (!image.Load(path)) return nullptr;
 
 		TextureSpecification spec;
+		spec.width = static_cast<uint32_t>(image.width);
+		spec.height = static_cast<uint32_t>(image.height);
+		spec.format = image.format;
 
-		if (stbi_is_hdr(path.string().c_str()))
-		{
-			data = stbi_loadf(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
-			spec.format = wgpu::TextureFormat::RGBA32Float;
-		}
-		else
-		{
-			data = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
-			spec.format = wgpu::TextureFormat::RGBA8Unorm;
-		}
-
-		if (!data)
-		{
-			LOG_ERROR("Failed to load texture at: {}", path);
-			LOG_ERROR("stb_image error: {}", stbi_failure_reason());
-			return nullptr;
-		}
-
-		spec.width = static_cast<uint32_t>(width);
-		spec.height = static_cast<uint32_t>(height);
-		Texture2D* texture = new Texture2D(spec, data);
-		stbi_image_free(data);
-		return texture;
-	}
-
-	uint16_t FloatToHalf(float f)
-	{
-		uint32_t x = *(uint32_t*)&f;
-
-		uint32_t sign = (x >> 16) & 0x8000;
-		uint32_t mantissa = x & 0x7fffff;
-		int exp = ((x >> 23) & 0xff) - 127 + 15;
-
-		if (exp <= 0)
-			return (uint16_t)sign;
-		if (exp >= 31)
-			return (uint16_t)(sign | 0x7c00);
-
-		return (uint16_t)(sign | (exp << 10) | (mantissa >> 13));
+		return new Texture2D(spec, image.GetData());
 	}
 
 	CubeMapTexture* TextureImporter::ImportCubeMapTexture(const std::filesystem::path& path)
@@ -65,43 +101,14 @@ namespace Engine
 
 	CubeMapTexture* TextureImporter::LoadCubeMapTexture(const std::filesystem::path& path)
 	{
-		if (!std::filesystem::exists(path))
-		{
-			LOG_ERROR("Texture path does not exist: {}", path);
-			return nullptr;
-		}
-
-
-		int width = 0, height = 0, channels = 0;
-		void* data= nullptr;
-		wgpu::TextureFormat format;
-
-		if (stbi_is_hdr(path.string().c_str()))
-		{
-			data = stbi_loadf(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
-			format = wgpu::TextureFormat::RGBA32Float;
-		}
-		else
-		{
-			data = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
-			format = wgpu::TextureFormat::RGBA8Unorm;
-		}
-
-		if (!data)
-		{
-			LOG_ERROR("Failed to load texture: {}", path);
-			return nullptr;
-		}
+		ImageLoadResult image;
+		if (!image.Load(path)) return nullptr;
 
 		TextureSpecification spec;
-		spec.width = width;
-		spec.height = height;
-		spec.format = format;
+		spec.width = static_cast<uint32_t>(image.width);
+		spec.height = static_cast<uint32_t>(image.height);
+		spec.format = image.format;
 
-		CubeMapTexture* cubeMap = new CubeMapTexture(spec, data);
-
-		stbi_image_free(data);
-
-		return cubeMap;
+		return new CubeMapTexture(spec, image.GetData());
 	}
 }

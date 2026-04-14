@@ -27,9 +27,6 @@ namespace Engine
 	};
 	static_assert(sizeof(ModelUniforms) % 16 == 0);
 
-
-
-
 	static wgpu::BindGroupLayout s_ViewBindGroupLayout = nullptr;
 	static wgpu::BindGroupLayout s_ModelBindGroupLayout = nullptr;
 	static wgpu::BindGroupLayout s_EnvironmentBindGroupLayout = nullptr;
@@ -49,14 +46,11 @@ namespace Engine
 		CreateModelUniformBuffer();
 		CreateModelBindGroup();
 
-
-		m_RenderContext.environmentCubemap = Engine::TextureImporter::LoadCubeMapTexture("Resources/Engine/hdr/PG2/lebombo_8k.hdr");
+		m_RenderContext.environmentCubemap = Engine::TextureImporter::LoadCubeMapTexture("Resources/Engine/hdr/PG2/lebombo_4k.hdr");
 		CreateShadowTexture();
 
 		CreateEnvironmentUniformBuffer();
 		CreateEnvironmentBindGroup();
-
-
 	}
 
 	void Renderer::AddPass(RenderPass* pass)
@@ -73,73 +67,19 @@ namespace Engine
 		}
 	}
 
-	//void Renderer::SetScene(Scene* scene)
-	//{
-	//	m_RenderContext.scene = scene;
-	//}
-
 	void Renderer::SetCamera(Camera* camera)
 	{
 		m_RenderContext.camera = camera;
 	}
 
-	void Renderer::Resize(uint32_t width, uint32_t height)
-	{
-		m_RenderContext.width = width;
-		m_RenderContext.height = height;
-
-		// Color
-		{
-			wgpu::TextureDescriptor desc;
-			desc.label = { "RendererColorTexture", WGPU_STRLEN };
-			desc.dimension = wgpu::TextureDimension::_2D;
-			desc.format = wgpu::TextureFormat::RGBA8Unorm;
-			desc.size = { width, height, 1 };
-			desc.mipLevelCount = 1;
-			desc.sampleCount = 1;
-			desc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
-			wgpu::Texture colorTexture = GraphicsContext::GetDevice().createTexture(desc);
-
-			wgpu::TextureViewDescriptor view;
-			view.label = { "RendererColorTextureView", WGPU_STRLEN };
-			view.dimension = wgpu::TextureViewDimension::_2D;
-			view.format = desc.format;
-			view.baseMipLevel = 0;
-			view.mipLevelCount = 1;
-			view.baseArrayLayer = 0;
-			view.arrayLayerCount = 1;
-			m_RenderContext.colorTarget = colorTexture.createView(view);
-		}
-
-		// Depth
-		{
-			wgpu::TextureDescriptor desc;
-			desc.label = { "RendererDepthTextureView", WGPU_STRLEN };
-			desc.dimension = wgpu::TextureDimension::_2D;
-			desc.format = wgpu::TextureFormat::Depth24Plus;
-			desc.mipLevelCount = 1;
-			desc.sampleCount = 1;
-			desc.size = { width, height, 1 };
-			desc.usage = wgpu::TextureUsage::RenderAttachment;
-			desc.viewFormatCount = 1;
-			desc.viewFormats = &wgpu::TextureFormat::Depth24Plus;
-			wgpu::Texture depthTexture = GraphicsContext::GetDevice().createTexture(desc);
-
-			wgpu::TextureViewDescriptor view;
-			view.aspect = wgpu::TextureAspect::DepthOnly;
-			view.baseArrayLayer = 0;
-			view.arrayLayerCount = 1;
-			view.baseMipLevel = 0;
-			view.mipLevelCount = 1;
-			view.dimension = wgpu::TextureViewDimension::_2D;
-			view.format = wgpu::TextureFormat::Depth24Plus;
-			m_RenderContext.depthTarget = depthTexture.createView(view);
-		}
-	}
-
 	void Renderer::SetColorTarget(wgpu::TextureView colorView)
 	{
 		m_RenderContext.colorTarget = colorView;
+	}
+
+	void Renderer::SetDepthTarget(wgpu::TextureView depthView)
+	{
+		m_RenderContext.depthTarget = depthView;
 	}
 
 	void Renderer::CreateViewBindGroupLayout()
@@ -407,16 +347,17 @@ namespace Engine
 
 		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder();
 
-		const DrawList& list = DrawList::CreateFromScene(m_RenderContext.scene);
+		m_RenderContext.drawList = DrawList::CreateFromScene(m_RenderContext.scene);
 
-		std::vector<glm::mat4> models(list.items.size());
+		std::vector<glm::mat4> models(m_RenderContext.drawList.size());
 
-		std::for_each(std::execution::par, list.items.begin(), list.items.end(), [&](const DrawItem& item)
+		std::for_each(std::execution::par, m_RenderContext.drawList.begin(), m_RenderContext.drawList.end(), [&](const DrawItem& item)
 			{
 				models[item.modelIndex] = item.entity.Get<TransformComponent>().GetWorldMatrix();
 			});
 
-		for (const DrawItem& item : list.items)
+
+		for (const DrawItem& item : m_RenderContext.drawList)
 		{
 			uint32_t offset = item.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment(); //TODO: cache the offset?
 			GraphicsContext::GetQueue().writeBuffer(m_RenderContext.modelUniformBuffer, offset, &models[item.modelIndex], sizeof(glm::mat4));
@@ -424,7 +365,7 @@ namespace Engine
 
 		for(auto pass : m_Passes)
 		{
-			pass->Execute(encoder, m_RenderContext, list);
+			pass->Execute(encoder, m_RenderContext);
 		}
 
 		wgpu::CommandBuffer commandBuffer = encoder.finish();

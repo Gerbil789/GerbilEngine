@@ -14,18 +14,16 @@ namespace Engine::GraphicsContext
 
 	void Initialize()
 	{
-		// Initialize WGPU instance
 		wgpu::InstanceDescriptor desc;
 		desc.setDefault();
 		desc.requiredFeatureCount = 1;
-		desc.requiredFeatures = &wgpu::InstanceFeatureName::TimedWaitAny;
+		desc.requiredFeatures = &wgpu::InstanceFeatureName::TimedWaitAny; //TODO: must be?
 		s_Instance = wgpu::createInstance(desc);
 		if(!s_Instance)
 		{
 			throw std::runtime_error("Failed to create WGPU instance");
 		}
 
-		// Request adapter
 		wgpu::RequestAdapterOptions adapterOpts{};
 		wgpu::Adapter adapter = s_Instance.requestAdapter(adapterOpts);
 		if(!adapter)
@@ -33,7 +31,6 @@ namespace Engine::GraphicsContext
 			throw std::runtime_error("Failed to request WGPU adapter");
 		}
 
-		// Print backend info
 		{
 			wgpu::AdapterInfo info;
 			adapter.getInfo(&info);
@@ -57,7 +54,6 @@ namespace Engine::GraphicsContext
 		s_UniformBufferOffsetAlignment = limits.minUniformBufferOffsetAlignment;
 		s_StorageBufferOffsetAlignment = limits.minStorageBufferOffsetAlignment;
 
-		// Request device
 		wgpu::DeviceDescriptor deviceDesc{};
 		deviceDesc.label = { "MainDevice", WGPU_STRLEN };
 		deviceDesc.requiredFeatureCount = 0;
@@ -76,25 +72,14 @@ namespace Engine::GraphicsContext
 				LOG_ERROR("WebGPU Uncaptured error [type: {}]: {}", ErrorTypeToString(type), message.data);
 			};
 
-		deviceDesc.requiredFeatureCount = 1;
-		wgpu::FeatureName features[]
-		{
-			wgpu::FeatureName::Float32Filterable
-		};
-		deviceDesc.requiredFeatures = (WGPUFeatureName*)features;
-
 		s_Device = adapter.requestDevice(deviceDesc);
 		if(!s_Device)
 		{
 			throw std::runtime_error("Failed to request WGPU device");
 		}
 
-		bool hasFloat32Filterable = s_Device.hasFeature(wgpu::FeatureName::Float32Filterable);
-		LOG_WARNING("Float32Filterable: {}", hasFloat32Filterable ? "YES" : "NO");
-
 		adapter.release();
 
-		// Get queue
 		s_Queue = s_Device.getQueue();
 		if(!s_Queue)
 		{

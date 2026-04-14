@@ -10,7 +10,7 @@ namespace Engine
 	class ENGINE_API AudioClip : public Asset
 	{
 	public:
-		AudioClip(const std::filesystem::path& path, void* fence = nullptr);
+		AudioClip(const std::filesystem::path& path);
 		~AudioClip();
 
 		float GetDurationSeconds() const;

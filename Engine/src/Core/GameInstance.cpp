@@ -29,7 +29,7 @@ namespace Engine
 		m_Renderer.AddPass(new Engine::BackgroundPass());
 		m_Renderer.AddPass(new Engine::OpaquePass());
 
-		m_Renderer.Resize(windowSpec.width, windowSpec.height);
+		//m_Renderer.Resize(windowSpec.width, windowSpec.height);
 	}
 
 	GameInstance::~GameInstance()
@@ -49,7 +49,7 @@ namespace Engine
 		//m_Renderer.SetScene(m_ActiveScene);
 
 		m_ActiveCameraEntity = m_ActiveScene->GetActiveCamera();
-		auto& cameraComponent = m_ActiveCameraEntity.Get<Engine::CameraComponent>();
+		const auto& cameraComponent = m_ActiveCameraEntity.Get<Engine::CameraComponent>();
 		m_Renderer.SetCamera(cameraComponent.camera);
 	}
 
@@ -116,9 +116,9 @@ namespace Engine
 		OnExit();
 	}
 
-	void GameInstance::OnWindowResize(Engine::WindowResizeEvent& e)
+	void GameInstance::OnWindowResize(Engine::WindowResizeEvent&)
 	{
-		m_Renderer.Resize((uint32_t)e.GetWidth(), (uint32_t)e.GetHeight());
+		//m_Renderer.Resize((uint32_t)e.GetWidth(), (uint32_t)e.GetHeight());
 	}
 
 }

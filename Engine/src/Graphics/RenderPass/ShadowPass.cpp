@@ -140,7 +140,7 @@ namespace Engine
 		m_ShadowPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
 	}
 
-	void ShadowPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList)
+	void ShadowPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
 	{
 		EnvironmentUniforms envUniforms;
 
@@ -273,19 +273,19 @@ namespace Engine
 
 			Mesh* mesh = nullptr;
 
-			for (const DrawItem& draw : drawList.items)
+			for (const DrawItem& item : context.drawList)
 			{
-				if (draw.mesh == nullptr) continue;
+				if (item.mesh == nullptr) continue;
 
-				if (draw.mesh != mesh)
+				if (item.mesh != mesh)
 				{
-					mesh = draw.mesh;
+					mesh = item.mesh;
 					pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
 					pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetIndexBuffer().getSize());
 				}
-				const SubMesh* sub = draw.subMesh;
+				const SubMesh* sub = item.subMesh;
 
-				uint32_t dynamicOffset = draw.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();
+				uint32_t dynamicOffset = item.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();
 				pass.setBindGroup(1, context.modelBindGroup, 1, &dynamicOffset);
 
 				pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);

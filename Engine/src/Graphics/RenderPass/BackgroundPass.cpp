@@ -15,7 +15,7 @@ namespace Engine
 		m_SkyboxShader = SkyboxShader("Resources/Engine/shaders/skybox.wgsl");
 	}
 
-	void BackgroundPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList&)
+	void BackgroundPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
 	{
 		const glm::vec4& col = context.camera->GetClearColor();
 

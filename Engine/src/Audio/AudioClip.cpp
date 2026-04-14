@@ -11,9 +11,9 @@ namespace Engine
 		ma_sound sound;
 	};
 
-	AudioClip::AudioClip(const std::filesystem::path& path, void* fence) : m_Impl(std::make_unique<Impl>())
+	AudioClip::AudioClip(const std::filesystem::path& path) : m_Impl(std::make_unique<Impl>())
 	{
-		if(ma_sound_init_from_file(&Audio::GetAudioEngine() , path.string().c_str(), MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_ASYNC | MA_SOUND_FLAG_NO_DEFAULT_ATTACHMENT, nullptr, reinterpret_cast<ma_fence*>(fence), &m_Impl->sound) != MA_SUCCESS)
+		if(ma_sound_init_from_file(&Audio::GetAudioEngine() , path.string().c_str(), MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_ASYNC | MA_SOUND_FLAG_NO_DEFAULT_ATTACHMENT, nullptr, nullptr, &m_Impl->sound) != MA_SUCCESS)
 		{
 			LOG_ERROR("Failed to load audio from file: {}", path);
 		}

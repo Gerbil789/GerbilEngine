@@ -10,6 +10,6 @@ namespace Engine
   {
   public:
     virtual ~RenderPass() = default;
-    virtual void Execute(wgpu::CommandEncoder& encoder, const RenderContext& context, const DrawList& drawList) = 0;
+    virtual void Execute(wgpu::CommandEncoder& encoder, const RenderContext& context) = 0;
   };
 }

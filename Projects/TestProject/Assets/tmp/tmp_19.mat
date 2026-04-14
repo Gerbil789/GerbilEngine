@@ -3,7 +3,7 @@ Sampler:
   Filter: 1
   Wrap: 0
 Attributes:
-  albedo: [1, 1, 1, 1]
+  albedo: [1, 0, 0, 1]
   roughness: 0
   metallic: 1
   tiling: [5, 1]

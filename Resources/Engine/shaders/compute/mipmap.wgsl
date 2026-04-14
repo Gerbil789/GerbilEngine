@@ -1,5 +1,5 @@
 @group(0) @binding(0) var previousMipLevel: texture_2d_array<f32>;
-@group(0) @binding(1) var nextMipLevel: texture_storage_2d_array<rgba32float,write>;
+@group(0) @binding(1) var nextMipLevel: texture_storage_2d_array<rgba16float,write>;
 
 
 @compute @workgroup_size(8, 8, 1)

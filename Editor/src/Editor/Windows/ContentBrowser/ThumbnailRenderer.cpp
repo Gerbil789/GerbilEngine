@@ -8,7 +8,6 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Camera.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/Importer/TextureImporter.h"
 
 namespace Editor
 {
@@ -46,12 +45,10 @@ namespace Editor
 		auto& mc = data.entity.Add<Engine::MeshComponent>();
 		mc.mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/sphere.glb");
 
-
 		data.renderer.Initialize();
 		data.renderer.AddPass(new Engine::BackgroundPass());
 		data.renderer.AddPass(new Engine::OpaquePass());
 		data.renderer.SetCamera(&data.camera);
-		data.renderer.Resize(64, 64);
 	}
 
 	wgpu::TextureView Render(Engine::Material* material)
@@ -78,6 +75,26 @@ namespace Editor
 		wgpu::TextureView thumbnailView = thumbnailTexture.createView(viewDesc);
 
 		data.renderer.SetColorTarget(thumbnailView);
+
+
+		//set depth target
+		{
+			wgpu::TextureDescriptor depthDesc;
+			depthDesc.label = { "ThumbnailDepthTexture", WGPU_STRLEN };
+			depthDesc.dimension = wgpu::TextureDimension::_2D;
+			depthDesc.format = wgpu::TextureFormat::Depth24Plus;
+			depthDesc.mipLevelCount = 1;
+			depthDesc.sampleCount = 1;
+			depthDesc.size = { 64, 64, 1 };
+			depthDesc.usage = wgpu::TextureUsage::RenderAttachment;
+			wgpu::Texture depthTexture = Engine::GraphicsContext::GetDevice().createTexture(depthDesc);
+			wgpu::TextureViewDescriptor depthViewDesc;
+			depthViewDesc.dimension = wgpu::TextureViewDimension::_2D;
+			depthViewDesc.format = depthDesc.format;
+			depthViewDesc.arrayLayerCount = 1;
+			depthViewDesc.mipLevelCount = 1;
+			data.renderer.SetDepthTarget(depthTexture.createView(depthViewDesc));
+		}
 
 
 		data.renderer.RenderScene(&data.scene);

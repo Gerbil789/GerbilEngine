@@ -15,7 +15,7 @@ namespace Engine
 		template<typename Self>
 		AssetRecord& GetRecord(this Self&& self, Uuid id)
 		{
-			if (auto it = self.m_Records.find(id); it != self.m_Records.end())
+			if (auto it = ((AssetRegistry&)self).m_Records.find(id); it != ((AssetRegistry&)self).m_Records.end())
 			{
 				return it->second;
 			}
@@ -26,7 +26,6 @@ namespace Engine
 
 		std::filesystem::path GetPath(const Uuid& id) const;
 		std::filesystem::path GetRelativePath(const Uuid& id) const;
-
 		std::vector<const AssetRecord*> GetAllRecords() const;
 		void Clear();
 

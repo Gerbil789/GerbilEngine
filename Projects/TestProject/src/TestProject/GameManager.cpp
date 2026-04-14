@@ -15,7 +15,7 @@ using namespace Engine;
 
 void GameManager::OnStart()
 {
-	auto scene = SceneManager::GetActiveScene();
+	//auto scene = SceneManager::GetActiveScene();
 
 
 	//for(int x = 0; x < 5; x++)
