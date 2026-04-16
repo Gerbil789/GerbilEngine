@@ -2,9 +2,13 @@
 
 #include "Engine/Core/API.h"
 #include "Engine/Event/Event.h"
+#include <unordered_map>
+#include <functional>
 
 namespace Engine
 {
+  using EventToken = uint32_t;
+
   class ENGINE_API EventBus
   {
   public:
@@ -15,7 +19,7 @@ namespace Engine
     }
 
     template<typename EventType>
-    void Subscribe(std::function<void(const EventType&)> callback)
+    EventToken Subscribe(std::function<void(const EventType&)> callback)
     {
       auto wrapper = [callback](Engine::Event& e)
         {
@@ -24,14 +28,36 @@ namespace Engine
             callback(static_cast<const EventType&>(e));
           }
         };
-      m_Subscribers.push_back(wrapper);
+
+      EventToken id = ++m_NextToken;
+      m_Subscribers[id] = wrapper;
+      return id;
+    }
+
+    EventToken SubscribeToAll(std::function<void(Engine::Event&)> callback)
+    {
+      auto wrapper = [callback](Engine::Event& e)
+        {
+          callback(e);
+        };
+
+      EventToken id = ++m_NextToken;
+      m_Subscribers[id] = wrapper;
+      return id;
+    }
+
+    void Unsubscribe(EventToken token)
+    {
+      m_Subscribers.erase(token);
     }
 
     void Publish(Engine::Event& e)
     {
-      for (auto& sub : m_Subscribers)
+      for (auto& [id, sub] : m_Subscribers)
       {
         sub(e);
+        // Optional: If you want to stop propagating the event once it's handled
+        // if (e.Handled) break; 
       }
     }
 
@@ -39,6 +65,7 @@ namespace Engine
     EventBus() = default;
     ~EventBus() = default;
 
-    std::vector<std::function<void(Engine::Event&)>> m_Subscribers;
+    EventToken m_NextToken = 0;
+    std::unordered_map<EventToken, std::function<void(Engine::Event&)>> m_Subscribers;
   };
 }

@@ -1,7 +1,4 @@
 Assets:
-  - ID: 5580616945690649780
-    Path: Meshes\de_dust2\object_10.glb
-    Type: Mesh
   - ID: 7346751248309590408
     Path: Textures\tile.png
     Type: Texture
@@ -20,11 +17,11 @@ Assets:
   - ID: 5360640591292890293
     Path: Textures\concrete_pillar\normal.png
     Type: Texture
-  - ID: 13715123166120170876
-    Path: Textures\bricks_wall\height.png
-    Type: Texture
   - ID: 16021381774665062487
     Path: Textures\Prototype\texture_09.png
+    Type: Texture
+  - ID: 13715123166120170876
+    Path: Textures\bricks_wall\height.png
     Type: Texture
   - ID: 4075095222217416333
     Path: Textures\coin.png
@@ -35,9 +32,6 @@ Assets:
   - ID: 5127748016343269317
     Path: Textures\de_dust2\material_9_baseColor.png
     Type: Texture
-  - ID: 5917813016382098050
-    Path: Meshes\de_dust2\object_19.glb
-    Type: Mesh
   - ID: 5655554086556983518
     Path: Meshes\Rocks\rock_6.glb
     Type: Mesh
@@ -50,9 +44,6 @@ Assets:
   - ID: 10975628317494508874
     Path: Textures\spritesheet.png
     Type: Texture
-  - ID: 5515924852972165167
-    Path: Meshes\de_dust2\object_25.glb
-    Type: Mesh
   - ID: 9667627839419811388
     Path: Materials\Test.mat
     Type: Material
@@ -101,9 +92,6 @@ Assets:
   - ID: 9802921481971375387
     Path: Meshes\bad cube 2.glb
     Type: Mesh
-  - ID: 10193106360623915242
-    Path: Meshes\de_dust2\object_24.glb
-    Type: Mesh
   - ID: 9444807739676329273
     Path: Textures\Prototype\texture_06.png
     Type: Texture
@@ -125,9 +113,6 @@ Assets:
   - ID: 1903245682125825534
     Path: Textures\SwordddV2.png
     Type: Texture
-  - ID: 8813310606094098336
-    Path: Meshes\de_dust2\object_13.glb
-    Type: Mesh
   - ID: 7797657547740846668
     Path: Textures\Prototype\texture_02.png
     Type: Texture
@@ -194,21 +179,18 @@ Assets:
   - ID: 15507889340687193263
     Path: Textures\concrete_pillar\roughness.png
     Type: Texture
-  - ID: 5199605455561781722
-    Path: Textures\HDR\lebombo_4k.hdr
-    Type: CubeMap
-  - ID: 17307467500031621436
-    Path: Textures\de_dust2\material_20_baseColor.png
-    Type: Texture
   - ID: 3424245490164057647
     Path: Audio\Music\Welcome_to_3D_Software.wav
     Type: Audio
+  - ID: 17307467500031621436
+    Path: Textures\de_dust2\material_20_baseColor.png
+    Type: Texture
+  - ID: 5199605455561781722
+    Path: Textures\HDR\lebombo_4k.hdr
+    Type: CubeMap
   - ID: 9893828857169588856
     Path: Textures\vsb.png
     Type: Texture
-  - ID: 508682868150673678
-    Path: Meshes\de_dust2\object_34.glb
-    Type: Mesh
   - ID: 4081624249093562338
     Path: tmp\tmp_20.mat
     Type: Material
@@ -242,9 +224,6 @@ Assets:
   - ID: 16437370415965019686
     Path: Audio\Sounds\shoot2.mp3
     Type: Audio
-  - ID: 12830303819139442345
-    Path: Textures\de_dust2\material_18_baseColor.png
-    Type: Texture
   - ID: 14629879430869841218
     Path: Textures\de_dust2\material_8_baseColor.png
     Type: Texture
@@ -260,9 +239,6 @@ Assets:
   - ID: 4524766446218326838
     Path: Materials\Grid.mat
     Type: Material
-  - ID: 15338051281205289988
-    Path: Meshes\de_dust2\object_33.glb
-    Type: Mesh
   - ID: 1453805156906467867
     Path: Textures\4150p04.jpg
     Type: Texture
@@ -305,12 +281,6 @@ Assets:
   - ID: 14271088859862093309
     Path: tmp\tmp_22.mat
     Type: Material
-  - ID: 1375503886267471664
-    Path: Meshes\de_dust2\object_3.glb
-    Type: Mesh
-  - ID: 7336270302484649671
-    Path: Meshes\de_dust2\object_30.glb
-    Type: Mesh
   - ID: 15046076345426150599
     Path: Textures\de_dust2\material_5_baseColor.png
     Type: Texture
@@ -362,9 +332,6 @@ Assets:
   - ID: 2240798008467000122
     Path: tmp\tmp_13.mat
     Type: Material
-  - ID: 18145908546623597882
-    Path: Meshes\de_dust2\object_26.glb
-    Type: Mesh
   - ID: 7619436097422543333
     Path: tmp\tmp_15.mat
     Type: Material
@@ -380,75 +347,15 @@ Assets:
   - ID: 3618852083861132642
     Path: Textures\de_dust2\material_1_baseColor.png
     Type: Texture
-  - ID: 16470796963727832406
-    Path: Meshes\de_dust2\object_5.glb
-    Type: Mesh
-  - ID: 17050192560973688415
-    Path: Meshes\de_dust2\object_28.glb
-    Type: Mesh
   - ID: 10678146075097392240
     Path: Textures\input.jpg
     Type: Texture
   - ID: 2591369825149807284
     Path: Textures\de_dust2\material_2_baseColor.png
     Type: Texture
-  - ID: 7805578762441251559
-    Path: Meshes\de_dust2\object_14.glb
-    Type: Mesh
-  - ID: 12685032723340911087
-    Path: Meshes\de_dust2\object_15.glb
-    Type: Mesh
-  - ID: 2502324683027232095
-    Path: Meshes\de_dust2\object_17.glb
-    Type: Mesh
-  - ID: 11951609692752166866
-    Path: Meshes\de_dust2\object_18.glb
-    Type: Mesh
-  - ID: 11571053972370739340
-    Path: Meshes\de_dust2\object_2.glb
-    Type: Mesh
-  - ID: 10617869892926732806
-    Path: Meshes\de_dust2\object_20.glb
-    Type: Mesh
   - ID: 11425289195247404998
     Path: Materials\newDirectory\brzh.mat
     Type: Material
-  - ID: 8722423432172757799
-    Path: Meshes\de_dust2\object_21.glb
-    Type: Mesh
-  - ID: 16380551832607911191
-    Path: Meshes\de_dust2\object_23.glb
-    Type: Mesh
-  - ID: 15762698354670265954
-    Path: Meshes\de_dust2\object_27.glb
-    Type: Mesh
-  - ID: 7683754096996263122
-    Path: Meshes\de_dust2\object_29.glb
-    Type: Mesh
-  - ID: 8850674390521955542
-    Path: Meshes\de_dust2\object_31.glb
-    Type: Mesh
-  - ID: 2859024710758327543
-    Path: Meshes\de_dust2\object_32.glb
-    Type: Mesh
-  - ID: 3638499465859705676
-    Path: Meshes\de_dust2\object_35.glb
-    Type: Mesh
-  - ID: 8135425887176007120
-    Path: Meshes\de_dust2\object_4.glb
-    Type: Mesh
-  - ID: 4279039226102497018
-    Path: Meshes\de_dust2\object_6.glb
-    Type: Mesh
-  - ID: 10598677727809791976
-    Path: Meshes\de_dust2\object_7.glb
-    Type: Mesh
-  - ID: 6684704410470367945
-    Path: Meshes\de_dust2\object_8.glb
-    Type: Mesh
-  - ID: 9644783857717387586
-    Path: Meshes\de_dust2\object_9.glb
-    Type: Mesh
   - ID: 6995563784632391490
     Path: Textures\de_dust2\material_12_baseColor.png
     Type: Texture
@@ -463,9 +370,6 @@ Assets:
     Type: Texture
   - ID: 6752624606653621229
     Path: Textures\de_dust2\material_16_baseColor.png
-    Type: Texture
-  - ID: 116419419813500017
-    Path: Textures\de_dust2\material_19_baseColor.png
     Type: Texture
   - ID: 15832348455550147357
     Path: Textures\de_dust2\material_22_baseColor.png
@@ -491,3 +395,6 @@ Assets:
   - ID: 14727335319401201755
     Path: Textures\HDR\wooden_studio_14_4k.hdr
     Type: CubeMap
+  - ID: 6831144514463113338
+    Path: Meshes\dedust2.glb
+    Type: Mesh

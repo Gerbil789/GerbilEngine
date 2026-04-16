@@ -179,11 +179,6 @@ namespace Editor
 		EndFrame();
 	}
 
-	//void EditorWindowManager::OnEvent(Engine::Event& e)
-	//{
-	//	m_ViewportWindow.OnEvent(e);
-	//}
-
 	void EditorWindowManager::ResetLayout()
 	{
 		const std::filesystem::path default_iniPath = "Resources/Editor/layouts/default.ini";

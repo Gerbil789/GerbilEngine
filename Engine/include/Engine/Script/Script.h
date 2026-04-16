@@ -6,6 +6,7 @@
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Audio/AudioClip.h"
+#include "Engine/Event/Event.h"
 
 namespace Engine 
 {
@@ -54,6 +55,7 @@ namespace Engine
     virtual void OnStart() {}
     virtual void OnUpdate() {}
     virtual void OnDestroy() {}
+		virtual void OnEvent([[maybe_unused]] const Event& event) {}
   };
 }
 

@@ -8,8 +8,11 @@ namespace Editor
 	class ViewportWindow : public IEditorWindow
 	{
 	public:
+
 		void Initialize() override;
 		void Draw() override;
+
+		static void UpdateViewportSize();
 		
 		static Engine::Renderer& GetRenderer();
 	};

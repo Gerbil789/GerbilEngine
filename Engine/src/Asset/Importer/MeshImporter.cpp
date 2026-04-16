@@ -198,7 +198,6 @@ namespace Engine
 						wireIndices.push_back(i1); wireIndices.push_back(i2);
 						wireIndices.push_back(i2); wireIndices.push_back(i0);
 					}
-
 				}
 			}
 		}
@@ -242,6 +241,6 @@ namespace Engine
 			ProcessNode(model, node, glm::mat4(1.0f), vertices, indices, wireIndices, subMeshes);
 		}
 
-		return new Mesh({ vertices, indices, /*wireIndices,*/ subMeshes });
+		return new Mesh({ vertices, indices, subMeshes });
 	}
 }

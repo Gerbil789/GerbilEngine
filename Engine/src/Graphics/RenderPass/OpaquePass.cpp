@@ -59,7 +59,15 @@ namespace Engine
 				continue;
 			}
 
-			auto subMaterial = meshMaterials[sub->materialIndex];
+			Engine::Material* subMaterial;
+			if(sub->materialIndex >= meshMaterials.size())
+			{
+				subMaterial = meshMaterials[0];
+			}
+			else
+			{
+				subMaterial = meshMaterials[sub->materialIndex];
+			}
 
 			if (subMaterial && (subMaterial != material))
 			{

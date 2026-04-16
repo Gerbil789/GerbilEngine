@@ -10,77 +10,105 @@
 #include "Engine/Utility/Color.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Scene/SceneManager.h"
+#include "Engine/Event/EventBus.h"
+#include "Engine/Event/KeyEvent.h"
+#include "Engine/Event/MouseEvent.h"
+#include "Engine/Event/Event.h"
 
 using namespace Engine;
 
-void PlayerController::OnCreate() {}
+void PlayerController::OnStart()
+{
+	Input::SetCursorMode(Input::CursorMode::Disabled);
+	m_LastMouseX = Input::GetMousePosition().x;
+	m_LastMouseY = Input::GetMousePosition().y;
+}
 
 void PlayerController::OnUpdate()
 {
 	float delta = Time::DeltaTime();
-
 	auto& transform = Self.Get<TransformComponent>();
 
+	float yawRadians = glm::radians(transform.rotation.y);
+
+	float forwardX = std::sin(yawRadians);
+	float forwardZ = std::cos(yawRadians);
+
+	float rightX = std::cos(yawRadians);
+	float rightZ = -std::sin(yawRadians);
+
 	// movement
-	if (Input::IsKeyDown(KeyCode::A)) transform.position.x -= m_MoveSpeed * delta;
-	if (Input::IsKeyDown(KeyCode::D)) transform.position.x += m_MoveSpeed * delta;
-	if (Input::IsKeyDown(KeyCode::W)) transform.position.z += m_MoveSpeed * delta;
-	if (Input::IsKeyDown(KeyCode::S)) transform.position.z -= m_MoveSpeed * delta;
-	if (Input::IsKeyDown(KeyCode::Space)) transform.position.y += m_JumpStrength * delta;
-
-
-	if (Input::IsKeyDown(KeyCode::Q)) transform.rotation.y -= m_RotateSpeed * delta;
-	if (Input::IsKeyDown(KeyCode::E)) transform.rotation.y += m_RotateSpeed * delta;
+	if (Input::IsKeyDown(KeyCode::W))
+	{
+		transform.position.x += forwardX * m_MoveSpeed * delta;
+		transform.position.z += forwardZ * m_MoveSpeed * delta;
+	}
+	if (Input::IsKeyDown(KeyCode::S))
+	{
+		transform.position.x -= forwardX * m_MoveSpeed * delta;
+		transform.position.z -= forwardZ * m_MoveSpeed * delta;
+	}
+	if (Input::IsKeyDown(KeyCode::D))
+	{
+		transform.position.x += rightX * m_MoveSpeed * delta;
+		transform.position.z += rightZ * m_MoveSpeed * delta;
+	}
+	if (Input::IsKeyDown(KeyCode::A))
+	{
+		transform.position.x -= rightX * m_MoveSpeed * delta;
+		transform.position.z -= rightZ * m_MoveSpeed * delta;
+	}
 
 	// gravity
-	if(transform.position.y > m_Ground)
+	m_VelocityY -= m_GravityStrength * delta;
+	transform.position.y += m_VelocityY * delta;
+	if (transform.position.y <= m_Ground)
 	{
-		transform.position.y -= Time::DeltaTime() * m_GravityStrength;
-	}
-	else
-	{
-		transform.position.y = m_Ground;
-	}
-
-	// shoot
-	if(Input::IsKeyPressedOnce(KeyCode::M))
-	{
-		if (!m_Sound || !m_BulletMesh || !m_BulletMaterial)
-		{
-			LOG_WARNING("Missing shoot components!");
-			return;
-		}
-
-		auto scene = SceneManager::GetActiveScene();
-
-		auto pos = Self.Get<TransformComponent>().position;
-		Audio::Play3D(m_Sound, pos.x, pos.y, pos.z);
-
-
-		Entity bullet = scene->CreateEntity("Bullet");
-		bullet.Get<TransformComponent>().position = pos;
-		bullet.Add<MeshComponent>(m_BulletMesh).SetMaterial(0, m_BulletMaterial);
-
-		auto& scriptComponent = bullet.Add<ScriptComponent>();
-		scriptComponent.id = "Bullet";
-		scriptComponent.instance = new Bullet(glm::vec3(0.0f, 0.0f, 1.0f));
-		scriptComponent.instance->Self = bullet;
-
+		transform.position.y = m_Ground; 
+		m_VelocityY = 0.0f;
 	}
 }
 
-
-void Bullet::OnUpdate()
+void PlayerController::OnDestroy()
 {
-	auto& transform = Self.Get<TransformComponent>();
 
-	transform.position += m_Direction * m_Speed * Time::DeltaTime();
+}
 
-	//m_Time -= Time::DeltaTime();
+void PlayerController::OnEvent(const Engine::Event& event)
+{
+	if(event.GetEventType() == EventType::MouseMoved)
+	{
+		const auto& e = static_cast<const MouseMovedEvent&>(event);
 
-	//if(m_Time <= 0.0f)
-	//{
-	//	Self.RemoveComponent<Engine::MeshComponent>();
-	//	Self.RemoveComponent<Engine::MaterialComponent>();
-	//}
+		float xOffset = e.GetX() - m_LastMouseX;
+		float yOffset = m_LastMouseY - e.GetY();
+
+		m_LastMouseX = e.GetX();
+		m_LastMouseY = e.GetY();
+
+		auto& transform = Self.Get<TransformComponent>();
+
+		transform.rotation.y += xOffset * m_MouseSensitivity;
+		transform.rotation.x -= yOffset * m_MouseSensitivity;
+
+		if (transform.rotation.x > 89.0f) transform.rotation.x = 89.0f;
+		if (transform.rotation.x < -89.0f) transform.rotation.x = -89.0f;
+	}
+
+	if (event.GetEventType() == EventType::KeyPressed)
+	{
+		const auto& e = static_cast<const KeyPressedEvent&>(event);
+		auto& transform = Self.Get<TransformComponent>();
+		bool isGrounded = (transform.position.y <= m_Ground);
+
+		if(!isGrounded)
+		{
+			return;
+		}
+
+		if (e.GetKey() == KeyCode::Space)
+		{
+			m_VelocityY = m_JumpStrength;
+		}
+	}
 }

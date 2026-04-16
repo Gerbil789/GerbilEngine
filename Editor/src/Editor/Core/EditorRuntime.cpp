@@ -7,6 +7,12 @@
 #include "Engine/Script/Script.h"
 #include "Engine/Audio/Audio.h"
 #include "Engine/Graphics/Camera.h"
+#include "Engine/Core/Input.h"
+#include "Engine/Event/EventBus.h"
+#include "Engine/Event/KeyEvent.h"
+#include "Engine/Event/MouseEvent.h"
+#include "Engine/Event/Event.h"
+#include "Editor/Windows/Viewport/ViewportWindow.h"
 #include <Windows.h>
 
 namespace Editor
@@ -14,6 +20,7 @@ namespace Editor
 	namespace 
 	{
 		bool m_IgnoredSceneChange = false;
+		Engine::EventToken m_Token;
 	}
 	void EditorRuntime::Initialize()
 	{
@@ -85,7 +92,6 @@ namespace Editor
 			m_RuntimeScene->SetActiveCamera(cameras[0]);
 		}
 
-
 		Engine::SceneManager::SetActiveScene(m_RuntimeScene);
 
 		for(const auto& ent : m_RuntimeScene->GetEntities<Engine::ScriptComponent>())
@@ -97,19 +103,48 @@ namespace Editor
 				sc.instance->OnStart();
 			}
 		}
+
+		m_Token = Engine::EventBus::Get().SubscribeToAll([](Engine::Event& e)
+			{
+				for (const auto& ent : m_RuntimeScene->GetEntities<Engine::ScriptComponent>())
+				{
+					auto& sc = ent.Get<Engine::ScriptComponent>();
+					if (sc.instance)
+					{
+						sc.instance->OnEvent(e);
+					}
+				}
+			});
 	}
 
 	void EditorRuntime::Stop()
 	{
+		for (const auto& ent : m_RuntimeScene->GetEntities<Engine::ScriptComponent>())
+		{
+			auto& sc = ent.Get<Engine::ScriptComponent>();
+			if (sc.instance)
+			{
+				sc.instance->OnDestroy();
+			}
+		}
+
+		Engine::EventBus::Get().Unsubscribe(m_Token);
+
 		Engine::Audio::StopAll();
 		Engine::SceneManager::SetActiveScene(m_EditorScene);
 		delete m_RuntimeScene;
 		m_RuntimeScene = nullptr;
+		Engine::Input::SetCursorMode(Engine::Input::CursorMode::Normal);
 	}
 
 	void EditorRuntime::Update()
 	{
 		if (m_State != EditorState::Play) return;
+
+		if(Engine::Input::IsKeyPressedOnce(Engine::KeyCode::Escape))
+		{
+			Engine::Input::SetCursorMode(Engine::Input::CursorMode::Normal);
+		}
 
 		// update scripts
 		for (auto& ent : m_RuntimeScene->GetEntities<Engine::ScriptComponent>())

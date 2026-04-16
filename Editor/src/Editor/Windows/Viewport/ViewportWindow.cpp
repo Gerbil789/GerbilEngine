@@ -61,7 +61,7 @@ namespace Editor
 		static EditorPicker* s_EntityPicker = nullptr;
 	}
 
-	void UpdateViewportSize()
+	void ViewportWindow::UpdateViewportSize()
 	{
 		ImVec2 newSize = ImGui::GetContentRegionAvail();
 
@@ -380,13 +380,24 @@ namespace Editor
 					auto cameraEntity = m_Scene->GetActiveCamera();
 					if (cameraEntity)
 					{
-						m_Renderer.SetCamera(cameraEntity.Get<Engine::CameraComponent>().camera);
+						Engine::Camera* camera = cameraEntity.Get<Engine::CameraComponent>().camera;
+
+						
+						camera->SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
+						m_Renderer.SetCamera(camera);
 					}
 				}
+					
 			});
 
 		Engine::EventBus::Get().Subscribe<Engine::MouseButtonPressedEvent>([this](const Engine::MouseButtonPressedEvent& e)
 			{
+				if (EditorRuntime::GetState() == EditorState::Play)
+				{
+					Engine::Input::SetCursorMode(Engine::Input::CursorMode::Disabled);
+					return;
+				}
+
 				if (e.GetMouseButton() == Engine::MouseCode::ButtonLeft && !ImGuizmo::IsOver())
 				{
 					ImVec2 mousePos = ImGui::GetMousePos();
@@ -414,6 +425,11 @@ namespace Editor
 
 		Engine::EventBus::Get().Subscribe<Engine::KeyPressedEvent>([this](const Engine::KeyPressedEvent& e)
 			{
+				if (EditorRuntime::GetState() == EditorState::Play)
+				{
+					return;
+				}
+
 				if (e.GetKey() == Engine::KeyCode::Q) gizmoType = static_cast<ImGuizmo::OPERATION>(0);
 				if (e.GetKey() == Engine::KeyCode::W) gizmoType = ImGuizmo::OPERATION::TRANSLATE;
 				if (e.GetKey() == Engine::KeyCode::E) gizmoType = ImGuizmo::OPERATION::ROTATE;
