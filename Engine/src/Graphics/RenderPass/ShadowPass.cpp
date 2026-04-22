@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "Engine/Graphics/RenderPass/ShadowPass.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/Renderer/RenderContext.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Mesh.h"
@@ -9,6 +8,7 @@
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Utility/File.h"
+#include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include <glm/gtx/quaternion.hpp>
 
 namespace Engine
@@ -47,7 +47,6 @@ namespace Engine
 		vertexBufferLayout.arrayStride = 8 * sizeof(float);
 		vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
 
-
 		wgpu::RenderPipelineDescriptor pipelineDesc;
 		pipelineDesc.label = { "ShadowShaderPipeline", WGPU_STRLEN };
 
@@ -61,16 +60,6 @@ namespace Engine
 		pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
 		pipelineDesc.primitive.frontFace = wgpu::FrontFace::CW;
 		pipelineDesc.primitive.cullMode = wgpu::CullMode::None;
-
-		wgpu::BlendState blendState;
-		blendState.color.srcFactor = wgpu::BlendFactor::SrcAlpha;
-		blendState.color.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha;
-		blendState.color.operation = wgpu::BlendOperation::Add;
-		blendState.alpha.srcFactor = wgpu::BlendFactor::Zero;
-		blendState.alpha.dstFactor = wgpu::BlendFactor::One;
-		blendState.alpha.operation = wgpu::BlendOperation::Add;
-
-		pipelineDesc.fragment = nullptr; // no fragment shader
 
 		wgpu::DepthStencilState depthStencilState;
 		depthStencilState.depthCompare = wgpu::CompareFunction::Less;
@@ -95,7 +84,6 @@ namespace Engine
 		bindGroupLayoutEntry.buffer.type = wgpu::BufferBindingType::Uniform;
 		bindGroupLayoutEntry.buffer.minBindingSize = sizeof(glm::mat4);
 
-
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
 		bindGroupLayoutDesc.label = { "shadowBindGroupLayout", WGPU_STRLEN };
 		bindGroupLayoutDesc.entryCount = 1;
@@ -106,7 +94,7 @@ namespace Engine
 		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts
 		{
 			layout,
-			Renderer::GetModelLayout()
+			RenderPipelineLayouts::GetModelLayout()
 		};	
 
 		{
@@ -156,8 +144,8 @@ namespace Engine
 				std::vector<float> splits;
 				splits.resize(s_ShadowCascadeCount);
 
-				float near = context.camera->Perspective().near;
-				float far = context.camera->Perspective().far;
+				float near = context.camera->GetPerspectiveNear();
+				float far = context.camera->GetPerspectiveFar();
 				float lambda = 0.9f; // 0 = linear, 1 = logarithmic
 
 				glm::quat q = glm::quat(glm::radians(transform.rotation));
@@ -182,7 +170,8 @@ namespace Engine
 					std::array<glm::vec3, 8> corners = context.camera->GetFrustumCornersWorld(prevSplit, currSplit);
 
 					glm::vec3 center(0.0f);
-					for (auto& c : corners) {
+					for (const auto& c : corners) 
+					{
 						center += c;
 					}
 
@@ -196,23 +185,18 @@ namespace Engine
 					glm::vec3 min(FLT_MAX);
 					glm::vec3 max(-FLT_MAX);
 
-					for (auto& c : corners)
+					for (const auto& c : corners)
 					{
 						glm::vec3 v = glm::vec3(view * glm::vec4(c, 1.0f));
 						min = glm::min(min, v);
 						max = glm::max(max, v);
 					}
 
-
-					// fix dissaperaing shadows of objects outside camera view
-
-					float extend = 200.0f; // tune this
+					float extend = 200; // shadow distance
 
 					min.z -= extend;
 					max.z += extend;
 
-
-					// Build ortho projection
 					glm::mat4 proj = glm::orthoLH_ZO(min.x, max.x, min.y, max.y, min.z, max.z);
 					m_LightViewProjMatrices[i] = proj * view;
 

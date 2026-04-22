@@ -1,9 +1,9 @@
 #include "enginepch.h"
 #include "Engine/Graphics/RenderPass/LightPass.h"
 #include "Engine/Graphics/Mesh.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Utility/File.h"
 #include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Scene/Scene.h"
 
 namespace Engine
@@ -169,8 +169,8 @@ namespace Engine
 		}
 
 		wgpu::BindGroupLayout bindGroupLayouts[] = {
-			Renderer::GetViewLayout(),
-			Renderer::GetModelLayout(),
+			RenderPipelineLayouts::GetViewLayout(),
+			RenderPipelineLayouts::GetModelLayout(),
 			s_LightBindGroupLayout
 		};
 

@@ -4,13 +4,16 @@
 
 namespace Engine
 {
-	Camera::Camera()
+	Camera::Projection Camera::GetProjection() const
 	{
-		UpdateViewMatrix();
-		UpdateProjectionMatrix();
+		return m_Projection;
 	}
 
-	Camera::~Camera() {}
+	void Camera::SetProjection(Projection projection)
+	{
+		m_Projection = projection; 
+		UpdateProjectionMatrix();
+	}
 
 	void Camera::SetAspectRatio(float ratio)
 	{
@@ -18,9 +21,19 @@ namespace Engine
 		UpdateProjectionMatrix();
 	}
 
+	const glm::mat4& Camera::GetProjectionMatrix() const
+	{
+		return m_ProjectionMatrix;
+	}
+
+	const glm::mat4& Camera::GetViewMatrix() const
+	{
+		return m_ViewMatrix;
+	}
+
 	const glm::quat Camera::GetOrientation() const
 	{
-		return glm::quat(glm::radians(glm::vec3(m_Pitch, m_Yaw, m_Roll)));
+		return glm::quat(glm::radians(m_Rotation));
 	}
 
 	const glm::vec3 Camera::GetForward() const
@@ -38,6 +51,26 @@ namespace Engine
 		return GetOrientation() * glm::vec3(0.0f, 1.0f, 0.0f);
 	}
 
+	float Camera::GetPitch() const
+	{
+		return m_Rotation.x;
+}
+
+	float Camera::GetYaw() const
+	{
+		return m_Rotation.y;
+	}
+
+	float Camera::GetRoll() const
+	{
+		return m_Rotation.z;
+	}
+
+	const glm::vec3& Camera::GetPosition() const
+	{
+		return m_Position;
+	}
+
 	void Camera::SetPosition(const glm::vec3& position)
 	{
 		m_Position = position;
@@ -46,18 +79,100 @@ namespace Engine
 
 	void Camera::SetRotation(float pitch, float yaw, float roll)
 	{
-		m_Pitch = pitch;
-		m_Yaw = yaw;
-		m_Roll = roll;
+		m_Rotation = { pitch, yaw, roll };
 		UpdateViewMatrix();
 	}
 
 	void Camera::SetRotation(const glm::vec3& rotation)
 	{
-		m_Pitch = rotation.x;
-		m_Yaw = rotation.y;
-		m_Roll = rotation.z;
+		m_Rotation = rotation;
 		UpdateViewMatrix();
+	}
+
+	Camera::Background Camera::GetBackground() const
+	{
+		return m_Background;
+	}
+
+	void Camera::SetBackground(Background background)
+	{
+		m_Background = background;
+	}
+
+	const glm::vec4& Camera::GetClearColor() const
+	{ 
+		return m_ClearColor; 
+	}
+
+	void Camera::SetClearColor(const glm::vec4& color)
+	{
+		m_ClearColor = color;
+	}
+
+	float Camera::GetPerspectiveFOV() const
+	{
+		return m_Perspective.fov;
+	}
+
+	float Camera::GetPerspectiveNear() const
+	{
+		return m_Perspective.near;
+	}
+
+	float Camera::GetPerspectiveFar() const
+	{
+		return m_Perspective.far;
+	}
+
+	void Camera::SetPerspectiveFOV(float fov)
+	{
+		m_Perspective.fov = fov;
+		UpdateProjectionMatrix();
+	}
+
+	void Camera::SetPerspectiveNear(float near)
+	{
+		m_Perspective.near = near;
+		UpdateProjectionMatrix();
+	}
+
+	void Camera::SetPerspectiveFar(float far)
+	{
+		m_Perspective.far = far;
+		UpdateProjectionMatrix();
+	}
+
+	float Camera::GetOrthoSize() const
+	{
+		return m_Orthographic.size;
+	}
+
+	float Camera::GetOrthoNear() const
+	{
+		return m_Orthographic.near;
+	}
+
+	float Camera::GetOrthoFar() const
+	{
+		return m_Orthographic.far;
+	}
+
+	void Camera::SetOrthoSize(float size)
+	{
+		m_Orthographic.size = size;
+		UpdateProjectionMatrix();
+	}
+
+	void Camera::SetOrthoNear(float near)
+	{
+		m_Orthographic.near = near;
+		UpdateProjectionMatrix();
+	}
+
+	void Camera::SetOrthoFar(float far)
+	{
+		m_Orthographic.far = far;
+		UpdateProjectionMatrix();
 	}
 
 	static glm::mat4 LookAtLH(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up)

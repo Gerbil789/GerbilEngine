@@ -11,18 +11,14 @@
 #include "Engine/Core/Input.h"
 #include "Engine/Core/KeyCodes.h"
 #include "Engine/Event/EventBus.h"
+#include "Engine/Event/KeyEvent.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Entity.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Graphics/RenderPass/BackgroundPass.h"
-#include "Engine/Graphics/RenderPass/OpaquePass.h"
-#include "Engine/Graphics/RenderPass/WireframePass.h"
-#include "Engine/Graphics/RenderPass/NormalPass.h"
-#include "Engine/Graphics/RenderPass/LightPass.h"
-#include "Engine/Graphics/RenderPass/ShadowPass.h"
+#include "Engine/Graphics/RenderPass/RenderPassRegistry.h"
 
 #include <ImGuizmo.h>
 #include <glm/glm.hpp>
@@ -33,6 +29,9 @@ namespace Editor
 	namespace
 	{
 		Engine::Scene* m_Scene = nullptr;
+		static Engine::Camera m_Camera;
+		static EditorPicker* s_EntityPicker = nullptr;
+		static ViewportCameraController s_Controller;
 
 		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
@@ -43,25 +42,93 @@ namespace Editor
 		glm::mat4 m_InitialPrimaryWorld = glm::mat4(1.0f);
 
 		static ImGuizmo::OPERATION gizmoType = ImGuizmo::OPERATION::TRANSLATE;
-
-		static Engine::OpaquePass* s_OpaquePass = nullptr;
-		static Engine::WireframePass* s_WireframePass = nullptr;
-		static Engine::NormalPass* s_NormalPass = nullptr;
-		static Engine::LightPass* s_LightPass = nullptr;
-		static Engine::ShadowPass* s_ShadowPass = nullptr;
-
-		static Engine::Camera m_Camera;
-		static Engine::Renderer m_Renderer;
-
-		static bool enableOpaquePass = true;
-		static bool enableNormalPass = false;
-		static bool enableWireframePass = false;
-		static bool enableLightPass = false;
-
-		static EditorPicker* s_EntityPicker = nullptr;
 	}
 
-	void ViewportWindow::UpdateViewportSize()
+	void ViewportWindow::Initialize()
+	{
+		ImGuizmo::AllowAxisFlip(true);
+		ImGuizmo::SetGizmoSizeClipSpace(0.15f);
+
+		m_Camera.SetBackground(Engine::Camera::Background::Skybox);
+		m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
+
+		s_Controller.Initialize(&m_Camera);
+		Engine::g_Renderer->SetCamera(&m_Camera);
+
+		Engine::g_Renderer->SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque/* | Engine::RenderPassType::Normal | Engine::RenderPassType::Wireframe*/);
+
+		s_EntityPicker = new EditorPicker();
+
+		Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene* scene)
+			{
+				m_Scene = scene;
+				SelectionManager::Clear(SelectionType::Entity);
+
+				if (EditorRuntime::GetState() == EditorState::Edit)
+				{
+					Engine::g_Renderer->SetCamera(&m_Camera);
+				}
+				else if (EditorRuntime::GetState() == EditorState::Play)
+				{
+					auto cameraEntity = m_Scene->GetActiveCamera();
+					if (cameraEntity)
+					{
+						Engine::Camera* camera = cameraEntity.Get<Engine::CameraComponent>().camera;
+						camera->SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
+						Engine::g_Renderer->SetCamera(camera);
+					}
+				}
+
+			});
+
+		Engine::EventBus::Get().Subscribe<Engine::MouseButtonPressedEvent>([this](const Engine::MouseButtonPressedEvent& e)
+			{
+				if (EditorRuntime::GetState() == EditorState::Play)
+				{
+					Engine::Input::SetCursorMode(Engine::Input::CursorMode::Disabled);
+					return;
+				}
+
+				if (e.GetMouseButton() == Engine::MouseCode::ButtonLeft && !ImGuizmo::IsOver())
+				{
+					ImVec2 mousePos = ImGui::GetMousePos();
+					if (mousePos.x < m_ViewportBounds[0].x || mousePos.y < m_ViewportBounds[0].y || mousePos.x > m_ViewportBounds[1].x || mousePos.y > m_ViewportBounds[1].y)
+					{
+						return;
+					}
+
+					const uint32_t mx = static_cast<uint32_t>(mousePos.x - m_ViewportBounds[0].x);
+					const uint32_t my = static_cast<uint32_t>(mousePos.y - m_ViewportBounds[0].y);
+
+					Engine::Uuid uuid = s_EntityPicker->Pick(mx, my, Engine::g_Renderer->GetRenderContext());
+
+					if (uuid)
+					{
+						Engine::Entity entity = m_Scene->GetEntity(uuid);
+						SelectionManager::Select(SelectionType::Entity, entity.GetUUID(), Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl) || Engine::Input::IsKeyDown(Engine::KeyCode::LeftShift));
+					}
+					else
+					{
+						SelectionManager::Clear(SelectionType::Entity);
+					}
+				}
+			});
+
+		Engine::EventBus::Get().Subscribe<Engine::KeyPressedEvent>([this](const Engine::KeyPressedEvent& e)
+			{
+				if (EditorRuntime::GetState() == EditorState::Play)
+				{
+					return;
+				}
+
+				if (e.GetKey() == Engine::KeyCode::Q) gizmoType = static_cast<ImGuizmo::OPERATION>(0);
+				if (e.GetKey() == Engine::KeyCode::W) gizmoType = ImGuizmo::OPERATION::TRANSLATE;
+				if (e.GetKey() == Engine::KeyCode::E) gizmoType = ImGuizmo::OPERATION::ROTATE;
+				if (e.GetKey() == Engine::KeyCode::R) gizmoType = ImGuizmo::OPERATION::SCALE;
+			});
+	}
+
+	static void UpdateViewportSize()
 	{
 		ImVec2 newSize = ImGui::GetContentRegionAvail();
 
@@ -94,8 +161,7 @@ namespace Editor
 					view.mipLevelCount = 1;
 					view.baseArrayLayer = 0;
 					view.arrayLayerCount = 1;
-
-					m_Renderer.SetColorTarget(colorTexture.createView(view));
+					Engine::g_Renderer->SetColorTarget(colorTexture.createView(view));
 				}
 
 				// Depth
@@ -121,7 +187,7 @@ namespace Editor
 					view.dimension = wgpu::TextureViewDimension::_2D;
 					view.format = wgpu::TextureFormat::Depth24Plus;
 
-					m_Renderer.SetDepthTarget(depthTexture.createView(view));
+					Engine::g_Renderer->SetDepthTarget(depthTexture.createView(view));
 				}
 
 				// Entity picker
@@ -320,121 +386,33 @@ namespace Editor
 
 			if (ImGui::BeginCombo("##ViewportOptions", "Passes"))
 			{
-				if (ImGui::Checkbox("Opaque", &enableOpaquePass))
-					enableOpaquePass ? m_Renderer.AddPass(s_OpaquePass) : m_Renderer.RemovePass(s_OpaquePass);
+				auto flags = Engine::g_Renderer->GetEnabledFlags();
 
-				if (ImGui::Checkbox("Light", &enableLightPass))
-					enableLightPass ? m_Renderer.AddPass(s_LightPass) : m_Renderer.RemovePass(s_LightPass);
+				auto RenderPassToggle = [&](const char* label, Engine::RenderPassType flag) {
+					// Check if the bit is currently set
+					bool isEnabled = (flags & flag) != Engine::RenderPassType::None;
 
-				if (ImGui::Checkbox("Normal", &enableNormalPass))
-					enableNormalPass ? m_Renderer.AddPass(s_NormalPass) : m_Renderer.RemovePass(s_NormalPass);
+					if (ImGui::Checkbox(label, &isEnabled))
+					{
+						if (isEnabled)
+							Engine::g_Renderer->EnableFlag(flag);
+						else
+							Engine::g_Renderer->DisableFlag(flag);
+					}
+					};
 
-				if (ImGui::Checkbox("Wireframe", &enableWireframePass))
-					enableWireframePass ? m_Renderer.AddPass(s_WireframePass) : m_Renderer.RemovePass(s_WireframePass);
+				RenderPassToggle("Background", Engine::RenderPassType::Background);
+				RenderPassToggle("Opaque", Engine::RenderPassType::Opaque);
+				RenderPassToggle("Light", Engine::RenderPassType::Light);
+				RenderPassToggle("Shadow", Engine::RenderPassType::Shadow);
+				RenderPassToggle("Normal", Engine::RenderPassType::Normal);
+				RenderPassToggle("Wireframe", Engine::RenderPassType::Wireframe);
 
 				ImGui::EndCombo();
 			}
 		}
 
 		ImGui::EndChild();
-	}
-
-	void ViewportWindow::Initialize()
-	{
-		ImGuizmo::AllowAxisFlip(true);
-		ImGuizmo::SetGizmoSizeClipSpace(0.15f);
-
-		m_Camera.SetBackground(Engine::Camera::Background::Skybox);
-		m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
-
-		SetCameraController(new ViewportCameraController(&m_Camera)); //TODO: this api is weird, make controller static?
-
-		m_Renderer.Initialize();
-		m_Renderer.SetCamera(&m_Camera);
-
-		m_Renderer.AddPass(new Engine::BackgroundPass());
-
-		s_ShadowPass = new Engine::ShadowPass();
-		m_Renderer.AddPass(s_ShadowPass);
-
-		s_OpaquePass = new Engine::OpaquePass();
-		m_Renderer.AddPass(s_OpaquePass);
-
-		s_LightPass = new Engine::LightPass();
-		s_NormalPass = new Engine::NormalPass();
-		s_WireframePass = new Engine::WireframePass();
-
-		s_EntityPicker = new EditorPicker();
-
-		Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene* scene)
-			{
-				m_Scene = scene;
-				SelectionManager::Clear(SelectionType::Entity);
-
-				if (EditorRuntime::GetState() == EditorState::Edit)
-				{
-					m_Renderer.SetCamera(&m_Camera);
-				}
-				else if (EditorRuntime::GetState() == EditorState::Play)
-				{
-					auto cameraEntity = m_Scene->GetActiveCamera();
-					if (cameraEntity)
-					{
-						Engine::Camera* camera = cameraEntity.Get<Engine::CameraComponent>().camera;
-
-						
-						camera->SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
-						m_Renderer.SetCamera(camera);
-					}
-				}
-					
-			});
-
-		Engine::EventBus::Get().Subscribe<Engine::MouseButtonPressedEvent>([this](const Engine::MouseButtonPressedEvent& e)
-			{
-				if (EditorRuntime::GetState() == EditorState::Play)
-				{
-					Engine::Input::SetCursorMode(Engine::Input::CursorMode::Disabled);
-					return;
-				}
-
-				if (e.GetMouseButton() == Engine::MouseCode::ButtonLeft && !ImGuizmo::IsOver())
-				{
-					ImVec2 mousePos = ImGui::GetMousePos();
-					if (mousePos.x < m_ViewportBounds[0].x || mousePos.y < m_ViewportBounds[0].y || mousePos.x > m_ViewportBounds[1].x || mousePos.y > m_ViewportBounds[1].y)
-					{
-						return; 
-					}
-
-					const uint32_t mx = static_cast<uint32_t>(mousePos.x - m_ViewportBounds[0].x);
-					const uint32_t my = static_cast<uint32_t>(mousePos.y - m_ViewportBounds[0].y);
-
-					Engine::Uuid uuid = s_EntityPicker->Pick(mx, my, m_Renderer.GetRenderContext());
-
-					if (uuid)
-					{
-						Engine::Entity entity = m_Scene->GetEntity(uuid);
-						SelectionManager::Select(SelectionType::Entity, entity.GetUUID(), Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl) || Engine::Input::IsKeyDown(Engine::KeyCode::LeftShift));
-					}
-					else
-					{
-						SelectionManager::Clear(SelectionType::Entity);
-					}
-				}
-			});
-
-		Engine::EventBus::Get().Subscribe<Engine::KeyPressedEvent>([this](const Engine::KeyPressedEvent& e)
-			{
-				if (EditorRuntime::GetState() == EditorState::Play)
-				{
-					return;
-				}
-
-				if (e.GetKey() == Engine::KeyCode::Q) gizmoType = static_cast<ImGuizmo::OPERATION>(0);
-				if (e.GetKey() == Engine::KeyCode::W) gizmoType = ImGuizmo::OPERATION::TRANSLATE;
-				if (e.GetKey() == Engine::KeyCode::E) gizmoType = ImGuizmo::OPERATION::ROTATE;
-				if (e.GetKey() == Engine::KeyCode::R) gizmoType = ImGuizmo::OPERATION::SCALE;
-			});
 	}
 
 	void ViewportWindow::Draw()
@@ -453,17 +431,12 @@ namespace Editor
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		m_Renderer.RenderScene(m_Scene);
-		ImGui::Image(static_cast<WGPUTextureView>(m_Renderer.GetTextureView()), viewportSize);
+		Engine::g_Renderer->RenderScene(m_Scene);
+		ImGui::Image(static_cast<WGPUTextureView>(Engine::g_Renderer->GetTextureView()), viewportSize);
 
 		DrawOverlay(imagePos, viewportSize);
 		DrawGizmos();
 
 		ImGui::End();
-	}
-
-	Engine::Renderer& ViewportWindow::GetRenderer()
-	{
-		return m_Renderer;
 	}
 }

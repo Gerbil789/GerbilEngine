@@ -5,38 +5,17 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Texture.h"
 #include "Engine/Graphics/Renderer/DrawList.h"
-#include "Engine/Graphics/RenderPass/ShadowPass.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
+#include "Engine/Graphics/Renderer/RenderUniforms.h"
+#include "Engine/Graphics/RenderPass/RenderPassRegistry.h"
+#include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include <execution>
 #include <glm/gtx/quaternion.hpp>
 
 namespace Engine
 {
-	struct alignas(16) ViewUniforms {
-		glm::mat4 view;
-		glm::mat4 projection;
-		glm::vec3 cameraPosition;
-		float padding;
-	};
-	static_assert(sizeof(ViewUniforms) % 16 == 0);
-
-	struct alignas(16) ModelUniforms
-	{
-		glm::mat4 modelMatrix;
-	};
-	static_assert(sizeof(ModelUniforms) % 16 == 0);
-
-	static wgpu::BindGroupLayout s_ViewBindGroupLayout = nullptr;
-	static wgpu::BindGroupLayout s_ModelBindGroupLayout = nullptr;
-	static wgpu::BindGroupLayout s_EnvironmentBindGroupLayout = nullptr;
-
-	void Renderer::InitializeSharedResources()
-	{
-		CreateViewBindGroupLayout();
-		CreateModelBindGroupLayout();
-		CreateEnvironmentBindGroupLayout();
-	}
+	Renderer* g_Renderer = nullptr;
 
 	void Renderer::Initialize()
 	{
@@ -51,20 +30,6 @@ namespace Engine
 
 		CreateEnvironmentUniformBuffer();
 		CreateEnvironmentBindGroup();
-	}
-
-	void Renderer::AddPass(RenderPass* pass)
-	{
-		m_Passes.push_back(pass);
-	}
-
-	void Renderer::RemovePass(RenderPass* pass)
-	{
-		auto it = std::find(m_Passes.begin(), m_Passes.end(), pass);
-		if(it != m_Passes.end())
-		{
-			m_Passes.erase(it);
-		}
 	}
 
 	void Renderer::SetCamera(Camera* camera)
@@ -82,22 +47,7 @@ namespace Engine
 		m_RenderContext.depthTarget = depthView;
 	}
 
-	void Renderer::CreateViewBindGroupLayout()
-	{
-		std::array<wgpu::BindGroupLayoutEntry, 1> entries;
-
-		entries[0].binding = 0;
-		entries[0].visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
-		entries[0].buffer.type = wgpu::BufferBindingType::Uniform;
-		entries[0].buffer.minBindingSize = sizeof(ViewUniforms);
-
-		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
-		bindGroupLayoutDesc.label = { "ViewBindGroupLayout", WGPU_STRLEN };
-		bindGroupLayoutDesc.entryCount = entries.size();
-		bindGroupLayoutDesc.entries = entries.data();
-
-		s_ViewBindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
-	}
+	
 
 	void Renderer::CreateViewUniformBuffer()
 	{
@@ -107,7 +57,6 @@ namespace Engine
 		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 		m_RenderContext.viewUniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
 	}
-
 
 	void Renderer::CreateViewBindGroup()
 	{
@@ -120,29 +69,10 @@ namespace Engine
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
 		bindGroupDesc.label = { "ViewBindGroup", WGPU_STRLEN };
-		bindGroupDesc.layout = s_ViewBindGroupLayout;
+		bindGroupDesc.layout = RenderPipelineLayouts::GetViewLayout();
 		bindGroupDesc.entryCount = entries.size();
 		bindGroupDesc.entries = entries.data();
 		m_RenderContext.viewBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
-	}
-
-	void Renderer::CreateModelBindGroupLayout()
-	{
-
-
-		std::array<wgpu::BindGroupLayoutEntry, 1> entries;
-
-		entries[0].binding = 0;
-		entries[0].visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
-		entries[0].buffer.hasDynamicOffset = true;
-		entries[0].buffer.type = wgpu::BufferBindingType::Uniform;
-		entries[0].buffer.minBindingSize = sizeof(ModelUniforms);
-
-		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
-		bindGroupLayoutDesc.label = { "ModelBindGroupLayout", WGPU_STRLEN };
-		bindGroupLayoutDesc.entryCount = entries.size();
-		bindGroupLayoutDesc.entries = entries.data();
-		s_ModelBindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
 	}
 
 	void Renderer::CreateModelUniformBuffer()
@@ -167,67 +97,10 @@ namespace Engine
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
 		bindGroupDesc.label = { "ModelBindGroup", WGPU_STRLEN };
-		bindGroupDesc.layout = s_ModelBindGroupLayout;
+		bindGroupDesc.layout = RenderPipelineLayouts::GetModelLayout();
 		bindGroupDesc.entryCount = 1;
 		bindGroupDesc.entries = &bindGroupEntry;
 		m_RenderContext.modelBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
-	}
-
-	void Renderer::CreateEnvironmentBindGroupLayout()
-	{
-		std::array<wgpu::BindGroupLayoutEntry, 7> entries;
-
-		// Environment uniforms
-		entries[0].binding = 0;
-		entries[0].visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
-		entries[0].buffer.type = wgpu::BufferBindingType::Uniform;
-		entries[0].buffer.minBindingSize = sizeof(EnvironmentUniforms);
-
-		// Environment sampler
-		entries[1].binding = 1;
-		entries[1].visibility = wgpu::ShaderStage::Fragment;
-		entries[1].sampler.type = wgpu::SamplerBindingType::Filtering;
-
-		// BRDF integration texture
-		entries[2].binding = 2;
-		entries[2].visibility = wgpu::ShaderStage::Fragment;
-		entries[2].texture.sampleType = wgpu::TextureSampleType::Float;
-		entries[2].texture.viewDimension = wgpu::TextureViewDimension::_2D;
-		entries[2].texture.multisampled = false;
-
-		// Irradiance texture
-		entries[3].binding = 3;
-		entries[3].visibility = wgpu::ShaderStage::Fragment;
-		entries[3].texture.sampleType = wgpu::TextureSampleType::Float;
-		entries[3].texture.viewDimension = wgpu::TextureViewDimension::Cube;
-		entries[3].texture.multisampled = false;
-
-		// Prefiltered environment texture
-		entries[4].binding = 4;
-		entries[4].visibility = wgpu::ShaderStage::Fragment;
-		entries[4].texture.sampleType = wgpu::TextureSampleType::Float;
-		entries[4].texture.viewDimension = wgpu::TextureViewDimension::Cube;
-		entries[4].texture.multisampled = false;
-
-		// Shadow map sampler
-		entries[5].binding = 5;
-		entries[5].visibility = wgpu::ShaderStage::Fragment;
-		entries[5].sampler.type = wgpu::SamplerBindingType::Comparison;
-
-		// Shadow map texture
-		entries[6].binding = 6;
-		entries[6].visibility = wgpu::ShaderStage::Fragment;
-		entries[6].texture.sampleType = wgpu::TextureSampleType::Depth;
-		entries[6].texture.viewDimension = wgpu::TextureViewDimension::_2DArray;
-		entries[6].texture.multisampled = false;
-
-
-		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
-		bindGroupLayoutDesc.label = { "EnvironmentBindGroupLayout", WGPU_STRLEN };
-		bindGroupLayoutDesc.entryCount = entries.size();
-		bindGroupLayoutDesc.entries = entries.data();
-
-		s_EnvironmentBindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
 	}
 
 	void Renderer::CreateEnvironmentUniformBuffer()
@@ -285,10 +158,9 @@ namespace Engine
 		entries[6].binding = 6;
 		entries[6].textureView = m_RenderContext.depthTextureArrayView;
 
-
 		wgpu::BindGroupDescriptor bindGroupDesc;
 		bindGroupDesc.label = { "EnvironmentBindGroup", WGPU_STRLEN };
-		bindGroupDesc.layout = s_EnvironmentBindGroupLayout;
+		bindGroupDesc.layout = RenderPipelineLayouts::GetEnvironmentLayout();
 		bindGroupDesc.entryCount = entries.size();
 		bindGroupDesc.entries = entries.data();
 		m_RenderContext.environmentBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
@@ -363,9 +235,29 @@ namespace Engine
 			GraphicsContext::GetQueue().writeBuffer(m_RenderContext.modelUniformBuffer, offset, &models[item.modelIndex], sizeof(glm::mat4));
 		}
 
-		for(auto pass : m_Passes)
+		static const RenderPassType order[] = {
+				RenderPassType::Shadow,
+				RenderPassType::Background,
+				RenderPassType::Opaque,
+				RenderPassType::Light,
+				RenderPassType::Normal,
+				RenderPassType::Wireframe
+		};
+
+		for (RenderPassType type : order)
 		{
-			pass->Execute(encoder, m_RenderContext);
+			if ((m_EnabledPasses & type) != RenderPassType::None)
+			{
+				auto* pass = RenderPassRegistry::GetPass(type);
+				if (pass)
+				{
+					pass->Execute(encoder, m_RenderContext);
+				}
+				else
+				{
+					LOG_ERROR("Render pass not found for type: {}", static_cast<uint32_t>(type));
+				}
+			}
 		}
 
 		wgpu::CommandBuffer commandBuffer = encoder.finish();
@@ -376,23 +268,4 @@ namespace Engine
 	{
 		return m_RenderContext.colorTarget;
 	}
-
-
-	wgpu::BindGroupLayout Renderer::GetViewLayout()
-	{
-		return s_ViewBindGroupLayout;
-	}
-
-	wgpu::BindGroupLayout Renderer::GetModelLayout()
-	{
-		return s_ModelBindGroupLayout;
-	}
-
-	wgpu::BindGroupLayout Renderer::GetEnvironmentLayout()
-	{
-		return s_EnvironmentBindGroupLayout;
-	}
-
-
-
 }

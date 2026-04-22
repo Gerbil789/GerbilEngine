@@ -1,15 +1,22 @@
 #pragma once
 
 #include "Engine/Graphics/Camera.h"
-#include "Engine/Event/MouseEvent.h"
-#include "Engine/Event/KeyEvent.h"
+
+namespace Engine
+{
+	class KeyPressedEvent;
+	class MouseScrolledEvent;
+	class MouseButtonPressedEvent;
+	class MouseButtonReleasedEvent;
+	class MouseMovedEvent;
+}
 
 namespace Editor
 {
 	class ViewportCameraController
 	{
 	public:
-		ViewportCameraController(Engine::Camera* camera);
+		void Initialize(Engine::Camera* camera);
 
 	private:
 		void OnKeyPressed(Engine::KeyPressedEvent& e);
@@ -31,7 +38,4 @@ namespace Editor
 		float m_ScrollSensitivity = 1.0f;
 		float m_PanSpeed = 0.1f;
 	};
-
-	ViewportCameraController& GetCameraController();
-	void SetCameraController(ViewportCameraController* controller);
 }

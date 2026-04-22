@@ -26,6 +26,7 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Core/Project.h"
 #include "Editor/Core/EditorSettings.h"
+#include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 
 namespace Editor
 {
@@ -65,7 +66,11 @@ namespace Editor
 		Engine::Input::SetActiveWindow(*static_cast<GLFWwindow*>(m_Window->GetNativeWindow()));
 
 		Engine::SamplerPool::Initialize();
-		Engine::Renderer::InitializeSharedResources();
+		Engine::RenderPipelineLayouts::Initialize();
+
+		Engine::g_Renderer = new Engine::Renderer();
+		Engine::g_Renderer->Initialize();
+
 		Engine::Time::Initialize();
 
 		EditorCommandManager::Initialize();

@@ -14,6 +14,8 @@ namespace Engine::GraphicsContext
 
 	void Initialize()
 	{
+
+
 		wgpu::InstanceDescriptor desc;
 		desc.setDefault();
 		desc.requiredFeatureCount = 1;

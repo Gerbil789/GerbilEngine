@@ -46,8 +46,7 @@ namespace Editor
 		mc.mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/sphere.glb");
 
 		data.renderer.Initialize();
-		data.renderer.AddPass(new Engine::BackgroundPass());
-		data.renderer.AddPass(new Engine::OpaquePass());
+		data.renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Opaque);
 		data.renderer.SetCamera(&data.camera);
 	}
 

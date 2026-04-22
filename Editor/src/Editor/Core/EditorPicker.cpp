@@ -7,6 +7,7 @@
 #include "Engine/Graphics/Renderer/DrawList.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/Scene.h"
+#include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include <execution>
 
 namespace Editor
@@ -17,7 +18,7 @@ namespace Editor
     CreatePipeline();
 
     // Create the persistent 8-byte readback buffer
-    wgpu::BufferDescriptor bufferDesc{};
+    wgpu::BufferDescriptor bufferDesc;
     bufferDesc.label = { "EditorPickerReadbackBuffer", WGPU_STRLEN };
     bufferDesc.size = sizeof(Engine::Uuid);
     bufferDesc.usage = wgpu::BufferUsage::MapRead | wgpu::BufferUsage::CopyDst;
@@ -278,8 +279,8 @@ namespace Editor
     pipelineDesc.multisample.mask = ~0u;
 
     wgpu::BindGroupLayout bindGroupLayouts[] = {
-        Engine::Renderer::GetViewLayout(),
-        Engine::Renderer::GetModelLayout(),
+        Engine::RenderPipelineLayouts::GetViewLayout(),
+        Engine::RenderPipelineLayouts::GetModelLayout(),
         m_BindGroupLayout
     };
 

@@ -2,7 +2,8 @@
 #include "Engine/Graphics/SkyboxShader.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
+#include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
+#include "Engine/Graphics/Renderer/RenderUniforms.h"
 
 namespace Engine
 {
@@ -142,7 +143,7 @@ namespace Engine
 
 		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts
 		{
-			Renderer::GetViewLayout(),
+			RenderPipelineLayouts::GetViewLayout(),
 			m_BindGroupLayout
 		};
 

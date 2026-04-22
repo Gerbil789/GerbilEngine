@@ -5,6 +5,7 @@
 #include "Engine/Utility/File.h"
 #include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 
 namespace Engine
 {
@@ -131,8 +132,8 @@ namespace Engine
 		pipelineDesc.multisample.alphaToCoverageEnabled = false;
 
 		wgpu::BindGroupLayout bindGroupLayouts[] = {
-			Renderer::GetViewLayout(),
-			Renderer::GetModelLayout(),
+			RenderPipelineLayouts::GetViewLayout(),
+			RenderPipelineLayouts::GetModelLayout(),
 			bindGroupLayout
 		};
 

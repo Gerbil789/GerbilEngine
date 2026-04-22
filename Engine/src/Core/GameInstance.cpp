@@ -26,8 +26,8 @@ namespace Engine
 
 
 
-		m_Renderer.AddPass(new Engine::BackgroundPass());
-		m_Renderer.AddPass(new Engine::OpaquePass());
+		//m_Renderer.AddPass(new Engine::BackgroundPass());
+		//m_Renderer.AddPass(new Engine::OpaquePass());
 
 		//m_Renderer.Resize(windowSpec.width, windowSpec.height);
 	}

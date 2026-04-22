@@ -6,26 +6,14 @@
 #include "Engine/Event/EventBus.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Scene.h"
+#include "Engine/Event/MouseEvent.h"
+#include "Engine/Event/KeyEvent.h"
 
 namespace Editor
 {
-	namespace
+	void ViewportCameraController::Initialize(Engine::Camera* camera)
 	{
-		ViewportCameraController* s_Controller = nullptr;
-	}
-
-	ViewportCameraController& GetCameraController() 
-	{
-		return *s_Controller;
-	}
-
-	void SetCameraController(ViewportCameraController* controller) 
-	{
-		s_Controller = controller;
-	}
-
-	ViewportCameraController::ViewportCameraController(Engine::Camera* camera) : m_Camera(camera)
-	{
+		m_Camera = camera;
 		Engine::EventBus::Get().Subscribe<Engine::KeyPressedEvent>([this](auto e) {OnKeyPressed(e); });
 		Engine::EventBus::Get().Subscribe<Engine::MouseScrolledEvent>([this](auto e) {OnMouseScroll(e); });
 		Engine::EventBus::Get().Subscribe<Engine::MouseButtonPressedEvent>([this](auto e) {OnMouseButtonPressed(e); });
@@ -44,8 +32,6 @@ namespace Editor
 			FocusOnPoint(focusPoint);
 		}
 	}
-
-
 
 	void ViewportCameraController::OnMouseScroll(Engine::MouseScrolledEvent& e)
 	{

@@ -1,13 +1,12 @@
 #pragma once
 
 #include "Engine/Graphics/Renderer/DrawList.h"
-#include <webgpu/webgpu.hpp>
+#include "Engine/Graphics/Renderer/RenderUniforms.h"
+#include <webgpu/webgpu-raii.hpp>
 #include <array>
 
 namespace Engine
 {
-  constexpr static int s_ShadowCascadeCount = 4;
-
   class Scene;
 	class CubeMapTexture;
 	class Camera;

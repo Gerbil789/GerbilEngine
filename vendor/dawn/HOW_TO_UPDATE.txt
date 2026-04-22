@@ -1,3 +1,5 @@
 1. Build new version: https://github.com/mmozeiko/build-dawn
-2. Include new header file
-3. Generate C++ wrapper based on the new header: https://github.com/eliemichel/WebGPU-Cpp
+2. Include new header file (.h): https://github.com/webgpu-native/webgpu-headers
+3. Generate C++ wrapper based on the new header (.hpp): https://github.com/eliemichel/WebGPU-Cpp
+3.1. Also generate raii wrapper
+4. maybe delete _NULLABLE keyword from generated webgpu.hpp

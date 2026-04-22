@@ -2,7 +2,7 @@
 #include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
+#include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 
 namespace Engine
 {
@@ -95,10 +95,10 @@ namespace Engine
 
 		std::array<wgpu::BindGroupLayout, 4> bindGroupLayouts
 		{
-			Renderer::GetViewLayout(),
-			Renderer::GetEnvironmentLayout(),
+			RenderPipelineLayouts::GetViewLayout(),
+			RenderPipelineLayouts::GetEnvironmentLayout(),
 			m_MaterialBindGroupLayout,
-			Renderer::GetModelLayout()
+			RenderPipelineLayouts::GetModelLayout()
 		};
 
 		wgpu::PipelineLayoutDescriptor layoutDesc;

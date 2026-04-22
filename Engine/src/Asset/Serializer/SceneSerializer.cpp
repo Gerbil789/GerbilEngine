@@ -84,19 +84,17 @@ namespace Engine
 			{
 				Engine::Yaml::Map perspectiveMap(out, "Perspective");
 
-				const auto& perspective = camera->Perspective();
-				Engine::Yaml::Write(out, "FOV", perspective.fov);
-				Engine::Yaml::Write(out, "Near", perspective.near);
-				Engine::Yaml::Write(out, "Far", perspective.far);
+				Engine::Yaml::Write(out, "FOV", camera->GetPerspectiveFOV());
+				Engine::Yaml::Write(out, "Near", camera->GetPerspectiveNear());
+				Engine::Yaml::Write(out, "Far", camera->GetPerspectiveFar());
 			}
 
 			{
 				Engine::Yaml::Map orthographicMap(out, "Orthographic");
 
-				const auto& orthographic = camera->Orthographic();
-				Engine::Yaml::Write(out, "Size", orthographic.size);
-				Engine::Yaml::Write(out, "Near", orthographic.near);
-				Engine::Yaml::Write(out, "Far", orthographic.far);
+				Engine::Yaml::Write(out, "Size", camera->GetOrthoSize());
+				Engine::Yaml::Write(out, "Near", camera->GetOrthoNear());
+				Engine::Yaml::Write(out, "Far", camera->GetOrthoFar());
 			}
 
 			Engine::Yaml::Write(out, "Background", static_cast<uint32_t>(camera->GetBackground())); //TODO: serialize string
@@ -312,18 +310,36 @@ namespace Engine
 				}
 
 				auto perspectiveNode = camNode["Perspective"];
-				auto& perspective = camera->Perspective();
 
-				Engine::Yaml::Read(perspectiveNode, "FOV", perspective.fov);
-				Engine::Yaml::Read(perspectiveNode, "Near", perspective.near);
-				Engine::Yaml::Read(perspectiveNode, "Far", perspective.far);
+
+				float val;
+				if (Engine::Yaml::Read(perspectiveNode, "FOV", val))
+				{
+					camera->SetPerspectiveFOV(val);
+				}
+				if (Engine::Yaml::Read(perspectiveNode, "Near", val))
+				{
+					camera->SetPerspectiveNear(val);
+				}
+				if (Engine::Yaml::Read(perspectiveNode, "Far", val))
+				{
+					camera->SetPerspectiveFar(val);
+				}
 
 				auto orthographicNode = camNode["Orthographic"];
-				auto& orthographic = camera->Orthographic();
 
-				Engine::Yaml::Read(orthographicNode, "FOV", orthographic.size);
-				Engine::Yaml::Read(orthographicNode, "Near", orthographic.near);
-				Engine::Yaml::Read(orthographicNode, "Far", orthographic.far);
+				if (Engine::Yaml::Read(orthographicNode, "FOV", val))
+				{
+					camera->SetOrthoSize(val);
+				}
+				if (Engine::Yaml::Read(orthographicNode, "Near", val))
+				{
+					camera->SetOrthoNear(val);
+				}
+				if (Engine::Yaml::Read(orthographicNode, "Far", val))
+				{
+					camera->SetOrthoFar(val);
+				}
 
 				if (uint32_t background; Engine::Yaml::Read(camNode, "Background", background))
 				{

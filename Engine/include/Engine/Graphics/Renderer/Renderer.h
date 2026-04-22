@@ -5,13 +5,6 @@
 
 namespace Engine
 {
-	struct alignas(16) EnvironmentUniforms //TODO: i dont like having this here...
-	{
-		std::array<glm::mat4, s_ShadowCascadeCount> lightViewProj;
-		std::array<float, s_ShadowCascadeCount> cascadeSplits;
-	};
-	static_assert(sizeof(EnvironmentUniforms) % 16 == 0);
-
 	class Camera;
 	class Scene;
 	class CubeMapTexture;
@@ -19,10 +12,12 @@ namespace Engine
 	class ENGINE_API Renderer
 	{
 	public:
-		static void InitializeSharedResources();
 		void Initialize();
-		void AddPass(RenderPass* pass);
-		void RemovePass(RenderPass* pass);
+
+		void SetFlags(RenderPassType flags) { m_EnabledPasses = flags; }
+		void EnableFlag(RenderPassType flag) { m_EnabledPasses |= flag; }
+		void DisableFlag(RenderPassType flag) { m_EnabledPasses &= ~flag; }
+		RenderPassType GetEnabledFlags() const { return m_EnabledPasses; }
 
 		void SetCamera(Camera* camera);
 		void SetColorTarget(wgpu::TextureView colorView);
@@ -34,27 +29,22 @@ namespace Engine
 		void RenderScene(Scene* scene);
 		wgpu::TextureView GetTextureView() const;
 
-		static wgpu::BindGroupLayout GetViewLayout();
-		static wgpu::BindGroupLayout GetModelLayout();
-		static wgpu::BindGroupLayout GetEnvironmentLayout();
-
 	private:
-		static void CreateViewBindGroupLayout();
 		void CreateViewUniformBuffer();
 		void CreateViewBindGroup();
 
-		static void CreateModelBindGroupLayout();
 		void CreateModelUniformBuffer();
 		void CreateModelBindGroup();
 
-		static void CreateEnvironmentBindGroupLayout();
 		void CreateEnvironmentUniformBuffer();
 		void CreateEnvironmentBindGroup();
 
-		void CreateShadowTexture();
+		void CreateShadowTexture(); //TODO: move to shadow pass?
 
 	private:
 		RenderContext m_RenderContext;
-		std::vector<RenderPass*> m_Passes;
+		RenderPassType m_EnabledPasses = RenderPassType::None;
 	};
+
+	extern ENGINE_API Renderer *g_Renderer;
 }

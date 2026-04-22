@@ -1,10 +1,10 @@
 #include "enginepch.h"
 #include "Engine/Graphics/RenderPass/NormalPass.h"
 #include "Engine/Graphics/Mesh.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Utility/File.h"
 #include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 
 namespace Engine
 {
@@ -80,9 +80,10 @@ namespace Engine
 		pipelineDesc.multisample.mask = ~0u;
 		pipelineDesc.multisample.alphaToCoverageEnabled = false;
 
-		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts = {
-			Renderer::GetViewLayout(),
-			Renderer::GetModelLayout()
+		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts 
+		{
+			RenderPipelineLayouts::GetViewLayout(),
+			RenderPipelineLayouts::GetModelLayout()
 		};
 
 		wgpu::PipelineLayoutDescriptor layoutDesc{};

@@ -69,7 +69,7 @@ namespace Editor
 			{
 				PropertyRow row("Environment");
 
-				auto& renderer = ViewportWindow::GetRenderer();
+				auto renderer = *Engine::g_Renderer;
 
 				auto envTexture = renderer.GetSkyboxCubemap();
 
