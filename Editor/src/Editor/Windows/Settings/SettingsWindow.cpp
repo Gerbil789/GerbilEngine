@@ -4,6 +4,9 @@
 #include "Editor/Windows/Viewport/ViewportWindow.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/Camera.h"
+#include "Engine/Graphics/RenderPass/RenderPassRegistry.h"
+#include "Engine/Graphics/Texture/TextureCube.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
 #include <imgui.h>
 
 namespace Editor
@@ -32,20 +35,18 @@ namespace Editor
 				BoolField("Show Grid", g_EditorSettings.showGrid);
 			}
 
-
-
-			ImGui::SeparatorText("Wireframe");
-
 			{
-				PropertyRow row("Color");
-				ColorField("Wireframe Color", g_EditorSettings.wireframeColor);
-			}
+				PropertyRow row("Wireframe color");
 
-			{
-				PropertyRow row("Thickness");
-				FloatField("Wireframe Thickness", g_EditorSettings.wireframeThickness, 0.1f, 10.0f);
+				if(ColorField("Wireframe color", g_EditorSettings.wireframeColor).changed)
+				{
+					auto wireframePass = Engine::RenderPassRegistry::GetPass(Engine::RenderPassType::Wireframe);
+					if (wireframePass)
+					{
+						static_cast<Engine::WireframePass*>(wireframePass)->SetColor(g_EditorSettings.wireframeColor);
+					}
+				}
 			}
-
 
 
 
@@ -69,13 +70,10 @@ namespace Editor
 			{
 				PropertyRow row("Environment");
 
-				auto renderer = *Engine::g_Renderer;
-
-				auto envTexture = renderer.GetSkyboxCubemap();
-
-				if (CubeMapField("Environment Texture", envTexture).changed)
+				Engine::Renderer& renderer = *Engine::g_Renderer;
+				if (TextureField("Environment Texture", renderer.GetRenderContext().environment.TextureHDR).changed)
 				{
-					renderer.SetSkyboxCubemap(envTexture);
+					renderer.BakeEnvironment();
 				}
 			}
 

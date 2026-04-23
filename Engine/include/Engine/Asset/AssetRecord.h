@@ -6,7 +6,7 @@
 namespace Engine
 {
 	//TODO: remove "Other"
-	enum class AssetType { Unknown = 0, Texture2D, HDR, CubeMap, Mesh, Shader, Material, Audio, Scene, Script, Other, Directory, EmptyDirectory }; //TODO: reorder this, and regenerate the registry
+	enum class AssetType { Unknown = 0, Texture2D, Mesh, Shader, Material, Audio, Scene, Script, Other, Directory, EmptyDirectory }; //TODO: reorder this, and regenerate the registry
 
 	//TODO: move implementaitions to .cpp file
 	inline AssetType GetAssetTypeFromExtension(const std::string& extension)
@@ -19,7 +19,7 @@ namespace Engine
 				{ ".png",		AssetType::Texture2D },
 				{ ".jpg",		AssetType::Texture2D },
 				{ ".jpeg",	AssetType::Texture2D },
-				{ ".hdr",		AssetType::CubeMap },
+				{ ".hdr",		AssetType::Texture2D },
 				{ ".gltf",	AssetType::Mesh },
 				{ ".glb",		AssetType::Mesh },
 				{ ".mat",		AssetType::Material },
@@ -48,7 +48,7 @@ namespace Engine
 		case AssetType::Audio:    return "Audio";
 		case AssetType::Scene:    return "Scene";
 		case AssetType::Script:   return "Script";
-		case AssetType::CubeMap:  return "CubeMap";
+		//case AssetType::CubeMap:  return "CubeMap";
 		default:                  return "Unknown";
 		}
 	}
@@ -62,7 +62,7 @@ namespace Engine
 		if (assetType == "Audio")    return AssetType::Audio;
 		if (assetType == "Scene")    return AssetType::Scene;
 		if (assetType == "Script")   return AssetType::Script;
-		if (assetType == "CubeMap") return AssetType::CubeMap;
+		//if (assetType == "CubeMap") return AssetType::CubeMap;
 		return AssetType::Unknown;
 	}
 

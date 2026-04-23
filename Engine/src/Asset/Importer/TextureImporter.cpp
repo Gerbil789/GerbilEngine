@@ -1,6 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
-#include "Engine/Graphics/Texture.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
+#include "Engine/Graphics/Texture/TextureCube.h"
 #include <stb_image.h>
 #include <glm/gtc/packing.hpp>
 
@@ -94,12 +95,12 @@ namespace Engine
 		return new Texture2D(spec, image.GetData());
 	}
 
-	CubeMapTexture* TextureImporter::ImportCubeMapTexture(const std::filesystem::path& path)
+	TextureCube* TextureImporter::ImportCubeTexture(const std::filesystem::path& path)
 	{
-		return LoadCubeMapTexture(path);
+		return LoadCubeTexture(path);
 	}
 
-	CubeMapTexture* TextureImporter::LoadCubeMapTexture(const std::filesystem::path& path)
+	TextureCube* TextureImporter::LoadCubeTexture(const std::filesystem::path& path)
 	{
 		ImageLoadResult image;
 		if (!image.Load(path)) return nullptr;
@@ -109,6 +110,6 @@ namespace Engine
 		spec.height = static_cast<uint32_t>(image.height);
 		spec.format = image.format;
 
-		return new CubeMapTexture(spec, image.GetData());
+		return new TextureCube(spec, image.GetData());
 	}
 }

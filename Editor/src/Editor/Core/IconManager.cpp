@@ -1,6 +1,6 @@
 #include "IconManager.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
-#include "Engine/Graphics/Texture.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Asset/AssetRecord.h"
 #include <glm/glm.hpp>
 #include <array>

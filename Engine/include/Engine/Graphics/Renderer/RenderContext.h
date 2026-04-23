@@ -2,13 +2,14 @@
 
 #include "Engine/Graphics/Renderer/DrawList.h"
 #include "Engine/Graphics/Renderer/RenderUniforms.h"
+#include "Engine/Graphics/Texture/Environment.h"
 #include <webgpu/webgpu-raii.hpp>
 #include <array>
 
 namespace Engine
 {
   class Scene;
-	class CubeMapTexture;
+	class TextureCube;
 	class Camera;
 
   struct RenderContext
@@ -32,7 +33,8 @@ namespace Engine
 		// Environment
     wgpu::BindGroup environmentBindGroup = nullptr;
 		wgpu::Buffer environmentUniformBuffer = nullptr;
-    CubeMapTexture* environmentCubemap = nullptr;
+    Environment environment;
+    //TextureCube* environmentCubemap = nullptr;
 
     // Shadow texture views
     std::array<wgpu::TextureView, s_ShadowCascadeCount> depthTextureViews;

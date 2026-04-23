@@ -4,9 +4,12 @@
 
 namespace Engine
 {
-  static float s_DeltaTime = 0.0f;
-  static float s_FPS = 0.0f;
-  static std::chrono::steady_clock::time_point s_LastTime;
+  namespace
+  {
+    static float s_DeltaTime = 0.0f;
+    static float s_FPS = 0.0f;
+    static std::chrono::steady_clock::time_point s_LastTime;
+  }
 
   void Time::Initialize()
   {

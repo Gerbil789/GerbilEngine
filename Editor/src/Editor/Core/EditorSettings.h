@@ -11,8 +11,7 @@ namespace Editor
 
 		bool showGrid = true;
 
-		glm::vec3 wireframeColor = glm::vec3(1.0f, 0.0f, 1.0f);
-		float wireframeThickness = 1.0f;
+		glm::vec4 wireframeColor = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
 	};
 
 	extern EditorSettings g_EditorSettings;

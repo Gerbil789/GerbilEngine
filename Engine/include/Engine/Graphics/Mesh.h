@@ -32,6 +32,9 @@ namespace Engine
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 		std::vector<SubMesh> subMeshes;
+
+		//TODO: add compile time macro to disable in export game builds
+		std::vector<uint32_t> wireIndices;
 	};
 
 	class ENGINE_API Mesh : public Asset
@@ -43,6 +46,7 @@ namespace Engine
 		const std::vector<SubMesh>& GetSubMeshes() const { return m_SubMeshes; }
 		const wgpu::Buffer& GetVertexBuffer() const;
 		const wgpu::Buffer& GetIndexBuffer() const;
+		const wgpu::Buffer& GetWireIndexBuffer() const;
 
 	private:
 		std::vector<SubMesh> m_SubMeshes;

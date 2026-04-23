@@ -3,7 +3,7 @@
 #include "Engine/Asset/Asset.h"
 #include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Shader.h"
-#include "Engine/Graphics/Texture.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
 
 namespace Engine 
 {

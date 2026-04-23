@@ -3,13 +3,15 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Camera.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Graphics/Texture.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
+#include "Engine/Graphics/Texture/TextureCube.h"
 #include "Engine/Graphics/Renderer/DrawList.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Graphics/Renderer/RenderUniforms.h"
 #include "Engine/Graphics/RenderPass/RenderPassRegistry.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
+#include "Engine/Graphics/Texture/Environment.h"
 #include <execution>
 #include <glm/gtx/quaternion.hpp>
 
@@ -25,7 +27,11 @@ namespace Engine
 		CreateModelUniformBuffer();
 		CreateModelBindGroup();
 
-		m_RenderContext.environmentCubemap = Engine::TextureImporter::LoadCubeMapTexture("Resources/Engine/hdr/PG2/lebombo_4k.hdr");
+
+		auto texture2D = Engine::TextureImporter::LoadTexture2D("Resources/Engine/hdr/PG2/lebombo_4k.hdr");
+		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(texture2D);
+		//m_RenderContext.environmentCubemap = environment.PrefilteredMap;
+		//m_RenderContext.environmentCubemap = Engine::TextureImporter::LoadCubeTexture("Resources/Engine/hdr/PG2/lebombo_4k.hdr");
 		CreateShadowTexture();
 
 		CreateEnvironmentUniformBuffer();
@@ -47,6 +53,16 @@ namespace Engine
 		m_RenderContext.depthTarget = depthView;
 	}
 
+	void Renderer::BakeEnvironment()
+	{
+		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(m_RenderContext.environment.TextureHDR);
+		CreateEnvironmentBindGroup();
+	}
+
+	RenderContext& Renderer::GetRenderContext()
+	{
+		return m_RenderContext;
+	}
 	
 
 	void Renderer::CreateViewUniformBuffer()
@@ -136,12 +152,14 @@ namespace Engine
 		entries[2].binding = 2;
 		entries[2].textureView = brdfTexture->GetTextureView();
 
-		Engine::CubeMapTexture* irrCubemap = Engine::TextureImporter::LoadCubeMapTexture("Resources/Engine/hdr/PG2/lebombo_irradiance_map.hdr");
+
+
+		//Engine::TextureCube* irrCubemap = Engine::TextureImporter::LoadCubeTexture("Resources/Engine/hdr/PG2/lebombo_irradiance_map.hdr");
 		entries[3].binding = 3;
-		entries[3].textureView = irrCubemap->GetTextureView();
+		entries[3].textureView = m_RenderContext.environment.IrradianceMap->GetTextureView();
 
 		entries[4].binding = 4;
-		entries[4].textureView = m_RenderContext.environmentCubemap->GetTextureView();
+		entries[4].textureView = m_RenderContext.environment.PrefilteredMap->GetTextureView();
 
 		wgpu::SamplerDescriptor desc;
 		desc.label = { "ShadowSampler", WGPU_STRLEN };

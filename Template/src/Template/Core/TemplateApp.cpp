@@ -16,7 +16,7 @@
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Graphics/Texture.h"
+//#include "Engine/Graphics/Texture.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 
 namespace Template

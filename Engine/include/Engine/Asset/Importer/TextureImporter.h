@@ -5,7 +5,7 @@
 namespace Engine
 {
 	class Texture2D;
-	class CubeMapTexture;
+	class TextureCube;
 
 	class ENGINE_API TextureImporter
 	{
@@ -13,7 +13,7 @@ namespace Engine
 		static Texture2D* ImportTexture2D(const std::filesystem::path& path);
 		static Texture2D* LoadTexture2D(const std::filesystem::path& path);
 
-		static CubeMapTexture* ImportCubeMapTexture(const std::filesystem::path& path);
-		static CubeMapTexture* LoadCubeMapTexture(const std::filesystem::path& path);
+		static TextureCube* ImportCubeTexture(const std::filesystem::path& path);
+		static TextureCube* LoadCubeTexture(const std::filesystem::path& path);
 	};
 }

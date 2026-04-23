@@ -10,6 +10,7 @@
 #include "ThumbnailRenderer.h"
 #include "Editor/Core/IconManager.h"
 #include "Engine/Asset/AssetRecord.h"
+#include "Engine/Graphics/Texture/TextureCube.h"
 //#include <GLFW/glfw3.h>
 
 namespace Editor
@@ -253,9 +254,9 @@ namespace Editor
 		case Engine::AssetType::Texture2D:
 			view = Engine::g_AssetManager->GetAsset<Engine::Texture2D>(record.id)->GetTextureView(); //TODO: use downscaled texture for thumbnail
 			break;
-		case Engine::AssetType::CubeMap:
-			view = Engine::g_AssetManager->GetAsset<Engine::CubeMapTexture>(record.id)->GetPreviewView(); //TODO: use downscaled texture for thumbnail
-			break;
+		//case Engine::AssetType::CubeMap:
+		//	view = Engine::g_AssetManager->GetAsset<Engine::TextureCube>(record.id)->GetPreviewView(); //TODO: use downscaled texture for thumbnail
+		//	break;
 		case Engine::AssetType::Material:
 			view = m_Renderer.GetThumbnail(record.id);
 			break;

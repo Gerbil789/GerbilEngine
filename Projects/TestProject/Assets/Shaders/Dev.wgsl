@@ -61,9 +61,10 @@ struct ModelUniforms
 @group(2) @binding(0) var<uniform> uMaterial: MaterialUniforms;
 @group(2) @binding(1) var MaterialSampler: sampler;
 @group(2) @binding(2) var AlbedoTexture: texture_2d<f32>;
-@group(2) @binding(3) var NormalTexture: texture_2d<f32>;
-@group(2) @binding(4) var RoughnessTexture: texture_2d<f32>;
-@group(2) @binding(5) var AmbientTexture: texture_2d<f32>;
+@group(2) @binding(3) var MetallicTexture: texture_2d<f32>;
+@group(2) @binding(4) var NormalTexture: texture_2d<f32>;
+@group(2) @binding(5) var RoughnessTexture: texture_2d<f32>;
+@group(2) @binding(6) var AmbientTexture: texture_2d<f32>;
 
 //model
 @group(3) @binding(0) var<uniform> uModel: ModelUniforms;
@@ -163,10 +164,11 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 	let R = reflect(-V, N);
   let NdotV = max(dot(N, V), 0.0);
   let F0 = mix(vec3f(0.04), albedo, metallic);
-  let Fd = (vec3f(1.0) - FresnelSchlick(NdotV, F0)) * (1.0 - metallic);
+	let F = FresnelSchlick(NdotV, F0);
+  let Fd = (vec3f(1.0) - F) * (1.0 - metallic);
 
   let irradiance = textureSample(IrradianceMap, EnvSampler, N).rgb;
-  let diffuse = Fd * (albedo / PI) * irradiance;
+  let diffuse = Fd * albedo * irradiance;
 
 
 	let maxMipLevel = f32(textureNumLevels(PrefilteredEnvMap)) - 1.0;

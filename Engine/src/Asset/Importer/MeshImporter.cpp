@@ -241,6 +241,6 @@ namespace Engine
 			ProcessNode(model, node, glm::mat4(1.0f), vertices, indices, wireIndices, subMeshes);
 		}
 
-		return new Mesh({ vertices, indices, subMeshes });
+		return new Mesh({ vertices, indices, subMeshes, wireIndices });
 	}
 }

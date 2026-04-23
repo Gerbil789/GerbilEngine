@@ -25,7 +25,7 @@ struct ModelUniforms
 
 struct WireframeUniforms 
 {
-    color: vec4f,
+  color: vec4f,
 };
 
 

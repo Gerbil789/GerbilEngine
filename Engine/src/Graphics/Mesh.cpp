@@ -8,6 +8,7 @@ namespace Engine
 	{
 		wgpu::Buffer vertexBuffer;
 		wgpu::Buffer indexBuffer;
+		wgpu::Buffer wireIndexBuffer;
 	};
 
 	Mesh::Mesh(const MeshSpecification& specification)
@@ -34,6 +35,18 @@ namespace Engine
 		m_GPU->indexBuffer = GraphicsContext::GetDevice().createBuffer(indexBufferdesc);
 		GraphicsContext::GetQueue().writeBuffer(m_GPU->indexBuffer, 0, specification.indices.data(), indexBufferdesc.size);
 
+		// Wireframe index buffer
+		if (!specification.wireIndices.empty())
+		{
+			wgpu::BufferDescriptor wireIndexBufferDesc;
+			wireIndexBufferDesc.label = { "WireframeIndexBuffer", WGPU_STRLEN };
+			wireIndexBufferDesc.usage = wgpu::BufferUsage::Index | wgpu::BufferUsage::CopyDst;
+			wireIndexBufferDesc.size = specification.wireIndices.size() * sizeof(uint32_t);
+			wireIndexBufferDesc.mappedAtCreation = false;
+			m_GPU->wireIndexBuffer = GraphicsContext::GetDevice().createBuffer(wireIndexBufferDesc);
+			GraphicsContext::GetQueue().writeBuffer(m_GPU->wireIndexBuffer, 0, specification.wireIndices.data(), wireIndexBufferDesc.size);
+		}
+
 		m_SubMeshes = specification.subMeshes;
 	}
 
@@ -47,5 +60,11 @@ namespace Engine
 	const wgpu::Buffer& Mesh::GetIndexBuffer() const
 	{
 		return m_GPU->indexBuffer;
+	}
+
+	const wgpu::Buffer& Mesh::GetWireIndexBuffer() const
+	{
+		static wgpu::Buffer emptyBuffer;
+		return m_GPU->wireIndexBuffer ? m_GPU->wireIndexBuffer : emptyBuffer;
 	}
 }

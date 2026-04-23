@@ -1,6 +1,7 @@
 #include "Property.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Graphics/Texture.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
+#include "Engine/Graphics/Texture/TextureCube.h"	
 #include "Engine/Audio/AudioClip.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
@@ -70,7 +71,7 @@ namespace Editor
 		return result;
 	}
 
-	EditResult CubeMapField(const std::string& label, Engine::CubeMapTexture*& texture)
+	/*EditResult CubeMapField(const std::string& label, Engine::TextureCube*& texture)
 	{
 		EditResult result;
 		const ImVec2 buttonSize = ImVec2(64, 64);
@@ -105,7 +106,7 @@ namespace Editor
 				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
 				if (Engine::g_AssetManager->GetAssetType(droppedUUID) == Engine::AssetType::CubeMap)
 				{
-					texture = Engine::g_AssetManager->GetAsset<Engine::CubeMapTexture>(droppedUUID);
+					texture = Engine::g_AssetManager->GetAsset<Engine::TextureCube>(droppedUUID);
 					result.changed = true;
 				}
 
@@ -129,7 +130,7 @@ namespace Editor
 
 		ImGui::PopID();
 		return result;
-	}
+	}*/
 
 	EditResult AudioClipField(const std::string& label, Engine::AudioClip*& audioClip)
 	{

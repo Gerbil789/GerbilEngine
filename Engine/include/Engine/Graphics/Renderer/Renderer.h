@@ -7,7 +7,7 @@ namespace Engine
 {
 	class Camera;
 	class Scene;
-	class CubeMapTexture;
+	class TextureCube;
 
 	class ENGINE_API Renderer
 	{
@@ -22,9 +22,8 @@ namespace Engine
 		void SetCamera(Camera* camera);
 		void SetColorTarget(wgpu::TextureView colorView);
 		void SetDepthTarget(wgpu::TextureView depthView);
-		CubeMapTexture* GetSkyboxCubemap() const { return m_RenderContext.environmentCubemap; }
-		void SetSkyboxCubemap(CubeMapTexture* cubemap) { m_RenderContext.environmentCubemap = cubemap; CreateEnvironmentBindGroup();}
-		RenderContext GetRenderContext() const { return m_RenderContext; }
+		void BakeEnvironment();
+		RenderContext& GetRenderContext();
 
 		void RenderScene(Scene* scene);
 		wgpu::TextureView GetTextureView() const;

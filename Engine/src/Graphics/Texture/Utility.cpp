@@ -1,26 +1,16 @@
 #include "enginepch.h"
-#include "Engine/Graphics/Texture.h"
+#include "Engine/Graphics/Texture/Utility.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
-#include "Engine/Compute/save_texture.h"
 
 namespace Engine
 {
-	namespace
-	{
-		static Texture2D* s_DefaultWhiteTexture = nullptr;
-		static Texture2D* s_DefaultNormalTexture = nullptr;
-		static Texture2D* s_DefaultAmbientTexture = nullptr;
-
-	}
-
-
 	uint32_t GetMaxMipLevelCount(const wgpu::Extent3D& textureSize)
 	{
 		return std::bit_width(std::max(textureSize.width, textureSize.height));
 	}
 
-	void GenerateMipmaps(wgpu::Texture& texture)
+	void GenerateMipmaps(wgpu::Texture texture)
 	{
 		std::vector<wgpu::TextureView> textureMipViews;
 		std::vector<wgpu::Extent3D> textureMipSizes;
@@ -140,7 +130,7 @@ namespace Engine
 		Engine::GraphicsContext::GetQueue().submit(1, &commandBuffer);
 	}
 
-	void ImportanceSample(wgpu::Texture& texture)
+	void ImportanceSample(wgpu::Texture texture)
 	{
 		std::vector<wgpu::TextureView> textureMipViews;
 		std::vector<wgpu::Extent3D> textureMipSizes;
@@ -150,7 +140,7 @@ namespace Engine
 
 		wgpu::Extent3D baseSize = { texture.getWidth(), texture.getHeight(), 1 };
 		auto mipCount = GetMaxMipLevelCount(baseSize);
-	
+
 
 		wgpu::TextureViewDescriptor textureViewDesc;
 		textureViewDesc.nextInChain = nullptr;
@@ -285,231 +275,39 @@ namespace Engine
 		Engine::GraphicsContext::GetQueue().submit(1, &commandBuffer);
 	}
 
-	Texture2D::Texture2D(const TextureSpecification& specification, const void* data)
+
+	void ComputeIrradiance(wgpu::Texture sourceCubemap, wgpu::Texture targetCubemap)
 	{
-		m_Width = specification.width;
-		m_Height = specification.height;
-		m_TextureFormat = specification.format;
-		uint32_t mipCount = 1;
+		wgpu::TextureFormat format = sourceCubemap.getFormat();
 
+		// 1. Source View (Reading the environment map)
+		wgpu::TextureViewDescriptor sourceViewDesc;
+		sourceViewDesc.label = { "IrradianceSourceView", WGPU_STRLEN };
+		sourceViewDesc.dimension = wgpu::TextureViewDimension::Cube;
+		sourceViewDesc.format = format;
+		sourceViewDesc.baseMipLevel = 0;
+		sourceViewDesc.mipLevelCount = 1;
+		sourceViewDesc.baseArrayLayer = 0;
+		sourceViewDesc.arrayLayerCount = 6;
+		sourceViewDesc.aspect = wgpu::TextureAspect::All;
+		wgpu::TextureView sourceView = sourceCubemap.createView(sourceViewDesc);
 
-		if (specification.generateMips)
-		{
-			mipCount = GetMaxMipLevelCount({ m_Width , m_Height , 1 });
-		}
+		// 2. Target View (Writing directly to our pre-allocated 32x32 texture as a 2D Array)
+		wgpu::TextureViewDescriptor targetViewDesc;
+		targetViewDesc.label = { "IrradianceTargetView", WGPU_STRLEN };
+		targetViewDesc.dimension = wgpu::TextureViewDimension::_2DArray;
+		targetViewDesc.format = format;
+		targetViewDesc.baseMipLevel = 0;
+		targetViewDesc.mipLevelCount = 1;
+		targetViewDesc.baseArrayLayer = 0;
+		targetViewDesc.arrayLayerCount = 6;
+		targetViewDesc.aspect = wgpu::TextureAspect::All;
+		wgpu::TextureView targetView = targetCubemap.createView(targetViewDesc);
 
-		uint32_t bytesPerPixel = 4;
-		if(m_TextureFormat == wgpu::TextureFormat::RGBA16Float)
-		{
-			bytesPerPixel = 8;
-		}
+		// 3. Load Shader & Setup Layouts
+		wgpu::ShaderModule computeShaderModule = LoadWGSLShader("Resources/Engine/shaders/compute/irradiance.wgsl");
 
-		wgpu::TextureDescriptor textureDesc;
-		textureDesc.dimension = wgpu::TextureDimension::_2D;
-		textureDesc.format = m_TextureFormat;
-		textureDesc.mipLevelCount = mipCount;
-		textureDesc.sampleCount = 1;
-		textureDesc.size = { m_Width, m_Height, 1 };
-
-		//TODO: write more elegantly
-		wgpu::TextureUsage usage = specification.usage;
-		if(specification.generateMips)
-		{
-			usage = specification.usage | wgpu::TextureUsage::StorageBinding;
-		}
-
-		textureDesc.usage = usage;
-		textureDesc.viewFormatCount = 0;
-		textureDesc.viewFormats = nullptr;
-		m_Texture = GraphicsContext::GetDevice().createTexture(textureDesc);
-
-		wgpu::TexelCopyTextureInfo dst;
-		dst.texture = m_Texture;
-		dst.mipLevel = 0;
-		dst.origin = { 0, 0, 0 };
-		dst.aspect = wgpu::TextureAspect::All;
-
-		wgpu::TexelCopyBufferLayout layout;
-		layout.offset = 0;
-		layout.bytesPerRow = m_Width * bytesPerPixel;
-		layout.rowsPerImage = m_Height;
-
-		wgpu::Extent3D size = { m_Width, m_Height, 1 };
-
-		GraphicsContext::GetQueue().writeTexture(dst, data, m_Width * m_Height * bytesPerPixel, layout, size);
-
-
-		if (specification.generateMips)
-		{
-			GenerateMipmaps(m_Texture);
-		}
-
-
-		wgpu::TextureViewDescriptor viewDesc;
-		viewDesc.label = { "Texture2DView", WGPU_STRLEN };
-		viewDesc.format = m_TextureFormat;
-		viewDesc.dimension = wgpu::TextureViewDimension::_2D;
-		viewDesc.baseMipLevel = 0;
-		viewDesc.mipLevelCount = 1;
-		viewDesc.baseArrayLayer = 0;
-		viewDesc.arrayLayerCount = 1;
-		viewDesc.aspect = wgpu::TextureAspect::All;
-		m_TextureView = m_Texture.createView(viewDesc);
-	}
-
-	Texture2D* Texture2D::GetDefault()
-	{
-		if (!s_DefaultWhiteTexture)
-		{
-			TextureSpecification spec;
-			spec.width = 1;
-			spec.height = 1;
-			spec.format = wgpu::TextureFormat::RGBA8Unorm;
-			uint32_t whitePixel = 0xFFFFFFFF;
-			s_DefaultWhiteTexture = new Texture2D(spec, &whitePixel);
-		}
-
-		return s_DefaultWhiteTexture;
-	}
-
-	Texture2D* Texture2D::GetDefaultNormal()
-	{
-		if (!s_DefaultNormalTexture)
-		{
-			TextureSpecification spec;
-			spec.width = 1;
-			spec.height = 1;
-			spec.format = wgpu::TextureFormat::RGBA8Unorm;
-			constexpr uint8_t normalPixel[4] = { 128, 128, 255, 255 }; // Blue-ish
-
-			s_DefaultNormalTexture = new Texture2D(spec, &normalPixel);
-		}
-
-		return s_DefaultNormalTexture;
-	}
-
-	Texture2D* Texture2D::GetDefaultAmbient()
-	{
-		if (!s_DefaultAmbientTexture)
-		{
-			TextureSpecification spec;
-			spec.width = 1;
-			spec.height = 1;
-			spec.format = wgpu::TextureFormat::RGBA8Unorm;
-			constexpr uint8_t ambientPixel[4] = { 10, 10, 10, 255 };
-			s_DefaultAmbientTexture = new Texture2D(spec, &ambientPixel);
-		}
-		return s_DefaultAmbientTexture;
-
-	}
-
-	SubTexture2D::SubTexture2D(Texture2D* texture, const glm::vec2& min, const glm::vec2& max) : m_Texture(texture), m_UVMin(min), m_UVMax(max) {}
-
-	SubTexture2D* SubTexture2D::CreateFromGrid(Texture2D* texture, const glm::ivec2& cellCoords, const glm::ivec2& cellSize, const glm::ivec2& spriteSize)
-	{
-		glm::vec2 texSize = { static_cast<float>(texture->GetWidth()), static_cast<float>(texture->GetHeight()) };
-
-		glm::vec2 min
-		{
-				(cellCoords.x * cellSize.x) / texSize.x,
-				(cellCoords.y * cellSize.y) / texSize.y
-		};
-
-		glm::vec2 max
-		{
-				((cellCoords.x + spriteSize.x) * cellSize.x) / texSize.x,
-				((cellCoords.y + spriteSize.y) * cellSize.y) / texSize.y
-		};
-
-		return new SubTexture2D(texture, min, max);
-	}
-
-
-
-
-
-
-
-	CubeMapTexture::CubeMapTexture(const TextureSpecification& specification, const void* data)
-	{
-		m_Width = specification.width;
-		m_Height = specification.height;
-		m_TextureFormat = specification.format;
-
-		wgpu::TextureDescriptor textureDesc;
-		textureDesc.dimension = wgpu::TextureDimension::_2D;
-		textureDesc.format = m_TextureFormat;
-		textureDesc.mipLevelCount = 1;
-		textureDesc.sampleCount = 1;
-		textureDesc.size = { m_Width, m_Height, 1 };
-		textureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
-		textureDesc.viewFormatCount = 0;
-		textureDesc.viewFormats = nullptr;
-		wgpu::Texture inputTexture = GraphicsContext::GetDevice().createTexture(textureDesc);
-
-		uint32_t bytesPerPixel = 4;
-		if (m_TextureFormat == wgpu::TextureFormat::RGBA16Float)
-		{
-			bytesPerPixel = 8;
-		}
-
-		wgpu::TexelCopyTextureInfo dst;
-		dst.texture = inputTexture;
-		dst.mipLevel = 0;
-		dst.origin = { 0, 0, 0 };
-		dst.aspect = wgpu::TextureAspect::All;
-
-		wgpu::TexelCopyBufferLayout layout;
-		layout.offset = 0;
-		layout.bytesPerRow = m_Width * bytesPerPixel;
-		layout.rowsPerImage = m_Height;
-
-		wgpu::Extent3D size = { m_Width, m_Height, 1 };
-
-		GraphicsContext::GetQueue().writeTexture(dst, data, m_Width * m_Height * bytesPerPixel, layout, size);
-
-
-		uint32_t faceSize = m_Height / 2;
-		uint32_t mipCount = GetMaxMipLevelCount({ faceSize, faceSize, 1 });
-
-		textureDesc.size = { faceSize, faceSize, 6 };
-		textureDesc.mipLevelCount = mipCount;
-		textureDesc.usage = wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::TextureBinding;
-		m_Texture = GraphicsContext::GetDevice().createTexture(textureDesc);
-
-		std::vector<wgpu::TextureView> m_cubemapTextureMips;
-
-		wgpu::TextureViewDescriptor viewDesc;
-		viewDesc.format = m_TextureFormat;
-		viewDesc.dimension = wgpu::TextureViewDimension::_2DArray;
-		viewDesc.mipLevelCount = 1;
-		viewDesc.baseArrayLayer = 0;
-		viewDesc.arrayLayerCount = 6;
-		viewDesc.aspect = wgpu::TextureAspect::All;
-		m_cubemapTextureMips.resize(mipCount, nullptr);
-		for (uint32_t level = 0; level < mipCount; ++level)
-		{
-			viewDesc.baseMipLevel = level;
-			m_cubemapTextureMips[level] = m_Texture.createView(viewDesc);
-		}
-
-		viewDesc.arrayLayerCount = 1;
-		viewDesc.baseMipLevel = 0;
-		viewDesc.dimension = wgpu::TextureViewDimension::_2D;
-		wgpu::TextureView inputTextureView = inputTexture.createView(viewDesc);
-
-
-		viewDesc.dimension = wgpu::TextureViewDimension::Cube;
-		viewDesc.baseArrayLayer = 0;
-		viewDesc.arrayLayerCount = 6;
-		viewDesc.baseMipLevel = 0;
-		viewDesc.mipLevelCount = mipCount;
-		m_TextureView = m_Texture.createView(viewDesc);
-
-		wgpu::ShaderModule computeShaderModule = LoadWGSLShader("Resources/Engine/shaders/compute/cubemap.wgsl");
-
-		// Create bind group layout
-		std::vector<wgpu::BindGroupLayoutEntry> bindings(3, wgpu::Default);
+		std::array<wgpu::BindGroupLayoutEntry, 3> bindings = { wgpu::Default, wgpu::Default, wgpu::Default };
 
 		bindings[0].binding = 0;
 		bindings[0].sampler.type = wgpu::SamplerBindingType::Filtering;
@@ -517,12 +315,12 @@ namespace Engine
 
 		bindings[1].binding = 1;
 		bindings[1].texture.sampleType = wgpu::TextureSampleType::Float;
-		bindings[1].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+		bindings[1].texture.viewDimension = wgpu::TextureViewDimension::Cube;
 		bindings[1].visibility = wgpu::ShaderStage::Compute;
 
 		bindings[2].binding = 2;
 		bindings[2].storageTexture.access = wgpu::StorageTextureAccess::WriteOnly;
-		bindings[2].storageTexture.format = m_TextureFormat;
+		bindings[2].storageTexture.format = format;
 		bindings[2].storageTexture.viewDimension = wgpu::TextureViewDimension::_2DArray;
 		bindings[2].visibility = wgpu::ShaderStage::Compute;
 
@@ -531,34 +329,33 @@ namespace Engine
 		bindGroupLayoutDesc.entries = bindings.data();
 		wgpu::BindGroupLayout bindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
 
-		// Create compute pipeline layout
 		wgpu::PipelineLayoutDescriptor pipelineLayoutDesc;
 		pipelineLayoutDesc.bindGroupLayoutCount = 1;
 		pipelineLayoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayout;
 		wgpu::PipelineLayout pipelineLayout = GraphicsContext::GetDevice().createPipelineLayout(pipelineLayoutDesc);
 
-		// Create compute pipeline;
 		wgpu::ComputePipelineDescriptor computePipelineDesc = wgpu::Default;
-		computePipelineDesc.compute.entryPoint = { "equirectToCubemap", WGPU_STRLEN };
+		computePipelineDesc.compute.entryPoint = { "computeIrradiance", WGPU_STRLEN };
 		computePipelineDesc.compute.module = computeShaderModule;
 		computePipelineDesc.layout = pipelineLayout;
 		wgpu::ComputePipeline computePipeline = GraphicsContext::GetDevice().createComputePipeline(computePipelineDesc);
 
+		// 4. Create Sampler & Bind Group
+		wgpu::SamplerDescriptor samplerDesc{};
+		samplerDesc.label = { "IrradianceSampler", WGPU_STRLEN };
+		samplerDesc.magFilter = wgpu::FilterMode::Linear;
+		samplerDesc.minFilter = wgpu::FilterMode::Linear;
+		samplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
+		samplerDesc.maxAnisotropy = 1;
+		wgpu::Sampler linearSampler = GraphicsContext::GetDevice().createSampler(samplerDesc);
 
-		std::vector<wgpu::BindGroup> m_bindGroups;
-
-		m_bindGroups.resize(mipCount, nullptr);
-
-		std::vector<wgpu::BindGroupEntry> entries(3, wgpu::Default);
-
+		std::array<wgpu::BindGroupEntry, 3> entries = { wgpu::Default, wgpu::Default, wgpu::Default };
 		entries[0].binding = 0;
-		entries[0].sampler = GraphicsContext::GetDevice().createSampler();
-
+		entries[0].sampler = linearSampler;
 		entries[1].binding = 1;
-		entries[1].textureView = inputTextureView;
-
+		entries[1].textureView = sourceView;
 		entries[2].binding = 2;
-		entries[2].textureView = m_cubemapTextureMips[0];
+		entries[2].textureView = targetView; // Bind the view pointing to the actual memory
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
 		bindGroupDesc.layout = bindGroupLayout;
@@ -566,6 +363,7 @@ namespace Engine
 		bindGroupDesc.entries = (WGPUBindGroupEntry*)entries.data();
 		wgpu::BindGroup bindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
 
+		// 5. Encode & Dispatch
 		auto encoder = Engine::GraphicsContext::GetDevice().createCommandEncoder();
 
 		wgpu::ComputePassDescriptor computePassDesc;
@@ -573,48 +371,19 @@ namespace Engine
 		wgpu::ComputePassEncoder computePass = encoder.beginComputePass(computePassDesc);
 
 		computePass.setPipeline(computePipeline);
-
-
 		computePass.setBindGroup(0, bindGroup, 0, nullptr);
 
-		uint32_t invocationCountX = faceSize;
-		uint32_t invocationCountY = faceSize;
-		uint32_t workgroupSizePerDim = 4;
+		uint32_t irradianceSize = 32;
+		uint32_t workgroupSizePerDim = 8;
+		uint32_t workgroupCountX = (irradianceSize + workgroupSizePerDim - 1) / workgroupSizePerDim;
+		uint32_t workgroupCountY = (irradianceSize + workgroupSizePerDim - 1) / workgroupSizePerDim;
 
-		uint32_t workgroupCountX = (invocationCountX + workgroupSizePerDim - 1) / workgroupSizePerDim;
-		uint32_t workgroupCountY = (invocationCountY + workgroupSizePerDim - 1) / workgroupSizePerDim;
 		computePass.dispatchWorkgroups(workgroupCountX, workgroupCountY, 6);
 		computePass.end();
 
 		wgpu::CommandBuffer commandBuffer = encoder.finish();
 		Engine::GraphicsContext::GetQueue().submit(1, &commandBuffer);
 
-
-		//create preview view
-		//create preview view
-		wgpu::TextureViewDescriptor previewViewDesc;
-		previewViewDesc.label = { "CubemapPreviewFace0", WGPU_STRLEN };
-		previewViewDesc.format = m_TextureFormat;
-
-		// IMPORTANT: Treat this view as a standard 2D texture, NOT a Cube or 2DArray
-		previewViewDesc.dimension = wgpu::TextureViewDimension::_2D;
-
-		// Just grab Mip 0
-		previewViewDesc.baseMipLevel = 0;
-		previewViewDesc.mipLevelCount = 1;
-
-		// Grab exactly one face. 
-		// 0 = +X (Right), 1 = -X (Left), 2 = +Y (Top), 3 = -Y (Bottom), 4 = +Z (Front), 5 = -Z (Back)
-		previewViewDesc.baseArrayLayer = 0;
-		previewViewDesc.arrayLayerCount = 1; // Only 1 layer!
-
-		previewViewDesc.aspect = wgpu::TextureAspect::All;
-
-		m_PreviewTextureView = m_Texture.createView(previewViewDesc);
-
-
-		ImportanceSample(m_Texture);
-
-		//GenerateMipmaps(m_Texture);
+		// No need to return anything, the data is directly written into targetCubemap!
 	}
 }

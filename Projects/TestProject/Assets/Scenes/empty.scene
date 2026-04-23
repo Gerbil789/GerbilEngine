@@ -1,302 +1,3 @@
-- ID: 10232879204256431706
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [15.721351, 0, 38.868492]
-    Rotation: [0, -0, 0]
-    Scale: [0.99999595, 0.99996954, 1.000027]
-  MeshComponent:
-    Mesh: 2873530127775231289
-    Materials: [16307921651454057929]
-  ScriptComponent:
-    Script: AudioPlayer
-    Audio Clip: 15119983366604146548
-    Play On Awake: true
-- ID: 10411314405147299532
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [34.5, 0, 12]
-    Rotation: [0, -0, 0]
-    Scale: [8, 3, 8]
-  MeshComponent:
-    Mesh: 9153350241491098746
-    Materials: [15420442079635448030]
-- ID: 5035431560302200696
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [39.367245, 2.42982, 5.7769723]
-    Rotation: [0, -47.37909, 0]
-    Scale: [4.999997, 4.999999, 4.999997]
-  MeshComponent:
-    Mesh: 9153350241491098746
-    Materials: [14271088859862093309]
-- ID: 10419314148164250282
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [16, 0, 4]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [8496260393453878813]
-- ID: 8139658228052313786
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [16, 0, 25.100859]
-    Rotation: [0, -0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [4081624249093562338]
-  ScriptComponent:
-    Script: AudioPlayer
-    Audio Clip: 6350057269135839349
-    Play On Awake: true
-- ID: 3273880496074712033
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [12, 0, 15.25647]
-    Rotation: [0, -0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [17286595405715129930]
-- ID: 9432398298484079886
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [12, 0, 12]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [12131057463189080297]
-- ID: 12389583892332128770
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [12, 7.450581e-09, 8]
-    Rotation: [0, -0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [7754810028909415072]
-- ID: 5856410415377495849
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [12, 0, 4]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [18207209538454066267]
-- ID: 15830639203553112494
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [12, 0, 0]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [7619436097422543333]
-- ID: 3086801180621983517
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [8, 0, 15.642649]
-    Rotation: [0, -0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [10110901189992253051]
-- ID: 8172047342344053202
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [8, 0, 12]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [2240798008467000122]
-- ID: 8259810380564748440
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [8, 0, 8]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [6420737745447128053]
-- ID: 11322113965525269091
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [8, 0, 4]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [13612887118892729250]
-- ID: 7011050500357913975
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [8, 0, 0]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [7267305591147661222]
-- ID: 6619031557454780055
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [3.9999762, 0, 16.000004]
-    Rotation: [-0.00071570044, 49.14418, 0.0126070725]
-    Scale: [0.9999929, 1, 0.9999958]
-  MeshComponent:
-    Mesh: 5906759997218235868
-    Materials: [3917323067370885854]
-- ID: 13126301125867873310
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [4, 0, 12]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [11338229386382074790]
-- ID: 15440613000085219870
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [4, 0, 8]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [15676324839833293052]
-- ID: 10050883766811257380
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [4, 0, 4]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [15336003854671780286]
-- ID: 7595510319564696268
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [4, 2.9802322e-08, 7.450581e-09]
-    Rotation: [0, -0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [18214915358259466449]
-- ID: 5876967340589998269
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [2.9802322e-08, 3.7252903e-09, 41.30034]
-    Rotation: [0, -0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [15388406335680235062]
-  ScriptComponent:
-    Script: AudioPlayer
-    Audio Clip: 3164677566141441093
-    Play On Awake: true
-- ID: 2202831766788744772
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [0, 0, 12]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [6697304609557636085]
-- ID: 12905062926474392229
-  Enabled: true
-  Name: Sphere
-  Transform:
-    Position: [0, 0, 8]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [13579045662078082631]
-- ID: 4789723939497359664
-  Enabled: true
-  Name: de_dust2
-  Transform:
-    Position: [2.8743398e-05, 2.0294838, -94.44765]
-    Rotation: [-179.9999, -0, -179.9999]
-    Scale: [2, 2, 2]
-  MeshComponent:
-    Mesh: 6831144514463113338
-    Materials: [7940381457507135126]
-- ID: 10245648827745755225
-  Enabled: true
-  Name: Brehemont
-  Transform:
-    Position: [0, -2.2351742e-08, 24.268759]
-    Rotation: [0, -0, 0]
-    Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [1996459253582605967]
-  ScriptComponent:
-    Script: AudioPlayer
-    Audio Clip: 14362726469785008781
-    Play On Awake: true
-- ID: 12535351768315973585
-  Enabled: true
-  Name: Ground
-  Transform:
-    Position: [0, -2, 0]
-    Rotation: [0, -0, 0]
-    Scale: [100, 100, 100]
-  MeshComponent:
-    Mesh: 16263461787928416772
-    Materials: [4524766446218326838]
-- ID: 8348957107591477546
-  Enabled: true
-  Name: Avenger
-  Transform:
-    Position: [-11.191829, 8.202157, -6.50147]
-    Rotation: [-51.931866, 60.10469, -74.75161]
-    Scale: [0.10001433, 0.10000276, 0.09999789]
-  MeshComponent:
-    Mesh: 4054887255351190265
-    Materials: [9062395416670711803, 9905515824125768949, 16641363256174755972, 12590626766011146814, 6243627826504047792]
-- ID: 7150985087517490007
-  Enabled: true
-  Name: Light
-  Transform:
-    Position: [-0.88852024, 13.806403, -7.6293945e-06]
-    Rotation: [-164.33511, 69.08971, 63.365143]
-    Scale: [1.0000045, 0.9999956, 0.99985635]
-  LightComponent:
-    Type: 0
-    Color: [1, 1, 1]
-    Intensity: 1
-    Range: 12
-    Angle: 67
 - ID: 10199165476046124790
   Enabled: true
   Name: Player
@@ -324,3 +25,302 @@
     Ground Level: 0
     Gravity Strength: 24
     Jump Strength: 10
+- ID: 7150985087517490007
+  Enabled: true
+  Name: Light
+  Transform:
+    Position: [-0.88852024, 13.806403, -7.6293945e-06]
+    Rotation: [-164.33511, 69.08971, 63.365143]
+    Scale: [1.0000045, 0.9999956, 0.99985635]
+  LightComponent:
+    Type: 0
+    Color: [1, 1, 1]
+    Intensity: 1
+    Range: 12
+    Angle: 67
+- ID: 8348957107591477546
+  Enabled: true
+  Name: Avenger
+  Transform:
+    Position: [-11.191829, 8.202157, -6.50147]
+    Rotation: [-51.931866, 60.10469, -74.75161]
+    Scale: [0.10001433, 0.10000276, 0.09999789]
+  MeshComponent:
+    Mesh: 4054887255351190265
+    Materials: [9062395416670711803, 9905515824125768949, 16641363256174755972, 12590626766011146814, 6243627826504047792]
+- ID: 12535351768315973585
+  Enabled: true
+  Name: Ground
+  Transform:
+    Position: [0, -2, 0]
+    Rotation: [0, -0, 0]
+    Scale: [100, 100, 100]
+  MeshComponent:
+    Mesh: 16263461787928416772
+    Materials: [4524766446218326838]
+- ID: 10245648827745755225
+  Enabled: true
+  Name: Brehemont
+  Transform:
+    Position: [0, -2.2351742e-08, 24.268759]
+    Rotation: [0, -0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [1996459253582605967]
+  ScriptComponent:
+    Script: AudioPlayer
+    Audio Clip: 14362726469785008781
+    Play On Awake: true
+- ID: 4789723939497359664
+  Enabled: true
+  Name: de_dust2
+  Transform:
+    Position: [2.8743398e-05, 2.0294838, -94.44765]
+    Rotation: [-179.9999, -0, -179.9999]
+    Scale: [2, 2, 2]
+  MeshComponent:
+    Mesh: 6831144514463113338
+    Materials: [7940381457507135126]
+- ID: 12905062926474392229
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [0, 0, 8]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [13579045662078082631]
+- ID: 2202831766788744772
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [0, 0, 12]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [6697304609557636085]
+- ID: 5876967340589998269
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [2.9802322e-08, 3.7252903e-09, 41.30034]
+    Rotation: [0, -0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [15388406335680235062]
+  ScriptComponent:
+    Script: AudioPlayer
+    Audio Clip: 3164677566141441093
+    Play On Awake: true
+- ID: 7595510319564696268
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [4, 2.9802322e-08, 7.450581e-09]
+    Rotation: [0, -0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [18214915358259466449]
+- ID: 10050883766811257380
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [4, 0, 4]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [15336003854671780286]
+- ID: 15440613000085219870
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [4, 0, 8]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [15676324839833293052]
+- ID: 13126301125867873310
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [4, 0, 12]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [11338229386382074790]
+- ID: 6619031557454780055
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [3.9999762, 0, 16.000004]
+    Rotation: [-0.00071570044, 49.14418, 0.0126070725]
+    Scale: [0.9999929, 1, 0.9999958]
+  MeshComponent:
+    Mesh: 5906759997218235868
+    Materials: [3917323067370885854]
+- ID: 7011050500357913975
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [8, 0, 0]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [7267305591147661222]
+- ID: 11322113965525269091
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [8, 0, 4]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [13612887118892729250]
+- ID: 8259810380564748440
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [8, 0, 8]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [6420737745447128053]
+- ID: 8172047342344053202
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [8, 0, 12]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [2240798008467000122]
+- ID: 3086801180621983517
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [8, 0, 15.642649]
+    Rotation: [0, -0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [10110901189992253051]
+- ID: 15830639203553112494
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [12, 0, 0]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [7619436097422543333]
+- ID: 5856410415377495849
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [12, 0, 4]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [18207209538454066267]
+- ID: 12389583892332128770
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [12, 7.450581e-09, 8]
+    Rotation: [0, -0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [7754810028909415072]
+- ID: 9432398298484079886
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [12, 0, 12]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [12131057463189080297]
+- ID: 3273880496074712033
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [12, 0, 15.25647]
+    Rotation: [0, -0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [17286595405715129930]
+- ID: 8139658228052313786
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [16, 0, 25.100859]
+    Rotation: [0, -0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [4081624249093562338]
+  ScriptComponent:
+    Script: AudioPlayer
+    Audio Clip: 6350057269135839349
+    Play On Awake: true
+- ID: 10419314148164250282
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [16, 0, 4]
+    Rotation: [0, 0, 0]
+    Scale: [1, 1, 1]
+  MeshComponent:
+    Mesh: 15608668046686712752
+    Materials: [8496260393453878813]
+- ID: 5035431560302200696
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [39.367245, 2.42982, 5.7769723]
+    Rotation: [0, -47.37909, 0]
+    Scale: [4.999997, 4.999999, 4.999997]
+  MeshComponent:
+    Mesh: 9153350241491098746
+    Materials: [14271088859862093309]
+- ID: 10411314405147299532
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [34.5, 0, 12]
+    Rotation: [0, -0, 0]
+    Scale: [8, 3, 8]
+  MeshComponent:
+    Mesh: 9153350241491098746
+    Materials: [15420442079635448030]
+- ID: 10232879204256431706
+  Enabled: true
+  Name: Sphere
+  Transform:
+    Position: [15.721351, 0, 38.868492]
+    Rotation: [0, -0, 0]
+    Scale: [0.99999595, 0.99996954, 1.000027]
+  MeshComponent:
+    Mesh: 2873530127775231289
+    Materials: [16307921651454057929]
+  ScriptComponent:
+    Script: AudioPlayer
+    Audio Clip: 15119983366604146548
+    Play On Awake: true

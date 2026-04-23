@@ -2,7 +2,6 @@
 
 #include "Engine/Scene/Entity.h"
 #include "Engine/Script/ScriptRegistry.h"
-#include "Engine/Graphics/Texture.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Audio/AudioClip.h"

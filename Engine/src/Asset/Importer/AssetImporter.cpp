@@ -10,6 +10,8 @@
 #include "Engine/Asset/AssetRecord.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
+#include "Engine/Graphics/Texture/TextureCube.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Audio/AudioClip.h"
 
@@ -20,13 +22,12 @@ namespace Engine
 	static std::map<AssetType, AssetImportFunction> s_AssetImportFunctions
 	{
 		{ AssetType::Texture2D, TextureImporter::ImportTexture2D },
-		{ AssetType::CubeMap, TextureImporter::ImportCubeMapTexture },
+		//{ AssetType::CubeMap, TextureImporter::ImportCubeTexture },
 		{ AssetType::Mesh, MeshImporter::ImportMesh },
 		{ AssetType::Material, MaterialImporter::ImportMaterial },
 		{ AssetType::Scene, SceneImporter::ImportScene },
 		{ AssetType::Shader, ShaderImporter::ImportShader },
 		{ AssetType::Audio, AudioImporter::ImportAudio },
-		{ AssetType::HDR, TextureImporter::ImportTexture2D }
 	};
 
 	Asset* AssetImporter::ImportAsset(const AssetRecord& record)
