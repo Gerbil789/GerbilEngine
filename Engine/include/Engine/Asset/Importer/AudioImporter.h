@@ -9,7 +9,6 @@ namespace Engine
 	class ENGINE_API AudioImporter
 	{
 	public:
-		static AudioClip* ImportAudio(const std::filesystem::path& path);
-		static AudioClip* LoadAudio(const std::filesystem::path& path);
+		static std::optional<AudioClip> LoadAudioClip(const std::filesystem::path& path);
 	};
 }

@@ -14,6 +14,11 @@ namespace Engine
 		Scene() = default;
 		~Scene();
 
+		Scene(Scene&& other) noexcept;
+		Scene& operator=(Scene&& other) noexcept;
+
+
+
 		static Scene* Copy(Scene* other);
 
 		Entity CreateEntity(const std::string& name = "new entity");

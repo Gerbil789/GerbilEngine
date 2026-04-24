@@ -5,14 +5,11 @@
 
 namespace Engine
 {
-	Material* MaterialImporter::ImportMaterial(const std::filesystem::path& path)
+	std::optional<Material> MaterialImporter::LoadMaterial(const std::filesystem::path& path)
 	{
-		return LoadMaterial(path);
-	}
-
-	Material* MaterialImporter::LoadMaterial(const std::filesystem::path& path)
-	{
-		Material* material = MaterialSerializer::Deserialize(path);
-		return material;
+		Material* material = MaterialSerializer::Deserialize(path); //TODO: change to return optional from deserialize and remove this function
+		if (material)
+			return *material;
+		return std::nullopt;
 	}
 }

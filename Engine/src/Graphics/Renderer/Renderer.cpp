@@ -17,7 +17,7 @@
 
 namespace Engine
 {
-	Renderer* g_Renderer = nullptr;
+	Renderer g_Renderer;
 
 	void Renderer::Initialize()
 	{
@@ -28,10 +28,9 @@ namespace Engine
 		CreateModelBindGroup();
 
 
-		auto texture2D = Engine::TextureImporter::LoadTexture2D("Resources/Engine/hdr/PG2/lebombo_4k.hdr");
-		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(texture2D);
-		//m_RenderContext.environmentCubemap = environment.PrefilteredMap;
-		//m_RenderContext.environmentCubemap = Engine::TextureImporter::LoadCubeTexture("Resources/Engine/hdr/PG2/lebombo_4k.hdr");
+		auto texture2D = Engine::TextureImporter::LoadTexture("Resources/Engine/hdr/PG2/lebombo_4k.hdr").value();
+		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(&texture2D);
+
 		CreateShadowTexture();
 
 		CreateEnvironmentUniformBuffer();
@@ -148,13 +147,10 @@ namespace Engine
 		entries[1].binding = 1;
 		entries[1].sampler = envSampler;
 
-		auto brdfTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/PG2/brdf_integration_map_ct_ggx.hdr");
+		auto brdfTexture = TextureImporter::LoadTexture("Resources/Engine/hdr/PG2/brdf_integration_map_ct_ggx.hdr").value();
 		entries[2].binding = 2;
-		entries[2].textureView = brdfTexture->GetTextureView();
+		entries[2].textureView = brdfTexture.GetTextureView();
 
-
-
-		//Engine::TextureCube* irrCubemap = Engine::TextureImporter::LoadCubeTexture("Resources/Engine/hdr/PG2/lebombo_irradiance_map.hdr");
 		entries[3].binding = 3;
 		entries[3].textureView = m_RenderContext.environment.IrradianceMap->GetTextureView();
 

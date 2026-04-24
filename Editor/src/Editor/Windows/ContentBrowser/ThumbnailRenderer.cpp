@@ -5,9 +5,11 @@
 #include "Engine/Graphics/RenderPass/OpaquePass.h"
 #include "Engine/Graphics/RenderPass/BackgroundPass.h"
 #include "Engine/Graphics/Material.h"
+#include "Engine/Graphics/Mesh.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Camera.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Core/Resources.h"
 
 namespace Editor
 {
@@ -43,7 +45,9 @@ namespace Editor
 
 		data.entity = data.scene.CreateEntity("PreviewEntity");
 		auto& mc = data.entity.Add<Engine::MeshComponent>();
-		mc.mesh = Engine::MeshImporter::LoadMesh("Resources/Engine/models/sphere.glb");
+
+		Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::RESOURCES::MESH::SPHERE);
+		mc.mesh = &mesh;
 
 		data.renderer.Initialize();
 		data.renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Opaque);
@@ -108,7 +112,7 @@ namespace Editor
 			return m_ThumbnailCache[id];
 		}
 
-		Engine::Material* material = Engine::g_AssetManager->GetAsset<Engine::Material>(id);
+		Engine::Material* material = &(Engine::AssetManager::GetAsset<Engine::Material>(id));
 		wgpu::TextureView newView = Render(material);
 		m_ThumbnailCache[id] = newView;
 		return newView;

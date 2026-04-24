@@ -74,7 +74,7 @@ namespace Engine
 				material = subMaterial;
 				GraphicsContext::GetQueue().writeBuffer(material->GetUniformBuffer(), 0, material->GetUniformData().data(), material->GetUniformData().size());
 				pass.setBindGroup(2, material->GetBindGroup(), 0, nullptr);
-				pass.setPipeline(material->GetShader()->GetRenderPipeline());
+				pass.setPipeline(material->GetShader().GetRenderPipeline());
 			}
 
 			uint32_t dynamicOffset = item.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();

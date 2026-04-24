@@ -60,20 +60,20 @@ namespace Engine
 		}
 
 		auto shader = material->GetShader();
-		if (!shader)
-		{
-			LOG_ERROR("MaterialSerializer::Serialize - Material has no shader, cannot serialize.");
-			return;
-		}
+		//if (!shader)
+		//{
+		//	LOG_ERROR("MaterialSerializer::Serialize - Material has no shader, cannot serialize.");
+		//	return;
+		//}
 
-		auto shaderSpec = shader->GetSpecification(); 
+		auto shaderSpec = shader.GetSpecification(); 
 		auto materialBindings = GetMaterialBindings(shaderSpec);
 
 		YAML::Emitter out;
 		{
 			Yaml::Map root(out);
 
-			Yaml::Write(out, "Shader", shader->id);
+			Yaml::Write(out, "Shader", shader.id);
 
 			// Sampler
 			out << YAML::Key << "Sampler" << YAML::Value;
@@ -136,13 +136,9 @@ namespace Engine
 			return nullptr;
 		}
 
-		auto shader = Engine::g_AssetManager->GetAsset<Shader>(Uuid(data["Shader"].as<uint64_t>()));
+		Engine::Shader& shader = Engine::AssetManager::GetAsset<Shader>(Uuid(data["Shader"].as<uint64_t>()));
 
-		if(!shader)
-		{
-			LOG_ERROR("Failed to load shader with ID: {}", data["Shader"].as<uint64_t>());
-			return nullptr;
-		}
+
 		MaterialSpecification spec;
 		spec.shader = shader;
 

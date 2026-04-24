@@ -3,13 +3,13 @@
 #include "Engine/Scene/Scene.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Utility/File.h"
 #include "Editor/Core/SelectionManager.h"
 #include "Editor/Windows/ContentBrowser/SelectionWithDeletion.h"
 #include "Engine/Core/Project.h"
 #include "ThumbnailRenderer.h"
 #include "Editor/Core/IconManager.h"
-#include "Engine/Asset/AssetRecord.h"
 #include "Engine/Graphics/Texture/TextureCube.h"
 //#include <GLFW/glfw3.h>
 
@@ -56,7 +56,7 @@ namespace Editor
 		}
 
 		// then find files
-		for (auto& record : Engine::g_AssetManager->GetAllAssetRecords())
+		for (auto& record : Engine::AssetManager::GetAssetRegistry().GetAllRecords())
 		{
 			if (record->path.parent_path() == m_CurrentDirectory)
 			{
@@ -174,7 +174,7 @@ namespace Editor
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
 				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				auto path = Engine::g_AssetManager->GetAssetPath(droppedUUID);
+				auto path = Engine::AssetManager::GetAssetRegistry().GetPath(droppedUUID);
 
 				LOG_INFO("Dropped file path: {} onto {}", path, record->path.filename().string().c_str());
 			}
@@ -201,11 +201,11 @@ namespace Editor
 					RefreshDirectory();
 				}
 
-				if (ImGui::MenuItem("Material"))
-				{
-					Engine::Materials::CreateMaterial(m_CurrentDirectory / "newMaterial.mat"); //TODO: this is just bad
-					RefreshDirectory();
-				}
+				//if (ImGui::MenuItem("Material"))
+				//{
+				//	Engine::Materials::CreateMaterial(m_CurrentDirectory / "newMaterial.mat"); //TODO: this is just bad
+				//	RefreshDirectory();
+				//}
 
 				ImGui::EndMenu();// End Create Menu
 			}
@@ -252,7 +252,7 @@ namespace Editor
 		switch (record.type)
 		{
 		case Engine::AssetType::Texture2D:
-			view = Engine::g_AssetManager->GetAsset<Engine::Texture2D>(record.id)->GetTextureView(); //TODO: use downscaled texture for thumbnail
+			view = Engine::AssetManager::GetAsset<Engine::Texture2D>(record.id).GetTextureView(); //TODO: use downscaled texture for thumbnail
 			break;
 		//case Engine::AssetType::CubeMap:
 		//	view = Engine::g_AssetManager->GetAsset<Engine::TextureCube>(record.id)->GetPreviewView(); //TODO: use downscaled texture for thumbnail

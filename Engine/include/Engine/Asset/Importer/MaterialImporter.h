@@ -9,7 +9,6 @@ namespace Engine
 	class MaterialImporter
 	{
 	public:
-		static Material* ImportMaterial(const std::filesystem::path& path);
-		static Material* LoadMaterial(const std::filesystem::path& path);
+		static std::optional<Material> LoadMaterial(const std::filesystem::path& path);
 	};
 }

@@ -195,11 +195,10 @@ namespace Engine
 	{
 		std::vector<const AssetRecord*> records;
 		records.reserve(m_Records.size());
-		for (const auto& [id, metadata] : m_Records)
+		for (const auto& [id, record] : m_Records)
 		{
-			records.push_back(&metadata);
+			records.push_back(&record);
 		}
-
 		return records;
 	}
 

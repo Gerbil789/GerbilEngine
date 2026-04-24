@@ -11,6 +11,8 @@ namespace Engine
 		ma_sound sound;
 	};
 
+	AudioClip::AudioClip() = default;
+
 	AudioClip::AudioClip(const std::filesystem::path& path) : m_Impl(std::make_unique<Impl>())
 	{
 		if(ma_sound_init_from_file(&Audio::GetAudioEngine() , path.string().c_str(), MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_ASYNC | MA_SOUND_FLAG_NO_DEFAULT_ATTACHMENT, nullptr, nullptr, &m_Impl->sound) != MA_SUCCESS)
@@ -30,6 +32,10 @@ namespace Engine
 	{
 		ma_sound_uninit(&m_Impl->sound);
 	}
+
+	AudioClip::AudioClip(AudioClip&& other) noexcept = default;
+
+	AudioClip& AudioClip::operator=(AudioClip&& other) noexcept = default;
 
 	float AudioClip::GetDurationSeconds() const
 	{

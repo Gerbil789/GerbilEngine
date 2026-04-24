@@ -1,5 +1,6 @@
 #include "Property.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/Texture/TextureCube.h"	
 #include "Engine/Audio/AudioClip.h"
@@ -43,9 +44,9 @@ namespace Editor
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
 				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				if (Engine::g_AssetManager->GetAssetType(droppedUUID) == Engine::AssetType::Texture2D)
+				if (Engine::AssetManager::GetAssetRegistry().GetType(droppedUUID) == Engine::AssetType::Texture2D)
 				{
-					texture = Engine::g_AssetManager->GetAsset<Engine::Texture2D>(droppedUUID);
+					texture = &(Engine::AssetManager::GetAsset<Engine::Texture2D>(droppedUUID));
 					result.changed = true;
 				}
 
@@ -138,8 +139,7 @@ namespace Editor
 
 		ImGui::PushID(label.c_str());
 
-		std::string buttonText = audioClip != nullptr ? Engine::g_AssetManager->GetAssetName(audioClip->id) : "##Clip";
-
+		std::string buttonText = audioClip != nullptr ? Engine::AssetManager::GetAssetRegistry().GetPath(audioClip->id).stem().string() : "##Clip";
 		ImGui::Button(buttonText.c_str(), ImVec2(-FLT_MIN, 0));
 
 		if (audioClip)
@@ -159,9 +159,9 @@ namespace Editor
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
 				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				if (Engine::g_AssetManager->GetAssetType(droppedUUID) == Engine::AssetType::Audio)
+				if (Engine::AssetManager::GetAssetRegistry().GetType(droppedUUID) == Engine::AssetType::Audio)
 				{
-					audioClip = Engine::g_AssetManager->GetAsset<Engine::AudioClip>(droppedUUID);
+					audioClip = &(Engine::AssetManager::GetAsset<Engine::AudioClip>(droppedUUID));
 					result.changed = true;
 				}
 
@@ -193,7 +193,7 @@ namespace Editor
 
 		ImGui::PushID(label.c_str());
 
-		std::string buttonText = mesh != nullptr ? Engine::g_AssetManager->GetAssetName(mesh->id) : "##Mesh";
+		std::string buttonText = mesh != nullptr ? Engine::AssetManager::GetAssetRegistry().GetPath(mesh->id).stem().string() : "##Mesh";
 		ImGui::Button(buttonText.c_str(), ImVec2(-FLT_MIN, 0));
 
 		if (mesh)
@@ -213,9 +213,9 @@ namespace Editor
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
 				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				if (Engine::g_AssetManager->GetAssetType(droppedUUID) == Engine::AssetType::Mesh)
+				if (Engine::AssetManager::GetAssetRegistry().GetType(droppedUUID) == Engine::AssetType::Mesh)
 				{
-					mesh = Engine::g_AssetManager->GetAsset<Engine::Mesh>(droppedUUID);
+					mesh = &(Engine::AssetManager::GetAsset<Engine::Mesh>(droppedUUID));
 					result.changed = true;
 				}
 
@@ -247,7 +247,7 @@ namespace Editor
 
 		ImGui::PushID(label.c_str());
 
-		std::string buttonText = material != nullptr ? Engine::g_AssetManager->GetAssetName(material->id) : "##Material";
+		std::string buttonText = material != nullptr ? Engine::AssetManager::GetAssetRegistry().GetPath(material->id).stem().string() : "##Material";
 		ImGui::Button(buttonText.c_str(), ImVec2(-FLT_MIN, 0));
 
 		if (material)
@@ -266,9 +266,9 @@ namespace Editor
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
 				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				if (Engine::g_AssetManager->GetAssetType(droppedUUID) == Engine::AssetType::Material)
+				if (Engine::AssetManager::GetAssetRegistry().GetType(droppedUUID) == Engine::AssetType::Material)
 				{
-					material = Engine::g_AssetManager->GetAsset<Engine::Material>(droppedUUID);
+					material = &(Engine::AssetManager::GetAsset<Engine::Material>(droppedUUID));
 					result.changed = true;
 				}
 

@@ -3,6 +3,7 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
+#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Core/Project.h"
 
 namespace Engine::SceneManager
@@ -53,7 +54,7 @@ namespace Engine::SceneManager
 			return; 
 		}
 
-		auto assetPath = Engine::g_AssetManager->GetAssetPath(s_ActiveScene->id);
+		auto assetPath = Engine::AssetManager::GetAssetRegistry().GetPath(s_ActiveScene->id);
 
 		if(assetPath.empty())
 		{

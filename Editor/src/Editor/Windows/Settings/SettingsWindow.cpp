@@ -70,10 +70,9 @@ namespace Editor
 			{
 				PropertyRow row("Environment");
 
-				Engine::Renderer& renderer = *Engine::g_Renderer;
-				if (TextureField("Environment Texture", renderer.GetRenderContext().environment.TextureHDR).changed)
+				if (TextureField("Environment Texture", Engine::g_Renderer.GetRenderContext().environment.TextureHDR).changed)
 				{
-					renderer.BakeEnvironment();
+					Engine::g_Renderer.BakeEnvironment();
 				}
 			}
 

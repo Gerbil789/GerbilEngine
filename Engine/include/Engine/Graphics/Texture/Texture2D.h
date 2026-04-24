@@ -8,6 +8,7 @@ namespace Engine
 	class ENGINE_API Texture2D : public Texture
 	{
 	public:
+		Texture2D() = default;
 		Texture2D(const TextureSpecification& specification, const void* data);
 		static Texture2D* GetDefault();
 		static Texture2D* GetDefaultNormal();

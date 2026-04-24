@@ -6,9 +6,9 @@
 #include "Engine/Core/Project.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
-#include "Engine/Asset/AssetRecord.h"	
 #include <imgui.h>
 
 namespace Editor
@@ -42,12 +42,13 @@ namespace Editor
 		{"Open", "Ctrl+O", [] { LOG_WARNING("Open File - not implemented");} },
 		{"Save", "Ctrl+S", [] {
 			Engine::SceneManager::SaveScene();
-			auto materials = Engine::g_AssetManager->GetAssetsOfType<Engine::Material>(Engine::AssetType::Material);
 
-			for(auto material : materials)
+			auto records = Engine::AssetManager::GetAssetRegistry().GetRecords(Engine::AssetType::Material);
+			for (auto record : records)
 			{
-				auto path = Engine::g_AssetManager->GetAssetPath(material->id);
-				Engine::MaterialSerializer::Serialize(material, path);
+				Engine::Material& material = Engine::AssetManager::GetAsset<Engine::Material>(record->id);
+				auto path = Engine::AssetManager::GetAssetRegistry().GetPath(material.id);
+				Engine::MaterialSerializer::Serialize(&material, path);
 			}
 		}},
 	};

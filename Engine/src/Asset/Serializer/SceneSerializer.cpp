@@ -274,7 +274,8 @@ namespace Engine
 
 				if (uint64_t id; Engine::Yaml::Read<uint64_t>(meshNode, "Mesh", id))
 				{
-					component.mesh = Engine::g_AssetManager->GetAsset<Mesh>(id);
+					Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(id);
+					component.mesh = &mesh;
 				}
 
 				// Materials
@@ -285,8 +286,8 @@ namespace Engine
 					for (const auto& materialNode : materialsNode)
 					{
 						uint64_t materialId = materialNode.as<uint64_t>();
-						Material* material = Engine::g_AssetManager->GetAsset<Material>(materialId);
-						component.SetMaterial(i++, material);
+						Material& material = Engine::AssetManager::GetAsset<Material>(materialId);
+						component.SetMaterial(i++, &material);
 					}
 				}
 
@@ -415,32 +416,32 @@ namespace Engine
 					{
 						uint64_t textureId = 0;
 						Engine::Yaml::Read(scriptNode, field.name, textureId);
-						Texture2D* texture = Engine::g_AssetManager->GetAsset<Texture2D>(textureId);
-						*reinterpret_cast<Texture2D**>(fieldPtr) = texture;
+						Texture2D& texture = Engine::AssetManager::GetAsset<Texture2D>(textureId);
+						*reinterpret_cast<Texture2D**>(fieldPtr) = &texture;
 						break;
 					}
 					case ScriptFieldType::AudioClip:
 					{
 						uint64_t clipId = 0;
 						Engine::Yaml::Read(scriptNode, field.name, clipId);
-						AudioClip* clip = Engine::g_AssetManager->GetAsset<AudioClip>(clipId);
-						*reinterpret_cast<AudioClip**>(fieldPtr) = clip;
+						AudioClip& clip = Engine::AssetManager::GetAsset<AudioClip>(clipId);
+						*reinterpret_cast<AudioClip**>(fieldPtr) = &clip;
 						break;
 					}
 					case ScriptFieldType::Mesh:
 					{
 						uint64_t meshId = 0;
 						Engine::Yaml::Read(scriptNode, field.name, meshId);
-						Mesh* mesh = Engine::g_AssetManager->GetAsset<Mesh>(meshId);
-						*reinterpret_cast<Mesh**>(fieldPtr) = mesh;
+						Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(meshId);
+						*reinterpret_cast<Mesh**>(fieldPtr) = &mesh;
 						break;
 					}
 					case ScriptFieldType::Material:
 					{
 						uint64_t materialId = 0;
 						Engine::Yaml::Read(scriptNode, field.name, materialId);
-						Material* material = Engine::g_AssetManager->GetAsset<Material>(materialId);
-						*reinterpret_cast<Material**>(fieldPtr) = material;
+						Material& material = Engine::AssetManager::GetAsset<Material>(materialId);
+						*reinterpret_cast<Material**>(fieldPtr) = &material;
 						break;
 					}
 					}

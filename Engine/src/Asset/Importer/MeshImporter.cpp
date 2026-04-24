@@ -208,12 +208,7 @@ namespace Engine
 		}
 	}
 
-	Mesh* MeshImporter::ImportMesh(const std::filesystem::path& path)
-	{
-		return LoadMesh(path);
-	}
-
-	Mesh* MeshImporter::LoadMesh(const std::filesystem::path& path)
+	std::optional<Mesh> MeshImporter::LoadMesh(const std::filesystem::path& path)
 	{
 		tinygltf::Model model;
 		tinygltf::TinyGLTF loader;
@@ -222,7 +217,7 @@ namespace Engine
 		if (!loader.LoadBinaryFromFile(&model, &err, &warn, path.string()))
 		{
 			LOG_ERROR("Failed to load glTF: {}", path);
-			return nullptr;
+			return std::nullopt;
 		}
 
 		if (!warn.empty()) LOG_WARNING("{}", warn);
@@ -241,6 +236,6 @@ namespace Engine
 			ProcessNode(model, node, glm::mat4(1.0f), vertices, indices, wireIndices, subMeshes);
 		}
 
-		return new Mesh({ vertices, indices, subMeshes, wireIndices });
+		return Mesh({ vertices, indices, subMeshes, wireIndices });
 	}
 }

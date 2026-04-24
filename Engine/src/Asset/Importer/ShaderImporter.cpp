@@ -5,22 +5,17 @@
 
 namespace Engine
 {
-	Shader* ShaderImporter::ImportShader(const std::filesystem::path& path)
-	{
-		return LoadShader(path);
-	}
-
-	Shader* ShaderImporter::LoadShader(const std::filesystem::path& path)
+	std::optional<Shader> ShaderImporter::LoadShader(const std::filesystem::path& path)
 	{
 		std::string source;
 		if (!Engine::ReadFile(path, source))
 		{
 			LOG_ERROR("Failed to read shader file. %s", path);
-			return nullptr;
+			return std::nullopt;
 		}
 
 		ShaderSpecification spec = ShaderParser::GetSpecification(source);
-		auto shader = new Shader(spec, source, path.stem().string());
+		auto shader = Shader(spec, source, path.stem().string());
 		return shader;
 	}
 }

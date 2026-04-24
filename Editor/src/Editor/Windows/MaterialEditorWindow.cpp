@@ -1,8 +1,10 @@
 #include "MaterialEditorWindow.h"
 #include "Editor/Windows/Utility/Property.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Graphics/Material.h"
 #include "Editor/Core/SelectionManager.h"
+
 #include <imgui.h>
 
 namespace Editor
@@ -15,9 +17,9 @@ namespace Editor
 	void MaterialEditorWindow::Draw()
 	{
 		auto id = SelectionManager::GetPrimary(SelectionType::Asset);
-		if (Engine::g_AssetManager->GetAssetType(id) == Engine::AssetType::Material)
+		if (Engine::AssetManager::GetAssetRegistry().GetType(id) == Engine::AssetType::Material)
 		{
-			m_Material = Engine::g_AssetManager->GetAsset<Engine::Material>(id);
+			m_Material = &(Engine::AssetManager::GetAsset<Engine::Material>(id));
 		}
 
 		ImGui::Begin("Material");
@@ -29,8 +31,8 @@ namespace Editor
 			return;
 		}
 
-		Engine::Shader* shader = m_Material->GetShader();
-		auto shaderSpec = shader->GetSpecification();
+		const Engine::Shader& shader = m_Material->GetShader();
+		auto shaderSpec = shader.GetSpecification();
 		auto bindings = GetMaterialBindings(shaderSpec);
 		bool hasTextures = false;
 
@@ -40,7 +42,16 @@ namespace Editor
 
 		if (s_AllShaders.empty())
 		{
-			auto shaders = Engine::g_AssetManager->GetAssetsOfType<Engine::Shader>(Engine::AssetType::Shader);
+			auto records = Engine::AssetManager::GetAssetRegistry().GetRecords(Engine::AssetType::Shader);
+
+			std::vector<Engine::Shader*> shaders;
+			shaders.reserve(records.size());
+
+			for(auto* record : records)
+			{
+				shaders.push_back(&Engine::AssetManager::GetAsset<Engine::Shader>(record->id));
+			}
+
 
 			s_AllShaders.resize(shaders.size());
 			for (size_t i = 0; i < shaders.size(); i++)
@@ -65,7 +76,8 @@ namespace Editor
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0);
 
-			Engine::AssetRecord& record = Engine::g_AssetManager->GetAssetRecord(m_Material->id);
+			const auto& registry = Engine::AssetManager::GetAssetRegistry();
+			Engine::AssetRecord& record = registry.GetRecord(m_Material->id);
 
 			std::string name = record.GetName();
 			if (TextField("MaterialName", name).finished)
@@ -80,13 +92,13 @@ namespace Editor
 			int currentShaderIndex = -1;
 			for (size_t i = 0; i < s_AllShaders.size(); i++)
 			{
-				if (m_Material->GetShader() == s_AllShaders[i])
+				if (&m_Material->GetShader() == s_AllShaders[i])
 					currentShaderIndex = (int)i;
 			}
 
 			if (ImGui::Combo("##Shader", &currentShaderIndex, shaderNames.data(), (int)shaderNames.size()))
 			{
-				m_Material->SetShader(s_AllShaders[currentShaderIndex]);
+				m_Material->SetShader(*s_AllShaders[currentShaderIndex]);
 			}
 
 

@@ -43,6 +43,14 @@ namespace Engine
 		Mesh(const MeshSpecification& specification);
 		~Mesh();
 
+		// 1. Declare Move Constructor and Move Assignment
+		Mesh(Mesh&& other) noexcept;
+		Mesh& operator=(Mesh&& other) noexcept;
+
+		// 2. Explicitly delete Copying (optional, but good practice for GPU resources)
+		Mesh(const Mesh&) = delete;
+		Mesh& operator=(const Mesh&) = delete;
+
 		const std::vector<SubMesh>& GetSubMeshes() const { return m_SubMeshes; }
 		const wgpu::Buffer& GetVertexBuffer() const;
 		const wgpu::Buffer& GetIndexBuffer() const;

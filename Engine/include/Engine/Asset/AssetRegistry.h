@@ -24,6 +24,30 @@ namespace Engine
 			return invalidRecord;
 		}
 
+		template<typename Self>
+		std::vector<AssetRecord*> GetRecords(this Self&& self, AssetType type)
+		{
+			std::vector<AssetRecord*> records;
+			for (auto& [id, record] : ((AssetRegistry&)self).m_Records)
+			{
+				if (record.type == type)
+				{
+					records.push_back(&record);
+				}
+			}
+			return records;
+		}
+
+		AssetType GetType(Uuid id) const
+		{
+			const AssetRecord& record = GetRecord(id);
+			if (!record.IsValid())
+			{
+				return AssetType::Unknown;
+			}
+			return record.type;
+		}
+
 		std::filesystem::path GetPath(const Uuid& id) const;
 		std::filesystem::path GetRelativePath(const Uuid& id) const;
 		std::vector<const AssetRecord*> GetAllRecords() const;

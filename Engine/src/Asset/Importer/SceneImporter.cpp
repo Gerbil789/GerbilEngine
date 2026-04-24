@@ -5,14 +5,15 @@
 
 namespace Engine
 {
-	Scene* SceneImporter::ImportScene(const std::filesystem::path& path)
-	{
-		return LoadScene(path);
-	}
-
-	Scene* SceneImporter::LoadScene(const std::filesystem::path& path)
-	{
-		Scene* scene = SceneSerializer::Deserialize(path);
-		return scene;
-	}
+	std::optional<Scene> SceneImporter::LoadScene(const std::filesystem::path& path)
+  {
+		Scene* scene = SceneSerializer::Deserialize(path); //TODO: change to return optional from deserialize and remove this function
+    if (scene)
+    {
+      std::optional<Scene> result = std::move(*scene);
+      delete scene;
+      return result; // Return by value
+    }
+    return std::nullopt;
+  }
 }

@@ -9,7 +9,7 @@ namespace Engine
 {
 	struct MaterialSpecification
 	{
-		Shader* shader = nullptr;
+		Shader shader;
 
 		TextureFilter filter = TextureFilter::Bilinear;
 		TextureWrap wrap = TextureWrap::Repeat;
@@ -25,8 +25,8 @@ namespace Engine
 	public:
 		Material(const MaterialSpecification& spec);
 
-		Shader* GetShader() const { return m_Shader; }
-		void SetShader(Shader* shader);
+		const Shader& GetShader() const { return m_Shader; }
+		void SetShader(Shader& shader);
 
 		void SetFloat(const std::string& paramName, float value);
 		void SetVec2(const std::string& paramName, const glm::vec2& value);
@@ -51,7 +51,7 @@ namespace Engine
 		void CreateBindGroup();
 
 	private:
-		Shader* m_Shader;
+		Shader m_Shader;
 
 		std::vector<std::byte> m_UniformData; // parameters data packed according to shader layout
 		std::unordered_map<std::string, Texture2D*> m_Textures; // this is for engine management, the webgpu binds it once and does not need it afterwards
@@ -66,5 +66,5 @@ namespace Engine
 namespace Engine::Materials
 {
 	ENGINE_API Material* GetDefault();
-	ENGINE_API Material* CreateMaterial(const std::filesystem::path& path);
+	//ENGINE_API Material* CreateMaterial(const std::filesystem::path& path);
 }

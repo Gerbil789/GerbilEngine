@@ -45,5 +45,5 @@ namespace Engine
 		RenderPassType m_EnabledPasses = RenderPassType::None;
 	};
 
-	extern ENGINE_API Renderer *g_Renderer;
+	extern ENGINE_API Renderer g_Renderer;
 }

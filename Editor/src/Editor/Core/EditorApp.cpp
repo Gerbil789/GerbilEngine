@@ -32,7 +32,7 @@ namespace Editor
 {
 	EditorApp::EditorApp(const ApplicationCommandLineArgs& args)
 	{
-		RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
+		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
 
 		LoadEditorSettings();
 
@@ -53,22 +53,17 @@ namespace Editor
 
 		std::filesystem::current_path(GetExecutableDir());
 
-		Engine::g_AssetManager = new Engine::AssetManager();
-		Engine::g_AssetManager->Initialize(project->GetProjectDirectory());
-
 		Engine::GraphicsContext::Initialize();
 		GLFW::Initialize();
+		Engine::SamplerPool::Initialize();
+		Engine::RenderPipelineLayouts::Initialize();
+		Engine::AssetManager::Initialize(project->GetProjectDirectory());
 
 		m_Window.emplace(Engine::WindowSpecification{ "Gerbil Editor", 1600, 900, "Resources/Engine/icons/logo.png" });
 		m_Window->SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
-
 		Engine::Input::SetActiveWindow(*static_cast<GLFWwindow*>(m_Window->GetNativeWindow()));
 
-		Engine::SamplerPool::Initialize();
-		Engine::RenderPipelineLayouts::Initialize();
-
-		Engine::g_Renderer = new Engine::Renderer();
-		Engine::g_Renderer->Initialize();
+		Engine::g_Renderer.Initialize();
 
 		Engine::Time::Initialize();
 
@@ -88,8 +83,8 @@ namespace Editor
 
 		EditorWindowManager::Initialize(*m_Window);
 
-		Engine::Scene* scene = Engine::g_AssetManager->GetAsset<Engine::Scene>(project->GetStartSceneID());
-		if(scene) { Engine::SceneManager::SetActiveScene(scene); }
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(project->GetStartSceneID());
+		if(&scene) { Engine::SceneManager::SetActiveScene(&scene); }
 
 		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
 	}
@@ -100,7 +95,7 @@ namespace Editor
 		Engine::Audio::Shutdown();
 		EditorWindowManager::Shutdown();
 		IconManager::Unload();
-		Engine::g_AssetManager->Shutdown();
+		Engine::AssetManager::Shutdown();
 		Engine::SamplerPool::Shutdown();
 		m_Window.reset();
 		GLFW::Shutdown();

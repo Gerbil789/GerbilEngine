@@ -41,9 +41,9 @@ namespace Engine
 		ma_engine_listener_set_direction(&s_AudioEngine, 0, 0, 0, -1);
 		ma_engine_listener_set_world_up(&s_AudioEngine, 0, 0, 1, 0);
 
-		auto clips = Engine::g_AssetManager->GetAssetsOfType<AudioClip>(AssetType::Audio);
+		//auto clips = Engine::g_AssetManager->GetAssetsOfType<AudioClip>(AssetType::Audio);
 
-		auto assets = Engine::g_AssetManager->GetAssetsOfType<Asset>(AssetType::Audio);
+		//auto assets = Engine::g_AssetManager->GetAssetsOfType<Asset>(AssetType::Audio);
 	}
 
 	void Audio::Shutdown()

@@ -11,6 +11,12 @@ namespace Engine
 		m_Specification = specification;
 		m_Name = name;
 
+		if(source == "")
+		{
+			LOG_ERROR("Shader source code is empty for shader '{}'", name);
+			return;
+		}
+
 		wgpu::ShaderModule shaderModule = CreateShaderModule(source);
 
 		auto vertexAttributeCount = specification.vertexAttributes.size();

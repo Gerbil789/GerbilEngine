@@ -36,6 +36,7 @@ namespace Engine
 		return AssetType::Unknown;
 	}
 
+
 	inline std::string_view AssetTypeToString(AssetType type)
 	{
 		switch (type)
@@ -48,7 +49,6 @@ namespace Engine
 		case AssetType::Audio:    return "Audio";
 		case AssetType::Scene:    return "Scene";
 		case AssetType::Script:   return "Script";
-		//case AssetType::CubeMap:  return "CubeMap";
 		default:                  return "Unknown";
 		}
 	}
@@ -62,7 +62,6 @@ namespace Engine
 		if (assetType == "Audio")    return AssetType::Audio;
 		if (assetType == "Scene")    return AssetType::Scene;
 		if (assetType == "Script")   return AssetType::Script;
-		//if (assetType == "CubeMap") return AssetType::CubeMap;
 		return AssetType::Unknown;
 	}
 

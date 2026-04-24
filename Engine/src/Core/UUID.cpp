@@ -12,6 +12,6 @@ namespace Engine
 
 		m_Value = 0;
 		do { m_Value = dis(gen); } 
-		while (m_Value == 0); // reserve 0 as invalid
+		while (m_Value <= 1000); // reserve low values for special cases
 	}
 }

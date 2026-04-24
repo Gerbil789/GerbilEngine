@@ -16,7 +16,7 @@ namespace Engine
 		m_GPU = std::make_unique<MeshGPUData>();
 
 		// Vertex buffer
-		wgpu::BufferDescriptor vertexBufferdesc{};
+		wgpu::BufferDescriptor vertexBufferdesc;
 		vertexBufferdesc.label = { "VertexBuffer", WGPU_STRLEN };
 		vertexBufferdesc.usage = wgpu::BufferUsage::Vertex | wgpu::BufferUsage::CopyDst;
 		vertexBufferdesc.size = specification.vertices.size() * sizeof(Vertex);
@@ -51,6 +51,10 @@ namespace Engine
 	}
 
 	Mesh::~Mesh() = default;
+
+	Mesh::Mesh(Mesh&& other) noexcept = default;
+
+	Mesh& Mesh::operator=(Mesh&& other) noexcept = default;
 
 	const wgpu::Buffer& Mesh::GetVertexBuffer() const
 	{

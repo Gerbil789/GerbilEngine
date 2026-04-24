@@ -7,6 +7,6 @@ namespace Engine
 	class ENGINE_API Asset
 	{
 	public:
-		Uuid id = Uuid(0);
+		Uuid id = Uuid{ 0 };
 	};
 }

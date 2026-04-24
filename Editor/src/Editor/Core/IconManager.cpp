@@ -19,17 +19,17 @@ namespace Editor
       glm::ivec2{7, 0}, // Mesh
   };
 
-  static Engine::Texture2D* s_TextureAtlas = nullptr;
+  static Engine::Texture2D s_TextureAtlas;
   constexpr static glm::ivec2 s_CellSize{ 64, 64 };
   static std::array<Engine::SubTexture2D*, static_cast<size_t>(Icon::Count)> s_Icons;
 
   void IconManager::Load(const std::filesystem::path& path)
   {
-    s_TextureAtlas = Engine::TextureImporter::LoadTexture2D(path);
+    s_TextureAtlas = Engine::TextureImporter::LoadTexture(path).value();
 
     const auto addIcon = [](Icon icon, const glm::ivec2& coords)
       {
-        s_Icons[static_cast<size_t>(icon)] = Engine::SubTexture2D::CreateFromGrid(s_TextureAtlas, coords, s_CellSize);
+        s_Icons[static_cast<size_t>(icon)] = Engine::SubTexture2D::CreateFromGrid(&s_TextureAtlas, coords, s_CellSize);
       };
 
     for (size_t i = 0; i < IconCoords.size(); ++i)
@@ -45,8 +45,6 @@ namespace Editor
       delete icon;
       icon = nullptr;
     }
-    delete s_TextureAtlas;
-		s_TextureAtlas = nullptr;
   }
 
   Engine::SubTexture2D* IconManager::GetIcon(Icon icon)

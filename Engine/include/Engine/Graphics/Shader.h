@@ -9,6 +9,7 @@ namespace Engine
 	class Shader : public Asset
 	{
 	public:
+		Shader() = default;
 		Shader(const ShaderSpecification& specification, const std::string& source, const std::string& name = "untitled");
 
 		const std::string& GetName() const { return m_Name; }

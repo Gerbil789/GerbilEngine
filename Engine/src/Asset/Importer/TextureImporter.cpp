@@ -77,39 +77,16 @@ namespace Engine
 		};
 	}
 
-	Texture2D* TextureImporter::ImportTexture2D(const std::filesystem::path& path)
-	{
-		return LoadTexture2D(path);
-	}
-
-	Texture2D* TextureImporter::LoadTexture2D(const std::filesystem::path& path)
+	std::optional<Texture2D> TextureImporter::LoadTexture(const std::filesystem::path& path)
 	{
 		ImageLoadResult image;
-		if (!image.Load(path)) return nullptr;
+		if (!image.Load(path)) return std::nullopt;
 
 		TextureSpecification spec;
 		spec.width = static_cast<uint32_t>(image.width);
 		spec.height = static_cast<uint32_t>(image.height);
 		spec.format = image.format;
 
-		return new Texture2D(spec, image.GetData());
-	}
-
-	TextureCube* TextureImporter::ImportCubeTexture(const std::filesystem::path& path)
-	{
-		return LoadCubeTexture(path);
-	}
-
-	TextureCube* TextureImporter::LoadCubeTexture(const std::filesystem::path& path)
-	{
-		ImageLoadResult image;
-		if (!image.Load(path)) return nullptr;
-
-		TextureSpecification spec;
-		spec.width = static_cast<uint32_t>(image.width);
-		spec.height = static_cast<uint32_t>(image.height);
-		spec.format = image.format;
-
-		return new TextureCube(spec, image.GetData());
+		return Texture2D(spec, image.GetData());
 	}
 }

@@ -9,6 +9,9 @@ namespace Engine
 		m_Registry.clear();
 	}
 
+	Scene::Scene(Scene&& other) noexcept = default;
+	Scene& Scene::operator=(Scene&& other) noexcept = default;
+
 	Scene* Scene::Copy(Scene* other)
 	{
 		Scene* newScene = new Scene();

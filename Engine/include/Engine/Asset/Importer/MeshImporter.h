@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Core/API.h"
+#include <optional>
 
 namespace Engine
 {
@@ -9,7 +10,6 @@ namespace Engine
 	class ENGINE_API MeshImporter
 	{
 	public:
-		static Mesh* ImportMesh(const std::filesystem::path& path);
-		static Mesh* LoadMesh(const std::filesystem::path& path);
+		static std::optional<Mesh> LoadMesh(const std::filesystem::path& path);
 	};
 }

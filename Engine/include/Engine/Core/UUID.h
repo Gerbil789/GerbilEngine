@@ -10,7 +10,7 @@ namespace Engine
   {
   public:
     Uuid(); // generates a new UUID
-    Uuid(uint64_t value) : m_Value(value) {}
+    constexpr Uuid(uint64_t value) : m_Value(value) {}
 
     bool operator==(const Uuid& other) const { return m_Value == other.m_Value; }
     bool operator!=(const Uuid& other) const { return m_Value != other.m_Value; }
