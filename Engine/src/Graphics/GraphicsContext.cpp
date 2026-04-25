@@ -5,29 +5,33 @@
 
 namespace Engine::GraphicsContext
 {
-	static wgpu::Instance s_Instance;
-	static wgpu::Device s_Device;
-	static wgpu::Queue s_Queue;
+	namespace
+	{
+		wgpu::raii::Instance s_Instance;
+		wgpu::raii::Device s_Device;
+		wgpu::raii::Queue s_Queue;
 
-	static uint32_t s_UniformBufferOffsetAlignment;
-	static uint32_t s_StorageBufferOffsetAlignment;
+		uint32_t s_UniformBufferOffsetAlignment;
+		uint32_t s_StorageBufferOffsetAlignment;
+	}
 
 	void Initialize()
 	{
-
-
 		wgpu::InstanceDescriptor desc;
 		desc.setDefault();
-		desc.requiredFeatureCount = 1;
-		desc.requiredFeatures = &wgpu::InstanceFeatureName::TimedWaitAny; //TODO: must be?
-		s_Instance = wgpu::createInstance(desc);
+
+		std::array<wgpu::InstanceFeatureName, 1> features = { wgpu::InstanceFeatureName::TimedWaitAny };
+		desc.requiredFeatureCount = features.size();
+		desc.requiredFeatures = reinterpret_cast<WGPUInstanceFeatureName*>(features.data());
+
+		s_Instance = std::move(wgpu::createInstance(desc));
 		if(!s_Instance)
 		{
 			throw std::runtime_error("Failed to create WGPU instance");
 		}
 
-		wgpu::RequestAdapterOptions adapterOpts{};
-		wgpu::Adapter adapter = s_Instance.requestAdapter(adapterOpts);
+		wgpu::RequestAdapterOptions adapterOpts;
+		wgpu::raii::Adapter adapter = std::move(s_Instance->requestAdapter(adapterOpts));
 		if(!adapter)
 		{
 			throw std::runtime_error("Failed to request WGPU adapter");
@@ -35,7 +39,7 @@ namespace Engine::GraphicsContext
 
 		{
 			wgpu::AdapterInfo info;
-			adapter.getInfo(&info);
+			adapter->getInfo(&info);
 
 			LOG_TRACE("Dawn backend: {}", BackendTypeToString(info.backendType));
 			LOG_TRACE("GPU: {} ({})", ToStringView(info.device), ToStringView(info.architecture));
@@ -45,10 +49,9 @@ namespace Engine::GraphicsContext
 		}
 
 		wgpu::Limits limits;
+		//limits.maxBufferSize = 1024ull * 1024ull * 1024ull; // request 1 GB
 
-		limits.maxBufferSize = 1024ull * 1024ull * 1024ull; // request 1 GB
-
-		if (adapter.getLimits(&limits) != wgpu::Status::Success)
+		if (adapter->getLimits(&limits) != wgpu::Status::Success)
 		{
 			throw std::runtime_error("Failed to query adapter limits");
 		}
@@ -56,7 +59,7 @@ namespace Engine::GraphicsContext
 		s_UniformBufferOffsetAlignment = limits.minUniformBufferOffsetAlignment;
 		s_StorageBufferOffsetAlignment = limits.minStorageBufferOffsetAlignment;
 
-		wgpu::DeviceDescriptor deviceDesc{};
+		wgpu::DeviceDescriptor deviceDesc;
 		deviceDesc.label = { "MainDevice", WGPU_STRLEN };
 		deviceDesc.requiredFeatureCount = 0;
 		deviceDesc.defaultQueue.label = { "DefaultQueue", WGPU_STRLEN };
@@ -74,49 +77,40 @@ namespace Engine::GraphicsContext
 				LOG_ERROR("WebGPU Uncaptured error [type: {}]: {}", ErrorTypeToString(type), message.data);
 			};
 
-		s_Device = adapter.requestDevice(deviceDesc);
+		s_Device = std::move(adapter->requestDevice(deviceDesc));
 		if(!s_Device)
 		{
 			throw std::runtime_error("Failed to request WGPU device");
 		}
 
-		adapter.release();
-
-		s_Queue = s_Device.getQueue();
+		s_Queue = std::move(s_Device->getQueue());
 		if(!s_Queue)
 		{
 			throw std::runtime_error("Failed to get WGPU queue");
 		}
 	}
 
-	void Shutdown()
+	wgpu::Instance GetInstance()
 	{
-		if (s_Queue) s_Queue.release();
-		if (s_Device) s_Device.release();
-		if (s_Instance) s_Instance.release();
+		return *s_Instance;
 	}
 
-	const wgpu::Instance& GetInstance()
+	wgpu::Device GetDevice()
 	{
-		return s_Instance;
+		return *s_Device;
 	}
 
-	const wgpu::Device& GetDevice()
+	wgpu::Queue GetQueue()
 	{
-		return s_Device;
+		return *s_Queue;
 	}
 
-	const wgpu::Queue& GetQueue()
-	{
-		return s_Queue;
-	}
-
-	ENGINE_API uint32_t GetUniformBufferOffsetAlignment()
+	uint32_t GetUniformBufferOffsetAlignment()
 	{
 		return s_UniformBufferOffsetAlignment;
 	}
 
-	ENGINE_API uint32_t GetStorageBufferOffsetAlignment()
+	uint32_t GetStorageBufferOffsetAlignment()
 	{
 		return s_StorageBufferOffsetAlignment;
 	}

@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
-#include "Engine/Graphics/Material.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Utility/Yaml.h"
 
@@ -51,21 +50,9 @@ namespace Engine
 		}
 	}
 
-	void MaterialSerializer::Serialize(Material* material, const std::filesystem::path& path)
+	void MaterialSerializer::Serialize(const Material& material, const std::filesystem::path& path)
 	{
-		if (!material)
-		{
-			LOG_ERROR("MaterialSerializer::Serialize - Material is null, cannot serialize.");
-			return;
-		}
-
-		auto shader = material->GetShader();
-		//if (!shader)
-		//{
-		//	LOG_ERROR("MaterialSerializer::Serialize - Material has no shader, cannot serialize.");
-		//	return;
-		//}
-
+		auto shader = material.GetShader();
 		auto shaderSpec = shader.GetSpecification(); 
 		auto materialBindings = GetMaterialBindings(shaderSpec);
 
@@ -79,8 +66,8 @@ namespace Engine
 			out << YAML::Key << "Sampler" << YAML::Value;
 			{
 				Yaml::Map sampler(out);
-				Yaml::Write(out, "Filter", (uint32_t)material->GetTextureFilter());
-				Yaml::Write(out, "Wrap", (uint32_t)material->GetTextureWrap());
+				Yaml::Write(out, "Filter", (uint32_t)material.GetTextureFilter());
+				Yaml::Write(out, "Wrap", (uint32_t)material.GetTextureWrap());
 			}
 
 			// Attributes
@@ -90,7 +77,7 @@ namespace Engine
 				for (const Binding& binding : materialBindings)
 				{
 					if (binding.type == BindingType::UniformBuffer)
-						SerializeUniformBuffer(out, binding, material->GetUniformData());
+						SerializeUniformBuffer(out, binding, material.GetUniformData());
 				}
 			}
 
@@ -102,7 +89,7 @@ namespace Engine
 				{
 					if (binding.type != BindingType::Texture2D) continue;
 
-					auto texture = material->GetTexture(binding.name);
+					auto texture = material.GetTexture(binding.name);
 					if(texture->id)
 					{
 						Engine::Yaml::Write(out, binding.name, texture->id);
@@ -123,7 +110,7 @@ namespace Engine
 		fout.close();
 	}
 
-	Material* MaterialSerializer::Deserialize(const std::filesystem::path& path)
+	std::optional<Material> MaterialSerializer::Deserialize(const std::filesystem::path& path)
 	{
 		YAML::Node data;
 		try
@@ -133,11 +120,10 @@ namespace Engine
 		catch (const YAML::Exception& e)
 		{
 			LOG_ERROR("YAML parse error in {}: {}", path, e.what());
-			return nullptr;
+			return std::nullopt;
 		}
 
 		Engine::Shader& shader = Engine::AssetManager::GetAsset<Shader>(Uuid(data["Shader"].as<uint64_t>()));
-
 
 		MaterialSpecification spec;
 		spec.shader = shader;
@@ -187,6 +173,6 @@ namespace Engine
 		}
 
 
-		return new Material(spec);
+		return Material(spec);
 	}
 }

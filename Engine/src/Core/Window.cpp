@@ -253,7 +253,7 @@ namespace Engine
 
 	void Window::ConfigureSurface(uint32_t width, uint32_t height)
 	{
-		wgpu::SurfaceConfiguration config{};
+		wgpu::SurfaceConfiguration config;
 		config.width = width;
 		config.height = height;
 		config.device = GraphicsContext::GetDevice();

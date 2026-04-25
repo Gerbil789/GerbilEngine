@@ -95,11 +95,13 @@ namespace Engine
       sphereMesh->id = RESOURCES::MESH::SPHERE;
       m_Meshes.insert_or_assign(RESOURCES::MESH::SPHERE, std::move(*sphereMesh));
 		}
-  }
 
-  void AssetManager::Shutdown()
-  {
-    m_AssetRegistry.Clear();
+		auto HDRTexture = TextureImporter::LoadTexture("Resources/Engine/hdr/PG2/lebombo_4k.hdr");
+    if(HDRTexture)
+    {
+      HDRTexture->id = RESOURCES::TEXTURE::HDR;
+      m_Textures.insert_or_assign(RESOURCES::TEXTURE::HDR, std::move(*HDRTexture));
+    }
   }
 
   AssetRegistry& AssetManager::GetAssetRegistry()

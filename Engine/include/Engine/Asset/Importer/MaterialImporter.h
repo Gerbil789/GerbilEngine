@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Engine/Core/API.h"
-
 namespace Engine
 {
 	class Material;

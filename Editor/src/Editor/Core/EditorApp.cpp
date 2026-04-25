@@ -19,14 +19,14 @@
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Utility/Path.h"
 #include "Engine/Scene/Scene.h"
-#include "Editor/Core/EditorRuntime.h"
+#include "Editor/Core/EditorContext.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Debug/RenderDoc.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Core/Project.h"
-#include "Editor/Core/EditorSettings.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
+#include "Engine/Core/Runtime.h"
 
 namespace Editor
 {
@@ -34,22 +34,22 @@ namespace Editor
 	{
 		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
 
-		LoadEditorSettings();
+		EditorSettings::Load();
 
 		if(args.Count > 1)
 		{
-			g_EditorSettings.projectDirectory = args[1];
+			EditorSettings::projectDirectory = args[1];
 		}
 		else
 		{
-			if(g_EditorSettings.projectDirectory.empty())
+			if(EditorSettings::projectDirectory.empty())
 			{
-				g_EditorSettings.projectDirectory = Engine::OpenDirectory();
+				EditorSettings::projectDirectory = Engine::OpenDirectory();
 			}
 		}
-
-		auto project = Engine::Project::Load(g_EditorSettings.projectDirectory);
-		SaveEditorSettings();
+		Engine::Project::Load(EditorSettings::projectDirectory);
+		const Engine::Project& project = Engine::Project::GetActive();
+		EditorSettings::Save();
 
 		std::filesystem::current_path(GetExecutableDir());
 
@@ -57,7 +57,7 @@ namespace Editor
 		GLFW::Initialize();
 		Engine::SamplerPool::Initialize();
 		Engine::RenderPipelineLayouts::Initialize();
-		Engine::AssetManager::Initialize(project->GetProjectDirectory());
+		Engine::AssetManager::Initialize(project.GetProjectDirectory());
 
 		m_Window.emplace(Engine::WindowSpecification{ "Gerbil Editor", 1600, 900, "Resources/Engine/icons/logo.png" });
 		m_Window->SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
@@ -65,26 +65,20 @@ namespace Editor
 
 		Engine::g_Renderer.Initialize();
 
-		Engine::Time::Initialize();
 
 		EditorCommandManager::Initialize();
-		FileWatcher::WatchDirectory(project->GetAssetsDirectory());
+		FileWatcher::WatchDirectory(project.GetAssetsDirectory());
 
 		Engine::Audio::Initialize();
 		IconManager::Load("Resources/Editor/icons/icons.png");
 
-		std::filesystem::path dllPath = project->GetProjectDirectory() / "bin/windows/" / BUILD_CONFIG / (project->GetTitle() + ".dll");
-		Engine::ScriptRegistry& registry = Engine::ScriptRegistry::Get();
-
-		EditorRuntime::Initialize();
-		EditorRuntime::LoadScripts(registry, dllPath);
-
-		Engine::SceneSerializer::Initialize(registry); //TODO: dont pass registry like this...
+		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / BUILD_CONFIG / (project.GetTitle() + ".dll");
+		Engine::Runtime::LoadScripts(dllPath);
 
 		EditorWindowManager::Initialize(*m_Window);
 
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(project->GetStartSceneID());
-		if(&scene) { Engine::SceneManager::SetActiveScene(&scene); }
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(project.GetStartSceneID());
+		if(&scene) { Engine::SceneManager::SetActiveScene(scene); }
 
 		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
 	}
@@ -95,11 +89,9 @@ namespace Editor
 		Engine::Audio::Shutdown();
 		EditorWindowManager::Shutdown();
 		IconManager::Unload();
-		Engine::AssetManager::Shutdown();
 		Engine::SamplerPool::Shutdown();
 		m_Window.reset();
 		GLFW::Shutdown();
-		Engine::GraphicsContext::Shutdown();
 	}
 
 	void EditorApp::Run()
@@ -114,7 +106,11 @@ namespace Editor
 
 			EditorWindowManager::Update();		// update editor UI, render viewport, ...
 			EditorCommandManager::Flush();		// execute queued commands (deffered execution)
-			EditorRuntime::Update();					// update runtime (scripts, audio listener, etc...)
+			
+			if (EditorContext::state == EditorState::Play)
+			{
+				Engine::Runtime::Update();			// update game runtime (scripts, audio listener, etc...)
+			}
 		}
 	}
 }

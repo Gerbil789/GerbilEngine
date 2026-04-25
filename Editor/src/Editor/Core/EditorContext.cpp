@@ -1,4 +1,4 @@
-#include "EditorSettings.h"
+#include "EditorContext.h"
 #include "Engine/Utility/Path.h"
 #include "Engine/Utility/Yaml.h"
 #include "Engine/Core/Log.h"
@@ -6,9 +6,7 @@
 
 namespace Editor
 {
-	EditorSettings g_EditorSettings;
-
-	void LoadEditorSettings()
+	void EditorSettings::Load()
 	{
 		std::filesystem::path settingsFilePath = GetSettingsFilePath("GerbilEditor");
 
@@ -30,19 +28,19 @@ namespace Editor
 
 		if (data["ProjectDirectory"])
 		{
-			g_EditorSettings.projectDirectory = data["ProjectDirectory"].as<std::string>();
+			projectDirectory = data["ProjectDirectory"].as<std::string>();
 		}
 
 		LOG_INFO("Loaded settings from {}", settingsFilePath);
 		return;
 	}
 
-	void SaveEditorSettings()
+	void EditorSettings::Save()
 	{
 		std::filesystem::path settingsFilePath = GetSettingsFilePath("GerbilEditor");
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		Engine::Yaml::Write(out, "ProjectDirectory", g_EditorSettings.projectDirectory.string());
+		Engine::Yaml::Write(out, "ProjectDirectory", projectDirectory.string());
 		out << YAML::EndMap;
 		std::ofstream fout(settingsFilePath);
 		if (!fout.is_open())

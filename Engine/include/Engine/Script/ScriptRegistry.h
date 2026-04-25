@@ -35,16 +35,11 @@ namespace Engine
   class ScriptRegistry
   {
   public:
-    static ScriptRegistry& Get()
-    {
-      static ScriptRegistry instance;
-      return instance;
-    }
-
+    ScriptRegistry() = default;
     ScriptRegistry(const ScriptRegistry&) = delete;
     ScriptRegistry& operator=(const ScriptRegistry&) = delete;
 
-    std::string ScriptName(std::string name)
+    inline std::string ScriptName(std::string name)
     {
       constexpr std::string_view struct_kw = "struct ";
       constexpr std::string_view class_kw = "class ";
@@ -69,9 +64,9 @@ namespace Engine
       m_Registry.emplace(name, std::move(desc));
     }
 
-    ScriptDescriptor& GetDescriptor(std::string id) { return m_Registry.at(id); }
+    inline ScriptDescriptor& GetDescriptor(std::string id) { return m_Registry.at(id); }
 
-    std::vector<const ScriptDescriptor*> GetAllDescriptors() const
+    inline std::vector<const ScriptDescriptor*> GetAllDescriptors() const
     {
       std::vector<const ScriptDescriptor*> result;
       result.reserve(m_Registry.size());
@@ -82,7 +77,7 @@ namespace Engine
       return result;
     }
 
-    std::vector<std::string> GetAllScriptNames() 
+    inline std::vector<std::string> GetAllScriptNames()
     {
       std::vector<std::string> scriptNames; //TODO: cache this, this is getting called every frame
       scriptNames.reserve(m_Registry.size());
@@ -91,16 +86,19 @@ namespace Engine
       return scriptNames;
     }
 
-    void Clear()
+    inline void Clear()
     {
       m_Registry.clear();
     }
 
   private:
-    ScriptRegistry() = default;
 		std::unordered_map<std::string, ScriptDescriptor> m_Registry;
   };
+
+
+  extern ENGINE_API ScriptRegistry g_ScriptRegistry;
 }
+
 
 extern "C"
 {

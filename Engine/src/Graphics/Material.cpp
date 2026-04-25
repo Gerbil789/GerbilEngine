@@ -183,8 +183,6 @@ namespace Engine
 
 	void Material::CreateBindGroup()
 	{
-		ASSERT(m_Shader, "Material::CreateMaterialBindGroup - No shader set for material!");
-
 		const auto materialBindings = GetMaterialBindings(m_Shader.GetSpecification());
 
 		std::vector<wgpu::BindGroupEntry> entries;

@@ -22,7 +22,7 @@ namespace Engine
 			return;
 		}
 
-		auto assetsDir = Engine::Project::GetActive()->GetAssetsDirectory();
+		auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
 		m_Records.clear();
 
 		for (const auto& entry : data["Assets"])
@@ -119,7 +119,7 @@ namespace Engine
 		out << YAML::BeginMap;
 		out << YAML::Key << "Assets" << YAML::Value << YAML::BeginSeq;
 
-		auto assetsDir = Engine::Project::GetActive()->GetAssetsDirectory();
+		auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
 
 		for (const auto& [uuid, record] : m_Records)
 		{
@@ -148,7 +148,7 @@ namespace Engine
 
 	const AssetRecord* AssetRegistry::Create(const std::filesystem::path& path)
 	{
-		auto assetsDir = Engine::Project::GetActive()->GetAssetsDirectory();
+		auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
 
 		for (const auto& [uuid, record] : m_Records)
 		{
@@ -162,7 +162,7 @@ namespace Engine
 		auto id = Uuid(); // generate new UUID
 		auto [it, inserted] = m_Records.try_emplace(id, AssetRecord{id, assetsDir / path, GetAssetTypeFromExtension(path.extension().string())});
 
-		Save(Engine::Project::GetActive()->GetProjectDirectory() / "assetRegistry.yaml");
+		Save(Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.yaml");
 		LOG_TRACE("Added asset '{}' to registry.", path);
 		return &it->second;
 	}
@@ -184,7 +184,7 @@ namespace Engine
 		static std::filesystem::path emptyPath;
 		if (auto it = m_Records.find(id); it != m_Records.end())
 		{
-			auto assetsDir = Engine::Project::GetActive()->GetAssetsDirectory();
+			auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
 			return std::filesystem::relative(it->second.path, assetsDir);
 		}
 		return emptyPath;

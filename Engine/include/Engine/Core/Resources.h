@@ -12,7 +12,11 @@ namespace Engine::RESOURCES
 		static constexpr Uuid SPHERE = Uuid{ 2 };
 	}
 
-	//static constexpr Uuid WHITE_TEXTURE = Uuid{ 11 };
-	//static constexpr Uuid BLACK_TEXTURE = Uuid{ 12 };
-	//static constexpr Uuid NORMAL_TEXTURE = Uuid{ 13 };
+	namespace TEXTURE
+	{
+		static constexpr Uuid WHITE = Uuid{ 3 };
+		static constexpr Uuid BLACK = Uuid{ 4 };
+		static constexpr Uuid NORMAL = Uuid{ 5 };
+		static constexpr Uuid HDR = Uuid{ 6 };
+	}
 }

@@ -46,9 +46,8 @@ namespace Editor
 			auto records = Engine::AssetManager::GetAssetRegistry().GetRecords(Engine::AssetType::Material);
 			for (auto record : records)
 			{
-				Engine::Material& material = Engine::AssetManager::GetAsset<Engine::Material>(record->id);
-				auto path = Engine::AssetManager::GetAssetRegistry().GetPath(material.id);
-				Engine::MaterialSerializer::Serialize(&material, path);
+				const Engine::Material& material = Engine::AssetManager::GetAsset<Engine::Material>(record->id);
+				Engine::MaterialSerializer::Serialize(material, record->path);
 			}
 		}},
 	};

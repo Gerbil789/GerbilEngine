@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Engine/Scene/Scene.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Asset/AssetRegistry.h"
@@ -8,53 +7,22 @@
 
 namespace Engine::SceneManager
 {
-	Scene* s_ActiveScene = nullptr;
-	static std::vector<std::function<void(Scene*)>> s_Callbacks;
+	static Scene s_ActiveScene;
 
-	void RegisterOnSceneChanged(const std::function<void(Scene*)>& callback)
+	void SetActiveScene(Scene& scene)
 	{
-		s_Callbacks.push_back(callback);
+		s_ActiveScene = std::move(scene);
+		LOG_INFO("Active scene set to {}", s_ActiveScene.id);
 	}
 
-	void NotifySceneChanged()
+	Scene& GetActiveScene()
 	{
-		for (auto& callback : s_Callbacks)
-		{
-			callback(s_ActiveScene);
-		}
-	}
-
-	void SetActiveScene(Scene* scene)
-	{
-		if (!scene) 
-		{
-			LOG_ERROR("Setting active scene failed. Scene is null");
-			return;
-		}
-
-		s_ActiveScene = scene;
-		LOG_INFO("Active scene set to {}", s_ActiveScene->id);
-		NotifySceneChanged();
-	}
-
-	Scene* GetActiveScene()
-	{
-		if (!s_ActiveScene) {
-			LOG_ERROR("Getting active scene failed. Current scene is null");
-			return nullptr;
-		}
 		return s_ActiveScene;
 	}
 
 	void SaveScene()
 	{
-		if(s_ActiveScene == nullptr) 
-		{ 
-			LOG_WARNING("Current scene is null"); 
-			return; 
-		}
-
-		auto assetPath = Engine::AssetManager::GetAssetRegistry().GetPath(s_ActiveScene->id);
+		auto assetPath = Engine::AssetManager::GetAssetRegistry().GetPath(s_ActiveScene.id);
 
 		if(assetPath.empty())
 		{
@@ -62,11 +30,11 @@ namespace Engine::SceneManager
 			return;
 		}
 
-		auto path = Engine::Project::GetActive()->GetAssetsDirectory() / assetPath;
+		auto path = Engine::Project::GetActive().GetAssetsDirectory() / assetPath;
 
 		SceneSerializer::Serialize(s_ActiveScene, path);
 
-		LOG_INFO("Scene {} saved to file {}", s_ActiveScene->id, path);
+		LOG_INFO("Scene {} saved to file {}", s_ActiveScene.id, path);
 	}
 
 	void SaveSceneAs()

@@ -3,7 +3,5 @@
 
 namespace Engine
 {
-
-
-
+	ScriptRegistry g_ScriptRegistry;
 }

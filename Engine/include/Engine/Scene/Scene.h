@@ -6,8 +6,6 @@
 
 namespace Engine
 {
-	class Entity;
-
 	class ENGINE_API Scene : public Asset
 	{
 	public:
@@ -17,9 +15,7 @@ namespace Engine
 		Scene(Scene&& other) noexcept;
 		Scene& operator=(Scene&& other) noexcept;
 
-
-
-		static Scene* Copy(Scene* other);
+		static Scene Copy(Scene& other);
 
 		Entity CreateEntity(const std::string& name = "new entity");
 

@@ -7,6 +7,7 @@ namespace Engine
 	class ENGINE_API TextureCube : public Texture
 	{
 	public:
+		TextureCube() = default;
 		TextureCube(const TextureSpecification& specification);
 
 		TextureCube(const TextureSpecification& specification, const void* data);

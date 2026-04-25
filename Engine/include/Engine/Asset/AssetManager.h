@@ -17,7 +17,6 @@ namespace Engine
 namespace Engine::AssetManager
 {
 	ENGINE_API void Initialize(const std::filesystem::path& projectDirectory);
-	ENGINE_API void Shutdown();
 
 	ENGINE_API AssetRegistry& GetAssetRegistry();
 

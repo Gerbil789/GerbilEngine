@@ -13,9 +13,8 @@ namespace Engine
     GameInstance();
     ~GameInstance();
 
-    void Initialize(Engine::Scene* scene);
+    void Initialize(Engine::Scene& scene);
     void Update();
-		void OnEvent(Engine::Event& e);
 
     void Close();
 
@@ -27,7 +26,7 @@ namespace Engine
   private:
     bool m_Running = false;
 
-		Engine::Scene* m_ActiveScene = nullptr;
+    Engine::Scene m_ActiveScene;
 
     Engine::Window* m_GameWindow;
     Engine::Renderer m_Renderer;

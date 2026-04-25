@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Graphics/RenderPass/RenderPass.h"
-#include <glm/glm.hpp>
+#include "Engine/Graphics/Texture/Texture2D.h"
 
 namespace Engine
 {
@@ -22,7 +22,7 @@ namespace Engine
 		void SetCamera(Camera* camera);
 		void SetColorTarget(wgpu::TextureView colorView);
 		void SetDepthTarget(wgpu::TextureView depthView);
-		void BakeEnvironment();
+		void SetEnvironmentTexture(Texture2D& texture);
 		RenderContext& GetRenderContext();
 
 		void RenderScene(Scene* scene);

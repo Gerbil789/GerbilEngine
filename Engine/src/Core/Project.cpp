@@ -6,6 +6,8 @@
 
 namespace Engine
 {
+	Project Project::s_ActiveProject;
+
 	Project* Project::New(const std::string& title, const std::filesystem::path& path)
 	{
 		if (!std::filesystem::exists(path))
@@ -27,14 +29,14 @@ namespace Engine
 		return newProject;
 	}
 
-	std::shared_ptr<Project> Project::Load(const std::filesystem::path& path)
+	void Project::Load(const std::filesystem::path& path)
 	{
 		std::filesystem::path configPath = path / "project.yaml";
 
 		if (!std::filesystem::exists(configPath))
 		{
 			LOG_ERROR("Config file not found at {}", configPath);
-			return nullptr;
+			return;
 		}
 
 		YAML::Node data;
@@ -45,24 +47,28 @@ namespace Engine
 		catch (const YAML::ParserException& e)
 		{
 			LOG_ERROR("Failed to parse YAML : {}", e.what());
-			return nullptr;
+			return;
 		}
 
-		auto project = std::make_shared<Project>();
-		project->m_ProjectDirectory = path;
-		project->m_AssetsDirectory = project->m_ProjectDirectory / "Assets";
+		Project project;
+		project.m_ProjectDirectory = path;
+		project.m_AssetsDirectory = path / "Assets";
 
 		if (data["Title"])
 		{
-			project->m_Title = data["Title"].as<std::string>();
+			project.m_Title = data["Title"].as<std::string>();
 		}
 
 		uint64_t id = data["StartScene"] ? data["StartScene"].as<uint64_t>(0) : 0;
-		project->m_StartSceneID = Engine::Uuid(id);
+		project.m_StartSceneID = Engine::Uuid(id);
 		
-		LOG_INFO("Loaded project '{}' from {}", project->m_Title, configPath);
+		LOG_INFO("Loaded project '{}' from {}", project.m_Title, configPath);
 		s_ActiveProject = project;
-		return project;
+	}
+
+	Project& Project::GetActive()
+	{
+		return s_ActiveProject;
 	}
 
 	void Project::Save()
@@ -79,4 +85,6 @@ namespace Engine
 
 		//LOG_INFO("Saved project to {}", path);
 	}
+
+
 }

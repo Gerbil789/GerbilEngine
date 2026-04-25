@@ -91,16 +91,16 @@ namespace Editor
 
 		ImGui::BeginChild("NavBar", ImVec2(0, 24), ImGuiChildFlags_None, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-		auto relativePath = std::filesystem::relative(m_CurrentDirectory, Engine::Project::GetActive()->GetAssetsDirectory());
+		auto relativePath = std::filesystem::relative(m_CurrentDirectory, Engine::Project::GetActive().GetAssetsDirectory());
 
-		std::filesystem::path pathSoFar = Engine::Project::GetActive()->GetAssetsDirectory();
+		std::filesystem::path pathSoFar = Engine::Project::GetActive().GetAssetsDirectory();
 
 		if (ImGui::Button("Assets"))
 		{
-			OpenDirectory(Engine::Project::GetActive()->GetAssetsDirectory());
+			OpenDirectory(Engine::Project::GetActive().GetAssetsDirectory());
 		}
 
-		if (m_CurrentDirectory != Engine::Project::GetActive()->GetAssetsDirectory())
+		if (m_CurrentDirectory != Engine::Project::GetActive().GetAssetsDirectory())
 		{
 			for (const auto& component : relativePath)
 			{
@@ -422,7 +422,7 @@ namespace Editor
 	{
 		m_Renderer.Initialize();
 
-		m_CurrentDirectory = Engine::Project::GetActive()->GetAssetsDirectory();
+		m_CurrentDirectory = Engine::Project::GetActive().GetAssetsDirectory();
 		RefreshDirectory();
 
 		/*glfwSetDropCallback(static_cast<GLFWwindow*>(Engine::Application::GetWindow().GetNativeWindow()), [](GLFWwindow*, int count, const char* paths[])

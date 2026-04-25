@@ -22,7 +22,7 @@ namespace Editor
 
     void Undo() override
     {
-      m_Entity = Engine::SceneManager::GetActiveScene()->CreateEntity(m_Name);
+      m_Entity = Engine::SceneManager::GetActiveScene().CreateEntity(m_Name);
 			SelectionManager::Select(SelectionType::Entity, m_Entity.GetUUID());
     }
 

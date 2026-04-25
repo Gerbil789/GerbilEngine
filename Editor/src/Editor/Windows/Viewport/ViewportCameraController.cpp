@@ -25,7 +25,7 @@ namespace Editor
 	{
 		if (e.GetKey() == Engine::KeyCode::F) //Focus
 		{
-			auto entity = Engine::SceneManager::GetActiveScene()->GetEntity(SelectionManager::GetPrimary(SelectionType::Entity));
+			auto entity = Engine::SceneManager::GetActiveScene().GetEntity(SelectionManager::GetPrimary(SelectionType::Entity));
 			if (!entity) return;
 
 			glm::vec3 focusPoint = entity.Get<Engine::TransformComponent>().position;

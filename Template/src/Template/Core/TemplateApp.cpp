@@ -16,7 +16,6 @@
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Graphics/GraphicsContext.h"
-//#include "Engine/Graphics/Texture.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 
 namespace Template
@@ -37,7 +36,6 @@ namespace Template
 
 		Engine::SamplerPool::Initialize();
 		//Engine::RenderGlobals::Initialize();
-		Engine::Time::Initialize();
 
 
 		//Engine::EngineContext context;
@@ -76,7 +74,7 @@ namespace Template
 		Engine::SamplerPool::Shutdown();
 		m_Window.reset();
 		GLFW::Shutdown();
-		Engine::GraphicsContext::Shutdown();
+		//Engine::GraphicsContext::Shutdown();
 	}
 
 	void TemplateApp::Run()

@@ -12,6 +12,8 @@
 #include "Engine/Graphics/RenderPass/RenderPassRegistry.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Graphics/Texture/Environment.h"
+#include "Engine/Core/Resources.h"
+#include "Engine/Asset/AssetManager.h"
 #include <execution>
 #include <glm/gtx/quaternion.hpp>
 
@@ -27,9 +29,7 @@ namespace Engine
 		CreateModelUniformBuffer();
 		CreateModelBindGroup();
 
-
-		auto texture2D = Engine::TextureImporter::LoadTexture("Resources/Engine/hdr/PG2/lebombo_4k.hdr").value();
-		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(&texture2D);
+		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(Engine::AssetManager::GetAsset<Texture2D>(RESOURCES::TEXTURE::HDR));
 
 		CreateShadowTexture();
 
@@ -52,9 +52,9 @@ namespace Engine
 		m_RenderContext.depthTarget = depthView;
 	}
 
-	void Renderer::BakeEnvironment()
+	void Renderer::SetEnvironmentTexture(Texture2D& texture)
 	{
-		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(m_RenderContext.environment.TextureHDR);
+		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(texture);
 		CreateEnvironmentBindGroup();
 	}
 
@@ -152,10 +152,10 @@ namespace Engine
 		entries[2].textureView = brdfTexture.GetTextureView();
 
 		entries[3].binding = 3;
-		entries[3].textureView = m_RenderContext.environment.IrradianceMap->GetTextureView();
+		entries[3].textureView = m_RenderContext.environment.IrradianceMap.GetTextureView();
 
 		entries[4].binding = 4;
-		entries[4].textureView = m_RenderContext.environment.PrefilteredMap->GetTextureView();
+		entries[4].textureView = m_RenderContext.environment.PrefilteredMap.GetTextureView();
 
 		wgpu::SamplerDescriptor desc;
 		desc.label = { "ShadowSampler", WGPU_STRLEN };

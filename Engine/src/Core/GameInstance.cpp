@@ -22,9 +22,6 @@ namespace Engine
 		windowSpec.iconPath = "Resources/Engine/icons/logo.png";
 
 		m_GameWindow = new Engine::Window(windowSpec);
-		m_GameWindow->SetEventCallback([this](Engine::Event& e) {this->OnEvent(e); });
-
-
 
 		//m_Renderer.AddPass(new Engine::BackgroundPass());
 		//m_Renderer.AddPass(new Engine::OpaquePass());
@@ -37,18 +34,18 @@ namespace Engine
 		delete m_GameWindow;
 	}
 
-	//TODO: copy scene (deep copy), not reference it
-	void GameInstance::Initialize(Engine::Scene* scene)
+
+	void GameInstance::Initialize(Engine::Scene& scene)
 	{
 		m_Running = true;
 		m_ActiveScene = Scene::Copy(scene);
 
-		auto entities = m_ActiveScene->GetEntities(true);
-		LOG_INFO("GameInstance - Initialized with scene ID: {}, containing {} entities", m_ActiveScene->id, entities.size());
+		auto entities = m_ActiveScene.GetEntities(true);
+		LOG_INFO("GameInstance - Initialized with scene ID: {}, containing {} entities", m_ActiveScene.id, entities.size());
 
 		//m_Renderer.SetScene(m_ActiveScene);
 
-		m_ActiveCameraEntity = m_ActiveScene->GetActiveCamera();
+		m_ActiveCameraEntity = m_ActiveScene.GetActiveCamera();
 		const auto& cameraComponent = m_ActiveCameraEntity.Get<Engine::CameraComponent>();
 		m_Renderer.SetCamera(cameraComponent.camera);
 	}
@@ -59,7 +56,7 @@ namespace Engine
 
 
 		// update scripts
-		for (auto& ent : m_ActiveScene->GetEntities<Engine::ScriptComponent>())
+		for (auto& ent : m_ActiveScene.GetEntities<Engine::ScriptComponent>())
 		{
 			auto& scriptComp = ent.Get<Engine::ScriptComponent>();
 			if (scriptComp.instance)
@@ -95,24 +92,17 @@ namespace Engine
 
 		m_Renderer.SetColorTarget(targetView);
 
-		m_Renderer.RenderScene(m_ActiveScene);
+		m_Renderer.RenderScene(&m_ActiveScene);
 
 		surface.present();
 	}
 
-	void GameInstance::OnEvent(Engine::Event& event)
-	{
-		//Engine::EventDispatcher dispatcher(event);
-		//dispatcher.Dispatch<Engine::WindowCloseEvent>([this](auto&) {Close(); });
-		//dispatcher.Dispatch<Engine::WindowResizeEvent>([this](auto& e) {OnWindowResize(e); });
-	}
+
 
 	void GameInstance::Close()
 	{
 		LOG_INFO("========== Closing game instance ===========");
 		m_Running = false;
-		delete m_ActiveScene;
-		m_ActiveScene = nullptr;
 		OnExit();
 	}
 

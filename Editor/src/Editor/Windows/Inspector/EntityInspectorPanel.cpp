@@ -316,10 +316,9 @@ namespace Editor
 		PropertyTable table;
 		if (!table) return;
 
-		Engine::ScriptRegistry& registry = Engine::ScriptRegistry::Get();
 		Engine::ScriptComponent& component = m_Entity.Get<Engine::ScriptComponent>();
 
-		const auto& scriptNames = registry.GetAllScriptNames();
+		const auto& scriptNames = Engine::g_ScriptRegistry.GetAllScriptNames();
 
 		{
 			PropertyRow row("Script");
@@ -342,7 +341,7 @@ namespace Editor
 						if (ImGui::Selectable(scriptNames[n].c_str(), is_selected)) 
 						{ 
 							id = n;
-							const Engine::ScriptDescriptor& desc = registry.GetDescriptor(scriptNames[n]);
+							const Engine::ScriptDescriptor& desc = Engine::g_ScriptRegistry.GetDescriptor(scriptNames[n]);
 							component.id = desc.name;
 							component.instance = desc.factory();
 							component.instance->Self = m_Entity;
@@ -358,7 +357,7 @@ namespace Editor
 
 		ImGui::Separator();
 
-		Engine::ScriptDescriptor& desc = registry.GetDescriptor(component.id);
+		Engine::ScriptDescriptor& desc = Engine::g_ScriptRegistry.GetDescriptor(component.id);
 
 		for (const Engine::ScriptField& field : desc.fields)
 		{
@@ -482,7 +481,7 @@ namespace Editor
 
 	void EntityInspectorPanel::Draw(Engine::Uuid entityId)
 	{
-		auto entity = Engine::SceneManager::GetActiveScene()->GetEntity(entityId);
+		auto entity = Engine::SceneManager::GetActiveScene().GetEntity(entityId);
 		if (!entity) return;
 		m_Entity = entity;
 

@@ -9,7 +9,7 @@
 
 namespace Engine
 {
-	Environment EnvironmentBaker::BakeEnvironment(Texture2D* equirectangularHDR)
+	Environment EnvironmentBaker::BakeEnvironment(Texture2D& equirectangularHDR)
 	{
     Environment env;
 		env.TextureHDR = equirectangularHDR;
@@ -19,10 +19,10 @@ namespace Engine
 		return env;
 	}
 
-  TextureCube* EnvironmentBaker::EquirectangularToCubemap(Texture2D* source)
+  TextureCube EnvironmentBaker::EquirectangularToCubemap(Texture2D& source)
   {
-    uint32_t faceSize = source->GetHeight() / 2;
-    wgpu::TextureFormat format = source->GetFormat();
+    uint32_t faceSize = source.GetHeight() / 2;
+    wgpu::TextureFormat format = source.GetFormat();
 
     TextureSpecification spec;
     spec.width = faceSize;
@@ -31,7 +31,7 @@ namespace Engine
     spec.usage = wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc;
     spec.generateMips = true;
 
-    TextureCube* targetCubemap = new TextureCube(spec);
+    TextureCube targetCubemap(spec);
 
     // View for READING the 2D Equirectangular source
     wgpu::TextureViewDescriptor sourceViewDesc;
@@ -42,7 +42,7 @@ namespace Engine
     sourceViewDesc.baseArrayLayer = 0;
     sourceViewDesc.arrayLayerCount = 1;
     sourceViewDesc.aspect = wgpu::TextureAspect::All;
-    wgpu::TextureView sourceTextureView = source->GetTexture().createView(sourceViewDesc);
+    wgpu::TextureView sourceTextureView = source.GetTexture().createView(sourceViewDesc);
 
     // View for WRITING to the 6 faces of the target cubemap (Mip Level 0)
     wgpu::TextureViewDescriptor targetViewDesc;
@@ -53,7 +53,7 @@ namespace Engine
     targetViewDesc.baseArrayLayer = 0;
     targetViewDesc.arrayLayerCount = 6;   // Write to all 6 faces
     targetViewDesc.aspect = wgpu::TextureAspect::All;
-    wgpu::TextureView targetWriteView = targetCubemap->GetTexture().createView(targetViewDesc);
+    wgpu::TextureView targetWriteView = targetCubemap.GetTexture().createView(targetViewDesc);
 
 
     // (Note: In a real engine, you should cache 'computeShaderModule' and 'computePipeline' 
@@ -136,25 +136,25 @@ namespace Engine
     return targetCubemap;
   }
 
-	TextureCube* EnvironmentBaker::CalculateIrradiance(TextureCube* sourceCubemap)
+	TextureCube EnvironmentBaker::CalculateIrradiance(TextureCube& sourceCubemap)
 	{
     TextureSpecification spec;
     spec.width = 64;
     spec.height = 64;
-    spec.format = sourceCubemap->GetFormat();
+    spec.format = sourceCubemap.GetFormat();
     spec.usage = wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopySrc;
     spec.generateMips = false;
 
-    TextureCube* irradianceMap = new TextureCube(spec);
+    TextureCube irradianceMap(spec);
 
-    ComputeIrradiance(sourceCubemap->GetTexture(), irradianceMap->GetTexture());
+    ComputeIrradiance(sourceCubemap.GetTexture(), irradianceMap.GetTexture());
 
     return irradianceMap;
 	}
 
-	TextureCube* EnvironmentBaker::CalculatePrefiltered(TextureCube* sourceCubemap)
+	TextureCube EnvironmentBaker::CalculatePrefiltered(TextureCube& sourceCubemap)
 	{
-		ImportanceSample(sourceCubemap->GetTexture());
+		ImportanceSample(sourceCubemap.GetTexture());
 		return sourceCubemap;
 		
 	}

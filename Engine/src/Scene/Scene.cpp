@@ -12,11 +12,11 @@ namespace Engine
 	Scene::Scene(Scene&& other) noexcept = default;
 	Scene& Scene::operator=(Scene&& other) noexcept = default;
 
-	Scene* Scene::Copy(Scene* other)
+	Scene Scene::Copy(Scene& other)
 	{
-		Scene* newScene = new Scene();
-		auto& srcRegistry = other->m_Registry;
-		auto& dstRegistry = newScene->m_Registry;
+		Scene newScene;
+		auto& srcRegistry = other.m_Registry;
+		auto& dstRegistry = newScene.m_Registry;
 
 		std::unordered_map<Uuid, entt::entity> uuidToEntityMap;
 
@@ -27,7 +27,7 @@ namespace Engine
 			const auto& enabled = srcRegistry.get<IdentityComponent>(srcEntity).enabled;
 			const auto& name = srcRegistry.get<NameComponent>(srcEntity).name;
 
-			Entity newEntity = newScene->CreateEntity(name);
+			Entity newEntity = newScene.CreateEntity(name);
 			newEntity.Get<IdentityComponent>().id = id;
 			newEntity.Get<IdentityComponent>().enabled = enabled;
 			const auto& transform = srcRegistry.get<TransformComponent>(srcEntity);
@@ -52,14 +52,31 @@ namespace Engine
 			};
 
 		copyComponent(MeshComponent{});
-		copyComponent(ScriptComponent{});
+		//copyComponent(ScriptComponent{});
 		copyComponent(LightComponent{});
 		copyComponent(CameraComponent{});
 
-		if (other->m_ActiveCamera != entt::null)
+		auto scriptView = srcRegistry.view<ScriptComponent>();
+		for (auto srcEntity : scriptView)
 		{
-			const auto& id = srcRegistry.get<IdentityComponent>(other->m_ActiveCamera);
-			newScene->m_ActiveCamera = uuidToEntityMap[id.id];
+			const auto& id = srcRegistry.get<IdentityComponent>(srcEntity);
+			entt::entity dstEntity = uuidToEntityMap[id.id];
+			const auto& srcComponent = scriptView.get<ScriptComponent>(srcEntity);
+
+			auto& dstComponent = dstRegistry.emplace<ScriptComponent>(dstEntity);
+
+			if (srcComponent.instance)
+			{
+				// You must create a method to Instantiate/Clone the script, 
+				// otherwise both scenes share the exact same script instance!
+				dstComponent.instance = srcComponent.instance; // <-- Example method
+			}
+		}
+
+		if (other.m_ActiveCamera != entt::null)
+		{
+			const auto& id = srcRegistry.get<IdentityComponent>(other.m_ActiveCamera);
+			newScene.m_ActiveCamera = uuidToEntityMap[id.id];
 		}
 
 		return newScene;

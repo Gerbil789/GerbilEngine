@@ -1,4 +1,7 @@
-#include "EditorRuntime.h"
+#include "enginepch.h"
+#include "Engine/Core/Runtime.h"
+
+
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Core/Log.h"
@@ -12,28 +15,17 @@
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Event/Event.h"
-#include "Editor/Windows/Viewport/ViewportWindow.h"
+
 #include <Windows.h>
 
-namespace Editor
+namespace Engine
 {
-	namespace 
+	namespace
 	{
-		bool m_IgnoredSceneChange = false;
 		Engine::EventToken m_Token;
 	}
-	void EditorRuntime::Initialize()
-	{
-		Engine::SceneManager::RegisterOnSceneChanged([](Engine::Scene* scene) 
-			{
-				if(m_IgnoredSceneChange == false)
-				{
-					m_EditorScene = scene;
-				}
-			});
-	}
 
-	void EditorRuntime::LoadScripts(Engine::ScriptRegistry& registry, const std::filesystem::path& dllPath)
+	void Runtime::LoadScripts(const std::filesystem::path& dllPath)
 	{
 		if (!std::filesystem::exists(dllPath))
 		{
@@ -54,9 +46,9 @@ namespace Editor
 			throw std::runtime_error("Failed to load RegisterScripts function from scripts dll");
 		}
 
-		Game_Register_Fn(registry);
+		Game_Register_Fn(Engine::g_ScriptRegistry);
 
-		auto scripts = registry.GetAllDescriptors();
+		auto scripts = Engine::g_ScriptRegistry.GetAllDescriptors();
 
 		LOG_INFO("Total Registered Scripts: {}", scripts.size());
 		for (const auto& script : scripts)
@@ -65,39 +57,22 @@ namespace Editor
 		}
 	}
 
-	void EditorRuntime::SetEditorState(EditorState newState)
+	void Runtime::Start()
 	{
-		m_State = newState;
-		m_IgnoredSceneChange = true;
-		if (m_State == EditorState::Play)
-		{
-			EditorRuntime::Start();
-		}
-		else
-		{
-			EditorRuntime::Stop();
-		}
+		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
 
-		m_IgnoredSceneChange = false;
-	}
+		//set active camera
 
-	void EditorRuntime::Start()
-	{
-		m_RuntimeScene = Engine::Scene::Copy(m_EditorScene);
-
-		// find and set active camera
-		auto cameras = m_RuntimeScene->GetEntities<Engine::CameraComponent>();
-		if (!cameras.empty())
+		auto cameraEntities = scene.GetEntities<Engine::CameraComponent>();
+		if (!cameraEntities.empty())
 		{
-			m_RuntimeScene->SetActiveCamera(cameras[0]);
+			scene.SetActiveCamera(cameraEntities[0]);
 		}
 
-		Engine::SceneManager::SetActiveScene(m_RuntimeScene);
-
-		for(const auto& ent : m_RuntimeScene->GetEntities<Engine::ScriptComponent>())
+		for (Engine::Entity& ent : scene.GetEntities<Engine::ScriptComponent>())
 		{
 			auto& sc = ent.Get<Engine::ScriptComponent>();
-			if(sc.instance)
+			if (sc.instance)
 			{
 				sc.instance->Self = ent;
 				sc.instance->OnStart();
@@ -106,7 +81,8 @@ namespace Editor
 
 		m_Token = Engine::EventBus::Get().SubscribeToAll([](Engine::Event& e)
 			{
-				for (const auto& ent : m_RuntimeScene->GetEntities<Engine::ScriptComponent>())
+				auto& scene = Engine::SceneManager::GetActiveScene();
+				for (Engine::Entity& ent : scene.GetEntities<Engine::ScriptComponent>())
 				{
 					auto& sc = ent.Get<Engine::ScriptComponent>();
 					if (sc.instance)
@@ -117,9 +93,10 @@ namespace Editor
 			});
 	}
 
-	void EditorRuntime::Stop()
+	void Runtime::Stop()
 	{
-		for (const auto& ent : m_RuntimeScene->GetEntities<Engine::ScriptComponent>())
+		auto& scene = Engine::SceneManager::GetActiveScene();
+		for (auto& ent : scene.GetEntities<Engine::ScriptComponent>())
 		{
 			auto& sc = ent.Get<Engine::ScriptComponent>();
 			if (sc.instance)
@@ -131,23 +108,20 @@ namespace Editor
 		Engine::EventBus::Get().Unsubscribe(m_Token);
 
 		Engine::Audio::StopAll();
-		Engine::SceneManager::SetActiveScene(m_EditorScene);
-		delete m_RuntimeScene;
-		m_RuntimeScene = nullptr;
 		Engine::Input::SetCursorMode(Engine::Input::CursorMode::Normal);
 	}
 
-	void EditorRuntime::Update()
+	void Runtime::Update()
 	{
-		if (m_State != EditorState::Play) return;
-
-		if(Engine::Input::IsKeyPressedOnce(Engine::KeyCode::Escape))
+		if (Engine::Input::IsKeyPressedOnce(Engine::KeyCode::Escape))
 		{
 			Engine::Input::SetCursorMode(Engine::Input::CursorMode::Normal);
 		}
 
+		auto& scene = Engine::SceneManager::GetActiveScene();
+
 		// update scripts
-		for (auto& ent : m_RuntimeScene->GetEntities<Engine::ScriptComponent>())
+		for (auto& ent : scene.GetEntities<Engine::ScriptComponent>())
 		{
 			auto& scriptComp = ent.Get<Engine::ScriptComponent>();
 			if (scriptComp.instance)
@@ -156,10 +130,8 @@ namespace Editor
 			}
 		}
 
-		
-
 		// update camera & audio listener
-		for (auto& ent : m_RuntimeScene->GetEntities<Engine::CameraComponent>())
+		for (auto& ent : scene.GetEntities<Engine::CameraComponent>())
 		{
 			Engine::Camera* cam = ent.Get<Engine::CameraComponent>().camera;
 			const auto& pos = ent.Get<Engine::TransformComponent>().position;

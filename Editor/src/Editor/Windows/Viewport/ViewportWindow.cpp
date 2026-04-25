@@ -5,7 +5,7 @@
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Command/TransformEntity.h"
 #include "Editor/Core/EditorPicker.h"
-#include "Editor/Core/EditorRuntime.h"
+#include "Editor/Core/EditorContext.h"
 #include "Editor/Windows/Viewport/ViewportCameraController.h"
 
 #include "Engine/Core/Input.h"
@@ -19,6 +19,7 @@
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/RenderPass/RenderPassRegistry.h"
+#include "Engine/Core/Runtime.h"
 
 #include <ImGuizmo.h>
 #include <glm/glm.hpp>
@@ -28,7 +29,6 @@ namespace Editor
 {
 	namespace
 	{
-		Engine::Scene* m_Scene = nullptr;
 		static Engine::Camera m_Camera;
 		static EditorPicker* s_EntityPicker = nullptr;
 		static ViewportCameraController s_Controller;
@@ -59,9 +59,8 @@ namespace Editor
 
 		s_EntityPicker = new EditorPicker();
 
-		Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene* scene)
+		/*Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene& scene)
 			{
-				m_Scene = scene;
 				SelectionManager::Clear(SelectionType::Entity);
 
 				if (EditorRuntime::GetState() == EditorState::Edit)
@@ -70,7 +69,7 @@ namespace Editor
 				}
 				else if (EditorRuntime::GetState() == EditorState::Play)
 				{
-					auto cameraEntity = m_Scene->GetActiveCamera();
+					auto cameraEntity = scene.GetActiveCamera();
 					if (cameraEntity)
 					{
 						Engine::Camera* camera = cameraEntity.Get<Engine::CameraComponent>().camera;
@@ -79,11 +78,11 @@ namespace Editor
 					}
 				}
 
-			});
+			});*/
 
 		Engine::EventBus::Get().Subscribe<Engine::MouseButtonPressedEvent>([this](const Engine::MouseButtonPressedEvent& e)
 			{
-				if (EditorRuntime::GetState() == EditorState::Play)
+				if (EditorContext::state == EditorState::Play)
 				{
 					Engine::Input::SetCursorMode(Engine::Input::CursorMode::Disabled);
 					return;
@@ -104,7 +103,7 @@ namespace Editor
 
 					if (uuid)
 					{
-						Engine::Entity entity = m_Scene->GetEntity(uuid);
+						Engine::Entity entity = Engine::SceneManager::GetActiveScene().GetEntity(uuid);
 						SelectionManager::Select(SelectionType::Entity, entity.GetUUID(), Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl) || Engine::Input::IsKeyDown(Engine::KeyCode::LeftShift));
 					}
 					else
@@ -116,7 +115,7 @@ namespace Editor
 
 		Engine::EventBus::Get().Subscribe<Engine::KeyPressedEvent>([this](const Engine::KeyPressedEvent& e)
 			{
-				if (EditorRuntime::GetState() == EditorState::Play)
+				if (EditorContext::state == EditorState::Play)
 				{
 					return;
 				}
@@ -218,7 +217,7 @@ namespace Editor
 			return;
 		}
 
-		Engine::Entity selectedEntity = m_Scene->GetEntity(selectedId);
+		Engine::Entity selectedEntity = Engine::SceneManager::GetActiveScene().GetEntity(selectedId);
 
 		ImGuizmo::SetDrawlist();
 
@@ -250,12 +249,12 @@ namespace Editor
 
 			for (auto id : selection)
 			{
-				Engine::Entity entity = m_Scene->GetEntity(id);
+				Engine::Entity entity = Engine::SceneManager::GetActiveScene().GetEntity(id);
 				auto& tc = entity.Get<Engine::TransformComponent>();
 				m_InitialWorldTransforms[entity] = tc.GetWorldMatrix();
 			}
 
-			m_InitialPrimaryWorld = m_InitialWorldTransforms[m_Scene->GetEntity(selectedId)];
+			m_InitialPrimaryWorld = m_InitialWorldTransforms[Engine::SceneManager::GetActiveScene().GetEntity(selectedId)];
 		}
 
 		if (isUsing)
@@ -266,7 +265,7 @@ namespace Editor
 
 			for (auto id : SelectionManager::GetAll(SelectionType::Entity))
 			{
-				Engine::Entity entity = m_Scene->GetEntity(id);
+				Engine::Entity entity = Engine::SceneManager::GetActiveScene().GetEntity(id);
 				auto& tc = entity.Get<Engine::TransformComponent>();
 
 				glm::mat4 originalWorld = m_InitialWorldTransforms[entity];
@@ -317,7 +316,7 @@ namespace Editor
 
 			for (auto id : selection)
 			{
-				Engine::Entity entity = m_Scene->GetEntity(id);
+				Engine::Entity entity = Engine::SceneManager::GetActiveScene().GetEntity(id);
 				entities.push_back(entity);
 				auto& tc = entity.Get<Engine::TransformComponent>();
 				TransformData afterData;
@@ -360,15 +359,33 @@ namespace Editor
 				4.0f
 			));
 
-			if (EditorRuntime::GetState() == EditorState::Edit)
+			if (EditorContext::state == EditorState::Edit)
 			{
 				if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
-					EditorRuntime::SetEditorState(EditorState::Play);
+				{
+					Engine::Runtime::Start();
+					EditorContext::state = EditorState::Play;
+
+					SelectionManager::Clear(SelectionType::Entity);
+
+					Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+					auto cameraEntity = scene.GetActiveCamera();
+					if (cameraEntity)
+					{
+						Engine::Camera* camera = cameraEntity.Get<Engine::CameraComponent>().camera;
+						camera->SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
+						Engine::g_Renderer.SetCamera(camera);
+					}
+				}
 			}
 			else
 			{
 				if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
-					EditorRuntime::SetEditorState(EditorState::Edit);
+				{
+					Engine::Runtime::Stop();
+					EditorContext::state = EditorState::Edit;
+					Engine::g_Renderer.SetCamera(&m_Camera);
+				}
 			}
 		}
 
@@ -431,7 +448,7 @@ namespace Editor
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		Engine::g_Renderer.RenderScene(m_Scene);
+		Engine::g_Renderer.RenderScene(&Engine::SceneManager::GetActiveScene());
 		ImGui::Image(static_cast<WGPUTextureView>(Engine::g_Renderer.GetTextureView()), viewportSize);
 
 		DrawOverlay(imagePos, viewportSize);

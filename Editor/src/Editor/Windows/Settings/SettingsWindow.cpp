@@ -1,5 +1,5 @@
 #include "SettingsWindow.h"
-#include "Editor/Core/EditorSettings.h"
+#include "Editor/Core/EditorContext.h"
 #include "Editor/Windows/Utility/Property.h"
 #include "Editor/Windows/Viewport/ViewportWindow.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
@@ -32,18 +32,18 @@ namespace Editor
 
 			{
 				PropertyRow row("Show Grid");
-				BoolField("Show Grid", g_EditorSettings.showGrid);
+				BoolField("Show Grid", EditorSettings::showGrid);
 			}
 
 			{
 				PropertyRow row("Wireframe color");
 
-				if(ColorField("Wireframe color", g_EditorSettings.wireframeColor).changed)
+				if(ColorField("Wireframe color", EditorSettings::wireframeColor).changed)
 				{
 					auto wireframePass = Engine::RenderPassRegistry::GetPass(Engine::RenderPassType::Wireframe);
 					if (wireframePass)
 					{
-						static_cast<Engine::WireframePass*>(wireframePass)->SetColor(g_EditorSettings.wireframeColor);
+						static_cast<Engine::WireframePass*>(wireframePass)->SetColor(EditorSettings::wireframeColor);
 					}
 				}
 			}
@@ -70,9 +70,11 @@ namespace Editor
 			{
 				PropertyRow row("Environment");
 
-				if (TextureField("Environment Texture", Engine::g_Renderer.GetRenderContext().environment.TextureHDR).changed)
+				Engine::Texture2D* texture = &Engine::g_Renderer.GetRenderContext().environment.TextureHDR;
+
+				if (TextureField("Environment Texture", texture).changed)
 				{
-					Engine::g_Renderer.BakeEnvironment();
+					Engine::g_Renderer.SetEnvironmentTexture(*texture);
 				}
 			}
 

@@ -34,7 +34,6 @@ namespace Engine
     wgpu::BindGroup environmentBindGroup = nullptr;
 		wgpu::Buffer environmentUniformBuffer = nullptr;
     Environment environment;
-    //TextureCube* environmentCubemap = nullptr;
 
     // Shadow texture views
     std::array<wgpu::TextureView, s_ShadowCascadeCount> depthTextureViews;

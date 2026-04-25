@@ -13,14 +13,6 @@
 
 namespace Engine
 {
-	ScriptRegistry* m_Registry = nullptr;
-
-	void SceneSerializer::Initialize(ScriptRegistry& registry)
-	{
-		m_Registry = &registry;
-	}
-
-
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
 		Engine::Yaml::Map entityMap(out);
@@ -122,7 +114,7 @@ namespace Engine
 		{
 			const auto& component = entity.Get<ScriptComponent>();
 
-			auto& desc = m_Registry->GetDescriptor(component.id);
+			auto& desc = Engine::g_ScriptRegistry.GetDescriptor(component.id);
 
 			const auto& fields = desc.fields;
 
@@ -187,14 +179,8 @@ namespace Engine
 		}
 	}
 
-	void SceneSerializer::Serialize(Scene* scene, const std::filesystem::path& path)
+	void SceneSerializer::Serialize(Scene& scene, const std::filesystem::path& path)
 	{
-		if (!scene)
-		{
-			LOG_ERROR("Scene is null, cannot serialize");
-			return;
-		}
-
 		if (path.extension() != ".scene")
 		{
 			LOG_ERROR("Expected '.scene' extension, got '{}'", path.extension().string());
@@ -205,7 +191,7 @@ namespace Engine
 
 		{
 			Engine::Yaml::Seq seq(out);
-			const auto& entities = scene->GetEntities(true);
+			std::vector<Entity> entities = scene.GetEntities(true);
 			for (const Entity& entity : entities)
 			{
 				SerializeEntity(out, entity);
@@ -217,12 +203,12 @@ namespace Engine
 	}
 
 
-	Scene* SceneSerializer::Deserialize(const std::filesystem::path& path)
+	std::optional<Scene> SceneSerializer::Deserialize(const std::filesystem::path& path)
 	{
 		if (path.extension() != ".scene")
 		{
 			LOG_ERROR("Expected '.scene' extension, got '{}'", path.extension().string());
-			return nullptr;
+			return std::nullopt;
 		}
 
 		YAML::Node root;
@@ -233,14 +219,14 @@ namespace Engine
 		catch (const YAML::ParserException& e)
 		{
 			LOG_ERROR("Failed to load scene file '{}': {}", path, e.what());
-			return nullptr;
+			return std::nullopt;
 		}
 
-		auto scene = new Scene();
+		Scene scene;
 
 		for (auto entityNode : root)
 		{
-			Entity entity = scene->CreateEntity();
+			Entity entity = scene.CreateEntity();
 
 			// Identity
 			uint64_t uuid = entityNode["ID"].as<uint64_t>();
@@ -377,7 +363,7 @@ namespace Engine
 				auto& component = entity.Add<ScriptComponent>();
 
 				std::string scriptName = scriptNode["Script"].as<std::string>();
-				auto desc = m_Registry->GetDescriptor(scriptName);
+				auto desc = Engine::g_ScriptRegistry.GetDescriptor(scriptName);
 
 				component.id = desc.name;
 				component.instance = desc.factory();

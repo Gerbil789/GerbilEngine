@@ -15,10 +15,10 @@ namespace Editor
 {
 	using namespace Engine;
 
-	void SceneHierarchyWindow::Initialize()
-	{
-		SceneManager::RegisterOnSceneChanged([this](Scene* scene) {m_Scene = scene; });
-	}
+	//void SceneHierarchyWindow::Initialize()
+	//{
+	//	SceneManager::RegisterOnSceneChanged([this](Scene& scene) {m_Scene = scene; });
+	//}
 
 	void SceneHierarchyWindow::Draw()
 	{
@@ -29,13 +29,14 @@ namespace Editor
 
 		ImGui::Begin("Scene Hierarchy");
 
-		if (!m_Scene)
-		{
-			ImGui::End();
-			return;
-		}
+		//if (!m_Scene)
+		//{
+		//	ImGui::End();
+		//	return;
+		//}
 
-		const auto& entities = m_Scene->GetEntities(true);
+		Engine::Scene& scene = SceneManager::GetActiveScene();
+		const auto& entities = scene.GetEntities(true);
 
 		for(size_t i = 0; i < entities.size(); ++i)
 		{

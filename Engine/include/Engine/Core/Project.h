@@ -9,9 +9,8 @@ namespace Engine
 	{
 	public:
 		static Project* New(const std::string& title, const std::filesystem::path& path);
-		static std::shared_ptr<Project> Load(const std::filesystem::path& path);
-
-		static std::shared_ptr<Project> GetActive() { return s_ActiveProject; }
+		static void Load(const std::filesystem::path& path);
+		static Project& GetActive();
 
 		void Save(); //TODO
 
@@ -22,7 +21,7 @@ namespace Engine
 		const Engine::Uuid& GetStartSceneID() const { return m_StartSceneID; }
 
 	private:
-		inline static std::shared_ptr<Project> s_ActiveProject;
+		static Project s_ActiveProject;
 
 		std::filesystem::path m_ProjectDirectory;
 		std::filesystem::path m_AssetsDirectory;
