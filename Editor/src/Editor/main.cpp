@@ -1,15 +1,13 @@
 #include "Engine/Core/Log.h"
 #include "Editor/Core/EditorApp.h"
 
-int main(int argc, char** argv)
+int main()
 {
   Engine::Log::Initialize();
 
   try
   {
-    auto app = Editor::EditorApp({ argc, argv });
-    LOG_INFO("--- Editor initialization complete ---");
-
+    Editor::EditorApp app;
     app.Run();
   }
   catch (const std::exception& e)

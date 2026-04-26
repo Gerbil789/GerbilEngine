@@ -77,15 +77,15 @@ namespace Engine
 		struct Perspective
 		{
 			float fov = glm::radians(45.0f);
-			float near = 0.1f;
-			float far = 512.0f;
+			float nearClip = 0.1f;
+			float farClip = 512.0f;
 		} m_Perspective;
 
 		struct Orthographic
 		{
 			float size = 10.0f;
-			float near = -1.0f;
-			float far = 512.0f;
+			float nearClip = -1.0f;
+			float farClip = 512.0f;
 		} m_Orthographic;
 	};
 }

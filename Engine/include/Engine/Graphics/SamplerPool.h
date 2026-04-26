@@ -37,7 +37,6 @@ namespace Engine
 	{
 	public:
 		static void Initialize();
-		static void Shutdown();
 
 		static wgpu::Sampler GetSampler(TextureFilter filter, TextureWrap wrap)
 		{

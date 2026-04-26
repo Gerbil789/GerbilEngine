@@ -2,6 +2,8 @@
 #define WEBGPU_CPP_IMPLEMENTATION // must be defined before including webgpu.hpp
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
+#include "Engine/Graphics/SamplerPool.h"
+#include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 
 namespace Engine::GraphicsContext
 {
@@ -88,6 +90,9 @@ namespace Engine::GraphicsContext
 		{
 			throw std::runtime_error("Failed to get WGPU queue");
 		}
+
+		Engine::SamplerPool::Initialize();
+		Engine::RenderPipelineLayouts::Initialize();
 	}
 
 	wgpu::Instance GetInstance()

@@ -254,21 +254,14 @@ namespace Editor
 		case Engine::AssetType::Texture2D:
 			view = Engine::AssetManager::GetAsset<Engine::Texture2D>(record.id).GetTextureView(); //TODO: use downscaled texture for thumbnail
 			break;
-		//case Engine::AssetType::CubeMap:
-		//	view = Engine::g_AssetManager->GetAsset<Engine::TextureCube>(record.id)->GetPreviewView(); //TODO: use downscaled texture for thumbnail
-		//	break;
 		case Engine::AssetType::Material:
 			view = m_Renderer.GetThumbnail(record.id);
 			break;
 		default:
-			auto icon = IconManager::GetIcon(record.type);
-
-			if (icon)
-			{
-				view = icon->GetTexture()->GetTextureView();
-				uv_min = ImVec2(icon->GetUVMin().x, icon->GetUVMin().y);
-				uv_max = ImVec2(icon->GetUVMax().x, icon->GetUVMax().y);
-			}
+			Engine::SubTexture2D& icon = IconManager::GetIcon(record.type);
+			view = icon.GetTexture().GetTextureView();
+			uv_min = ImVec2(icon.GetUVMin().x, icon.GetUVMin().y);
+			uv_max = ImVec2(icon.GetUVMax().x, icon.GetUVMax().y);
 			break;
 		}
 

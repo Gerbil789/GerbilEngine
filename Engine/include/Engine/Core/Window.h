@@ -30,7 +30,6 @@ namespace Engine
 	class ENGINE_API Window
 	{
 	public:
-		Window() = default;
 		Window(const WindowSpecification& specification);
 		~Window();
 

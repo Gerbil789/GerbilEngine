@@ -116,12 +116,12 @@ namespace Engine
 
 	float Camera::GetPerspectiveNear() const
 	{
-		return m_Perspective.near;
+		return m_Perspective.nearClip;
 	}
 
 	float Camera::GetPerspectiveFar() const
 	{
-		return m_Perspective.far;
+		return m_Perspective.farClip;
 	}
 
 	void Camera::SetPerspectiveFOV(float fov)
@@ -132,13 +132,13 @@ namespace Engine
 
 	void Camera::SetPerspectiveNear(float near)
 	{
-		m_Perspective.near = near;
+		m_Perspective.nearClip = near;
 		UpdateProjectionMatrix();
 	}
 
 	void Camera::SetPerspectiveFar(float far)
 	{
-		m_Perspective.far = far;
+		m_Perspective.farClip = far;
 		UpdateProjectionMatrix();
 	}
 
@@ -149,12 +149,12 @@ namespace Engine
 
 	float Camera::GetOrthoNear() const
 	{
-		return m_Orthographic.near;
+		return m_Orthographic.nearClip;
 	}
 
 	float Camera::GetOrthoFar() const
 	{
-		return m_Orthographic.far;
+		return m_Orthographic.farClip;
 	}
 
 	void Camera::SetOrthoSize(float size)
@@ -165,13 +165,13 @@ namespace Engine
 
 	void Camera::SetOrthoNear(float near)
 	{
-		m_Orthographic.near = near;
+		m_Orthographic.nearClip = near;
 		UpdateProjectionMatrix();
 	}
 
 	void Camera::SetOrthoFar(float far)
 	{
-		m_Orthographic.far = far;
+		m_Orthographic.farClip = far;
 		UpdateProjectionMatrix();
 	}
 
@@ -246,7 +246,7 @@ namespace Engine
 		case Projection::Perspective:
 		{
 			//m_ProjectionMatrix = glm::perspectiveLH_ZO(m_Perspective.fov, m_AspectRatio, m_Perspective.near, m_Perspective.far); //LH_ZO - left-handed, zero to one. WebGPU uses this convention.
-			m_ProjectionMatrix = PerspectiveLH_ZO(m_Perspective.fov, m_AspectRatio, m_Perspective.near, m_Perspective.far);
+			m_ProjectionMatrix = PerspectiveLH_ZO(m_Perspective.fov, m_AspectRatio, m_Perspective.nearClip, m_Perspective.farClip);
 			break;
 		}
 		case Projection::Orthographic:
@@ -254,7 +254,7 @@ namespace Engine
 			float halfHeight = m_Orthographic.size * 0.5f;
 			float halfWidth = halfHeight * m_AspectRatio;
 			//m_ProjectionMatrix = glm::orthoLH_ZO(-halfWidth, halfWidth, -halfHeight, halfHeight, m_Orthographic.near, m_Orthographic.far);
-			m_ProjectionMatrix = OrthoLH_ZO(-halfWidth, halfWidth, -halfHeight, halfHeight, m_Orthographic.near, m_Orthographic.far);
+			m_ProjectionMatrix = OrthoLH_ZO(-halfWidth, halfWidth, -halfHeight, halfHeight, m_Orthographic.nearClip, m_Orthographic.farClip);
 			break;
 		}
 		}

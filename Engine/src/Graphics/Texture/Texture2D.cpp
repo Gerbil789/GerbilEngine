@@ -114,12 +114,11 @@ namespace Engine
 		return s_DefaultNormalTexture;
 	}
 
-	SubTexture2D::SubTexture2D(Texture2D* texture, const glm::vec2& min, const glm::vec2& max) : m_Texture(texture), m_UVMin(min), m_UVMax(max) {}
+	SubTexture2D::SubTexture2D(const Texture2D& texture, const glm::vec2& min, const glm::vec2& max) : m_Texture(texture), m_UVMin(min), m_UVMax(max) {}
 
-	SubTexture2D* SubTexture2D::CreateFromGrid(Texture2D* texture, const glm::ivec2& cellCoords, const glm::ivec2& cellSize, const glm::ivec2& spriteSize)
+	SubTexture2D SubTexture2D::CreateFromGrid(const Texture2D& texture, const glm::ivec2& cellCoords, const glm::ivec2& cellSize, const glm::ivec2& spriteSize)
 	{
-		glm::vec2 texSize = { static_cast<float>(texture->GetWidth()), static_cast<float>(texture->GetHeight()) };
-
+		glm::vec2 texSize = { static_cast<float>(texture.GetWidth()), static_cast<float>(texture.GetHeight()) };
 		glm::vec2 min
 		{
 				(cellCoords.x * cellSize.x) / texSize.x,
@@ -132,7 +131,7 @@ namespace Engine
 				((cellCoords.y + spriteSize.y) * cellSize.y) / texSize.y
 		};
 
-		return new SubTexture2D(texture, min, max);
+		return SubTexture2D(texture, min, max);
 	}
 
 }

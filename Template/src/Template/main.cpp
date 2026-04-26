@@ -1,13 +1,13 @@
 #include "Engine/Core/Log.h"
 #include "Template/Core/TemplateApp.h"
 
-int main(int argc, char** argv)
+int main()
 {
   Engine::Log::Initialize();
 
   try
   {
-    auto app = Template::TemplateApp({ argc, argv });
+    Template::TemplateApp app;
     LOG_INFO("--- Project initialization complete ---");
     app.Run();
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Core/UUID.h"
-#include "Engine/Core/GameContext.h"
+#include <string>
 
 #ifdef ENGINE_PLATFORM_WINDOWS
 #ifdef GAME_BUILD_DLL

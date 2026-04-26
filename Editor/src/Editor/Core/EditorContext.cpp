@@ -1,6 +1,7 @@
 #include "EditorContext.h"
 #include "Engine/Utility/Path.h"
 #include "Engine/Utility/Yaml.h"
+#include "Engine/Utility/File.h"
 #include "Engine/Core/Log.h"
 #include <fstream>
 
@@ -30,6 +31,11 @@ namespace Editor
 		{
 			projectDirectory = data["ProjectDirectory"].as<std::string>();
 		}
+		else
+		{
+			projectDirectory = Engine::OpenDirectory();
+		}
+
 
 		LOG_INFO("Loaded settings from {}", settingsFilePath);
 		return;

@@ -1,76 +1,65 @@
-#include "EditorApp.h"
 #define WEBGPU_CPP_IMPLEMENTATION
+#include "EditorApp.h"
+#include "Editor/Core/EditorContext.h"
 #include "Editor/Core/EditorWindowManager.h"
 #include "Editor/Core/IconManager.h"
-#include "Editor/Core/SelectionManager.h"
+#include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Utility/FileWatcher.h"
+
 #include "Engine/Core/Time.h"
-#include "Engine/Utility/File.h"
+#include "Engine/Core/Input.h"
+#include "Engine/Core/Project.h"
+#include "Engine/Core/Runtime.h"
+
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Editor/Command/EditorCommandManager.h"
 #include "Engine/Audio/Audio.h"
-#include "Engine/Core/GameContext.h"
-#include "Engine/Script/ScriptRegistry.h"
-#include "Engine/Script/Script.h"
-#include "Engine/Event/WindowEvent.h"
-#include "Engine/Core/Input.h"
-#include "Engine/Graphics/SamplerPool.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Utility/Path.h"
-#include "Engine/Scene/Scene.h"
-#include "Editor/Core/EditorContext.h"
-#include "Engine/Asset/Serializer/SceneSerializer.h"
+
 #include "Engine/Event/EventBus.h"
-#include "Engine/Debug/RenderDoc.h"
+#include "Engine/Event/WindowEvent.h"
+
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Core/Project.h"
-#include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
-#include "Engine/Core/Runtime.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
+
+#include "Engine/Utility/Path.h"
+
+#include "Engine/Debug/RenderDoc.h"
 
 namespace Editor
 {
-	EditorApp::EditorApp(const ApplicationCommandLineArgs& args)
+	namespace
+	{
+		std::optional<Engine::Window> m_Window;
+		bool m_Running = true;
+	}
+
+	EditorApp::EditorApp()
 	{
 		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
 
 		EditorSettings::Load();
-
-		if(args.Count > 1)
-		{
-			EditorSettings::projectDirectory = args[1];
-		}
-		else
-		{
-			if(EditorSettings::projectDirectory.empty())
-			{
-				EditorSettings::projectDirectory = Engine::OpenDirectory();
-			}
-		}
 		Engine::Project::Load(EditorSettings::projectDirectory);
 		const Engine::Project& project = Engine::Project::GetActive();
-		EditorSettings::Save();
+		//EditorSettings::Save();
 
 		std::filesystem::current_path(GetExecutableDir());
 
 		Engine::GraphicsContext::Initialize();
-		GLFW::Initialize();
-		Engine::SamplerPool::Initialize();
-		Engine::RenderPipelineLayouts::Initialize();
+
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());
 
+		GLFW::Initialize();
 		m_Window.emplace(Engine::WindowSpecification{ "Gerbil Editor", 1600, 900, "Resources/Engine/icons/logo.png" });
 		m_Window->SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
 		Engine::Input::SetActiveWindow(*static_cast<GLFWwindow*>(m_Window->GetNativeWindow()));
 
 		Engine::g_Renderer.Initialize();
 
-
 		EditorCommandManager::Initialize();
 		FileWatcher::WatchDirectory(project.GetAssetsDirectory());
 
 		Engine::Audio::Initialize();
-		IconManager::Load("Resources/Editor/icons/icons.png");
+		IconManager::Initialize();
 
 		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / BUILD_CONFIG / (project.GetTitle() + ".dll");
 		Engine::Runtime::LoadScripts(dllPath);
@@ -81,6 +70,7 @@ namespace Editor
 		if(&scene) { Engine::SceneManager::SetActiveScene(scene); }
 
 		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
+		LOG_INFO("--- Editor initialization complete ---");
 	}
 
 	EditorApp::~EditorApp()
@@ -88,8 +78,6 @@ namespace Editor
 		FileWatcher::Shutdown();
 		Engine::Audio::Shutdown();
 		EditorWindowManager::Shutdown();
-		IconManager::Unload();
-		Engine::SamplerPool::Shutdown();
 		m_Window.reset();
 		GLFW::Shutdown();
 	}

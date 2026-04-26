@@ -17,11 +17,6 @@ namespace Engine
 		s_Samplers[{ TextureFilter::Trilinear, TextureWrap::Mirror }] = CreateSampler(device, wgpu::FilterMode::Linear, wgpu::MipmapFilterMode::Linear, wgpu::AddressMode::MirrorRepeat);
 	}
 
-	void SamplerPool::Shutdown()
-	{
-		s_Samplers.clear();
-	}
-
 	wgpu::Sampler SamplerPool::CreateSampler(wgpu::Device device, wgpu::FilterMode minMag, wgpu::MipmapFilterMode mip, wgpu::AddressMode mode)
 	{
 		wgpu::SamplerDescriptor desc{};

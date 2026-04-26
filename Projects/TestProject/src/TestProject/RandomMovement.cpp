@@ -1,6 +1,7 @@
 #include "RandomMovement.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Core/Time.h"
+#include "Engine/Scene/Components.h"
 #include <cmath>
 
 using namespace Engine;
