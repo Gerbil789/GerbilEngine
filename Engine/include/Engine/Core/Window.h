@@ -10,6 +10,7 @@ namespace GLFW
 {
 	ENGINE_API void Initialize();
 	ENGINE_API void Shutdown();
+	ENGINE_API void WaitEvents();
 }
 
 namespace Engine

@@ -8,7 +8,7 @@ namespace Engine
 	class ENGINE_API Project
 	{
 	public:
-		static Project* New(const std::string& title, const std::filesystem::path& path);
+		static Project& New(const std::filesystem::path& path);
 		static void Load(const std::filesystem::path& path);
 		static Project& GetActive();
 

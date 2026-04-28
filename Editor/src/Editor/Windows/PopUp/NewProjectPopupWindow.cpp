@@ -33,7 +33,8 @@ namespace Editor
 
 			if (ImGui::Button("Create"))
 			{
-				Engine::Project::New(m_Name, m_Path);
+				std::filesystem::path fullPath = std::filesystem::path(m_Path) / m_Name;
+				Engine::Project::New(fullPath);
 				ImGui::CloseCurrentPopup();
 			}
 

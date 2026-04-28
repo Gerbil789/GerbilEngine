@@ -9,6 +9,8 @@ namespace Editor
 {
 	void EditorSettings::Load()
 	{
+		std::filesystem::current_path(GetExecutableDir()); // set current working directory to executable dir
+
 		std::filesystem::path settingsFilePath = GetSettingsFilePath("GerbilEditor");
 
 		if (!std::filesystem::exists(settingsFilePath))

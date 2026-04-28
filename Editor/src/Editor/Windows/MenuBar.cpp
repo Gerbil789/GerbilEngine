@@ -9,6 +9,7 @@
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
+#include "Editor/Core/EditorWindowManager.h"
 #include <imgui.h>
 
 namespace Editor
@@ -63,6 +64,7 @@ namespace Editor
 		{"New", "", [] { PopupManager::Open("New Project"); }},
 		{"Open", "", [] { Engine::Project::Load(Engine::OpenDirectory()); }},
 		{"Settings", "", [] { LOG_WARNING("Project Settings - not implemented"); }},
+		{"Save layout", "", [] { Editor::EditorWindowManager::SaveLayout(); }},
 	};
 
 	static const MenuEntry DebugMenu[]

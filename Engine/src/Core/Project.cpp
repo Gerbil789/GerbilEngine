@@ -8,25 +8,20 @@ namespace Engine
 {
 	Project Project::s_ActiveProject;
 
-	Project* Project::New(const std::string& title, const std::filesystem::path& path)
+	Project& Project::New(const std::filesystem::path& path)
 	{
-		if (!std::filesystem::exists(path))
-		{
-			LOG_ERROR("Project::New - Path does not exist: {}", path);
-			return nullptr;
-		}
+		std::filesystem::create_directory(path);
+		std::filesystem::create_directory(path / "Assets");
 
-		std::filesystem::create_directory(path / title);
-		std::filesystem::create_directory(path / title / "Assets");
+		Project newProject;
+		newProject.m_Title = path.stem().string();
+		newProject.m_ProjectDirectory = path;
+		newProject.m_AssetsDirectory = newProject.m_ProjectDirectory / "Assets";
+		//newProject.Save();
 
-		Project* newProject = new Project();
-		newProject->m_Title = title;
-		newProject->m_ProjectDirectory = path / title;
-		newProject->m_AssetsDirectory = newProject->m_ProjectDirectory / "Assets";
-		newProject->Save();
-
-		LOG_INFO("Created new project '{}' at {}", title, newProject->GetProjectDirectory());
-		return newProject;
+		LOG_INFO("Created new project '{}' at {}", newProject.m_Title, newProject.GetProjectDirectory());
+		s_ActiveProject = newProject;
+		return s_ActiveProject;
 	}
 
 	void Project::Load(const std::filesystem::path& path)

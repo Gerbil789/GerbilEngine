@@ -21,8 +21,6 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 
-#include "Engine/Utility/Path.h"
-
 #include "Engine/Debug/RenderDoc.h"
 
 namespace Editor
@@ -42,32 +40,28 @@ namespace Editor
 		const Engine::Project& project = Engine::Project::GetActive();
 		//EditorSettings::Save();
 
-		std::filesystem::current_path(GetExecutableDir());
-
 		Engine::GraphicsContext::Initialize();
-
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());
-
 		GLFW::Initialize();
 		m_Window.emplace(Engine::WindowSpecification{ "Gerbil Editor", 1600, 900, "Resources/Engine/icons/logo.png" });
 		m_Window->SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
 		Engine::Input::SetActiveWindow(*static_cast<GLFWwindow*>(m_Window->GetNativeWindow()));
-
-		Engine::g_Renderer.Initialize();
-
+		Engine::g_Renderer.Initialize(); //TODO: i dont like global variable
 		EditorCommandManager::Initialize();
 		FileWatcher::WatchDirectory(project.GetAssetsDirectory());
-
 		Engine::Audio::Initialize();
 		IconManager::Initialize();
+		EditorWindowManager::Initialize(*m_Window);
 
 		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / BUILD_CONFIG / (project.GetTitle() + ".dll");
 		Engine::Runtime::LoadScripts(dllPath);
 
-		EditorWindowManager::Initialize(*m_Window);
-
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(project.GetStartSceneID());
-		if(&scene) { Engine::SceneManager::SetActiveScene(scene); }
+		auto id = project.GetStartSceneID();
+		if(id)
+		{
+			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
+			Engine::SceneManager::SetActiveScene(scene);
+		}
 
 		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
 		LOG_INFO("--- Editor initialization complete ---");
@@ -86,11 +80,16 @@ namespace Editor
 	{
 		while (m_Running)
 		{
+			if (m_Window->IsMinimized())
+			{
+				GLFW::WaitEvents();
+				Engine::Time::BeginFrame();
+				continue;
+			}
+
 			Engine::Time::BeginFrame();				// update delta time and FPS counters
 			Engine::Input::Update();					// poll input events
 			Engine::Audio::Update();					// release finished audio voices back to pool
-
-			if (m_Window->IsMinimized()) continue;
 
 			EditorWindowManager::Update();		// update editor UI, render viewport, ...
 			EditorCommandManager::Flush();		// execute queued commands (deffered execution)

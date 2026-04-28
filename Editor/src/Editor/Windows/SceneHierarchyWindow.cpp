@@ -15,11 +15,6 @@ namespace Editor
 {
 	using namespace Engine;
 
-	//void SceneHierarchyWindow::Initialize()
-	//{
-	//	SceneManager::RegisterOnSceneChanged([this](Scene& scene) {m_Scene = scene; });
-	//}
-
 	void SceneHierarchyWindow::Draw()
 	{
 		ScopedStyle style({
@@ -28,12 +23,6 @@ namespace Editor
 		});
 
 		ImGui::Begin("Scene Hierarchy");
-
-		//if (!m_Scene)
-		//{
-		//	ImGui::End();
-		//	return;
-		//}
 
 		Engine::Scene& scene = SceneManager::GetActiveScene();
 		const auto& entities = scene.GetEntities(true);

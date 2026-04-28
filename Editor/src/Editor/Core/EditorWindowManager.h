@@ -10,10 +10,11 @@ namespace Editor
 		static void Initialize(const Engine::Window& window);
 		static void Shutdown();
 		static void Update();
+
 		static void ResetLayout();
+		static void SaveLayout();
 
 	private:
-		static void BeginFrame();
-		static void EndFrame();
+		static void BeginDockSpace();
 	};
 }

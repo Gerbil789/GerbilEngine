@@ -35,6 +35,11 @@ namespace GLFW
 	{
 		glfwTerminate();
 	}
+
+	void WaitEvents()
+	{
+		glfwWaitEvents();
+	}
 }
 
 
@@ -150,6 +155,8 @@ namespace Engine
 	{
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 			{
+				if (width == 0 || height == 0) { return; }
+
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 				data.width = width;
 				data.height = height;
