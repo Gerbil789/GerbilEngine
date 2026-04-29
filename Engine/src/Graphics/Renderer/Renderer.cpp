@@ -42,6 +42,11 @@ namespace Engine
 		m_RenderContext.camera = camera;
 	}
 
+	Camera* Renderer::GetCamera() const
+	{
+		return m_RenderContext.camera;
+	}
+
 	void Renderer::SetColorTarget(wgpu::TextureView colorView)
 	{
 		m_RenderContext.colorTarget = colorView;
@@ -221,9 +226,9 @@ namespace Engine
 		m_RenderContext.depthTextureArrayView = texture.createView(arrayViewDesc);
 	}
 
-	void Renderer::RenderScene(Scene* scene)
+	void Renderer::RenderScene(Scene& scene)
 	{
-		m_RenderContext.scene = scene;
+		m_RenderContext.scene = &scene;
 
 		ViewUniforms viewUniforms;
 		viewUniforms.view = m_RenderContext.camera->GetViewMatrix();

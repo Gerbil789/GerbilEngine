@@ -13,6 +13,9 @@
 
 namespace Engine
 {
+
+	float ShadowPass::s_Lambda = 0.9f;
+
 	namespace 
 	{
 		wgpu::RenderPipeline m_ShadowPipeline;
@@ -104,7 +107,6 @@ namespace Engine
 			shadowBufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 			m_ShadowUniformBuffer = GraphicsContext::GetDevice().createBuffer(shadowBufferDesc);
 
-
 			wgpu::BindGroupEntry bindGroupEntry;
 			bindGroupEntry.binding = 0;
 			bindGroupEntry.buffer = m_ShadowUniformBuffer;
@@ -146,7 +148,6 @@ namespace Engine
 
 				float near = context.camera->GetPerspectiveNear();
 				float far = context.camera->GetPerspectiveFar();
-				float lambda = 0.9f; // 0 = linear, 1 = logarithmic
 
 				glm::quat q = glm::quat(glm::radians(transform.rotation));
 				glm::vec3 forward = q * glm::vec3(0, 0, 1);
@@ -159,7 +160,7 @@ namespace Engine
 					float log = near * std::pow(far / near, p);
 					float lin = near + (far - near) * p;
 
-					splits[i] = glm::mix(lin, log, lambda);
+					splits[i] = glm::mix(lin, log, s_Lambda);
 				}
 
 				for (int i = 0; i < s_ShadowCascadeCount; i++)

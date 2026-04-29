@@ -47,7 +47,15 @@ namespace Engine
 			GraphicsContext::GetQueue().writeBuffer(m_GPU->wireIndexBuffer, 0, specification.wireIndices.data(), wireIndexBufferDesc.size);
 		}
 
+		// Submeshes
 		m_SubMeshes = specification.subMeshes;
+
+		// AABB
+		for (const auto& vertex : specification.vertices) 
+		{
+			aabb.min = glm::min(aabb.min, vertex.position);
+			aabb.max = glm::max(aabb.max, vertex.position);
+		}
 	}
 
 	Mesh::~Mesh() = default;
@@ -70,5 +78,17 @@ namespace Engine
 	{
 		static wgpu::Buffer emptyBuffer;
 		return m_GPU->wireIndexBuffer ? m_GPU->wireIndexBuffer : emptyBuffer;
+	}
+
+	bool Mesh::IntersectTest(const Mesh& other) const
+	{
+		auto a = aabb;
+		auto b = other.aabb;
+
+		return
+			(a.min.x <= b.max.x && a.max.x >= b.min.x) &&
+			(a.min.y <= b.max.y && a.max.y >= b.min.y) &&
+			(a.min.z <= b.max.z && a.max.z >= b.min.z);
+		
 	}
 }

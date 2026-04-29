@@ -19,4 +19,10 @@ namespace Engine::RESOURCES
 		static constexpr Uuid NORMAL = Uuid{ 5 };
 		static constexpr Uuid HDR = Uuid{ 6 };
 	}
+
+	namespace MATERIAL
+	{
+		static constexpr Uuid WHITE = Uuid{ 7 };
+		static constexpr Uuid PINK = Uuid{ 8 };
+	}
 }

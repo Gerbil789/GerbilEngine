@@ -192,7 +192,7 @@ namespace Template
 			}
 
 			Engine::g_Renderer.SetColorTarget(targetView);
-			Engine::g_Renderer.RenderScene(&Engine::SceneManager::GetActiveScene());
+			Engine::g_Renderer.RenderScene(Engine::SceneManager::GetActiveScene());
 
 			surface.present();
 		}

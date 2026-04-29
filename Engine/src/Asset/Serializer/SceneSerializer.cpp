@@ -40,24 +40,20 @@ namespace Engine
 		if (entity.Has<MeshComponent>())
 		{
 			const auto& component = entity.Get<MeshComponent>();
-			const auto& mesh = component.mesh;
-			const auto& materials = component.materials;
+			const auto& meshId = component.mesh;
+			const auto& materialsIds = component.materials;
 
 			Engine::Yaml::Map meshMap(out, "MeshComponent");
 
-			if (mesh)
+			if (meshId)
 			{
-				Engine::Yaml::Write(out, "Mesh", mesh->id);
+				Engine::Yaml::Write(out, "Mesh", meshId);
 
 				{
 					Engine::Yaml::Seq materialSeq(out, "Materials", true);
-					for (const auto& material : materials)
+					for (const auto& materialId : materialsIds)
 					{
-						if (material) 
-						{
-							out << static_cast<uint64_t>(material->id);
-						}
-						
+						out << static_cast<uint64_t>(materialId);
 					}
 				}
 			}
@@ -260,8 +256,7 @@ namespace Engine
 
 				if (uint64_t id; Engine::Yaml::Read<uint64_t>(meshNode, "Mesh", id))
 				{
-					Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(id);
-					component.mesh = &mesh;
+					component.mesh = id;
 				}
 
 				// Materials
@@ -272,8 +267,8 @@ namespace Engine
 					for (const auto& materialNode : materialsNode)
 					{
 						uint64_t materialId = materialNode.as<uint64_t>();
-						Material& material = Engine::AssetManager::GetAsset<Material>(materialId);
-						component.SetMaterial(i++, &material);
+						//Material& material = Engine::AssetManager::GetAsset<Material>(materialId);
+						component.SetMaterial(i++, materialId);
 					}
 				}
 

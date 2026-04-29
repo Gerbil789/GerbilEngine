@@ -46,18 +46,19 @@ namespace Editor
 		data.entity = data.scene.CreateEntity("PreviewEntity");
 		auto& mc = data.entity.Add<Engine::MeshComponent>();
 
-		Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::RESOURCES::MESH::SPHERE);
-		mc.mesh = &mesh;
-
+		//Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::RESOURCES::MESH::SPHERE);
+		//mc.mesh = &mesh;
+		mc.mesh = Engine::RESOURCES::MESH::SPHERE;
 		data.renderer.Initialize();
 		data.renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Opaque);
 		data.renderer.SetCamera(&data.camera);
 	}
 
+	//TODO: pass material uuid
 	wgpu::TextureView Render(Engine::Material* material)
 	{
 		auto& data = GetData();
-		data.entity.Get<Engine::MeshComponent>().SetMaterial(0, material);
+		data.entity.Get<Engine::MeshComponent>().SetMaterial(0, material->id);
 
 		wgpu::TextureDescriptor desc;
 		desc.label = { "ThumbnailTexture", WGPU_STRLEN };
@@ -100,7 +101,7 @@ namespace Editor
 		}
 
 
-		data.renderer.RenderScene(&data.scene);
+		data.renderer.RenderScene(data.scene);
 
 		return thumbnailView;
 	}

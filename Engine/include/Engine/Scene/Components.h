@@ -25,7 +25,7 @@ namespace Engine
 	struct ENGINE_API TransformComponent
 	{
 		glm::vec3 position = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 rotation = { 0.0f, 0.0f, 0.0f }; 
+		glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
 
 		Entity parent;
@@ -49,22 +49,21 @@ namespace Engine
 
 	struct ENGINE_API MeshComponent
 	{
-		Mesh* mesh = nullptr;
-		std::vector<Material*> materials;
+		Uuid mesh{ 0 };
+		std::vector<Uuid> materials;
 
 		MeshComponent();
-		MeshComponent(Mesh* mesh) : mesh(mesh) {}
 
-		Material* GetMaterial(uint32_t index)
+		Uuid GetMaterial(uint32_t index)
 		{
 			if (index >= materials.size())
 			{
-				return nullptr;
+				return 0;
 			}
 			return materials[index];
 		}
 
-		void SetMaterial(uint32_t index, Material* material)
+		void SetMaterial(uint32_t index, Uuid material)
 		{
 			if (index >= materials.size())
 			{
@@ -75,9 +74,15 @@ namespace Engine
 
 		void Reset()
 		{
-			mesh = nullptr;
+			mesh = 0;
 			materials.clear();
 		}
+	};
+
+
+	struct ENGINE_API ColliderComponent
+	{
+		Uuid mesh{ 0 };
 	};
 
 	struct ENGINE_API CameraComponent
@@ -100,12 +105,9 @@ namespace Engine
 		float nearPlane = 0.1f;
 		float farPlane = 100.0f;
 
-
-
 		float range = 50.0f; // for point and spot lights, ignored for directional
 		float angle;
 
-		// type-specific
 		union
 		{
 			struct // Directional
@@ -129,7 +131,6 @@ namespace Engine
 			type = LightType::Directional;
 			color = { 1.0f, 1.0f, 1.0f };
 			intensity = 1.0f;
-
 		}
 	};
 

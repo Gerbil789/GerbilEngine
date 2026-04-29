@@ -203,7 +203,7 @@ namespace Editor
 
 		auto& component = m_Entity.Get<Engine::MeshComponent>();
 
-		std::string meshText = component.mesh != nullptr ? Engine::AssetManager::GetAssetRegistry().GetPath(component.mesh->id).stem().string() : "##Mesh";
+		std::string meshText = component.mesh ? Engine::AssetManager::GetAssetRegistry().GetPath(component.mesh).stem().string() : "##Mesh";
 
 
 		PropertyTable table;
@@ -215,7 +215,7 @@ namespace Editor
 			DragDropTarget{}.Accept("UUID", [&](const void* data) {
 				Engine::Uuid id = *static_cast<const Engine::Uuid*>(data);
 				if (Engine::AssetManager::GetAssetRegistry().GetType(id) == Engine::AssetType::Mesh) {
-					component.mesh = &(Engine::AssetManager::GetAsset<Engine::Mesh>(id));
+					component.mesh = id;
 				}
 				});
 		}
@@ -225,23 +225,24 @@ namespace Editor
 		auto materials = component.materials;
 		for (int i = 0; i < materials.size(); ++i)
 		{
-			auto material = materials[i];
+			auto materialId = materials[i];
 			std::string text = "##Material";
-			if(material->id)
+			if(materialId)
 			{
-				text = Engine::AssetManager::GetAssetRegistry().GetPath(material->id).stem().string();
+				text = Engine::AssetManager::GetAssetRegistry().GetPath(materialId).stem().string();
 			}
 
 			PropertyRow row("Material");
 			ImGui::PushID(i);
 			if(ImGui::Button(text.c_str(), ImVec2(-FLT_MIN, 0)))
 			{
-				MaterialEditorWindow::SetMaterial(material);
+				auto& material = Engine::AssetManager::GetAsset<Engine::Material>(materialId);
+				MaterialEditorWindow::SetMaterial(&material);
 			}
 			DragDropTarget{}.Accept("UUID", [&](const void* data) {
 				Engine::Uuid id = *static_cast<const Engine::Uuid*>(data);
 				if (Engine::AssetManager::GetAssetRegistry().GetType(id) == Engine::AssetType::Material) {
-					component.SetMaterial(i, &Engine::AssetManager::GetAsset<Engine::Material>(id));
+					component.SetMaterial(i, id);
 				}
 				});
 			ImGui::PopID();

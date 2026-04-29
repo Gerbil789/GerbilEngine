@@ -17,6 +17,79 @@
 
 using namespace Engine;
 
+AABB CalculateWorldAABB(const AABB& local, const glm::mat4& transformMatrix) {
+	// The 8 corners of the local bounding box
+	glm::vec3 corners[8] = {
+			{local.min.x, local.min.y, local.min.z},
+			{local.max.x, local.min.y, local.min.z},
+			{local.min.x, local.max.y, local.min.z},
+			{local.max.x, local.max.y, local.min.z},
+			{local.min.x, local.min.y, local.max.z},
+			{local.max.x, local.min.y, local.max.z},
+			{local.min.x, local.max.y, local.max.z},
+			{local.max.x, local.max.y, local.max.z}
+	};
+
+	glm::vec3 worldMin(FLT_MAX);
+	glm::vec3 worldMax(-FLT_MAX);
+
+	for (int i = 0; i < 8; ++i) 
+	{
+		glm::vec3 worldPos = glm::vec3(transformMatrix * glm::vec4(corners[i], 1.0f));
+		worldMin = glm::min(worldMin, worldPos);
+		worldMax = glm::max(worldMax, worldPos);
+	}
+
+	return { worldMin, worldMax };
+}
+
+
+bool IntersectTest(const AABB& a, const AABB& b)
+{
+	return
+		(a.min.x <= b.max.x && a.max.x >= b.min.x) &&
+		(a.min.y <= b.max.y && a.max.y >= b.min.y) &&
+		(a.min.z <= b.max.z && a.max.z >= b.min.z);
+
+}
+
+void CheckCollision(const Entity& self)
+{
+	Uuid id = self.Get<MeshComponent>().mesh;
+	if(!id)
+	{
+		LOG_WARNING("Player does not have mesh!");
+		return;
+	}
+
+	Mesh& playerMesh = AssetManager::GetAsset<Mesh>(id);
+	const TransformComponent& playerTransform = self.Get<TransformComponent>();
+	
+	AABB playerWorldAABB = CalculateWorldAABB(playerMesh.aabb, playerTransform.GetWorldMatrix());
+
+	Scene& scene = SceneManager::GetActiveScene();
+	auto entities = scene.GetEntities<MeshComponent>();
+
+	int count = 0;
+
+	for(const auto& entity : entities)
+	{
+		if (entity == self) continue;
+
+		Uuid meshID = entity.Get<MeshComponent>().mesh;
+		Mesh& mesh = AssetManager::GetAsset<Mesh>(meshID);
+		const TransformComponent& transform = entity.Get<TransformComponent>();
+		AABB worldAABB = CalculateWorldAABB(mesh.aabb, transform.GetWorldMatrix());
+
+		if(IntersectTest(playerWorldAABB, worldAABB))
+		{
+			count++;
+		}
+	}
+
+	LOG_INFO("Intersect count: {}", count);
+}
+
 void PlayerController::OnStart()
 {
 	Input::SetCursorMode(Input::CursorMode::Disabled);
@@ -67,6 +140,8 @@ void PlayerController::OnUpdate()
 		transform.position.y = m_Ground; 
 		m_VelocityY = 0.0f;
 	}
+
+	CheckCollision(Self);
 }
 
 void PlayerController::OnDestroy()

@@ -4,12 +4,13 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include "Engine/Graphics/Material.h"
+#include "Engine/Core/Resources.h"
 
 namespace Engine
 {
   MeshComponent::MeshComponent()
   {
-    SetMaterial(0, Materials::GetDefault());
+    SetMaterial(0, RESOURCES::MATERIAL::WHITE);
   }
 
 

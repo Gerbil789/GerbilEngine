@@ -7,11 +7,11 @@ namespace wgpu { class Buffer; }
 
 namespace Engine
 {
-	//struct AABB
-	//{
-	//	glm::vec3 min = glm::vec3(FLT_MAX);
-	//	glm::vec3 max = glm::vec3(-FLT_MAX);
-	//};
+	struct AABB
+	{
+		glm::vec3 min = glm::vec3(std::numeric_limits<float>::max());
+		glm::vec3 max = glm::vec3(std::numeric_limits<float>::lowest());
+	};
 
 	struct Vertex 
 	{
@@ -56,8 +56,11 @@ namespace Engine
 		const wgpu::Buffer& GetIndexBuffer() const;
 		const wgpu::Buffer& GetWireIndexBuffer() const;
 
+		bool IntersectTest(const Mesh& other) const;
+		AABB aabb;
 	private:
 		std::vector<SubMesh> m_SubMeshes;
+		
 
 		struct MeshGPUData;
 		std::unique_ptr<MeshGPUData> m_GPU;

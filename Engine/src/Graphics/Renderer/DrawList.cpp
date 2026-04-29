@@ -2,6 +2,7 @@
 #include "Engine/Graphics/Renderer/DrawList.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Mesh.h"
+#include "Engine/Asset/AssetManager.h"
 
 namespace Engine
 {
@@ -21,9 +22,11 @@ namespace Engine
 				continue;
 			}
 
-			for (const auto& subMesh : mc.mesh->GetSubMeshes())
+			Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(mc.mesh);
+
+			for (const auto& subMesh : mesh.GetSubMeshes())
 			{
-				list.items.emplace_back(DrawItem{ entity, mc.mesh, &subMesh, modelIndex++ });
+				list.items.emplace_back(DrawItem{ entity, &mesh, &subMesh, modelIndex++ });
 			}
 		}
 

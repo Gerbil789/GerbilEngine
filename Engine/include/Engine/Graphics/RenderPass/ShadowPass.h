@@ -9,5 +9,7 @@ namespace Engine
 	public:
 		ShadowPass();
 		virtual void Execute(wgpu::CommandEncoder& encoder, const RenderContext& context) override;
+
+		static float s_Lambda;
 	};
 }

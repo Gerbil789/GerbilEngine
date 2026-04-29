@@ -102,6 +102,13 @@ namespace Engine
       HDRTexture->id = RESOURCES::TEXTURE::HDR;
       m_Textures.insert_or_assign(RESOURCES::TEXTURE::HDR, std::move(*HDRTexture));
     }
+
+    auto whiteMaterial = Materials::GetDefault();
+    if(whiteMaterial)
+    {
+      whiteMaterial->id = RESOURCES::MATERIAL::WHITE;
+      m_Materials.insert_or_assign(RESOURCES::MATERIAL::WHITE, std::move(*whiteMaterial));
+    }
   }
 
   AssetRegistry& AssetManager::GetAssetRegistry()

@@ -4,6 +4,7 @@
 #include "Engine/Graphics/Material.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Scene/Components.h"
+#include "Engine/Asset/AssetManager.h"
 
 namespace Engine
 {
@@ -38,7 +39,8 @@ namespace Engine
 		pass.setBindGroup(0, context.viewBindGroup, 0, nullptr);
 		pass.setBindGroup(1, context.environmentBindGroup, 0, nullptr);
 
-		Material* material = nullptr;
+		Engine::Uuid materialId{ 0 };
+		Engine::Material* material = nullptr;
 		Mesh* mesh = nullptr;
 
 		for (const DrawItem& item : context.drawList)
@@ -59,7 +61,7 @@ namespace Engine
 				continue;
 			}
 
-			Engine::Material* subMaterial;
+			Engine::Uuid subMaterial;
 			if(sub->materialIndex >= meshMaterials.size())
 			{
 				subMaterial = meshMaterials[0];
@@ -69,9 +71,10 @@ namespace Engine
 				subMaterial = meshMaterials[sub->materialIndex];
 			}
 
-			if (subMaterial && (subMaterial != material))
+			if (subMaterial && (subMaterial != materialId))
 			{
-				material = subMaterial;
+				materialId = subMaterial;
+				material = &Engine::AssetManager::GetAsset<Material>(subMaterial);
 				GraphicsContext::GetQueue().writeBuffer(material->GetUniformBuffer(), 0, material->GetUniformData().data(), material->GetUniformData().size());
 				pass.setBindGroup(2, material->GetBindGroup(), 0, nullptr);
 				pass.setPipeline(material->GetShader().GetRenderPipeline());

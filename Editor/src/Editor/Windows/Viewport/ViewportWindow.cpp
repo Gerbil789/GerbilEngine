@@ -448,7 +448,8 @@ namespace Editor
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		Engine::g_Renderer.RenderScene(&Engine::SceneManager::GetActiveScene());
+		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+		Engine::g_Renderer.RenderScene(scene);
 		ImGui::Image(static_cast<WGPUTextureView>(Engine::g_Renderer.GetTextureView()), viewportSize);
 
 		DrawOverlay(imagePos, viewportSize);

@@ -20,12 +20,13 @@ namespace Engine
 		RenderPassType GetEnabledFlags() const { return m_EnabledPasses; }
 
 		void SetCamera(Camera* camera);
+		Camera* GetCamera() const;
 		void SetColorTarget(wgpu::TextureView colorView);
 		void SetDepthTarget(wgpu::TextureView depthView);
 		void SetEnvironmentTexture(Texture2D& texture);
 		RenderContext& GetRenderContext();
 
-		void RenderScene(Scene* scene);
+		void RenderScene(Scene& scene);
 		wgpu::TextureView GetTextureView() const;
 
 	private:

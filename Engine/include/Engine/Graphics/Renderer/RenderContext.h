@@ -9,7 +9,6 @@
 namespace Engine
 {
   class Scene;
-	class TextureCube;
 	class Camera;
 
   struct RenderContext
@@ -19,7 +18,7 @@ namespace Engine
 
 		DrawList drawList;
 
-    Scene* scene = nullptr;
+		Scene* scene = nullptr;
     Camera* camera = nullptr;
 
     // View
