@@ -244,7 +244,7 @@ namespace Engine
 
 		std::for_each(std::execution::par, m_RenderContext.drawList.begin(), m_RenderContext.drawList.end(), [&](const DrawItem& item)
 			{
-				models[item.modelIndex] = item.entity.Get<TransformComponent>().GetWorldMatrix();
+				models[item.modelIndex] = item.entity.Get<TransformComponent>().GetWorld();
 			});
 
 

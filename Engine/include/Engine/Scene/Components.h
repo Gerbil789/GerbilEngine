@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Engine/Scene/Entity.h"
+#include "Engine/Core/Resources.h"
+#include "Engine/Graphics/Mesh.h" //TODO: remove this dependency, only need AABB
 #include <glm/glm.hpp>
 
 namespace Engine
@@ -13,7 +15,7 @@ namespace Engine
 
 	struct ENGINE_API IdentityComponent
 	{
-		Uuid id = Uuid();
+		Uuid id{ 0 };
 		bool enabled = true;
 	};
 
@@ -33,56 +35,24 @@ namespace Engine
 		Entity nextSibling;
 		Entity prevSibling;
 
-		TransformComponent() = default;
-		TransformComponent(const glm::vec3& position) : position(position) {}
-
-		glm::mat4 GetLocalMatrix() const;
-		glm::mat4 GetWorldMatrix() const;
-
-		void Reset()
-		{
-			position = { 0.0f, 0.0f, 0.0f };
-			rotation = { 0.0f, 0.0f, 0.0f };
-			scale = { 1.0f, 1.0f, 1.0f };
-		}
+		glm::mat4 GetLocal() const;
+		glm::mat4 GetWorld() const;
 	};
 
 	struct ENGINE_API MeshComponent
 	{
-		Uuid mesh{ 0 };
-		std::vector<Uuid> materials;
-
-		MeshComponent();
-
-		Uuid GetMaterial(uint32_t index)
-		{
-			if (index >= materials.size())
-			{
-				return 0;
-			}
-			return materials[index];
-		}
-
-		void SetMaterial(uint32_t index, Uuid material)
-		{
-			if (index >= materials.size())
-			{
-				materials.resize(index + 1);
-			}
-			materials[index] = material;
-		}
-
-		void Reset()
-		{
-			mesh = 0;
-			materials.clear();
-		}
+		Uuid meshId{ 0 };
+		std::vector<Uuid> materials{ Uuid{RESOURCES::MATERIAL::PINK} };
 	};
 
+	enum class BodyType { Static = 0, Dynamic, Kinematic };
 
 	struct ENGINE_API ColliderComponent
 	{
-		Uuid mesh{ 0 };
+		Uuid meshId{ RESOURCES::MESH::SPHERE };
+		AABB worldAABB;
+		BodyType type = BodyType::Dynamic;
+		bool isTrigger = false;
 	};
 
 	struct ENGINE_API CameraComponent
@@ -96,53 +66,40 @@ namespace Engine
 	{
 		LightType type = LightType::Directional;
 
-		// common
 		glm::vec3 color = { 1.0f, 1.0f, 1.0f };
 		float intensity = 1.0f;
 
-		// shadowing
+		// shadows
 		bool castsShadows = true;
 		float nearPlane = 0.1f;
 		float farPlane = 100.0f;
 
-		float range = 50.0f; // for point and spot lights, ignored for directional
+		float range = 50.0f;
 		float angle;
 
 		union
 		{
-			struct // Directional
+			struct
 			{
+
 			} directional;
 
-			struct // Spot
+			struct
 			{
-				float fov;      // radians
-				float aspect;   // usually 1 for shadow map
+				float fov;
+				float aspect;
 			} spot;
 
-			struct // Point
+			struct
 			{
-				// no extra params needed beyond position + range
+
 			} point;
 		};
-
-		void Reset()
-		{
-			type = LightType::Directional;
-			color = { 1.0f, 1.0f, 1.0f };
-			intensity = 1.0f;
-		}
 	};
 
 	struct ENGINE_API ScriptComponent
 	{
 		std::string id; //TODO: dont use string as id
 		Script* instance = nullptr;
-
-		void Reset()
-		{
-			id.clear();
-			instance = nullptr;
-		}	
 	};
 }

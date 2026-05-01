@@ -49,23 +49,22 @@ namespace Engine
 
 	wgpu::Surface CreateSurface(GLFWwindow* window)
 	{
-		wgpu::SurfaceDescriptor surfaceDesc{};
+		wgpu::SurfaceDescriptor surfaceDesc;
 		surfaceDesc.label = { "MainSurface", WGPU_STRLEN };
 
 #if defined(ENGINE_PLATFORM_WINDOWS)
-		wgpu::SurfaceSourceWindowsHWND hwndDesc{};
+		wgpu::SurfaceSourceWindowsHWND hwndDesc;
 		hwndDesc.hwnd = glfwGetWin32Window(window);
 		hwndDesc.hinstance = GetModuleHandle(nullptr);
 		hwndDesc.chain.sType = wgpu::SType::SurfaceSourceWindowsHWND;
 		surfaceDesc.nextInChain = &hwndDesc.chain;
 #else
-		wgpu::SurfaceSourceXlibWindow x11Desc{};
+		wgpu::SurfaceSourceXlibWindow x11Desc;
 		x11Desc.chain.sType = wgpu::SType::SurfaceSourceXlibWindow;
 		x11Desc.display = glfwGetX11Display();
 		x11Desc.window = glfwGetX11Window(window);
 		surfaceDesc.nextInChain = &x11Desc.chain;
 #endif
-
 
 		return GraphicsContext::GetInstance().createSurface(surfaceDesc);
 	}

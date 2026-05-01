@@ -1,31 +1,21 @@
 #include "enginepch.h"
 #include "Engine/Scene/Components.h"
-#include "Engine/Audio/Audio.h"
-#include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
-#include "Engine/Graphics/Material.h"
-#include "Engine/Core/Resources.h"
 
 namespace Engine
 {
-  MeshComponent::MeshComponent()
-  {
-    SetMaterial(0, RESOURCES::MATERIAL::WHITE);
-  }
-
-
-  glm::mat4 TransformComponent::GetLocalMatrix() const
+  glm::mat4 TransformComponent::GetLocal() const
   {
     return glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(glm::radians(rotation))) * glm::scale(glm::mat4(1.0f), scale);
   }
 
-  glm::mat4 TransformComponent::GetWorldMatrix() const
+  glm::mat4 TransformComponent::GetWorld() const
   {
-    glm::mat4 local = GetLocalMatrix();
+    glm::mat4 local = GetLocal();
     if (parent)
     {
 			const auto& parentTransform = parent.Get<TransformComponent>();
-      return parentTransform.GetWorldMatrix() * local;
+      return parentTransform.GetWorld() * local;
     }
     return local;
   }

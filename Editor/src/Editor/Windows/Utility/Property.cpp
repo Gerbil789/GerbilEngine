@@ -11,6 +11,11 @@
 
 namespace Editor
 {
+	bool CheckAssetType(Engine::Uuid id, Engine::AssetType expectedType)
+	{
+		return Engine::AssetManager::GetAssetRegistry().GetType(id) == expectedType;
+	}
+
 	EditResult TextureField(const std::string& label, Engine::Texture2D*& texture)
 	{
 		EditResult result;

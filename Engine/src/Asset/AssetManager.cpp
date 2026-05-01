@@ -109,6 +109,13 @@ namespace Engine
       whiteMaterial->id = RESOURCES::MATERIAL::WHITE;
       m_Materials.insert_or_assign(RESOURCES::MATERIAL::WHITE, std::move(*whiteMaterial));
     }
+
+    auto pinkMaterial = Materials::GetDefault();
+    if (pinkMaterial)
+    {
+      pinkMaterial->id = RESOURCES::MATERIAL::PINK;
+      m_Materials.insert_or_assign(RESOURCES::MATERIAL::PINK, std::move(*pinkMaterial));
+    }
   }
 
   AssetRegistry& AssetManager::GetAssetRegistry()

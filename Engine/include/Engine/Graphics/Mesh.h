@@ -56,11 +56,9 @@ namespace Engine
 		const wgpu::Buffer& GetIndexBuffer() const;
 		const wgpu::Buffer& GetWireIndexBuffer() const;
 
-		bool IntersectTest(const Mesh& other) const;
 		AABB aabb;
 	private:
 		std::vector<SubMesh> m_SubMeshes;
-		
 
 		struct MeshGPUData;
 		std::unique_ptr<MeshGPUData> m_GPU;

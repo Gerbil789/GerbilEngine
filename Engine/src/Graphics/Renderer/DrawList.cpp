@@ -17,12 +17,12 @@ namespace Engine
 		for (const auto& entity : entities)
 		{
 			const auto& mc = entity.Get<MeshComponent>();
-			if (!mc.mesh)
+			if (!mc.meshId)
 			{
 				continue;
 			}
 
-			Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(mc.mesh);
+			Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(mc.meshId);
 
 			for (const auto& subMesh : mesh.GetSubMeshes())
 			{

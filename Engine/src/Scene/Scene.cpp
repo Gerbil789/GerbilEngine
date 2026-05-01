@@ -85,7 +85,7 @@ namespace Engine
 	Entity Scene::CreateEntity(const std::string& name)
 	{
 		entt::entity handle = m_Registry.create();
-		m_Registry.emplace<IdentityComponent>(handle, Uuid(), true);
+		m_Registry.emplace<IdentityComponent>(handle, Uuid());
 		m_Registry.emplace<NameComponent>(handle, name);
 		m_Registry.emplace<TransformComponent>(handle);
 		return Entity{ handle, &m_Registry };

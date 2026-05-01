@@ -21,6 +21,8 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 
+#include "Engine/Physics/Physics.h"
+
 #include "Engine/Debug/RenderDoc.h"
 
 namespace Editor
@@ -43,7 +45,8 @@ namespace Editor
 		Engine::GraphicsContext::Initialize();
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());
 		GLFW::Initialize();
-		m_Window.emplace(Engine::WindowSpecification{ "Gerbil Editor", 1600, 900, "Resources/Engine/icons/logo.png" });
+
+		m_Window.emplace(Engine::WindowSpecification{ std::format("Gerbil Editor - {}", BUILD_CONFIG) , 1600, 900, "Resources/Engine/icons/logo.png" });
 		m_Window->SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
 		Engine::Input::SetActiveWindow(*static_cast<GLFWwindow*>(m_Window->GetNativeWindow()));
 		Engine::g_Renderer.Initialize(); //TODO: i dont like global variable
@@ -91,11 +94,13 @@ namespace Editor
 			Engine::Input::Update();					// poll input events
 			Engine::Audio::Update();					// release finished audio voices back to pool
 
+
 			EditorWindowManager::Update();		// update editor UI, render viewport, ...
 			EditorCommandManager::Flush();		// execute queued commands (deffered execution)
 			
 			if (EditorContext::state == EditorState::Play)
 			{
+				Engine::PhysicsSystem::Update();
 				Engine::Runtime::Update();			// update game runtime (scripts, audio listener, etc...)
 			}
 		}

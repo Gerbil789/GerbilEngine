@@ -1,18 +1,22 @@
 #pragma once
 
+#include "Engine/Core/UUID.h"
 #include <string>
 #include <imgui.h>
 #include <glm/glm.hpp>
 #include <limits>
 
-namespace Engine { class Texture2D; class AudioClip; class Mesh; class Material; class TextureCube; }
+namespace Engine { class Texture2D; class AudioClip; class Mesh; class Material; class TextureCube; enum class AssetType;}
 
 namespace Editor
 {
-	constexpr float fltMin = std::numeric_limits<float>::lowest();
-	constexpr float fltMax = std::numeric_limits<float>::max();
-	constexpr int intMin = std::numeric_limits<int>::lowest();
-	constexpr int intMax = std::numeric_limits<int>::max();
+	namespace
+	{
+		constexpr float fltMin = std::numeric_limits<float>::lowest();
+		constexpr float fltMax = std::numeric_limits<float>::max();
+		constexpr int intMin = std::numeric_limits<int>::lowest();
+		constexpr int intMax = std::numeric_limits<int>::max();
+	}
 
 	struct EditResult
 	{
@@ -65,6 +69,8 @@ namespace Editor
 		}
 	};
 
+	bool CheckAssetType(Engine::Uuid id, Engine::AssetType expectedType);
+
 	struct DragDropTarget
 	{
 		DragDropTarget()
@@ -77,22 +83,29 @@ namespace Editor
 			if (active) ImGui::EndDragDropTarget();
 		}
 
-		template<typename Fn>
-		void Accept(const char* type, Fn&& fn)
+		template<Engine::AssetType ExpectedType, typename Fn>
+		void AcceptAsset(Fn&& fn)
 		{
-			static_assert(std::is_invocable_v<Fn, void*>, "Accept() requires callable(void*)");
+			static_assert(std::is_invocable_v<Fn, Engine::Uuid>, "Callback must take an Engine::Uuid");
 
 			if (!active) return;
 
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(type))
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
-				std::forward<Fn>(fn)(payload->Data);
+				assert(payload->DataSize == sizeof(Engine::Uuid) && "Drag drop payload size mismatch!");
+				Engine::Uuid id = *static_cast<const Engine::Uuid*>(payload->Data);
+
+				if (CheckAssetType(id, ExpectedType))
+				{
+					std::forward<Fn>(fn)(id);
+				}
 			}
 		}
 
 	private:
 		bool active = false;
 	};
+
 
 	EditResult TextureField(const std::string& label, Engine::Texture2D*& texture);
 	EditResult AudioClipField(const std::string& label, Engine::AudioClip*& audioClip);

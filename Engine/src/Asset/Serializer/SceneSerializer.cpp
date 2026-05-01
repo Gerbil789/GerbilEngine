@@ -40,7 +40,7 @@ namespace Engine
 		if (entity.Has<MeshComponent>())
 		{
 			const auto& component = entity.Get<MeshComponent>();
-			const auto& meshId = component.mesh;
+			const auto& meshId = component.meshId;
 			const auto& materialsIds = component.materials;
 
 			Engine::Yaml::Map meshMap(out, "MeshComponent");
@@ -57,6 +57,16 @@ namespace Engine
 					}
 				}
 			}
+		}
+
+		// Collider
+		if (entity.Has<ColliderComponent>())
+		{
+			const auto& component = entity.Get<ColliderComponent>();
+			Engine::Yaml::Map colliderMap(out, "ColliderComponent");
+			Engine::Yaml::Write(out, "Mesh", component.meshId);
+			Engine::Yaml::Write(out, "Type", static_cast<uint32_t>(component.type)); //TODO: serialize string
+			Engine::Yaml::Write(out, "IsTrigger", component.isTrigger);
 		}
 
 		// Camera
@@ -256,23 +266,36 @@ namespace Engine
 
 				if (uint64_t id; Engine::Yaml::Read<uint64_t>(meshNode, "Mesh", id))
 				{
-					component.mesh = id;
+					component.meshId = id;
 				}
 
 				// Materials
 				auto materialsNode = meshNode["Materials"];
 				if (materialsNode)
 				{
+					component.materials.resize(materialsNode.size());
+
 					int i = 0;
 					for (const auto& materialNode : materialsNode)
 					{
-						uint64_t materialId = materialNode.as<uint64_t>();
-						//Material& material = Engine::AssetManager::GetAsset<Material>(materialId);
-						component.SetMaterial(i++, materialId);
+						component.materials[i++] = materialNode.as<uint64_t>();
 					}
 				}
+			}
 
-
+			// Collider
+			if (auto colliderNode = entityNode["ColliderComponent"]; colliderNode)
+			{
+				auto& component = entity.Add<ColliderComponent>();
+				if (uint64_t id; Engine::Yaml::Read<uint64_t>(colliderNode, "Mesh", id))
+				{
+					component.meshId = id;
+				}
+				if (uint32_t type; Engine::Yaml::Read(colliderNode, "Type", type))
+				{
+					component.type = static_cast<BodyType>(type);
+				}
+				Engine::Yaml::Read(colliderNode, "IsTrigger", component.isTrigger);
 			}
 
 			// Camera

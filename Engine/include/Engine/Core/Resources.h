@@ -2,27 +2,27 @@
 
 #include "Engine/Core/UUID.h"
 
-namespace Engine::RESOURCES
+namespace RESOURCES
 {
-	static constexpr Uuid INVALID_UUID = Uuid{ 0 };
+	static constexpr Engine::Uuid INVALID_UUID = Engine::Uuid{ 0 };
 
 	namespace MESH
 	{
-		static constexpr Uuid CUBE = Uuid{ 1 };
-		static constexpr Uuid SPHERE = Uuid{ 2 };
+		static constexpr Engine::Uuid CUBE = Engine::Uuid{ 1 };
+		static constexpr Engine::Uuid SPHERE = Engine::Uuid{ 2 };
 	}
 
 	namespace TEXTURE
 	{
-		static constexpr Uuid WHITE = Uuid{ 3 };
-		static constexpr Uuid BLACK = Uuid{ 4 };
-		static constexpr Uuid NORMAL = Uuid{ 5 };
-		static constexpr Uuid HDR = Uuid{ 6 };
+		static constexpr Engine::Uuid WHITE = Engine::Uuid{ 3 };
+		static constexpr Engine::Uuid BLACK = Engine::Uuid{ 4 };
+		static constexpr Engine::Uuid NORMAL = Engine::Uuid{ 5 };
+		static constexpr Engine::Uuid HDR = Engine::Uuid{ 6 };
 	}
 
 	namespace MATERIAL
 	{
-		static constexpr Uuid WHITE = Uuid{ 7 };
-		static constexpr Uuid PINK = Uuid{ 8 };
+		static constexpr Engine::Uuid WHITE = Engine::Uuid{ 7 };
+		static constexpr Engine::Uuid PINK = Engine::Uuid{ 8 };
 	}
 }

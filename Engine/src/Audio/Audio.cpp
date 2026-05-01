@@ -80,10 +80,10 @@ namespace Engine
 		ma_engine_listener_set_world_up(&s_AudioEngine, 0, ux, uy, uz);
 	}
 
-	void Audio::SetSourcePosition(AudioClip* clip, float x, float y, float z)
+	void Audio::SetSourcePosition(AudioClip* clip, const glm::vec3& position)
 	{
 		if (!clip) return;
-		ma_sound_set_position(&clip->GetSound(), x, y, z);
+		ma_sound_set_position(&clip->GetSound(), position.x, position.y, position.z);
 	}
 
 	void Audio::Play2D(AudioClip* clip)
@@ -116,7 +116,7 @@ namespace Engine
 		voice->active = true;
 	}
 
-	void Audio::Play3D(AudioClip* clip, float x, float y, float z)
+	void Audio::Play3D(AudioClip* clip, const glm::vec3& position)
 	{
 		if(!clip)
 		{
@@ -137,7 +137,7 @@ namespace Engine
 			return;
 		}
 
-		ma_sound_set_position(&voice->sound, x, y, z);
+		ma_sound_set_position(&voice->sound, position.x, position.y, position.z);
 		ma_sound_set_spatialization_enabled(&voice->sound, MA_TRUE);
 
 		if (ma_sound_start(&voice->sound) != MA_SUCCESS)

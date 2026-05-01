@@ -121,13 +121,13 @@ namespace Engine
 
 		if (keepWorld)
 		{
-			glm::mat4 worldMatrix = Get<TransformComponent>().GetWorldMatrix();
+			glm::mat4 worldMatrix = Get<TransformComponent>().GetWorld();
 
 			// Recalculate local transform so world stays same
 			auto& childTransform = Get<TransformComponent>();
 			glm::mat4 parentWorld = glm::mat4(1.0f);
 			if (childTransform.parent)
-				parentWorld = childTransform.parent.Get<TransformComponent>().GetWorldMatrix();
+				parentWorld = childTransform.parent.Get<TransformComponent>().GetWorld();
 
 			glm::mat4 local = glm::inverse(parentWorld) * worldMatrix;
 

@@ -5,6 +5,7 @@
 #include "TestProject/RandomMovement.h"
 #include "TestProject/AudioPlayer.h"
 #include "TestProject/GameManager.h"
+#include "TestProject/Button.h"
 
 extern "C"
 {
@@ -14,5 +15,6 @@ extern "C"
     registry.Register<RandomMovement>();
 		registry.Register<AudioPlayer>();
 		registry.Register<GameManager>();
+    registry.Register<Button>();
   }
 }

@@ -2,7 +2,7 @@
 
 #include "Engine/Core/API.h"
 #include "Engine/Core/Assert.h"
-#include <entt.hpp> //TODO: dont include entt in the headers
+#include <entt.hpp>
 
 namespace Engine
 {

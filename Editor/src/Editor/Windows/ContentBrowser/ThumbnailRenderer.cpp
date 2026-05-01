@@ -1,64 +1,41 @@
 #include "ThumbnailRenderer.h"
+#include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Scene/Entity.h"
-#include "Engine/Asset/Importer/MeshImporter.h"
-#include "Engine/Graphics/RenderPass/OpaquePass.h"
-#include "Engine/Graphics/RenderPass/BackgroundPass.h"
-#include "Engine/Graphics/Material.h"
-#include "Engine/Graphics/Mesh.h"
-#include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Camera.h"
-#include "Engine/Asset/AssetManager.h"
+#include "Engine/Scene/Scene.h"
 #include "Engine/Core/Resources.h"
 
 namespace Editor
 {
 	namespace
 	{
-		struct ThumbnailData 
-		{
-			Engine::Scene scene;
-			Engine::Entity entity;
-			Engine::Camera camera;
-
-			Engine::Renderer renderer;
-		};
-
-		ThumbnailData& GetData() 
-		{
-			static ThumbnailData data;
-			return data;
-		}
+		Engine::Scene scene;
+		Engine::Entity entity;
+		Engine::Camera camera;
+		Engine::Renderer renderer;
 
 		std::unordered_map<Engine::Uuid, wgpu::TextureView> m_ThumbnailCache;
 	}
 
 	void ThumbnailRenderer::Initialize()
 	{
-		auto& data = GetData();
+		camera.SetBackground(Engine::Camera::Background::Color);
+		camera.SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+		camera.SetAspectRatio(1.0f);
+		camera.SetPosition({ 0.0f, 0.0f, 3.0f });
+		camera.SetRotation({ 0.0f, 180.0f, 0.0f });
 
-		data.camera.SetBackground(Engine::Camera::Background::Color);
-		data.camera.SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
-		data.camera.SetAspectRatio(1.0f);
-		data.camera.SetPosition({ 0.0f, 0.0f, 3.0f });
-		data.camera.SetRotation({ 0.0f, 180.0f, 0.0f });
+		entity = scene.CreateEntity("PreviewEntity");
+		entity.Add<Engine::MeshComponent>(RESOURCES::MESH::SPHERE);
 
-		data.entity = data.scene.CreateEntity("PreviewEntity");
-		auto& mc = data.entity.Add<Engine::MeshComponent>();
-
-		//Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(Engine::RESOURCES::MESH::SPHERE);
-		//mc.mesh = &mesh;
-		mc.mesh = Engine::RESOURCES::MESH::SPHERE;
-		data.renderer.Initialize();
-		data.renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Opaque);
-		data.renderer.SetCamera(&data.camera);
+		renderer.Initialize();
+		renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Opaque);
+		renderer.SetCamera(&camera);
 	}
 
-	//TODO: pass material uuid
-	wgpu::TextureView Render(Engine::Material* material)
+	wgpu::TextureView Render(Engine::Uuid id)
 	{
-		auto& data = GetData();
-		data.entity.Get<Engine::MeshComponent>().SetMaterial(0, material->id);
+		entity.Get<Engine::MeshComponent>().materials[0] = id;
 
 		wgpu::TextureDescriptor desc;
 		desc.label = { "ThumbnailTexture", WGPU_STRLEN };
@@ -78,8 +55,7 @@ namespace Editor
 		viewDesc.mipLevelCount = 1;
 		wgpu::TextureView thumbnailView = thumbnailTexture.createView(viewDesc);
 
-		data.renderer.SetColorTarget(thumbnailView);
-
+		renderer.SetColorTarget(thumbnailView);
 
 		//set depth target
 		{
@@ -97,12 +73,10 @@ namespace Editor
 			depthViewDesc.format = depthDesc.format;
 			depthViewDesc.arrayLayerCount = 1;
 			depthViewDesc.mipLevelCount = 1;
-			data.renderer.SetDepthTarget(depthTexture.createView(depthViewDesc));
+			renderer.SetDepthTarget(depthTexture.createView(depthViewDesc));
 		}
 
-
-		data.renderer.RenderScene(data.scene);
-
+		renderer.RenderScene(scene);
 		return thumbnailView;
 	}
 
@@ -113,8 +87,7 @@ namespace Editor
 			return m_ThumbnailCache[id];
 		}
 
-		Engine::Material* material = &(Engine::AssetManager::GetAsset<Engine::Material>(id));
-		wgpu::TextureView newView = Render(material);
+		wgpu::TextureView newView = Render(id);
 		m_ThumbnailCache[id] = newView;
 		return newView;
 	}

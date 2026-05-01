@@ -1,13 +1,23 @@
+- ID: 5692400728539980210
+  Enabled: true
+  Name: Mesh
+  Transform:
+    Position: [0, 0, 0]
+    Rotation: [0, -0, 0]
+    Scale: [1, 0.3, 1]
+  MeshComponent:
+    Mesh: 9153350241491098746
+    Materials: [9905515824125768949]
 - ID: 10199165476046124790
   Enabled: true
   Name: Player
   Transform:
-    Position: [8, 10, 8]
-    Rotation: [0, -0, 0]
-    Scale: [1, 0.99999684, 0.99999684]
+    Position: [4.1024485, 0, -4.6065955]
+    Rotation: [-0.63988835, -2.0009024, 7.11453e-14]
+    Scale: [0.4999998, 0.9999964, 0.4999998]
   CameraComponent:
     Projection: 0
-    AspectRatio: 1.5856
+    AspectRatio: 0.9216
     Perspective:
       FOV: 0.7853982
       Near: 0.1
@@ -87,7 +97,7 @@
   Name: Sphere
   Transform:
     Position: [0, 0, 8]
-    Rotation: [0, 0, 0]
+    Rotation: [0, -0, 0]
     Scale: [1, 1, 1]
   MeshComponent:
     Mesh: 15608668046686712752
@@ -118,14 +128,16 @@
     Play On Awake: true
 - ID: 7595510319564696268
   Enabled: true
-  Name: Sphere
+  Name: Button
   Transform:
-    Position: [4, 2.9802322e-08, 7.450581e-09]
+    Position: [0, -2, -1.1920929e-07]
     Rotation: [0, -0, 0]
     Scale: [1, 1, 1]
-  MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [18214915358259466449]
+  ScriptComponent:
+    Script: Button
+    Offset: -0.25
+    Press Sound: 16291733256000547131
+    Release Sound: 16437370415965019686
 - ID: 10050883766811257380
   Enabled: true
   Name: Sphere
@@ -160,8 +172,8 @@
   Enabled: true
   Name: Sphere
   Transform:
-    Position: [3.9999762, 0, 16.000004]
-    Rotation: [-0.00071570044, 49.14418, 0.0126070725]
+    Position: [3.9999533, 1.13891645e-07, 16.000004]
+    Rotation: [-0.00071570044, 49.14418, 0.012607072]
     Scale: [0.9999929, 1, 0.9999958]
   MeshComponent:
     Mesh: 5906759997218235868

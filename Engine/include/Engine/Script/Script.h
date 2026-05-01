@@ -55,6 +55,12 @@ namespace Engine
     virtual void OnUpdate() {}
     virtual void OnDestroy() {}
 		virtual void OnEvent([[maybe_unused]] const Event& event) {}
+
+		virtual void OnCollisionEnter([[maybe_unused]] Entity other) {}
+    virtual void OnCollisionExit([[maybe_unused]] Entity other) {}
+
+    virtual void OnTriggerEnter([[maybe_unused]] Entity other) {}
+    virtual void OnTriggerExit([[maybe_unused]] Entity other) {}
   };
 }
 
