@@ -4,6 +4,7 @@
 #include "Engine/Graphics/Material.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Scene/Components.h"
+#include "Engine/Scene/Scene.h"
 #include "Engine/Asset/AssetManager.h"
 
 namespace Engine
@@ -55,7 +56,7 @@ namespace Engine
 			}
 			const SubMesh* sub = item.subMesh;
 
-			auto meshMaterials = item.entity.Get<MeshComponent>().materials;
+			auto meshMaterials = context.scene->GetRegistry().get<MeshComponent>(item.entity).materials;
 			if(meshMaterials.size() < 1)
 			{
 				continue;

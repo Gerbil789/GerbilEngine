@@ -1,12 +1,9 @@
 #include "enginepch.h"
 #include "Engine/Core/Runtime.h"
-
-
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Scene/Components.h"
-#include "Engine/Scene/Entity.h"
 #include "Engine/Script/Script.h"
 #include "Engine/Audio/Audio.h"
 #include "Engine/Graphics/Camera.h"
@@ -69,12 +66,12 @@ namespace Engine
 			scene.SetActiveCamera(cameraEntities[0]);
 		}
 
-		for (Engine::Entity& ent : scene.GetEntities<Engine::ScriptComponent>())
+		for (entt::entity entity : scene.GetEntities<Engine::ScriptComponent>())
 		{
-			auto& sc = ent.Get<Engine::ScriptComponent>();
+			auto& sc = scene.GetRegistry().get<Engine::ScriptComponent>(entity);
 			if (sc.instance)
 			{
-				sc.instance->Self = ent;
+				sc.instance->m_Entity = entity;
 				sc.instance->OnStart();
 			}
 		}
@@ -82,9 +79,9 @@ namespace Engine
 		m_Token = Engine::EventBus::Get().SubscribeToAll([](Engine::Event& e)
 			{
 				auto& scene = Engine::SceneManager::GetActiveScene();
-				for (Engine::Entity& ent : scene.GetEntities<Engine::ScriptComponent>())
+				for (entt::entity entity : scene.GetEntities<Engine::ScriptComponent>())
 				{
-					auto& sc = ent.Get<Engine::ScriptComponent>();
+					auto& sc = scene.GetRegistry().get<Engine::ScriptComponent>(entity);
 					if (sc.instance)
 					{
 						sc.instance->OnEvent(e);
@@ -96,9 +93,9 @@ namespace Engine
 	void Runtime::Stop()
 	{
 		auto& scene = Engine::SceneManager::GetActiveScene();
-		for (auto& ent : scene.GetEntities<Engine::ScriptComponent>())
+		for (entt::entity entity : scene.GetEntities<Engine::ScriptComponent>())
 		{
-			auto& sc = ent.Get<Engine::ScriptComponent>();
+			auto& sc = scene.GetRegistry().get<Engine::ScriptComponent>(entity);
 			if (sc.instance)
 			{
 				sc.instance->OnDestroy();
@@ -121,9 +118,9 @@ namespace Engine
 		auto& scene = Engine::SceneManager::GetActiveScene();
 
 		// update scripts
-		for (auto& ent : scene.GetEntities<Engine::ScriptComponent>())
+		for (entt::entity entity : scene.GetEntities<Engine::ScriptComponent>())
 		{
-			auto& scriptComp = ent.Get<Engine::ScriptComponent>();
+			auto& scriptComp = scene.GetRegistry().get<Engine::ScriptComponent>(entity);
 			if (scriptComp.instance)
 			{
 				scriptComp.instance->OnUpdate();
@@ -131,16 +128,17 @@ namespace Engine
 		}
 
 		// update camera & audio listener
-		for (auto& ent : scene.GetEntities<Engine::CameraComponent>())
+		for (entt::entity entity : scene.GetEntities<Engine::CameraComponent>())
 		{
-			Engine::Camera* cam = ent.Get<Engine::CameraComponent>().camera;
-			const auto& pos = ent.Get<Engine::TransformComponent>().position;
+			auto& cameraComp = scene.GetRegistry().get<Engine::CameraComponent>(entity);
+			Engine::Camera* cam = cameraComp.camera;
+			const auto& pos = scene.GetRegistry().get<Engine::TransformComponent>(entity).position;
 			const auto& forward = cam->GetForward();
 			const auto& up = cam->GetUp();
 			Engine::Audio::SetListener(pos.x, pos.y, pos.z, forward.x, forward.y, forward.z, up.x, up.y, up.z);
 			cam->SetPosition(pos);
 
-			const auto& rot = ent.Get<Engine::TransformComponent>().rotation;
+			const auto& rot = scene.GetRegistry().get<Engine::TransformComponent>(entity).rotation;
 			cam->SetRotation(rot);
 		}
 	}

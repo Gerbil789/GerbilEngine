@@ -5,6 +5,7 @@
 #include "Editor/Core/IconManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Utility/FileWatcher.h"
+#include "Engine/Scene/TransformSystem.h"
 
 #include "Engine/Core/Time.h"
 #include "Engine/Core/Input.h"
@@ -24,6 +25,7 @@
 #include "Engine/Physics/Physics.h"
 
 #include "Engine/Debug/RenderDoc.h"
+#include "Engine/Core/Log.h"
 
 namespace Editor
 {
@@ -93,7 +95,7 @@ namespace Editor
 			Engine::Time::BeginFrame();				// update delta time and FPS counters
 			Engine::Input::Update();					// poll input events
 			Engine::Audio::Update();					// release finished audio voices back to pool
-
+			Engine::TransformSystem::Update();
 
 			EditorWindowManager::Update();		// update editor UI, render viewport, ...
 			EditorCommandManager::Flush();		// execute queued commands (deffered execution)

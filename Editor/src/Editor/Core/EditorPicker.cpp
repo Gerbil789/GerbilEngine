@@ -1,8 +1,8 @@
 #include "EditorPicker.h"
-#include "Engine/Scene/Entity.h"
 #include "Engine/Utility/File.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/WebGPUUtils.h"
+#include "Engine/Scene/SceneManager.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/DrawList.h"
 #include "Engine/Scene/Components.h"
@@ -35,6 +35,10 @@ namespace Editor
 
   Engine::Uuid EditorPicker::Pick(uint32_t x, uint32_t y, const Engine::RenderContext& context)
   {
+		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+		entt::registry& registry = scene.GetRegistry();
+
+
     // Out of bounds check
     if (x >= m_Width || y >= m_Height) return Engine::Uuid(0);
 
@@ -87,7 +91,7 @@ namespace Editor
       uint32_t dynamicOffset = draw.modelIndex * Engine::GraphicsContext::GetUniformBufferOffsetAlignment();
       pass.setBindGroup(1, context.modelBindGroup, 1, &dynamicOffset);
 
-      Engine::Uuid uuid = draw.entity.GetUUID();
+			Engine::Uuid uuid = registry.get<Engine::IdentityComponent>(draw.entity).id;
       Engine::GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, dynamicOffset, &uuid, sizeof(Engine::Uuid));
       pass.setBindGroup(2, m_BindGroup, 1, &dynamicOffset);
 

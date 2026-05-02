@@ -5,6 +5,7 @@
     Position: [0, 0, 0]
     Rotation: [0, -0, 0]
     Scale: [1, 0.3, 1]
+    Parent: 7595510319564696268
   MeshComponent:
     Mesh: 9153350241491098746
     Materials: [9905515824125768949]

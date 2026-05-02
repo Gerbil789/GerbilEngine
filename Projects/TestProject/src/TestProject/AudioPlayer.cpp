@@ -6,7 +6,7 @@ void AudioPlayer::OnStart()
 {
   if (m_PlayOnAwake && m_Clip)
   {
-    Engine::Audio::Play3D(m_Clip, Self.Get<Engine::TransformComponent>().position);
+    Engine::Audio::Play3D(m_Clip, GetComponent<Engine::TransformComponent>().position);
   }
 }
 
@@ -16,6 +16,6 @@ void AudioPlayer::OnUpdate()
 
   if (Engine::Audio::IsPlaying(m_Clip))
   {
-    Engine::Audio::SetSourcePosition(m_Clip, Self.Get<Engine::TransformComponent>().position);
+    Engine::Audio::SetSourcePosition(m_Clip, GetComponent<Engine::TransformComponent>().position);
   }
 }

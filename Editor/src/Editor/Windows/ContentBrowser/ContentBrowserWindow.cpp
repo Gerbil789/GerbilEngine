@@ -11,6 +11,7 @@
 #include "ThumbnailRenderer.h"
 #include "Editor/Core/IconManager.h"
 #include "Engine/Graphics/Texture/TextureCube.h"
+#include "Engine/Core/Log.h"
 //#include <GLFW/glfw3.h>
 
 namespace Editor

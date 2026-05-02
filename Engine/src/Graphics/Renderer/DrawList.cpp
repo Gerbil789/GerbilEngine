@@ -6,29 +6,27 @@
 
 namespace Engine
 {
-	DrawList DrawList::CreateFromScene(Scene* scene)
+	DrawList DrawList::CreateFromScene(Scene& scene)
 	{
 		DrawList list;
 		uint32_t modelIndex = 0;
 
-		const auto& entities = scene->GetEntities<TransformComponent, MeshComponent>();
-		list.items.reserve(entities.size());
+		entt::registry& registry = scene.GetRegistry();
+		auto view = registry.view<IdentityComponent, TransformComponent, MeshComponent>();
 
-		for (const auto& entity : entities)
+		view.each([&](auto entity, IdentityComponent& identity, TransformComponent&, MeshComponent& mc)
 		{
-			const auto& mc = entity.Get<MeshComponent>();
-			if (!mc.meshId)
-			{
-				continue;
-			}
+				if (!identity.enabled || !mc.meshId)
+				{
+					return;
+				}
 
-			Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(mc.meshId);
-
-			for (const auto& subMesh : mesh.GetSubMeshes())
-			{
-				list.items.emplace_back(DrawItem{ entity, &mesh, &subMesh, modelIndex++ });
-			}
-		}
+				Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(mc.meshId);
+				for (const auto& subMesh : mesh.GetSubMeshes())
+				{
+					list.items.emplace_back(DrawItem{ entity, &mesh, &subMesh, modelIndex++ });
+				}
+		});
 
 		std::sort(list.begin(), list.end(), [](const DrawItem& a, const DrawItem& b)
 			{

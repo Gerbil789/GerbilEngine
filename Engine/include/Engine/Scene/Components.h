@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Engine/Scene/Entity.h"
 #include "Engine/Core/Resources.h"
 #include "Engine/Graphics/Mesh.h" //TODO: remove this dependency, only need AABB
 #include <glm/glm.hpp>
+#include <entt.hpp>
 
 namespace Engine
 {
@@ -30,13 +30,12 @@ namespace Engine
 		glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
 
-		Entity parent;
-		Entity firstChild;
-		Entity nextSibling;
-		Entity prevSibling;
+		entt::entity parent{ entt::null };
 
-		glm::mat4 GetLocal() const;
-		glm::mat4 GetWorld() const;
+		glm::mat4 localMatrix{ 1.0f };
+		glm::mat4 worldMatrix{ 1.0f };
+		bool isDirty = true;
+
 	};
 
 	struct ENGINE_API MeshComponent

@@ -9,28 +9,41 @@ namespace Editor
   class DeleteEntityCommand : public ICommand
   {
   public:
-    DeleteEntityCommand(Engine::Entity entity) : m_Name(entity.GetName()), m_Entity(entity) {}
+    DeleteEntityCommand(entt::entity entity) 
+    {
+			Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+			entt::registry& registry = scene.GetRegistry();
+
+      if (entity != entt::null)
+      {
+        m_Name = registry.get<Engine::NameComponent>(entity).name;
+        m_Entity = entity;
+			}
+    } 
 
     void Execute() override
     {
-      if (m_Entity)
-      {
-				SelectionManager::Clear(SelectionType::Entity);
-        m_Entity.Destroy();
-      }
+      if (m_Entity == entt::null) return;
+
+      SelectionManager::Clear(SelectionType::Entity);
+      Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+      entt::registry& registry = scene.GetRegistry();
+			registry.destroy(m_Entity);
     }
 
     void Undo() override
     {
-      m_Entity = Engine::SceneManager::GetActiveScene().CreateEntity(m_Name);
-			SelectionManager::Select(SelectionType::Entity, m_Entity.GetUUID());
+      Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+      entt::registry& registry = scene.GetRegistry();
+
+      m_Entity = scene.CreateEntity(m_Name);
+			auto id = registry.get<Engine::IdentityComponent>(m_Entity).id;
+
+			SelectionManager::Select(SelectionType::Entity, id);
     }
 
   private:
     std::string m_Name;
-    Engine::Entity m_Entity;
-
-
-
+    entt::entity m_Entity;
   };
 }

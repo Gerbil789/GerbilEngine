@@ -1,7 +1,6 @@
 #pragma once
 
 #include "IEditorWindow.h"
-#include "Engine/Scene/Entity.h"
 #include "Engine/Scene/Scene.h"
 
 namespace Editor
@@ -12,7 +11,7 @@ namespace Editor
 		void Draw() override;
 
 	private:
-		void DrawEntityNode(Engine::Entity);
-		void DrawReorderDropTarget(Engine::Entity parent, size_t index);
+		void DrawEntityNode(entt::registry& registry, entt::entity entity);
+		void DrawReorderDropTarget(entt::registry& registry, entt::entity parent, size_t index);
 	};
 }

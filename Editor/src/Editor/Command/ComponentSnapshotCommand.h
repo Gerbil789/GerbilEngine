@@ -1,7 +1,8 @@
 #pragma once
 
 #include "ICommand.h"
-#include "Engine/Scene/Entity.h"
+#include "Engine/Scene/SceneManager.h"
+#include <entt.hpp>
 
 namespace Editor
 {
@@ -9,20 +10,26 @@ namespace Editor
   class ComponentSnapshotCommand : public ICommand
   {
   public:
-    ComponentSnapshotCommand(Engine::Entity e, T before, T after) : m_Entity(e), m_Before(before), m_After(after) {}
+    ComponentSnapshotCommand(entt::entity e, T before, T after) : m_Entity(e), m_Before(before), m_After(after) {}
 
     void Execute() override
     {
-      m_Entity.Get<T>() = m_After;
+			Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+			entt::registry& registry = scene.GetRegistry();
+
+			registry.get<T>(m_Entity) = m_After;
     }
 
     void Undo() override
     {
-      m_Entity.Get<T>() = m_Before;
+			Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+			entt::registry& registry = scene.GetRegistry();
+
+			registry.get<T>(m_Entity) = m_Before;
     }
 
   private:
-    Engine::Entity m_Entity;
+    entt::entity m_Entity;
     T m_Before, m_After;
   };
 }

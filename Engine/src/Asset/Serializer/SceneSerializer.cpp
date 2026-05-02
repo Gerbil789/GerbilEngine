@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
-#include "Engine/Scene/Entity.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Mesh.h"
@@ -13,33 +12,41 @@
 
 namespace Engine
 {
-	static void SerializeEntity(YAML::Emitter& out, Entity entity)
+	static void SerializeEntity(YAML::Emitter& out, const entt::registry& registry, entt::entity entity)
 	{
 		Engine::Yaml::Map entityMap(out);
 
 		// Identity
-		const auto& identityComponent = entity.Get<IdentityComponent>();
+		const auto& identityComponent = registry.get<IdentityComponent>(entity);
 
 		Engine::Yaml::Write(out, "ID", identityComponent.id);
 		Engine::Yaml::Write(out, "Enabled", identityComponent.enabled);
 
 		// Name
-		Engine::Yaml::Write(out, "Name", entity.Get<NameComponent>().name);
+		const auto& nameComponent = registry.get<NameComponent>(entity);
+		Engine::Yaml::Write(out, "Name", nameComponent.name);
 
 		// Transform
-		const auto& transformComponent = entity.Get<TransformComponent>();
+
+		const auto& transformComponent = registry.get<TransformComponent>(entity);
 		{
 			Engine::Yaml::Map transformMap(out, "Transform");
 
 			Engine::Yaml::Write(out, "Position", transformComponent.position);
 			Engine::Yaml::Write(out, "Rotation", transformComponent.rotation);
 			Engine::Yaml::Write(out, "Scale", transformComponent.scale);
+
+			if(transformComponent.parent != entt::null)
+			{
+				const auto& parentIdentityComponent = registry.get<IdentityComponent>(transformComponent.parent);
+				Engine::Yaml::Write(out, "Parent", static_cast<uint64_t>(parentIdentityComponent.id));
+			}
 		}
 
 		// Mesh
-		if (entity.Has<MeshComponent>())
+		if (registry.any_of<MeshComponent>(entity))
 		{
-			const auto& component = entity.Get<MeshComponent>();
+			const auto& component = registry.get<MeshComponent>(entity);
 			const auto& meshId = component.meshId;
 			const auto& materialsIds = component.materials;
 
@@ -60,9 +67,9 @@ namespace Engine
 		}
 
 		// Collider
-		if (entity.Has<ColliderComponent>())
+		if (registry.any_of<ColliderComponent>(entity))
 		{
-			const auto& component = entity.Get<ColliderComponent>();
+			const auto& component = registry.get<ColliderComponent>(entity);
 			Engine::Yaml::Map colliderMap(out, "ColliderComponent");
 			Engine::Yaml::Write(out, "Mesh", component.meshId);
 			Engine::Yaml::Write(out, "Type", static_cast<uint32_t>(component.type)); //TODO: serialize string
@@ -70,9 +77,9 @@ namespace Engine
 		}
 
 		// Camera
-		if (entity.Has<CameraComponent>())
+		if (registry.any_of<CameraComponent>(entity))
 		{
-			const auto& component = entity.Get<CameraComponent>();
+			const auto& component = registry.get<CameraComponent>(entity);
 			Camera* camera = component.camera;
 
 			Engine::Yaml::Map cameraMap(out, "CameraComponent");
@@ -103,9 +110,9 @@ namespace Engine
 
 
 		// Light
-		if (entity.Has<LightComponent>())
+		if (registry.any_of<LightComponent>(entity))
 		{
-			const auto& component = entity.Get<LightComponent>();
+			const auto& component = registry.get<LightComponent>(entity);
 
 			Engine::Yaml::Map cameraMap(out, "LightComponent");
 			Engine::Yaml::Write(out, "Type", static_cast<uint32_t>(component.type)); //TODO: serialize string
@@ -116,9 +123,9 @@ namespace Engine
 		}
 
 		// Script
-		if (entity.Has<ScriptComponent>())
+		if (registry.any_of<ScriptComponent>(entity))
 		{
-			const auto& component = entity.Get<ScriptComponent>();
+			const auto& component = registry.get<ScriptComponent>(entity);
 
 			auto& desc = Engine::g_ScriptRegistry.GetDescriptor(component.id);
 
@@ -197,10 +204,12 @@ namespace Engine
 
 		{
 			Engine::Yaml::Seq seq(out);
-			std::vector<Entity> entities = scene.GetEntities(true);
-			for (const Entity& entity : entities)
+
+			entt::registry& registry = scene.GetRegistry();
+			auto view = registry.view<IdentityComponent>();
+			for (entt::entity entity : view)
 			{
-				SerializeEntity(out, entity);
+				SerializeEntity(out, registry, entity);
 			}
 		}
 
@@ -229,40 +238,50 @@ namespace Engine
 		}
 
 		Scene scene;
+		entt::registry& registry = scene.GetRegistry();
+		std::unordered_map<uint64_t, entt::entity> entityMap;
+		std::unordered_map<uint64_t, uint64_t> entityParentMap; // <ChildUUID, ParentUUID>
 
 		for (auto entityNode : root)
 		{
-			Entity entity = scene.CreateEntity();
+			entt::entity entity = scene.CreateEntity();
 
 			// Identity
 			uint64_t uuid = entityNode["ID"].as<uint64_t>();
 			bool enabled = entityNode["Enabled"].as<bool>(true);
-			auto& identity = entity.Get<IdentityComponent>();
+			auto& identity = registry.get<IdentityComponent>(entity);
 			identity.id = uuid;
 			identity.enabled = enabled;
+
+			entityMap[uuid] = entity;
 
 			// Name
 			if (entityNode["Name"])
 			{
-				auto& nameComp = entity.Get<NameComponent>();
+				auto& nameComp = registry.get<NameComponent>(entity);
 				nameComp.name = entityNode["Name"].as<std::string>();
 			}
 
 			// Transform
 			if (entityNode["Transform"])
 			{
-				auto& transform = entity.Get<TransformComponent>();
+				auto& transform = registry.get<TransformComponent>(entity);
 				auto transformNode = entityNode["Transform"];
 
 				Engine::Yaml::Read(transformNode["Position"], transform.position);
 				Engine::Yaml::Read(transformNode["Rotation"], transform.rotation);
 				Engine::Yaml::Read(transformNode["Scale"], transform.scale);
+
+				if (transformNode["Parent"])
+        {
+          entityParentMap[uuid] = transformNode["Parent"].as<uint64_t>();
+        }
 			}
 
 			// Mesh
 			if (auto meshNode = entityNode["MeshComponent"]; meshNode)
 			{
-				auto& component = entity.Add<MeshComponent>();
+				auto& component = registry.emplace<MeshComponent>(entity);
 
 				if (uint64_t id; Engine::Yaml::Read<uint64_t>(meshNode, "Mesh", id))
 				{
@@ -286,7 +305,7 @@ namespace Engine
 			// Collider
 			if (auto colliderNode = entityNode["ColliderComponent"]; colliderNode)
 			{
-				auto& component = entity.Add<ColliderComponent>();
+				auto& component = registry.emplace<ColliderComponent>(entity);
 				if (uint64_t id; Engine::Yaml::Read<uint64_t>(colliderNode, "Mesh", id))
 				{
 					component.meshId = id;
@@ -301,7 +320,7 @@ namespace Engine
 			// Camera
 			if(auto camNode = entityNode["CameraComponent"]; camNode)
 			{
-				auto& component = entity.Add<CameraComponent>();
+				auto& component = registry.emplace<CameraComponent>(entity);
 				std::unique_ptr<Camera> camera = std::make_unique<Camera>();
 
 				if(uint32_t projection; Engine::Yaml::Read(camNode, "Projection", projection))
@@ -362,7 +381,7 @@ namespace Engine
 			// Light
 			if (auto lightNode = entityNode["LightComponent"]; lightNode)
 			{
-				auto& component = entity.Add<LightComponent>();
+				auto& component = registry.emplace<LightComponent>(entity);
 
 				if (uint32_t type; Engine::Yaml::Read(lightNode, "Type", type))
 				{
@@ -378,14 +397,14 @@ namespace Engine
 			// Script
 			if (auto scriptNode = entityNode["ScriptComponent"]; scriptNode)
 			{
-				auto& component = entity.Add<ScriptComponent>();
+				auto& component = registry.emplace<ScriptComponent>(entity);
 
 				std::string scriptName = scriptNode["Script"].as<std::string>();
 				auto desc = Engine::g_ScriptRegistry.GetDescriptor(scriptName);
 
 				component.id = desc.name;
 				component.instance = desc.factory();
-				component.instance->Self = entity;
+				component.instance->m_Entity = entity;
 				component.instance->OnCreate();
 
 				std::byte* base = reinterpret_cast<std::byte*>(component.instance);
@@ -450,6 +469,17 @@ namespace Engine
 					}
 					}
 				}
+			}
+		}
+
+		for (const auto& [childID, parentID] : entityParentMap)
+		{
+			if (parentID != 0 && entityMap.find(parentID) != entityMap.end())
+			{
+				entt::entity child = scene.GetEntity(childID);
+				entt::entity parent = scene.GetEntity(parentID);
+
+				registry.get<Engine::TransformComponent>(child).parent = parent;
 			}
 		}
 

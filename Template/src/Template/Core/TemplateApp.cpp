@@ -20,6 +20,7 @@
 #include "Engine/Core/Runtime.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Graphics/Camera.h"
+#include "Engine/Core/Log.h"
 
 namespace Template
 {
@@ -34,7 +35,9 @@ namespace Template
 
 
 		Engine::Scene& activeScene = Engine::SceneManager::GetActiveScene();
-		Engine::Camera* camera = activeScene.GetActiveCamera().Get<Engine::CameraComponent>().camera;
+		entt::registry& registry = activeScene.GetRegistry();
+
+		Engine::Camera* camera = registry.get<Engine::CameraComponent>(activeScene.GetActiveCamera()).camera;
 		camera->SetAspectRatio(static_cast<float>(m_Width) / static_cast<float>(m_Height));
 
 		if (m_Width > 0 && m_Height > 0)
@@ -134,10 +137,10 @@ namespace Template
 
 		activeScene.SetActiveCamera(cameras[0]);
 
+		entt::registry& registry = activeScene.GetRegistry();
 
-
-		Engine::Entity cameraEntity = activeScene.GetActiveCamera();
-		Engine::g_Renderer.SetCamera(cameraEntity.Get<Engine::CameraComponent>().camera);
+		entt::entity cameraEntity = activeScene.GetActiveCamera();
+		Engine::g_Renderer.SetCamera(registry.get<Engine::CameraComponent>(cameraEntity).camera);
 
 		UpdateSize(m_Width, m_Height);
 

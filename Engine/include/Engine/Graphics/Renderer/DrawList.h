@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Scene/Entity.h"
+#include <entt.hpp>
 
 namespace Engine
 {
@@ -10,7 +10,7 @@ namespace Engine
 
 	struct DrawItem
 	{
-		Entity entity;
+		entt::entity entity{ entt::null };
 		Mesh* mesh;
 		const SubMesh* subMesh;
 		uint32_t modelIndex; // index into model buffer
@@ -19,7 +19,7 @@ namespace Engine
 	class DrawList
 	{
 	public:
-		static DrawList CreateFromScene(Scene* scene);
+		static DrawList CreateFromScene(Scene& scene);
 
 		// Non-const iterators
 		auto begin() { return items.begin(); }

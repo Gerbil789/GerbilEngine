@@ -15,18 +15,18 @@ namespace Engine
 		Scene(Scene&& other) noexcept;
 		Scene& operator=(Scene&& other) noexcept;
 
-		static Scene Copy(Scene& other);
+		//static Scene Copy(Scene& other);
 
-		Entity CreateEntity(const std::string& name = "new entity");
+		entt::entity CreateEntity(const std::string& name = "new entity");
 
-		Entity GetEntity(Uuid uuid);
-		Entity GetActiveCamera();
-		void SetActiveCamera(Entity entity);
-
+		entt::entity GetEntity(Uuid uuid);
+		entt::entity GetActiveCamera();
+		void SetActiveCamera(entt::entity entity);
+		entt::registry& GetRegistry() { return m_Registry; }
 		template<typename... Components>
-		std::vector<Entity> GetEntities(bool includeDisabled = false)
+		std::vector<entt::entity> GetEntities(bool includeDisabled = false)
 		{
-			std::vector<Entity> entities;
+			std::vector<entt::entity> entities;
 
 			auto view = m_Registry.view<IdentityComponent, Components...>();
 			for (auto entity : view)
@@ -35,7 +35,7 @@ namespace Engine
 				{
 					continue;
 				}
-				entities.push_back(Entity{ entity, &m_Registry });
+				entities.push_back(entity);
 			}
 			return entities;
 		}

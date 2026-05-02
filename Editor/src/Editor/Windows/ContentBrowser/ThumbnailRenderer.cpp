@@ -10,7 +10,7 @@ namespace Editor
 	namespace
 	{
 		Engine::Scene scene;
-		Engine::Entity entity;
+		entt::entity entity;
 		Engine::Camera camera;
 		Engine::Renderer renderer;
 
@@ -26,7 +26,9 @@ namespace Editor
 		camera.SetRotation({ 0.0f, 180.0f, 0.0f });
 
 		entity = scene.CreateEntity("PreviewEntity");
-		entity.Add<Engine::MeshComponent>(RESOURCES::MESH::SPHERE);
+		entt::registry& registry = scene.GetRegistry();
+		auto& mc = registry.emplace<Engine::MeshComponent>(entity);
+		mc.meshId = RESOURCES::MESH::SPHERE;
 
 		renderer.Initialize();
 		renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Opaque);
@@ -35,7 +37,8 @@ namespace Editor
 
 	wgpu::TextureView Render(Engine::Uuid id)
 	{
-		entity.Get<Engine::MeshComponent>().materials[0] = id;
+		entt::registry& registry = scene.GetRegistry();
+		registry.get<Engine::MeshComponent>(entity).materials[0] = id;
 
 		wgpu::TextureDescriptor desc;
 		desc.label = { "ThumbnailTexture", WGPU_STRLEN };

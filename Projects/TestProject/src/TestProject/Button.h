@@ -2,8 +2,6 @@
 
 #include "Engine/Script/Script.h"
 
-
-
 class Button : public Engine::Script
 {
   SCRIPT_CLASS(Button)
@@ -18,6 +16,6 @@ public:
   PROPERTY(m_ReleaseSound, "Release Sound")
     Engine::AudioClip* m_ReleaseSound = nullptr;
 
-  void OnTriggerEnter(Engine::Entity other) override;
-  void OnTriggerExit(Engine::Entity other) override;
+  void OnTriggerEnter(entt::entity other) override;
+  void OnTriggerExit(entt::entity other) override;
 };

@@ -43,14 +43,14 @@ namespace Engine
 
   enum class CollisionType { Enter, Exit };
 
-  void DispatchCollision(Entity entity, Entity other, CollisionType type, bool isTrigger)
+  void DispatchCollision(entt::registry& registry, entt::entity entity, entt::entity other, CollisionType type, bool isTrigger)
   {
-    if (!entity || !entity.Has<ScriptComponent>()) return;
+		auto scriptComponent = registry.try_get<ScriptComponent>(entity);
+		if (!scriptComponent) return;
 
-    auto* script = entity.Get<ScriptComponent>().instance;
+    auto* script = scriptComponent->instance;
     if (!script) return;
 
-    // Clean, elegant dispatch using ternary operators
     if (isTrigger)
     {
       type == CollisionType::Enter ? script->OnTriggerEnter(other) : script->OnTriggerExit(other);
@@ -64,30 +64,28 @@ namespace Engine
   void PhysicsSystem::Update()
   {
     Scene& scene = SceneManager::GetActiveScene();
-    auto view = scene.GetEntities<TransformComponent, ColliderComponent>();
+		entt::registry& registry = scene.GetRegistry();
+
+		auto view = registry.view<TransformComponent, ColliderComponent>();
 
     std::map<std::pair<uint64_t, uint64_t>, bool> currentCollisions;
 
-    // 1. Update all world AABBs
-    for (auto& entity : view)
-    {
-      const auto& transform = entity.Get<TransformComponent>();
-      auto& collider = entity.Get<ColliderComponent>();
+		for (auto [entity, transform, collider] : view.each())
+      {
+        const auto& mesh = AssetManager::GetAsset<Engine::Mesh>(collider.meshId);
+        collider.worldAABB = CalculateWorldAABB(mesh.aabb, transform.worldMatrix);
+		};
 
-      const auto& mesh = AssetManager::GetAsset<Engine::Mesh>(collider.meshId);
-      collider.worldAABB = CalculateWorldAABB(mesh.aabb, transform.GetWorld());
-    }
-
-    // 2. Check for intersections
+    // Check for intersections
     for (auto itA = view.begin(); itA != view.end(); ++itA)
     {
       for (auto itB = std::next(itA); itB != view.end(); ++itB)
       {
-        Entity entityA = *itA;
-        Entity entityB = *itB;
+        entt::entity entityA = *itA;
+        entt::entity entityB = *itB;
 
-        auto& colA = entityA.Get<ColliderComponent>();
-        auto& colB = entityB.Get<ColliderComponent>();
+				auto& colA = registry.get<ColliderComponent>(entityA);
+				auto& colB = registry.get<ColliderComponent>(entityB);
 
         // Static vs Static will never collide in a meaningful way
         if (colA.type == BodyType::Static && colB.type == BodyType::Static) continue;
@@ -95,8 +93,8 @@ namespace Engine
         // --- COLLISION CHECK ---
         if (IntersectTest(colA.worldAABB, colB.worldAABB))
         {
-          uint64_t idA = (uint64_t)entityA.Get<IdentityComponent>().id;
-          uint64_t idB = (uint64_t)entityB.Get<IdentityComponent>().id;
+					uint64_t idA = registry.get<IdentityComponent>(entityA).id;
+          uint64_t idB = registry.get<IdentityComponent>(entityB).id;
           auto pair = std::minmax(idA, idB);
 
           bool isTrigger = colA.isTrigger || colB.isTrigger;
@@ -105,8 +103,8 @@ namespace Engine
           // If not found in previous frame, it's an Enter event
           if (s_PreviousCollisions.find(pair) == s_PreviousCollisions.end())
           {
-            DispatchCollision(entityA, entityB, CollisionType::Enter, isTrigger);
-            DispatchCollision(entityB, entityA, CollisionType::Enter, isTrigger);
+            DispatchCollision(registry, entityA, entityB, CollisionType::Enter, isTrigger);
+            DispatchCollision(registry, entityB, entityA, CollisionType::Enter, isTrigger);
           }
         }
       }
@@ -117,11 +115,11 @@ namespace Engine
     {
       if (currentCollisions.find(pair) == currentCollisions.end())
       {
-        Entity entityA = scene.GetEntity(pair.first); // Implicitly casts uint64_t back to Uuid if constructor exists
-        Entity entityB = scene.GetEntity(pair.second);
+        entt::entity entityA = scene.GetEntity(pair.first); // Implicitly casts uint64_t back to Uuid if constructor exists
+        entt::entity entityB = scene.GetEntity(pair.second);
 
-        if (entityA) DispatchCollision(entityA, entityB, CollisionType::Exit, wasTrigger);
-        if (entityB) DispatchCollision(entityB, entityA, CollisionType::Exit, wasTrigger);
+        if (entityA != entt::null) DispatchCollision(registry, entityA, entityB, CollisionType::Exit, wasTrigger);
+        if (entityB != entt::null) DispatchCollision(registry, entityB, entityA, CollisionType::Exit, wasTrigger);
       }
     }
 

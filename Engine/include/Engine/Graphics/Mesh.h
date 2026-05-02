@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Asset/Asset.h"
+#include <memory>
 #include <glm/glm.hpp>
 
 namespace wgpu { class Buffer; }

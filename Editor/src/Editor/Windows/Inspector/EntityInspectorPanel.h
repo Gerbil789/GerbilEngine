@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Scene/Entity.h"
+#include "Engine/Core/UUID.h"
 
 namespace Editor
 {
@@ -8,17 +8,5 @@ namespace Editor
 	{
 	public:
 		void Draw(Engine::Uuid entityId);
-
-	private:
-		void DrawTransform();
-		void DrawCamera();
-		void DrawMesh();
-		void DrawCollider();
-		void DrawLight();
-		void DrawScript();
-		void DrawAddComponentButton();
-
-	private:
-		Engine::Entity m_Entity;
 	};
 }

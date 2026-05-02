@@ -27,7 +27,7 @@ void PlayerController::OnStart()
 void PlayerController::OnUpdate()
 {
 	float delta = Time::DeltaTime();
-	auto& transform = Self.Get<TransformComponent>();
+	auto& transform = GetComponent<TransformComponent>();
 
 	float yawRadians = glm::radians(transform.rotation.y);
 
@@ -86,7 +86,7 @@ void PlayerController::OnEvent(const Engine::Event& event)
 		m_LastMouseX = e.GetX();
 		m_LastMouseY = e.GetY();
 
-		auto& transform = Self.Get<TransformComponent>();
+		auto& transform = GetComponent<TransformComponent>();
 
 		transform.rotation.y += xOffset * m_MouseSensitivity;
 		transform.rotation.x -= yOffset * m_MouseSensitivity;
@@ -98,7 +98,7 @@ void PlayerController::OnEvent(const Engine::Event& event)
 	if (event.GetEventType() == EventType::KeyPressed)
 	{
 		const auto& e = static_cast<const KeyPressedEvent&>(event);
-		auto& transform = Self.Get<TransformComponent>();
+		auto& transform = GetComponent<TransformComponent>();
 		bool isGrounded = (transform.position.y <= m_Ground);
 
 		if(!isGrounded)
@@ -113,22 +113,22 @@ void PlayerController::OnEvent(const Engine::Event& event)
 	}
 }
 
-void PlayerController::OnCollisionEnter(Engine::Entity other)
+void PlayerController::OnCollisionEnter(entt::entity other)
 {
 	//LOG_INFO("Collided with entity {}", other.GetName());
 }
 
-void PlayerController::OnCollisionExit(Engine::Entity other)
+void PlayerController::OnCollisionExit(entt::entity other)
 {
 	//LOG_INFO("Stopped colliding with entity {}", other.GetName());
 }
 
-void PlayerController::OnTriggerEnter(Engine::Entity other)
+void PlayerController::OnTriggerEnter(entt::entity other)
 {
 	//LOG_CRITICAL("Entered trigger of entity {}", other.GetName());
 }
 
-void PlayerController::OnTriggerExit(Engine::Entity other)
+void PlayerController::OnTriggerExit(entt::entity other)
 {
 	//LOG_CRITICAL("Exited trigger of entity {}", other.GetName());
 }

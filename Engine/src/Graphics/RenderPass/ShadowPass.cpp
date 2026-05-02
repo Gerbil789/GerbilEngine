@@ -133,12 +133,11 @@ namespace Engine
 	void ShadowPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
 	{
 		EnvironmentUniforms envUniforms;
+		entt::registry& registry = context.scene->GetRegistry();
+		auto entityView = registry.view<TransformComponent, LightComponent>();
 
-		for (const auto& lightEntitiy : context.scene->GetEntities<LightComponent>())
+		for(auto [entity, transform, light] : entityView.each())
 		{
-			const auto& light = lightEntitiy.Get<LightComponent>();
-			const auto& transform = lightEntitiy.Get<TransformComponent>();
-
 			switch (light.type)
 			{
 			case LightType::Directional:
@@ -171,7 +170,7 @@ namespace Engine
 					std::array<glm::vec3, 8> corners = context.camera->GetFrustumCornersWorld(prevSplit, currSplit);
 
 					glm::vec3 center(0.0f);
-					for (const auto& c : corners) 
+					for (const auto& c : corners)
 					{
 						center += c;
 					}
@@ -218,7 +217,6 @@ namespace Engine
 			}
 			}
 		}
-
 
 		for (int i = 0; i < s_ShadowCascadeCount; i++)
 		{

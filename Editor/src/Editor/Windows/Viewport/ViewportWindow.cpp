@@ -14,7 +14,6 @@
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Engine/Scene/Entity.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/GraphicsContext.h"
@@ -38,7 +37,7 @@ namespace Editor
 
 		bool m_GizmoPreviouslyUsed = false;
 
-		std::unordered_map<Engine::Entity, glm::mat4> m_InitialWorldTransforms;
+		std::unordered_map<entt::entity, glm::mat4> m_InitialWorldTransforms;
 		glm::mat4 m_InitialPrimaryWorld = glm::mat4(1.0f);
 
 		static ImGuizmo::OPERATION gizmoType = ImGuizmo::OPERATION::TRANSLATE;
@@ -58,27 +57,6 @@ namespace Editor
 		Engine::g_Renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque/* | Engine::RenderPassType::Normal | Engine::RenderPassType::Wireframe*/);
 
 		s_EntityPicker = new EditorPicker();
-
-		/*Engine::SceneManager::RegisterOnSceneChanged([this](Engine::Scene& scene)
-			{
-				SelectionManager::Clear(SelectionType::Entity);
-
-				if (EditorRuntime::GetState() == EditorState::Edit)
-				{
-					Engine::g_Renderer.SetCamera(&m_Camera);
-				}
-				else if (EditorRuntime::GetState() == EditorState::Play)
-				{
-					auto cameraEntity = scene.GetActiveCamera();
-					if (cameraEntity)
-					{
-						Engine::Camera* camera = cameraEntity.Get<Engine::CameraComponent>().camera;
-						camera->SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
-						Engine::g_Renderer.SetCamera(camera);
-					}
-				}
-
-			});*/
 
 		Engine::EventBus::Get().Subscribe<Engine::MouseButtonPressedEvent>([this](const Engine::MouseButtonPressedEvent& e)
 			{
@@ -102,9 +80,8 @@ namespace Editor
 					Engine::Uuid uuid = s_EntityPicker->Pick(mx, my, Engine::g_Renderer.GetRenderContext());
 
 					if (uuid)
-					{
-						Engine::Entity entity = Engine::SceneManager::GetActiveScene().GetEntity(uuid);
-						SelectionManager::Select(SelectionType::Entity, entity.GetUUID(), Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl) || Engine::Input::IsKeyDown(Engine::KeyCode::LeftShift));
+					{	
+						SelectionManager::Select(SelectionType::Entity, uuid, Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl) || Engine::Input::IsKeyDown(Engine::KeyCode::LeftShift));
 					}
 					else
 					{
@@ -216,8 +193,10 @@ namespace Editor
 		{
 			return;
 		}
+		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+		entt::registry& registry = scene.GetRegistry();
 
-		Engine::Entity selectedEntity = Engine::SceneManager::GetActiveScene().GetEntity(selectedId);
+		entt::entity selectedEntity = scene.GetEntity(selectedId);
 
 		ImGuizmo::SetDrawlist();
 
@@ -226,8 +205,8 @@ namespace Editor
 		const glm::mat4& cameraProjection = m_Camera.GetProjectionMatrix();
 		glm::mat4 cameraView = m_Camera.GetViewMatrix();
 
-		auto& transformComponent = selectedEntity.Get<Engine::TransformComponent>();
-		glm::mat4 worldTransform = transformComponent.GetWorld();
+		auto& transformComponent = registry.get<Engine::TransformComponent>(selectedEntity);
+		glm::mat4 worldTransform = transformComponent.worldMatrix;
 
 		float* snapValue = nullptr;
 		if (Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl))
@@ -249,32 +228,31 @@ namespace Editor
 
 			for (auto id : selection)
 			{
-				Engine::Entity entity = Engine::SceneManager::GetActiveScene().GetEntity(id);
-				auto& tc = entity.Get<Engine::TransformComponent>();
-				m_InitialWorldTransforms[entity] = tc.GetWorld();
+				entt::entity entity = scene.GetEntity(id);
+				auto& tc = registry.get<Engine::TransformComponent>(entity);
+				m_InitialWorldTransforms[entity] = tc.worldMatrix;
 			}
 
-			m_InitialPrimaryWorld = m_InitialWorldTransforms[Engine::SceneManager::GetActiveScene().GetEntity(selectedId)];
+			m_InitialPrimaryWorld = m_InitialWorldTransforms[selectedEntity];
 		}
 
 		if (isUsing)
 		{
-
 			glm::mat4 newPrimaryWorld = worldTransform;
 			glm::mat4 delta = newPrimaryWorld * glm::inverse(m_InitialPrimaryWorld);
 
 			for (auto id : SelectionManager::GetAll(SelectionType::Entity))
 			{
-				Engine::Entity entity = Engine::SceneManager::GetActiveScene().GetEntity(id);
-				auto& tc = entity.Get<Engine::TransformComponent>();
+				entt::entity entity = scene.GetEntity(id);
+				auto& tc = registry.get<Engine::TransformComponent>(entity);
 
 				glm::mat4 originalWorld = m_InitialWorldTransforms[entity];
 				glm::mat4 newWorld = delta * originalWorld;
 
 				glm::mat4 parentWorld = glm::mat4(1.0f);
-				if (tc.parent)
+				if (tc.parent != entt::null)
 				{
-					parentWorld = tc.parent.Get<Engine::TransformComponent>().GetWorld();
+					parentWorld = registry.get<Engine::TransformComponent>(tc.parent).worldMatrix;
 				}
 
 				glm::mat4 newLocal = glm::inverse(parentWorld) * newWorld;
@@ -285,6 +263,7 @@ namespace Editor
 				tc.position = trans;
 				tc.rotation = rot;
 				tc.scale = scale;
+				tc.isDirty = true;
 			}
 		}
 
@@ -296,12 +275,12 @@ namespace Editor
 
 			for (auto& [entity, initialWorld] : m_InitialWorldTransforms)
 			{
-				auto& tc = entity.Get<Engine::TransformComponent>();
+				auto& tc = registry.get<Engine::TransformComponent>(entity);
 				{
 					glm::mat4 parentWorld = glm::mat4(1.0f);
-					if (tc.parent)
+					if (tc.parent != entt::null)
 					{
-						parentWorld = tc.parent.Get<Engine::TransformComponent>().GetWorld();
+						parentWorld = registry.get<Engine::TransformComponent>(tc.parent).worldMatrix;
 					}
 					glm::mat4 initialLocal = glm::inverse(parentWorld) * initialWorld;
 					glm::vec3 rot;
@@ -311,14 +290,14 @@ namespace Editor
 				}
 			}
 
-			std::vector<Engine::Entity> entities;
+			std::vector<entt::entity> entities;
 			entities.reserve(selection.size());
 
 			for (auto id : selection)
 			{
-				Engine::Entity entity = Engine::SceneManager::GetActiveScene().GetEntity(id);
+				entt::entity entity = scene.GetEntity(id);
 				entities.push_back(entity);
-				auto& tc = entity.Get<Engine::TransformComponent>();
+				auto& tc = registry.get<Engine::TransformComponent>(entity);
 				TransformData afterData;
 				afterData.Position = tc.position;
 				afterData.Rotation = tc.rotation;
@@ -334,7 +313,7 @@ namespace Editor
 
 	void DrawOverlay(const ImVec2& imagePos, const ImVec2& size)
 	{
-		const float overlayHeight = 32.0f; // or 40.0f if you want more space
+		const float overlayHeight = 32.0f;
 
 		ImGui::SetCursorPos(imagePos);
 
@@ -370,9 +349,11 @@ namespace Editor
 
 					Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
 					auto cameraEntity = scene.GetActiveCamera();
-					if (cameraEntity)
+					if (cameraEntity != entt::null)
 					{
-						Engine::Camera* camera = cameraEntity.Get<Engine::CameraComponent>().camera;
+						entt::registry& registry = scene.GetRegistry();
+
+						Engine::Camera* camera = registry.get<Engine::CameraComponent>(cameraEntity).camera;
 						camera->SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
 						Engine::g_Renderer.SetCamera(camera);
 					}

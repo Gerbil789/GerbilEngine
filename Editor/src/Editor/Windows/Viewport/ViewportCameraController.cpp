@@ -1,6 +1,5 @@
 #include "ViewportCameraController.h"
 #include "Engine/Core/Input.h"
-#include "Engine/Scene/Entity.h"
 #include "Editor/Core/SelectionManager.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Event/EventBus.h"
@@ -25,10 +24,14 @@ namespace Editor
 	{
 		if (e.GetKey() == Engine::KeyCode::F) //Focus
 		{
-			auto entity = Engine::SceneManager::GetActiveScene().GetEntity(SelectionManager::GetPrimary(SelectionType::Entity));
-			if (!entity) return;
+			Engine::Uuid id = SelectionManager::GetPrimary(SelectionType::Entity);
+			if (!id) return;
 
-			glm::vec3 focusPoint = entity.Get<Engine::TransformComponent>().position;
+			Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+			entt::entity entity = scene.GetEntity(id);
+			if (entity == entt::null) return;
+
+			glm::vec3 focusPoint = scene.GetRegistry().get<Engine::TransformComponent>(entity).position;
 			FocusOnPoint(focusPoint);
 		}
 	}

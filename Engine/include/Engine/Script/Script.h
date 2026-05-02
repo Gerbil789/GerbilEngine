@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Engine/Scene/Entity.h"
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Audio/AudioClip.h"
 #include "Engine/Event/Event.h"
+#include "Engine/Scene/Scene.h"
+#include <entt.hpp>
 
 namespace Engine 
 {
@@ -48,7 +49,17 @@ namespace Engine
   public:
     virtual ~Script() = default;
 
-    Entity Self;
+    template<typename T>
+    T& GetComponent()
+    {
+      return m_Scene->GetRegistry().get<T>(m_Entity);
+    }
+
+    template<typename T, typename... Args>
+    T& AddComponent(Args&&... args)
+    {
+      return m_Scene->GetRegistry().emplace<T>(m_Entity, std::forward<Args>(args)...);
+    }
 
     virtual void OnCreate() {}
     virtual void OnStart() {}
@@ -56,11 +67,17 @@ namespace Engine
     virtual void OnDestroy() {}
 		virtual void OnEvent([[maybe_unused]] const Event& event) {}
 
-		virtual void OnCollisionEnter([[maybe_unused]] Entity other) {}
-    virtual void OnCollisionExit([[maybe_unused]] Entity other) {}
+		virtual void OnCollisionEnter([[maybe_unused]] entt::entity other) {}
+    virtual void OnCollisionExit([[maybe_unused]] entt::entity other) {}
 
-    virtual void OnTriggerEnter([[maybe_unused]] Entity other) {}
-    virtual void OnTriggerExit([[maybe_unused]] Entity other) {}
+    virtual void OnTriggerEnter([[maybe_unused]] entt::entity other) {}
+    virtual void OnTriggerExit([[maybe_unused]] entt::entity other) {}
+
+    entt::entity m_Entity{ entt::null };
+
+  private:
+    friend class Scene;
+    Scene* m_Scene = nullptr;
   };
 }
 

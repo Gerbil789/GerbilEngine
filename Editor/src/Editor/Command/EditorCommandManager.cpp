@@ -23,7 +23,7 @@ namespace Editor
     Enqueue(std::make_unique<CreateEntityCommand>(name));
   }
 
-	void EditorCommandManager::DeleteEntity(Engine::Entity entity)
+	void EditorCommandManager::DeleteEntity(entt::entity entity)
   {
     Enqueue(std::make_unique<DeleteEntityCommand>(entity));
   }

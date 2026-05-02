@@ -14,22 +14,22 @@ namespace Editor
   public:
 		static void Initialize();
     static void CreateEntity(const std::string& name = "Empty");
-    static void DeleteEntity(Engine::Entity entity);
+    static void DeleteEntity(entt::entity entity);
 
     template<typename T>
-    static void RemoveComponent(Engine::Entity e)
+    static void RemoveComponent(entt::entity e)
     {
       Enqueue(std::make_unique<RemoveComponentCommand<T>>(e));
     }
 
     template<typename T>
-    static void AddComponent(Engine::Entity e, const T& initial)
+    static void AddComponent(entt::entity e, const T& initial)
     {
       Enqueue(std::make_unique<AddComponentCommand<T>>(e, initial));
     }
 
     template<typename T>
-    static void ModifyComponent(Engine::Entity e, const T& before, const T& after)
+    static void ModifyComponent(entt::entity e, const T& before, const T& after)
     {
       Enqueue(std::make_unique<ComponentSnapshotCommand<T>>(e, before, after));
     }

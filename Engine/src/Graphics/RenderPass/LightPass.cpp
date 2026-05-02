@@ -223,7 +223,7 @@ namespace Engine
 		LightUniforms lightUniforms{};
 		lightUniforms.count = static_cast<uint32_t>(lightEntities.size());
 
-		int i = 0;
+		/*int i = 0;
 		for (auto entity : lightEntities)
 		{
 			auto& lightComponent = entity.Get<LightComponent>();
@@ -238,7 +238,7 @@ namespace Engine
 
 
 			lightUniforms.lights[i++] = light;
-		}
+		}*/
 
 		GraphicsContext::GetDevice().getQueue().writeBuffer(s_LightUniformBuffer, 0, &lightUniforms, sizeof(LightUniforms));
 

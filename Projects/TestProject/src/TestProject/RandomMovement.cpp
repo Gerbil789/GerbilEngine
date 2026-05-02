@@ -13,7 +13,7 @@ void RandomMovement::OnCreate()
 
 void RandomMovement::OnUpdate()
 {
-	auto& transform = Self.Get<TransformComponent>();
+	auto& transform = GetComponent<TransformComponent>();
 
 	m_ElapsedTime += Time::DeltaTime();
 

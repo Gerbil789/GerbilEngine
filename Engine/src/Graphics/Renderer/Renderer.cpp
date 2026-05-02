@@ -229,6 +229,7 @@ namespace Engine
 	void Renderer::RenderScene(Scene& scene)
 	{
 		m_RenderContext.scene = &scene;
+		entt::registry& registry = scene.GetRegistry();
 
 		ViewUniforms viewUniforms;
 		viewUniforms.view = m_RenderContext.camera->GetViewMatrix();
@@ -238,13 +239,13 @@ namespace Engine
 
 		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder();
 
-		m_RenderContext.drawList = DrawList::CreateFromScene(m_RenderContext.scene);
+		m_RenderContext.drawList = DrawList::CreateFromScene(scene);
 
 		std::vector<glm::mat4> models(m_RenderContext.drawList.size());
 
 		std::for_each(std::execution::par, m_RenderContext.drawList.begin(), m_RenderContext.drawList.end(), [&](const DrawItem& item)
 			{
-				models[item.modelIndex] = item.entity.Get<TransformComponent>().GetWorld();
+				models[item.modelIndex] = registry.get<TransformComponent>(item.entity).worldMatrix;
 			});
 
 
