@@ -2,7 +2,7 @@
 <!-- [![Linux](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_linux.yaml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_linux.yaml) -->
 
 # GerbilEngine
-My custom WebGPU based game engine
+WebGPU based game engine
 
 #### Prerequisites
  - Windows machine
@@ -43,4 +43,8 @@ My custom WebGPU based game engine
 
 ---
 
-<img width="1920" height="1042" alt="screenshot" src="https://github.com/user-attachments/assets/1fc200c0-f796-463f-b10e-d2c8e8855740" />
+<img width="1920" height="1080" alt="screen1" src="https://github.com/user-attachments/assets/a8091422-2f4e-4f4f-926a-262a0accf6bb" />
+<img width="1920" height="1080" alt="screen2" src="https://github.com/user-attachments/assets/657f1aae-249f-4058-8a5b-ba5dc1f6714d" />
+<img width="1920" height="1080" alt="screen3" src="https://github.com/user-attachments/assets/8c2677f8-6cbd-4203-b420-5ef7cda494da" />
+<img width="1920" height="1080" alt="screen4" src="https://github.com/user-attachments/assets/18990aaf-9cd5-454c-911c-605f600a84d3" />
+
