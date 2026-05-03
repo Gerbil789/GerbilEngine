@@ -62,7 +62,7 @@ namespace Engine
 
 		pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
 		pipelineDesc.primitive.frontFace = wgpu::FrontFace::CW;
-		pipelineDesc.primitive.cullMode = wgpu::CullMode::None;
+		pipelineDesc.primitive.cullMode = wgpu::CullMode::Back;
 
 		wgpu::DepthStencilState depthStencilState;
 		depthStencilState.depthCompare = wgpu::CompareFunction::Less;
@@ -70,9 +70,9 @@ namespace Engine
 		depthStencilState.format = wgpu::TextureFormat::Depth24Plus;
 		depthStencilState.stencilReadMask = 0xFFFFFFFF;
 		depthStencilState.stencilWriteMask = 0xFFFFFFFF;
-		depthStencilState.depthBias = 2;
-		depthStencilState.depthBiasSlopeScale = 2.0f;
-		depthStencilState.depthBiasClamp = 0.0f;
+		depthStencilState.depthBias = 10;
+		depthStencilState.depthBiasSlopeScale = 3.0f;
+		depthStencilState.depthBiasClamp = 50;
 
 		pipelineDesc.depthStencil = &depthStencilState;
 

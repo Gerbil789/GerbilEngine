@@ -18,7 +18,7 @@ namespace Engine
 		const std::filesystem::path& GetAssetsDirectory() const { return m_AssetsDirectory; }
 		std::filesystem::path& GetAssetsDirectory() { return m_AssetsDirectory; }
 		const std::string& GetTitle() const { return m_Title; }
-		const Engine::Uuid& GetStartSceneID() const { return m_StartSceneID; }
+		Engine::Uuid GetDefaultSceneId() const { return m_DefaultSceneId; }
 
 	private:
 		static Project s_ActiveProject;
@@ -26,6 +26,6 @@ namespace Engine
 		std::filesystem::path m_ProjectDirectory;
 		std::filesystem::path m_AssetsDirectory;
 		std::string m_Title = "Untitled";
-		Engine::Uuid m_StartSceneID = Engine::Uuid{ 0 };
+		Engine::Uuid m_DefaultSceneId = Engine::Uuid{ 0 };
 	};
 }

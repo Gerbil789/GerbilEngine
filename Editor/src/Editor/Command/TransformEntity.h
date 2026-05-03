@@ -39,7 +39,7 @@ namespace Editor
       tc.position = data.Position;
       tc.rotation = data.Rotation;
       tc.scale = data.Scale;
-			tc.isDirty = true;
+      registry.patch<Engine::TransformComponent>(m_Entity);
     }
 
   private:

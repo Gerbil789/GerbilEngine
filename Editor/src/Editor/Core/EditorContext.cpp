@@ -36,6 +36,7 @@ namespace Editor
 		else
 		{
 			projectDirectory = Engine::OpenDirectory();
+			EditorSettings::Save();
 		}
 
 

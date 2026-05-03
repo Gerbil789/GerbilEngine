@@ -2,7 +2,7 @@
 
 #include "Engine/Asset/Asset.h"
 #include "Engine/Scene/Components.h"
-#include <entt.hpp>
+#include "Engine/Scene/TransformSystem.h"
 
 namespace Engine
 {
@@ -23,6 +23,7 @@ namespace Engine
 		entt::entity GetActiveCamera();
 		void SetActiveCamera(entt::entity entity);
 		entt::registry& GetRegistry() { return m_Registry; }
+
 		template<typename... Components>
 		std::vector<entt::entity> GetEntities(bool includeDisabled = false)
 		{

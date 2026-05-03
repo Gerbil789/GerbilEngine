@@ -21,18 +21,17 @@
 #include "Engine/Scene/Components.h"
 #include "Engine/Graphics/Camera.h"
 #include "Engine/Core/Log.h"
+#include "Engine/Physics/Physics.h"
 
 namespace Template
 {
 	uint32_t m_Width = 1600;
 	uint32_t m_Height = 900;
 
-
 	static void UpdateSize(uint32_t width, uint32_t height)
 	{
 		m_Width = width;
 		m_Height = height;
-
 
 		Engine::Scene& activeScene = Engine::SceneManager::GetActiveScene();
 		entt::registry& registry = activeScene.GetRegistry();
@@ -97,7 +96,7 @@ namespace Template
 
 	TemplateApp::TemplateApp()
 	{
-		std::filesystem::path projectDir = "C:/Users/vojta/source/repos/GerbilEngine/Projects/TestProject";
+		std::filesystem::path projectDir = "C:/Users/vojta/source/repos/GerbilEngine/Projects/TestProject"; //TODO: use compiletime macro or command line argument for this
 		Engine::Project::Load(projectDir);
 		const Engine::Project& project = Engine::Project::GetActive();
 
@@ -118,14 +117,14 @@ namespace Template
 		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / BUILD_CONFIG / (project.GetTitle() + ".dll");
 		Engine::Runtime::LoadScripts(dllPath);
 
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(project.GetStartSceneID());
-		if (&scene) 
-		{ 
-			Engine::SceneManager::SetActiveScene(scene); 
+		auto id = project.GetDefaultSceneId();
+		if (id)
+		{
+			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
+			Engine::SceneManager::SetActiveScene(scene);
 		}
 
-
-		Engine::g_Renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque/* | Engine::RenderPassType::Normal | Engine::RenderPassType::Wireframe*/);
+		Engine::g_Renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque);
 
 		Engine::Scene& activeScene = Engine::SceneManager::GetActiveScene();
 
@@ -162,12 +161,20 @@ namespace Template
 
 		while (m_Running)
 		{
+			if (m_Window->IsMinimized())
+			{
+				GLFW::WaitEvents();
+				Engine::Time::BeginFrame();
+				continue;
+			}
+
+
 			Engine::Time::BeginFrame();				// update delta time and FPS counters
 			Engine::Input::Update();					// poll input events
 			Engine::Audio::Update();					// release finished audio voices back to pool
-
-			if (m_Window->IsMinimized()) continue;
-			Engine::Runtime::Update();			// update game runtime (scripts, audio listener, etc...)
+			Engine::TransformSystem::Update();
+			Engine::PhysicsSystem::Update();
+			Engine::Runtime::Update();				// update game runtime (scripts, audio listener, etc...)
 
 			wgpu::Surface surface = *static_cast<wgpu::Surface*>(m_Window->GetSurface());
 			wgpu::SurfaceTexture surfaceTexture;

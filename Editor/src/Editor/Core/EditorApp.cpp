@@ -5,7 +5,6 @@
 #include "Editor/Core/IconManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Utility/FileWatcher.h"
-#include "Engine/Scene/TransformSystem.h"
 
 #include "Engine/Core/Time.h"
 #include "Engine/Core/Input.h"
@@ -26,6 +25,7 @@
 
 #include "Engine/Debug/RenderDoc.h"
 #include "Engine/Core/Log.h"
+#include "Engine/Scene/TransformSystem.h"
 
 namespace Editor
 {
@@ -38,11 +38,9 @@ namespace Editor
 	EditorApp::EditorApp()
 	{
 		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
-
 		EditorSettings::Load();
 		Engine::Project::Load(EditorSettings::projectDirectory);
 		const Engine::Project& project = Engine::Project::GetActive();
-		//EditorSettings::Save();
 
 		Engine::GraphicsContext::Initialize();
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());
@@ -61,7 +59,7 @@ namespace Editor
 		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / BUILD_CONFIG / (project.GetTitle() + ".dll");
 		Engine::Runtime::LoadScripts(dllPath);
 
-		auto id = project.GetStartSceneID();
+		auto id = project.GetDefaultSceneId();
 		if(id)
 		{
 			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);

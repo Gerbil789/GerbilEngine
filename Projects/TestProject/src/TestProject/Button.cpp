@@ -2,24 +2,30 @@
 #include "Engine/Scene/Components.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Audio/Audio.h"
+#include "Engine/Core/Time.h"
+
+void Button::OnUpdate()
+{
+	if (!m_Pressed) return;
+
+	auto delta = Engine::Time::DeltaTime() * m_Speed;
+	auto& transform = GetComponent<Engine::TransformComponent>();
+	transform.rotation.y += delta;
+	m_Scene->GetRegistry().patch<Engine::TransformComponent>(m_Entity);
+}
 
 void Button::OnTriggerEnter(entt::entity other)
 {
 	Engine::TransformComponent& transform = GetComponent<Engine::TransformComponent>();
-	//Engine::TransformComponent& meshTransform = transform.firstChild.GetComponent<Engine::TransformComponent>();
-	//meshTransform.position.y += m_Offset;
-	//Engine::Audio::Play3D(m_PressSound, transform.position);
-
-	//LOG_TRACE("Button pressed by entity {}", other.GetName());
+	Engine::Audio::Play3D(m_PressSound, transform.position);
+	m_Pressed = true;
+	LOG_TRACE("Button pressed by entity {}", (uint32_t)other);
 }
 
 void Button::OnTriggerExit(entt::entity other)
 {
-	//Engine::TransformComponent& transform = Self.Get<Engine::TransformComponent>();
-	//Engine::TransformComponent& meshTransform = transform.firstChild.Get<Engine::TransformComponent>();
-	//meshTransform.position.y -= m_Offset;
-	//glm::vec3& pos = transform.position;
-	//Engine::Audio::Play3D(m_ReleaseSound, transform.position);
-
-	//LOG_TRACE("Button released by entity {}", other.GetName());
+	Engine::TransformComponent& transform = GetComponent<Engine::TransformComponent>();
+	Engine::Audio::Play3D(m_ReleaseSound, transform.position);
+	m_Pressed = false;
+	LOG_TRACE("Button released by entity {}", (uint32_t)other);
 }

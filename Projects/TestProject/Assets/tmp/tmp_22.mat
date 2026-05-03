@@ -7,6 +7,7 @@ Attributes:
   roughness: 1
   metallic: 0
   tiling: [3, 3]
+  offset: [0, 0]
 Textures:
   AlbedoTexture: 3932435452252890858
   NormalTexture: 5360640591292890293

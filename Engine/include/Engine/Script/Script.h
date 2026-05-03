@@ -4,8 +4,8 @@
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Audio/AudioClip.h"
-#include "Engine/Event/Event.h"
 #include "Engine/Scene/Scene.h"
+#include "Engine/Event/Event.h"
 #include <entt.hpp>
 
 namespace Engine 
@@ -74,9 +74,6 @@ namespace Engine
     virtual void OnTriggerExit([[maybe_unused]] entt::entity other) {}
 
     entt::entity m_Entity{ entt::null };
-
-  private:
-    friend class Scene;
     Scene* m_Scene = nullptr;
   };
 }

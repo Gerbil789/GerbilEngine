@@ -8,10 +8,7 @@ int main()
   try
   {
     Template::TemplateApp app;
-    LOG_INFO("--- Project initialization complete ---");
     app.Run();
-
-    LOG_TRACE("--- Exiting application ---");
   }
   catch (const std::exception& e)
   {

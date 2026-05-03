@@ -1,11 +1,13 @@
 #include "enginepch.h"
 #include "Engine/Scene/TransformSystem.h"
 #include "Engine/Scene/SceneManager.h"
+#include "Engine/Scene/Components.h"
 #include <glm/gtx/quaternion.hpp>
 
 namespace Engine
 {
-  // Recursive helper function inside the system
+  static std::unique_ptr<entt::observer> observer = nullptr;
+
   void UpdateWorldMatrix(entt::registry& registry, entt::entity entity)
   {
     auto& transform = registry.get<TransformComponent>(entity);
@@ -16,38 +18,46 @@ namespace Engine
     }
     else
     {
-      // Ensure parent is updated first
       UpdateWorldMatrix(registry, transform.parent);
       auto& parentTransform = registry.get<TransformComponent>(transform.parent);
 
       transform.worldMatrix = parentTransform.worldMatrix * transform.localMatrix;
     }
+  }
 
-    transform.isDirty = false;
+  void TransformSystem::SetScene()
+  {
+    Scene& scene = SceneManager::GetActiveScene();
+    entt::registry& registry = scene.GetRegistry();
+    observer = std::make_unique<entt::observer>(registry, entt::collector.update<TransformComponent>());
+
+		auto view = registry.view<TransformComponent>();
+
+    for (const auto entity : view)
+    {
+      registry.patch<TransformComponent>(entity);
+		}
   }
 
   void TransformSystem::Update()
   {
-		Scene& scene = SceneManager::GetActiveScene();
-		entt::registry& registry = scene.GetRegistry();
+    Scene& scene = SceneManager::GetActiveScene();
+    entt::registry& registry = scene.GetRegistry();
 
-    // update local matrices
-    auto view = registry.view<TransformComponent>();
-    for (auto entity : view)
+		auto view = registry.view<TransformComponent>();
+
+    for (const auto entity : view)
     {
-      auto& transform = view.get<TransformComponent>(entity);
-      if (!transform.isDirty)
-      {
-        continue;
-      }
-
-      transform.localMatrix = glm::translate(glm::mat4(1.0f), transform.position) * glm::toMat4(glm::quat(glm::radians(transform.rotation))) * glm::scale(glm::mat4(1.0f), transform.scale);
+      auto& transform = registry.get<TransformComponent>(entity);
+      transform.localMatrix = glm::translate(glm::mat4(1.0f), transform.position) * glm::toMat4(glm::quat(glm::radians(transform.rotation))) *glm::scale(glm::mat4(1.0f), transform.scale);
     }
 
-    for (auto entity : view)
+    for (const auto entity : view)
     {
       UpdateWorldMatrix(registry, entity);
     }
+
+    observer->clear();
   }
 
 

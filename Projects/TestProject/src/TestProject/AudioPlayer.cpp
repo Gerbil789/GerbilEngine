@@ -6,7 +6,11 @@ void AudioPlayer::OnStart()
 {
   if (m_PlayOnAwake && m_Clip)
   {
-    Engine::Audio::Play3D(m_Clip, GetComponent<Engine::TransformComponent>().position);
+    auto& transform = GetComponent<Engine::TransformComponent>();
+		glm::vec3 localPosition = transform.position;
+    glm::vec3 worldPosition =  transform.worldMatrix * glm::vec4(localPosition, 1.0f);
+
+    Engine::Audio::Play3D(m_Clip, worldPosition);
   }
 }
 
@@ -14,8 +18,9 @@ void AudioPlayer::OnUpdate()
 {
   if (!m_Clip) return;
 
-  if (Engine::Audio::IsPlaying(m_Clip))
-  {
-    Engine::Audio::SetSourcePosition(m_Clip, GetComponent<Engine::TransformComponent>().position);
-  }
+  auto& transform = GetComponent<Engine::TransformComponent>();
+  glm::vec3 localPosition = transform.position;
+  glm::vec3 worldPosition = transform.worldMatrix * glm::vec4(localPosition, 1.0f);
+
+  Engine::Audio::SetSourcePosition(m_Clip, worldPosition);
 }

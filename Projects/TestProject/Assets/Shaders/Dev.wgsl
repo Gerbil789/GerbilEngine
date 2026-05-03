@@ -37,6 +37,8 @@ struct MaterialUniforms
 	roughness: f32,
 	metallic: f32,
 	tiling: vec2f,
+	offset: vec2f,
+	_padding: vec2f,
 };
 
 // uses dynamic offset
@@ -68,7 +70,6 @@ struct ModelUniforms
 
 //model
 @group(3) @binding(0) var<uniform> uModel: ModelUniforms;
-
 
 fn FresnelSchlick(cosTheta: f32, F0: vec3f) -> vec3f
 {
@@ -110,19 +111,29 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 	let lightPos4 = uEnvironment.lightViewProj[cascadeIndex] * vec4f(in.worldPos, 1.0);
 	let lightPos = lightPos4.xyz / lightPos4.w;
 
+	let light_uv = vec2f((lightPos.x + 1.0) * 0.5, -(lightPos.y - 1.0) * 0.5);
 
-	let light_uv = vec2f(
-    (lightPos.x + 1.0) * 0.5,
-    -(lightPos.y - 1.0) * 0.5
-	);
+	var visibility: f32 = 0.0;
+	let texelSize = 1.0 / 1024.0; // 1024x1024 shadow texture
 
-	let visibility = textureSampleCompare(
-    shadowMap,
-    shadowSampler,
-    light_uv,
-    cascadeIndex,
-    lightPos.z
-	);
+	// 3x3 PCF Kernel
+	for (var y: i32 = -1; y <= 1; y++) 
+	{
+	  for (var x: i32 = -1; x <= 1; x++) 
+		{
+	    let offset = vec2f(f32(x), f32(y)) * texelSize;
+	
+	    visibility += textureSampleCompare(
+	      shadowMap,
+	      shadowSampler,
+	      light_uv + offset,
+	      cascadeIndex,
+	      lightPos.z
+	    );
+	  }
+	}
+
+	visibility = visibility / 9.0; // Average the 9 samples
 
 	// check bounds
 	let inBounds =
@@ -132,9 +143,9 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 	// shadow mask
 	let shadow = select(1.0, visibility, inBounds);
 
-  let uv = in.uv * uMaterial.tiling;
+  let uv = in.uv * uMaterial.tiling + uMaterial.offset;
   let albedo = textureSample(AlbedoTexture, MaterialSampler, uv).rgb * uMaterial.albedo.rgb;
-	let metallic = uMaterial.metallic;
+	let metallic = textureSample(MetallicTexture, MaterialSampler, uv).r * uMaterial.metallic;
 	let roughness = textureSample(RoughnessTexture, MaterialSampler, uv).r * uMaterial.roughness;
 	let ao = textureSample(AmbientTexture, MaterialSampler, uv).r;
 	let normal = in.normal;
@@ -157,7 +168,6 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 
 	let invmax = inverseSqrt(max(dot(T,T), dot(B,B)));
 	let TBN = mat3x3f(T * invmax, B * invmax, normal);
-
 
 	let N = normalize(TBN * tangentNormal);
   let V = normalize(uView.cameraPosition - in.worldPos); // direction from surface to camera

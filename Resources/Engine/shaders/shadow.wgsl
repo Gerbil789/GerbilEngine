@@ -28,8 +28,12 @@ fn vs_main(in: VertexInput) -> VertexOutput
 {
 	var out: VertexOutput;
 
-	let worldPos = uModel.model * vec4f(in.position, 1.0);
-  out.position = uShadow.lightViewProj * worldPos;
+  let worldPos = (uModel.model * vec4f(in.position, 1.0)).xyz;
+  let worldNormal = normalize((uModel.model * vec4f(in.normal, 0.0)).xyz);
 
-	return out;
+  let biasAmount = 0.0000; 
+  let biasedWorldPos = worldPos - (worldNormal * biasAmount);
+
+  out.position = uShadow.lightViewProj * vec4f(biasedWorldPos, 1.0);
+  return out;
 }

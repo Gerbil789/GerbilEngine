@@ -1,24 +1,17 @@
-- ID: 5692400728539980210
-  Enabled: true
-  Name: Mesh
-  Transform:
-    Position: [0, 0, 0]
-    Rotation: [0, -0, 0]
-    Scale: [1, 0.3, 1]
-    Parent: 7595510319564696268
-  MeshComponent:
-    Mesh: 9153350241491098746
-    Materials: [9905515824125768949]
 - ID: 10199165476046124790
   Enabled: true
   Name: Player
   Transform:
-    Position: [4.1024485, 0, -4.6065955]
-    Rotation: [-0.63988835, -2.0009024, 7.11453e-14]
-    Scale: [0.4999998, 0.9999964, 0.4999998]
+    Position: [15.603916, 0, -33.097828]
+    Rotation: [-31.319992, -10.164358, 9.835834e-10]
+    Scale: [0.5, 1, 0.5]
+  ColliderComponent:
+    Mesh: 9153350241491098746
+    Type: 1
+    IsTrigger: false
   CameraComponent:
     Projection: 0
-    AspectRatio: 0.9216
+    AspectRatio: 1.3152
     Perspective:
       FOV: 0.7853982
       Near: 0.1
@@ -73,7 +66,7 @@
   Enabled: true
   Name: Brehemont
   Transform:
-    Position: [0, -2.2351742e-08, 24.268759]
+    Position: [1.4901161e-08, -2.9802322e-08, 24.268759]
     Rotation: [0, -0, 0]
     Scale: [1, 1, 1]
   MeshComponent:
@@ -82,9 +75,9 @@
   ScriptComponent:
     Script: AudioPlayer
     Audio Clip: 14362726469785008781
-    Play On Awake: true
+    Play On Awake: false
 - ID: 4789723939497359664
-  Enabled: true
+  Enabled: false
   Name: de_dust2
   Transform:
     Position: [2.8743398e-05, 2.0294838, -94.44765]
@@ -117,12 +110,13 @@
   Enabled: true
   Name: Sphere
   Transform:
-    Position: [2.9802322e-08, 3.7252903e-09, 41.30034]
-    Rotation: [0, -0, 0]
-    Scale: [1, 1, 1]
+    Position: [-0.00049209595, 1.4989147, -3.9990053]
+    Rotation: [9.067792e-05, 4.1938554e-05, -0.00030755176]
+    Scale: [1.0000733, 1.0000019, 1.0000743]
+    Parent: 7595510319564696268
   MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [15388406335680235062]
+    Mesh: 3088373566504746988
+    Materials: [7267305591147661222]
   ScriptComponent:
     Script: AudioPlayer
     Audio Clip: 3164677566141441093
@@ -131,12 +125,16 @@
   Enabled: true
   Name: Button
   Transform:
-    Position: [0, -2, -1.1920929e-07]
-    Rotation: [0, -0, 0]
-    Scale: [1, 1, 1]
+    Position: [16.157362, -1.9999285, -32.729034]
+    Rotation: [-179.9999, 2608.9663, -179.99974]
+    Scale: [0.99999714, 1, 0.99999714]
+  ColliderComponent:
+    Mesh: 9153350241491098746
+    Type: 1
+    IsTrigger: true
   ScriptComponent:
     Script: Button
-    Offset: -0.25
+    Speed: 100
     Press Sound: 16291733256000547131
     Release Sound: 16437370415965019686
 - ID: 10050883766811257380
@@ -159,16 +157,17 @@
   MeshComponent:
     Mesh: 15608668046686712752
     Materials: [15676324839833293052]
-- ID: 13126301125867873310
+- ID: 5692400728539980210
   Enabled: true
-  Name: Sphere
+  Name: Mesh
   Transform:
-    Position: [4, 0, 12]
-    Rotation: [0, 0, 0]
-    Scale: [1, 1, 1]
+    Position: [0, 0, 0]
+    Rotation: [0, -0, 0]
+    Scale: [1, 0.3, 1]
+    Parent: 7595510319564696268
   MeshComponent:
-    Mesh: 15608668046686712752
-    Materials: [11338229386382074790]
+    Mesh: 9153350241491098746
+    Materials: [16641363256174755972]
 - ID: 6619031557454780055
   Enabled: true
   Name: Sphere
@@ -292,7 +291,7 @@
   ScriptComponent:
     Script: AudioPlayer
     Audio Clip: 6350057269135839349
-    Play On Awake: true
+    Play On Awake: false
 - ID: 10419314148164250282
   Enabled: true
   Name: Sphere
@@ -327,7 +326,7 @@
   Enabled: true
   Name: Sphere
   Transform:
-    Position: [15.721351, 0, 38.868492]
+    Position: [15.72135, -3.7252903e-09, 38.868484]
     Rotation: [0, -0, 0]
     Scale: [0.99999595, 0.99996954, 1.000027]
   MeshComponent:
@@ -336,4 +335,4 @@
   ScriptComponent:
     Script: AudioPlayer
     Audio Clip: 15119983366604146548
-    Play On Awake: true
+    Play On Awake: false

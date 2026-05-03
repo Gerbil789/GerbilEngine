@@ -37,9 +37,9 @@ namespace Engine
 	LightPass::LightPass()
 	{
 		std::string content;
-		if (!Engine::ReadFile("Resources/Engine/shaders/phong.wgsl", content))
+		if (!Engine::ReadFile("Resources/Engine/shaders/opaque.wgsl", content))
 		{
-			throw std::runtime_error("Failed to load phong shader");
+			throw std::runtime_error("Failed to load opaque shader");
 		}
 
 		wgpu::ShaderSourceWGSL shaderCodeDesc;
@@ -127,11 +127,6 @@ namespace Engine
 		pipelineDesc.multisample.count = 1;
 		pipelineDesc.multisample.mask = ~0u;
 		pipelineDesc.multisample.alphaToCoverageEnabled = false;
-
-
-
-
-
 
 		// Light
 		{

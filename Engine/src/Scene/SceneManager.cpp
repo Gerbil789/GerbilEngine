@@ -3,6 +3,7 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Asset/AssetRegistry.h"
+#include "Engine/Scene/TransformSystem.h"
 #include "Engine/Core/Project.h"
 
 namespace Engine::SceneManager
@@ -12,6 +13,7 @@ namespace Engine::SceneManager
 	void SetActiveScene(Scene& scene)
 	{
 		s_ActiveScene = std::move(scene);
+		Engine::TransformSystem::SetScene();
 		LOG_INFO("Active scene set to {}", s_ActiveScene.id);
 	}
 

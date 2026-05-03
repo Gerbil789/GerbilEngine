@@ -95,8 +95,6 @@ namespace Editor
 
 	void DrawTransform(entt::registry& registry, entt::entity entity)
 	{
-
-
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
 			{ "Reset", [&] {auto before = registry.get<Engine::TransformComponent>(entity);
@@ -104,7 +102,7 @@ namespace Editor
 				after.position = { 0.0f, 0.0f, 0.0f };
 				after.rotation = { 0.0f, 0.0f, 0.0f };
 				after.scale = { 1.0f, 1.0f, 1.0f };
-				after.isDirty = true;
+				registry.patch<Engine::TransformComponent>(entity);
 				EditorCommandManager::ModifyComponent<Engine::TransformComponent>(entity, before, after); } },
 		};
 

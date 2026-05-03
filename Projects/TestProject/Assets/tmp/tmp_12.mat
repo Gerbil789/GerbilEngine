@@ -7,5 +7,6 @@ Attributes:
   roughness: 0.5
   metallic: 0.5
   tiling: [1, 1]
+  offset: [0, 0]
 Textures:
   {}

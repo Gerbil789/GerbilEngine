@@ -263,7 +263,7 @@ namespace Editor
 				tc.position = trans;
 				tc.rotation = rot;
 				tc.scale = scale;
-				tc.isDirty = true;
+				registry.patch<Engine::TransformComponent>(entity);
 			}
 		}
 

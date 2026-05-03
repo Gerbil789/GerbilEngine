@@ -4,8 +4,12 @@ Sampler:
   Wrap: 0
 Attributes:
   albedo: [1, 1, 1, 1]
-  roughness: 0
-  metallic: 0.5
-  tiling: [1, 1]
+  roughness: 1
+  metallic: 1
+  tiling: [2, 2]
+  offset: [0, 0]
 Textures:
-  {}
+  AlbedoTexture: 9444807739676329273
+  NormalTexture: 11654688269110205916
+  RoughnessTexture: 9444807739676329273
+  AmbientTexture: 9444807739676329273

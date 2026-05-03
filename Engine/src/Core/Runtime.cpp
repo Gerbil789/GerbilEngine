@@ -58,8 +58,6 @@ namespace Engine
 	{
 		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
 
-		//set active camera
-
 		auto cameraEntities = scene.GetEntities<Engine::CameraComponent>();
 		if (!cameraEntities.empty())
 		{
@@ -72,6 +70,7 @@ namespace Engine
 			if (sc.instance)
 			{
 				sc.instance->m_Entity = entity;
+				sc.instance->m_Scene = &scene;
 				sc.instance->OnStart();
 			}
 		}

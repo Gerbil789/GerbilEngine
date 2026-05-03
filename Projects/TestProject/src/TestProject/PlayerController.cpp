@@ -67,6 +67,8 @@ void PlayerController::OnUpdate()
 		transform.position.y = m_Ground; 
 		m_VelocityY = 0.0f;
 	}
+
+	m_Scene->GetRegistry().patch<Engine::TransformComponent>(m_Entity);
 }
 
 void PlayerController::OnDestroy()

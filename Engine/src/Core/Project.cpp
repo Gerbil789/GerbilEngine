@@ -55,7 +55,7 @@ namespace Engine
 		}
 
 		uint64_t id = data["StartScene"] ? data["StartScene"].as<uint64_t>(0) : 0;
-		project.m_StartSceneID = Engine::Uuid(id);
+		project.m_DefaultSceneId = Engine::Uuid(id);
 		
 		LOG_INFO("Loaded project '{}' from {}", project.m_Title, configPath);
 		s_ActiveProject = project;

@@ -34,8 +34,6 @@ namespace Engine
 
 		glm::mat4 localMatrix{ 1.0f };
 		glm::mat4 worldMatrix{ 1.0f };
-		bool isDirty = true;
-
 	};
 
 	struct ENGINE_API MeshComponent

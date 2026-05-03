@@ -9,7 +9,6 @@
 
 namespace Engine
 {
-  // Storing uint64_t directly to avoid Uuid operator< ambiguity
   static std::map<std::pair<uint64_t, uint64_t>, bool> s_PreviousCollisions;
 
   AABB CalculateWorldAABB(const AABB& local, const glm::mat4& transformMatrix)
@@ -76,7 +75,7 @@ namespace Engine
         collider.worldAABB = CalculateWorldAABB(mesh.aabb, transform.worldMatrix);
 		};
 
-    // Check for intersections
+
     for (auto itA = view.begin(); itA != view.end(); ++itA)
     {
       for (auto itB = std::next(itA); itB != view.end(); ++itB)
