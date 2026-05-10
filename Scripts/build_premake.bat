@@ -26,7 +26,7 @@ cd build\bootstrap || (echo Missing build/bootstrap folder & exit /b 1)
 
 REM REM Build full premake using MSBuild
 cd build\bootstrap
-msbuild Premake5.sln /t:Premake5 /m /p:Configuration=Release /p:Platform=x64
+msbuild Premake5.sln /t:Premake5 /m /p:Configuration=Release /p:Platform=Windows
 
 if %errorlevel% neq 0 (
     echo Premake build FAILED
