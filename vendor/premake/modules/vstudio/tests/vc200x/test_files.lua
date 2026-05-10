@@ -358,10 +358,10 @@
 -- A file flagged with NoPCH should be marked as such.
 --
 
-	function suite.useNoPCHFlag()
+	function suite.useNoPCH()
 		files { "test.cpp" }
 		filter { "files:test.cpp" }
-			flags { "NoPCH" }
+			enablepch "Off"
 		prepare()
 		test.capture [[
 <Files>
@@ -404,10 +404,10 @@
 		]]
 	end
 
-	function suite.excludedFromBuild_onExcludeFlag()
+	function suite.excludedFromBuild()
 		files { "hello.cpp" }
 		filter "files:hello.cpp"
-		flags { "ExcludeFromBuild" }
+		excludefrombuild "On"
 		prepare()
 		test.capture [[
 <Files>
@@ -460,13 +460,13 @@
 			>
 		]]
 	end
-
-	function suite.excludedFromBuild_onCustomBuildRule_excludeFlag()
+	
+	function suite.excludedFromBuild_onCustomBuildRule_excludeAPI()
 		files { "hello.cg" }
 		filter "files:**.cg"
 			buildcommands { "cgc $(InputFile)" }
 			buildoutputs { "$(InputName).obj" }
-			flags { "ExcludeFromBuild" }
+			excludefrombuild "On"
 		prepare()
 		test.capture [[
 <Files>

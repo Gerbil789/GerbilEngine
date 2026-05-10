@@ -36,7 +36,7 @@ namespace Engine
 		}
 
 		using GameRegisterScriptsFn = int(*)(Engine::ScriptRegistry&);
-		auto Game_Register_Fn = (GameRegisterScriptsFn)GetProcAddress(gameModule, "RegisterScripts");
+		auto Game_Register_Fn = reinterpret_cast<GameRegisterScriptsFn>(reinterpret_cast<void*>(GetProcAddress(gameModule, "RegisterScripts")));
 
 		if (!Game_Register_Fn)
 		{

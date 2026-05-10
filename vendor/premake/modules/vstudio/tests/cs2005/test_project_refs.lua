@@ -96,9 +96,9 @@
 -- NoCopyLocal flag has been set for the configuration.
 --
 
-	function suite.markedPrivate_onNoCopyLocal()
+	function suite.markedPrivate_onNoLocalCopy_ViaAPI()
 		links { "MyProject" }
-		flags { "NoCopyLocal" }
+		allowcopylocal "Off"
 		prepare()
 		test.capture [[
 	<ItemGroup>

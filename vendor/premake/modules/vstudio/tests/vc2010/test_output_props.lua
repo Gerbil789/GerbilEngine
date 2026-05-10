@@ -199,12 +199,12 @@ end
 	end
 
 --
--- If the NoImportLib flag is set, add the IgnoreImportLibrary element.
+-- If use import library is turned off, the import library should be ignored.
 --
 
-	function suite.ignoreImportLib_onNoImportLib()
+	function suite.ignoreImportLib_onUseImportLibOff()
 		kind "SharedLib"
-		flags "NoImportLib"
+		useimportlib "Off"
 		prepare()
 		test.capture [[
 <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -226,7 +226,7 @@ end
 
 	function suite.omitIgnoreImportLib_onNonSharedLib()
 		kind "ConsoleApp"
-		flags "NoImportLib"
+		useimportlib "Off"
 		prepare()
 		test.capture [[
 <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -237,11 +237,11 @@ end
 
 
 --
--- If the NoManifest flag is set, add the GenerateManifest element.
+-- If manifest is Off, add the GenerateManifest element.
 --
 
 	function suite.generateManifest_onNoManifest()
-		flags "NoManifest"
+		manifest "Off"
 		prepare()
 		test.capture [[
 <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

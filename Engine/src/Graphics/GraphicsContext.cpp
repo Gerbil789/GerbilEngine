@@ -9,9 +9,9 @@ namespace Engine::GraphicsContext
 {
 	namespace
 	{
-		wgpu::raii::Instance s_Instance;
-		wgpu::raii::Device s_Device;
-		wgpu::raii::Queue s_Queue;
+		wgpu::Instance s_Instance;
+		wgpu::Device s_Device;
+		wgpu::Queue s_Queue;
 
 		uint32_t s_UniformBufferOffsetAlignment;
 		uint32_t s_StorageBufferOffsetAlignment;
@@ -26,14 +26,14 @@ namespace Engine::GraphicsContext
 		desc.requiredFeatureCount = features.size();
 		desc.requiredFeatures = reinterpret_cast<WGPUInstanceFeatureName*>(features.data());
 
-		s_Instance = std::move(wgpu::createInstance(desc));
+		s_Instance = wgpu::createInstance(desc);
 		if(!s_Instance)
 		{
 			throw std::runtime_error("Failed to create WGPU instance");
 		}
 
 		wgpu::RequestAdapterOptions adapterOpts;
-		wgpu::raii::Adapter adapter = std::move(s_Instance->requestAdapter(adapterOpts));
+		wgpu::Adapter adapter = s_Instance.requestAdapter(adapterOpts);
 		if(!adapter)
 		{
 			throw std::runtime_error("Failed to request WGPU adapter");
@@ -41,7 +41,7 @@ namespace Engine::GraphicsContext
 
 		{
 			wgpu::AdapterInfo info;
-			adapter->getInfo(&info);
+			adapter.getInfo(&info);
 
 			LOG_TRACE("Dawn backend: {}", BackendTypeToString(info.backendType));
 			LOG_TRACE("GPU: {} ({})", ToStringView(info.device), ToStringView(info.architecture));
@@ -53,7 +53,7 @@ namespace Engine::GraphicsContext
 		wgpu::Limits limits;
 		//limits.maxBufferSize = 1024ull * 1024ull * 1024ull; // request 1 GB
 
-		if (adapter->getLimits(&limits) != wgpu::Status::Success)
+		if (adapter.getLimits(&limits) != wgpu::Status::Success)
 		{
 			throw std::runtime_error("Failed to query adapter limits");
 		}
@@ -79,13 +79,13 @@ namespace Engine::GraphicsContext
 				LOG_ERROR("WebGPU Uncaptured error [type: {}]: {}", ErrorTypeToString(type), message.data);
 			};
 
-		s_Device = std::move(adapter->requestDevice(deviceDesc));
+		s_Device = adapter.requestDevice(deviceDesc);
 		if(!s_Device)
 		{
 			throw std::runtime_error("Failed to request WGPU device");
 		}
 
-		s_Queue = std::move(s_Device->getQueue());
+		s_Queue = s_Device.getQueue();
 		if(!s_Queue)
 		{
 			throw std::runtime_error("Failed to get WGPU queue");
@@ -95,19 +95,28 @@ namespace Engine::GraphicsContext
 		Engine::RenderPipelineLayouts::Initialize();
 	}
 
+	void Shutdown()
+	{
+		s_Queue.release();
+		s_Device.release();
+		s_Instance.release();
+
+		Engine::SamplerPool::Shutdown();
+	}
+
 	wgpu::Instance GetInstance()
 	{
-		return *s_Instance;
+		return s_Instance;
 	}
 
 	wgpu::Device GetDevice()
 	{
-		return *s_Device;
+		return s_Device;
 	}
 
 	wgpu::Queue GetQueue()
 	{
-		return *s_Queue;
+		return s_Queue;
 	}
 
 	uint32_t GetUniformBufferOffsetAlignment()

@@ -249,10 +249,22 @@
 		]]
 	end
 
-	function suite.excludedFromBuild_onExcludeFlag()
+	function suite.excludedFromBuild_onBuildActionNone()
 		files { "hello.cpp" }
 		filter "files:hello.cpp"
-		flags { "ExcludeFromBuild" }
+		buildaction "None"
+		prepare()
+		test.capture [[
+<ItemGroup>
+	<None Include="hello.cpp" />
+</ItemGroup>
+		]]
+	end
+
+	function suite.excludedFromBuild_onAPI()
+		files { "hello.cpp" }
+		filter "files:hello.cpp"
+		excludefrombuild "On"
 		prepare()
 		test.capture [[
 <ItemGroup>
@@ -262,6 +274,7 @@
 </ItemGroup>
 		]]
 	end
+
 
 	function suite.excludedFromBuild_onResourceFile_excludedFile()
 		files { "hello.rc" }
@@ -277,10 +290,22 @@
 		]]
 	end
 
-	function suite.excludedFromBuild_onResourceFile_excludeFlag()
+	function suite.excludedFromBuild_onResourceFile_buildActionNone()
 		files { "hello.rc" }
 		filter "files:hello.rc"
-		flags { "ExcludeFromBuild" }
+		buildaction "None"
+		prepare()
+		test.capture [[
+<ItemGroup>
+	<None Include="hello.rc" />
+</ItemGroup>
+		]]
+	end
+
+	function suite.excludedFromBuild_onResourceFile_viaAPI()
+		files { "hello.rc" }
+		filter "files:hello.rc"
+		excludefrombuild "On"
 		prepare()
 		test.capture [[
 <ItemGroup>
@@ -291,11 +316,11 @@
 		]]
 	end
 
-	function suite.excludedFromBuild_onResourceFile_excludeFlag_nonWindows()
+	function suite.excludedFromBuild_onResourceFile_viaAPI_nonWindows()
 		files { "hello.rc" }
 		system "Linux"
 		filter "files:hello.rc"
-		flags { "ExcludeFromBuild" }
+		excludefrombuild "On"
 		prepare()
 		test.capture [[
 <ItemGroup>
@@ -336,12 +361,12 @@
 		]]
 	end
 
-	function suite.excludedFromBuild_onCustomBuildRule_excludeFlag()
+	function suite.excludedFromBuild_onCustomBuildRule_excludeAPI()
 		files { "hello.cg" }
 		filter "files:**.cg"
 			buildcommands { "cgc $(InputFile)" }
 			buildoutputs { "$(InputName).obj" }
-			flags { "ExcludeFromBuild" }
+			excludefrombuild "On"
 		prepare()
 		test.capture [[
 <ItemGroup>
@@ -355,13 +380,13 @@
 		]]
 	end
 
-	function suite.excludedFromBuild_onCustomBuildRule_withNoCommands()
+	function suite.excludedFromBuild_onCustomBuildRule_withNoCommands_excludeViaAPI()
 		files { "hello.cg" }
 		filter { "files:**.cg", "Debug" }
 			buildcommands { "cgc $(InputFile)" }
 			buildoutputs { "$(InputName).obj" }
 		filter { "files:**.cg" }
-			flags { "ExcludeFromBuild" }
+			excludefrombuild "On"
 		prepare()
 		test.capture [[
 <ItemGroup>
@@ -836,7 +861,7 @@
 	function suite.excludedFromPCH()
 		files { "hello.cpp" }
 		filter "files:**.cpp"
-		flags { "NoPCH" }
+		enablepch "Off"
 		prepare()
 		test.capture [[
 <ItemGroup>

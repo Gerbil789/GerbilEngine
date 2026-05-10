@@ -122,13 +122,12 @@ Environment="key=value&#x0A;foo=bar"
 
 
 --
--- Make sure that environment merging is turned off if the build
--- flag is set.
+-- Make sure that debugenvsmerge API works correctly.
 --
 
-	function suite.environmentVarsSet_onDebugEnvsAndDebugEnvsDontMerge()
+	function suite.environmentVarsSet_onDebugEnvsAndDebugEnvsMergeOff()
 		debugenvs { "key=value" }
-		flags { "DebugEnvsDontMerge" }
+		debugenvsmerge "Off"
 		prepare()
 		test.capture [[
 Environment="key=value"

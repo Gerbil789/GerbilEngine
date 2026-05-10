@@ -3,6 +3,7 @@
 #include "Engine/Core/API.h"
 #include <filesystem>
 #include <functional>
+#include <string>
 
 struct GLFWwindow;
 

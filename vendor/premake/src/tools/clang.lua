@@ -50,6 +50,8 @@
 		flags = gcc.shared.flags,
 		floatingpoint = {
 			Fast = "-ffast-math",
+			Strict = "-ffp-model=strict",
+			Precise = "-ffp-model=precise"
 		},
 		strictaliasing = gcc.shared.strictaliasing,
 		openmp = gcc.shared.openmp,
@@ -68,8 +70,12 @@
 		structmemberalign = gcc.shared.structmemberalign,
 		visibility = gcc.shared.visibility,
 		inlinesvisibility = gcc.shared.inlinesvisibility,
-		linktimeoptimization = gcc.shared.linktimeoptimization,
+		linktimeoptimization = {
+			On = "-flto",
+			Fast = "-flto=thin",
+		},
 		profile = gcc.shared.profile,
+		useshortenums = gcc.shared.useshortenums,
 	}
 
 	clang.cflags = table.merge(gcc.cflags, {
@@ -184,6 +190,24 @@
 
 
 --
+-- Returns the proper precompiled header file for the given configuration.
+-- For GCC-like toolsets, this is the header file path with .gch appended.
+--
+-- @param cfg
+--    The project configuration.
+-- @return
+--    The path to the precompiled header file, relative to the project.
+--
+
+	function clang.getpch(cfg)
+
+		-- Clang uses the same PCH handling as GCC
+		return gcc.getpch(cfg)
+
+	end
+
+
+--
 -- Returns a list of include file search directories, decorated for
 -- the compiler command line.
 --
@@ -205,13 +229,16 @@
 --    An array of symbols with the appropriate flag decorations.
 --
 
-	function clang.getincludedirs(cfg, dirs, extdirs, frameworkdirs, includedirsafter)
+	function clang.getstructuredincludedirs(cfg, dirs, extdirs, frameworkdirs, includedirsafter)
 
 		-- Just pass through to GCC for now
-		local flags = gcc.getincludedirs(cfg, dirs, extdirs, frameworkdirs, includedirsafter)
+		local flags = gcc.getstructuredincludedirs(cfg, dirs, extdirs, frameworkdirs, includedirsafter)
 		return flags
 
 	end
+
+	clang.getincludedirs = gcc.getincludedirs
+	clang.getstructuredimplicitincludedirs = gcc.getstructuredimplicitincludedirs
 
 	clang.getrunpathdirs = gcc.getrunpathdirs
 
@@ -244,7 +271,7 @@
 		kind = {
 			SharedLib = function(cfg)
 				local r = { clang.getsharedlibarg(cfg) }
-				if cfg.system == "windows" and not cfg.flags.NoImportLib then
+				if cfg.system == "windows" and cfg.useimportlib ~= p.OFF then
 					table.insert(r, '-Wl,--out-implib="' .. cfg.linktarget.relpath .. '"')
 				elseif cfg.system == p.LINUX then
 					table.insert(r, '-Wl,-soname=' .. p.quoted(cfg.linktarget.name))
@@ -258,7 +285,9 @@
 			end,
 		},
 		linker = gcc.ldflags.linker,
+		mapfile = gcc.ldflags.mapfile,
 		profile = gcc.ldflags.profile,
+		openmp = gcc.ldflags.openmp,
 		sanitize = table.merge(gcc.ldflags.sanitize, {
 			Fuzzer = "-fsanitize=fuzzer",
 		}),
@@ -267,8 +296,13 @@
 		}
 	}
 
+	clang.wholearchive = gcc.wholearchive
+
 	function clang.getldflags(cfg)
 		local flags = config.mapFlags(cfg, clang.ldflags)
+
+		flags = table.join(flags, gcc.wholearchive(cfg))
+
 		return flags
 	end
 
@@ -349,7 +383,7 @@
 	clang.tools = {
 		cc = "clang",
 		cxx = "clang++",
-		ar = function(cfg) return iif(cfg.linktimeoptimization == "On", "llvm-ar", "ar") end,
+		ar = function(cfg) return iif(cfg.linktimeoptimization == "On" or cfg.linktimeoptimization == "Fast", "llvm-ar", "ar") end,
 		rc = "windres"
 	}
 

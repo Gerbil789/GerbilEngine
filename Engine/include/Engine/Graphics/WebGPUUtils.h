@@ -3,7 +3,7 @@
 #include "Engine/Core/Log.h"
 #include "Engine/Utility/File.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include <webgpu/webgpu-raii.hpp>
+#include <webgpu/webgpu.hpp>
 
 //TODO: rename this file to something better, its practicaly just toString() functions for webgpu enums
 

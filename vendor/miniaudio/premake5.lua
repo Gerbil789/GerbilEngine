@@ -17,6 +17,8 @@ project "miniaudio"
 
 	filter "system:windows"
 		systemversion "latest"
+		toolset "clang"
+		buildoptions { "/MP", "/permissive-", "/std:c++latest" } -- MP = Enable multithreading for Visual Studio
 
 	filter "system:linux"
 		pic "on"

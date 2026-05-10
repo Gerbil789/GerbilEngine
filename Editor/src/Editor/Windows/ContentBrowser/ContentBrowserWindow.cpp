@@ -4,7 +4,7 @@
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/AssetRegistry.h"
-#include "Engine/Utility/File.h"
+#include "Editor/Utility/File.h"
 #include "Editor/Core/SelectionManager.h"
 #include "Editor/Windows/ContentBrowser/SelectionWithDeletion.h"
 #include "Engine/Core/Project.h"
@@ -215,7 +215,7 @@ namespace Editor
 
 			if (ImGui::MenuItem("Open in file explorer"))
 			{
-				Engine::OpenFileExplorer(m_CurrentDirectory);
+				OpenFileExplorer(m_CurrentDirectory);
 			}
 
 			ImGui::EndPopup();
@@ -234,7 +234,7 @@ namespace Editor
 
 			if (ImGui::MenuItem("Open in file explorer"))
 			{
-				Engine::OpenFileExplorer(m_CurrentDirectory);
+				OpenFileExplorer(m_CurrentDirectory);
 			}
 
 			ImGui::EndPopup();

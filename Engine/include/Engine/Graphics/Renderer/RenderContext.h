@@ -3,7 +3,7 @@
 #include "Engine/Graphics/Renderer/DrawList.h"
 #include "Engine/Graphics/Renderer/RenderUniforms.h"
 #include "Engine/Graphics/Texture/Environment.h"
-#include <webgpu/webgpu-raii.hpp>
+#include <webgpu/webgpu.hpp>
 #include <array>
 
 namespace Engine

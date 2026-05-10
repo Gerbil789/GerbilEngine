@@ -712,11 +712,11 @@ EndGlobalSection
 	end
 
 
-	function suite.onBuildCfgExcludedByFlag()
+	function suite.onBuildCfgExcluded()
 		platforms { "DLL", "Static" }
 		project "MyProject"
 		filter "configurations:Debug"
-		flags "ExcludeFromBuild"
+		excludefrombuild "On"
 		prepare()
 		test.capture [[
 GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -761,11 +761,11 @@ EndGlobalSection
 	end
 
 
-	function suite.onPlatformExcludedByFlag()
+	function suite.onPlatformExcluded()
 		platforms { "DLL", "Static" }
 		project "MyProject"
 		filter "platforms:Static"
-		flags "ExcludeFromBuild"
+		excludefrombuild "On"
 		prepare()
 		test.capture [[
 GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -784,6 +784,7 @@ GlobalSection(ProjectConfigurationPlatforms) = postSolution
 EndGlobalSection
 		]]
 	end
+
 
 	function suite.onExcludedBuildCfg_noPlatforms()
 		project "MyProject"

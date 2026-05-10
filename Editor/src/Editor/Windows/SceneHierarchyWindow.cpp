@@ -63,7 +63,7 @@ namespace Editor
 	{
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-		auto& tc = registry.get<Engine::TransformComponent>(entity);
+		//auto& tc = registry.get<Engine::TransformComponent>(entity);
 
 		// If entity has no children, mark as leaf
 		//if (tc.firstChild == entt::null)

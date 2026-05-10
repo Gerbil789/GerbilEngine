@@ -33,7 +33,6 @@ externalincludedirs
 	"%{wks.location}/vendor/entt/include",
 	"%{wks.location}/vendor/imgui",
 	"%{wks.location}/vendor/tinygltf",
-	"%{wks.location}/vendor/portable-file-dialogs",
 	"%{wks.location}/vendor/yaml-cpp/include",
 	"%{wks.location}/vendor/miniaudio",
 	"%{wks.location}/vendor/renderdoc"
@@ -53,27 +52,77 @@ libdirs
 	"%{wks.location}/vendor/dawn"
 }
 
--- postbuildcommands
--- {
---     '{COPY} "%{cfg.buildtarget.abspath}" "%{wks.location}/bin/' .. outputdir .. '/Editor/"',
--- 		'{COPY} "%{cfg.buildtarget.abspath}" "%{wks.location}/bin/' .. outputdir .. '/Template/"'
--- }
-
 postbuildmessage "Copying Engine.dll to Editor directory"
 
 filter "system:windows"
-  disablewarnings { "4251" }
 	systemversion "latest"
-	buildoptions { "/MP", "/permissive-" } -- MP = Enable multithreading for Visual Studio
+	buildoptions { "/permissive-", "/std:c++latest"}
 	defines
 	{
+		"_HAS_CXX23=1",
 		"ENGINE_PLATFORM_WINDOWS",
+		"IMGUI_IMPL_WEBGPU_BACKEND_DAWN",
 		"GLFW_INCLUDE_NONE",
 		"YAML_CPP_STATIC_DEFINE",
 		"GLM_ENABLE_EXPERIMENTAL",
 		"NOMINMAX", -- prevent windows.h from defining min and max macros
 		"ENGINE_BUILD_DLL"
 	}
+
+
+filter { "platforms:Web" }
+  -- Trick Premake into generating GCC/Clang compatible Makefiles
+  system "linux" 
+	kind "StaticLib"
+  
+  -- Change the output file to an HTML page (Emscripten will generate the .wasm and .js alongside it)
+  targetextension ".html"
+  -- Emscripten Compiler Flags
+  buildoptions 
+	{
+      -- "-s USE_GLFW=3",        -- Use Emscripten's built-in GLFW3 port
+      "--use-port=emdawnwebgpu",      -- Enable native browser WebGPU headers
+      "-pthread"              -- Only if you plan to keep std::thread, otherwise remove
+	}
+  -- Emscripten Linker Flags
+  linkoptions 
+	{
+      "-s USE_GLFW=3",
+      "--use-port=emdawnwebgpu",
+      "-s WASM=1",
+      "-s ALLOW_MEMORY_GROWTH=1",     -- Crucial for dynamic memory allocation in games
+      "-s ASYNCIFY",                  -- Helpful if you struggle to refactor your while(true) loop immediately
+      "--preload-file ../assets@/assets" -- Mount your local assets folder to the browser's virtual file system
+	}
+
+  removefiles { 
+      "src/vendor/dawn/**.cpp", -- Adjust to your actual Dawn source paths
+      "src/vendor/dawn/**.c" 
+  }
+
+
+	removeexternalincludedirs 
+	{ 
+		-- "%{wks.location}/vendor/dawn/include",
+		-- "vendor/dawn/include",
+		"vendor/imgui",
+		"vendor/ImGuizmo",
+	}
+
+  removelinks 
+	{ 
+		"ImGui",
+		"webgpu_dawn",
+    "dawn_native", 
+    "dawn_proc" 
+  }
+
+	defines
+	{
+		"ENGINE_BUILD_STATIC",
+	}
+
+
 
 filter "configurations:Debug"
 	defines { "DEBUG" }

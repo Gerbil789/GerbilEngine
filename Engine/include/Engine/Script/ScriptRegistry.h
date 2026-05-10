@@ -1,7 +1,12 @@
 #pragma once
 
 #include "Engine/Core/UUID.h"
+#include <string_view>
 #include <string>
+#include <vector>
+#include <unordered_map>
+#include <functional>
+#include <typeinfo>
 
 #ifdef ENGINE_PLATFORM_WINDOWS
 #ifdef GAME_BUILD_DLL

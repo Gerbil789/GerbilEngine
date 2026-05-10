@@ -5,7 +5,6 @@ newoption
    description = "The name of the output executable"
 }
 
-
 project (_OPTIONS["project_name"] or "Template")
 kind "ConsoleApp"
 language "C++"
@@ -33,18 +32,14 @@ externalincludedirs
 	"%{wks.location}/vendor/glfw/include",
 	"%{wks.location}/vendor/glm",
 	"%{wks.location}/vendor/entt/include",
-	"%{wks.location}/vendor/imgui",
-	"%{wks.location}/vendor/ImGuizmo",
 	"%{wks.location}/vendor/yaml-cpp/include",
 }
 
-LinkEngine() -- This pulls in the links, includes, and DLL copy commands
 
 links
 {
 	"Engine",
 	"glfw",
-	"ImGui",
 	"yaml-cpp",
 	"webgpu_dawn"
 }
@@ -56,16 +51,23 @@ libdirs
 
 postbuildcommands 
 {
-	"{COPY} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
-	"{COPY} %{wks.location}/Resources %{cfg.targetdir}/Resources",
+	"{ECHO} Copying dependencies...",
+	"{COPYFILE} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
+	"{COPYDIR} %{wks.location}/Resources %{cfg.targetdir}/Resources",
 }
 
-postbuildmessage "Copying dependencies..."
+LinkEngine() -- This pulls in the links, includes, and DLL copy commands
+
 filter "system:windows"
 	systemversion "latest"
-	buildoptions { "/MP", "/permissive-" }
+	buildoptions 
+	{ 
+		"/permissive-", 
+		"/std:c++latest",
+	}
 	defines 
 	{ 
+		--"_HAS_CXX23=1",
 		"ENGINE_PLATFORM_WINDOWS",
 		"GLFW_INCLUDE_NONE",
 		"YAML_CPP_STATIC_DEFINE",
@@ -73,8 +75,40 @@ filter "system:windows"
 		"NOMINMAX", -- prevent windows.h from defining min and max macros
 	}
 
-filter "system:windows"
-  disablewarnings { "4251" } -- 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
+filter { "platforms:Web" }
+  -- Trick Premake into generating GCC/Clang compatible Makefiles
+  system "linux" 
+  toolset "clang"
+  
+  -- Change the output file to an HTML page (Emscripten will generate the .wasm and .js alongside it)
+  targetextension ".html"
+  -- Emscripten Compiler Flags
+  buildoptions {
+      -- "-s USE_GLFW=3",        -- Use Emscripten's built-in GLFW3 port
+      "--use-port=emdawnwebgpu",      -- Enable native browser WebGPU headers
+      "-pthread"              -- Only if you plan to keep std::thread, otherwise remove
+	}
+  -- Emscripten Linker Flags
+  linkoptions {
+      "-s USE_GLFW=3",
+      "--use-port=emdawnwebgpu",
+      "-s WASM=1",
+      "-s ALLOW_MEMORY_GROWTH=1",     -- Crucial for dynamic memory allocation in games
+      "-s ASYNCIFY",                  -- Helpful if you struggle to refactor your while(true) loop immediately
+      "--preload-file ../assets@/assets" -- Mount your local assets folder to the browser's virtual file system
+	}
+  -- Remove Desktop-Specific Files (Dawn)
+  -- Since the browser handles WebGPU natively, you DO NOT want to compile Dawn
+  removefiles { 
+      "src/vendor/dawn/**.cpp", -- Adjust to your actual Dawn source paths
+      "src/vendor/dawn/**.c" 
+  }
+
+  removelinks 
+	{ 
+    "dawn_native", 
+    "dawn_proc" 
+  }
 
 filter "configurations:Debug"
 	defines { "DEBUG", "BUILD_CONFIG=\"Debug\"" }

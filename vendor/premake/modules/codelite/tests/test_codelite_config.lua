@@ -53,13 +53,32 @@
 		symbols "On"
 		language "C++"
 		cppdialect "C++11"
-		flags { "NoBufferSecurityCheck" }
+		buffersecuritycheck "Off"
 		forceincludes { "forced_include1.h", "forced_include2.h" }
 		buildoptions { "-opt1", "-opt2" }
 		prepare()
 		codelite.project.compiler(cfg)
 		test.capture [[
-      <Compiler Options="-Og;-fPIC;-g;-std=c++11;-fno-exceptions;-fno-stack-protector;-fno-rtti;-include forced_include1.h;-include forced_include2.h;-opt1;-opt2" C_Options="-Og;-fPIC;-g;-include forced_include1.h;-include forced_include2.h;-opt1;-opt2" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="1">
+      <Compiler Options="-Og;-fPIC;-g;-fno-stack-protector;-std=c++11;-fno-exceptions;-fno-rtti;-include forced_include1.h;-include forced_include2.h;-opt1;-opt2" C_Options="-Og;-fPIC;-g;-include forced_include1.h;-include forced_include2.h;-opt1;-opt2" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="1">
+      </Compiler>
+		]]
+	end
+
+	function suite.OnProjectCfg_BufferSecurityCheckAPI()
+		optimize "Debug"
+		exceptionhandling "Off"
+		rtti "Off"
+		pic "On"
+		symbols "On"
+		language "C++"
+		cppdialect "C++11"
+		buffersecuritycheck "Off"
+		forceincludes { "forced_include1.h", "forced_include2.h" }
+		buildoptions { "-opt1", "-opt2" }
+		prepare()
+		codelite.project.compiler(cfg)
+		test.capture [[
+      <Compiler Options="-Og;-fPIC;-g;-fno-stack-protector;-std=c++11;-fno-exceptions;-fno-rtti;-include forced_include1.h;-include forced_include2.h;-opt1;-opt2" C_Options="-Og;-fPIC;-g;-include forced_include1.h;-include forced_include2.h;-opt1;-opt2" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="1">
       </Compiler>
 		]]
 	end
@@ -81,7 +100,7 @@
 		prepare()
 		codelite.project.compiler(cfg)
 		test.capture [[
-      <Compiler Options="-isystem sysdir;-isystem sysdir2" C_Options="-isystem sysdir;-isystem sysdir2" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="1">
+      <Compiler Options="-isystemsysdir;-isystemsysdir2" C_Options="-isystemsysdir;-isystemsysdir2" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="1">
       </Compiler>
 		]]
 	end
@@ -91,7 +110,7 @@
 		prepare()
 		codelite.project.compiler(cfg)
 		test.capture [[
-      <Compiler Options="-idirafter sysdir;-idirafter sysdir2" C_Options="-idirafter sysdir;-idirafter sysdir2" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="1">
+      <Compiler Options="-idiraftersysdir;-idiraftersysdir2" C_Options="-idiraftersysdir;-idiraftersysdir2" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="1">
       </Compiler>
 		]]
 	end

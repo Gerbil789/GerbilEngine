@@ -3,7 +3,7 @@
 #include "Engine/Core/UUID.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/Renderer/RenderContext.h"
-#include <webgpu/webgpu-raii.hpp>
+#include <webgpu/webgpu.hpp>
 
 namespace Editor
 {

@@ -2,7 +2,7 @@
 
 #include "Engine/Asset/Asset.h"
 #include "Engine/Graphics/ShaderSpecification.h"
-#include <webgpu/webgpu-raii.hpp>
+#include <webgpu/webgpu.hpp>
 
 namespace Engine 
 {

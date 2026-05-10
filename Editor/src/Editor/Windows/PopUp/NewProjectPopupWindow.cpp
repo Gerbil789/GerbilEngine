@@ -1,6 +1,6 @@
 #include "NewProjectPopupWindow.h"
 #include "Engine/Core/Project.h"
-#include "Engine/Utility/File.h"
+#include "Editor/Utility/File.h"
 #include <imgui.h>
 
 namespace Editor
@@ -24,7 +24,7 @@ namespace Editor
 			ImGui::SameLine();
 			if(ImGui::Button("Browse"))
 			{
-				std::filesystem::path dir = Engine::OpenDirectory();
+				std::filesystem::path dir = OpenDirectory();
 				if (!dir.empty())
 				{
 					strncpy_s(m_Path, dir.string().c_str(), sizeof(m_Path));

@@ -7,7 +7,6 @@
 	local p = premake
 	local suite = test.declare("vs2010_link")
 	local vc2010 = p.vstudio.vc2010
-	local project = p.project
 
 
 --
@@ -126,8 +125,8 @@
 -- Test the handling of the NoImplicitLink flag.
 --
 
-	function suite.linkDependencies_onNoImplicitLink()
-		flags "NoImplicitLink"
+	function suite.linkDependencies_onNoImplicitLink_ViaAPI()
+		implicitlink "Off"
 		prepare()
 		test.capture [[
 <Link>
@@ -136,6 +135,20 @@
 </Link>
 <ProjectReference>
 	<LinkLibraryDependencies>false</LinkLibraryDependencies>
+</ProjectReference>
+		]]
+	end
+
+	function suite.linkDependencies_onImplicitLink_ViaAPI()
+		implicitlink "On"
+		prepare()
+		test.capture [[
+<Link>
+	<SubSystem>Windows</SubSystem>
+	<ImportLibrary>bin\Debug\MyProject.lib</ImportLibrary>
+</Link>
+<ProjectReference>
+	<LinkLibraryDependencies>true</LinkLibraryDependencies>
 </ProjectReference>
 		]]
 	end
@@ -513,8 +526,8 @@
 -- If the NoImplicitLink flag is set, all dependencies should be listed explicitly.
 --
 
-	function suite.includeSiblings_onNoImplicitLink()
-		flags { "NoImplicitLink" }
+	function suite.includeSiblings_onNoImplicitLink_ViaAPI()
+		implicitlink "Off"
 		links { "MyProject2" }
 		test.createproject(wks)
 		kind "SharedLib"
@@ -527,6 +540,23 @@
 </Link>
 <ProjectReference>
 	<LinkLibraryDependencies>false</LinkLibraryDependencies>
+</ProjectReference>
+		]]
+	end
+
+	function suite.includeSiblings_onImplicitLink_ViaAPI()
+		implicitlink "On"
+		links { "MyProject2" }
+		test.createproject(wks)
+		kind "SharedLib"
+		prepare()
+		test.capture [[
+<Link>
+	<SubSystem>Windows</SubSystem>
+	<ImportLibrary>bin\Debug\MyProject.lib</ImportLibrary>
+</Link>
+<ProjectReference>
+	<LinkLibraryDependencies>true</LinkLibraryDependencies>
 </ProjectReference>
 		]]
 	end
@@ -615,6 +645,31 @@
 
 
 --
+-- Test if LinkTimeOptimization API correctly specifies LinkTimeCodeGeneration
+--
+
+	function suite.linkTimeOptimization_onEnableLinkTimeOptimization()
+		linktimeoptimization "On"
+		prepare()
+		test.capture [[
+<Link>
+	<SubSystem>Windows</SubSystem>
+	<LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+		]]
+	end
+
+	function suite.linkTimeOptimization_onFastLinkTimeOptimization()
+		linktimeoptimization "Fast"
+		prepare()
+		test.capture [[
+<Link>
+	<SubSystem>Windows</SubSystem>
+	<LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+		]]
+	end
+
+
+--
 -- Correctly handle module definition (.def) files.
 --
 
@@ -651,7 +706,7 @@
 
 	function suite.fatalWarnings_onDynamicLink()
 		kind "ConsoleApp"
-		flags { "FatalLinkWarnings" }
+		linkerfatalwarnings "All"
 		prepare()
 		test.capture [[
 <Link>
@@ -662,7 +717,7 @@
 
 	function suite.fatalWarnings_onStaticLink()
 		kind "StaticLib"
-		flags { "FatalLinkWarnings" }
+		linkerfatalwarnings "All"
 		prepare()
 		test.capture [[
 <Link>
@@ -679,14 +734,28 @@
 -- Test generating .map files.
 --
 
-	function suite.generateMapFile_onMapsFlag()
-		flags { "Maps" }
+	function suite.generateMapFile()
+		mapfile "On"
 		prepare()
 		test.capture [[
 <Link>
 	<SubSystem>Windows</SubSystem>
 	<ImportLibrary>bin\Debug\MyProject.lib</ImportLibrary>
 	<GenerateMapFile>true</GenerateMapFile>
+</Link>
+		]]
+	end
+
+		function suite.generateMapFile_onMapFileWithPathAPI()
+		mapfile "On"
+		mapfilepath "bin/Debug/MyProject.map"
+		prepare()
+		test.capture [[
+<Link>
+	<SubSystem>Windows</SubSystem>
+	<ImportLibrary>bin\Debug\MyProject.lib</ImportLibrary>
+	<GenerateMapFile>true</GenerateMapFile>
+	<MapFileName>bin\Debug\MyProject.map</MapFileName>
 </Link>
 		]]
 	end
@@ -763,6 +832,26 @@
 <Link>
 	<SubSystem>Windows</SubSystem>
 	<AdditionalDependencies>kernel32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+	<ImportLibrary>bin\Debug\MyProject.lib</ImportLibrary>
+</Link>
+		]]
+	end
+
+
+--
+-- Whole archive should be listed in additional dependencies.
+--
+
+	function suite.wholearchive()
+		links { "MyProject2" }
+		wholearchive { "kernel32", "MyProject2" }
+		project "MyProject2"
+		kind "StaticLib"
+		prepare()
+		test.capture [[
+<Link>
+	<SubSystem>Windows</SubSystem>
+	<AdditionalDependencies>/WHOLEARCHIVE:kernel32;/WHOLEARCHIVE:bin\Debug\MyProject2.lib;%(AdditionalDependencies)</AdditionalDependencies>
 	<ImportLibrary>bin\Debug\MyProject.lib</ImportLibrary>
 </Link>
 		]]

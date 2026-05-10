@@ -26,7 +26,7 @@ namespace RenderDoc
 		}
 
 		RENDERDOC_Version version = eRENDERDOC_API_Version_1_6_0;
-		pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(module, "RENDERDOC_GetAPI");
+		pRENDERDOC_GetAPI RENDERDOC_GetAPI = reinterpret_cast<pRENDERDOC_GetAPI>(reinterpret_cast<void*>(GetProcAddress(module, "RENDERDOC_GetAPI")));
 
 		if (RENDERDOC_GetAPI)
 		{

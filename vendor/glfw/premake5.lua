@@ -41,11 +41,8 @@ defines
 	"_CRT_SECURE_NO_WARNINGS",
 	"_GLFW_BUILD_DLL"
 }
-
--- postbuildcommands
--- {
---   '{COPY} "%{cfg.buildtarget.abspath}" "%{wks.location}/bin/' .. outputdir .. '/Editor/"'
--- }
+filter "system:windows"
+	buildoptions { "/permissive-" }
 
 filter "configurations:Debug"
 	runtime "Debug"
@@ -54,3 +51,8 @@ filter "configurations:Debug"
 filter "configurations:Release"
 	runtime "Release"
 	optimize "on"
+
+filter { "platforms:Web" }
+	kind "StaticLib"       -- Stops it from trying to build a .so shared library
+  removefiles { "**.*" } -- Strips out all the desktop OS files
+  files { "dummy.c" }    -- Feeds the linker our empty file

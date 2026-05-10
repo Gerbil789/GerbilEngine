@@ -27,7 +27,7 @@
 			p.X86,
 			p.X86_64,
 			p.ARM,
-			p.ARM64,
+			p.AARCH64,
 			p.RISCV64,
 			p.LOONGARCH64,
 			p.PPC,
@@ -38,12 +38,16 @@
 			p.MIPS64EL
 		},
 		aliases = {
-			i386  = p.X86,
-			amd64 = p.X86_64,
-			x32   = p.X86,	-- these should be DEPRECATED
-			x64   = p.X86_64,
+			i386    = p.X86,
+			amd64   = p.X86_64,
+			x32     = p.X86,
+			x64     = p.X86_64,
+			ARM64   = p.AARCH64,
 		},
 	}
+
+	api.deprecateAlias("architecture", "i386", "Use 'x86' instead with `buildoptions { '-march=i386' }`.")
+	api.deprecateAlias("architecture", "x32", "Use 'x86' instead. There is no x32 ABI support currently.")
 
 	api.register {
 		name = "basedir",
@@ -331,39 +335,6 @@
 	}
 
 	api.register {
-		name = "flags",
-		scope = "config",
-		kind  = "list:string",
-		allowed = {
-			"DebugEnvsDontMerge",
-			"DebugEnvsInherit",
-			"ExcludeFromBuild",
-			"FatalCompileWarnings",	-- DEPRECATED
-			"FatalLinkWarnings",	-- DEPRECATED
-			"FatalWarnings",		-- DEPRECATED
-			"LinkTimeOptimization", -- DEPRECATED
-			"Maps",
-			"MFC",
-			"MultiProcessorCompile",
-			"No64BitChecks",
-			"NoCopyLocal",
-			"NoImplicitLink",
-			"NoImportLib",         -- DEPRECATED
-			"NoIncrementalLink",
-			"NoManifest",
-			"NoMinimalRebuild",
-			"NoPCH",
-			"NoRuntimeChecks",
-			"NoBufferSecurityCheck",
-			"OmitDefaultLibrary",
-			"RelativeLinks",
-			"ShadowedVariables",
-			"UndefinedIdentifiers",
-			"WPF",
-		},
-	}
-
-	api.register {
 		name = "floatingpoint",
 		scope = "config",
 		kind = "string",
@@ -371,6 +342,7 @@
 			"Default",
 			"Fast",
 			"Strict",
+			"Precise"
 		}
 	}
 
@@ -515,6 +487,8 @@
 			"C++20",
 			"C++2b",
 			"C++23",
+			"C++2c",
+			"C++26",
 			"gnu++98",
 			"gnu++0x",
 			"gnu++11",
@@ -526,6 +500,8 @@
 			"gnu++20",
 			"gnu++2b",
 			"gnu++23",
+			"gnu++2c",
+			"gnu++26",
 		}
 	}
 
@@ -867,6 +843,7 @@
 			"bsd",
 			"emscripten",
 			"haiku",
+			"hurd",
 			"ios",
 			"linux",
 			"macosx",
@@ -1029,6 +1006,12 @@
 	}
 
 	api.register {
+		name = "wholearchive",
+		scope = "config",
+		kind = "list:string"
+	}
+
+	api.register {
 		name = "editorintegration",
 		scope = "workspace",
 		kind = "boolean",
@@ -1110,18 +1093,6 @@
 		tokens = true
 	}
 
-	api.register {   -- DEPRECATED 2021-11-16
-		name = "sysincludedirs",
-		scope = "config",
-		kind = "list:directory",
-		tokens = true,
-	}
-
-	api.deprecateField("sysincludedirs", 'Use `externalincludedirs` instead.',
-	function(value)
-		externalincludedirs(value)
-	end)
-
 	api.register {
 		name = "linktimeoptimization",
 		scope = "config",
@@ -1129,50 +1100,10 @@
 		allowed = {
 			"Default",
 			"On",
+			"Fast",
 			"Off"
 		}
 	}
-
-	--27 November 2024
-	api.deprecateValue("flags", "LinkTimeOptimization", "Use `linktimeoptimization` instead.",
-	function(value)
-		linktimeoptimization("On")
-	end,
-	function(value)
-		linktimeoptimization("Default")
-	end)
-
-	--25 November 2024
-	api.deprecateValue("flags", "WPF", 'Use `dotnetsdk "WindowsDesktop"` instead.',
-	function(value)
-		dotnetsdk "WindowsDesktop"
-	end,
-	function(value)
-		dotnetsdk "Default"
-	end)
-	api.deprecateValue("flags", "FatalWarnings", "Use `fatalwarnings { \"All\" }` instead.",
-	function(value)
-		fatalwarnings({ "All" })
-	end,
-	function(value)
-		removefatalwarnings({ "All" })
-	end)
-
-	api.deprecateValue("flags", "FatalCompileWarnings", "Use `fatalwarnings { \"All\" }` instead.",
-	function(value)
-		fatalwarnings({ "All" })
-	end,
-	function(value)
-		removefatalwarnings({ "All" })
-	end)
-
-	api.deprecateValue("flags", "FatalLinkWarnings", "Use `linkerfatalwarnings { \"All\" }` instead.",
-	function(value)
-		linkerfatalwarnings({ "All" })
-	end,
-	function(value)
-		removelinkerfatalwarnings({ "All" })
-	end)
 
 	premake.filterFatalWarnings = function(tbl)
 		if type(tbl) == "table" then
@@ -1218,6 +1149,193 @@
 		kind = "string"
 	}
 
+	api.register {
+		name = "mapfile",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off"
+		}
+	}
+
+	api.register {
+		name = "mapfilepath",
+		scope = "config",
+		kind = "string",
+	}
+
+	api.register {
+		name = "enable64bitchecks",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off"
+		}
+	}
+
+	api.register {
+		name = "multiprocessorcompile",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off"
+		}
+	}
+
+	api.register {
+		name = "buffersecuritycheck",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off"
+		}
+	}
+
+	api.register {
+		name = "useimportlib",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off"
+		}
+	}
+
+	api.register {
+		name = "incrementallink",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off"
+		}
+	}
+
+	api.register {
+		name = "manifest",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off",
+		}
+	}
+
+	api.register {
+		name = "minimalrebuild",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off"
+		}
+	}
+
+	api.register {
+		name = "enablepch",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off",
+		},
+	}
+
+	api.register {
+		name = "nodefaultlib",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off",
+		},
+	}
+
+	api.register {
+		name = "userelativelinks",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off",
+		},
+	}
+
+	api.register {
+		name = "wpf",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off",
+		},
+	}
+
+	api.register {
+		name = "debugenvsinherit",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off",
+		},
+	}
+
+	api.register {
+		name = "debugenvsmerge",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off",
+		},
+	}
+
+	api.register {
+		name = "excludefrombuild",
+		scope = "config",
+		kind = "boolean",
+	}
+
+	api.register {
+		name = "useshortenums",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off"
+		}
+	}
+
+	api.register {
+		name = "dynamicdebugging",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"On",
+			"Off"
+		}
+	}
 
 -----------------------------------------------------------------------------
 --
@@ -1248,7 +1366,7 @@
 		allowed = {
 			{ "clang", "Clang (clang)" },
 			{ "gcc", "GNU GCC (gcc/g++)" },
-			{ "mingw", "MinGW GCC (gcc/g++)" },
+			{ "mingw", "MinGW GCC (gcc/g++)" }, -- deprecated
 			{ "msc-v80", "Microsoft compiler (Visual Studio 2005)" },
 			{ "msc-v90", "Microsoft compiler (Visual Studio 2008)" },
 			{ "msc-v100", "Microsoft compiler (Visual Studio 2010)" },
@@ -1265,6 +1383,11 @@
 			end
 		}
 	}
+
+	if _OPTIONS[cc] == "mingw" then
+		p.warn("--cc=mingw is deprecated, use --cc=gcc instead")
+		_OPTIONS[cc] = "gcc"
+	end
 
 	newoption
 	{

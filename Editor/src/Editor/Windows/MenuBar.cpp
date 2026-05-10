@@ -2,7 +2,7 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Core/PopupWindowManager.h"
-#include "Engine/Utility/File.h"
+#include "Editor/Utility/File.h"
 #include "Engine/Core/Project.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Asset/AssetManager.h"
@@ -62,7 +62,7 @@ namespace Editor
 	static const MenuEntry ProjectMenu[]
 	{
 		{"New", "", [] { PopupManager::Open("New Project"); }},
-		{"Open", "", [] { Engine::Project::Load(Engine::OpenDirectory()); }},
+		{"Open", "", [] { Engine::Project::Load(OpenDirectory()); }},
 		{"Settings", "", [] { LOG_WARNING("Project Settings - not implemented"); }},
 		{"Save layout", "", [] { Editor::EditorWindowManager::SaveLayout(); }},
 	};

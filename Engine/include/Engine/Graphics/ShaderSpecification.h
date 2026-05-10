@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <webgpu/webgpu-raii.hpp>
+#include <webgpu/webgpu.hpp>
 
 namespace Engine
 {

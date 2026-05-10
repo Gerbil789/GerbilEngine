@@ -56,8 +56,6 @@ namespace Engine
       for (auto& [id, sub] : m_Subscribers)
       {
         sub(e);
-        // Optional: If you want to stop propagating the event once it's handled
-        // if (e.Handled) break; 
       }
     }
 

@@ -13,7 +13,7 @@ namespace Engine
     virtual void Execute(wgpu::CommandEncoder& encoder, const RenderContext& context) = 0;
   };
 
-  enum class ENGINE_API RenderPassType : uint32_t
+  enum class RenderPassType : uint32_t
   {
     None = 0,
     Background = 1 << 0,

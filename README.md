@@ -38,7 +38,6 @@ WebGPU based game engine
 | **[tinygltf](https://github.com/syoyo/tinygltf)**                                | glTF mesh loading and processing |
 | **[yaml-cpp](https://github.com/jbeder/yaml-cpp)**                               | YAML serialization							  |
 | **[miniaudio](https://github.com/mackron/miniaudio)**                            | Audio playback    							  |
-| **[portable-file-dialogs](https://github.com/samhocevar/portable-file-dialogs)** | Native file dialogs              |
 | **[RenderDoc](https://github.com/baldurk/renderdoc)** 													 | Graphics debbuger	              |
 
 ---

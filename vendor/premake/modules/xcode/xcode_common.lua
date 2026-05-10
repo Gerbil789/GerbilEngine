@@ -365,13 +365,13 @@
 
 	function xcode.newid(...)
 		local name = ''
-		local arg = {...}
-		for i, v in pairs(arg) do
-			name = name..v..'****'
+		local arg = { n = select("#", ...), ... }
+		for i=1, arg.n do
+			name = name .. tostring(arg[i]) .. '****'
 		end
 
-
-		return ("%08X%08X%08X"):format(name:hash(16777619), name:hash(2166136261), name:hash(46577619))
+		local sha1 = name:sha1():upper()
+		return sha1:sub(1, 24)
 	end
 
 
@@ -1303,7 +1303,7 @@
 						-- ms this seems to work on visual studio !!!
 						-- why not in xcode ??
 						local filecfg = fileconfig.getconfig(node, cfg)
-						if not filecfg or filecfg.flags.ExcludeFromBuild or filecfg.buildaction == "None" then
+						if not filecfg or filecfg.buildaction == "None" or filecfg.excludefrombuild then
 						--fileNameList = fileNameList .. " " ..filecfg.name
 							table.insert(fileNameList, xcode.escapeArg(node.name))
 						end
@@ -1499,10 +1499,10 @@
 			settings['GCC_ENABLE_OBJC_EXCEPTIONS'] = 'NO'
 		end
 
-		local optimizeMap = { On = 3, Size = 's', Speed = 3, Full = 'fast', Debug = 'g' }
+		local optimizeMap = { On = 3, Size = 's', Speed = 3, Full = 3, Debug = 'g' }
 		settings['GCC_OPTIMIZATION_LEVEL'] = optimizeMap[cfg.optimize] or 0
 
-		if cfg.pchheader and not cfg.flags.NoPCH then
+		if cfg.pchheader and cfg.enablepch ~= p.OFF then
 			settings['GCC_PRECOMPILE_PREFIX_HEADER'] = 'YES'
 			settings['GCC_PREFIX_HEADER'] = cfg.pchheader
 		end
@@ -1543,12 +1543,12 @@
 		settings['SYSTEM_HEADER_SEARCH_PATHS'] = systemincludedirs
 
 		for i,v in ipairs(cfg.libdirs) do
-			cfg.libdirs[i] = p.project.getrelative(cfg.project, cfg.libdirs[i])
+			cfg.libdirs[i] = p.quoted(p.project.getrelative(cfg.project, cfg.libdirs[i]))
 		end
 		for i,v in ipairs(cfg.syslibdirs) do
-			cfg.syslibdirs[i] = p.project.getrelative(cfg.project, cfg.syslibdirs[i])
+			cfg.syslibdirs[i] = p.quoted(p.project.getrelative(cfg.project, cfg.syslibdirs[i]))
 		end
-		settings['LIBRARY_SEARCH_PATHS'] = table.join (cfg.libdirs, cfg.syslibdirs)
+		settings['LIBRARY_SEARCH_PATHS'] = table.join(cfg.libdirs, cfg.syslibdirs)
 
 		for i,v in ipairs(cfg.frameworkdirs) do
 			cfg.frameworkdirs[i] = p.project.getrelative(cfg.project, cfg.frameworkdirs[i])
@@ -1565,7 +1565,7 @@
 
 		-- build list of "other" C/C++ flags
 		local checks = {
-			["-ffast-math"]             = cfg.floatingpoint == "Fast",
+			["-ffast-math"]             = cfg.floatingpoint == "Fast" or cfg.optimize == "Full",
 			["-fomit-frame-pointer"]    = cfg.omitframepointer == "On",
 			["-fno-omit-frame-pointer"] = cfg.omitframepointer == "Off",
 			["-fopenmp"]                = cfg.openmp == "On"
@@ -1609,7 +1609,7 @@
 			end
 		end
 
-		settings['OTHER_LDFLAGS'] = table.join(flags, cfg.linkoptions)
+		settings['OTHER_LDFLAGS'] = table.join(flags, cfg.linkoptions, toolset.wholearchive(cfg))
 
 		if cfg.staticruntime == "On" then
 			settings['STANDARD_C_PLUS_PLUS_LIBRARY_TYPE'] = 'static'

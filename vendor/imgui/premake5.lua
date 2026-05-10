@@ -21,12 +21,11 @@ project "ImGui"
 
 	filter "system:windows"
 		systemversion "latest"
-
+		buildoptions { "/permissive-", "/std:c++latest", "-Wno-missing-braces"}
 	filter "system:linux"
 		pic "on"
 		systemversion "latest"
 		
-
 	filter "configurations:Debug"
 		runtime "Debug"
 		symbols "on"
@@ -35,4 +34,12 @@ project "ImGui"
 		runtime "Release"
 		optimize "on"
 
+filter { "platforms:Windows" }
+	defines
+	{
+		"IMGUI_IMPL_WEBGPU_BACKEND_DAWN",
+	}
 
+filter { "platforms:Web" }
+  removefiles { "**.*" } -- Strip out all ImGui source code
+  files { "dummy.cpp" }  -- Feed the linker the empty file

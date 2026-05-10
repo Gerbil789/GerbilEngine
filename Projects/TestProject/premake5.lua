@@ -43,15 +43,20 @@ libdirs
 
 postbuildcommands 
 {
-	"{COPY} %{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Engine/Engine.dll %{cfg.targetdir}"
+	"{COPYFILE} %{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Engine/Engine.dll %{cfg.targetdir}"
 }
 
 filter "system:windows"
-  disablewarnings { "4251" }
 	systemversion "latest"
-	buildoptions { "/MP", "/permissive-" } -- MP = Enable multithreading for Visual Studio
+	buildoptions 
+	{ 
+		"/permissive-", 
+		"/std:c++latest", 
+		"-Wno-invalid-offsetof", 
+	}
 	defines
 	{
+		-- "_HAS_CXX23=1",
 		"ENGINE_PLATFORM_WINDOWS",
 		"GLFW_INCLUDE_NONE",
 		"GAME_BUILD_DLL"

@@ -68,7 +68,7 @@
 
 	function suite.noPrecompiledHeaders_onNoPCH()
 		pchheader "afxwin.h"
-		flags "NoPCH"
+		enablepch "Off"
 		prepare()
 		test.capture [[
 <ClCompile>
@@ -149,19 +149,6 @@
 -- If warnings are turned off, the fatal warnings flags should
 -- not be generated.
 --
-
-	function suite.warningLevel_onNoWarningsOverOtherWarningsFlags()
-		flags { "FatalWarnings" }
-		warnings "Off"
-		prepare()
-		test.capture [[
-<ClCompile>
-	<PrecompiledHeader>NotUsing</PrecompiledHeader>
-	<WarningLevel>TurnOffAllWarnings</WarningLevel>
-	<Optimization>Disabled</Optimization>
-		]]
-	end
-
 
 	function suite.warningLevel_onNoWarningsOverOtherWarningsAPI()
 		fatalwarnings { "All" }
@@ -415,7 +402,7 @@
 --
 
 	function suite.minimalRebuild_onNoMinimalRebuild()
-		flags "NoMinimalRebuild"
+		minimalrebuild "Off"
 		prepare()
 		test.capture [[
 <ClCompile>
@@ -557,17 +544,6 @@
 --
 -- Add <TreatWarningAsError> if FatalWarnings flag is set.
 --
-
-	function suite.treatWarningsAsError_onFatalWarningsViaFlag()
-		flags { "FatalCompileWarnings" }
-		prepare()
-		test.capture [[
-<ClCompile>
-	<PrecompiledHeader>NotUsing</PrecompiledHeader>
-	<WarningLevel>Level3</WarningLevel>
-	<TreatWarningAsError>true</TreatWarningAsError>
-		]]
-	end
 
 
 	function suite.treatWarningsAsError_onFatalWarningsViaAPI()
@@ -738,7 +714,7 @@
 	end
 
 	function suite.runtimeTypeInfo_onNoBufferSecurityCheck()
-		flags "NoBufferSecurityCheck"
+		buffersecuritycheck "Off"
 		prepare()
 		test.capture [[
 <ClCompile>
@@ -749,6 +725,17 @@
 		]]
 	end
 
+	function suite.runtimeTypeInfo_onBufferSecurityCheck()
+		buffersecuritycheck "On"
+		prepare()
+		test.capture [[
+<ClCompile>
+	<PrecompiledHeader>NotUsing</PrecompiledHeader>
+	<WarningLevel>Level3</WarningLevel>
+	<Optimization>Disabled</Optimization>
+	<BufferSecurityCheck>true</BufferSecurityCheck>
+		]]
+	end
 
 --
 -- On Win32 builds, use the Edit-and-Continue debug information format.
@@ -880,11 +867,11 @@
 
 
 --
--- Check handling of the NoRuntimeChecks flag.
+-- Check handling of the runtimechecks API with "Off" value.
 --
 
-	function suite.onNoRuntimeChecks()
-		flags { "NoRuntimeChecks" }
+	function suite.onRuntimeChecks_Off()
+		runtimechecks "Off"
 		prepare()
 		test.capture [[
 <ClCompile>
@@ -896,11 +883,43 @@
 
 
 --
+-- Check handling of the runtimechecks API with "FastChecks" value.
+--
+
+	function suite.onRuntimeChecks_FastChecks()
+		runtimechecks "FastChecks"
+		prepare()
+		test.capture [[
+<ClCompile>
+	<PrecompiledHeader>NotUsing</PrecompiledHeader>
+	<WarningLevel>Level3</WarningLevel>
+	<BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+		]]
+	end
+
+
+--
+-- Check handling of the runtimechecks API with "Default" value.
+--
+
+	function suite.onRuntimeChecks_Default()
+		runtimechecks "Default"
+		prepare()
+		test.capture [[
+<ClCompile>
+	<PrecompiledHeader>NotUsing</PrecompiledHeader>
+	<WarningLevel>Level3</WarningLevel>
+	<Optimization>Disabled</Optimization>
+		]]
+	end
+
+
+--
 -- Check handling of the EnableMultiProcessorCompile flag.
 --
 
 	function suite.onMultiProcessorCompile()
-		flags { "MultiProcessorCompile" }
+		multiprocessorcompile "On"
 		prepare()
 		test.capture [[
 <ClCompile>
@@ -965,11 +984,11 @@
 
 
 --
--- Check handling of the OmitDefaultLibrary flag.
+-- Check handling of the nodefaultlib API.
 --
 
 	function suite.onOmitDefaultLibrary()
-		flags { "OmitDefaultLibrary" }
+		nodefaultlib "On"
 		prepare()
 		test.capture [[
 <ClCompile>
@@ -1440,6 +1459,38 @@
 	<WarningLevel>Level3</WarningLevel>
 	<Optimization>Disabled</Optimization>
 	<LanguageStandard>stdcpp23</LanguageStandard>
+	<ExternalWarningLevel>Level3</ExternalWarningLevel>
+</ClCompile>
+		]]
+	end
+
+	function suite.onLanguage_Cpp26_VS2022()
+		p.action.set("vs2022")
+
+		cppdialect 'C++26'
+		prepare()
+		test.capture [[
+<ClCompile>
+	<PrecompiledHeader>NotUsing</PrecompiledHeader>
+	<WarningLevel>Level3</WarningLevel>
+	<Optimization>Disabled</Optimization>
+	<LanguageStandard>stdcpplatest</LanguageStandard>
+	<ExternalWarningLevel>Level3</ExternalWarningLevel>
+</ClCompile>
+		]]
+	end
+
+	function suite.onLanguage_Cpp26_VS2026()
+		p.action.set("vs2026")
+
+		cppdialect 'C++26'
+		prepare()
+		test.capture [[
+<ClCompile>
+	<PrecompiledHeader>NotUsing</PrecompiledHeader>
+	<WarningLevel>Level3</WarningLevel>
+	<Optimization>Disabled</Optimization>
+	<LanguageStandard>stdcpplatest</LanguageStandard>
 	<ExternalWarningLevel>Level3</ExternalWarningLevel>
 </ClCompile>
 		]]

@@ -130,12 +130,12 @@
 
 --
 -- The assembly should not be copied to the target directory if the
--- NoCopyLocal flag has been set for the configuration.
+-- allowcopylocal has been turned off for the configuration.
 --
 
-	function suite.markedPrivate_onNoCopyLocal()
+	function suite.markedPrivate_onAllowCopyLocalOff()
 		links { "../Libraries/nunit.framework" }
-		flags { "NoCopyLocal" }
+		allowcopylocal "Off"
 		prepare()
 		test.capture [[
 	<ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -282,14 +282,14 @@ end
 
 
 --
--- NuGet packages should respect copylocal() and the NoCopyLocal flag.
+-- NuGet packages should respect copylocal() and the allowcopylocal API.
 --
 
 if http ~= nil and _OPTIONS["test-all"] then
-	function suite.nugetPackages_onNoCopyLocal()
+	function suite.nugetPackages_onAllowCopyLocalOff()
 		dotnetframework "2.0"
 		nuget { "NUnit:3.6.1" }
-		flags { "NoCopyLocal" }
+		allowcopylocal "Off"
 		prepare()
 		test.capture [[
 	<ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

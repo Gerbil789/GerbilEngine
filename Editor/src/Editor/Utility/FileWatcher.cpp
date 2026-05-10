@@ -66,20 +66,20 @@ namespace Editor
         {
         case FILE_ACTION_ADDED:
         {
-          auto e = std::make_unique<Engine::FileAddedEvent>(fullPath);
-          Engine::EventBus::Get().Publish(*e);
+          auto e = Engine::FileAddedEvent(fullPath);
+          Engine::EventBus::Get().Publish(e);
           break;
         }
         case FILE_ACTION_REMOVED:
         {
-          auto e = std::make_unique<Engine::FileRemovedEvent>(fullPath);
-          Engine::EventBus::Get().Publish(*e);
+					auto e = Engine::FileRemovedEvent(fullPath);
+          Engine::EventBus::Get().Publish(e);
           break;
         }
         case FILE_ACTION_MODIFIED:
         {
-          auto e = std::make_unique<Engine::FileModifiedEvent>(fullPath);
-          Engine::EventBus::Get().Publish(*e);
+					auto e = Engine::FileModifiedEvent(fullPath);
+          Engine::EventBus::Get().Publish(e);
           break;
         }
         /* case FILE_ACTION_RENAMED_OLD_NAME:

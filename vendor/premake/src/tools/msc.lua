@@ -64,14 +64,11 @@
 		fatalwarnings = {
 			All = "/WX"
 		},
-		flags = {
-			MultiProcessorCompile = "/MP",
-			NoMinimalRebuild = "/Gm-",
-			OmitDefaultLibrary = "/Zl"
-		},
+
 		floatingpoint = {
 			Fast = "/fp:fast",
 			Strict = "/fp:strict",
+			Precise = "/fp:precise",
 		},
 		floatingpointexceptions = {
 			On  = "/fp:except",
@@ -87,11 +84,21 @@
 			StdCall = "/Gz",
 			VectorCall = "/Gv",
 		},
+		dynamicdebugging = {
+			On = "/dynamicdeopt",
+		},
 		intrinsics = {
 			On = "/Oi",
 		},
 		linktimeoptimization = {
 			On = "/GL",
+			Fast = "/GL",
+		},
+		multiprocessorcompile = {
+			On = "/MP",
+		},
+		minimalrebuild = {
+			Off = "/Gm-",
 		},
 		optimize = {
 			Off = "/Od",
@@ -126,6 +133,9 @@
 		},
 		externalanglebrackets = {
 			On = "/external:anglebrackets",
+		},
+		nodefaultlib = {
+			On = "/Zl",
 		},
 		staticruntime = {
 			-- this option must always be emit (does it??)
@@ -208,8 +218,9 @@
 			["C++14"] = "/std:c++14",
 			["C++17"] = "/std:c++17",
 			["C++20"] = "/std:c++20",
-			["C++23"] = "/std:c++latest",
-			["C++latest"] = "/std:c++latest"
+			["C++23"] = "/std:c++23preview",
+			["C++26"] = "/std:c++latest",
+			["C++latest"] = "/std:c++latest",
 		},
 		exceptionhandling = {
 			Default = "/EHsc",
@@ -304,32 +315,45 @@
 -- Decorate include file search paths for the MSVC command line.
 --
 
-	function msc.getincludedirs(cfg, dirs, extdirs, frameworkdirs, includedirsafter)
+	function msc.getstructuredincludedirs(cfg, dirs, extdirs, frameworkdirs, includedirsafter)
 		local result = {}
 		for _, dir in ipairs(dirs) do
 			dir = p.tools.getrelative(cfg.project, dir)
-			table.insert(result, '/I' ..  p.quoted(dir))
+			table.insert(result, { flag = '/I', value = p.quoted(dir) })
 		end
 
 		for _, dir in ipairs(extdirs or {}) do
 			dir = p.tools.getrelative(cfg.project, dir)
 			if isVersionGreaterOrEqualTo(cfg.toolset, "msc-v142") then
-				table.insert(result, '/external:I' ..  p.quoted(dir))
+				table.insert(result, { flag = '/external:I', value = p.quoted(dir) })
 			else
-				table.insert(result, '/I' ..  p.quoted(dir))
+				table.insert(result, { flag = '/I', value = p.quoted(dir) })
 			end
 		end
 
 		for _, dir in ipairs(includedirsafter or {}) do
 			dir = p.tools.getrelative(cfg.project, dir)
 			if isVersionGreaterOrEqualTo(cfg.toolset, "msc-v142") then
-				table.insert(result, '/external:I' ..  p.quoted(dir))
+				table.insert(result, { flag = '/external:I', value = p.quoted(dir) })
 			else
-				table.insert(result, '/I' ..  p.quoted(dir))
+				table.insert(result, { flag = '/I', value = p.quoted(dir) })
 			end
 		end
 
 		return result
+	end
+
+
+	function msc.getincludedirs(cfg, dirs, extdirs, frameworkdirs, includedirsafter)
+		local result = msc.getstructuredincludedirs(cfg, dirs, extdirs, frameworkdirs, includedirsafter)
+		return table.flatten(table.translate(result, function(kv)
+			return kv.flag .. kv.value
+		end))
+	end
+
+
+	function msc.getstructuredimplicitincludedirs(toolname, language)
+		return {}
 	end
 
 
@@ -341,21 +365,29 @@
 		linkerfatalwarnings = {
 			All = "/WX",
 		},
-		flags = {
-			NoIncrementalLink = "/INCREMENTAL:NO",
-			NoManifest = "/MANIFEST:NO",
-			OmitDefaultLibrary = "/NODEFAULTLIB",
+		manifest = {
+			Off = "/MANIFEST:NO",
+		},
+		incrementallink = {
+			Off = "/INCREMENTAL:NO",
 		},
 		kind = {
 			SharedLib = "/DLL",
 			WindowedApp = "/SUBSYSTEM:WINDOWS"
 		},
 		linktimeoptimization = {
-			On = "/LTCG"
+			On = "/LTCG",
+			Fast = "/LTCG:incremental",
+		},
+		nodefaultlib = {
+			On = "/NODEFAULTLIB",
 		},
 		symbols = {
 			On = "/DEBUG"
-		}
+		},
+		dynamicdebugging = {
+			On = "/dynamicdeopt",
+		},
 	}
 
 	msc.librarianFlags = {
@@ -363,6 +395,10 @@
 			All = "/WX",
 		}
 	}
+
+	function msc.wholearchive(cfg)
+		return table.translate(config.getwholearchive(cfg), function(libraryname) return "/WHOLEARCHIVE:" .. libraryname end)
+	end
 
 	function msc.getldflags(cfg)
 		local map = iif(cfg.kind ~= p.STATICLIB, msc.linkerFlags, msc.librarianFlags)
@@ -394,6 +430,8 @@
 				table.insert(flags, "/PROFILE")
 			end
 		end
+
+		flags = table.join(flags, msc.wholearchive(cfg))
 
 		return flags
 	end

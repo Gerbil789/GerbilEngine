@@ -1,7 +1,7 @@
 #include "EditorContext.h"
 #include "Engine/Utility/Path.h"
 #include "Engine/Utility/Yaml.h"
-#include "Engine/Utility/File.h"
+#include "Editor/Utility/File.h"
 #include "Engine/Core/Log.h"
 #include <fstream>
 
@@ -35,7 +35,7 @@ namespace Editor
 		}
 		else
 		{
-			projectDirectory = Engine::OpenDirectory();
+			projectDirectory = OpenDirectory();
 			EditorSettings::Save();
 		}
 

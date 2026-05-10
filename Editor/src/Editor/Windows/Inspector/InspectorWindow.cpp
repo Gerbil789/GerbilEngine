@@ -15,7 +15,7 @@ namespace Editor
 
 	void InspectorWindow::Initialize()
 	{
-		SelectionManager::Subscribe([this](const std::vector<SelectionEntry>& selections) 
+		SelectionManager::Subscribe([](const std::vector<SelectionEntry>& selections) 
 			{ 
 				auto id = selections.empty() ? Engine::Uuid{ 0 } : selections.back().id;
 				if (!id) 

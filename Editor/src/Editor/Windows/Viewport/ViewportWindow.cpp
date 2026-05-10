@@ -58,7 +58,7 @@ namespace Editor
 
 		s_EntityPicker = new EditorPicker();
 
-		Engine::EventBus::Get().Subscribe<Engine::MouseButtonPressedEvent>([this](const Engine::MouseButtonPressedEvent& e)
+		Engine::EventBus::Get().Subscribe<Engine::MouseButtonPressedEvent>([](const Engine::MouseButtonPressedEvent& e)
 			{
 				if (EditorContext::state == EditorState::Play)
 				{
@@ -90,7 +90,7 @@ namespace Editor
 				}
 			});
 
-		Engine::EventBus::Get().Subscribe<Engine::KeyPressedEvent>([this](const Engine::KeyPressedEvent& e)
+		Engine::EventBus::Get().Subscribe<Engine::KeyPressedEvent>([](const Engine::KeyPressedEvent& e)
 			{
 				if (EditorContext::state == EditorState::Play)
 				{

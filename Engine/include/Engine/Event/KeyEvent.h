@@ -16,8 +16,8 @@ namespace Engine
 		inline int GetRepeatCount() const { return m_RepeatCount; }
 
 	private:
-		int m_RepeatCount;
 		int m_Key;
+		int m_RepeatCount;
 	};
 
 	class KeyReleasedEvent : public Event

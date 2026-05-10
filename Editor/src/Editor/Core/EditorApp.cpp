@@ -66,7 +66,7 @@ namespace Editor
 			Engine::SceneManager::SetActiveScene(scene);
 		}
 
-		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
+		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([](auto&) {m_Running = false; LOG_INFO("Application closed"); });
 		LOG_INFO("--- Editor initialization complete ---");
 	}
 
@@ -77,6 +77,7 @@ namespace Editor
 		EditorWindowManager::Shutdown();
 		m_Window.reset();
 		GLFW::Shutdown();
+		Engine::GraphicsContext::Shutdown();
 	}
 
 	void EditorApp::Run()

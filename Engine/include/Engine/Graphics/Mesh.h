@@ -3,6 +3,7 @@
 #include "Engine/Asset/Asset.h"
 #include <memory>
 #include <glm/glm.hpp>
+#include <vector>
 
 namespace wgpu { class Buffer; }
 

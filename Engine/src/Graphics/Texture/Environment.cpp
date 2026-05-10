@@ -5,7 +5,7 @@
 #include "Engine/Graphics/Texture/Utility.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
-#include <webgpu/webgpu-raii.hpp>
+#include <webgpu/webgpu.hpp>
 
 namespace Engine
 {

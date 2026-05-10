@@ -115,22 +115,22 @@ void PlayerController::OnEvent(const Engine::Event& event)
 	}
 }
 
-void PlayerController::OnCollisionEnter(entt::entity other)
-{
-	//LOG_INFO("Collided with entity {}", other.GetName());
-}
-
-void PlayerController::OnCollisionExit(entt::entity other)
-{
-	//LOG_INFO("Stopped colliding with entity {}", other.GetName());
-}
-
-void PlayerController::OnTriggerEnter(entt::entity other)
-{
-	//LOG_CRITICAL("Entered trigger of entity {}", other.GetName());
-}
-
-void PlayerController::OnTriggerExit(entt::entity other)
-{
-	//LOG_CRITICAL("Exited trigger of entity {}", other.GetName());
-}
+//void PlayerController::OnCollisionEnter(entt::entity other)
+//{
+//	//LOG_INFO("Collided with entity {}", other.GetName());
+//}
+//
+//void PlayerController::OnCollisionExit(entt::entity other)
+//{
+//	//LOG_INFO("Stopped colliding with entity {}", other.GetName());
+//}
+//
+//void PlayerController::OnTriggerEnter(entt::entity other)
+//{
+//	//LOG_CRITICAL("Entered trigger of entity {}", other.GetName());
+//}
+//
+//void PlayerController::OnTriggerExit(entt::entity other)
+//{
+//	//LOG_CRITICAL("Exited trigger of entity {}", other.GetName());
+//}

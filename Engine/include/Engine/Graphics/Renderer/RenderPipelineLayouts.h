@@ -1,7 +1,11 @@
 #pragma once
 
 #include "Engine/Core/API.h"
-#include <webgpu/webgpu-raii.hpp>
+#ifdef __EMSCRIPTEN__
+#include <webgpu/webgpu_cpp.h> // The official Emscripten Dawn C++ header
+#else
+#include <webgpu/webgpu.hpp>   // Your local Windows header
+#endif
 
 namespace Engine
 {

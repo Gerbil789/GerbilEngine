@@ -160,11 +160,11 @@
 
 
 --
--- Verify handling of the NoIncrementalLink flag.
+-- Verify handling of incrementallink API.
 --
 
 	function suite.onNoIncrementalLink()
-		flags { "NoIncrementalLink" }
+		incrementallink "Off"
 		prepare()
 		test.capture [[
 <Tool
@@ -232,8 +232,8 @@
 -- then be added to the list.
 --
 
-	function suite.includesSiblings_onNoImplicitLink()
-		flags { "NoImplicitLink" }
+	function suite.includesSiblings_onNoImplicitLink_ViaAPI()
+		implicitlink "Off"
 		links { "MyProject2" }
 		project ("MyProject2")
 		kind "StaticLib"

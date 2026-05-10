@@ -8,6 +8,7 @@
 #include "Engine/Graphics/Material.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
+#include <cstdio> // For std::snprintf
 
 namespace Editor
 {
@@ -496,8 +497,9 @@ namespace Editor
 	{
 		std::array<char, 256> buffer{};
 
-		std::strncpy(buffer.data(), text.c_str(), buffer.size());
-		buffer[buffer.size() - 1] = '\0'; // Ensure null-termination
+		std::snprintf(buffer.data(), buffer.size(), "%s", text.c_str());
+		//std::strncpy(buffer.data(), text.c_str(), buffer.size());
+		//buffer[buffer.size() - 1] = '\0'; // Ensure null-termination
 
 		auto formattedLabel = std::format("##{}", label);
 

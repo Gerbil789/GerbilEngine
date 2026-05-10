@@ -21,6 +21,8 @@ defines { "YAML_CPP_STATIC_DEFINE" }
 
 filter "system:windows"
   systemversion "latest"
+	toolset "clang"
+	buildoptions { "/MP", "/permissive-", "/std:c++latest" } -- MP = Enable multithreading for Visual Studio
 
 filter "configurations:Debug"
   runtime "Debug"

@@ -228,8 +228,8 @@ namespace Editor
 
 		if (!component.meshId) return;
 
-		auto materials = component.materials;
-		for (int i = 0; i < materials.size(); ++i)
+		auto materials = component.materials; //TODO: dont use index for loop?
+		for (size_t i = 0; i < materials.size(); ++i)
 		{
 			auto materialId = materials[i];
 			std::string text = "##Material";
@@ -382,14 +382,14 @@ namespace Editor
 				}
 
 				filter.Draw("##Filter", -FLT_MIN);
-				for (int n = 0; n < scriptNames.size(); n++)
+				for (size_t n = 0; n < scriptNames.size(); n++)
 				{
-					const bool is_selected = (id == n);
+					const bool is_selected = (id == static_cast<int>(n));
 					if (filter.PassFilter(scriptNames[n].c_str()))
 					{
 						if (ImGui::Selectable(scriptNames[n].c_str(), is_selected))
 						{
-							id = n;
+							id = static_cast<int>(n);
 							const Engine::ScriptDescriptor& desc = Engine::g_ScriptRegistry.GetDescriptor(scriptNames[n]);
 							component.id = desc.name;
 							component.instance = desc.factory();
@@ -513,7 +513,7 @@ namespace Editor
 			}
 			filter.Draw("##Filter", -FLT_MIN);
 
-			for (int n = 0; n < entries.size(); n++)
+			for (size_t n = 0; n < entries.size(); n++)
 			{
 				if (filter.PassFilter(entries[n].name))
 				{

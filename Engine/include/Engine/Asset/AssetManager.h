@@ -21,7 +21,7 @@ namespace Engine::AssetManager
 	ENGINE_API AssetRegistry& GetAssetRegistry();
 
 	template<typename T>
-	T& GetAsset(Uuid id)
+	T& GetAsset(Uuid)
 	{
 		static_assert(std::is_base_of_v<Asset, T>, "ERROR: Requested type does not derive from Engine::Asset!");
 		static_assert(sizeof(T) == 0, "ERROR: Asset type is valid, but missing an explicit template specialization!");

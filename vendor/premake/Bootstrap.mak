@@ -72,7 +72,7 @@ none:
 	@echo "Please do"
 	@echo "   nmake -f Bootstrap.mak windows"
 	@echo "or"
-	@echo "   CC=mingw32-gcc mingw32-make -f Bootstrap.mak mingw CONFIG=x64"
+	@echo "   CC=mingw32-gcc mingw32-make -f Bootstrap.mak mingw PLATFORM=x64"
 	@echo "or"
 	@echo "   make -f Bootstrap.mak HOST_PLATFORM"
 	@echo "where HOST_PLATFORM is one of these:"
@@ -86,7 +86,7 @@ clean:
 	@echo "Please run the same command used for building by adding a '-clean' suffix to the target name."
 	@echo "   nmake -f Bootstrap.mak windows-clean"
 	@echo "or"
-	@echo "   CC=mingw32-gcc mingw32-make -f Bootstrap.mak mingw-clean CONFIG=x64"
+	@echo "   CC=mingw32-gcc mingw32-make -f Bootstrap.mak mingw-clean PLATFORM=x64"
 	@echo "or"
 	@echo "   make -f Bootstrap.mak HOST_PLATFORM-clean"
 	@echo "where HOST_PLATFORM is one of these:"
@@ -106,9 +106,9 @@ mingw-clean: nix-clean
 
 mingw: mingw-clean
 	mkdir -p build/bootstrap
-	$(CC) -o build/bootstrap/premake_bootstrap -DPREMAKE_NO_BUILTIN_SCRIPTS -DLUA_STATICLIB -I"$(LUA_DIR)" -I"$(LUASHIM_DIR)" $(SRC) -lole32 -lversion
+	$(CC) -o build/bootstrap/premake_bootstrap -DPREMAKE_NO_BUILTIN_SCRIPTS -DLUA_STATICLIB -DUNICODE -D_UNICODE -municode -I"$(LUA_DIR)" -I"$(LUASHIM_DIR)" $(SRC) -lole32 -lversion
 	./build/bootstrap/premake_bootstrap embed
-	./build/bootstrap/premake_bootstrap --arch=$(PLATFORM) --os=windows --to=build/bootstrap --cc=mingw $(PREMAKE_OPTS) gmake
+	./build/bootstrap/premake_bootstrap --arch=$(PLATFORM) --os=windows --to=build/bootstrap --cc=gcc $(PREMAKE_OPTS) gmake
 	$(MAKE) -C build/bootstrap -j`getconf _NPROCESSORS_ONLN` config=$(CONFIG)_$(PLATFORM:x86=win32)
 
 macosx: osx
@@ -162,7 +162,7 @@ haiku: haiku-clean
 
 windows-base: windows-clean
 	if not exist build\bootstrap (mkdir build\bootstrap)
-	cl /Fo.\build\bootstrap\ /Fe.\build\bootstrap\premake_bootstrap.exe /DPREMAKE_NO_BUILTIN_SCRIPTS /DLUA_STATICLIB /I"$(LUA_DIR)" /I"$(LUASHIM_DIR)" user32.lib ole32.lib advapi32.lib $(SRC)
+	cl /Fo.\build\bootstrap\ /Fe.\build\bootstrap\premake_bootstrap.exe /DPREMAKE_NO_BUILTIN_SCRIPTS /DLUA_STATICLIB /DUNICODE /D_UNICODE /I"$(LUA_DIR)" /I"$(LUASHIM_DIR)" user32.lib ole32.lib advapi32.lib $(SRC)
 	.\build\bootstrap\premake_bootstrap.exe embed
 	.\build\bootstrap\premake_bootstrap --arch=$(PLATFORM) --to=build/bootstrap $(PREMAKE_OPTS) $(MSDEV)
 
