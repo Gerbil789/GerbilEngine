@@ -2,6 +2,7 @@
 #include "Engine/Graphics/Texture/Utility.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
+#include <bit>
 
 namespace Engine
 {

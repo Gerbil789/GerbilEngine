@@ -7,12 +7,6 @@ newoption
 
 project (_OPTIONS["project_name"] or "Template")
 kind "ConsoleApp"
-language "C++"
-cppdialect "C++23"
-staticruntime "off"
-conformancemode "On"
-externalwarnings "Off"
-warnings "Extra"
 
 files
 {
@@ -67,13 +61,21 @@ filter "system:windows"
 	}
 	defines 
 	{ 
-		--"_HAS_CXX23=1",
 		"ENGINE_PLATFORM_WINDOWS",
 		"GLFW_INCLUDE_NONE",
 		"YAML_CPP_STATIC_DEFINE",
 		"GLM_ENABLE_EXPERIMENTAL",
 		"NOMINMAX", -- prevent windows.h from defining min and max macros
 	}
+
+filter "system:linux"
+  pic "On" -- Position Independent Code: STRICTLY REQUIRED for .so shared libraries on Linux
+  systemversion "latest"
+
+	defines
+  {
+    "ENGINE_PLATFORM_LINUX",
+  }
 
 filter { "platforms:Web" }
   -- Trick Premake into generating GCC/Clang compatible Makefiles

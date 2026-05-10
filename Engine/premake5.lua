@@ -1,12 +1,5 @@
 project "Engine"
 kind "SharedLib"
-language "C++"
-cppdialect "C++23"
-staticruntime "off"
-conformancemode "On"
-externalwarnings "Off"
-warnings "Extra"
--- fatalwarnings { "All" }
 
 pchheader "enginepch.h"
 pchsource "src/enginepch.cpp"
@@ -52,39 +45,60 @@ libdirs
 	"%{wks.location}/vendor/dawn"
 }
 
-postbuildmessage "Copying Engine.dll to Editor directory"
+defines
+{
+	"GLFW_INCLUDE_NONE",
+	"YAML_CPP_STATIC_DEFINE",
+	"GLM_ENABLE_EXPERIMENTAL",
+	"NOMINMAX",
+}
 
 filter "system:windows"
 	systemversion "latest"
 	buildoptions { "/permissive-", "/std:c++latest"}
 	defines
 	{
-		"_HAS_CXX23=1",
+		--"_HAS_CXX23=1",
 		"ENGINE_PLATFORM_WINDOWS",
+		"ENGINE_BUILD_SHARED",
 		"IMGUI_IMPL_WEBGPU_BACKEND_DAWN",
-		"GLFW_INCLUDE_NONE",
-		"YAML_CPP_STATIC_DEFINE",
-		"GLM_ENABLE_EXPERIMENTAL",
-		"NOMINMAX", -- prevent windows.h from defining min and max macros
-		"ENGINE_BUILD_DLL"
+		"NOMINMAX",
 	}
 
+filter "system:linux"
+	-- kind "StaticLib"
+  pic "On" -- Position Independent Code: STRICTLY REQUIRED for .so shared libraries on Linux
+  systemversion "latest"
+  buildoptions { "-Wno-invalid-offsetof" } 
+  
+  defines
+  {
+    "ENGINE_PLATFORM_LINUX",
+  }
+  
+	links 
+	{ 
+		"pthread", 
+		"dl", 
+		"X11", 
+		"Xrandr", 
+		"Xi", 
+		"Xcursor" 
+	}
 
 filter { "platforms:Web" }
-  -- Trick Premake into generating GCC/Clang compatible Makefiles
   system "linux" 
 	kind "StaticLib"
   
-  -- Change the output file to an HTML page (Emscripten will generate the .wasm and .js alongside it)
   targetextension ".html"
-  -- Emscripten Compiler Flags
+
   buildoptions 
 	{
       -- "-s USE_GLFW=3",        -- Use Emscripten's built-in GLFW3 port
       "--use-port=emdawnwebgpu",      -- Enable native browser WebGPU headers
       "-pthread"              -- Only if you plan to keep std::thread, otherwise remove
 	}
-  -- Emscripten Linker Flags
+
   linkoptions 
 	{
       "-s USE_GLFW=3",
@@ -95,11 +109,11 @@ filter { "platforms:Web" }
       "--preload-file ../assets@/assets" -- Mount your local assets folder to the browser's virtual file system
 	}
 
-  removefiles { 
+  removefiles 
+	{ 
       "src/vendor/dawn/**.cpp", -- Adjust to your actual Dawn source paths
       "src/vendor/dawn/**.c" 
   }
-
 
 	removeexternalincludedirs 
 	{ 
@@ -123,8 +137,7 @@ filter { "platforms:Web" }
 	}
 
 
-
-filter "configurations:Debug"
+	filter "configurations:Debug"
 	defines { "DEBUG" }
 	symbols "on"
 	runtime "Debug"

@@ -37,7 +37,7 @@ template <>
 struct std::formatter<std::filesystem::path, char>
 	: std::formatter<std::string_view, char>
 {
-	auto format(const std::filesystem::path& p, format_context& ctx) const
+	auto format(const std::filesystem::path& p, auto& ctx) const
 	{
 		return std::formatter<std::string_view, char>::format(p.string(), ctx);
 	}
@@ -47,7 +47,7 @@ template <>
 struct std::formatter<Engine::Uuid, char>
 	: std::formatter<uint64_t, char>
 {
-	auto format(const Engine::Uuid& uuid, format_context& ctx) const
+	auto format(const Engine::Uuid& uuid, auto& ctx) const
 	{
 		return std::formatter<uint64_t, char>::format(
 			static_cast<uint64_t>(uuid), ctx);

@@ -1,6 +1,9 @@
 #include "enginepch.h"
 #include "Engine/Debug/RenderDoc.h"
 #include "Engine/Utility/Path.h"
+
+#ifdef ENGINE_PLATFORM_WINDOWS
+
 #include "Engine/Core/Log.h"
 #include <renderdoc_app.h>
 
@@ -60,3 +63,20 @@ namespace RenderDoc
 		}
 	}
 }
+
+#else
+
+// --- Linux & Web Stub Implementations ---
+namespace RenderDoc
+{
+	void Initialize()
+	{
+		// RenderDoc is intentionally excluded on this platform.
+	}
+
+	void StartFrameCapture() {}
+
+	void EndFrameCapture() {}
+}
+
+#endif

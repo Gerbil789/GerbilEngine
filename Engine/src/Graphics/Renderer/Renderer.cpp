@@ -14,7 +14,6 @@
 #include "Engine/Graphics/Texture/Environment.h"
 #include "Engine/Core/Resources.h"
 #include "Engine/Asset/AssetManager.h"
-#include <execution>
 #include <glm/gtx/quaternion.hpp>
 
 namespace Engine
@@ -243,7 +242,7 @@ namespace Engine
 
 		std::vector<glm::mat4> models(m_RenderContext.drawList.size());
 
-		std::for_each(std::execution::par, m_RenderContext.drawList.begin(), m_RenderContext.drawList.end(), [&](const DrawItem& item)
+		std::for_each(m_RenderContext.drawList.begin(), m_RenderContext.drawList.end(), [&](const DrawItem& item)
 			{
 				models[item.modelIndex] = registry.get<TransformComponent>(item.entity).worldMatrix;
 			});

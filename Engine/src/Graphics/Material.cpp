@@ -234,7 +234,7 @@ namespace Engine::Materials
 		if (!s_DefaultMaterial)
 		{
 			MaterialSpecification spec;
-			spec.shader = ShaderImporter::LoadShader("Resources/Engine/Shaders/flat.wgsl").value();
+			spec.shader = ShaderImporter::LoadShader("Resources/Engine/shaders/flat.wgsl").value();
 			s_DefaultMaterial = new Material(spec);
 			s_DefaultMaterial->SetVec4("color", glm::vec4{ 1.0f, 0.0f, 1.0f, 1.0f });
 		}

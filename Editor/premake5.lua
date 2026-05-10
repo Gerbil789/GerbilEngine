@@ -1,12 +1,6 @@
 project "Editor"
 kind "ConsoleApp"
-language "C++"
-cppdialect "C++23"
-staticruntime "off"
-conformancemode "On"
-externalwarnings "Off"
-warnings "Extra"
--- fatalwarnings { "All" }
+removeplatforms { "Linux", "Web" }
 
 files
 {
@@ -31,8 +25,6 @@ externalincludedirs
 	"%{wks.location}/vendor/yaml-cpp/include",
 	"%{wks.location}/vendor/renderdoc"
 }
-
-
 
 links
 {

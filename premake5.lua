@@ -9,24 +9,30 @@ function LinkEngine()
       "{COPYFILE} %{wks.location}/bin/" .. outputdir .. "/glfw/glfw.dll %{cfg.targetdir}",
       "{COPYFILE} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
     }
-  filter {} -- Reset the filter so it doesn't break subsequent setup
+
+  filter {} -- reset filter
 end
 
 workspace "GerbilEngine"
 architecture "x64"
 startproject "Editor"
-
+toolset "clang"
 configurations { "Debug", "Release" }
-platforms { "Windows", "Web" }
+platforms { "Windows", "Linux", "Web" }
+
+language "C++"
+cppdialect "C++23"
+staticruntime "off"
+conformancemode "On"
+externalwarnings "Off"
+warnings "Extra"
 
 filter "action:vs*"
-  removeplatforms { "Web" }
-filter { "platforms:Windows" }
-	toolset "clang"
-filter { "platforms:Web" }
-	toolset "clang"
-filter {} -- Reset filter
-
+  removeplatforms { "Web", "Linux" }
+filter "system:linux"
+  buildoptions { "-stdlib=libc++" }
+  linkoptions  { "-stdlib=libc++" }
+filter {} -- reset filter
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 targetdir ("bin/" .. outputdir .. "/%{prj.name}")

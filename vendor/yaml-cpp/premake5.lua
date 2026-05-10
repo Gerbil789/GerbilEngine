@@ -1,8 +1,5 @@
 project "yaml-cpp"
 kind "StaticLib"
-language "C++"
-cppdialect "C++23"
-staticruntime "off"
 warnings "Off"
 
 files
@@ -17,12 +14,14 @@ includedirs
 }
 
 defines { "YAML_CPP_STATIC_DEFINE" }
--- defines { "yaml_cpp_EXPORTS" }
 
 filter "system:windows"
   systemversion "latest"
-	toolset "clang"
-	buildoptions { "/MP", "/permissive-", "/std:c++latest" } -- MP = Enable multithreading for Visual Studio
+  buildoptions {"/permissive-", "/std:c++latest" }
+
+filter "system:linux"
+  pic "On"
+  systemversion "latest"
 
 filter "configurations:Debug"
   runtime "Debug"

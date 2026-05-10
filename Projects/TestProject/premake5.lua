@@ -1,12 +1,5 @@
 project "TestProject"
 kind "SharedLib"
-language "C++"
-cppdialect "C++23"
-staticruntime "off"
-conformancemode "On"
-externalwarnings "Off"
-warnings "Extra"
--- fatalwarnings { "All" }
 
 targetdir ("%{prj.location}/bin/%{cfg.system}/%{cfg.buildcfg}")
 objdir ("%{prj.location}/bin-int/%{cfg.system}/%{cfg.buildcfg}")
@@ -36,11 +29,6 @@ links
 	"Engine",
 }
 
-libdirs 
-{
-	--"%{wks.location}/vendor/dawn"
-}
-
 postbuildcommands 
 {
 	"{COPYFILE} %{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Engine/Engine.dll %{cfg.targetdir}"
@@ -54,13 +42,21 @@ filter "system:windows"
 		"/std:c++latest", 
 		"-Wno-invalid-offsetof", 
 	}
+
 	defines
 	{
-		-- "_HAS_CXX23=1",
 		"ENGINE_PLATFORM_WINDOWS",
 		"GLFW_INCLUDE_NONE",
 		"GAME_BUILD_DLL"
 	}
+
+filter "system:linux"
+  pic "On"
+
+	defines
+  {
+    "ENGINE_PLATFORM_LINUX",
+  }
 
 filter "configurations:Debug"
 	defines { "DEBUG" }

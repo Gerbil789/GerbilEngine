@@ -16,10 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up MSVC
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
 
       - name: Build Premake
         run: .\Scripts\build_premake.bat
@@ -29,4 +27,4 @@ jobs:
       
       - name: Build project
         run: |
-          msbuild /p:Configuration=${{ matrix.configuration }} /p:Platform=x64 GerbilEngine.sln
+          msbuild /p:Configuration=${{ matrix.configuration }} /p:Platform=Windows GerbilEngine.sln

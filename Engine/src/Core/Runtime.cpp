@@ -13,7 +13,15 @@
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Event/Event.h"
 
+#ifdef ENGINE_PLATFORM_WINDOWS
 #include <Windows.h>
+#elif defined(ENGINE_PLATFORM_LINUX)
+#include <dlfcn.h> // POSIX dynamic loading (dlopen, dlsym)
+#endif
+
+#ifndef ENGINE_BUILD_SHARED
+extern "C" void RegisterScripts(Engine::ScriptRegistry&);
+#endif
 
 namespace Engine
 {
@@ -22,28 +30,50 @@ namespace Engine
 		Engine::EventToken m_Token;
 	}
 
-	void Runtime::LoadScripts(const std::filesystem::path& dllPath)
+	void Runtime::LoadScripts([[maybe_unused]] const std::filesystem::path& dllPath)
 	{
+#ifdef ENGINE_BUILD_SHARED
+		// ==========================================
+		// DYNAMIC LINKING (Windows Editor / DLL mode)
+		// ==========================================
 		if (!std::filesystem::exists(dllPath))
 		{
-			throw std::runtime_error("DLL path does not exist: " + dllPath.string());
+			throw std::runtime_error("Script library path does not exist: " + dllPath.string());
 		}
 
+		using GameRegisterScriptsFn = void(*)(Engine::ScriptRegistry&);
+		GameRegisterScriptsFn Game_Register_Fn = nullptr;
+
+#ifdef ENGINE_PLATFORM_WINDOWS
 		HMODULE gameModule = LoadLibraryA(dllPath.string().c_str());
-		if (!gameModule)
-		{
-			throw std::runtime_error("Failed to load DLL scripts");
-		}
+		if (!gameModule) throw std::runtime_error("Failed to load Windows DLL scripts");
 
-		using GameRegisterScriptsFn = int(*)(Engine::ScriptRegistry&);
-		auto Game_Register_Fn = reinterpret_cast<GameRegisterScriptsFn>(reinterpret_cast<void*>(GetProcAddress(gameModule, "RegisterScripts")));
+		Game_Register_Fn = reinterpret_cast<GameRegisterScriptsFn>(reinterpret_cast<void*>(GetProcAddress(gameModule, "RegisterScripts")));
+
+#elif defined(ENGINE_PLATFORM_LINUX)
+		// We include this just in case you ever decide to make a Linux Editor!
+		void* gameModule = dlopen(dllPath.string().c_str(), RTLD_NOW | RTLD_LOCAL);
+		if (!gameModule) throw std::runtime_error(std::string("Failed to load Linux .so scripts: ") + dlerror());
+
+		Game_Register_Fn = reinterpret_cast<GameRegisterScriptsFn>(reinterpret_cast<void*>(dlsym(gameModule, "RegisterScripts")));
+#endif
 
 		if (!Game_Register_Fn)
 		{
-			throw std::runtime_error("Failed to load RegisterScripts function from scripts dll");
+			throw std::runtime_error("Failed to load RegisterScripts function from scripts library");
 		}
 
 		Game_Register_Fn(Engine::g_ScriptRegistry);
+
+#else
+		// ==========================================
+		// STATIC LINKING (Final Linux Export mode)
+		// ==========================================
+		LOG_INFO("Static build detected. Ignoring dynamic path and calling linked RegisterScripts directly.");
+
+		// Because the game is statically linked, RegisterScripts is already in memory!
+		RegisterScripts(Engine::g_ScriptRegistry);
+#endif
 
 		auto scripts = Engine::g_ScriptRegistry.GetAllDescriptors();
 
