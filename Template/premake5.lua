@@ -7,6 +7,7 @@ newoption
 
 project (_OPTIONS["project_name"] or "Template")
 kind "ConsoleApp"
+systemversion "latest"
 
 files
 {
@@ -26,22 +27,28 @@ externalincludedirs
 	"%{wks.location}/vendor/glfw/include",
 	"%{wks.location}/vendor/glm",
 	"%{wks.location}/vendor/entt/include",
-	"%{wks.location}/vendor/yaml-cpp/include",
+	"%{wks.location}/vendor/glaze/include",
 }
 
 
-links
-{
-	"Engine",
-	"glfw",
-	"yaml-cpp",
-	"webgpu_dawn"
-}
+
+-- links
+-- {
+-- 	"glfw",
+-- 	"webgpu_dawn"
+-- }
 
 libdirs 
 {
 	"%{wks.location}/vendor/dawn"
 }
+
+defines 
+{ 
+	"GLFW_INCLUDE_NONE",
+	"GLM_ENABLE_EXPERIMENTAL",
+}
+
 
 postbuildcommands 
 {
@@ -50,32 +57,56 @@ postbuildcommands
 	"{COPYDIR} %{wks.location}/Resources %{cfg.targetdir}/Resources",
 }
 
-LinkEngine() -- This pulls in the links, includes, and DLL copy commands
+
+LinkEngine()
 
 filter "system:windows"
-	systemversion "latest"
 	buildoptions 
 	{ 
 		"/permissive-", 
 		"/std:c++latest",
 	}
+
 	defines 
 	{ 
 		"ENGINE_PLATFORM_WINDOWS",
-		"GLFW_INCLUDE_NONE",
-		"YAML_CPP_STATIC_DEFINE",
-		"GLM_ENABLE_EXPERIMENTAL",
-		"NOMINMAX", -- prevent windows.h from defining min and max macros
+		"NOMINMAX",
+	}
+
+	links
+	{
+		"glfw",
+		"webgpu_dawn"
 	}
 
 filter "system:linux"
-  pic "On" -- Position Independent Code: STRICTLY REQUIRED for .so shared libraries on Linux
-  systemversion "latest"
+  pic "On"
+
+	buildoptions 
+	{ 
+		"-stdlib=libc++" 
+	}
+
+  linkoptions 
+	{ 
+		"-fuse-ld=lld",
+		"-stdlib=libc++",
+	}
 
 	defines
   {
     "ENGINE_PLATFORM_LINUX",
   }
+
+	links 
+	{ 
+		"pthread", 
+		"dl", 
+		"X11", 
+		"Xrandr", 
+		"Xi", 
+		"Xcursor" 
+	}
 
 filter { "platforms:Web" }
   -- Trick Premake into generating GCC/Clang compatible Makefiles

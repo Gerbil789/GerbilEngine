@@ -1,13 +1,56 @@
 #include "enginepch.h"
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Core/Project.h"
-#include <yaml-cpp/yaml.h>
+#include <glaze/glaze.hpp>
 #include <fstream>
 
 //TODO: also keep track of directories
 
+template <>
+struct glz::meta<Engine::AssetType> {
+	using enum Engine::AssetType;
+	static constexpr auto value = enumerate(
+		"Unknown", Unknown,
+		"Texture", Texture2D,
+		"Mesh", Mesh,
+		"Shader", Shader,
+		"Material", Material,
+		"Audio", Audio,
+		"Scene", Scene,
+		"Script", Script,
+		"Other", Other,
+		"Directory", Directory,
+		"EmptyDirectory", EmptyDirectory
+	);
+};
+
+// Assuming Uuid contains a uint64_t. We tell Glaze to treat Uuid as its underlying integer.
+template <>
+struct glz::meta<Engine::Uuid> {
+	static constexpr auto value = [](auto& self) -> auto& {
+		// Cast to uint64_t reference. Adjust this if your Uuid internal member is named differently!
+		return reinterpret_cast<uint64_t&>(self);
+		};
+};
+
+template <>
+struct glz::meta<Engine::AssetRecord> {
+	using T = Engine::AssetRecord;
+	static constexpr auto value = object(
+		"ID", &T::id,
+		"Path", &T::path, // Glaze supports std::filesystem::path natively!
+		"Type", &T::type
+	);
+};
+
 namespace Engine
 {
+	// A tiny wrapper just for the root JSON object
+	struct RegistryFile 
+	{
+		std::vector<AssetRecord> Assets;
+	};
+
 	void AssetRegistry::Load(const std::filesystem::path& path) //TODO: split into functions (load from file, scan directory, ...) and make better logs
 	{
 		if (!std::filesystem::exists(path))
@@ -16,54 +59,33 @@ namespace Engine
 			return;
 		}
 
-		YAML::Node data = YAML::LoadFile(path.string());
-		if (!data["Assets"])
-		{
+
+		// 1. Parse directly into our wrapper struct
+		RegistryFile fileData;
+		std::string buffer; // <--- ADD THIS: The memory buffer Glaze will use
+
+		// Pass the buffer as the 3rd argument
+		auto ec = glz::read_file_json(fileData, path.string(), buffer);
+
+		if (ec) {
+			LOG_ERROR("Registry Load Error: {}", glz::format_error(ec, buffer)); // Bonus: passing the buffer here gives you the exact line/character of the error!
 			return;
 		}
-
 		auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
 		m_Records.clear();
 
-		for (const auto& entry : data["Assets"])
+		// 2. Process the loaded assets
+		for (auto& record : fileData.Assets)
 		{
-			AssetRecord record;
-			record.id = entry["ID"].as<uint64_t>();
-			std::filesystem::path relativePath = entry["Path"].as<std::string>();
-			record.path = assetsDir / relativePath;
-			record.type = AssetTypeFromString(entry["Type"].as<std::string>());
+			record.path = assetsDir / record.path;
 
-			if (record.type == AssetType::Other)
-			{
-				continue; // Skip 'Other' types like .txt, .md, etc.
-			}
-
-			if (!std::filesystem::exists(record.path))
-			{
-				LOG_WARNING("Asset '{}' not found on disk, skipping.", record.path);
+			if (record.type == AssetType::Other || !std::filesystem::exists(record.path))
 				continue;
-			}
-
-			//check for duplicate paths
-			bool duplicate = false;
-			for (const auto& [id, existingRecord] : m_Records)
-			{
-				if (existingRecord.path == record.path)
-				{
-					LOG_WARNING("Duplicate asset path '{}' found in registry, skipping.", record.path);
-					duplicate = true;
-					break;
-				}
-			}
-
-			if (duplicate)
-			{
-				continue;
-			}
 
 			m_Records[record.id] = std::move(record);
 		}
 
+		// 3. Scan disk for new assets
 		for (auto& file : std::filesystem::recursive_directory_iterator(assetsDir))
 		{
 			if (!file.is_regular_file() || file.is_directory())
@@ -115,34 +137,26 @@ namespace Engine
 
 	void AssetRegistry::Save(const std::filesystem::path& path)
 	{
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "Assets" << YAML::Value << YAML::BeginSeq;
-
 		auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
 
-		for (const auto& [uuid, record] : m_Records)
+		RegistryFile outData;
+		outData.Assets.reserve(m_Records.size());
+
+		for (const auto& [id, record] : m_Records)
 		{
-			std::filesystem::path relativePath = std::filesystem::relative(record.path, assetsDir);
-
-			if (relativePath.empty())
-			{
-				LOG_WARNING("Asset '{}' is outside of the assets directory, skipping.", record.path);
-				continue;
-			}
-
-			out << YAML::BeginMap;
-			out << YAML::Key << "ID" << YAML::Value << (uint64_t)record.id;
-			out << YAML::Key << "Path" << YAML::Value << relativePath.string();
-			out << YAML::Key << "Type" << YAML::Value << AssetTypeToString(record.type);
-			out << YAML::EndMap;
+			AssetRecord diskCopy = record;
+			// Convert to relative path for storage
+			diskCopy.path = std::filesystem::relative(record.path, assetsDir);
+			outData.Assets.push_back(std::move(diskCopy));
 		}
 
-		out << YAML::EndSeq;
-		out << YAML::EndMap;
+		std::string buffer;
+		// Write the wrapper struct to disk
+		auto ec = glz::write_file_json(outData, path.string(), buffer);
 
-		std::ofstream fout(path);
-		fout << out.c_str();
+		if (ec) {
+			LOG_ERROR("Failed to save registry: {}", glz::format_error(ec));
+		}
 	}
 
 
@@ -162,7 +176,7 @@ namespace Engine
 		auto id = Uuid(); // generate new UUID
 		auto [it, inserted] = m_Records.try_emplace(id, AssetRecord{id, assetsDir / path, GetAssetTypeFromExtension(path.extension().string())});
 
-		Save(Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.yaml");
+		Save(Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.json");
 		LOG_TRACE("Added asset '{}' to registry.", path);
 		return &it->second;
 	}

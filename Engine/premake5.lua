@@ -1,6 +1,6 @@
 project "Engine"
 kind "SharedLib"
-
+systemversion "latest"
 pchheader "enginepch.h"
 pchsource "src/enginepch.cpp"
 
@@ -14,8 +14,8 @@ files
 
 includedirs
 {
-	"include",	-- public headers
-	"src"				-- private headers
+	"include",
+	"src",
 }
 
 externalincludedirs
@@ -26,7 +26,7 @@ externalincludedirs
 	"%{wks.location}/vendor/entt/include",
 	"%{wks.location}/vendor/imgui",
 	"%{wks.location}/vendor/tinygltf",
-	"%{wks.location}/vendor/yaml-cpp/include",
+	"%{wks.location}/vendor/glaze/include",
 	"%{wks.location}/vendor/miniaudio",
 	"%{wks.location}/vendor/renderdoc"
 }
@@ -36,8 +36,7 @@ links
 	"glfw",
 	"ImGui",
 	"webgpu_dawn",
-	"yaml-cpp",
-	"miniaudio"
+	"miniaudio",
 }
 
 libdirs 
@@ -48,17 +47,18 @@ libdirs
 defines
 {
 	"GLFW_INCLUDE_NONE",
-	"YAML_CPP_STATIC_DEFINE",
 	"GLM_ENABLE_EXPERIMENTAL",
-	"NOMINMAX",
 }
 
 filter "system:windows"
-	systemversion "latest"
-	buildoptions { "/permissive-", "/std:c++latest"}
+	buildoptions 
+	{ 
+		"/permissive-",
+		"/std:c++latest",
+	}
+
 	defines
 	{
-		--"_HAS_CXX23=1",
 		"ENGINE_PLATFORM_WINDOWS",
 		"ENGINE_BUILD_SHARED",
 		"IMGUI_IMPL_WEBGPU_BACKEND_DAWN",
@@ -66,11 +66,21 @@ filter "system:windows"
 	}
 
 filter "system:linux"
-	-- kind "StaticLib"
-  pic "On" -- Position Independent Code: STRICTLY REQUIRED for .so shared libraries on Linux
-  systemversion "latest"
-  buildoptions { "-Wno-invalid-offsetof" } 
-  
+	kind "StaticLib"
+  pic "On"
+
+	buildoptions 
+	{ 
+		"-Wno-invalid-offsetof",
+		"-stdlib=libc++",
+	}
+
+  linkoptions 
+	{ 
+		"-fuse-ld=lld",
+		"-stdlib=libc++",
+	}
+
   defines
   {
     "ENGINE_PLATFORM_LINUX",

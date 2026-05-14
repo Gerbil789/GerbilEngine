@@ -1,4 +1,7 @@
+
+#ifdef ENGINE_PLATFORM_WINDOWS
 #define WEBGPU_CPP_IMPLEMENTATION
+#endif
 #include "TemplateApp.h"
 #include "Engine/Core/Time.h"
 #include "Engine/Utility/File.h"

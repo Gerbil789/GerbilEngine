@@ -1,177 +1,209 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Utility/Yaml.h"
+#include <glaze/glaze.hpp>
+#include <fstream>
 
 namespace Engine
 {
-	void SerializeUniformBuffer(YAML::Emitter& out, const Binding& binding, const std::vector<std::byte>& data)
+	// =========================================================================
+	// GLAZE DATA TRANSFER OBJECTS (DTOs)
+	// =========================================================================
+
+	struct MaterialSamplerJSON
 	{
-		for (const auto& param : binding.parameters)
-		{
-			if (!param.name.empty() && param.name[0] == '_') // skip padding parameters
-			{
-				continue;
-			}
+		uint32_t Filter = 0;
+		uint32_t Wrap = 0;
+	};
 
-			switch (param.type)
-			{
-			case ShaderValueType::Float:
-			{
-				float value;
-				std::memcpy(&value, data.data() + param.offset, sizeof(float));
-				Engine::Yaml::Write(out, param.name, value);
-				break;
-			}
-			case ShaderValueType::Vec2:
-			{
-				glm::vec2 value;
-				std::memcpy(&value, data.data() + param.offset, sizeof(glm::vec2));
-				Engine::Yaml::Write(out, param.name, value);
-				break;
-			}
-			case ShaderValueType::Vec3:
-			{
-				glm::vec3 value;
-				std::memcpy(&value, data.data() + param.offset, sizeof(glm::vec3));
-				Engine::Yaml::Write(out, param.name, value);
-				break;
-			}
-			case ShaderValueType::Vec4:
-			{
-				glm::vec4 value;
-				std::memcpy(&value, data.data() + param.offset, sizeof(glm::vec4));
-				Engine::Yaml::Write(out, param.name, value);
-				break;
-			}
-			default:
-				LOG_ERROR("MaterialSerializer::Serialize - Unsupported uniform type for parameter '{}'", param.name);
-			}
-		}
-	}
+	struct MaterialJSON
+	{
+		uint64_t Shader = 0;
+		MaterialSamplerJSON Sampler;
 
+		// glz::json_t acts like YAML::Node, allowing us to store floats, or arrays of floats dynamically
+		std::map<std::string, glz::json_t> Attributes;
+		std::map<std::string, uint64_t> Textures;
+	};
+}
+
+// =========================================================================
+// GLAZE METADATA
+// =========================================================================
+
+template <>
+struct glz::meta<Engine::MaterialSamplerJSON> {
+	using T = Engine::MaterialSamplerJSON;
+	static constexpr auto value = object(
+		"Filter", &T::Filter,
+		"Wrap", &T::Wrap
+	);
+};
+
+template <>
+struct glz::meta<Engine::MaterialJSON> {
+	using T = Engine::MaterialJSON;
+	static constexpr auto value = object(
+		"Shader", &T::Shader,
+		"Sampler", &T::Sampler,
+		"Attributes", &T::Attributes,
+		"Textures", &T::Textures
+	);
+};
+
+namespace Engine
+{
 	void MaterialSerializer::Serialize(const Material& material, const std::filesystem::path& path)
 	{
 		auto shader = material.GetShader();
-		auto shaderSpec = shader.GetSpecification(); 
+		auto shaderSpec = shader.GetSpecification();
 		auto materialBindings = GetMaterialBindings(shaderSpec);
+		const auto& uniformData = material.GetUniformData();
 
-		YAML::Emitter out;
+		MaterialJSON outData;
+		outData.Shader = (uint64_t)shader.id;
+		outData.Sampler.Filter = (uint32_t)material.GetTextureFilter();
+		outData.Sampler.Wrap = (uint32_t)material.GetTextureWrap();
+
+		for (const Binding& binding : materialBindings)
 		{
-			Yaml::Map root(out);
-
-			Yaml::Write(out, "Shader", shader.id);
-
-			// Sampler
-			out << YAML::Key << "Sampler" << YAML::Value;
+			if (binding.type == BindingType::UniformBuffer)
 			{
-				Yaml::Map sampler(out);
-				Yaml::Write(out, "Filter", (uint32_t)material.GetTextureFilter());
-				Yaml::Write(out, "Wrap", (uint32_t)material.GetTextureWrap());
-			}
-
-			// Attributes
-			out << YAML::Key << "Attributes" << YAML::Value;
-			{
-				Engine::Yaml::Map attrs(out);
-				for (const Binding& binding : materialBindings)
+				for (const auto& param : binding.parameters)
 				{
-					if (binding.type == BindingType::UniformBuffer)
-						SerializeUniformBuffer(out, binding, material.GetUniformData());
+					if (!param.name.empty() && param.name[0] == '_') // skip padding parameters
+						continue;
+
+					switch (param.type)
+					{
+					case ShaderValueType::Float:
+					{
+						float value;
+						std::memcpy(&value, uniformData.data() + param.offset, sizeof(float));
+						outData.Attributes[param.name] = value;
+						break;
+					}
+					case ShaderValueType::Vec2:
+					{
+						glm::vec2 value;
+						std::memcpy(&value, uniformData.data() + param.offset, sizeof(glm::vec2));
+						outData.Attributes[param.name] = std::vector<float>{ value.x, value.y };
+						break;
+					}
+					case ShaderValueType::Vec3:
+					{
+						glm::vec3 value;
+						std::memcpy(&value, uniformData.data() + param.offset, sizeof(glm::vec3));
+						outData.Attributes[param.name] = std::vector<float>{ value.x, value.y, value.z };
+						break;
+					}
+					case ShaderValueType::Vec4:
+					{
+						glm::vec4 value;
+						std::memcpy(&value, uniformData.data() + param.offset, sizeof(glm::vec4));
+						outData.Attributes[param.name] = std::vector<float>{ value.x, value.y, value.z, value.w };
+						break;
+					}
+					default:
+						LOG_ERROR("MaterialSerializer::Serialize - Unsupported uniform type for parameter '{}'", param.name);
+					}
 				}
 			}
-
-			// Textures
-			out << YAML::Key << "Textures" << YAML::Value;
+			else if (binding.type == BindingType::Texture2D)
 			{
-				Engine::Yaml::Map textures(out);
-				for (const Binding& binding : materialBindings)
+				auto texture = material.GetTexture(binding.name);
+				if (texture && texture->id)
 				{
-					if (binding.type != BindingType::Texture2D) continue;
-
-					auto texture = material.GetTexture(binding.name);
-					if(texture->id)
-					{
-						Engine::Yaml::Write(out, binding.name, texture->id);
-					}
-
+					outData.Textures[binding.name] = (uint64_t)texture->id;
 				}
 			}
 		}
 
-		// Write to file
-		std::ofstream fout(path);
-		if (!fout.is_open())
+		// Write directly to file buffer
+		std::string buffer;
+		if (auto ec = glz::write_file_json(outData, path.string(), buffer))
 		{
 			LOG_ERROR("Failed to open file for serialization: {}", path);
-			return;
 		}
-		fout << out.c_str();
-		fout.close();
 	}
 
 	std::optional<Material> MaterialSerializer::Deserialize(const std::filesystem::path& path)
 	{
-		YAML::Node data;
-		try
+		MaterialJSON data;
+		std::string buffer;
+
+		if (auto ec = glz::read_file_json(data, path.string(), buffer))
 		{
-			data = YAML::LoadFile(path.string());
-		}
-		catch (const YAML::Exception& e)
-		{
-			LOG_ERROR("YAML parse error in {}: {}", path, e.what());
+			LOG_ERROR("JSON parse error in {}: {}", path.string(), glz::format_error(ec, buffer));
 			return std::nullopt;
 		}
 
-		Engine::Shader& shader = Engine::AssetManager::GetAsset<Shader>(Uuid(data["Shader"].as<uint64_t>()));
+		Engine::Shader& shader = Engine::AssetManager::GetAsset<Shader>(Uuid(data.Shader));
 
 		MaterialSpecification spec;
 		spec.shader = shader;
 
-		if (auto sampler = data["Sampler"])
-		{
-			Yaml::Read(sampler, "Filter", (uint32_t&)spec.filter);
-			Yaml::Read(sampler, "Wrap", (uint32_t&)spec.wrap);
-		}
+		// Note: ensure spec.filter and spec.wrap can be safely cast from uint32_t
+		// depending on how TextureFilter/TextureWrap are defined in your engine
+		spec.filter = static_cast<decltype(spec.filter)>(data.Sampler.Filter);
+		spec.wrap = static_cast<decltype(spec.wrap)>(data.Sampler.Wrap);
 
-		if (auto attributes = data["Attributes"])
+		// Deserialize Attributes dynamically using glz::json_t
+		for (auto& [name, node] : data.Attributes)
 		{
-			for (auto it : attributes)
+			if (node.is_number())
 			{
-				std::string name = it.first.as<std::string>();
-				YAML::Node& node = it.second;
+				// glz::json_t stores all numbers internally as doubles
+				spec.floatDefaults[name] = static_cast<float>(node.get<double>());
+			}
+			else if (node.is_array())
+			{
+				auto& arr = node.get_array();
+				size_t size = arr.size();
 
-				glm::vec2 v2;
-				glm::vec4 v4;
-
-				if (node.IsScalar())
+				if (size == 2)
 				{
-					spec.floatDefaults[name] = node.as<float>();
+					spec.vec2Defaults[name] = glm::vec2(
+						static_cast<float>(arr[0].get<double>()),
+						static_cast<float>(arr[1].get<double>())
+					);
 				}
-				else if (Yaml::Read(node, v2))
+				//else if (size == 3)
+				//{
+				//	// NOTE: I added vec3Defaults here. In your YAML code, you serialized Vec3 
+				//	// but forgot to deserialize it. If `vec3Defaults` doesn't exist in your 
+				//	// MaterialSpecification, you can comment this block out.
+				//	spec.vec3Defaults[name] = glm::vec3(
+				//		static_cast<float>(arr[0].get<double>()),
+				//		static_cast<float>(arr[1].get<double>()),
+				//		static_cast<float>(arr[2].get<double>())
+				//	);
+				//}
+				else if (size == 4)
 				{
-					spec.vec2Defaults[name] = v2;
-				}
-				else if (Yaml::Read(node, v4))
-				{
-					spec.vec4Defaults[name] = v4;
+					spec.vec4Defaults[name] = glm::vec4(
+						static_cast<float>(arr[0].get<double>()),
+						static_cast<float>(arr[1].get<double>()),
+						static_cast<float>(arr[2].get<double>()),
+						static_cast<float>(arr[3].get<double>())
+					);
 				}
 				else
 				{
-					LOG_WARNING("Unknown property format for '{}'", name);
+					LOG_WARNING("Unknown property array format for '{}' (size: {})", name, size);
 				}
 			}
-		}
-
-		if (auto textures = data["Textures"])
-		{
-			for (auto it : textures)
+			else
 			{
-				std::string name = it.first.as<std::string>();
-				spec.textureDefaults[name] = Uuid(it.second.as<uint64_t>());
+				LOG_WARNING("Unknown property JSON type for '{}'", name);
 			}
 		}
 
+		// Deserialize Textures
+		for (const auto& [name, id] : data.Textures)
+		{
+			spec.textureDefaults[name] = Uuid(id);
+		}
 
 		return Material(spec);
 	}

@@ -73,7 +73,7 @@ struct ModelUniforms
 
 fn FresnelSchlick(cosTheta: f32, F0: vec3f) -> vec3f
 {
-  return F0 + (vec3f(1.0) - F0) * pow(1.0 - cosTheta, 5.0);
+	return F0 + (vec3f(1.0) - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
 @vertex
@@ -101,11 +101,11 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 
 	for (var i: i32 = 0; i < NUM_SHADOW_CASCADES; i = i + 1)
 	{
-    if (depth < uEnvironment.cascadeSplits[i])
-    {
-        cascadeIndex = i;
-        break;
-    }
+		if (depth < uEnvironment.cascadeSplits[i])
+		{
+				cascadeIndex = i;
+				break;
+		}
 	}
 
 	let lightPos4 = uEnvironment.lightViewProj[cascadeIndex] * vec4f(in.worldPos, 1.0);
@@ -119,32 +119,32 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 	// 3x3 PCF Kernel
 	for (var y: i32 = -1; y <= 1; y++) 
 	{
-	  for (var x: i32 = -1; x <= 1; x++) 
+		for (var x: i32 = -1; x <= 1; x++) 
 		{
-	    let offset = vec2f(f32(x), f32(y)) * texelSize;
+			let offset = vec2f(f32(x), f32(y)) * texelSize;
 	
-	    visibility += textureSampleCompare(
-	      shadowMap,
-	      shadowSampler,
-	      light_uv + offset,
-	      cascadeIndex,
-	      lightPos.z
-	    );
-	  }
+			visibility += textureSampleCompare(
+				shadowMap,
+				shadowSampler,
+				light_uv + offset,
+				cascadeIndex,
+				lightPos.z
+			);
+		}
 	}
 
 	visibility = visibility / 9.0; // Average the 9 samples
 
 	// check bounds
 	let inBounds =
-    light_uv.x >= 0.0 && light_uv.x <= 1.0 &&
-    light_uv.y >= 0.0 && light_uv.y <= 1.0;
+		light_uv.x >= 0.0 && light_uv.x <= 1.0 &&
+		light_uv.y >= 0.0 && light_uv.y <= 1.0;
 
 	// shadow mask
 	let shadow = select(1.0, visibility, inBounds);
 
-  let uv = in.uv * uMaterial.tiling + uMaterial.offset;
-  let albedo = textureSample(AlbedoTexture, MaterialSampler, uv).rgb * uMaterial.albedo.rgb;
+	let uv = in.uv * uMaterial.tiling + uMaterial.offset;
+	let albedo = textureSample(AlbedoTexture, MaterialSampler, uv).rgb * uMaterial.albedo.rgb;
 	let metallic = textureSample(MetallicTexture, MaterialSampler, uv).r * uMaterial.metallic;
 	let roughness = textureSample(RoughnessTexture, MaterialSampler, uv).r * uMaterial.roughness;
 	let ao = textureSample(AmbientTexture, MaterialSampler, uv).r;
@@ -170,27 +170,27 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 	let TBN = mat3x3f(T * invmax, B * invmax, normal);
 
 	let N = normalize(TBN * tangentNormal);
-  let V = normalize(uView.cameraPosition - in.worldPos); // direction from surface to camera
+	let V = normalize(uView.cameraPosition - in.worldPos); // direction from surface to camera
 	let R = reflect(-V, N);
-  let NdotV = max(dot(N, V), 0.0);
-  let F0 = mix(vec3f(0.04), albedo, metallic);
+	let NdotV = max(dot(N, V), 0.0);
+	let F0 = mix(vec3f(0.04), albedo, metallic);
 	let F = FresnelSchlick(NdotV, F0);
-  let Fd = (vec3f(1.0) - F) * (1.0 - metallic);
+	let Fd = (vec3f(1.0) - F) * (1.0 - metallic);
 
-  let irradiance = textureSample(IrradianceMap, EnvSampler, N).rgb;
-  let diffuse = Fd * albedo * irradiance;
+	let irradiance = textureSample(IrradianceMap, EnvSampler, N).rgb;
+	let diffuse = Fd * albedo * irradiance;
 
 
 	let maxMipLevel = f32(textureNumLevels(PrefilteredEnvMap)) - 1.0;
 	let lod = pow(roughness, 2.0) * maxMipLevel;
 	let env = textureSampleLevel(PrefilteredEnvMap, EnvSampler, R, lod).rgb;
 
-  let brdf = textureSample(BRDFIntMap, EnvSampler, vec2(NdotV, roughness)).rg;
+	let brdf = textureSample(BRDFIntMap, EnvSampler, vec2(NdotV, roughness)).rg;
 
-  let specular = env * (F0 * brdf.r + brdf.g);
+	let specular = env * (F0 * brdf.r + brdf.g);
 
-  let color = ((diffuse + specular) * shadow) * ao;
+	let color = ((diffuse + specular) * shadow) * ao;
 	
 	let gammaCorrected = pow(color, vec3f(1.0 / 2.2));
-  return vec4f(gammaCorrected, uMaterial.albedo.a);
+	return vec4f(gammaCorrected, uMaterial.albedo.a);
 }

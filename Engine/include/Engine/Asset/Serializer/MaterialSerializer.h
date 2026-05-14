@@ -2,6 +2,7 @@
 
 #include "Engine/Graphics/Material.h"
 #include <optional>
+#include <filesystem>
 
 namespace Engine
 {

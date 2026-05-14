@@ -8,4 +8,7 @@
 *.user
 *.log
 
+Makefile
+**/Makefile
+
 Editor/resources/layouts/imgui.ini

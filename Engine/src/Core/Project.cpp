@@ -1,8 +1,38 @@
 #include "enginepch.h"
 #include "Engine/Core/Project.h"
 #include "Engine/Core/Log.h"
-#include <yaml-cpp/yaml.h>
+#include <glaze/glaze.hpp>
 #include <fstream>
+
+namespace Engine
+{
+	// =========================================================================
+	// GLAZE DTO
+	// =========================================================================
+
+	struct ProjectConfigJSON
+	{
+		std::string Title = "Untitled";
+		uint64_t StartScene = 0;
+	};
+}
+
+// =========================================================================
+// GLAZE METADATA
+// =========================================================================
+
+template <>
+struct glz::meta<Engine::ProjectConfigJSON> {
+	using T = Engine::ProjectConfigJSON;
+	static constexpr auto value = object(
+		"Title", &T::Title,
+		"StartScene", &T::StartScene
+	);
+};
+
+// =========================================================================
+// PROJECT IMPLEMENTATION
+// =========================================================================
 
 namespace Engine
 {
@@ -17,47 +47,43 @@ namespace Engine
 		newProject.m_Title = path.stem().string();
 		newProject.m_ProjectDirectory = path;
 		newProject.m_AssetsDirectory = newProject.m_ProjectDirectory / "Assets";
-		//newProject.Save();
 
-		LOG_INFO("Created new project '{}' at {}", newProject.m_Title, newProject.GetProjectDirectory());
 		s_ActiveProject = newProject;
+
+		// Uncommented: Now automatically saves the project.json upon creation
+		s_ActiveProject.Save();
+
+		LOG_INFO("Created new project '{}' at {}", s_ActiveProject.m_Title, s_ActiveProject.GetProjectDirectory().string());
 		return s_ActiveProject;
 	}
 
 	void Project::Load(const std::filesystem::path& path)
 	{
-		std::filesystem::path configPath = path / "project.yaml";
+		// Changed to .json
+		std::filesystem::path configPath = path / "project.json";
 
 		if (!std::filesystem::exists(configPath))
 		{
-			LOG_ERROR("Config file not found at {}", configPath);
+			LOG_ERROR("Config file not found at {}", configPath.string());
 			return;
 		}
 
-		YAML::Node data;
-		try
+		ProjectConfigJSON data;
+		std::string buffer;
+
+		if (auto ec = glz::read_file_json(data, configPath.string(), buffer))
 		{
-			data = YAML::LoadFile(configPath.string());
-		}
-		catch (const YAML::ParserException& e)
-		{
-			LOG_ERROR("Failed to parse YAML : {}", e.what());
+			LOG_ERROR("Failed to parse JSON in {}: {}", configPath.string(), glz::format_error(ec, buffer));
 			return;
 		}
 
 		Project project;
 		project.m_ProjectDirectory = path;
 		project.m_AssetsDirectory = path / "Assets";
+		project.m_Title = data.Title;
+		project.m_DefaultSceneId = Engine::Uuid(data.StartScene);
 
-		if (data["Title"])
-		{
-			project.m_Title = data["Title"].as<std::string>();
-		}
-
-		uint64_t id = data["StartScene"] ? data["StartScene"].as<uint64_t>(0) : 0;
-		project.m_DefaultSceneId = Engine::Uuid(id);
-		
-		LOG_INFO("Loaded project '{}' from {}", project.m_Title, configPath);
+		LOG_INFO("Loaded project '{}' from {}", project.m_Title, configPath.string());
 		s_ActiveProject = project;
 	}
 
@@ -68,17 +94,21 @@ namespace Engine
 
 	void Project::Save()
 	{
-		//YAML::Emitter out;
-		//out << YAML::BeginMap;
-		//out << YAML::Key << "Title" << YAML::Value << this->m_Title;
-		//out << YAML::Key << "StartScene" << YAML::Value << (uint64_t)this->m_StartSceneID;
-		//out << YAML::EndMap;
+		ProjectConfigJSON outData;
+		outData.Title = this->m_Title;
+		outData.StartScene = (uint64_t)this->m_DefaultSceneId;
 
-		//std::filesystem::path path = this->m_ProjectDirectory / "project.yaml";
-		//std::ofstream fout(path);
-		//fout << out.c_str();
+		// Changed to .json
+		std::filesystem::path path = this->m_ProjectDirectory / "project.json";
+		std::string buffer;
 
-		//LOG_INFO("Saved project to {}", path);
+		if (auto ec = glz::write_file_json(outData, path.string(), buffer))
+		{
+			LOG_ERROR("Failed to save project to {}: {}", path.string(), glz::format_error(ec));
+			return;
+		}
+
+		LOG_INFO("Saved project to {}", path.string());
 	}
 
 

@@ -2,6 +2,7 @@
 
 #include "Engine/Scene/Scene.h"
 #include <optional>
+#include <filesystem>
 
 namespace Engine
 {

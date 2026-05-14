@@ -4,8 +4,14 @@ warnings "Off"
 
 files
 {
-  "include/GLFW/glfw3.h",
-  "include/GLFW/glfw3native.h",
+
+  "src/**.cpp"
+}
+
+files
+{
+	"include/GLFW/**.h",
+
   "src/glfw_config.h",
   "src/context.c",
   "src/init.c",
@@ -45,10 +51,10 @@ filter "system:windows"
 
 filter "system:linux"
   kind "StaticLib"
-  pic "On" -- Position Independent Code is required for static libs on Linux
+  pic "On"
   defines 
   { 
-    "_GLFW_X11" -- Tell GLFW to use the X11 Windowing system
+    "_GLFW_X11"
   }
   files
   {
@@ -60,8 +66,7 @@ filter "system:linux"
     "src/posix_thread.c",
     "src/posix_module.c",
     "src/linux_joystick.c",
-    "src/glx_context.c"
-    -- Note: If you are using GLFW 3.4+, you may also need to add "src/posix_poll.c" here.
+    "src/glx_context.c",
   }
 
 filter { "platforms:Web" }

@@ -10,6 +10,19 @@ function LinkEngine()
       "{COPYFILE} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
     }
 
+	filter "system:linux"
+    postbuildcommands 
+    {
+      "{COPYFILE} %{wks.location}/bin/" .. outputdir .. "/Engine/libEngine.so %{cfg.targetdir}",
+      "{COPYFILE} %{wks.location}/vendor/dawn/libwebgpu_dawn.so %{cfg.targetdir}",
+    }
+    
+    -- If your GLFW is also built as a SharedLib on Linux, uncomment the line below:
+    -- "{COPYFILE} %{wks.location}/bin/" .. outputdir .. "/glfw/libglfw.so %{cfg.targetdir}",
+
+    -- CRITICAL FOR LINUX: Tell the executable to look for .so files in its own directory
+    linkoptions { "-Wl,-rpath,'$$ORIGIN'" }
+
   filter {} -- reset filter
 end
 
@@ -19,7 +32,6 @@ startproject "Editor"
 toolset "clang"
 configurations { "Debug", "Release" }
 platforms { "Windows", "Linux", "Web" }
-
 language "C++"
 cppdialect "C++23"
 staticruntime "off"
@@ -33,6 +45,7 @@ filter "system:linux"
   buildoptions { "-stdlib=libc++" }
   linkoptions  { "-stdlib=libc++" }
 filter {} -- reset filter
+
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 targetdir ("bin/" .. outputdir .. "/%{prj.name}")
@@ -40,7 +53,6 @@ objdir    ("bin-int/" .. outputdir .. "/%{prj.name}")
 
 group "Dependencies"
 	include "vendor/glfw"
-	include "vendor/yaml-cpp"
 	include "vendor/miniaudio"
 	include "vendor/imgui"
 

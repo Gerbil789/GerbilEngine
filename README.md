@@ -10,16 +10,16 @@ WebGPU based game engine
 
 #### Setup
 1. **Clone the Project**
-   - ```git clone https://github.com/Gerbil789/GerbilEngine.git```
-  - *Navigate into the **Scripts** directory*
+	 - ```git clone https://github.com/Gerbil789/GerbilEngine.git```
+	- *Navigate into the **Scripts** directory*
 2. **Build premake**
 	 - Run `build_premake.bat`
 3. **Generate project files**
 	 - Run `generate_project.bat` 
 4. **Build project in Visual Studio**
-   - Open solution in VS (`GerbilEngine.sln`)
-   - Find **`Editor`** project in Solution Explorer
-   - Right click -> **Build**
+	 - Open solution in VS (`GerbilEngine.sln`)
+	 - Find **`Editor`** project in Solution Explorer
+	 - Right click -> **Build**
 5. **Run**
 
 #### Dependencies
@@ -35,8 +35,8 @@ WebGPU based game engine
 | **[ImGui](https://github.com/ocornut/imgui)**                                    | Immediate-mode UI                |
 | **[ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo)**                      | 3D transform gizmo for ImGui     |
 | **[EnTT](https://github.com/skypjack/entt)**                                     | Entity Component System          |
-| **[tinygltf](https://github.com/syoyo/tinygltf)**                                | glTF mesh loading and processing |
-| **[yaml-cpp](https://github.com/jbeder/yaml-cpp)**                               | YAML serialization							  |
+| **[tinygltf](https://github.com/syoyo/tinygltf)**                                | glTF mesh processing             |
+| **[glaze](https://github.com/stephenberry/glaze)**                               | Serialization							      |
 | **[miniaudio](https://github.com/mackron/miniaudio)**                            | Audio playback    							  |
 | **[RenderDoc](https://github.com/baldurk/renderdoc)** 													 | Graphics debbuger	              |
 

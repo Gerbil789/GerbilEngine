@@ -1,12 +1,17 @@
-Shader: 10614378585745839232
-Sampler:
-  Filter: 1
-  Wrap: 0
-Attributes:
-  albedo: [1, 1, 1, 1]
-  roughness: 0
-  metallic: 0
-  tiling: [1, 1]
-  offset: [0, 0]
-Textures:
-  AlbedoTexture: 1453805156906467867
+{
+  "Shader": 10614378585745839232,
+  "Sampler": {
+    "Filter": 1,
+    "Wrap": 0
+  },
+  "Attributes": {
+    "albedo": [1, 1, 1, 1],
+    "roughness": 0,
+    "metallic": 0,
+    "tiling": [1, 1],
+    "offset": [0, 0]
+  },
+  "Textures": {
+    "AlbedoTexture": 1453805156906467867
+  }
+}

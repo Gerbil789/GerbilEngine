@@ -72,7 +72,7 @@ namespace Engine
 
   void AssetManager::Initialize(const std::filesystem::path& projectDirectory)
   {
-    m_AssetRegistry.Load(projectDirectory / "assetRegistry.yaml");
+    m_AssetRegistry.Load(projectDirectory / "assetRegistry.json");
 		m_AssetsDirectory = projectDirectory / "Assets";
 
 		s_defaultTexture = *Texture2D::GetDefault();
