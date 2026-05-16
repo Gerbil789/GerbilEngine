@@ -152,4 +152,16 @@ namespace Engine
   {
     return LoadAssetInternal(id, m_Scenes, s_defaultScene, SceneImporter::LoadScene);
   }
+
+
+
+  template<> Scene& AssetManager::CreateAsset<Scene>()
+  {
+    Scene scene;
+    scene.id = Uuid();
+
+    auto [insertedIt, success] = m_Scenes.insert_or_assign(scene.id, std::move(scene));
+    LOG_TRACE("Created asset '{}'", scene.id);
+    return insertedIt->second;
+  }
 }

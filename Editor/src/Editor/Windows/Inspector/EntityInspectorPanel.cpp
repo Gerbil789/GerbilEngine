@@ -239,7 +239,7 @@ namespace Editor
 			}
 
 			PropertyRow row("Material");
-			ImGui::PushID(i);
+			ImGui::PushID(static_cast<int>(i));
 			if (ImGui::Button(text.c_str(), ImVec2(-FLT_MIN, 0)))
 			{
 				auto& material = Engine::AssetManager::GetAsset<Engine::Material>(materialId);

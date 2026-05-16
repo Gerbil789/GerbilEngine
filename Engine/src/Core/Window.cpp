@@ -259,11 +259,17 @@ namespace Engine
 
 	void Window::ConfigureSurface(uint32_t width, uint32_t height)
 	{
+		wgpu::SurfaceCapabilities capabilities;
+		m_Surface.getCapabilities(GraphicsContext::GetAdapter(), &capabilities);
+
+		wgpu::TextureFormat preferredFormat = capabilities.formats[0];
+		GraphicsContext::SetPreferredSwapChainFormat(preferredFormat);
+
 		wgpu::SurfaceConfiguration config;
 		config.width = width;
 		config.height = height;
 		config.device = GraphicsContext::GetDevice();
-		config.format = wgpu::TextureFormat::RGBA8Unorm;
+		config.format = preferredFormat; //wgpu::TextureFormat::RGBA8Unorm
 		config.usage = wgpu::TextureUsage::RenderAttachment;
 		config.presentMode = wgpu::PresentMode::Immediate;
 		config.alphaMode = wgpu::CompositeAlphaMode::Opaque;
@@ -272,6 +278,7 @@ namespace Engine
 		config.nextInChain = nullptr;
 
 		m_Surface.configure(config);
+		capabilities.freeMembers();
 	}
 
 	void Window::SetWindowIcon(const std::filesystem::path& path)

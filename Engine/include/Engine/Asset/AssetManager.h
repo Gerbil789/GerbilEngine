@@ -27,6 +27,14 @@ namespace Engine::AssetManager
 		static_assert(sizeof(T) == 0, "ERROR: Asset type is valid, but missing an explicit template specialization!");
 		return *(T*)nullptr;
 	}
+
+	template<typename T>
+	T& CreateAsset()
+	{
+		static_assert(std::is_base_of_v<Asset, T>, "ERROR: Requested type does not derive from Engine::Asset!");
+		static_assert(sizeof(T) == 0, "ERROR: Asset type is valid, but missing an explicit template specialization!");
+		return *(T*)nullptr;
+	}
 }
 
 namespace Engine
@@ -37,6 +45,8 @@ namespace Engine
 	template<> ENGINE_API Material& AssetManager::GetAsset<Material>(Uuid id);
 	template<> ENGINE_API AudioClip& AssetManager::GetAsset<AudioClip>(Uuid id);
 	template<> ENGINE_API Scene& AssetManager::GetAsset<Scene>(Uuid id);
+
+	template<> ENGINE_API Scene& AssetManager::CreateAsset<Scene>();
 }
 
 

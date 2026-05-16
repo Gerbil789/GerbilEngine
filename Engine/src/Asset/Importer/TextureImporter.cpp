@@ -2,6 +2,7 @@
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/Texture/TextureCube.h"
+#include "Engine/Graphics/GraphicsContext.h"
 #include <stb_image.h>
 #include <glm/gtc/packing.hpp>
 
@@ -62,7 +63,7 @@ namespace Engine
 				else
 				{
 					stbiData = stbi_load(pathStr.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-					format = wgpu::TextureFormat::RGBA8Unorm;
+					format = Engine::GraphicsContext::GetPreferredSwapChainFormat();
 				}
 
 				if (!stbiData)

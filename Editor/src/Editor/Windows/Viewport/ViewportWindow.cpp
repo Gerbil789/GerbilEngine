@@ -122,7 +122,7 @@ namespace Editor
 					wgpu::TextureDescriptor desc;
 					desc.label = { "RendererColorTexture", WGPU_STRLEN };
 					desc.dimension = wgpu::TextureDimension::_2D;
-					desc.format = wgpu::TextureFormat::RGBA8Unorm;
+					desc.format = Engine::GraphicsContext::GetPreferredSwapChainFormat();
 					desc.size = size;
 					desc.mipLevelCount = 1;
 					desc.sampleCount = 1;

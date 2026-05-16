@@ -9,13 +9,13 @@
 #include <typeinfo>
 
 #ifdef ENGINE_PLATFORM_WINDOWS
-#ifdef GAME_BUILD_DLL
-#define GAME_API  __declspec(dllexport)
+  #ifdef ENGINE_BUILD_SHARED
+    #define GAME_API  __declspec(dllexport)
+  #else
+    #define GAME_API  __declspec(dllimport)     
+  #endif
 #else
-#define GAME_API  __declspec(dllimport)     
-#endif
-#else
-#define GAME_API
+  #define GAME_API
 #endif
 
 namespace Engine

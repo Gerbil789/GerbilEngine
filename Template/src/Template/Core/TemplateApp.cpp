@@ -26,6 +26,14 @@
 #include "Engine/Core/Log.h"
 #include "Engine/Physics/Physics.h"
 
+#ifdef DEBUG
+std::string config = "Debug";
+#elif RELEASE
+std::string config = "Release";
+#elif DIST
+std::string config = "Dist";
+#endif
+
 namespace Template
 {
 	uint32_t m_Width = 1600;
@@ -50,7 +58,7 @@ namespace Template
 				wgpu::TextureDescriptor desc;
 				desc.label = { "RendererColorTexture", WGPU_STRLEN };
 				desc.dimension = wgpu::TextureDimension::_2D;
-				desc.format = wgpu::TextureFormat::RGBA8Unorm;
+				desc.format = Engine::GraphicsContext::GetPreferredSwapChainFormat();
 				desc.size = size;
 				desc.mipLevelCount = 1;
 				desc.sampleCount = 1;
@@ -99,25 +107,31 @@ namespace Template
 
 	TemplateApp::TemplateApp()
 	{
-		std::filesystem::path projectDir = "C:/Users/vojta/source/repos/GerbilEngine/Projects/TestProject"; //TODO: use compiletime macro or command line argument for this
+		std::filesystem::current_path(GetExecutableDir());
+		std::filesystem::path projectDir = "../../../Projects/TestProject";
+
+		//std::filesystem::path projectDir = "C:/Users/vojta/source/repos/GerbilEngine/Projects/TestProject";
 		Engine::Project::Load(projectDir);
 		const Engine::Project& project = Engine::Project::GetActive();
 
-		std::filesystem::current_path(GetExecutableDir());
+
 
 		Engine::GraphicsContext::Initialize();
 		GLFW::Initialize();
-		Engine::AssetManager::Initialize(project.GetProjectDirectory());
+
 
 		m_Window.emplace(Engine::WindowSpecification{ "Game", m_Width, m_Height, "Resources/Engine/icons/logo.png" });
 		m_Window->SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
+
+		Engine::AssetManager::Initialize(project.GetProjectDirectory());
+
 		Engine::Input::SetActiveWindow(*static_cast<GLFWwindow*>(m_Window->GetNativeWindow()));
 
 		Engine::g_Renderer.Initialize();
 
 		Engine::Audio::Initialize();
 
-		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / BUILD_CONFIG / (project.GetTitle() + ".dll");
+		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / config / (project.GetTitle() + ".dll");
 		Engine::Runtime::LoadScripts(dllPath);
 
 		auto id = project.GetDefaultSceneId();

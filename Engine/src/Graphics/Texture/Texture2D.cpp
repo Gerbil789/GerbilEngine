@@ -90,7 +90,7 @@ namespace Engine
 			TextureSpecification spec;
 			spec.width = 1;
 			spec.height = 1;
-			spec.format = wgpu::TextureFormat::RGBA8Unorm;
+			spec.format = Engine::GraphicsContext::GetPreferredSwapChainFormat();
 			uint32_t whitePixel = 0xFFFFFFFF;
 			s_DefaultWhiteTexture = new Texture2D(spec, &whitePixel);
 		}
@@ -105,7 +105,7 @@ namespace Engine
 			TextureSpecification spec;
 			spec.width = 1;
 			spec.height = 1;
-			spec.format = wgpu::TextureFormat::RGBA8Unorm;
+			spec.format = Engine::GraphicsContext::GetPreferredSwapChainFormat();
 			constexpr uint8_t normalPixel[4] = { 128, 128, 255, 255 }; // Blue-ish
 
 			s_DefaultNormalTexture = new Texture2D(spec, &normalPixel);

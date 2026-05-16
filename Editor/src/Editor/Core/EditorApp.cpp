@@ -27,6 +27,16 @@
 #include "Engine/Core/Log.h"
 #include "Engine/Scene/TransformSystem.h"
 
+#include "Engine/Scene/Components.h"
+
+#ifdef DEBUG
+std::string config = "Debug";
+#elif RELEASE
+std::string config = "Release";
+#elif DIST
+std::string config = "Dist";
+#endif
+
 namespace Editor
 {
 	namespace
@@ -43,11 +53,16 @@ namespace Editor
 		const Engine::Project& project = Engine::Project::GetActive();
 
 		Engine::GraphicsContext::Initialize();
-		Engine::AssetManager::Initialize(project.GetProjectDirectory());
+
 		GLFW::Initialize();
 
-		m_Window.emplace(Engine::WindowSpecification{ std::format("Gerbil Editor - {}", BUILD_CONFIG) , 1600, 900, "Resources/Engine/icons/logo.png" });
+
+
+		m_Window.emplace(Engine::WindowSpecification{ std::format("Gerbil Editor - {}", config) , 1600, 900, "Resources/Engine/icons/logo.png" });
 		m_Window->SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
+
+		Engine::AssetManager::Initialize(project.GetProjectDirectory());
+
 		Engine::Input::SetActiveWindow(*static_cast<GLFWwindow*>(m_Window->GetNativeWindow()));
 		Engine::g_Renderer.Initialize(); //TODO: i dont like global variable
 		EditorCommandManager::Initialize();
@@ -56,7 +71,7 @@ namespace Editor
 		IconManager::Initialize();
 		EditorWindowManager::Initialize(*m_Window);
 
-		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / BUILD_CONFIG / (project.GetTitle() + ".dll");
+		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / config / (project.GetTitle() + ".dll");
 		Engine::Runtime::LoadScripts(dllPath);
 
 		auto id = project.GetDefaultSceneId();
@@ -65,7 +80,14 @@ namespace Editor
 			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
 			Engine::SceneManager::SetActiveScene(scene);
 		}
+		else
+		{
+			//Create default scene
+			auto& scene = Engine::AssetManager::CreateAsset<Engine::Scene>();
+			//auto entity = scene.CreateEntity("Camera");
+			//entity.emplace<Engine::CameraComponent>();
 
+		}
 		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([](auto&) {m_Running = false; LOG_INFO("Application closed"); });
 		LOG_INFO("--- Editor initialization complete ---");
 	}

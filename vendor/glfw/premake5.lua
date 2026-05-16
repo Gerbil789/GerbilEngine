@@ -1,10 +1,10 @@
 project "glfw"
 language "C"
+kind "StaticLib"
 warnings "Off"
 
 files
 {
-
   "src/**.cpp"
 }
 
@@ -28,14 +28,18 @@ files
   "src/osmesa_context.c"
 }
 
+filter "configurations:not Dist"
+	kind "SharedLib"
+  defines 
+  { 
+    "_GLFW_BUILD_DLL",
+  }
+
 filter "system:windows"
-  kind "SharedLib"
-  buildoptions { "/permissive-"}
   defines 
   { 
     "_GLFW_WIN32",
     "_CRT_SECURE_NO_WARNINGS",
-    "_GLFW_BUILD_DLL",
   }
   files
   {
@@ -50,8 +54,6 @@ filter "system:windows"
   }
 
 filter "system:linux"
-  kind "StaticLib"
-  pic "On"
   defines 
   { 
     "_GLFW_X11"
@@ -67,17 +69,8 @@ filter "system:linux"
     "src/posix_module.c",
     "src/linux_joystick.c",
     "src/glx_context.c",
+		"src/posix_time.c",
+    "src/posix_thread.c",
+    "src/posix_module.c",
+    "src/posix_poll.c",
   }
-
-filter { "platforms:Web" }
-  kind "StaticLib"       
-  removefiles { "**.*" } 
-  files { "dummy.c" }    
-
-filter "configurations:Debug"
-  runtime "Debug"
-  symbols "on"
-
-filter "configurations:Release"
-  runtime "Release"
-  optimize "on"

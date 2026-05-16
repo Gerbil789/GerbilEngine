@@ -9,9 +9,12 @@ namespace Engine::GraphicsContext
 {
 	namespace
 	{
+		wgpu::Adapter s_Adapter;
 		wgpu::Instance s_Instance;
 		wgpu::Device s_Device;
 		wgpu::Queue s_Queue;
+
+		wgpu::TextureFormat s_PreferredSwapChainFormat;
 
 		uint32_t s_UniformBufferOffsetAlignment;
 		uint32_t s_StorageBufferOffsetAlignment;
@@ -33,15 +36,15 @@ namespace Engine::GraphicsContext
 		}
 
 		wgpu::RequestAdapterOptions adapterOpts;
-		wgpu::Adapter adapter = s_Instance.requestAdapter(adapterOpts);
-		if(!adapter)
+		s_Adapter = s_Instance.requestAdapter(adapterOpts);
+		if(!s_Adapter)
 		{
 			throw std::runtime_error("Failed to request WGPU adapter");
 		}
 
 		{
 			wgpu::AdapterInfo info;
-			adapter.getInfo(&info);
+			s_Adapter.getInfo(&info);
 
 			LOG_TRACE("Dawn backend: {}", BackendTypeToString(info.backendType));
 			LOG_TRACE("GPU: {} ({})", ToStringView(info.device), ToStringView(info.architecture));
@@ -51,9 +54,7 @@ namespace Engine::GraphicsContext
 		}
 
 		wgpu::Limits limits;
-		//limits.maxBufferSize = 1024ull * 1024ull * 1024ull; // request 1 GB
-
-		if (adapter.getLimits(&limits) != wgpu::Status::Success)
+		if (s_Adapter.getLimits(&limits) != wgpu::Status::Success)
 		{
 			throw std::runtime_error("Failed to query adapter limits");
 		}
@@ -79,7 +80,7 @@ namespace Engine::GraphicsContext
 				LOG_ERROR("WebGPU Uncaptured error [type: {}]: {}", ErrorTypeToString(type), message.data);
 			};
 
-		s_Device = adapter.requestDevice(deviceDesc);
+		s_Device = s_Adapter.requestDevice(deviceDesc);
 		if(!s_Device)
 		{
 			throw std::runtime_error("Failed to request WGPU device");
@@ -100,8 +101,14 @@ namespace Engine::GraphicsContext
 		s_Queue.release();
 		s_Device.release();
 		s_Instance.release();
+		s_Adapter.release();
 
 		Engine::SamplerPool::Shutdown();
+	}
+
+	wgpu::Adapter GetAdapter()
+	{
+		return s_Adapter;
 	}
 
 	wgpu::Instance GetInstance()
@@ -117,6 +124,16 @@ namespace Engine::GraphicsContext
 	wgpu::Queue GetQueue()
 	{
 		return s_Queue;
+	}
+
+	void SetPreferredSwapChainFormat(wgpu::TextureFormat format)
+	{
+		s_PreferredSwapChainFormat = format;
+	}
+
+	wgpu::TextureFormat GetPreferredSwapChainFormat()
+	{
+		return s_PreferredSwapChainFormat;
 	}
 
 	uint32_t GetUniformBufferOffsetAlignment()

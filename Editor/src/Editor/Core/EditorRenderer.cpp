@@ -18,7 +18,7 @@ namespace Editor
 
 		ImGui_ImplWGPU_InitInfo initInfo;
 		initInfo.Device = Engine::GraphicsContext::GetDevice();
-		initInfo.RenderTargetFormat = wgpu::TextureFormat::RGBA8Unorm;
+		initInfo.RenderTargetFormat = Engine::GraphicsContext::GetPreferredSwapChainFormat();
 		initInfo.DepthStencilFormat = wgpu::TextureFormat::Undefined;
 		ImGui_ImplWGPU_Init(&initInfo);
 	}

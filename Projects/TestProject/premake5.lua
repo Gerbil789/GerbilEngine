@@ -1,6 +1,5 @@
 project "TestProject"
-kind "SharedLib"
-
+kind "StaticLib"
 targetdir ("%{prj.location}/bin/%{cfg.system}/%{cfg.buildcfg}")
 objdir ("%{prj.location}/bin-int/%{cfg.system}/%{cfg.buildcfg}")
 
@@ -14,7 +13,6 @@ includedirs
 {
 	"src",
 	"%{wks.location}/Engine/include",
-
 }
 
 externalincludedirs
@@ -29,41 +27,20 @@ links
 	"Engine",
 }
 
-postbuildcommands 
-{
-	"{COPYFILE} %{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Engine/Engine.dll %{cfg.targetdir}"
-}
-
-filter "system:windows"
-	systemversion "latest"
-	buildoptions 
-	{ 
-		"/permissive-", 
-		"/std:c++latest", 
-		"-Wno-invalid-offsetof", 
+filter "configurations:not Dist"
+	kind "SharedLib"
+	postbuildcommands 
+	{
+		"{COPYFILE} %{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Engine/Engine.dll %{cfg.targetdir}"
 	}
 
 	defines
 	{
-		"ENGINE_PLATFORM_WINDOWS",
-		"GLFW_INCLUDE_NONE",
-		"GAME_BUILD_DLL"
+		"ENGINE_BUILD_SHARED",
 	}
 
-filter "system:linux"
-  pic "On"
-
+filter "system:windows"
 	defines
-  {
-    "ENGINE_PLATFORM_LINUX",
-  }
-
-filter "configurations:Debug"
-	defines { "DEBUG" }
-	symbols "on"
-	runtime "Debug"
-
-filter "configurations:Release"
-	defines { "RELEASE" }
-	optimize "on"
-	runtime "Release"
+	{
+		"GLFW_INCLUDE_NONE", --TODO: remove?
+	}

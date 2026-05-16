@@ -50,7 +50,6 @@ namespace Engine
 
 		s_ActiveProject = newProject;
 
-		// Uncommented: Now automatically saves the project.json upon creation
 		s_ActiveProject.Save();
 
 		LOG_INFO("Created new project '{}' at {}", s_ActiveProject.m_Title, s_ActiveProject.GetProjectDirectory().string());
@@ -59,8 +58,10 @@ namespace Engine
 
 	void Project::Load(const std::filesystem::path& path)
 	{
-		// Changed to .json
-		std::filesystem::path configPath = path / "project.json";
+		std::string configFilename = path.filename().string() + ".json"; // "TestProject.json"
+		std::filesystem::path configPath = path / configFilename;
+
+		//std::filesystem::path configPath = path / "project.json";
 
 		if (!std::filesystem::exists(configPath))
 		{
@@ -83,7 +84,7 @@ namespace Engine
 		project.m_Title = data.Title;
 		project.m_DefaultSceneId = Engine::Uuid(data.StartScene);
 
-		LOG_INFO("Loaded project '{}' from {}", project.m_Title, configPath.string());
+		LOG_INFO("Loaded project '{}' from {}", project.m_Title, configPath);
 		s_ActiveProject = project;
 	}
 
@@ -98,8 +99,9 @@ namespace Engine
 		outData.Title = this->m_Title;
 		outData.StartScene = (uint64_t)this->m_DefaultSceneId;
 
-		// Changed to .json
-		std::filesystem::path path = this->m_ProjectDirectory / "project.json";
+		std::string configFilename = this->m_ProjectDirectory.filename().string() + ".json"; // "TestProject.json"
+		std::filesystem::path path = this->m_ProjectDirectory / configFilename;
+		//std::filesystem::path path = this->m_ProjectDirectory / "project.json";
 		std::string buffer;
 
 		if (auto ec = glz::write_file_json(outData, path.string(), buffer))
@@ -108,8 +110,6 @@ namespace Engine
 			return;
 		}
 
-		LOG_INFO("Saved project to {}", path.string());
+		LOG_INFO("Saved project to {}", path);
 	}
-
-
 }

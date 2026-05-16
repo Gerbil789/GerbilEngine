@@ -75,7 +75,7 @@ namespace Engine
 
 	struct ScriptComponentJSON {
 		std::string Script;
-		std::map<std::string, glz::json_t> Fields; // Dynamic variables
+		std::map<std::string, glz::generic> Fields; // Dynamic variables
 	};
 
 	struct EntityJSON {
@@ -366,7 +366,6 @@ namespace Engine
 				{
 					if (sJson.Fields.find(field.name) == sJson.Fields.end()) continue;
 					const auto& node = sJson.Fields.at(field.name);
-
 					void* fieldPtr = base + field.offset;
 
 					switch (field.type)
@@ -375,22 +374,22 @@ namespace Engine
 						if (node.is_boolean()) *reinterpret_cast<bool*>(fieldPtr) = node.get_boolean();
 						break;
 					case ScriptFieldType::Int:
-						if (node.is_number()) *reinterpret_cast<int*>(fieldPtr) = static_cast<int>(node.get_number());
+						if (node.is_number()) *reinterpret_cast<int*>(fieldPtr) = static_cast<int>(static_cast<uint64_t>(node.get_number()));
 						break;
 					case ScriptFieldType::Float:
 						if (node.is_number()) *reinterpret_cast<float*>(fieldPtr) = static_cast<float>(node.get_number());
 						break;
 					case ScriptFieldType::Texture:
-						if (node.is_number()) *reinterpret_cast<Texture2D**>(fieldPtr) = &Engine::AssetManager::GetAsset<Texture2D>(node.get_number());
+						if (node.is_number()) *reinterpret_cast<Texture2D**>(fieldPtr) = &Engine::AssetManager::GetAsset<Texture2D>(static_cast<uint64_t>(node.get_number()));
 						break;
 					case ScriptFieldType::AudioClip:
-						if (node.is_number()) *reinterpret_cast<AudioClip**>(fieldPtr) = &Engine::AssetManager::GetAsset<AudioClip>(node.get_number());
+						if (node.is_number()) *reinterpret_cast<AudioClip**>(fieldPtr) = &Engine::AssetManager::GetAsset<AudioClip>(static_cast<uint64_t>(node.get_number()));
 						break;
 					case ScriptFieldType::Mesh:
-						if (node.is_number()) *reinterpret_cast<Mesh**>(fieldPtr) = &Engine::AssetManager::GetAsset<Mesh>(node.get_number());
+						if (node.is_number()) *reinterpret_cast<Mesh**>(fieldPtr) = &Engine::AssetManager::GetAsset<Mesh>(static_cast<uint64_t>(node.get_number()));
 						break;
 					case ScriptFieldType::Material:
-						if (node.is_number()) *reinterpret_cast<Material**>(fieldPtr) = &Engine::AssetManager::GetAsset<Material>(node.get_number());
+						if (node.is_number()) *reinterpret_cast<Material**>(fieldPtr) = &Engine::AssetManager::GetAsset<Material>(static_cast<uint64_t>(node.get_number()));
 						break;
 					}
 				}

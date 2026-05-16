@@ -39,41 +39,23 @@ libdirs
 	"%{wks.location}/vendor/dawn"
 }
 
+defines 
+{ 
+	"IMGUI_IMPL_WEBGPU_BACKEND_DAWN",
+	"GLFW_INCLUDE_NONE",
+	"GLM_ENABLE_EXPERIMENTAL",
+}
+
 postbuildcommands 
 {
-	"{ECHO} Copying dependencies...",
 	"{COPYFILE} %{wks.location}/vendor/renderdoc/renderdoc.dll %{cfg.targetdir}",
 	"{COPYDIR} %{wks.location}/Resources %{cfg.targetdir}/Resources",
 }
 
-LinkEngine() -- This pulls in the links, includes, and DLL copy commands
-
-filter "system:windows"
-	systemversion "latest"
-	buildoptions { "/permissive-", "/std:c++latest" }
-	defines 
-	{ 
-		"_HAS_CXX23=1",
-		"ENGINE_PLATFORM_WINDOWS",
-		"IMGUI_IMPL_WEBGPU_BACKEND_DAWN",
-		"GLFW_INCLUDE_NONE",
-		"GLM_ENABLE_EXPERIMENTAL",
-		"NOMINMAX", -- prevent windows.h from defining min and max macros
-	}
-
---filter "system:windows"
-
-
-filter "configurations:Debug"
-	defines { "DEBUG", "BUILD_CONFIG=\"Debug\"" }
-	symbols "on"
-	runtime "Debug"
-
-filter "configurations:Release"
-	defines { "RELEASE", "BUILD_CONFIG=\"Release\"" }
-	optimize "on"
-	runtime "Release"
-
-
-filter { "platforms:Web" }
-  removefiles { "**.*" }
+filter "configurations:not Dist"
+	postbuildcommands 
+  {
+    "{COPYFILE} %{wks.location}/bin/" .. outputdir .. "/Engine/Engine.dll %{cfg.targetdir}",
+    "{COPYFILE} %{wks.location}/bin/" .. outputdir .. "/glfw/glfw.dll %{cfg.targetdir}",
+    "{COPYFILE} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
+  }

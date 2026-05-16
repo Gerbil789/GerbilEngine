@@ -22,7 +22,7 @@ namespace Engine
 		MaterialSamplerJSON Sampler;
 
 		// glz::json_t acts like YAML::Node, allowing us to store floats, or arrays of floats dynamically
-		std::map<std::string, glz::json_t> Attributes;
+		std::map<std::string, glz::generic> Attributes;
 		std::map<std::string, uint64_t> Textures;
 	};
 }

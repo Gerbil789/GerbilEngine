@@ -35,7 +35,7 @@ namespace Engine
 		blendState.alpha.operation = wgpu::BlendOperation::Add;
 
 		wgpu::ColorTargetState colorTarget;
-		colorTarget.format = wgpu::TextureFormat::RGBA8Unorm;
+		colorTarget.format = GraphicsContext::GetPreferredSwapChainFormat();
 		colorTarget.blend = &blendState;
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 
