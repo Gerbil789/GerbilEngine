@@ -29,14 +29,11 @@ externalincludedirs
 	"%{wks.location}/vendor/glaze/include",
 }
 
-libdirs 
-{
-	"%{wks.location}/vendor/dawn"
-}
-
 links
 {
 	"Engine",
+	"glfw",
+	"TestProject", --TODO: make this configurable (also in not dist filter)
 }
 
 defines 
@@ -56,13 +53,35 @@ filter "configurations:not Dist"
   {
     "{COPYFILE} %{wks.location}/bin/" .. outputdir .. "/Engine/Engine.dll %{cfg.targetdir}",
     "{COPYFILE} %{wks.location}/bin/" .. outputdir .. "/glfw/glfw.dll %{cfg.targetdir}",
-    "{COPYFILE} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
+    "{COPYFILE} %{wks.location}/vendor/dawn/shared/webgpu_dawn.dll %{cfg.targetdir}",
   }
 
+	removelinks
+	{
+		"TestProject",
+	}
+
+	defines
+	{
+		"ENGINE_SHARED_IMPORT",
+		"WGPU_SHARED_LIBRARY",
+	}
+
+	libdirs 
+	{
+		"%{wks.location}/vendor/dawn/shared",
+	}
+
+filter "configurations:Dist"
+	libdirs
+	{
+		"%{wks.location}/vendor/dawn/static",
+	}
+
+filter "system:windows"
 	links
 	{
-		"glfw",
-		"webgpu_dawn"
+		"webgpu_dawn",
 	}
 
 filter "system:linux"
@@ -84,5 +103,4 @@ filter "system:linux"
 		"Xcursor",
 		"glfw",
     ":libwebgpu_dawn.a", -- force static linking
-		"TestProject"
 	}

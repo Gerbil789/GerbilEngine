@@ -103,7 +103,7 @@ namespace Engine::Input
 		return { static_cast<float>(x), static_cast<float>(y) };
 	}
 
-	ENGINE_API void SetCursorMode(CursorMode mode)
+	void SetCursorMode(CursorMode mode)
 	{
 		int glfwMode = GLFW_CURSOR_NORMAL;
 		switch (mode)
@@ -116,7 +116,7 @@ namespace Engine::Input
 		
 	}
 
-	ENGINE_API CursorMode GetCursorMode()
+	CursorMode GetCursorMode()
 	{
 		int glfwMode = glfwGetInputMode(s_ActiveWindow, GLFW_CURSOR);
 		switch (glfwMode)
@@ -128,7 +128,7 @@ namespace Engine::Input
 		}
 	}
 
-	ENGINE_API void SetCursorPosition(const glm::vec2& position)
+	void SetCursorPosition(const glm::vec2& position)
 	{
 		glfwSetCursorPos(s_ActiveWindow, position.x, position.y);
 		

@@ -1,7 +1,7 @@
 
-#ifdef ENGINE_PLATFORM_WINDOWS
+
 #define WEBGPU_CPP_IMPLEMENTATION
-#endif
+
 #include "TemplateApp.h"
 #include "Engine/Core/Time.h"
 #include "Engine/Utility/File.h"
@@ -25,6 +25,7 @@
 #include "Engine/Graphics/Camera.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Physics/Physics.h"
+#include "Engine/Asset/AssetRegistry.h"
 
 #ifdef DEBUG
 std::string config = "Debug";
@@ -58,7 +59,7 @@ namespace Template
 				wgpu::TextureDescriptor desc;
 				desc.label = { "RendererColorTexture", WGPU_STRLEN };
 				desc.dimension = wgpu::TextureDimension::_2D;
-				desc.format = Engine::GraphicsContext::GetPreferredSwapChainFormat();
+				desc.format = wgpu::TextureFormat::RGBA8Unorm;
 				desc.size = size;
 				desc.mipLevelCount = 1;
 				desc.sampleCount = 1;
@@ -110,7 +111,6 @@ namespace Template
 		std::filesystem::current_path(GetExecutableDir());
 		std::filesystem::path projectDir = "../../../Projects/TestProject";
 
-		//std::filesystem::path projectDir = "C:/Users/vojta/source/repos/GerbilEngine/Projects/TestProject";
 		Engine::Project::Load(projectDir);
 		const Engine::Project& project = Engine::Project::GetActive();
 
@@ -120,12 +120,12 @@ namespace Template
 		GLFW::Initialize();
 
 
-		m_Window.emplace(Engine::WindowSpecification{ "Game", m_Width, m_Height, "Resources/Engine/icons/logo.png" });
-		m_Window->SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
+		m_Window.Initialize(Engine::WindowSpecification{ "Game", m_Width, m_Height, "Resources/Engine/icons/logo.png" });
+		m_Window.SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
 
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());
 
-		Engine::Input::SetActiveWindow(*static_cast<GLFWwindow*>(m_Window->GetNativeWindow()));
+		Engine::Input::SetActiveWindow(*m_Window.GetNativeWindow());
 
 		Engine::g_Renderer.Initialize();
 
@@ -134,12 +134,17 @@ namespace Template
 		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / config / (project.GetTitle() + ".dll");
 		Engine::Runtime::LoadScripts(dllPath);
 
+
 		auto id = project.GetDefaultSceneId();
-		if (id)
+
+		if (!Engine::AssetManager::GetAssetRegistry().GetRecord(id).IsValid())
 		{
-			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
-			Engine::SceneManager::SetActiveScene(scene);
+			LOG_ERROR("Failed to load default scene '{}', loading empty scene instead!", id);
+			id = RESOURCES::SCENE::DEFAULT;
 		}
+
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
+		Engine::SceneManager::SetActiveScene(scene);
 
 		Engine::g_Renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque);
 
@@ -166,9 +171,7 @@ namespace Template
 	TemplateApp::~TemplateApp()
 	{
 		Engine::Runtime::Stop();
-
 		Engine::Audio::Shutdown();
-		m_Window.reset();
 		GLFW::Shutdown();
 	}
 
@@ -178,7 +181,7 @@ namespace Template
 
 		while (m_Running)
 		{
-			if (m_Window->IsMinimized())
+			if (m_Window.IsMinimized())
 			{
 				GLFW::WaitEvents();
 				Engine::Time::BeginFrame();
@@ -193,7 +196,7 @@ namespace Template
 			Engine::PhysicsSystem::Update();
 			Engine::Runtime::Update();				// update game runtime (scripts, audio listener, etc...)
 
-			wgpu::Surface surface = *static_cast<wgpu::Surface*>(m_Window->GetSurface());
+			wgpu::Surface surface = reinterpret_cast<WGPUSurface>(m_Window.GetSurface());
 			wgpu::SurfaceTexture surfaceTexture;
 
 			surface.getCurrentTexture(&surfaceTexture);

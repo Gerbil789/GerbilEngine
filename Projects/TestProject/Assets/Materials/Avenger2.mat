@@ -1,15 +1,1 @@
-{
-  "Shader": 6347426801160351249,
-  "Sampler": {
-    "Filter": 1,
-    "Wrap": 0
-  },
-  "Attributes": {
-    "albedo": [1, 1, 1, 1],
-    "roughness": 1,
-    "metallic": 0,
-    "tiling": [1, 1],
-    "offset": [0, 0]
-  },
-  "Textures": {}
-}
+{"Shader":7,"Sampler":{"Filter":1,"Wrap":0},"Attributes":{"color":[0,0,0,0]},"Textures":{}}

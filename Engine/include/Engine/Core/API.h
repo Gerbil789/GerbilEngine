@@ -1,11 +1,13 @@
 #pragma once
 
+#define ENGINE_API
+
 #ifdef ENGINE_PLATFORM_WINDOWS
-  #ifdef ENGINE_BUILD_SHARED
+  #ifdef ENGINE_SHARED_EXPORT
+    #undef ENGINE_API
     #define ENGINE_API __declspec(dllexport)
-  #else
-     #define ENGINE_API __declspec(dllimport)
+  #elif ENGINE_SHARED_IMPORT
+    #undef ENGINE_API
+    #define ENGINE_API __declspec(dllimport)
   #endif
-#else
-  #define ENGINE_API
 #endif

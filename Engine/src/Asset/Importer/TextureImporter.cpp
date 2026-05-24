@@ -63,7 +63,7 @@ namespace Engine
 				else
 				{
 					stbiData = stbi_load(pathStr.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-					format = Engine::GraphicsContext::GetPreferredSwapChainFormat();
+					format = wgpu::TextureFormat::RGBA8Unorm; //Engine::GraphicsContext::GetPreferredSwapChainFormat();
 				}
 
 				if (!stbiData)

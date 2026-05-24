@@ -53,7 +53,7 @@ namespace Engine
 		pipelineDesc.primitive.cullMode = wgpu::CullMode::None;
 
 		wgpu::ColorTargetState colorTarget;
-		colorTarget.format = Engine::GraphicsContext::GetPreferredSwapChainFormat();
+		colorTarget.format = wgpu::TextureFormat::RGBA8Unorm;
 		//colorTarget.blend = &blendState;
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 

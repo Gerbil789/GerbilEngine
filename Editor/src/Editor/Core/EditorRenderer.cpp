@@ -12,13 +12,13 @@ namespace Editor
 
 	void EditorRenderer::Initialize(const Engine::Window& window)
 	{
-		s_Surface = *static_cast<wgpu::Surface*>(window.GetSurface());
+		s_Surface = wgpu::Surface(window.GetSurface());
 
 		ImGui_ImplGlfw_InitForOther(static_cast<GLFWwindow*>(window.GetNativeWindow()), true);
 
 		ImGui_ImplWGPU_InitInfo initInfo;
 		initInfo.Device = Engine::GraphicsContext::GetDevice();
-		initInfo.RenderTargetFormat = Engine::GraphicsContext::GetPreferredSwapChainFormat();
+		initInfo.RenderTargetFormat = static_cast<WGPUTextureFormat>(window.GetSurfaceFormat());
 		initInfo.DepthStencilFormat = wgpu::TextureFormat::Undefined;
 		ImGui_ImplWGPU_Init(&initInfo);
 	}

@@ -11,16 +11,13 @@ WebGPU based game engine
 #### Setup
 1. **Clone the Project**
 	 - ```git clone https://github.com/Gerbil789/GerbilEngine.git```
-	- *Navigate into the **Scripts** directory*
-2. **Build premake**
-	 - Run `build_premake.bat`
-3. **Generate project files**
+2. **Generate project files**
+	 - *Navigate into the **Scripts** directory*
 	 - Run `generate_project.bat` 
-4. **Build project in Visual Studio**
+3. **Build project in Visual Studio**
 	 - Open solution in VS (`GerbilEngine.sln`)
-	 - Find **`Editor`** project in Solution Explorer
-	 - Right click -> **Build**
-5. **Run**
+	 - Right click Solution -> Build Solution
+4. **Run**
 
 #### Dependencies
 

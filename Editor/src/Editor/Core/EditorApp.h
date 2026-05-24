@@ -10,5 +10,9 @@ namespace Editor
 		EditorApp();
 		~EditorApp();
 		void Run();
+
+	private:
+		Engine::Window m_Window;
+		bool m_Running = true;
 	};
 }

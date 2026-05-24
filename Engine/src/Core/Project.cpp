@@ -65,7 +65,7 @@ namespace Engine
 
 		if (!std::filesystem::exists(configPath))
 		{
-			LOG_ERROR("Config file not found at {}", configPath.string());
+			LOG_ERROR("Config file not found at {}", configPath);
 			return;
 		}
 
@@ -74,7 +74,7 @@ namespace Engine
 
 		if (auto ec = glz::read_file_json(data, configPath.string(), buffer))
 		{
-			LOG_ERROR("Failed to parse JSON in {}: {}", configPath.string(), glz::format_error(ec, buffer));
+			LOG_ERROR("Failed to parse JSON in {}: {}", configPath, glz::format_error(ec, buffer));
 			return;
 		}
 
@@ -106,7 +106,7 @@ namespace Engine
 
 		if (auto ec = glz::write_file_json(outData, path.string(), buffer))
 		{
-			LOG_ERROR("Failed to save project to {}: {}", path.string(), glz::format_error(ec));
+			LOG_ERROR("Failed to save project to {}: {}", path, glz::format_error(ec));
 			return;
 		}
 

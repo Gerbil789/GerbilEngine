@@ -9,6 +9,7 @@
 #include "Engine/Graphics/Material.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Audio/AudioClip.h"
+#include "Engine/Graphics/Camera.h"
 
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/Importer/MeshImporter.h"
@@ -103,6 +104,13 @@ namespace Engine
       m_Textures.insert_or_assign(RESOURCES::TEXTURE::HDR, std::move(*HDRTexture));
     }
 
+		auto shader = ShaderImporter::LoadShader("Resources/Engine/shaders/flat.wgsl");
+    if(shader)
+    {
+      shader->id = RESOURCES::SHADER::DEFAULT;
+      m_Shaders.insert_or_assign(RESOURCES::SHADER::DEFAULT, std::move(*shader));
+    }
+
     auto whiteMaterial = Materials::GetDefault();
     if(whiteMaterial)
     {
@@ -116,6 +124,26 @@ namespace Engine
       pinkMaterial->id = RESOURCES::MATERIAL::PINK;
       m_Materials.insert_or_assign(RESOURCES::MATERIAL::PINK, std::move(*pinkMaterial));
     }
+
+		auto& scene = AssetManager::CreateAsset<Scene>();
+		scene.id = RESOURCES::SCENE::DEFAULT;
+
+    auto& registry = scene.GetRegistry();
+
+		auto cameraEntity = scene.CreateEntity("Camera");
+    auto& cc = registry.emplace<CameraComponent>(cameraEntity);
+    std::unique_ptr<Camera> camera = std::make_unique<Camera>();
+    camera->SetBackground(Camera::Background::Skybox);
+		cc.camera = camera.release();
+		auto& tc = registry.get<TransformComponent>(cameraEntity);
+		tc.position = { 0.0f, 0.0f, -10.0f };
+
+
+    auto cubeEntity = scene.CreateEntity("Cube");
+    auto& mc = registry.emplace<MeshComponent>(cubeEntity, RESOURCES::MESH::CUBE);
+    mc.materials = { RESOURCES::MATERIAL::WHITE };
+
+		m_Scenes.insert_or_assign(RESOURCES::SCENE::DEFAULT, std::move(scene));
   }
 
   AssetRegistry& AssetManager::GetAssetRegistry()

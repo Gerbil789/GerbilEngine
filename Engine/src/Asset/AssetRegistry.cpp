@@ -51,30 +51,33 @@ namespace Engine
 		std::vector<AssetRecord> Assets;
 	};
 
-	void AssetRegistry::Load(const std::filesystem::path& path) //TODO: split into functions (load from file, scan directory, ...) and make better logs
+	void AssetRegistry::Load(const std::filesystem::path& path)
 	{
 		if (!std::filesystem::exists(path))
 		{
-			LOG_ERROR("Asset registry file '{}' does not exist.", path);
-			return;
+			LOG_WARNING("Asset registry file '{}' does not exist, creating new one...", path);
+			std::ofstream outFile(path);
+			if (!outFile)
+			{
+				LOG_ERROR("Failed to create asset registry file at '{}'", path);
+				return;
+			}
+			outFile << "{\n  \"Assets\": []\n}"; // Write an empty registry structure
 		}
 
-
-		// 1. Parse directly into our wrapper struct
 		RegistryFile fileData;
-		std::string buffer; // <--- ADD THIS: The memory buffer Glaze will use
-
-		// Pass the buffer as the 3rd argument
-		auto ec = glz::read_file_json(fileData, path.string(), buffer);
-
-		if (ec) {
-			LOG_ERROR("Registry Load Error: {}", glz::format_error(ec, buffer)); // Bonus: passing the buffer here gives you the exact line/character of the error!
-			return;
-		}
+		std::string buffer;
 		auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
 		m_Records.clear();
 
-		// 2. Process the loaded assets
+		auto ec = glz::read_file_json(fileData, path.string(), buffer);
+
+		if (ec) 
+		{
+			LOG_ERROR("Registry Load Error: {}", glz::format_error(ec, buffer));
+			return;
+		}
+
 		for (auto& record : fileData.Assets)
 		{
 			record.path = assetsDir / record.path;
@@ -85,52 +88,7 @@ namespace Engine
 			m_Records[record.id] = std::move(record);
 		}
 
-		// 3. Scan disk for new assets
-		for (auto& file : std::filesystem::recursive_directory_iterator(assetsDir))
-		{
-			if (!file.is_regular_file() || file.is_directory())
-			{
-				continue;	// Skip non-regular files (directories, symlinks, etc.)
-			}
-
-			auto ext = file.path().extension().string();
-			if (ext.empty())
-			{
-				continue; // Skip files without extension
-			}
-
-			auto type = GetAssetTypeFromExtension(ext);
-			if (type == AssetType::Unknown)
-			{
-				LOG_WARNING("File '{}' has unknown asset type, skipping.", file.path());
-				continue;
-			}
-
-			if (type == AssetType::Other)
-			{
-				continue; // Skip 'Other' types like .txt, .md, etc.
-			}
-
-			bool found = false;
-			for (auto& [id, meta] : m_Records)
-			{
-				if (meta.path == file.path())
-				{
-					found = true;
-					break;
-				}
-			}
-
-			if (!found)
-			{
-				AssetRecord record;
-				record.id = Uuid(); // generate new UUID
-				record.path = file.path();
-				record.type = type;
-				LOG_INFO("Discovered new asset '{}'", record.path);
-				m_Records[record.id] = std::move(record);
-			}
-		}
+		ScanDirectory(assetsDir); // look for new files
 
 		Save(path);
 	}
@@ -145,16 +103,15 @@ namespace Engine
 		for (const auto& [id, record] : m_Records)
 		{
 			AssetRecord diskCopy = record;
-			// Convert to relative path for storage
 			diskCopy.path = std::filesystem::relative(record.path, assetsDir);
 			outData.Assets.push_back(std::move(diskCopy));
 		}
 
 		std::string buffer;
-		// Write the wrapper struct to disk
 		auto ec = glz::write_file_json(outData, path.string(), buffer);
 
-		if (ec) {
+		if (ec) 
+		{
 			LOG_ERROR("Failed to save registry: {}", glz::format_error(ec));
 		}
 	}
@@ -219,5 +176,34 @@ namespace Engine
 	void AssetRegistry::Clear()
 	{ 
 		m_Records.clear(); 
+	}
+
+	void AssetRegistry::ScanDirectory(const std::filesystem::path& directory)
+	{
+		for (const auto& entry : std::filesystem::recursive_directory_iterator(directory))
+		{
+			if (!entry.is_regular_file()) continue;
+
+			const auto& path = entry.path();
+			if (!path.has_extension()) continue;
+
+			AssetType type = GetAssetTypeFromExtension(path.extension().string());
+
+			if (type == AssetType::Other) continue;
+			if (type == AssetType::Unknown)
+			{
+				LOG_WARNING("File '{}' has unknown asset type, skipping.", path);
+				continue;
+			}
+
+			auto it = std::find_if(m_Records.begin(), m_Records.end(), [&path](const auto& pair) { return pair.second.path == path; });
+			if (it == m_Records.end())
+			{
+				AssetRecord record{ Uuid(), path, type };
+
+				LOG_INFO("Discovered new asset '{}'", path);
+				m_Records[record.id] = std::move(record);
+			}
+		}
 	}
 }

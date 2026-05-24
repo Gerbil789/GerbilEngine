@@ -43,7 +43,7 @@ namespace Editor
 		wgpu::TextureDescriptor desc;
 		desc.label = { "ThumbnailTexture", WGPU_STRLEN };
 		desc.dimension = wgpu::TextureDimension::_2D;
-		desc.format = Engine::GraphicsContext::GetPreferredSwapChainFormat();
+		desc.format = wgpu::TextureFormat::RGBA8Unorm;
 		desc.size = { 64, 64, 1 };
 		desc.mipLevelCount = 1;
 		desc.sampleCount = 1;

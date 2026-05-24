@@ -35,11 +35,6 @@ links
 	"miniaudio",
 }
 
-libdirs
-{
-	"%{wks.location}/vendor/dawn"
-}
-
 defines
 {
 	"GLFW_INCLUDE_NONE",
@@ -49,13 +44,42 @@ defines
 
 filter "configurations:not Dist"
 	kind "SharedLib"
+	defines
+	{
+		"ENGINE_SHARED_EXPORT",
+		"WGPU_SHARED_LIBRARY",
+	}
+
+	libdirs
+	{
+		"%{wks.location}/vendor/dawn/shared"
+	}
+
+
+filter "configurations:Dist"
+	libdirs
+	{
+		"%{wks.location}/vendor/dawn/static"
+	}
+
+
+filter {"system:windows", "configurations:Dist"}
+	disablewarnings { "4006" }
+
+	links 
+	{
+    "dxguid.lib",
+    "dxgi.lib",
+    "d3d11.lib",
+    "d3d12.lib",
+    "d3dcompiler.lib",
+		"mincore.lib",
+	}
+
+filter "system:windows"
 	links
 	{
 		"webgpu_dawn",
-	}
-	defines
-	{
-		"ENGINE_BUILD_SHARED",
 	}
 
 filter "system:linux"

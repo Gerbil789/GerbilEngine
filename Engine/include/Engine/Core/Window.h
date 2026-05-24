@@ -7,6 +7,9 @@
 
 struct GLFWwindow;
 
+struct WGPUSurfaceImpl;
+using WGPUSurface = WGPUSurfaceImpl*;
+
 namespace GLFW
 {
 	ENGINE_API void Initialize();
@@ -32,13 +35,16 @@ namespace Engine
 	class ENGINE_API Window
 	{
 	public:
+		Window() = default;
 		Window(const WindowSpecification& specification);
+		void Initialize(const WindowSpecification& specification);
 		~Window();
 
 		uint32_t GetWidth() const { return m_Data.width; }
 		uint32_t GetHeight() const { return m_Data.height; }
-		void* GetNativeWindow() const { return m_Window; } // GLFWwindow*
-		void* GetSurface() const; // wgpu::Surface
+		GLFWwindow* GetNativeWindow() const { return m_Window; }
+		WGPUSurface GetSurface() const;
+		uint32_t GetSurfaceFormat() const;
 
 		void SetEventCallback(const std::function<void(Event&)>& callback) { m_Data.callback = callback; }
 

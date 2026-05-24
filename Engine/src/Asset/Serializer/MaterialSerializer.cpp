@@ -1,6 +1,8 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetRegistry.h"
+#include "Engine/Core/Resources.h"
 #include <glaze/glaze.hpp>
 #include <fstream>
 
@@ -134,8 +136,13 @@ namespace Engine
 
 		if (auto ec = glz::read_file_json(data, path.string(), buffer))
 		{
-			LOG_ERROR("JSON parse error in {}: {}", path.string(), glz::format_error(ec, buffer));
+			LOG_ERROR("JSON parse error in {}: {}", path, glz::format_error(ec, buffer));
 			return std::nullopt;
+		}
+
+		if (!AssetManager::GetAssetRegistry().GetRecord(Uuid(data.Shader)).IsValid())
+		{
+			data.Shader = RESOURCES::SHADER::DEFAULT;
 		}
 
 		Engine::Shader& shader = Engine::AssetManager::GetAsset<Shader>(Uuid(data.Shader));
@@ -202,7 +209,10 @@ namespace Engine
 		// Deserialize Textures
 		for (const auto& [name, id] : data.Textures)
 		{
-			spec.textureDefaults[name] = Uuid(id);
+			if(AssetManager::GetAssetRegistry().GetRecord(Uuid(id)).IsValid())
+			{
+				spec.textureDefaults[name] = Uuid(id);
+			}
 		}
 
 		return Material(spec);

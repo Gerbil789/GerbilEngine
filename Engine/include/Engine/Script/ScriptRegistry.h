@@ -8,11 +8,13 @@
 #include <functional>
 #include <typeinfo>
 
-#ifdef ENGINE_PLATFORM_WINDOWS
-  #ifdef ENGINE_BUILD_SHARED
-    #define GAME_API  __declspec(dllexport)
+#if defined(DIST) // Or a specific STATIC define if you prefer
+  #define GAME_API 
+#elif defined(ENGINE_PLATFORM_WINDOWS)
+  #ifdef GAME_SHARED_EXPORT
+    #define GAME_API __declspec(dllexport)
   #else
-    #define GAME_API  __declspec(dllimport)     
+    #define GAME_API __declspec(dllimport)
   #endif
 #else
   #define GAME_API

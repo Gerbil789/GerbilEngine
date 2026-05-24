@@ -28,12 +28,6 @@ public:
   void OnDestroy() override;
 	void OnEvent(const Engine::Event& event) override;
 
-	//void OnCollisionEnter(entt::entity other) override;
-	//void OnCollisionExit(entt::entity other) override;
-
-	//void OnTriggerEnter(entt::entity other) override;
-	//void OnTriggerExit(entt::entity other) override;
-
 private:
   float m_LastMouseX = 0.0f;
   float m_LastMouseY = 0.0f;

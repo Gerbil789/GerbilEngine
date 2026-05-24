@@ -54,6 +54,9 @@ namespace Engine
 		void Clear();
 
 	private:
+		void ScanDirectory(const std::filesystem::path& directory);
+
+	private:
 		std::unordered_map<Uuid, AssetRecord> m_Records;
 	};
 }

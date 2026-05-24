@@ -1,4 +1,7 @@
+#ifndef DIST
 #define WEBGPU_CPP_IMPLEMENTATION
+#endif
+
 #include "EditorApp.h"
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Core/EditorWindowManager.h"
@@ -27,24 +30,12 @@
 #include "Engine/Core/Log.h"
 #include "Engine/Scene/TransformSystem.h"
 
-#include "Engine/Scene/Components.h"
-
-#ifdef DEBUG
-std::string config = "Debug";
-#elif RELEASE
-std::string config = "Release";
-#elif DIST
-std::string config = "Dist";
-#endif
+#include "Engine/Core/Resources.h"
+#include "Engine/Asset/AssetRegistry.h"
+#include "Engine/Core/Configuration.h"
 
 namespace Editor
 {
-	namespace
-	{
-		std::optional<Engine::Window> m_Window;
-		bool m_Running = true;
-	}
-
 	EditorApp::EditorApp()
 	{
 		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
@@ -53,42 +44,36 @@ namespace Editor
 		const Engine::Project& project = Engine::Project::GetActive();
 
 		Engine::GraphicsContext::Initialize();
-
 		GLFW::Initialize();
 
-
-
-		m_Window.emplace(Engine::WindowSpecification{ std::format("Gerbil Editor - {}", config) , 1600, 900, "Resources/Engine/icons/logo.png" });
-		m_Window->SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
+		m_Window.Initialize({ std::format("Gerbil Editor - {}", Engine::Configuration) , 1600, 900, "Resources/Engine/icons/logo.png" });
+		m_Window.SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
 
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());
 
-		Engine::Input::SetActiveWindow(*static_cast<GLFWwindow*>(m_Window->GetNativeWindow()));
+		Engine::Input::SetActiveWindow(*m_Window.GetNativeWindow());
 		Engine::g_Renderer.Initialize(); //TODO: i dont like global variable
 		EditorCommandManager::Initialize();
 		FileWatcher::WatchDirectory(project.GetAssetsDirectory());
 		Engine::Audio::Initialize();
 		IconManager::Initialize();
-		EditorWindowManager::Initialize(*m_Window);
+		EditorWindowManager::Initialize(m_Window);
 
-		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / config / (project.GetTitle() + ".dll");
+		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / Engine::Configuration / (project.GetTitle() + ".dll");
 		Engine::Runtime::LoadScripts(dllPath);
 
 		auto id = project.GetDefaultSceneId();
-		if(id)
-		{
-			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
-			Engine::SceneManager::SetActiveScene(scene);
-		}
-		else
-		{
-			//Create default scene
-			auto& scene = Engine::AssetManager::CreateAsset<Engine::Scene>();
-			//auto entity = scene.CreateEntity("Camera");
-			//entity.emplace<Engine::CameraComponent>();
 
+		if(!Engine::AssetManager::GetAssetRegistry().GetRecord(id).IsValid())
+		{
+			LOG_ERROR("Failed to load default scene '{}', loading empty scene instead!", id);
+			id = RESOURCES::SCENE::DEFAULT;
 		}
-		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([](auto&) {m_Running = false; LOG_INFO("Application closed"); });
+
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
+		Engine::SceneManager::SetActiveScene(scene);
+
+		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
 		LOG_INFO("--- Editor initialization complete ---");
 	}
 
@@ -97,7 +82,6 @@ namespace Editor
 		FileWatcher::Shutdown();
 		Engine::Audio::Shutdown();
 		EditorWindowManager::Shutdown();
-		m_Window.reset();
 		GLFW::Shutdown();
 		Engine::GraphicsContext::Shutdown();
 	}
@@ -106,7 +90,7 @@ namespace Editor
 	{
 		while (m_Running)
 		{
-			if (m_Window->IsMinimized())
+			if (m_Window.IsMinimized())
 			{
 				GLFW::WaitEvents();
 				Engine::Time::BeginFrame();

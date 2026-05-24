@@ -5,11 +5,6 @@ warnings "Off"
 
 files
 {
-  "src/**.cpp"
-}
-
-files
-{
 	"include/GLFW/**.h",
 
   "src/glfw_config.h",
@@ -28,7 +23,7 @@ files
   "src/osmesa_context.c"
 }
 
-filter "configurations:not Dist"
+filter { "system:windows", "configurations:not Dist" }
 	kind "SharedLib"
   defines 
   { 

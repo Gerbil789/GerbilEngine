@@ -4,6 +4,7 @@
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Graphics/WebGPUUtils.h"
 #include <stb_image.h>
 #include <GLFW/glfw3.h>
 
@@ -46,6 +47,7 @@ namespace GLFW
 namespace Engine
 {
 	wgpu::Surface m_Surface;
+	wgpu::TextureFormat m_SurfaceFormat;
 
 	wgpu::Surface CreateSurface(GLFWwindow* window)
 	{
@@ -71,6 +73,11 @@ namespace Engine
 
 	Window::Window(const WindowSpecification& specification)
 	{
+		Initialize(specification);
+	}
+
+	void Window::Initialize(const WindowSpecification& specification)
+	{
 		m_Data.width = specification.width;
 		m_Data.height = specification.height;
 
@@ -79,7 +86,7 @@ namespace Engine
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		m_Window = glfwCreateWindow(static_cast<int>(m_Data.width), static_cast<int>(m_Data.height), specification.title.c_str(), nullptr, nullptr);
 
-		if(!m_Window)
+		if (!m_Window)
 		{
 			throw std::runtime_error("Could not create GLFW window!");
 		}
@@ -96,12 +103,20 @@ namespace Engine
 
 	Window::~Window()
 	{
-		glfwDestroyWindow(m_Window);
+		if (m_Window)
+		{
+			glfwDestroyWindow(m_Window);
+		}
 	}
 
-	void* Window::GetSurface() const
+	WGPUSurface Window::GetSurface() const
 	{
-		return static_cast<void*>(&m_Surface);
+		return m_Surface;
+	}
+
+	uint32_t Window::GetSurfaceFormat() const
+	{
+		return static_cast<uint32_t>(m_SurfaceFormat);
 	}
 
 	void Window::SetMode(WindowMode mode)
@@ -262,14 +277,13 @@ namespace Engine
 		wgpu::SurfaceCapabilities capabilities;
 		m_Surface.getCapabilities(GraphicsContext::GetAdapter(), &capabilities);
 
-		wgpu::TextureFormat preferredFormat = capabilities.formats[0];
-		GraphicsContext::SetPreferredSwapChainFormat(preferredFormat);
+		m_SurfaceFormat = capabilities.formats[0];
 
 		wgpu::SurfaceConfiguration config;
 		config.width = width;
 		config.height = height;
 		config.device = GraphicsContext::GetDevice();
-		config.format = preferredFormat; //wgpu::TextureFormat::RGBA8Unorm
+		config.format = m_SurfaceFormat;
 		config.usage = wgpu::TextureUsage::RenderAttachment;
 		config.presentMode = wgpu::PresentMode::Immediate;
 		config.alphaMode = wgpu::CompositeAlphaMode::Opaque;
@@ -283,20 +297,17 @@ namespace Engine
 
 	void Window::SetWindowIcon(const std::filesystem::path& path)
 	{
-		int iconWidth, iconHeight, channels;
-		unsigned char* iconPixels = stbi_load(path.string().c_str(), &iconWidth, &iconHeight, &channels, STBI_rgb_alpha);
+		int width, height, channels;
+		unsigned char* data = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
 
-		if (!iconPixels)
+		if (!data)
 		{
-			LOG_ERROR("Failed to load icon from path: {}", path);
+			LOG_ERROR("Failed to load icon from: {}", path);
 			return;
 		}
 
-		GLFWimage icon;
-		icon.width = iconWidth;
-		icon.height = iconHeight;
-		icon.pixels = iconPixels;
+		GLFWimage icon{ width, height, data };
 		glfwSetWindowIcon(m_Window, 1, &icon);
-		stbi_image_free(iconPixels);
+		stbi_image_free(data);
 	}
 }

@@ -1,5 +1,4 @@
 #include "enginepch.h"
-#define WEBGPU_CPP_IMPLEMENTATION // must be defined before including webgpu.hpp
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Graphics/SamplerPool.h"
@@ -13,8 +12,6 @@ namespace Engine::GraphicsContext
 		wgpu::Instance s_Instance;
 		wgpu::Device s_Device;
 		wgpu::Queue s_Queue;
-
-		wgpu::TextureFormat s_PreferredSwapChainFormat;
 
 		uint32_t s_UniformBufferOffsetAlignment;
 		uint32_t s_StorageBufferOffsetAlignment;
@@ -102,7 +99,6 @@ namespace Engine::GraphicsContext
 		s_Device.release();
 		s_Instance.release();
 		s_Adapter.release();
-
 		Engine::SamplerPool::Shutdown();
 	}
 
@@ -124,16 +120,6 @@ namespace Engine::GraphicsContext
 	wgpu::Queue GetQueue()
 	{
 		return s_Queue;
-	}
-
-	void SetPreferredSwapChainFormat(wgpu::TextureFormat format)
-	{
-		s_PreferredSwapChainFormat = format;
-	}
-
-	wgpu::TextureFormat GetPreferredSwapChainFormat()
-	{
-		return s_PreferredSwapChainFormat;
 	}
 
 	uint32_t GetUniformBufferOffsetAlignment()

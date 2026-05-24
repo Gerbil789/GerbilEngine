@@ -27,7 +27,7 @@ links
 	"Engine",
 }
 
-filter "configurations:not Dist"
+filter { "system:windows", "configurations:not Dist" }
 	kind "SharedLib"
 	postbuildcommands 
 	{
@@ -36,11 +36,5 @@ filter "configurations:not Dist"
 
 	defines
 	{
-		"ENGINE_BUILD_SHARED",
-	}
-
-filter "system:windows"
-	defines
-	{
-		"GLFW_INCLUDE_NONE", --TODO: remove?
+		"GAME_SHARED_EXPORT",
 	}

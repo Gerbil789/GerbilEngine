@@ -101,7 +101,7 @@ namespace Engine
 		blend.alpha.dstFactor = wgpu::BlendFactor::One;
 
 		wgpu::ColorTargetState colorTarget;
-		colorTarget.format = Engine::GraphicsContext::GetPreferredSwapChainFormat();
+		colorTarget.format = wgpu::TextureFormat::RGBA8Unorm;
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 		colorTarget.blend = &blend;
 

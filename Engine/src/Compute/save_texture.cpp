@@ -8,7 +8,7 @@
 
 uint64_t m_bufferSize = 0;
 
-bool ENGINE_API saveTexture(const std::filesystem::path path, wgpu::Texture texture, int mipLevel) {
+bool saveTexture(const std::filesystem::path path, wgpu::Texture texture, int mipLevel) {
 	using namespace wgpu;
 
 	if (texture.getDimension() != TextureDimension::_2D) {

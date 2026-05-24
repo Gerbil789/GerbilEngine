@@ -20,9 +20,19 @@ namespace RESOURCES
 		static constexpr Engine::Uuid HDR = Engine::Uuid{ 6 };
 	}
 
+	namespace SHADER
+	{
+		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 7 };
+	}
+
 	namespace MATERIAL
 	{
-		static constexpr Engine::Uuid WHITE = Engine::Uuid{ 7 };
-		static constexpr Engine::Uuid PINK = Engine::Uuid{ 8 };
+		static constexpr Engine::Uuid WHITE = Engine::Uuid{ 8 };
+		static constexpr Engine::Uuid PINK = Engine::Uuid{ 9 };
+	}
+
+	namespace SCENE
+	{
+		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 10 };
 	}
 }

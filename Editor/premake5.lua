@@ -34,11 +34,6 @@ links
 	"webgpu_dawn"
 }
 
-libdirs 
-{
-	"%{wks.location}/vendor/dawn"
-}
-
 defines 
 { 
 	"IMGUI_IMPL_WEBGPU_BACKEND_DAWN",
@@ -57,5 +52,21 @@ filter "configurations:not Dist"
   {
     "{COPYFILE} %{wks.location}/bin/" .. outputdir .. "/Engine/Engine.dll %{cfg.targetdir}",
     "{COPYFILE} %{wks.location}/bin/" .. outputdir .. "/glfw/glfw.dll %{cfg.targetdir}",
-    "{COPYFILE} %{wks.location}/vendor/dawn/webgpu_dawn.dll %{cfg.targetdir}",
+    "{COPYFILE} %{wks.location}/vendor/dawn/shared/webgpu_dawn.dll %{cfg.targetdir}",
   }
+
+	defines
+	{
+		"ENGINE_SHARED_IMPORT",
+	}
+
+	libdirs 
+	{
+		"%{wks.location}/vendor/dawn/shared",
+	}
+
+filter "configurations:Dist"
+	libdirs
+	{
+		"%{wks.location}/vendor/dawn/static",
+	}
