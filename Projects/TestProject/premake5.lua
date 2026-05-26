@@ -31,7 +31,7 @@ filter { "system:windows", "configurations:not Dist" }
 	kind "SharedLib"
 	postbuildcommands 
 	{
-		"{COPYFILE} %{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Engine/Engine.dll %{cfg.targetdir}"
+		"{COPYFILE} %{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Engine.dll %{cfg.targetdir}"
 	}
 
 	defines

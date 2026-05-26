@@ -3,40 +3,35 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Asset/AssetRegistry.h"
-#include "Engine/Scene/TransformSystem.h"
 #include "Engine/Core/Project.h"
+#include "Engine/Utility/Path.h"
 
 namespace Engine::SceneManager
 {
-	static Scene s_ActiveScene;
+	static Scene* s_ActiveScene = nullptr;
 
-	void SetActiveScene(Scene& scene)
+	void SetActiveScene(Uuid id)
 	{
-		s_ActiveScene = std::move(scene);
-		Engine::TransformSystem::SetScene();
-		LOG_INFO("Active scene set to {}", s_ActiveScene.id);
+		if(s_ActiveScene && s_ActiveScene->id == id)
+		{
+			LOG_WARNING("Scene {} is already active", id);
+			return;
+		}
+
+		auto& scene = AssetManager::GetAsset<Scene>(id);
+		s_ActiveScene = &scene;
+		LOG_INFO("Active scene set to {}", id);
 	}
 
 	Scene& GetActiveScene()
 	{
-		return s_ActiveScene;
+		return *s_ActiveScene;
 	}
 
-	void SaveScene()
+	void SaveScene(const std::filesystem::path& path)
 	{
-		auto assetPath = Engine::AssetManager::GetAssetRegistry().GetPath(s_ActiveScene.id);
-
-		if(assetPath.empty())
-		{
-			LOG_ERROR("Current scene has no path");
-			return;
-		}
-
-		auto path = Engine::Project::GetActive().GetAssetsDirectory() / assetPath;
-
-		SceneSerializer::Serialize(s_ActiveScene, path);
-
-		LOG_INFO("Scene {} saved to file {}", s_ActiveScene.id, path);
+		SceneSerializer::Serialize(*s_ActiveScene, path);
+		LOG_INFO("Scene {} saved to file {}", s_ActiveScene->id, path);
 	}
 
 	void SaveSceneAs()

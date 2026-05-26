@@ -151,7 +151,7 @@ namespace Engine
 		entries[1].binding = 1;
 		entries[1].sampler = envSampler;
 
-		auto brdfTexture = TextureImporter::LoadTexture("Resources/Engine/hdr/PG2/brdf_integration_map_ct_ggx.hdr").value();
+		auto brdfTexture = TextureImporter::LoadTexture("Resources/Engine/hdr/brdf_integration_map_ct_ggx.hdr").value();
 		entries[2].binding = 2;
 		entries[2].textureView = brdfTexture.GetTextureView();
 

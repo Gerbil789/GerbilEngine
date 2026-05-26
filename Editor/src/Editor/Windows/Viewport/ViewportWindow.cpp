@@ -29,7 +29,7 @@ namespace Editor
 	namespace
 	{
 		static Engine::Camera m_Camera;
-		static EditorPicker* s_EntityPicker = nullptr;
+		static EditorPicker* s_EntityPicker = nullptr; //TODO: why is this a pointer?
 		static ViewportCameraController s_Controller;
 
 		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
@@ -305,7 +305,7 @@ namespace Editor
 				after.push_back(afterData);
 			}
 
-			EditorCommandManager::Enqueue(std::make_unique<TransformEntitiesCommand>(entities, before, after));
+			EditorCommandManager::TransformEntities(entities, before, after);
 		}
 
 		m_GizmoPreviouslyUsed = isUsing;
@@ -348,12 +348,9 @@ namespace Editor
 					SelectionManager::Clear(SelectionType::Entity);
 
 					Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
-					auto cameraEntity = scene.GetActiveCamera();
-					if (cameraEntity != entt::null)
+					Engine::Camera* camera = scene.GetActiveCamera();
+					if (camera)
 					{
-						entt::registry& registry = scene.GetRegistry();
-
-						Engine::Camera* camera = registry.get<Engine::CameraComponent>(cameraEntity).camera;
 						camera->SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
 						Engine::g_Renderer.SetCamera(camera);
 					}

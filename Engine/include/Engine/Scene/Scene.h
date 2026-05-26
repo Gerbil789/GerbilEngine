@@ -6,23 +6,26 @@
 
 namespace Engine
 {
+	class Camera;
+
 	class ENGINE_API Scene : public Asset
 	{
 	public:
 		Scene() = default;
 		~Scene();
 
+		Scene(const Scene& other);
+		Scene& operator=(const Scene& other);
+
 		Scene(Scene&& other) noexcept;
 		Scene& operator=(Scene&& other) noexcept;
-
-		//static Scene Copy(Scene& other);
 
 		entt::entity CreateEntity(const std::string& name = "new entity");
 
 		entt::entity GetEntity(Uuid uuid);
-		entt::entity GetActiveCamera();
-		void SetActiveCamera(entt::entity entity);
 		entt::registry& GetRegistry() { return m_Registry; }
+
+		Camera* GetActiveCamera() const;
 
 		template<typename... Components>
 		std::vector<entt::entity> GetEntities(bool includeDisabled = false)
@@ -42,7 +45,15 @@ namespace Engine
 		}
 
 	private:
+		template<typename T>
+		void CopyComponentIfExists(entt::entity dst, entt::entity src, const entt::registry& srcRegistry)
+		{
+			if (srcRegistry.any_of<T>(src))
+			{
+				m_Registry.emplace_or_replace<T>(dst, srcRegistry.get<T>(src));
+			}
+		}
+	private:
 		entt::registry m_Registry;
-		entt::entity m_ActiveCamera{ entt::null };
 	};
 }

@@ -18,14 +18,42 @@ namespace Editor
       });
   }
 
+  void EditorCommandManager::SetContext(Engine::Scene* scene)
+  { 
+    s_Context = scene;
+
+		//clear stacks
+    while (!s_UndoStack.empty())
+    {
+      s_UndoStack.pop();
+    }
+    while (!s_RedoStack.empty())
+    {
+      s_RedoStack.pop();
+    }
+		s_Deferred.clear();
+  }
+
 	void EditorCommandManager::CreateEntity(const std::string& name)
   {
-    Enqueue(std::make_unique<CreateEntityCommand>(name));
+    Enqueue(std::make_unique<CreateEntityCommand>(s_Context, name));
   }
 
 	void EditorCommandManager::DeleteEntity(entt::entity entity)
   {
-    Enqueue(std::make_unique<DeleteEntityCommand>(entity));
+    Enqueue(std::make_unique<DeleteEntityCommand>(s_Context, entity));
+  }
+
+  void EditorCommandManager::TransformEntity(entt::entity entity, const TransformData& before, const TransformData& after)
+  {
+		entt::registry& registry = s_Context->GetRegistry();
+		Enqueue(std::make_unique<TransformEntityCommand>(registry, entity, before, after));
+  }
+
+  void EditorCommandManager::TransformEntities(const std::vector<entt::entity>& entities, const std::vector<TransformData>& before, const std::vector<TransformData>& after)
+  {
+		entt::registry& registry = s_Context->GetRegistry();
+		Enqueue(std::make_unique<TransformEntitiesCommand>(registry, entities, before, after));
   }
 
   void EditorCommandManager::Enqueue(std::unique_ptr<ICommand> cmd)

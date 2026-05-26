@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Core/UUID.h"
+#include <string>
 
 namespace Engine
 {
@@ -8,5 +9,10 @@ namespace Engine
 	{
 	public:
 		Uuid id = Uuid{ 0 };
+
+#ifdef GERBIL_EDITOR
+		std::string editor_name = "Unnamed Asset";
+#endif
+
 	};
 }

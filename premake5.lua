@@ -35,12 +35,12 @@ filter "system:linux"
   }
 
 filter "configurations:Debug"
-	defines { "DEBUG" }
+	defines { "DEBUG", "GERBIL_EDITOR" }
 	symbols "on"
 	runtime "Debug"
 
 filter "configurations:Release"
-	defines { "RELEASE" }
+	defines { "RELEASE", "GERBIL_EDITOR" }
 	optimize "on"
 	runtime "Release"
 
@@ -55,7 +55,7 @@ filter {}
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
-targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+targetdir ("bin/" .. outputdir)
 objdir    ("bin-int/" .. outputdir .. "/%{prj.name}")
 
 group "Dependencies"

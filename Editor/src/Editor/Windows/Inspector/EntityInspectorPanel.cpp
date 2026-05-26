@@ -15,7 +15,6 @@
 #include "Engine/Audio/AudioClip.h"
 
 #include "Editor/Core/SelectionManager.h"
-#include "Editor/Windows/MaterialEditorWindow.h"
 
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Asset/AssetRegistry.h"
@@ -25,6 +24,7 @@
 #include "Editor/Command/ComponentSnapshotCommand.h"
 #include "Editor/Command/AddComponentCommand.h"
 #include "Editor/Command/RemoveComponentCommand.h"
+
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -142,7 +142,7 @@ namespace Editor
 
 			if (memcmp(&s_TransformBefore, &after, sizeof(TransformData)) != 0) //TODO: float comparison is unsafe
 			{
-				EditorCommandManager::Enqueue(std::make_unique<TransformEntityCommand>(entity, s_TransformBefore, after));
+				EditorCommandManager::TransformEntity(entity, s_TransformBefore, after);
 			}
 		}
 	}
@@ -242,8 +242,7 @@ namespace Editor
 			ImGui::PushID(static_cast<int>(i));
 			if (ImGui::Button(text.c_str(), ImVec2(-FLT_MIN, 0)))
 			{
-				auto& material = Engine::AssetManager::GetAsset<Engine::Material>(materialId);
-				MaterialEditorWindow::SetMaterial(&material);
+				SelectionManager::Select(SelectionType::Asset, materialId);
 			}
 			DragDropTarget{}.AcceptAsset<Engine::AssetType::Material>([&](Engine::Uuid id) { component.materials[i] = id; });
 			ImGui::PopID();

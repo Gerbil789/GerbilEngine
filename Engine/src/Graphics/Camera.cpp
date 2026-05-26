@@ -175,68 +175,10 @@ namespace Engine
 		UpdateProjectionMatrix();
 	}
 
-	static glm::mat4 LookAtLH(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up)
-	{
-		glm::vec3 f = glm::normalize(target - eye);
-		glm::vec3 r = glm::normalize(glm::cross(up, f));
-		glm::vec3 u = glm::cross(f, r);
-
-		glm::mat4 result(1.0f);
-
-		result[0][0] = r.x;
-		result[1][0] = r.y;
-		result[2][0] = r.z;
-		result[3][0] = -glm::dot(r, eye);
-
-		result[0][1] = u.x;
-		result[1][1] = u.y;
-		result[2][1] = u.z;
-		result[3][1] = -glm::dot(u, eye);
-
-		result[0][2] = f.x;
-		result[1][2] = f.y;
-		result[2][2] = f.z;
-		result[3][2] = -glm::dot(f, eye);
-
-		return result;
-	}
-
-	static glm::mat4 PerspectiveLH_ZO(float fov, float aspect, float nearZ, float farZ)
-	{
-		float yScale = 1.0f / tanf(fov * 0.5f);
-		float xScale = yScale / aspect;
-
-		glm::mat4 result(0.0f);
-
-		result[0][0] = xScale;
-		result[1][1] = yScale;
-		result[2][2] = farZ / (farZ - nearZ);
-		result[2][3] = 1.0f;
-		result[3][2] = -(nearZ * farZ) / (farZ - nearZ);
-
-		return result;
-	}
-
-	static glm::mat4 OrthoLH_ZO(float left, float right, float bottom, float top, float nearZ, float farZ)
-	{
-		glm::mat4 result(1.0f);
-
-		result[0][0] = 2.0f / (right - left);
-		result[1][1] = 2.0f / (top - bottom);
-		result[2][2] = 1.0f / (farZ - nearZ);
-
-		result[3][0] = -(right + left) / (right - left);
-		result[3][1] = -(top + bottom) / (top - bottom);
-		result[3][2] = -nearZ / (farZ - nearZ);
-
-		return result;
-	}
-
-
+	
 	void Camera::UpdateViewMatrix()
 	{
-		//m_ViewMatrix = glm::lookAtLH(m_Position, m_Position + GetForward(), GetUp());
-		m_ViewMatrix = LookAtLH(m_Position, m_Position + GetForward(), GetUp());
+		m_ViewMatrix = glm::lookAtLH(m_Position, m_Position + GetForward(), GetUp());
 	}
 
 	void Camera::UpdateProjectionMatrix()
@@ -245,16 +187,14 @@ namespace Engine
 		{
 		case Projection::Perspective:
 		{
-			//m_ProjectionMatrix = glm::perspectiveLH_ZO(m_Perspective.fov, m_AspectRatio, m_Perspective.near, m_Perspective.far); //LH_ZO - left-handed, zero to one. WebGPU uses this convention.
-			m_ProjectionMatrix = PerspectiveLH_ZO(m_Perspective.fov, m_AspectRatio, m_Perspective.nearClip, m_Perspective.farClip);
+			m_ProjectionMatrix = glm::perspectiveLH_ZO(m_Perspective.fov, m_AspectRatio, m_Perspective.nearClip, m_Perspective.farClip); //LH_ZO - left-handed, zero to one. WebGPU uses this convention.
 			break;
 		}
 		case Projection::Orthographic:
 		{
 			float halfHeight = m_Orthographic.size * 0.5f;
 			float halfWidth = halfHeight * m_AspectRatio;
-			//m_ProjectionMatrix = glm::orthoLH_ZO(-halfWidth, halfWidth, -halfHeight, halfHeight, m_Orthographic.near, m_Orthographic.far);
-			m_ProjectionMatrix = OrthoLH_ZO(-halfWidth, halfWidth, -halfHeight, halfHeight, m_Orthographic.nearClip, m_Orthographic.farClip);
+			m_ProjectionMatrix = glm::orthoLH_ZO(-halfWidth, halfWidth, -halfHeight, halfHeight, m_Orthographic.nearClip, m_Orthographic.farClip);
 			break;
 		}
 		}

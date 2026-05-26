@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Editor/Command/ICommand.h"
-#include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Components.h"
 
 namespace Editor
@@ -13,11 +12,10 @@ namespace Editor
 		glm::vec3 Scale{ 1.0f, 1.0f, 1.0f };
 	};
 
-
   class TransformEntityCommand : public ICommand
   {
   public:
-    TransformEntityCommand(entt::entity entity, const TransformData& before, const TransformData& after) : m_Entity(entity), m_Before(before), m_After(after) {}
+    TransformEntityCommand(entt::registry& registry, entt::entity entity, const TransformData& before, const TransformData& after) : m_Registry(&registry), m_Entity(entity), m_Before(before), m_After(after) {}
 
     void Execute() override
     {
@@ -32,17 +30,14 @@ namespace Editor
   private:
     void Apply(const TransformData& data)
     {
-			Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
-			entt::registry& registry = scene.GetRegistry();
-
-			auto& tc = registry.get<Engine::TransformComponent>(m_Entity);
+			auto& tc = m_Registry->get<Engine::TransformComponent>(m_Entity);
       tc.position = data.Position;
       tc.rotation = data.Rotation;
       tc.scale = data.Scale;
-      registry.patch<Engine::TransformComponent>(m_Entity);
     }
 
   private:
+    entt::registry* m_Registry;
     entt::entity m_Entity;
     TransformData m_Before, m_After;
   };
@@ -51,8 +46,8 @@ namespace Editor
   class TransformEntitiesCommand : public ICommand
   {
   public:
-    TransformEntitiesCommand(std::vector<entt::entity> entities, const std::vector<TransformData>& before, const std::vector<TransformData>& after)
-      : m_Entities(entities), m_Before(before), m_After(after) {}
+    TransformEntitiesCommand(entt::registry& registry, std::vector<entt::entity> entities, const std::vector<TransformData>& before, const std::vector<TransformData>& after)
+      : m_Registry(&registry), m_Entities(entities), m_Before(before), m_After(after) {}
 
     void Execute() override
     {
@@ -67,12 +62,9 @@ namespace Editor
   private:
     void Apply(const std::vector<TransformData>& data)
     {
-			Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
-			entt::registry& registry = scene.GetRegistry();
-
       for (size_t i = 0; i < m_Entities.size(); i++)
       {
-        auto& tc = registry.get<Engine::TransformComponent>(m_Entities[i]);
+        auto& tc = m_Registry->get<Engine::TransformComponent>(m_Entities[i]);
         tc.position = data[i].Position;
         tc.rotation = data[i].Rotation;
         tc.scale = data[i].Scale;
@@ -80,6 +72,7 @@ namespace Editor
     }
 
   private:
+		entt::registry* m_Registry;
     std::vector<entt::entity> m_Entities;
     std::vector<TransformData> m_Before, m_After;
   };

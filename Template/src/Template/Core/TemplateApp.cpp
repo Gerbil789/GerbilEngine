@@ -26,14 +26,7 @@
 #include "Engine/Core/Log.h"
 #include "Engine/Physics/Physics.h"
 #include "Engine/Asset/AssetRegistry.h"
-
-#ifdef DEBUG
-std::string config = "Debug";
-#elif RELEASE
-std::string config = "Release";
-#elif DIST
-std::string config = "Dist";
-#endif
+#include "Engine/Core/Configuration.h"
 
 namespace Template
 {
@@ -46,9 +39,7 @@ namespace Template
 		m_Height = height;
 
 		Engine::Scene& activeScene = Engine::SceneManager::GetActiveScene();
-		entt::registry& registry = activeScene.GetRegistry();
-
-		Engine::Camera* camera = registry.get<Engine::CameraComponent>(activeScene.GetActiveCamera()).camera;
+		Engine::Camera* camera = activeScene.GetActiveCamera();
 		camera->SetAspectRatio(static_cast<float>(m_Width) / static_cast<float>(m_Height));
 
 		if (m_Width > 0 && m_Height > 0)
@@ -109,18 +100,15 @@ namespace Template
 	TemplateApp::TemplateApp()
 	{
 		std::filesystem::current_path(GetExecutableDir());
-		std::filesystem::path projectDir = "../../../Projects/TestProject";
+		std::filesystem::path projectDir = "../../../Projects/TestProject"; //TODO: dont hardcode paths
 
 		Engine::Project::Load(projectDir);
 		const Engine::Project& project = Engine::Project::GetActive();
 
-
-
 		Engine::GraphicsContext::Initialize();
 		GLFW::Initialize();
 
-
-		m_Window.Initialize(Engine::WindowSpecification{ "Game", m_Width, m_Height, "Resources/Engine/icons/logo.png" });
+		m_Window.Initialize(Engine::WindowSpecification{ "Game", m_Width, m_Height, "Resources/Editor/icons/logo.png" }); //TODO: make this configurable
 		m_Window.SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
 
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());
@@ -131,7 +119,7 @@ namespace Template
 
 		Engine::Audio::Initialize();
 
-		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / config / (project.GetTitle() + ".dll");
+		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / Engine::Configuration / (project.GetTitle() + ".dll");
 		Engine::Runtime::LoadScripts(dllPath);
 
 
@@ -144,7 +132,7 @@ namespace Template
 		}
 
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
-		Engine::SceneManager::SetActiveScene(scene);
+		Engine::SceneManager::SetActiveScene(scene.id);
 
 		Engine::g_Renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque);
 
@@ -156,12 +144,16 @@ namespace Template
 			throw std::runtime_error("No camera found in the scene. Please add a camera entity with a CameraComponent.");
 		}
 
-		activeScene.SetActiveCamera(cameras[0]);
 
 		entt::registry& registry = activeScene.GetRegistry();
-
-		entt::entity cameraEntity = activeScene.GetActiveCamera();
-		Engine::g_Renderer.SetCamera(registry.get<Engine::CameraComponent>(cameraEntity).camera);
+		for(auto camera : cameras)
+		{
+			if (activeScene.GetRegistry().get<Engine::CameraComponent>(camera).primary)
+			{
+				Engine::g_Renderer.SetCamera(registry.get<Engine::CameraComponent>(camera).camera);
+				break;
+			}
+		}
 
 		UpdateSize(m_Width, m_Height);
 

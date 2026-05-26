@@ -24,7 +24,7 @@ namespace Editor
 			ImGui::SameLine();
 			if(ImGui::Button("Browse"))
 			{
-				std::filesystem::path dir = OpenDirectory();
+				std::filesystem::path dir = Editor::FileDialog::SelectDirectory();
 				if (!dir.empty())
 				{
 					strncpy_s(m_Path, dir.string().c_str(), sizeof(m_Path));

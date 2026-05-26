@@ -38,6 +38,7 @@ namespace Engine
 		Window() = default;
 		Window(const WindowSpecification& specification);
 		void Initialize(const WindowSpecification& specification);
+		void Shutdown();
 		~Window();
 
 		uint32_t GetWidth() const { return m_Data.width; }
@@ -48,6 +49,7 @@ namespace Engine
 
 		void SetEventCallback(const std::function<void(Event&)>& callback) { m_Data.callback = callback; }
 
+		void SetTitle(const std::string& title);
 		void SetMode(WindowMode mode);
 		WindowMode GetMode() const;
 		void ToggleFullscreen();

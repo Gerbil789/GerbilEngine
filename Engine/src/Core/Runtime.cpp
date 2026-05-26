@@ -70,12 +70,6 @@ namespace Engine
 	{
 		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
 
-		auto cameraEntities = scene.GetEntities<Engine::CameraComponent>();
-		if (!cameraEntities.empty())
-		{
-			scene.SetActiveCamera(cameraEntities[0]);
-		}
-
 		for (entt::entity entity : scene.GetEntities<Engine::ScriptComponent>())
 		{
 			auto& sc = scene.GetRegistry().get<Engine::ScriptComponent>(entity);

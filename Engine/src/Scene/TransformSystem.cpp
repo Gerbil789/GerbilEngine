@@ -6,8 +6,6 @@
 
 namespace Engine
 {
-  static std::unique_ptr<entt::observer> observer = nullptr;
-
   void UpdateWorldMatrix(entt::registry& registry, entt::entity entity)
   {
     auto& transform = registry.get<TransformComponent>(entity);
@@ -23,20 +21,6 @@ namespace Engine
 
       transform.worldMatrix = parentTransform.worldMatrix * transform.localMatrix;
     }
-  }
-
-  void TransformSystem::SetScene()
-  {
-    Scene& scene = SceneManager::GetActiveScene();
-    entt::registry& registry = scene.GetRegistry();
-    observer = std::make_unique<entt::observer>(registry, entt::collector.update<TransformComponent>());
-
-		auto view = registry.view<TransformComponent>();
-
-    for (const auto entity : view)
-    {
-      registry.patch<TransformComponent>(entity);
-		}
   }
 
   void TransformSystem::Update()
@@ -56,9 +40,5 @@ namespace Engine
     {
       UpdateWorldMatrix(registry, entity);
     }
-
-    observer->clear();
   }
-
-
 }

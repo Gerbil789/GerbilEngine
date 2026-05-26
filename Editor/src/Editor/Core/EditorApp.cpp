@@ -46,7 +46,7 @@ namespace Editor
 		Engine::GraphicsContext::Initialize();
 		GLFW::Initialize();
 
-		m_Window.Initialize({ std::format("Gerbil Editor - {}", Engine::Configuration) , 1600, 900, "Resources/Engine/icons/logo.png" });
+		m_Window.Initialize({ std::format("Gerbil Editor - {}", Engine::Configuration) , 1600, 900, "Resources/Editor/icons/logo.png" });
 		m_Window.SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
 
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());
@@ -71,7 +71,13 @@ namespace Editor
 		}
 
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
-		Engine::SceneManager::SetActiveScene(scene);
+
+		Engine::Scene& newScene = Engine::AssetManager::CreateAsset<Engine::Scene>();
+		newScene = scene;
+
+
+		Engine::SceneManager::SetActiveScene(newScene.id);
+		EditorCommandManager::SetContext(&newScene);
 
 		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
 		LOG_INFO("--- Editor initialization complete ---");
@@ -82,6 +88,7 @@ namespace Editor
 		FileWatcher::Shutdown();
 		Engine::Audio::Shutdown();
 		EditorWindowManager::Shutdown();
+		m_Window.Shutdown();
 		GLFW::Shutdown();
 		Engine::GraphicsContext::Shutdown();
 	}

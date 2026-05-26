@@ -48,7 +48,7 @@ namespace Editor
 		if (!std::filesystem::exists(settingsFilePath))
 		{
 			// If no settings file exists at all, prompt for directory and save
-			projectDirectory = OpenDirectory();
+			projectDirectory = Editor::FileDialog::SelectDirectory();
 			EditorSettings::Save();
 			return;
 		}
@@ -68,7 +68,7 @@ namespace Editor
 		}
 		else
 		{
-			projectDirectory = OpenDirectory();
+			projectDirectory = Editor::FileDialog::SelectDirectory();
 			EditorSettings::Save();
 		}
 

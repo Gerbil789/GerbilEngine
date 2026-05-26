@@ -32,13 +32,10 @@ namespace Editor
       m_Subscribers.push_back(callback);
     }
 
-    // 1. SELECTING: Now only replaces selection for its OWN type
     static void Select(SelectionType type, Engine::Uuid id, bool additive = false)
     {
-      // Remove previous selections of THIS type only, leave others intact
       if(additive)
       {
-        // If already selected, do nothing (prevents duplicates)
         for (const auto& entry : m_Selections)
         {
           if (entry.type == type && entry.id == id)
@@ -54,7 +51,6 @@ namespace Editor
       NotifySubscribers();
     }
 
-    // 2. CLEARING BY TYPE: Clear entities without touching materials
     static void Clear(SelectionType type)
     {
       if (ClearInternal(type))
@@ -80,7 +76,6 @@ namespace Editor
       return false;
     }
 
-    // 3. GETTING DATA: Fetch the most recently selected item of a specific type
     static Engine::Uuid GetPrimary(SelectionType type)
     {
       // Search backwards to get the most recently clicked item
@@ -89,10 +84,10 @@ namespace Editor
         if (it->type == type)
           return it->id;
       }
-      return 0; // Or whatever your default/invalid UUID is
+      return Engine::Uuid{ 0 };
     }
 
-    // Optional: Get all selected items of a type (for Multi-select)
+    // Multi-select
     static std::vector<Engine::Uuid> GetAll(SelectionType type)
     {
       std::vector<Engine::Uuid> result;
@@ -114,7 +109,7 @@ namespace Editor
       if (it != m_Selections.end())
       {
         m_Selections.erase(it, m_Selections.end());
-        return true; // We actually removed something
+        return true;
       }
       return false;
     }

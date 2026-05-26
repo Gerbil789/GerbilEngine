@@ -1,6 +1,8 @@
 project "ImGui"
 kind "StaticLib"
 warnings "Off"
+targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+objdir    ("bin-int/" .. outputdir .. "/%{prj.name}")
 
 files
 {

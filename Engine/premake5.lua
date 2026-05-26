@@ -82,6 +82,11 @@ filter "system:windows"
 		"webgpu_dawn",
 	}
 
+	defines
+	{
+		"GLFW_EXPOSE_NATIVE_WIN32",
+	}
+
 filter "system:linux"
 	buildoptions 
 	{ 
@@ -102,4 +107,10 @@ filter "system:linux"
 		"Xi", 
 		"Xcursor",
 		":libwebgpu_dawn.a",
+	}
+
+	defines
+	{
+		"GLFW_EXPOSE_NATIVE_X11",
+		"GLFW_EXPOSE_NATIVE_WAYLAND",
 	}

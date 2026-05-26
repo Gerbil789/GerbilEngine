@@ -8,7 +8,6 @@ namespace Engine
 	class ENGINE_API TransformSystem
 	{
 	public:
-		static void SetScene();
 		static void Update();
 	};
 }

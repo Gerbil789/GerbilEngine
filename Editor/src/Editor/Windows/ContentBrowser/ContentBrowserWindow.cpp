@@ -12,6 +12,9 @@
 #include "Editor/Core/IconManager.h"
 #include "Engine/Graphics/Texture/TextureCube.h"
 #include "Engine/Core/Log.h"
+#include "Engine/Scene/SceneManager.h"
+#include "Editor/Command/EditorCommandManager.h"
+#include "Editor/Command/SceneCommands.h"
 //#include <GLFW/glfw3.h>
 
 namespace Editor
@@ -32,6 +35,13 @@ namespace Editor
 		std::filesystem::path m_CurrentDirectory;
 
 		std::vector<Engine::AssetRecord> m_Items;
+
+		enum class ItemInteraction
+		{
+			None,
+			Clicked,
+			DoubleClicked
+		};
 	}
 
 	void RefreshDirectory()
@@ -45,7 +55,7 @@ namespace Editor
 			auto& path = entry.path();
 			if (entry.is_directory())
 			{
-				if(std::filesystem::is_empty(path))
+				if (std::filesystem::is_empty(path))
 				{
 					m_Items.emplace_back(Engine::Uuid{}, path, Engine::AssetType::EmptyDirectory);
 				}
@@ -215,7 +225,7 @@ namespace Editor
 
 			if (ImGui::MenuItem("Open in file explorer"))
 			{
-				OpenFileExplorer(m_CurrentDirectory);
+				Editor::FileDialog::OpenFileExplorer(m_CurrentDirectory);
 			}
 
 			ImGui::EndPopup();
@@ -234,21 +244,20 @@ namespace Editor
 
 			if (ImGui::MenuItem("Open in file explorer"))
 			{
-				OpenFileExplorer(m_CurrentDirectory);
+				Editor::FileDialog::OpenFileExplorer(m_CurrentDirectory);
 			}
 
 			ImGui::EndPopup();
 		}
 	}
 
-	bool DrawItem(const Engine::AssetRecord& record, ImDrawList* draw_list, const ImVec2& pos, const ImU32 label_col)
+	ItemInteraction DrawItem(const Engine::AssetRecord& record, ImDrawList* draw_list, const ImVec2& pos, const ImU32 label_col)
 	{
 		ImVec2 box_min(pos.x - 1, pos.y - 1);
 		ImVec2 box_max(box_min.x + m_LayoutItemSize.x + 2, box_min.y + m_LayoutItemSize.y + 2);
 		ImVec2 uv_min(0.0f, 0.0f);
 		ImVec2 uv_max(1.0f, 1.0f);
 		wgpu::TextureView view;
-		bool openRequested = false;
 
 		switch (record.type)
 		{
@@ -276,8 +285,8 @@ namespace Editor
 		// label
 		const float padding = 4.0f;
 		const float textHeight = ImGui::GetFontSize();
-		ImVec2 labelMin { box_min.x + padding, box_max.y - textHeight };
-		ImVec2 labelMax { box_max.x - padding, box_max.y };
+		ImVec2 labelMin{ box_min.x + padding, box_max.y - textHeight };
+		ImVec2 labelMax{ box_max.x - padding, box_max.y };
 
 		draw_list->PushClipRect(labelMin, labelMax, true);
 
@@ -288,13 +297,24 @@ namespace Editor
 
 		draw_list->PopClipRect();
 
-		if (record.type == Engine::AssetType::Directory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+
+		ItemInteraction interaction = ItemInteraction::None;
+
+		if (ImGui::IsItemHovered())
 		{
-			openRequested = true;
+			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+			{
+				interaction = ItemInteraction::DoubleClicked;
+			}
+			// Use IsMouseReleased rather than IsMouseClicked to prevent firing a click when the user is just initiating a Drag-and-Drop
+			else if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+			{
+				interaction = ItemInteraction::Clicked;
+			}
 		}
 
 		ItemContextMenu();
-		return openRequested;
+		return interaction;
 	}
 
 	std::optional<std::filesystem::path> DrawMainContent()
@@ -356,34 +376,45 @@ namespace Editor
 					bool item_is_visible = ImGui::IsRectVisible(m_LayoutItemSize);
 					ImGui::Selectable("##unique_id", item_is_selected, ImGuiSelectableFlags_None, m_LayoutItemSize);
 
-					if (ImGui::IsItemToggledSelection())
-					{
-						item_is_selected = !item_is_selected;
-
-						if (item_is_selected && assetRecord->type != Engine::AssetType::Directory)
-						{
-							// User selected this asset
-							SelectionManager::Select(SelectionType::Asset, assetRecord->id);
-						}
-					}
-
 					if (item_curr_idx_to_focus == item_idx)
 					{
 						ImGui::SetKeyboardFocusHere(-1);
 					}
 
-					ProcessDragAndDrop(assetRecord);
-
 					if (item_is_visible)
 					{
 						ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
-						DrawItem(*assetRecord, drawList, pos, label_col);
 
-						if (DrawItem(*assetRecord, drawList, pos, label_col))
+						ItemInteraction interaction = DrawItem(*assetRecord, drawList, pos, label_col);
+
+						if (interaction == ItemInteraction::Clicked)
 						{
-							nextDirectory = assetRecord->path;
+							if (assetRecord->type != Engine::AssetType::Directory)
+							{
+								SelectionManager::Select(SelectionType::Asset, assetRecord->id);
+							}
 						}
+						else if (interaction == ItemInteraction::DoubleClicked)
+						{
+							switch (assetRecord->type)
+							{
+							case Engine::AssetType::Directory:
+								nextDirectory = assetRecord->path;
+								break;
+							case Engine::AssetType::Scene:
+								Editor::EditorCommandManager::Enqueue(std::make_unique<Editor::OpenSceneCommand>(assetRecord->id));
+								break;
+							case Engine::AssetType::Material:
+								LOG_INFO("Opening Material Editor...");
+								break;
+							default:
+								break;
+							}
+						}
+
 					}
+
+					ProcessDragAndDrop(assetRecord);
 
 					ImGui::PopID();
 				}

@@ -4,21 +4,11 @@
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Graphics/WebGPUUtils.h"
 #include <stb_image.h>
 #include <GLFW/glfw3.h>
-
-//TODO: move platform specific code to separate files or figure something better xd
-// look at this https://dawn.googlesource.com/dawn/+/refs/heads/main/src/dawn/glfw/utils.cpp
-
-#if defined(ENGINE_PLATFORM_WINDOWS)
-	#define GLFW_EXPOSE_NATIVE_WIN32
-#elif defined(ENGINE_PLATFORM_LINUX)
-	#define GLFW_EXPOSE_NATIVE_X11
-	#define GLFW_EXPOSE_NATIVE_WAYLAND
-#endif
 #include <GLFW/glfw3native.h>
 
+//TODO: move event callbacks into input system?
 
 namespace GLFW
 {
@@ -26,7 +16,7 @@ namespace GLFW
 	{
 		if (!glfwInit())
 		{
-			throw std::runtime_error("Could not initialize GLFW!");
+			throw std::runtime_error("Failed to initialize GLFW");
 		}
 
 		glfwSetErrorCallback([](int error, const char* description) { LOG_ERROR("GLFW Error ({}): {}", error, description); });
@@ -42,7 +32,6 @@ namespace GLFW
 		glfwWaitEvents();
 	}
 }
-
 
 namespace Engine
 {
@@ -101,12 +90,18 @@ namespace Engine
 		ConfigureSurface(m_Data.width, m_Data.height);
 	}
 
-	Window::~Window()
+	void Window::Shutdown()
 	{
 		if (m_Window)
 		{
 			glfwDestroyWindow(m_Window);
+			m_Window = nullptr;
 		}
+	}
+
+	Window::~Window()
+	{
+		Shutdown();
 	}
 
 	WGPUSurface Window::GetSurface() const
@@ -117,6 +112,14 @@ namespace Engine
 	uint32_t Window::GetSurfaceFormat() const
 	{
 		return static_cast<uint32_t>(m_SurfaceFormat);
+	}
+
+	void Window::SetTitle(const std::string& title)
+	{
+		if (m_Window)
+		{
+			glfwSetWindowTitle(m_Window, title.c_str());
+		}
 	}
 
 	void Window::SetMode(WindowMode mode)

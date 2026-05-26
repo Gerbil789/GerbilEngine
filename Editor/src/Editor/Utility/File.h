@@ -1,13 +1,19 @@
 #pragma once
 
+#include <string>
 #include <filesystem>
+#include <initializer_list>
 
-namespace Editor
+namespace Editor::FileDialog
 {
-	std::string OpenFile();
-	std::string SaveFile();
+	struct DialogFilter
+	{
+		std::string name; // e.g., "Scene Files"
+		std::string spec; // e.g., "*.scene"
+	};
 
-	std::filesystem::path OpenDirectory();
-
+	std::string SelectFile(std::initializer_list<DialogFilter> filters = {});
+	std::string SelectPath(std::initializer_list<DialogFilter> filters = {}, const char* defaultExt = nullptr);
+	std::filesystem::path SelectDirectory();
 	void OpenFileExplorer(const std::filesystem::path& path);
 }

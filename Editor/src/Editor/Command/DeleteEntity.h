@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Editor/Command/ICommand.h"
-#include "Engine/Scene/SceneManager.h"
+#include "Engine/Scene/Scene.h"
 #include "Editor/Core/SelectionManager.h"
 
 namespace Editor
@@ -9,14 +9,11 @@ namespace Editor
   class DeleteEntityCommand : public ICommand
   {
   public:
-    DeleteEntityCommand(entt::entity entity) 
+    DeleteEntityCommand(Engine::Scene* scene, entt::entity entity) : m_Scene(scene), m_Entity(entity)
     {
-			Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
-			entt::registry& registry = scene.GetRegistry();
-
       if (entity != entt::null)
       {
-        m_Name = registry.get<Engine::NameComponent>(entity).name;
+        m_Name = m_Scene->GetRegistry().get<Engine::NameComponent>(entity).name;
         m_Entity = entity;
 			}
     } 
@@ -26,14 +23,12 @@ namespace Editor
       if (m_Entity == entt::null) return;
 
       SelectionManager::Clear(SelectionType::Entity);
-      Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
-      entt::registry& registry = scene.GetRegistry();
-			registry.destroy(m_Entity);
+      m_Scene->GetRegistry().destroy(m_Entity);
     }
 
     void Undo() override
     {
-      Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+      Engine::Scene& scene = *m_Scene;
       entt::registry& registry = scene.GetRegistry();
 
       m_Entity = scene.CreateEntity(m_Name);
@@ -43,7 +38,8 @@ namespace Editor
     }
 
   private:
+		Engine::Scene* m_Scene;
     std::string m_Name;
-    entt::entity m_Entity;
+		entt::entity m_Entity = entt::null;
   };
 }

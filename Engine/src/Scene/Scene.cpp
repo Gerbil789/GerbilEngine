@@ -11,75 +11,48 @@ namespace Engine
 	Scene::Scene(Scene&& other) noexcept = default;
 	Scene& Scene::operator=(Scene&& other) noexcept = default;
 
-	//Scene Scene::Copy(Scene& other)
-	//{
-	//	Scene newScene;
-	//	auto& srcRegistry = other.m_Registry;
-	//	auto& dstRegistry = newScene.m_Registry;
+	Scene::Scene(const Scene& other)
+	{
+		std::unordered_map<entt::entity, entt::entity> entityMap;
 
-	//	std::unordered_map<Uuid, entt::entity> uuidToEntityMap;
+		auto view = other.m_Registry.view<const IdentityComponent>();
+		for (auto srcEntity : view)
+		{
+			auto uuid = other.m_Registry.get<IdentityComponent>(srcEntity).id;
+			auto name = other.m_Registry.get<NameComponent>(srcEntity).name;
 
-	//	auto view = srcRegistry.view<IdentityComponent>();
-	//	for (auto srcEntity : view)
-	//	{
-	//		const auto& id = srcRegistry.get<IdentityComponent>(srcEntity).id;
-	//		const auto& enabled = srcRegistry.get<IdentityComponent>(srcEntity).enabled;
-	//		const auto& name = srcRegistry.get<NameComponent>(srcEntity).name;
+			entt::entity dstEntity = CreateEntity(name);
 
-	//		Entity newEntity = newScene.CreateEntity(name);
-	//		newEntity.Get<IdentityComponent>().id = id;
-	//		newEntity.Get<IdentityComponent>().enabled = enabled;
-	//		const auto& transform = srcRegistry.get<TransformComponent>(srcEntity);
-	//		newEntity.Get<TransformComponent>() = transform;
+			m_Registry.replace<IdentityComponent>(dstEntity, uuid);
 
-	//		uuidToEntityMap[id] = newEntity.Handle();
-	//	}
+			entityMap[srcEntity] = dstEntity;
 
-	//	auto copyComponent = [&](auto typeTag)
-	//		{
-	//			using Component = decltype(typeTag);
+			CopyComponentIfExists<IdentityComponent>(dstEntity, srcEntity, other.m_Registry);
+			CopyComponentIfExists<NameComponent>(dstEntity, srcEntity, other.m_Registry);
+			CopyComponentIfExists<TransformComponent>(dstEntity, srcEntity, other.m_Registry);
+			CopyComponentIfExists<CameraComponent>(dstEntity, srcEntity, other.m_Registry);
+			CopyComponentIfExists<MeshComponent>(dstEntity, srcEntity, other.m_Registry);
+			CopyComponentIfExists<ColliderComponent>(dstEntity, srcEntity, other.m_Registry);
+			CopyComponentIfExists<LightComponent>(dstEntity, srcEntity, other.m_Registry);
+			CopyComponentIfExists<ScriptComponent>(dstEntity, srcEntity, other.m_Registry);
+		}
 
-	//			auto componentView = srcRegistry.view<Component>();
-	//			for (auto srcEntity : componentView)
-	//			{
-	//				const auto& id = srcRegistry.get<IdentityComponent>(srcEntity);
-	//				entt::entity dstEntity = uuidToEntityMap[id.id];
+		//this->id = other.id;
+		//this->editor_name = other.editor_name + "_copy";
+	}
 
-	//				const auto& srcComponent = componentView.get<Component>(srcEntity);
-	//				dstRegistry.emplace_or_replace<Component>(dstEntity, srcComponent);
-	//			}
-	//		};
+	Scene& Scene::operator=(const Scene& other)
+	{
+		if (this != &other)
+		{
+			m_Registry.clear();
+			Uuid oldId = id;
+			*this = Scene(other);
+			id = oldId;
+		}
+		return *this;
+	}
 
-	//	copyComponent(MeshComponent{});
-	//	//copyComponent(ScriptComponent{});
-	//	copyComponent(LightComponent{});
-	//	copyComponent(CameraComponent{});
-
-	//	auto scriptView = srcRegistry.view<ScriptComponent>();
-	//	for (auto srcEntity : scriptView)
-	//	{
-	//		const auto& id = srcRegistry.get<IdentityComponent>(srcEntity);
-	//		entt::entity dstEntity = uuidToEntityMap[id.id];
-	//		const auto& srcComponent = scriptView.get<ScriptComponent>(srcEntity);
-
-	//		auto& dstComponent = dstRegistry.emplace<ScriptComponent>(dstEntity);
-
-	//		if (srcComponent.instance)
-	//		{
-	//			// You must create a method to Instantiate/Clone the script, 
-	//			// otherwise both scenes share the exact same script instance!
-	//			dstComponent.instance = srcComponent.instance; // <-- Example method
-	//		}
-	//	}
-
-	//	if (other.m_ActiveCamera != entt::null)
-	//	{
-	//		const auto& id = srcRegistry.get<IdentityComponent>(other.m_ActiveCamera);
-	//		newScene.m_ActiveCamera = uuidToEntityMap[id.id];
-	//	}
-
-	//	return newScene;
-	//}
 
 	entt::entity Scene::CreateEntity(const std::string& name)
 	{
@@ -88,21 +61,6 @@ namespace Engine
 		m_Registry.emplace<NameComponent>(handle, name);
 		m_Registry.emplace<TransformComponent>(handle);
 		return handle;
-	}
-
-	entt::entity Scene::GetActiveCamera()
-	{
-		return m_ActiveCamera;
-	}
-
-	void Scene::SetActiveCamera(entt::entity entity)
-	{
-		if (!m_Registry.any_of<CameraComponent>(entity))
-		{
-			LOG_WARNING("Setting active camera to entity without CameraComponent!");
-			return;
-		}
-		m_ActiveCamera = entity;
 	}
 
 	entt::entity Scene::GetEntity(Uuid uuid)
@@ -116,5 +74,18 @@ namespace Engine
 			}
 		}
 		return entt::null;
+	}
+
+	Camera* Scene::GetActiveCamera() const
+	{
+		auto view = m_Registry.view<CameraComponent>();
+		for (auto entity : view)
+		{
+			if (m_Registry.get<CameraComponent>(entity).primary)
+			{
+				return m_Registry.get<CameraComponent>(entity).camera;
+			}
+		}
+		return nullptr;
 	}
 }

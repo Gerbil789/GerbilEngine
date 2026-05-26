@@ -1,32 +1,53 @@
-#include "Editor/Utility/File.h"
+#include "File.h"
 
 #include <windows.h>
 #include <commdlg.h>
 #include <shlobj.h>
 #include <shobjidl.h> // For IFileDialog
 #include <shellapi.h>
+#include <wrl/client.h> // For Microsoft::WRL::ComPtr
 #include <thread>
 #include <algorithm>
 
-namespace Editor
+namespace Editor::FileDialog
 {
-	std::string OpenFile()
+	// Internal helper to translate clean C++ structs into the Win32 double-null string
+	static std::string BuildWin32FilterString(std::initializer_list<DialogFilter> filters)
+	{
+		if (filters.size() == 0)
+		{
+			return "All Files (*.*)\0*.*\0";
+		}
+
+		std::string result;
+		for (const auto& filter : filters)
+		{
+			result += filter.name + " (" + filter.spec + ")";
+			result += '\0';
+			result += filter.spec;
+			result += '\0';
+		}
+		result += '\0'; // Final terminator required by Windows
+
+		return result;
+	}
+
+	std::string SelectFile(std::initializer_list<DialogFilter> filters)
 	{
 		OPENFILENAMEA ofn;
 		CHAR szFile[260] = { 0 };
+		std::string win32Filter = BuildWin32FilterString(filters);
 
-		// Initialize OPENFILENAME
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hwndOwner = NULL; // Can be set to a parent window handle if you have one
+		ofn.hwndOwner = NULL;
 		ofn.lpstrFile = szFile;
 		ofn.nMaxFile = sizeof(szFile);
-		ofn.lpstrFilter = "All Files\0*.*\0";
+		ofn.lpstrFilter = win32Filter.c_str();
 		ofn.nFilterIndex = 1;
 		ofn.lpstrFileTitle = NULL;
 		ofn.nMaxFileTitle = 0;
 		ofn.lpstrInitialDir = NULL;
-		// OFN_NOCHANGEDIR prevents the dialog from changing the app's working directory
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
 		if (GetOpenFileNameA(&ofn) == TRUE)
@@ -37,19 +58,20 @@ namespace Editor
 		return "";
 	}
 
-	std::string SaveFile()
+	std::string SelectPath(std::initializer_list<DialogFilter> filters, const char* defaultExt)
 	{
 		OPENFILENAMEA ofn;
 		CHAR szFile[260] = { 0 };
+		std::string win32Filter = BuildWin32FilterString(filters);
 
-		// Initialize OPENFILENAME
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hwndOwner = NULL;
 		ofn.lpstrFile = szFile;
 		ofn.nMaxFile = sizeof(szFile);
-		ofn.lpstrFilter = "All Files\0*.*\0";
+		ofn.lpstrFilter = win32Filter.c_str();
 		ofn.nFilterIndex = 1;
+		ofn.lpstrDefExt = defaultExt;
 		ofn.lpstrFileTitle = NULL;
 		ofn.nMaxFileTitle = 0;
 		ofn.lpstrInitialDir = NULL;
@@ -63,44 +85,38 @@ namespace Editor
 		return "";
 	}
 
-	std::filesystem::path OpenDirectory()
+	std::filesystem::path SelectDirectory()
 	{
 		std::filesystem::path resultPath;
 
-		// Initialize COM for the thread. 
+		// Initialize COM for the thread
 		HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 		bool needToUninitialize = SUCCEEDED(hr);
 
-		IFileOpenDialog* pFolderDialog = NULL;
+		// Using ComPtr automatically handles ->Release() when going out of scope
+		Microsoft::WRL::ComPtr<IFileOpenDialog> pFolderDialog;
 
-		// Create the FileOpenDialog object
 		if (SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pFolderDialog))))
 		{
 			DWORD dwOptions;
 			if (SUCCEEDED(pFolderDialog->GetOptions(&dwOptions)))
 			{
-				// Set options to pick folders only and force file system paths
 				pFolderDialog->SetOptions(dwOptions | FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM);
 			}
 
-			// Show the dialog
 			if (SUCCEEDED(pFolderDialog->Show(NULL)))
 			{
-				IShellItem* pItem;
+				Microsoft::WRL::ComPtr<IShellItem> pItem;
 				if (SUCCEEDED(pFolderDialog->GetResult(&pItem)))
 				{
 					PWSTR pszFolderPath = NULL;
-
-					// Get the path string
 					if (SUCCEEDED(pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFolderPath)))
 					{
 						resultPath = pszFolderPath;
 						CoTaskMemFree(pszFolderPath);
 					}
-					pItem->Release();
 				}
 			}
-			pFolderDialog->Release();
 		}
 
 		if (needToUninitialize)

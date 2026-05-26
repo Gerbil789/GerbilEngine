@@ -4,7 +4,6 @@
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Graphics/Material.h"
 #include "Editor/Core/SelectionManager.h"
-
 #include <imgui.h>
 
 namespace Editor
@@ -16,12 +15,6 @@ namespace Editor
 
 	void MaterialEditorWindow::Draw()
 	{
-		auto id = SelectionManager::GetPrimary(SelectionType::Asset);
-		if (Engine::AssetManager::GetAssetRegistry().GetType(id) == Engine::AssetType::Material)
-		{
-			m_Material = &(Engine::AssetManager::GetAsset<Engine::Material>(id));
-		}
-
 		ImGui::Begin("Material");
 
 		if (!m_Material)
@@ -31,42 +24,8 @@ namespace Editor
 			return;
 		}
 
-		const Engine::Shader& shader = m_Material->GetShader();
-		auto shaderSpec = shader.GetSpecification();
-		auto bindings = GetMaterialBindings(shaderSpec);
-		bool hasTextures = false;
-
-
-		static std::vector<Engine::Shader*> s_AllShaders;
-		static std::vector<const char*> shaderNames;
-
-		if (s_AllShaders.empty())
-		{
-			auto records = Engine::AssetManager::GetAssetRegistry().GetRecords(Engine::AssetType::Shader);
-
-			std::vector<Engine::Shader*> shaders;
-			shaders.reserve(records.size());
-
-			for(auto* record : records)
-			{
-				shaders.push_back(&Engine::AssetManager::GetAsset<Engine::Shader>(record->id));
-			}
-
-
-			s_AllShaders.resize(shaders.size());
-			for (size_t i = 0; i < shaders.size(); i++)
-			{
-				s_AllShaders[i] = shaders[i];
-			}
-
-			shaderNames.clear();
-			shaderNames.reserve(s_AllShaders.size());
-
-			for (size_t i = 0; i < s_AllShaders.size(); i++)
-			{
-				shaderNames.push_back(s_AllShaders[i]->GetName().c_str());
-			}
-		}
+		const Engine::Shader& currentShader = m_Material->GetShader();
+		auto bindings = GetMaterialBindings(currentShader.GetSpecification());
 
 		if (ImGui::BeginTable("MaterialHeader", 2, ImGuiTableFlags_SizingStretchProp))
 		{
@@ -74,33 +33,40 @@ namespace Editor
 			ImGui::TableSetupColumn("Shader", ImGuiTableColumnFlags_WidthFixed, 120.0f);
 
 			ImGui::TableNextRow();
-			ImGui::TableSetColumnIndex(0);
+			ImGui::TableSetColumnIndex(0); // Name column
 
-			const auto& registry = Engine::AssetManager::GetAssetRegistry();
-			Engine::AssetRecord& record = registry.GetRecord(m_Material->id);
-
-			std::string name = record.GetName();
-			if (TextField("MaterialName", name).finished)
+			if (TextField("MaterialName", m_Material->editor_name).finished)
 			{
-				record.path = record.path.parent_path() / (name + record.path.extension().string());
+				//record.path = record.path.parent_path() / (name + record.path.extension().string());
 				//TODO: SAVE CHANGE
 			}
 
+			ImGui::TableSetColumnIndex(1); // Shader column
+			ImGui::SetNextItemWidth(-FLT_MIN);
 
-			ImGui::TableSetColumnIndex(1);
-			ImGui::SetNextItemWidth(-FLT_MIN); // fill full column
-			int currentShaderIndex = -1;
-			for (size_t i = 0; i < s_AllShaders.size(); i++)
+
+			if (ImGui::BeginCombo("##Shader", currentShader.editor_name.c_str()))
 			{
-				if (&m_Material->GetShader() == s_AllShaders[i])
-					currentShaderIndex = (int)i;
-			}
+				auto shaderRecords = Engine::AssetManager::GetAssetRegistry().GetRecords(Engine::AssetType::Shader);
 
-			if (ImGui::Combo("##Shader", &currentShaderIndex, shaderNames.data(), (int)shaderNames.size()))
-			{
-				m_Material->SetShader(*s_AllShaders[currentShaderIndex]);
-			}
+				for (auto* record : shaderRecords)
+				{
+					Engine::Shader& shader = Engine::AssetManager::GetAsset<Engine::Shader>(record->id);
 
+					bool isSelected = (&shader == &currentShader);
+					if (ImGui::Selectable(shader.editor_name.c_str(), isSelected))
+					{
+						m_Material->SetShader(shader);
+					}
+
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+
+				ImGui::EndCombo();
+			}
 
 			ImGui::EndTable();
 		}
@@ -169,8 +135,6 @@ namespace Editor
 
 				if (binding.type == Engine::BindingType::Texture2D)
 				{
-					hasTextures = true;
-
 					ImGui::TableNextRow();
 					ImGui::TableSetColumnIndex(0);
 					ImGui::TextUnformatted(binding.name.c_str());
@@ -186,7 +150,6 @@ namespace Editor
 				}
 			}
 
-			if(hasTextures)
 			{
 				ImGui::Separator();
 
@@ -202,7 +165,6 @@ namespace Editor
 					m_Material->SetTextureFilter(static_cast<Engine::TextureFilter>(currentFilter));
 				}
 
-
 				ImGui::TableNextRow();
 				ImGui::TableSetColumnIndex(0);
 				ImGui::TextUnformatted("Texture Wrap");
@@ -215,16 +177,33 @@ namespace Editor
 				}
 			}
 
-
 			ImGui::EndTable();
 		}
 
 		ImGui::End();
 	}
 
-	void MaterialEditorWindow::SetMaterial(Engine::Material* material)
+	void MaterialEditorWindow::Initialize()
 	{
-		m_Material = material;
+		SelectionManager::Subscribe([](const std::vector<SelectionEntry>& selections)
+		{
+			for (const auto& entry : selections)
+			{
+				if (entry.type == SelectionType::Asset)
+				{
+					if (Engine::AssetManager::GetAssetRegistry().GetType(entry.id) == Engine::AssetType::Material)
+					{
+						m_Material = &(Engine::AssetManager::GetAsset<Engine::Material>(entry.id));
+						return;
+					}
+				}
+			}
+			});
+	}
+
+	void MaterialEditorWindow::SetMaterial(Engine::Material& material)
+	{
+		m_Material = &material;
 	}
 
 

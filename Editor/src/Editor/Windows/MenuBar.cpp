@@ -1,35 +1,20 @@
 #include "MenuBar.h"
-#include "Engine/Scene/SceneManager.h"
 #include "Editor/Command/EditorCommandManager.h"
+#include "Editor/Core/EditorWindowManager.h"
 #include "Editor/Core/PopupWindowManager.h"
 #include "Editor/Utility/File.h"
+//#include "Engine/Scene/SceneManager.h"
+#include "Editor/Command/SceneCommands.h"
 #include "Engine/Core/Project.h"
-#include "Engine/Core/Log.h"
-#include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/AssetRegistry.h"
-#include "Engine/Graphics/Material.h"
-#include "Engine/Asset/Serializer/MaterialSerializer.h"
-#include "Editor/Core/EditorWindowManager.h"
+//#include "Engine/Core/Log.h"
+//#include "Engine/Asset/AssetManager.h"
+//#include "Engine/Asset/AssetRegistry.h"
+//#include "Engine/Graphics/Material.h"
+//#include "Engine/Asset/Serializer/MaterialSerializer.h"
 #include <imgui.h>
 
 namespace Editor
 {
-	struct ScopedMenuBar
-	{
-		bool open;
-		ScopedMenuBar() : open(ImGui::BeginMenuBar()) {}
-		~ScopedMenuBar() { if (open) ImGui::EndMenuBar(); }
-		explicit operator bool() const { return open; }
-	};
-
-	struct ScopedMenu
-	{
-		bool open;
-		explicit ScopedMenu(const char* label) : open(ImGui::BeginMenu(label)) {}
-		~ScopedMenu() { if (open) ImGui::EndMenu(); }
-		explicit operator bool() const { return open; }
-	};
-
 	struct MenuEntry
 	{
 		const char* label;
@@ -37,89 +22,64 @@ namespace Editor
 		std::function<void()> action;
 	};
 
-	static const MenuEntry FileMenu[]
+	struct MenuCategory
 	{
-		{"New",  "Ctrl+N", [] { LOG_WARNING("New File - not implemented");} },
-		{"Open", "Ctrl+O", [] { LOG_WARNING("Open File - not implemented");} },
-		{"Save", "Ctrl+S", [] {
-			Engine::SceneManager::SaveScene();
+		const char* name;
+		std::vector<MenuEntry> entries;
+	};
 
-			auto records = Engine::AssetManager::GetAssetRegistry().GetRecords(Engine::AssetType::Material);
-			for (auto record : records)
-			{
-				const Engine::Material& material = Engine::AssetManager::GetAsset<Engine::Material>(record->id);
-				Engine::MaterialSerializer::Serialize(material, record->path);
-			}
+	static const std::vector<MenuCategory> MainMenuBar
+	{
+		{ "File", {
+			{"Save scene", "ctrl+s", [] {
+				Editor::SaveScene();
+
+				//auto records = Engine::AssetManager::GetAssetRegistry().GetRecords(Engine::AssetType::Material);
+				//for (auto record : records)
+				//{
+				//	const Engine::Material& material = Engine::AssetManager::GetAsset<Engine::Material>(record->id);
+				//	Engine::MaterialSerializer::Serialize(material, record->path);
+				//}
+			}},
+			//{"Open scene", "", [] { Editor::OpenScene(); },
 		}},
-	};
 
-	static const MenuEntry EditMenu[]
-	{
-		{"Undo", "Ctrl+Z", EditorCommandManager::Undo},
-		{"Redo", "Ctrl+Shift+Z", EditorCommandManager::Redo},
-	};
+		{ "Edit", {
+			{"Undo", "Ctrl+Z", EditorCommandManager::Undo},
+			{"Redo", "Ctrl+Shift+Z", EditorCommandManager::Redo},
+		}},
 
-	static const MenuEntry ProjectMenu[]
-	{
-		{"New", "", [] { PopupManager::Open("New Project"); }},
-		{"Open", "", [] { Engine::Project::Load(OpenDirectory()); }},
-		{"Settings", "", [] { LOG_WARNING("Project Settings - not implemented"); }},
-		{"Save layout", "", [] { Editor::EditorWindowManager::SaveLayout(); }},
-	};
+		{ "Project", {
+			{"New", "", [] { PopupManager::Open("New Project"); }},
+			{"Open", "", [] { Engine::Project::Load(Editor::FileDialog::SelectDirectory()); }}, //TODO: select project.json file instead of directory?
+			{"Settings", "", [] { /*TODO*/ }},
+			{"Save layout", "", [] { Editor::EditorWindowManager::SaveLayout(); }},
+		}},
 
-	static const MenuEntry DebugMenu[]
-	{
-		{"RenderDoc", "", [] {} }
+		{ "Debug", {
+			{"RenderDoc", "", [] { /*TODO*/ }}
+		}}
 	};
 
 	void MenuBar::Draw()
 	{
-		if (ScopedMenuBar bar{})
+		if (ImGui::BeginMenuBar())
 		{
-
-			if (ScopedMenu file{ "File" })
+			for (const auto& category : MainMenuBar)
 			{
-				for (auto& e : FileMenu)
+				if (ImGui::BeginMenu(category.name))
 				{
-					if (ImGui::MenuItem(e.label, e.shortcut))
+					for (const auto& e : category.entries)
 					{
-						e.action();
+						if (ImGui::MenuItem(e.label, e.shortcut))
+						{
+							if (e.action) e.action();
+						}
 					}
+					ImGui::EndMenu();
 				}
 			}
-
-			if (ScopedMenu edit{ "Edit" })
-			{
-				for (auto& e : EditMenu)
-				{
-					if (ImGui::MenuItem(e.label, e.shortcut))
-					{
-						e.action();
-					}
-				}
-			}
-
-			if (ScopedMenu project{ "Project" })
-			{
-				for (auto& e : ProjectMenu)
-				{
-					if (ImGui::MenuItem(e.label, e.shortcut))
-					{
-						e.action();
-					}
-				}
-			}
-
-			if (ScopedMenu debug{ "Debug" })
-			{
-				for (auto& e : DebugMenu)
-				{
-					if (ImGui::MenuItem(e.label, e.shortcut))
-					{
-						e.action();
-					}
-				}
-			}
+			ImGui::EndMenuBar();
 		}
 	}
 }

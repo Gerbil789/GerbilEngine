@@ -1,6 +1,6 @@
 .vs/
-/bin/
-/bin-int/
+bin/
+bin-int/
 
 *.sln
 *.vcxproj
@@ -9,6 +9,3 @@
 *.log
 
 Makefile
-**/Makefile
-
-Editor/resources/layouts/imgui.ini

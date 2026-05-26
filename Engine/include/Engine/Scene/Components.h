@@ -55,6 +55,7 @@ namespace Engine
 	struct ENGINE_API CameraComponent
 	{
 		Camera* camera = nullptr;
+		bool primary = false;
 	};
 
 	enum class LightType { Directional = 0, Spot, Point };

@@ -61,6 +61,10 @@ namespace Engine
       if (importedAsset)
       {
         importedAsset->id = id;
+
+#ifdef GERBIL_EDITOR
+				importedAsset->editor_name = record.GetName();
+#endif
         auto [insertedIt, success] = map.insert_or_assign(id, std::move(*importedAsset));
         LOG_TRACE("Loaded asset '{}'", id);
         return insertedIt->second;
@@ -97,7 +101,7 @@ namespace Engine
       m_Meshes.insert_or_assign(RESOURCES::MESH::SPHERE, std::move(*sphereMesh));
 		}
 
-		auto HDRTexture = TextureImporter::LoadTexture("Resources/Engine/hdr/PG2/lebombo_4k.hdr");
+		auto HDRTexture = TextureImporter::LoadTexture("Resources/Engine/hdr/lebombo_4k.hdr");
     if(HDRTexture)
     {
       HDRTexture->id = RESOURCES::TEXTURE::HDR;
@@ -132,6 +136,7 @@ namespace Engine
 
 		auto cameraEntity = scene.CreateEntity("Camera");
     auto& cc = registry.emplace<CameraComponent>(cameraEntity);
+		cc.primary = true;
     std::unique_ptr<Camera> camera = std::make_unique<Camera>();
     camera->SetBackground(Camera::Background::Skybox);
 		cc.camera = camera.release();
@@ -188,8 +193,9 @@ namespace Engine
     Scene scene;
     scene.id = Uuid();
 
-    auto [insertedIt, success] = m_Scenes.insert_or_assign(scene.id, std::move(scene));
     LOG_TRACE("Created asset '{}'", scene.id);
+    auto [insertedIt, success] = m_Scenes.insert_or_assign(scene.id, std::move(scene));
+
     return insertedIt->second;
   }
 }

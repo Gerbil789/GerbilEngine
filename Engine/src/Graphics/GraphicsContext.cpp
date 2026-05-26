@@ -95,11 +95,11 @@ namespace Engine::GraphicsContext
 
 	void Shutdown()
 	{
+		Engine::SamplerPool::Shutdown();
 		s_Queue.release();
 		s_Device.release();
 		s_Instance.release();
 		s_Adapter.release();
-		Engine::SamplerPool::Shutdown();
 	}
 
 	wgpu::Adapter GetAdapter()
