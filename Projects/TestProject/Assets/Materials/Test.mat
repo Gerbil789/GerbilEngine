@@ -1,1 +1,1 @@
-{"Shader":7,"Sampler":{"Filter":1,"Wrap":2},"Attributes":{"color":[0,0,0,0]},"Textures":{}}
+{"Shader":7,"Filter":1,"Wrap":2,"Attributes":{"albedo":[1,1,1,1]},"Textures":{}}

@@ -3,6 +3,7 @@
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
+#include "Engine/Graphics/Pipeline.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Asset/AssetManager.h"
@@ -78,7 +79,9 @@ namespace Engine
 				material = &Engine::AssetManager::GetAsset<Material>(subMaterial);
 				GraphicsContext::GetQueue().writeBuffer(material->GetUniformBuffer(), 0, material->GetUniformData().data(), material->GetUniformData().size());
 				pass.setBindGroup(2, material->GetBindGroup(), 0, nullptr);
-				pass.setPipeline(material->GetShader().GetRenderPipeline());
+
+				wgpu::RenderPipeline pipeline = PipelineCache::GetOrCreatePipeline(material->GetPipelineSpec());
+				pass.setPipeline(pipeline);
 			}
 
 			uint32_t dynamicOffset = item.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();

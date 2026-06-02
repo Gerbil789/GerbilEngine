@@ -12,9 +12,11 @@ namespace Engine
 
 	Material::Material(const MaterialSpecification& spec)
 	{
-		m_Shader = spec.shader;
+		m_Shader = *spec.shader;
 		m_TextureFilter = spec.filter;
 		m_TextureWrap = spec.wrap;
+
+		m_PipelineSpec.shader = spec.shader;
 
 		m_UniformData.resize(m_Shader.GetMaterialUniformBufferSize(), std::byte{});
 		CreateUniformBuffer();
@@ -32,19 +34,12 @@ namespace Engine
 		{
 			Engine::Texture2D& tex = Engine::AssetManager::GetAsset<Texture2D>(uuid);
 			SetTexture(name, &tex);
-				
 		}
 
 
-		auto shaderSpec = m_Shader.GetSpecification();
-
-		for (const auto& binding : shaderSpec.bindings)
+		// material bindings
+		for (const auto& binding : m_Shader.GetBindings())
 		{
-			if(binding.group == 0 || binding.group == 1 || binding.group == 3)
-			{
-				continue; // skip view and environment and model bindings
-			}
-
 			if (binding.type == BindingType::Texture2D)
 			{
 				auto it = spec.textureDefaults.find(binding.name);
@@ -70,7 +65,7 @@ namespace Engine
 
 	void Material::SetFloat(const std::string& paramName, float value)
 	{
-		auto binding = GetBinding(GetMaterialBindings(m_Shader.GetSpecification()), "uMaterial");
+		auto binding = GetBinding(m_Shader.GetBindings(), "uMaterial");
 		if (binding.type != BindingType::UniformBuffer)
 		{
 			LOG_WARNING("Parameter 'uMaterial' is not a uniform buffer!");
@@ -90,7 +85,7 @@ namespace Engine
 
 	void Material::SetVec2(const std::string& paramName, const glm::vec2& value)
 	{
-		auto materialBindings = GetMaterialBindings(m_Shader.GetSpecification());
+		auto materialBindings = m_Shader.GetBindings();
 		auto binding = GetBinding(materialBindings, "uMaterial");
 		if (binding.type != BindingType::UniformBuffer)
 		{
@@ -111,7 +106,7 @@ namespace Engine
 
 	void Material::SetVec4(const std::string& paramName, const glm::vec4& value)
 	{
-		auto materialBindings = GetMaterialBindings(m_Shader.GetSpecification());
+		auto materialBindings = m_Shader.GetBindings();
 		auto binding = GetBinding(materialBindings, "uMaterial");
 		if (binding.type != BindingType::UniformBuffer)
 		{
@@ -148,7 +143,7 @@ namespace Engine
 			}
 		}
 
-		const auto materialBindings = GetMaterialBindings(m_Shader.GetSpecification());
+		const auto materialBindings = m_Shader.GetBindings();
 
 		auto binding = Engine::GetBinding(materialBindings, name);
 
@@ -183,7 +178,7 @@ namespace Engine
 
 	void Material::CreateBindGroup()
 	{
-		const auto materialBindings = GetMaterialBindings(m_Shader.GetSpecification());
+		const auto materialBindings = m_Shader.GetBindings();
 
 		std::vector<wgpu::BindGroupEntry> entries;
 		entries.reserve(materialBindings.size());
@@ -217,45 +212,21 @@ namespace Engine
 			entries.push_back(entry);
 		}
 
-		wgpu::BindGroupDescriptor bindGroupDesc{};
-		bindGroupDesc.label = { "MaterialBindGroup", WGPU_STRLEN }; //TODO: add material name
-		bindGroupDesc.layout = m_Shader.GetMaterialBindGroupLayout();
-		bindGroupDesc.entryCount = static_cast<uint32_t>(entries.size());
-		bindGroupDesc.entries = entries.data();
+		wgpu::BindGroupLayout materialBindGroupLayout = m_Shader.GetMaterialBindGroupLayout();
 
-		m_BindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
-	}
-}
-
-namespace Engine::Materials
-{
-	Material* GetDefault()
-	{
-		if (!s_DefaultMaterial)
+		if(materialBindGroupLayout)
 		{
-			MaterialSpecification spec;
-			spec.shader = ShaderImporter::LoadShader("Resources/Engine/shaders/flat.wgsl").value();
-			s_DefaultMaterial = new Material(spec);
-			s_DefaultMaterial->SetVec4("color", glm::vec4{ 1.0f, 0.0f, 1.0f, 1.0f });
+			wgpu::BindGroupDescriptor bindGroupDesc{};
+			bindGroupDesc.label = { "MaterialBindGroup", WGPU_STRLEN }; //TODO: add material name
+			bindGroupDesc.layout = materialBindGroupLayout;
+			bindGroupDesc.entryCount = static_cast<uint32_t>(entries.size());
+			bindGroupDesc.entries = entries.data();
+
+			m_BindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
 		}
-
-		return s_DefaultMaterial;
+		else
+		{
+			m_BindGroup = nullptr;
+		}
 	}
-
-	//ENGINE_API Material* CreateMaterial(const std::filesystem::path& path)
-	//{
-	//	MaterialSpecification spec;
-
-	//	const auto& shaders = Engine::g_AssetManager->GetAssetsOfType<Shader>(AssetType::Shader);
-
-	//	if (shaders.size() == 0)
-	//	{
-	//		throw std::runtime_error("No shaders found! Cannot create material '" + path.string() + "'");
-	//	}
-
-	//	spec.shader = shaders[0]; //TODO: better way to specify shader for material
-
-	//	auto material = Engine::g_AssetManager->CreateAsset<Engine::Material>(path, spec);
-	//	return material;
-	//}
 }

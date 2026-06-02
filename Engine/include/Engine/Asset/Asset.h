@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Engine/Core/UUID.h"
+#include "Engine/Asset/AssetRecord.h"
 #include <string>
+#include <filesystem>
 
 namespace Engine
 {
@@ -11,8 +13,12 @@ namespace Engine
 		Uuid id = Uuid{ 0 };
 
 #ifdef GERBIL_EDITOR
-		std::string editor_name = "Unnamed Asset";
+		struct
+		{
+			std::string name;
+			std::filesystem::path path;
+			AssetType type = AssetType::Unknown;
+		} EditorOnly;
 #endif
-
 	};
 }

@@ -1,55 +1,35 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/AssetRegistry.h"
+//#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Core/Resources.h"
+#include "Engine/Core/Project.h"
 #include <glaze/glaze.hpp>
 #include <fstream>
 
 namespace Engine
 {
-	// =========================================================================
-	// GLAZE DATA TRANSFER OBJECTS (DTOs)
-	// =========================================================================
-
-	struct MaterialSamplerJSON
-	{
-		uint32_t Filter = 0;
-		uint32_t Wrap = 0;
-	};
-
 	struct MaterialJSON
 	{
 		uint64_t Shader = 0;
-		MaterialSamplerJSON Sampler;
 
-		// glz::json_t acts like YAML::Node, allowing us to store floats, or arrays of floats dynamically
 		std::map<std::string, glz::generic> Attributes;
 		std::map<std::string, uint64_t> Textures;
+
+		uint32_t Filter = 0;
+		uint32_t Wrap = 0;
 	};
 }
-
-// =========================================================================
-// GLAZE METADATA
-// =========================================================================
-
-template <>
-struct glz::meta<Engine::MaterialSamplerJSON> {
-	using T = Engine::MaterialSamplerJSON;
-	static constexpr auto value = object(
-		"Filter", &T::Filter,
-		"Wrap", &T::Wrap
-	);
-};
 
 template <>
 struct glz::meta<Engine::MaterialJSON> {
 	using T = Engine::MaterialJSON;
 	static constexpr auto value = object(
 		"Shader", &T::Shader,
-		"Sampler", &T::Sampler,
 		"Attributes", &T::Attributes,
-		"Textures", &T::Textures
+		"Textures", &T::Textures,
+		"Filter", &T::Filter,
+		"Wrap", &T::Wrap
 	);
 };
 
@@ -58,14 +38,13 @@ namespace Engine
 	void MaterialSerializer::Serialize(const Material& material, const std::filesystem::path& path)
 	{
 		auto shader = material.GetShader();
-		auto shaderSpec = shader.GetSpecification();
-		auto materialBindings = GetMaterialBindings(shaderSpec);
+		auto materialBindings = shader.GetBindings();
 		const auto& uniformData = material.GetUniformData();
 
 		MaterialJSON outData;
 		outData.Shader = (uint64_t)shader.id;
-		outData.Sampler.Filter = (uint32_t)material.GetTextureFilter();
-		outData.Sampler.Wrap = (uint32_t)material.GetTextureWrap();
+		outData.Filter = (uint32_t)material.GetTextureFilter();
+		outData.Wrap = (uint32_t)material.GetTextureWrap();
 
 		for (const Binding& binding : materialBindings)
 		{
@@ -121,11 +100,14 @@ namespace Engine
 			}
 		}
 
-		// Write directly to file buffer
-		std::string buffer;
-		if (auto ec = glz::write_file_json(outData, path.string(), buffer))
+
+		auto assetsDirectory = Project::GetActive().GetAssetsDirectory();
+
+		auto writeError = glz::write_file_json<glz::opts{.prettify = true}>(outData, (assetsDirectory / path).string(), std::string{});
+
+		if(writeError)
 		{
-			LOG_ERROR("Failed to open file for serialization: {}", path);
+			LOG_ERROR("Failed to write material JSON: {}", glz::format_error(writeError));
 		}
 	}
 
@@ -140,20 +122,20 @@ namespace Engine
 			return std::nullopt;
 		}
 
-		if (!AssetManager::GetAssetRegistry().GetRecord(Uuid(data.Shader)).IsValid())
-		{
-			data.Shader = RESOURCES::SHADER::DEFAULT;
-		}
+		//if (!AssetManager::GetAssetRegistry().GetRecord(Uuid(data.Shader)).IsValid())
+		//{
+		//	data.Shader = RESOURCES::SHADER::DEFAULT;
+		//}
 
 		Engine::Shader& shader = Engine::AssetManager::GetAsset<Shader>(Uuid(data.Shader));
 
 		MaterialSpecification spec;
-		spec.shader = shader;
+		spec.shader = &shader;
 
 		// Note: ensure spec.filter and spec.wrap can be safely cast from uint32_t
 		// depending on how TextureFilter/TextureWrap are defined in your engine
-		spec.filter = static_cast<decltype(spec.filter)>(data.Sampler.Filter);
-		spec.wrap = static_cast<decltype(spec.wrap)>(data.Sampler.Wrap);
+		spec.filter = static_cast<decltype(spec.filter)>(data.Filter);
+		spec.wrap = static_cast<decltype(spec.wrap)>(data.Wrap);
 
 		// Deserialize Attributes dynamically using glz::json_t
 		for (auto& [name, node] : data.Attributes)
@@ -209,10 +191,12 @@ namespace Engine
 		// Deserialize Textures
 		for (const auto& [name, id] : data.Textures)
 		{
-			if(AssetManager::GetAssetRegistry().GetRecord(Uuid(id)).IsValid())
-			{
-				spec.textureDefaults[name] = Uuid(id);
-			}
+			//if(AssetManager::GetAssetRegistry().GetRecord(Uuid(id)).IsValid())
+			//{
+			//	spec.textureDefaults[name] = Uuid(id);
+			//}
+
+			spec.textureDefaults[name] = Uuid(id);
 		}
 
 		return Material(spec);

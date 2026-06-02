@@ -186,6 +186,52 @@ namespace Editor
 		return result;
 	}
 
+	EditResult ShaderField(const std::string& label, Engine::Shader*& shader)
+	{
+		EditResult result;
+		ImGui::PushID(label.c_str());
+		std::string buttonText = shader != nullptr ? Engine::AssetManager::GetAssetRegistry().GetPath(shader->id).stem().string() : "##Shader";
+		ImGui::Button(buttonText.c_str(), ImVec2(-FLT_MIN, 0));
+		if (shader)
+		{
+			if (ImGui::BeginDragDropSource())
+			{
+				Engine::Uuid uuid = shader->id;
+				ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
+				ImGui::Text("%llu", static_cast<unsigned long long>((uint64_t)shader->id));
+				ImGui::EndDragDropSource();
+			}
+		}
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
+			{
+				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
+				if (Engine::AssetManager::GetAssetRegistry().GetType(droppedUUID) == Engine::AssetType::Shader)
+				{
+					shader = &(Engine::AssetManager::GetAsset<Engine::Shader>(droppedUUID));
+					result.changed = true;
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+		if (shader && ImGui::BeginPopupContextItem("Options"))
+		{
+			if (ImGui::MenuItem("Remove"))
+			{
+				shader = nullptr;
+				result.changed = true;
+			}
+			ImGui::EndPopup();
+		}
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+		ImGui::PopID();
+		return result;
+		
+	}
+
 	EditResult MaterialField(const std::string& label, Engine::Material*& material)
 	{
 		EditResult result;

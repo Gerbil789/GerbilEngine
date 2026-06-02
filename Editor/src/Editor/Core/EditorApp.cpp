@@ -64,20 +64,22 @@ namespace Editor
 
 		auto id = project.GetDefaultSceneId();
 
-		if(!Engine::AssetManager::GetAssetRegistry().GetRecord(id).IsValid())
-		{
-			LOG_ERROR("Failed to load default scene '{}', loading empty scene instead!", id);
-			id = RESOURCES::SCENE::DEFAULT;
-		}
+		//if(!Engine::AssetManager::GetAssetRegistry().GetRecord(id).IsValid())
+		//{
+		//	LOG_ERROR("Failed to load default scene '{}', loading empty scene instead!", id);
+		//	id = RESOURCES::SCENE::DEFAULT;
+		//}
 
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
 
-		Engine::Scene& newScene = Engine::AssetManager::CreateAsset<Engine::Scene>();
-		newScene = scene;
+		//Engine::Scene& newScene = Engine::AssetManager::CreateAsset<Engine::Scene>();
+		//newScene = scene;
 
 
-		Engine::SceneManager::SetActiveScene(newScene.id);
-		EditorCommandManager::SetContext(&newScene);
+
+
+		Engine::SceneManager::SetActiveScene(scene.id);
+		EditorCommandManager::SetContext(&scene);
 
 		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
 		LOG_INFO("--- Editor initialization complete ---");

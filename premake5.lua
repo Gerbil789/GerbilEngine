@@ -16,6 +16,7 @@ filter "action:vs*"
   removeplatforms { "Web", "Linux" }
 	toolset "msc"
 	disablewarnings { "4251" }
+	multiprocessorcompile ("On")
 	
 filter "system:windows"
 	defines 

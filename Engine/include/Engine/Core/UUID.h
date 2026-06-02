@@ -9,16 +9,17 @@ namespace Engine
   class ENGINE_API Uuid
   {
   public:
-    Uuid(); // generates a new UUID
+    Uuid(); // generate a new UUID
     constexpr Uuid(uint64_t value) : m_Value(value) {}
 
     bool operator==(const Uuid& other) const { return m_Value == other.m_Value; }
     bool operator!=(const Uuid& other) const { return m_Value != other.m_Value; }
+
 		operator uint64_t() const { return m_Value; }
     operator bool() const { return m_Value != 0; }
 
   private:
-    uint64_t m_Value{};
+    uint64_t m_Value = 0;
   };
 }
 
@@ -30,7 +31,7 @@ namespace std
   {
     size_t operator()(const Engine::Uuid& uuid) const noexcept
     {
-      return std::hash<uint64_t>{}(uuid);
+      return static_cast<size_t>(uuid);
     }
   };
 }

@@ -1,1 +1,1 @@
-{"Shader":13992555324839847950,"Sampler":{"Filter":0,"Wrap":0},"Attributes":{"albedo":[1,1,1,1],"metallic":0,"offset":[0,0],"roughness":1,"tiling":[1,1]},"Textures":{"AlbedoTexture":17437120939506816063}}
+{"Shader":13992555324839847950,"Filter":0,"Wrap":0,"Attributes":{"albedo":[1,1,1,1],"metallic":0,"offset":[0,0],"roughness":1,"tiling":[1,1]},"Textures":{"AlbedoTexture":17437120939506816063}}

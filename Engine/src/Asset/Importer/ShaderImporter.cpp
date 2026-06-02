@@ -14,8 +14,7 @@ namespace Engine
 			return std::nullopt;
 		}
 
-		ShaderSpecification spec = ShaderParser::GetSpecification(source);
-		auto shader = Shader(spec, source, path.stem().string());
+		auto shader = Shader(source);
 		return shader;
 	}
 }

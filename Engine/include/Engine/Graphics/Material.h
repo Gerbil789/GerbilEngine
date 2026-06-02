@@ -4,12 +4,13 @@
 #include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
+#include "Engine/Graphics/Pipeline.h"
 
 namespace Engine 
 {
 	struct MaterialSpecification
 	{
-		Shader shader;
+		Shader* shader;
 
 		TextureFilter filter = TextureFilter::Bilinear;
 		TextureWrap wrap = TextureWrap::Repeat;
@@ -46,6 +47,8 @@ namespace Engine
 		const std::vector<std::byte>& GetUniformData() const { return m_UniformData; }
 		const std::unordered_map<std::string, Texture2D*>& GetTextures() const { return m_Textures; }
 
+
+		const PipelineSpecification& GetPipelineSpec() const { return m_PipelineSpec; }
 	private:
 		void CreateUniformBuffer();
 		void CreateBindGroup();
@@ -60,11 +63,7 @@ namespace Engine
 
 		TextureFilter m_TextureFilter = TextureFilter::Bilinear;
 		TextureWrap m_TextureWrap = TextureWrap::Repeat;
-	};
-}
 
-namespace Engine::Materials
-{
-	ENGINE_API Material* GetDefault();
-	//ENGINE_API Material* CreateMaterial(const std::filesystem::path& path);
+		PipelineSpecification m_PipelineSpec;
+	};
 }

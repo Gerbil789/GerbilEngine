@@ -2,7 +2,7 @@
 
 #include "Engine/Core/UUID.h"
 #include <filesystem>
-#include <glaze/glaze.hpp>
+
 namespace Engine
 {
 	//TODO: remove "Other"
@@ -78,35 +78,3 @@ namespace Engine
 
 
 };
-
-
-//// Put this in the Engine namespace or global namespace
-//template <>
-//struct glz::meta<Engine::AssetType> {
-//	using enum Engine::AssetType;
-//	static constexpr auto value = enumerate(
-//		"Texture", Texture2D,
-//		"Mesh", Mesh,
-//		"Shader", Shader,
-//		"Material", Material,
-//		"Audio", Audio,
-//		"Scene", Scene,
-//		"Script", Script
-//	);
-//};
-//
-//template <>
-//struct glz::meta<Engine::AssetRecord> {
-//	using T = Engine::AssetRecord;
-//	static constexpr auto value = object(
-//		"ID", &T::id,
-//		"Path", &T::path,
-//		"Type", &T::type
-//	);
-//};
-//
-//// Assuming Uuid can be treated as its underlying uint64_t
-//template <>
-//struct glz::meta<Engine::Uuid> {
-//	static constexpr auto value = [](auto& t) -> auto& { return t.GetRaw(); }; // Adjust GetRaw() to your actual getter
-//};

@@ -23,7 +23,7 @@
 namespace Engine
 {
   class Script;
-  enum class ScriptFieldType { Float, Int, Bool, Texture, AudioClip, Mesh, Material };
+  enum class ScriptFieldType { Float, Int, Bool, Texture, AudioClip, Mesh, Shader, Material };
 
   struct ScriptField
   {

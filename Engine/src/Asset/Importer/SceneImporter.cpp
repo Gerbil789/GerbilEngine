@@ -6,6 +6,6 @@ namespace Engine
 {
 	std::optional<Scene> SceneImporter::LoadScene(const std::filesystem::path& path)
   {
-    return  SceneSerializer::Deserialize(path);
+    return SceneSerializer::Deserialize(path);
   }
 }

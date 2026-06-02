@@ -29,6 +29,7 @@ namespace Editor
 		entt::registry& registry = scene.GetRegistry();
 		auto& mc = registry.emplace<Engine::MeshComponent>(entity);
 		mc.meshId = RESOURCES::MESH::SPHERE;
+		mc.materials.push_back(RESOURCES::MATERIAL::PINK);
 
 		renderer.Initialize();
 		renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Opaque);

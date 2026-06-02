@@ -125,11 +125,11 @@ namespace Template
 
 		auto id = project.GetDefaultSceneId();
 
-		if (!Engine::AssetManager::GetAssetRegistry().GetRecord(id).IsValid())
-		{
-			LOG_ERROR("Failed to load default scene '{}', loading empty scene instead!", id);
-			id = RESOURCES::SCENE::DEFAULT;
-		}
+		//if (!Engine::AssetManager::GetAssetRegistry().GetRecord(id).IsValid())
+		//{
+		//	LOG_ERROR("Failed to load default scene '{}', loading empty scene instead!", id);
+		//	id = RESOURCES::SCENE::DEFAULT;
+		//}
 
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
 		Engine::SceneManager::SetActiveScene(scene.id);

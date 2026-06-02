@@ -10,24 +10,20 @@ namespace Engine
 	{
 	public:
 		Shader() = default;
-		Shader(const ShaderSpecification& specification, const std::string& source, const std::string& name = "untitled");
+		Shader(const std::string& source);
 
-		const std::string& GetName() const { return m_Name; }
-		const ShaderSpecification& GetSpecification() const { return m_Specification; }
-		wgpu::RenderPipeline GetRenderPipeline() const { return m_RenderPipeline; }
 		size_t GetMaterialUniformBufferSize() const { return m_MaterialUniformBufferSize; }
 		wgpu::BindGroupLayout GetMaterialBindGroupLayout() const { return m_MaterialBindGroupLayout; }
 
-	private:
-		wgpu::ShaderModule CreateShaderModule(const std::string& source);
-		wgpu::BindGroupLayout CreateMaterialBindGroupLayout(const ShaderSpecification& specification);
+		wgpu::ShaderModule GetShaderModule() const { return m_ShaderModule; }
 
-		size_t m_MaterialUniformBufferSize = 0;
+		inline std::vector<Binding> GetBindings() const { return GetMaterialBindings(m_Specification); }
+		inline const ShaderSpecification& GetSpecification() const { return m_Specification; }
 
 	private:
-    std::string m_Name;
 		ShaderSpecification m_Specification;
-		wgpu::RenderPipeline m_RenderPipeline;
+		wgpu::ShaderModule m_ShaderModule;
 		wgpu::BindGroupLayout m_MaterialBindGroupLayout;
+		size_t m_MaterialUniformBufferSize = 0;
 	};
 }

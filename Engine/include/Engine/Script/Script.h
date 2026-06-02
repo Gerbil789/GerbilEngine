@@ -2,6 +2,7 @@
 
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Graphics/Mesh.h"
+#include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Audio/AudioClip.h"
 #include "Engine/Scene/Scene.h"
@@ -36,6 +37,10 @@ namespace Engine
 	template<> struct ScriptFieldTypeMap<Mesh*> {
     static constexpr ScriptFieldType value = ScriptFieldType::Mesh;
 	};
+
+  template<> struct ScriptFieldTypeMap<Shader*> {
+		static constexpr ScriptFieldType value = ScriptFieldType::Shader;
+  };
 
   template<> struct ScriptFieldTypeMap<Material*> {
     static constexpr ScriptFieldType value = ScriptFieldType::Material;

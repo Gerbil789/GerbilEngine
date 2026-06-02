@@ -39,7 +39,7 @@ namespace Engine
 	struct ENGINE_API MeshComponent
 	{
 		Uuid meshId{ 0 };
-		std::vector<Uuid> materials{ Uuid{RESOURCES::MATERIAL::PINK} };
+		std::vector<Uuid> materials{};
 	};
 
 	enum class BodyType { Static = 0, Dynamic, Kinematic };

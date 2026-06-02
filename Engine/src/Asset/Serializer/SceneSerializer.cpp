@@ -1,6 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
@@ -8,6 +9,7 @@
 #include "Engine/Audio/AudioClip.h"
 #include "Engine/Script/Script.h"
 #include "Engine/Script/ScriptRegistry.h"
+#include "Engine/Core/Resources.h"
 #include <glaze/glaze.hpp>
 #include <fstream>
 
@@ -250,6 +252,8 @@ namespace Engine
 			return std::nullopt;
 		}
 
+		AssetRegistry& assetRegistry = AssetManager::GetAssetRegistry();
+
 		std::vector<EntityJSON> sceneData;
 		std::string buffer;
 
@@ -299,7 +303,25 @@ namespace Engine
 				auto& mComp = registry.emplace<MeshComponent>(entity);
 				const auto& mJson = eJson.MeshComponent.value();
 				mComp.meshId = mJson.Mesh;
-				for (auto id : mJson.Materials) mComp.materials.push_back(Uuid(id));
+
+				if(!assetRegistry.GetRecord(mComp.meshId).IsValid())
+				{
+					mComp.meshId = RESOURCES::MESH::EMPTY;
+				}
+
+				mComp.materials.reserve(mJson.Materials.size());
+
+				for (auto id : mJson.Materials)
+				{
+					if (assetRegistry.GetRecord(id).IsValid())
+					{
+						mComp.materials.push_back(Uuid(id));
+					}
+					else
+					{
+						mComp.materials.push_back(RESOURCES::MATERIAL::PINK);
+					}
+				}
 			}
 
 			// Collider

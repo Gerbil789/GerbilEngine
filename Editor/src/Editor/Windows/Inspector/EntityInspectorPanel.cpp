@@ -34,11 +34,6 @@
 
 namespace Editor
 {
-	namespace
-	{
-		Engine::AssetRegistry& s_AssetRegistry = Engine::AssetManager::GetAssetRegistry();
-	}
-
 	struct EntityHeader
 	{
 		EntityHeader(entt::registry& registry, entt::entity entity)
@@ -215,27 +210,35 @@ namespace Editor
 
 		auto& component = registry.get<Engine::MeshComponent>(entity);
 
-		std::string meshText = component.meshId ? s_AssetRegistry.GetRecord(component.meshId).GetName() : "##Mesh";
-
 		PropertyTable table;
 		if (!table) return;
 
 		{
 			PropertyRow row("Mesh");
-			ImGui::Button(meshText.c_str(), ImVec2(-FLT_MIN, 0));
+			if(component.meshId)
+			{
+				Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(component.meshId);
+				ImGui::Button(mesh.EditorOnly.name.c_str(), ImVec2(-FLT_MIN, 0));
+			}
+			else
+			{
+				ImGui::Button("##Mesh", ImVec2(-FLT_MIN, 0));
+			}
+
 			DragDropTarget{}.AcceptAsset<Engine::AssetType::Mesh>([&](Engine::Uuid id) {component.meshId = id; });
 		}
 
 		if (!component.meshId) return;
 
 		auto materials = component.materials; //TODO: dont use index for loop?
-		for (size_t i = 0; i < materials.size(); ++i)
+
+		for (size_t i = 0; i < materials.size(); i++)
 		{
 			auto materialId = materials[i];
 			std::string text = "##Material";
 			if (materialId)
 			{
-				text = s_AssetRegistry.GetRecord(materialId).GetName();
+				text = Engine::AssetManager::GetAsset<Engine::Material>(materialId).EditorOnly.name;
 			}
 
 			PropertyRow row("Material");
@@ -269,7 +272,7 @@ namespace Editor
 
 		auto& component = registry.get<Engine::ColliderComponent>(entity);
 
-		std::string meshText = component.meshId ? s_AssetRegistry.GetRecord(component.meshId).GetName() : "##Mesh";
+		std::string meshText = component.meshId ? Engine::AssetManager::GetAsset<Engine::Mesh>(component.meshId).EditorOnly.name : "##Mesh";
 
 
 		PropertyTable table;
@@ -455,6 +458,13 @@ namespace Editor
 			{
 				Engine::Mesh*& mesh = *reinterpret_cast<Engine::Mesh**>(fieldPtr);
 				MeshField(field.name, mesh);
+				break;
+			}
+
+			case Engine::ScriptFieldType::Shader:
+			{
+				Engine::Shader*& shader = *reinterpret_cast<Engine::Shader**>(fieldPtr);
+				ShaderField(field.name, shader);
 				break;
 			}
 

@@ -125,7 +125,7 @@ namespace Engine
 		{
 			if (record.path == path)
 			{
-				LOG_WARNING("Asset '{}' already exists in registry.", path);
+				LOG_WARNING("Asset '{}' already exists", path);
 				return &record;
 			}
 		}

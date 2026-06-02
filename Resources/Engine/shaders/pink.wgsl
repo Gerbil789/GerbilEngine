@@ -8,7 +8,6 @@ struct VertexInput
 struct VertexOutput 
 {
 	@builtin(position) position: vec4f,
-	@location(0) uv: vec2f,
 };
 
 struct ViewUniforms 
@@ -24,14 +23,7 @@ struct ModelUniforms
 	model: mat4x4f,
 };
 
-struct MaterialUniforms 
-{
-	albedo: vec4f,
-};
-
 @group(0) @binding(0) var<uniform> uView: ViewUniforms;
-//skip environment bindings
-@group(2) @binding(0) var<uniform> uMaterial: MaterialUniforms;
 @group(3) @binding(0) var<uniform> uModel: ModelUniforms;
 
 @vertex
@@ -45,5 +37,5 @@ fn vs_main(in: VertexInput) -> VertexOutput
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4f 
 {
-	return uMaterial.albedo;
+	return vec4f(1.0, 0.0, 1.0, 1.0);
 }

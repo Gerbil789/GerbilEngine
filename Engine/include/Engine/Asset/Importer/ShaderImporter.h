@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Engine/Graphics/Shader.h"
+
 namespace Engine
 {
-	class Shader;
-
 	class ShaderImporter
 	{
 	public:

@@ -10,24 +10,59 @@
 #include "Engine/Utility/Color.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Scene/SceneManager.h"
+#include "Engine/Core/Resources.h"
+#include "Engine/Asset/AssetRegistry.h"
+#include <format>
+#include "Engine/Asset/Serializer/MaterialSerializer.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
 
 using namespace Engine;
 
 void GameManager::OnStart()
 {
-	//auto scene = SceneManager::GetActiveScene();
+	Scene& scene = SceneManager::GetActiveScene();
+	auto& registry = scene.GetRegistry();
+	int i = 1;
 
+	for(int x = 0; x < 5; x++)
+	{
+		for(int z = 0; z < 5; z++)
+		{
+			auto sphere = scene.CreateEntity(std::format("Sphere_{}", i));
 
-	//for(int x = 0; x < 5; x++)
-	//{
-	//	for(int z = 0; z < 5; z++)
-	//	{
-	//		auto sphere = scene->CreateEntity("Sphere");
-	//		sphere.GetComponent<TransformComponent>().position = { static_cast<float>(x) * 2.0f, 0.0f, static_cast<float>(z) * 2.0f };
-	//		sphere.AddComponent<MeshComponent>(m_Mesh);
-	//		
-	//	}
-	//}
+			registry.get<TransformComponent>(sphere).position = { static_cast<float>(x) * 3.0f, 0.0f, static_cast<float>(z) * 3.0f };
+
+			std::string path = std::format("Materials/tmp/tmp_{}.mat", i);
+			Material& mat = AssetManager::CreateAsset<Material>(path);
+
+#ifdef GERBIL_EDITOR
+			mat.EditorOnly.name = std::format("Mat_{}", i);
+			mat.EditorOnly.type = AssetType::Material;
+			mat.EditorOnly.path = path;
+#endif
+
+			mat.SetShader(*m_Shader);
+
+			mat.SetVec4("albedo", glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f });
+			mat.SetVec2("tiling", glm::vec2{ 1.0f, 1.0f });
+			mat.SetTexture("NormalTexture", &Engine::AssetManager::GetAsset<Engine::Texture2D>(RESOURCES::TEXTURE::NORMAL));
+
+			float roughness = static_cast<float>(x) / 4.0f;
+			float metallic = static_cast<float>(z) / 4.0f;
+
+			mat.SetFloat("roughness", roughness);
+			mat.SetFloat("metallic", metallic);
+
+			MaterialSerializer::Serialize(mat, path);
+
+			auto& mc = registry.emplace<MeshComponent>(sphere, RESOURCES::MESH::SPHERE);
+			mc.materials = { mat.id };
+
+			i++;
+		}
+
+	}
+
 
 
 }

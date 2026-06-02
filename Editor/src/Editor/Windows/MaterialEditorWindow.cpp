@@ -25,7 +25,7 @@ namespace Editor
 		}
 
 		const Engine::Shader& currentShader = m_Material->GetShader();
-		auto bindings = GetMaterialBindings(currentShader.GetSpecification());
+		auto bindings = currentShader.GetBindings();
 
 		if (ImGui::BeginTable("MaterialHeader", 2, ImGuiTableFlags_SizingStretchProp))
 		{
@@ -35,7 +35,7 @@ namespace Editor
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0); // Name column
 
-			if (TextField("MaterialName", m_Material->editor_name).finished)
+			if (TextField("MaterialName", m_Material->EditorOnly.name).finished)
 			{
 				//record.path = record.path.parent_path() / (name + record.path.extension().string());
 				//TODO: SAVE CHANGE
@@ -45,7 +45,7 @@ namespace Editor
 			ImGui::SetNextItemWidth(-FLT_MIN);
 
 
-			if (ImGui::BeginCombo("##Shader", currentShader.editor_name.c_str()))
+			if (ImGui::BeginCombo("##Shader", currentShader.EditorOnly.name.c_str()))
 			{
 				auto shaderRecords = Engine::AssetManager::GetAssetRegistry().GetRecords(Engine::AssetType::Shader);
 
@@ -54,7 +54,7 @@ namespace Editor
 					Engine::Shader& shader = Engine::AssetManager::GetAsset<Engine::Shader>(record->id);
 
 					bool isSelected = (&shader == &currentShader);
-					if (ImGui::Selectable(shader.editor_name.c_str(), isSelected))
+					if (ImGui::Selectable(shader.EditorOnly.name.c_str(), isSelected))
 					{
 						m_Material->SetShader(shader);
 					}

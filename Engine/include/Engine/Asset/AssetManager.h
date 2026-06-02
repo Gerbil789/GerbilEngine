@@ -1,52 +1,21 @@
 #pragma once
 
-#include "Engine/Asset/Asset.h"
+#include "Engine/Core/UUID.h"
 #include <filesystem>
 
-namespace Engine
-{
-	class AssetRegistry;
-	class Texture2D;
-	class Mesh;
-	class Material;
-	class Shader;
-	class AudioClip;
-	class Scene;
-}
+namespace Engine { class AssetRegistry; }
 
 namespace Engine::AssetManager
 {
 	ENGINE_API void Initialize(const std::filesystem::path& projectDirectory);
-
-	ENGINE_API AssetRegistry& GetAssetRegistry();
-
-	template<typename T>
-	T& GetAsset(Uuid)
-	{
-		static_assert(std::is_base_of_v<Asset, T>, "ERROR: Requested type does not derive from Engine::Asset!");
-		static_assert(sizeof(T) == 0, "ERROR: Asset type is valid, but missing an explicit template specialization!");
-		return *(T*)nullptr;
-	}
+	ENGINE_API AssetRegistry& GetAssetRegistry(); //TODO: asset registry should be interal to asset manager only, dont expose it
 
 	template<typename T>
-	T& CreateAsset()
-	{
-		static_assert(std::is_base_of_v<Asset, T>, "ERROR: Requested type does not derive from Engine::Asset!");
-		static_assert(sizeof(T) == 0, "ERROR: Asset type is valid, but missing an explicit template specialization!");
-		return *(T*)nullptr;
-	}
+	ENGINE_API T& GetAsset(Uuid id);
+
+	//TODO: make this editor only, we dont want to create assets in game code
+	template<typename T>
+	ENGINE_API T& CreateAsset(const std::filesystem::path& path);
+
+	//TODO: save asset, delete asset, etc.
 }
-
-namespace Engine
-{
-	template<> ENGINE_API Texture2D& AssetManager::GetAsset<Texture2D>(Uuid id);
-	template<> ENGINE_API Mesh& AssetManager::GetAsset<Mesh>(Uuid id);
-	template<> ENGINE_API Shader& AssetManager::GetAsset<Shader>(Uuid id);
-	template<> ENGINE_API Material& AssetManager::GetAsset<Material>(Uuid id);
-	template<> ENGINE_API AudioClip& AssetManager::GetAsset<AudioClip>(Uuid id);
-	template<> ENGINE_API Scene& AssetManager::GetAsset<Scene>(Uuid id);
-
-	template<> ENGINE_API Scene& AssetManager::CreateAsset<Scene>();
-}
-
-

@@ -35,16 +35,16 @@ namespace Engine
 		wgpu::SamplerBindingType samplerType = wgpu::SamplerBindingType::Filtering;
 	};
 
-	struct VertexAttribute
-	{
-		uint32_t location;
-		std::string label;
-		wgpu::VertexFormat format;
-	};
+	//struct VertexAttribute
+	//{
+	//	uint32_t location;
+	//	std::string label;
+	//	wgpu::VertexFormat format;
+	//};
 
 	struct ShaderSpecification
 	{
-		std::vector<VertexAttribute> vertexAttributes;
+		std::vector<wgpu::VertexAttribute> vertexAttributes;
 		std::vector<Binding> bindings;
 
 		std::string vsEntryPoint = "vs_main";

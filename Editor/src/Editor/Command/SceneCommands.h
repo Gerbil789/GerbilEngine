@@ -10,7 +10,7 @@ namespace Editor
 {
 	inline void SaveScene()
 	{
-		auto path = Engine::AssetManager::GetAssetRegistry().GetPath(Engine::SceneManager::GetActiveScene().id);
+		auto path = Engine::SceneManager::GetActiveScene().EditorOnly.path;
 
 		if (path.empty())
 		{

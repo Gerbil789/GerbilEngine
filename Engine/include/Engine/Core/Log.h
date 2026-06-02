@@ -15,27 +15,16 @@ namespace Engine
 	public:
 		static void Initialize();
 
-
-		static void Trace(std::string_view message,
-			const std::source_location& location = std::source_location::current());
-
-		static void Info(std::string_view message,
-			const std::source_location& location = std::source_location::current());
-
-		static void Warn(std::string_view message,
-			const std::source_location& location = std::source_location::current());
-
-		static void Error(std::string_view message,
-			const std::source_location& location = std::source_location::current());
-
-		static void Critical(std::string_view message,
-			const std::source_location& location = std::source_location::current());
+		static void Trace(std::string_view message, const std::source_location& location = std::source_location::current());
+		static void Info(std::string_view message, const std::source_location& location = std::source_location::current());
+		static void Warn(std::string_view message, const std::source_location& location = std::source_location::current());
+		static void Error(std::string_view message, const std::source_location& location = std::source_location::current());
+		static void Critical(std::string_view message, const std::source_location& location = std::source_location::current());
 	};
 }
 
 template <>
-struct std::formatter<std::filesystem::path, char>
-	: std::formatter<std::string_view, char>
+struct std::formatter<std::filesystem::path, char> : std::formatter<std::string_view, char>
 {
 	auto format(const std::filesystem::path& p, auto& ctx) const
 	{
@@ -44,13 +33,11 @@ struct std::formatter<std::filesystem::path, char>
 };
 
 template <>
-struct std::formatter<Engine::Uuid, char>
-	: std::formatter<uint64_t, char>
+struct std::formatter<Engine::Uuid, char> : std::formatter<uint64_t, char>
 {
 	auto format(const Engine::Uuid& uuid, auto& ctx) const
 	{
-		return std::formatter<uint64_t, char>::format(
-			static_cast<uint64_t>(uuid), ctx);
+		return std::formatter<uint64_t, char>::format(static_cast<uint64_t>(uuid), ctx);
 	}
 };
 
