@@ -15,7 +15,7 @@ namespace Engine
 
   struct PipelineSpecification
   {
-    Shader* shader;
+		Uuid shaderId;
     wgpu::PrimitiveTopology topology = wgpu::PrimitiveTopology::TriangleList;
     wgpu::CullMode cullMode = wgpu::CullMode::Back;
 
@@ -25,16 +25,13 @@ namespace Engine
     {
       size_t seed = 0;
 
-      HashCombine(seed, shader->id);
+      HashCombine(seed, static_cast<uint64_t>(shaderId));
       HashCombine(seed, static_cast<uint32_t>(topology));
       HashCombine(seed, static_cast<uint32_t>(cullMode));
 
       return seed;
     }
   };
-
-
-
 
   class PipelineCache
   {

@@ -41,17 +41,17 @@ void GameManager::OnStart()
 			mat.EditorOnly.path = path;
 #endif
 
-			mat.SetShader(*m_Shader);
+			mat.SetShader(m_Shader->id);
 
-			mat.SetVec4("albedo", glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f });
-			mat.SetVec2("tiling", glm::vec2{ 1.0f, 1.0f });
-			mat.SetTexture("NormalTexture", &Engine::AssetManager::GetAsset<Engine::Texture2D>(RESOURCES::TEXTURE::NORMAL));
+			mat.SetParameter("albedo", glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f });
+			mat.SetParameter("tiling", glm::vec2{ 1.0f, 1.0f });
+			mat.SetTexture("NormalTexture", RESOURCES::TEXTURE::NORMAL);
 
 			float roughness = static_cast<float>(x) / 4.0f;
 			float metallic = static_cast<float>(z) / 4.0f;
 
-			mat.SetFloat("roughness", roughness);
-			mat.SetFloat("metallic", metallic);
+			mat.SetParameter("roughness", roughness);
+			mat.SetParameter("metallic", metallic);
 
 			MaterialSerializer::Serialize(mat, path);
 
@@ -62,9 +62,6 @@ void GameManager::OnStart()
 		}
 
 	}
-
-
-
 }
 
 void GameManager::OnUpdate()

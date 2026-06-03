@@ -4,6 +4,7 @@
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/Material.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Audio/AudioClip.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Event/Event.h"

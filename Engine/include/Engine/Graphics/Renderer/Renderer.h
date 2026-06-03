@@ -23,7 +23,7 @@ namespace Engine
 		Camera* GetCamera() const;
 		void SetColorTarget(wgpu::TextureView colorView);
 		void SetDepthTarget(wgpu::TextureView depthView);
-		void SetEnvironmentTexture(Texture2D& texture);
+		void SetEnvironmentTexture(Uuid textureId);
 		RenderContext& GetRenderContext();
 
 		void RenderScene(Scene& scene);

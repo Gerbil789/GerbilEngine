@@ -24,8 +24,10 @@ namespace Editor
 			return;
 		}
 
-		const Engine::Shader& currentShader = m_Material->GetShader();
-		auto bindings = currentShader.GetBindings();
+
+		Engine::Uuid currentShaderId = m_Material->GetShader();
+		const Engine::Shader& currentShader = Engine::AssetManager::GetAsset<Engine::Shader>(currentShaderId);
+
 
 		if (ImGui::BeginTable("MaterialHeader", 2, ImGuiTableFlags_SizingStretchProp))
 		{
@@ -45,6 +47,7 @@ namespace Editor
 			ImGui::SetNextItemWidth(-FLT_MIN);
 
 
+
 			if (ImGui::BeginCombo("##Shader", currentShader.EditorOnly.name.c_str()))
 			{
 				auto shaderRecords = Engine::AssetManager::GetAssetRegistry().GetRecords(Engine::AssetType::Shader);
@@ -53,10 +56,10 @@ namespace Editor
 				{
 					Engine::Shader& shader = Engine::AssetManager::GetAsset<Engine::Shader>(record->id);
 
-					bool isSelected = (&shader == &currentShader);
+					bool isSelected = (record->id == currentShaderId);
 					if (ImGui::Selectable(shader.EditorOnly.name.c_str(), isSelected))
 					{
-						m_Material->SetShader(shader);
+						m_Material->SetShader(record->id);
 					}
 
 					if (isSelected)
@@ -78,58 +81,49 @@ namespace Editor
 			ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthFixed, 100.0f);
 			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
+			auto bindings = currentShader.GetMaterialBindings();
+
 			for (auto& binding : bindings)
 			{
 				if (binding.type == Engine::BindingType::UniformBuffer)
 				{
 					for (auto& param : binding.parameters)
 					{
-						if (param.name[0] == '_')
-						{
-							continue;
-						}
+						if (param.name[0] == '_') continue;
 
 						ImGui::TableNextRow();
 						ImGui::TableSetColumnIndex(0);
 						ImGui::TextUnformatted(param.name.c_str());
 						ImGui::TableSetColumnIndex(1);
 
-						switch(param.type)
-						{
-						case Engine::ShaderValueType::Float:
-						{
-							float value;
-							auto data = m_Material->GetUniformData();
-							memcpy(&value, data.data() + param.offset, sizeof(float));
-							if (FloatField(param.name.c_str(), value).changed)
-								m_Material->SetFloat(param.name, value);
-							break;
-						}
+						Engine::MaterialValue variantValue = m_Material->GetParameterVariant(param.name);
 
-						case Engine::ShaderValueType::Vec2:
-						{
-							glm::vec2 value;
-							auto data = m_Material->GetUniformData();
-							memcpy(&value, data.data() + param.offset, sizeof(glm::vec2));
-							if (Vec2Field(param.name.c_str(), value).changed)
-								m_Material->SetVec2(param.name, value);
-							break;
-						}
+						std::visit([&](auto& arg)
+							{
+								using T = std::decay_t<decltype(arg)>;
 
-						case Engine::ShaderValueType::Vec4:
-						{
-							glm::vec4 value;
-							auto data = m_Material->GetUniformData();
-							memcpy(&value, data.data() + param.offset, sizeof(glm::vec4));
-							if (ColorField(param.name.c_str(), value).changed)
-								m_Material->SetVec4(param.name, value);
-							break;
-						}
+								// 3. Compile-time branching. The compiler strips out the blocks that don't match!
+								if constexpr (std::is_same_v<T, float>)
+								{
+									if (FloatField(param.name.c_str(), arg).changed)
+										m_Material->SetParameter(param.name, arg);
+								}
+								else if constexpr (std::is_same_v<T, glm::vec2>)
+								{
+									if (Vec2Field(param.name.c_str(), arg).changed)
+										m_Material->SetParameter(param.name, arg);
+								}
+								else if constexpr (std::is_same_v<T, glm::vec4>)
+								{
+									if (ColorField(param.name.c_str(), arg).changed)
+										m_Material->SetParameter(param.name, arg);
+								}
+								else
+								{
+									ImGui::TextUnformatted("<Unsupported Type>");
+								}
 
-						default:
-							ImGui::TextUnformatted("<Unsupported Type>");
-							break;
-						}
+							}, variantValue); // Pass the variant into the visitor
 					}
 				}
 
@@ -141,10 +135,12 @@ namespace Editor
 
 					ImGui::TableSetColumnIndex(1);
 
-					Engine::Texture2D* texture = m_Material->GetTexture(binding.name);
-					if (TextureField(binding.name, texture).changed)
+					Engine::Uuid id = m_Material->GetTexture(binding.name);
+					//Engine::Texture2D* texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(id);
+
+					if (TextureField(binding.name, id).changed)
 					{
-						m_Material->SetTexture(binding.name, texture);
+						m_Material->SetTexture(binding.name, id);
 					}
 
 				}

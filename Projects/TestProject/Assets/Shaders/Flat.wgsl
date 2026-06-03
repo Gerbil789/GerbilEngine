@@ -1,26 +1,31 @@
-struct VertexInput {
+struct VertexInput 
+{
 	@location(0) position: vec3f,
 	@location(1) normal: vec3f,
 	@location(2) uv: vec2f,
 };
 
-struct VertexOutput {
+struct VertexOutput 
+{
 	@builtin(position) position: vec4f,
 	@location(0) uv: vec2f,
 };
 
-struct FrameUniforms {
+struct FrameUniforms 
+{
 	view: mat4x4f,
 	projection: mat4x4f,
 	cameraPosition: vec3f,	
 	_padding: f32,
 };
 
-struct ModelUniforms {
+struct ModelUniforms 
+{
 	model: mat4x4f,
 };
 
-struct MaterialUniforms {
+struct MaterialUniforms 
+{
 	albedo: vec4f,
 };
 

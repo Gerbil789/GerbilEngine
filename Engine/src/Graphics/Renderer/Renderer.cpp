@@ -56,8 +56,9 @@ namespace Engine
 		m_RenderContext.depthTarget = depthView;
 	}
 
-	void Renderer::SetEnvironmentTexture(Texture2D& texture)
+	void Renderer::SetEnvironmentTexture(Uuid textureId)
 	{
+		Texture2D& texture = Engine::AssetManager::GetAsset<Texture2D>(textureId);
 		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(texture);
 		CreateEnvironmentBindGroup();
 	}

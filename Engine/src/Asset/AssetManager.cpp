@@ -131,9 +131,9 @@ namespace Engine
     LoadBuiltInAsset(RESOURCES::SCENE::DEFAULT, "Resources/Engine/scenes/default.scene", m_Scenes, SceneImporter::LoadScene, "Default Scene");
 
     {
-      MaterialSpecification spec{ .shader = &AssetManager::GetAsset<Shader>(RESOURCES::SHADER::FLAT) };
+      MaterialSpecification spec{ .shaderId = RESOURCES::SHADER::FLAT };
       Material whiteMaterial = Material(spec);
-      whiteMaterial.SetVec4("albedo", glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f });
+      whiteMaterial.SetParameter("albedo", glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f });
       whiteMaterial.id = RESOURCES::MATERIAL::WHITE;
 
 #ifdef GERBIL_EDITOR
@@ -144,7 +144,7 @@ namespace Engine
     }
 
     {
-      MaterialSpecification spec{ .shader = &AssetManager::GetAsset<Shader>(RESOURCES::SHADER::FLAT) };
+      MaterialSpecification spec{ .shaderId = RESOURCES::SHADER::FLAT };
       Material pinkMaterial = Material(spec);
       pinkMaterial.id = RESOURCES::MATERIAL::PINK;
 
@@ -208,7 +208,7 @@ namespace Engine
     {
       MaterialSpecification spec
       {
-        .shader = &AssetManager::GetAsset<Shader>(RESOURCES::SHADER::DEFAULT),
+        .shaderId = RESOURCES::SHADER::DEFAULT,
       };
 
       Material material(spec);

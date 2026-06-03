@@ -21,10 +21,10 @@ namespace Engine
 
 		m_Specification = ShaderParser::GetSpecification(source);
 
-		auto materialBindings = GetMaterialBindings(m_Specification);
+		auto materialBindings = GetMaterialBindings();
 
 		std::vector<wgpu::BindGroupLayoutEntry> layoutEntries;
-		layoutEntries.reserve(materialBindings.size());
+		layoutEntries.reserve(std::ranges::distance(materialBindings));
 
 		for (const auto& binding : materialBindings)
 		{

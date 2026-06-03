@@ -3,8 +3,9 @@
 #include "Engine/Asset/Asset.h"
 #include "Engine/Graphics/ShaderSpecification.h"
 #include <webgpu/webgpu.hpp>
+#include <ranges>
 
-namespace Engine 
+namespace Engine
 {
 	class Shader : public Asset
 	{
@@ -16,9 +17,27 @@ namespace Engine
 		wgpu::BindGroupLayout GetMaterialBindGroupLayout() const { return m_MaterialBindGroupLayout; }
 
 		wgpu::ShaderModule GetShaderModule() const { return m_ShaderModule; }
+		const ShaderSpecification& GetSpecification() const { return m_Specification; }
 
-		inline std::vector<Binding> GetBindings() const { return GetMaterialBindings(m_Specification); }
-		inline const ShaderSpecification& GetSpecification() const { return m_Specification; }
+		inline auto GetMaterialBindings() const
+		{ 
+			constexpr uint32_t materialGroupIndex = 2;
+
+			return m_Specification.bindings | std::views::filter([](const Binding& binding) 
+				{
+					return binding.group == materialGroupIndex;
+				});
+		}
+
+		inline const Binding& GetBinding(const std::string& name)
+		{
+			for (const auto& binding : m_Specification.bindings)
+			{
+				if (binding.name == name) return binding;
+			}
+
+			throw std::runtime_error("Binding not found: " + name); //TODO: better error handling
+		}
 
 	private:
 		ShaderSpecification m_Specification;

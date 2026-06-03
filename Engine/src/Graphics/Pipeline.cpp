@@ -3,6 +3,8 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Graphics/WebGPUUtils.h"
+#include "Engine/Asset/AssetManager.h"
+#include <numeric>
 
 namespace Engine
 {
@@ -15,13 +17,16 @@ namespace Engine
 			return it->second;
 		}
 
-		uint64_t offset = 0; //TODO: write more elegant
+		const Shader& shader = Engine::AssetManager::GetAsset<Shader>(specification.shaderId);
 
-		auto vertexAttributes = specification.shader->GetSpecification().vertexAttributes;
-		for(const auto& attr : vertexAttributes)
-		{
-			offset += GetVertexFormatSize(attr.format);
-		}
+		auto vertexAttributes = shader.GetSpecification().vertexAttributes;
+
+		const uint64_t offset = std::accumulate(vertexAttributes.begin(), vertexAttributes.end(), 0ull,
+			[](uint64_t sum, const wgpu::VertexAttribute& attr)
+			{
+				return sum + GetVertexFormatSize(attr.format);
+			}
+		);
 
 		wgpu::VertexBufferLayout vertexBufferLayout;
 		vertexBufferLayout.attributeCount = vertexAttributes.size();
@@ -35,14 +40,14 @@ namespace Engine
 
 		pipelineDesc.vertex.bufferCount = 1;
 		pipelineDesc.vertex.buffers = &vertexBufferLayout;
-		pipelineDesc.vertex.module = specification.shader->GetShaderModule();
+		pipelineDesc.vertex.module = shader.GetShaderModule();
 		pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN};
 		pipelineDesc.vertex.constantCount = 0;
 		pipelineDesc.vertex.constants = nullptr;
 
-		pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+		pipelineDesc.primitive.topology = specification.topology;
 		pipelineDesc.primitive.frontFace = wgpu::FrontFace::CW;
-		pipelineDesc.primitive.cullMode = wgpu::CullMode::Back; //TODO: Configure in material?
+		pipelineDesc.primitive.cullMode = specification.cullMode;
 
 		wgpu::BlendState blendState;
 		blendState.color.srcFactor = wgpu::BlendFactor::SrcAlpha;
@@ -58,7 +63,7 @@ namespace Engine
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 
 		wgpu::FragmentState fragmentState;
-		fragmentState.module = specification.shader->GetShaderModule();
+		fragmentState.module = shader.GetShaderModule();
 		fragmentState.entryPoint = { "fs_main", WGPU_STRLEN };
 		fragmentState.constantCount = 0;
 		fragmentState.constants = nullptr;
@@ -88,7 +93,7 @@ namespace Engine
 		{
 			RenderPipelineLayouts::GetViewLayout(),
 			RenderPipelineLayouts::GetEnvironmentLayout(),
-			specification.shader->GetMaterialBindGroupLayout(),
+			shader.GetMaterialBindGroupLayout(),
 			RenderPipelineLayouts::GetModelLayout()
 		};
 

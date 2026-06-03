@@ -107,7 +107,7 @@ namespace Editor
 	};
 
 
-	EditResult TextureField(const std::string& label, Engine::Texture2D*& texture);
+	EditResult TextureField(const std::string& label, Engine::Uuid& textureId);
 	EditResult AudioClipField(const std::string& label, Engine::AudioClip*& audioClip);
 	EditResult MeshField(const std::string& label, Engine::Mesh*& mesh);
 	EditResult ShaderField(const std::string& label, Engine::Shader*& shader);

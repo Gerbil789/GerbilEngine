@@ -43,7 +43,6 @@ namespace Engine
     case ShaderValueType::ArrayFloat: return 4 * 4; //TODO: dont hardcode array size, need to parse it from shader source
     }
 
-
     std::unreachable();
   }
 

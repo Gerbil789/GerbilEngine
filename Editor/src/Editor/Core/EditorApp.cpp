@@ -77,7 +77,6 @@ namespace Editor
 
 
 
-
 		Engine::SceneManager::SetActiveScene(scene.id);
 		EditorCommandManager::SetContext(&scene);
 

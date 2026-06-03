@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "Engine/Asset/Importer/ShaderImporter.h"
-#include "Engine/Asset/Serializer/ShaderParser.h"
 #include "Engine/Utility/File.h"
 
 namespace Engine
@@ -10,7 +9,7 @@ namespace Engine
 		std::string source;
 		if (!Engine::ReadFile(path, source))
 		{
-			LOG_ERROR("Failed to read shader file. %s", path);
+			LOG_ERROR("Failed to read shader file at '{}'", path);
 			return std::nullopt;
 		}
 

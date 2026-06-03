@@ -17,29 +17,29 @@ namespace Editor
 		return Engine::AssetManager::GetAssetRegistry().GetType(id) == expectedType;
 	}
 
-	EditResult TextureField(const std::string& label, Engine::Texture2D*& texture)
+	EditResult TextureField(const std::string& label, Engine::Uuid& textureId)
 	{
 		EditResult result;
 		const ImVec2 buttonSize = ImVec2(64, 64);
 
 		ImGui::PushID(label.c_str());
 
-		if (texture == nullptr) 
+		if (!textureId)
 		{
 			ImGui::Button("empty", buttonSize);
 		}
 		else 
 		{
-			ImGui::ImageButton(label.c_str(), (ImTextureID)(intptr_t)(WGPUTextureView)texture->GetTextureView(), buttonSize);
+			const Engine::Texture2D& texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(textureId);
+			ImGui::ImageButton(label.c_str(), (ImTextureID)(intptr_t)(WGPUTextureView)texture.GetTextureView(), buttonSize);
 		}
 
-		if(texture)
+		if(textureId)
 		{
 			if (ImGui::BeginDragDropSource())
 			{
-				Engine::Uuid uuid = texture->id;
-				ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
-				ImGui::Text("%llu", static_cast<unsigned long long>((uint64_t)texture->id));
+				ImGui::SetDragDropPayload("UUID", &textureId, sizeof(textureId));
+				ImGui::Text("%llu", static_cast<unsigned long long>((uint64_t)textureId));
 				ImGui::EndDragDropSource();
 			}
 		}
@@ -50,21 +50,21 @@ namespace Editor
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
 				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				if (Engine::AssetManager::GetAssetRegistry().GetType(droppedUUID) == Engine::AssetType::Texture2D)
+
+				if(droppedUUID)
 				{
-					texture = &(Engine::AssetManager::GetAsset<Engine::Texture2D>(droppedUUID));
+					textureId = droppedUUID;
 					result.changed = true;
 				}
-
 			}
 			ImGui::EndDragDropTarget();
 		}
 
-		if (texture && ImGui::BeginPopupContextItem("TextureOptions"))
+		if (textureId && ImGui::BeginPopupContextItem("TextureOptions"))
 		{
 			if (ImGui::MenuItem("Remove Texture"))
 			{
-				texture = nullptr;
+				textureId = Engine::Uuid{ 0 };
 				result.changed = true;
 			}
 			ImGui::EndPopup();

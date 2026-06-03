@@ -71,11 +71,11 @@ namespace Editor
 			{
 				PropertyRow row("Environment");
 
-				Engine::Texture2D* texture = &Engine::g_Renderer.GetRenderContext().environment.TextureHDR;
+				Engine::Uuid textureId = Engine::g_Renderer.GetRenderContext().environment.TextureHDR.id;
 
-				if (TextureField("Environment Texture", texture).changed)
+				if (TextureField("Environment Texture", textureId).changed)
 				{
-					Engine::g_Renderer.SetEnvironmentTexture(*texture);
+					Engine::g_Renderer.SetEnvironmentTexture(textureId);
 				}
 			}
 		}

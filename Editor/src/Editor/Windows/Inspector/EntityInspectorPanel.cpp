@@ -443,7 +443,7 @@ namespace Editor
 			case Engine::ScriptFieldType::Texture:
 			{
 				Engine::Texture2D*& texture = *reinterpret_cast<Engine::Texture2D**>(fieldPtr);
-				TextureField(field.name, texture);
+				TextureField(field.name, texture->id);
 				break;
 			}
 
