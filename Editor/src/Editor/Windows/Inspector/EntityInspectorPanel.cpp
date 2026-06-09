@@ -245,7 +245,7 @@ namespace Editor
 			ImGui::PushID(static_cast<int>(i));
 			if (ImGui::Button(text.c_str(), ImVec2(-FLT_MIN, 0)))
 			{
-				SelectionManager::Select(SelectionType::Asset, materialId);
+				SelectionManager::Assets.Select(materialId);
 			}
 			DragDropTarget{}.AcceptAsset<Engine::AssetType::Material>([&](Engine::Uuid id) { component.materials[i] = id; });
 			ImGui::PopID();
@@ -543,8 +543,9 @@ namespace Editor
 	void EntityInspectorPanel::Draw(Engine::Uuid entityId)
 	{
 		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
-		auto entity = scene.GetEntity(entityId);
+		entt::entity entity = scene.GetEntity(entityId);
 		if (entity == entt::null) return;
+
 		entt::registry& registry = scene.GetRegistry();
 
 		EntityHeader header(registry, entity);

@@ -4,13 +4,24 @@
 #include "Engine/Event/Event.h"
 #include <unordered_map>
 #include <functional>
+#include <type_traits>
 
 namespace Engine
 {
   using EventToken = uint32_t;
 
+  template<typename T>
+  concept IsEvent = std::is_base_of_v<Event, std::remove_cvref_t<T>>;
+
   class ENGINE_API EventBus
   {
+  private:
+    struct Handler
+    {
+      EventToken Token;
+      std::function<void(Engine::Event&)> Callback;
+    };
+
   public:
     static EventBus& Get()
     {
@@ -18,44 +29,40 @@ namespace Engine
       return instance;
     }
 
-    template<typename EventType>
-    EventToken Subscribe(std::function<void(const EventType&)> callback)
+    template<IsEvent T>
+    EventToken Subscribe(std::function<void(const T&)> callback)
     {
+      size_t typeHash = typeid(T).hash_code();
+
       auto wrapper = [callback](Engine::Event& e)
         {
-          if (e.GetEventType() == EventType::GetStaticType())
-          {
-            callback(static_cast<const EventType&>(e));
-          }
+          callback(static_cast<const T&>(e));
         };
 
       EventToken id = ++m_NextToken;
-      m_Subscribers[id] = wrapper;
-      return id;
-    }
-
-    EventToken SubscribeToAll(std::function<void(Engine::Event&)> callback)
-    {
-      auto wrapper = [callback](Engine::Event& e)
-        {
-          callback(e);
-        };
-
-      EventToken id = ++m_NextToken;
-      m_Subscribers[id] = wrapper;
+      m_Subscribers[typeHash].push_back({ id, wrapper });
       return id;
     }
 
     void Unsubscribe(EventToken token)
     {
-      m_Subscribers.erase(token);
+      for (auto& [hash, handlers] : m_Subscribers)
+      {
+        std::erase_if(handlers, [token](const Handler& h) { return h.Token == token; });
+      }
     }
 
-    void Publish(Engine::Event& e)
+    template<IsEvent T>
+    void Publish(T&& e)
     {
-      for (auto& [id, sub] : m_Subscribers)
+      size_t typeHash = typeid(e).hash_code();
+
+      if (!m_Subscribers.contains(typeHash)) return;
+
+      for (auto& handler : m_Subscribers[typeHash])
       {
-        sub(e);
+        if (e.Handled) break; // Support for consuming events
+        handler.Callback(e);
       }
     }
 
@@ -64,6 +71,6 @@ namespace Engine
     ~EventBus() = default;
 
     EventToken m_NextToken = 0;
-    std::unordered_map<EventToken, std::function<void(Engine::Event&)>> m_Subscribers;
+    std::unordered_map<size_t, std::vector<Handler>> m_Subscribers;
   };
 }

@@ -204,30 +204,29 @@ namespace Engine
 						data.self->ToggleFullscreen();
 					}
 
-					KeyPressedEvent event(key, 0);
+					KeyPressedEvent event{ key, 0 };
 					data.callback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					KeyReleasedEvent event(key);
+					KeyReleasedEvent event{ key };
 					data.callback(event);
 					break;
 				}
 				case GLFW_REPEAT:
 				{
-					KeyPressedEvent event(key, 1);
+					KeyPressedEvent event{ key, 1 };
 					data.callback(event);
 					break;
 				}
 				}
 			});
 
-		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int keycode)
+		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int key)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-				KeyTypedEvent event(keycode);
+				KeyTypedEvent event{ key };
 				data.callback(event);
 			});
 
@@ -239,13 +238,13 @@ namespace Engine
 				{
 				case GLFW_PRESS:
 				{
-					MouseButtonPressedEvent event(button);
+					MouseButtonPressedEvent event{ button };
 					data.callback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					MouseButtonReleasedEvent event(button);
+					MouseButtonReleasedEvent event{ button };
 					data.callback(event);
 					break;
 				}
@@ -256,7 +255,7 @@ namespace Engine
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				MouseScrolledEvent event((float)xOffset, (float)yOffset);
+				MouseScrolledEvent event{ xOffset, yOffset };
 				data.callback(event);
 			});
 
@@ -264,7 +263,7 @@ namespace Engine
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				MouseMovedEvent event((float)xPos, (float)yPos);
+				MouseMovedEvent event{ xPos, yPos };
 				data.callback(event);
 			});
 

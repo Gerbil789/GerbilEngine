@@ -10,6 +10,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Engine/Core/KeyCodes.h"
 #include <imgui_internal.h>
+#include "Engine/Event/EventBus.h"
+#include "Editor/Core/EditorEvent.h"
 
 namespace Editor
 {
@@ -43,7 +45,7 @@ namespace Editor
 		// deselect on empty space click
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
 		{
-			SelectionManager::Clear(SelectionType::Entity);
+			//Engine::EventBus::Get().Publish(FocusEntityEvent{ 0 });
 		}
 
 		// right-click context menu
@@ -63,16 +65,8 @@ namespace Editor
 	{
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-		//auto& tc = registry.get<Engine::TransformComponent>(entity);
-
-		// If entity has no children, mark as leaf
-		//if (tc.firstChild == entt::null)
-		//{
-		//	flags |= ImGuiTreeNodeFlags_Leaf;
-		//}
-
-		auto& ic = registry.get<Engine::IdentityComponent>(entity);
-		bool selected = SelectionManager::IsSelected(SelectionType::Entity, ic.id);
+		Engine::Uuid id = registry.get<Engine::IdentityComponent>(entity).id;
+		bool selected = SelectionManager::Entities.IsSelected(id);
 
 		if (selected)
 		{
@@ -81,21 +75,21 @@ namespace Editor
 
 		ImGui::PushID((uint32_t)entity);
 
-		auto& nc = registry.get<Engine::NameComponent>(entity);
-		bool opened = ImGui::TreeNodeEx(nc.name.c_str(), flags);
+		const std::string& name = registry.get<Engine::NameComponent>(entity).name;
+		bool opened = ImGui::TreeNodeEx(name.c_str(), flags);
 
 		// Handle selection
 		if (ImGui::IsItemClicked())
 		{
-			bool additive = Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl) || Engine::Input::IsKeyDown(Engine::KeyCode::LeftShift);
-			SelectionManager::Select(SelectionType::Entity, ic.id, additive);
+			bool additive = Engine::Input::IsKeyDown(Engine::Key::LeftControl) || Engine::Input::IsKeyDown(Engine::Key::LeftShift);
+			SelectionManager::Entities.Select(id, additive);
 		}
 
 		// Drag source
 		if (ImGui::BeginDragDropSource())
 		{
 			ImGui::SetDragDropPayload("ENTITY", &entity, sizeof(entt::entity));
-			ImGui::Text("%s", nc.name.c_str());
+			ImGui::Text("%s", name.c_str());
 			ImGui::EndDragDropSource();
 		}
 
@@ -111,12 +105,11 @@ namespace Editor
 			ImGui::EndDragDropTarget();
 		}
 
-		bool entityDeleted = false;
 		if(ImGui::BeginPopupContextItem())
 		{
 			if(ImGui::MenuItem("Delete"))
 			{
-				entityDeleted = true;
+				EditorCommandManager::DeleteEntity(entity);
 			}
 			ImGui::EndPopup();
 		}
@@ -138,11 +131,6 @@ namespace Editor
 			DrawReorderDropTarget(registry, entity, i);
 
 			ImGui::TreePop();
-		}
-
-		if(entityDeleted) //TODO: is delayed deletion necessary?
-		{
-			EditorCommandManager::DeleteEntity(entity); // <---- its already deferred in here 
 		}
 
 		ImGui::PopID();

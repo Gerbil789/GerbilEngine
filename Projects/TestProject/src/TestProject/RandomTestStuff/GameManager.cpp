@@ -60,7 +60,6 @@ void GameManager::OnStart()
 
 			i++;
 		}
-
 	}
 }
 

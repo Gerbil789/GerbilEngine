@@ -21,6 +21,7 @@ namespace Engine
 		Scene& operator=(Scene&& other) noexcept;
 
 		entt::entity CreateEntity(const std::string& name = "new entity");
+		entt::entity CreateEntity(const std::string& name, Uuid entityId);
 
 		entt::entity GetEntity(Uuid uuid);
 		entt::registry& GetRegistry() { return m_Registry; }
@@ -55,5 +56,6 @@ namespace Engine
 		}
 	private:
 		entt::registry m_Registry;
+		std::unordered_map<Engine::Uuid, entt::entity> m_EntityMap; // for faster lookup by UUID
 	};
 }

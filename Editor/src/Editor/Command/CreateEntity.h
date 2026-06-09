@@ -3,6 +3,8 @@
 #include "Editor/Command/ICommand.h"
 #include "Editor/Core/SelectionManager.h"
 #include "Engine/Scene/Scene.h"
+#include "Engine/Event/EventBus.h"
+#include "Editor/Core/EditorEvent.h"
 
 namespace Editor
 {
@@ -16,14 +18,17 @@ namespace Editor
 			m_Entity = m_Scene->CreateEntity(m_Name);
 			auto id = m_Scene->GetRegistry().get<Engine::IdentityComponent>(m_Entity).id;
 
-			SelectionManager::Select(SelectionType::Entity, id);
+			//SelectionManager::Select(SelectionType::Entity, id);
+      FocusEntityEvent e{ id };
+			Engine::EventBus::Get().Publish(e);
     }
 
     void Undo() override 
     {
       if (m_Entity == entt::null) return;
 
-      SelectionManager::Clear(SelectionType::Entity);
+      FocusEntityEvent e {0};
+      Engine::EventBus::Get().Publish(e);
       m_Scene->GetRegistry().destroy(m_Entity);
     }
 

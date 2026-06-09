@@ -19,14 +19,14 @@ namespace Engine
 		void DisableFlag(RenderPassType flag) { m_EnabledPasses &= ~flag; }
 		RenderPassType GetEnabledFlags() const { return m_EnabledPasses; }
 
-		void SetCamera(Camera* camera);
-		Camera* GetCamera() const;
+		//void SetCamera(Camera* camera);
+		//Camera* GetCamera() const;
 		void SetColorTarget(wgpu::TextureView colorView);
 		void SetDepthTarget(wgpu::TextureView depthView);
 		void SetEnvironmentTexture(Uuid textureId);
 		RenderContext& GetRenderContext();
 
-		void RenderScene(Scene& scene);
+		void RenderScene(Scene& scene, Camera& camera);
 		wgpu::TextureView GetTextureView() const;
 
 	private:

@@ -46,7 +46,7 @@ namespace Editor
     static void Enqueue(std::unique_ptr<ICommand> cmd);
     static void Undo();
     static void Redo();
-    static void Flush();
+    static void ExecuteDefferedCommands();
    
   private:
 		//const static int s_MaxUndoSteps = 128; //TODO: limit undo steps

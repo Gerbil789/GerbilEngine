@@ -1,20 +1,23 @@
 #pragma once
 
+#include "Engine/Graphics/Camera.h"
 #include <filesystem>
 #include <glm/glm.hpp>
+
 
 namespace Editor
 {
 	enum class EditorState { Edit, Play };
 	enum class PlayMode { PIE, Windowed, Fullscreen }; // PIE - Play In Editor
 
-	namespace EditorContext
+	struct EditorContext
 	{
-		inline EditorState state = EditorState::Edit;
-		inline PlayMode playMode = PlayMode::PIE;
-	}
+		static EditorState state;
+		static PlayMode playMode;
+		static Engine::Camera editorCamera;
+	};
 
-	namespace EditorSettings
+	namespace EditorSettings //TODP: convert to struct and move to its own file
 	{
 		inline std::filesystem::path projectDirectory = std::filesystem::path();
 		inline bool showGrid = true;

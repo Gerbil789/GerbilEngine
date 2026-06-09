@@ -5,44 +5,25 @@
 
 namespace Engine 
 {
-	class KeyPressedEvent : public Event
+	struct KeyPressedEvent : public Event
 	{
-	public:
-		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
-		EVENT_CLASS_TYPE(KeyPressed)
+		Key key;
+		int repeatCount;
 
-		KeyPressedEvent(int key, int repeatCount) : m_Key(key), m_RepeatCount(repeatCount) {}
-		inline KeyCode GetKey() const { return static_cast<KeyCode>(m_Key); }
-		inline int GetRepeatCount() const { return m_RepeatCount; }
-
-	private:
-		int m_Key;
-		int m_RepeatCount;
+		KeyPressedEvent(int key, int repeat) : key(static_cast<Key>(key)), repeatCount(repeat) {}
 	};
 
-	class KeyReleasedEvent : public Event
+	struct KeyReleasedEvent : public Event
 	{
-	public:
-		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
-		EVENT_CLASS_TYPE(KeyReleased)
+		Key key;
 
-		KeyReleasedEvent(int key) : m_Key(key) {}
-		inline KeyCode GetKey() const { return static_cast<KeyCode>(m_Key); }
-
-	private:
-		int m_Key;
+		KeyReleasedEvent(int key) : key(static_cast<Key>(key)) {}
 	};
 
-	class KeyTypedEvent : public Event
+	struct KeyTypedEvent : public Event
 	{
-	public:
-		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
-		EVENT_CLASS_TYPE(KeyTyped)
+		Key key;
 
-		KeyTypedEvent(int key) : m_Key(key) {}
-		inline KeyCode GetKey() const { return static_cast<KeyCode>(m_Key); }
-
-	private:
-		int m_Key;
+		KeyTypedEvent(unsigned int key) : key(static_cast<Key>(key)) {}
 	};
 }

@@ -24,18 +24,30 @@ namespace Engine
 			return invalidRecord;
 		}
 
-		template<typename Self>
-		std::vector<AssetRecord*> GetRecords(this Self&& self, AssetType type)
+		//template<typename Self>
+		//std::vector<AssetRecord*> GetRecords(this Self&& self, AssetType type)
+		//{
+		//	std::vector<AssetRecord*> records;
+		//	for (auto& [id, record] : ((AssetRegistry&)self).m_Records)
+		//	{
+		//		if (record.type == type)
+		//		{
+		//			records.push_back(&record);
+		//		}
+		//	}
+		//	return records;
+		//}
+
+		template<typename Func>
+		void ForEachRecord(AssetType type, Func&& callback) const
 		{
-			std::vector<AssetRecord*> records;
-			for (auto& [id, record] : ((AssetRegistry&)self).m_Records)
+			for (const auto& [id, record] : m_Records)
 			{
 				if (record.type == type)
 				{
-					records.push_back(&record);
+					callback(record);
 				}
 			}
-			return records;
 		}
 
 		AssetType GetType(Uuid id) const

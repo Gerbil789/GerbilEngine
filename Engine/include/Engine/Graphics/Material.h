@@ -27,7 +27,7 @@ namespace Engine
 	public:
 		Material(const MaterialSpecification& spec);
 
-		Uuid GetShader() const { return m_Shader.id; }
+		const Uuid GetShader() const { return m_ShaderId; }
 		void SetShader(Uuid shaderId);
 
 		void SetTextureFilter(TextureFilter filter) { m_TextureFilter = filter; CreateBindGroup(); }
@@ -57,7 +57,7 @@ namespace Engine
 		void CreateBindGroup();
 
 	private:
-		Shader m_Shader;
+		Uuid m_ShaderId;
 
 		std::vector<std::byte> m_UniformData; // parameters data packed according to shader layout (material uniform layout)
 		std::unordered_map<std::string, Uuid> m_Textures;

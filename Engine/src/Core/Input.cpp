@@ -32,27 +32,27 @@ namespace Engine::Input
 
 		EventBus::Get().Subscribe<KeyPressedEvent>([&state](auto& e) 
 			{
-				int key = static_cast<int>(e.GetKey());
+				int key = static_cast<int>(e.key);
 				if (!state.KeyDown[key]) state.KeyPressed[key] = true;
 				state.KeyDown[key] = true;
 			});
 
 		EventBus::Get().Subscribe<KeyReleasedEvent>([&state](auto& e)
 			{
-				int key = static_cast<int>(e.GetKey());
+				int key = static_cast<int>(e.key);
 				state.KeyDown[key] = false;
 				state.KeyReleased[key] = true;
 			});
 
 		EventBus::Get().Subscribe<MouseButtonPressedEvent>([&state](auto& e)
 			{
-				int button = static_cast<int>(e.GetMouseButton());
+				int button = static_cast<int>(e.button);
 				state.MouseDown[button] = true;
 			});
 
 		EventBus::Get().Subscribe<MouseButtonReleasedEvent>([&state](auto& e)
 			{
-				int button = static_cast<int>(e.GetMouseButton());
+				int button = static_cast<int>(e.button);
 				state.MouseDown[button] = false;
 			});
 
@@ -76,22 +76,22 @@ namespace Engine::Input
 		glfwPollEvents();
 	}
 
-	bool IsKeyDown(KeyCode key)
+	bool IsKeyDown(Key key)
 	{
 		return s_States[s_ActiveWindow].KeyDown[(int)key];
 	}
 
-	bool IsKeyPressedOnce(KeyCode key)
+	bool IsKeyPressedOnce(Key key)
 	{
 		return s_States[s_ActiveWindow].KeyPressed[(int)key];
 	}
 
-	bool IsKeyReleased(KeyCode key)
+	bool IsKeyReleased(Key key)
 	{
 		return s_States[s_ActiveWindow].KeyReleased[(int)key];
 	}
 
-	bool IsMouseButtonPressed(MouseCode button)
+	bool IsMouseButtonPressed(Mouse button)
 	{
 		return s_States[s_ActiveWindow].MouseDown[(int)button];
 	}

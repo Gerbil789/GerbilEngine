@@ -10,8 +10,9 @@ namespace Editor
   class EditorPicker
   {
   public:
-    EditorPicker();
     ~EditorPicker();
+
+		void Initialize();
 
     void Resize(uint32_t width, uint32_t height);
     Engine::Uuid Pick(uint32_t mouseX, uint32_t mouseY, const Engine::RenderContext& context);

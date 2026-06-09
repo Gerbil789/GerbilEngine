@@ -56,22 +56,31 @@ namespace Engine
 
 	entt::entity Scene::CreateEntity(const std::string& name)
 	{
-		entt::entity handle = m_Registry.create();
-		m_Registry.emplace<IdentityComponent>(handle, Uuid());
-		m_Registry.emplace<NameComponent>(handle, name);
-		m_Registry.emplace<TransformComponent>(handle);
-		return handle;
+		entt::entity entity = m_Registry.create();
+		Uuid uuid = m_Registry.emplace<IdentityComponent>(entity, Uuid()).id;
+		m_Registry.emplace<NameComponent>(entity, name);
+		m_Registry.emplace<TransformComponent>(entity);
+
+		m_EntityMap[uuid] = entity;
+		return entity;
+	}
+
+	entt::entity Scene::CreateEntity(const std::string& name, Uuid entityId)
+	{
+		entt::entity entity = m_Registry.create();
+		m_Registry.emplace<IdentityComponent>(entity, entityId);
+		m_Registry.emplace<NameComponent>(entity, name);
+		m_Registry.emplace<TransformComponent>(entity);
+		
+		m_EntityMap[entityId] = entity;
+		return entity;
 	}
 
 	entt::entity Scene::GetEntity(Uuid uuid)
 	{
-		auto view = m_Registry.view<IdentityComponent>();
-		for (auto entity : view)
+		if (m_EntityMap.find(uuid) != m_EntityMap.end()) 
 		{
-			if (view.get<IdentityComponent>(entity).id == uuid)
-			{
-				return entity;
-			}
+			return m_EntityMap.at(uuid);
 		}
 		return entt::null;
 	}

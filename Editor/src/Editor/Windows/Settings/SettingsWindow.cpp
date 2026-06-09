@@ -90,7 +90,7 @@ namespace Editor
 				FloatField("Lambda", Engine::ShadowPass::s_Lambda, 0.0f, 1.0f, 0.01f);
 			}
 
-			Engine::Camera& camera = *Engine::g_Renderer.GetCamera();
+			Engine::Camera& camera = EditorContext::editorCamera;
 
 			{
 				PropertyRow row("Near");

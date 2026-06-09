@@ -36,15 +36,15 @@ namespace Engine
 		CreateEnvironmentBindGroup();
 	}
 
-	void Renderer::SetCamera(Camera* camera)
-	{
-		m_RenderContext.camera = camera;
-	}
+	//void Renderer::SetCamera(Camera* camera)
+	//{
+	//	m_RenderContext.camera = camera;
+	//}
 
-	Camera* Renderer::GetCamera() const
-	{
-		return m_RenderContext.camera;
-	}
+	//Camera* Renderer::GetCamera() const
+	//{
+	//	return m_RenderContext.camera;
+	//}
 
 	void Renderer::SetColorTarget(wgpu::TextureView colorView)
 	{
@@ -226,9 +226,10 @@ namespace Engine
 		m_RenderContext.depthTextureArrayView = texture.createView(arrayViewDesc);
 	}
 
-	void Renderer::RenderScene(Scene& scene)
+	void Renderer::RenderScene(Scene& scene, Camera& camera)
 	{
 		m_RenderContext.scene = &scene;
+		m_RenderContext.camera = &camera;
 		entt::registry& registry = scene.GetRegistry();
 
 		ViewUniforms viewUniforms;

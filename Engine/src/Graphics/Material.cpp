@@ -10,12 +10,11 @@
 
 namespace Engine
 {
-	static Material* s_DefaultMaterial = nullptr;
-
 	template<typename T>
 	void Material::SetParameter(const std::string& paramName, const T& value)
 	{
-		auto binding = m_Shader.GetBinding("uMaterial");
+		Shader& shader = Engine::AssetManager::GetAsset<Shader>(m_ShaderId);
+		auto binding = shader.GetBinding("uMaterial");
 
 		if (binding.type != BindingType::UniformBuffer)
 		{
@@ -23,8 +22,7 @@ namespace Engine
 			return;
 		}
 
-		auto it = std::find_if(binding.parameters.begin(), binding.parameters.end(),
-			[&](const ShaderParameter& p) { return p.name == paramName; });
+		auto it = std::find_if(binding.parameters.begin(), binding.parameters.end(), [&](const ShaderParameter& p) { return p.name == paramName; });
 
 		if (it == binding.parameters.end())
 		{
@@ -46,20 +44,23 @@ namespace Engine
 	{
 		auto it = m_Parameters.find(name);
 		if (it != m_Parameters.end())
+		{
 			return it->second;
+		}
 
 		throw std::runtime_error("Parameter not found: " + name);
 	}
 
 	Material::Material(const MaterialSpecification& spec)
 	{
-		m_Shader = Engine::AssetManager::GetAsset<Shader>(spec.shaderId);
+		m_ShaderId = spec.shaderId;
 		m_TextureFilter = spec.filter;
 		m_TextureWrap = spec.wrap;
 
 		m_PipelineSpec.shaderId = spec.shaderId;
 
-		m_UniformData.resize(m_Shader.GetMaterialUniformBufferSize(), std::byte{});
+		const Shader& shader = Engine::AssetManager::GetAsset<Shader>(spec.shaderId);
+		m_UniformData.assign(shader.GetMaterialUniformBufferSize(), std::byte{});
 		CreateUniformBuffer();
 
 
@@ -77,7 +78,7 @@ namespace Engine
 		}
 
 		// material bindings
-		for (const auto& binding : m_Shader.GetMaterialBindings())
+		for (const auto& binding : shader.GetMaterialBindings())
 		{
 			if (binding.type == BindingType::Texture2D)
 			{
@@ -94,10 +95,25 @@ namespace Engine
 
 	void Material::SetShader(Uuid shaderId)
 	{
-		m_Shader = Engine::AssetManager::GetAsset<Shader>(shaderId);
+		m_ShaderId = shaderId;
+		m_PipelineSpec.shaderId = shaderId;
 
-		m_UniformData.resize(m_Shader.GetMaterialUniformBufferSize(), std::byte{});
+		m_Parameters.clear();
+		m_Textures.clear();
+
+		const Shader& shader = Engine::AssetManager::GetAsset<Shader>(shaderId);
+		m_UniformData.assign(shader.GetMaterialUniformBufferSize(), std::byte{});
+
 		CreateUniformBuffer();
+
+		for (const auto& binding : shader.GetMaterialBindings())
+		{
+			if (binding.type == BindingType::Texture2D)
+			{
+				SetTexture(binding.name, RESOURCES::INVALID_UUID);
+			}
+		}
+
 		CreateBindGroup();
 	}
 
@@ -115,7 +131,9 @@ namespace Engine
 			}
 		}
 
-		auto binding = m_Shader.GetBinding(name);
+
+		Shader& shader = Engine::AssetManager::GetAsset<Shader>(m_ShaderId);
+		auto binding = shader.GetBinding(name);
 
 		if (binding.type != BindingType::Texture2D)
 		{
@@ -141,14 +159,16 @@ namespace Engine
 	{
 		wgpu::BufferDescriptor bufferDesc{};
 		bufferDesc.label = { "MaterialUniformBuffer", WGPU_STRLEN }; //TODO: add material name
-		bufferDesc.size = m_Shader.GetMaterialUniformBufferSize();
+		bufferDesc.size = Engine::AssetManager::GetAsset<Shader>(m_ShaderId).GetMaterialUniformBufferSize();
 		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 		m_UniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
 	}
 
 	void Material::CreateBindGroup()
 	{
-		auto materialBindings = m_Shader.GetMaterialBindings();
+		Shader& shader = Engine::AssetManager::GetAsset<Shader>(m_ShaderId);
+
+		auto materialBindings = shader.GetMaterialBindings();
 		size_t bindingCount = std::ranges::distance(materialBindings);
 
 		std::vector<wgpu::BindGroupEntry> entries(bindingCount);
@@ -183,7 +203,7 @@ namespace Engine
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
 		bindGroupDesc.label = { "MaterialBindGroup", WGPU_STRLEN };
-		bindGroupDesc.layout = m_Shader.GetMaterialBindGroupLayout();
+		bindGroupDesc.layout = shader.GetMaterialBindGroupLayout();
 		bindGroupDesc.entryCount = entries.size();
 		bindGroupDesc.entries = entries.data();
 		m_BindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);

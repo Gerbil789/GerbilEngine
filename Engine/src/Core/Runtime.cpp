@@ -81,7 +81,7 @@ namespace Engine
 			}
 		}
 
-		m_Token = Engine::EventBus::Get().SubscribeToAll([](Engine::Event& e)
+		/*m_Token = Engine::EventBus::Get().Subscribe([](Engine::Event& e)
 			{
 				auto& scene = Engine::SceneManager::GetActiveScene();
 				for (entt::entity entity : scene.GetEntities<Engine::ScriptComponent>())
@@ -92,7 +92,7 @@ namespace Engine
 						sc.instance->OnEvent(e);
 					}
 				}
-			});
+			});*/
 	}
 
 	void Runtime::Stop()
@@ -115,7 +115,7 @@ namespace Engine
 
 	void Runtime::Update()
 	{
-		if (Engine::Input::IsKeyPressedOnce(Engine::KeyCode::Escape))
+		if (Engine::Input::IsKeyPressedOnce(Engine::Key::Escape))
 		{
 			Engine::Input::SetCursorMode(Engine::Input::CursorMode::Normal);
 		}

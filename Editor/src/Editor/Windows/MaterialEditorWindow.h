@@ -11,6 +11,5 @@ namespace Editor
 	public:
 		void Draw() override;
 		void Initialize() override;
-		static void SetMaterial(Engine::Material& material);
 	};
 }

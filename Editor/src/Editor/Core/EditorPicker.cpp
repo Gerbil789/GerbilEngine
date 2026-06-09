@@ -1,68 +1,52 @@
 #include "EditorPicker.h"
-#include "Engine/Utility/File.h"
-#include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/WebGPUUtils.h"
-#include "Engine/Scene/SceneManager.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Graphics/Renderer/DrawList.h"
-#include "Engine/Scene/Components.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
-#include <execution>
 
 namespace Editor
 {
-  EditorPicker::EditorPicker()
-  {
-    CreateBindGroupLayout();
-    CreatePipeline();
-
-    // Create the persistent 8-byte readback buffer
-    wgpu::BufferDescriptor bufferDesc;
-    bufferDesc.label = { "EditorPickerReadbackBuffer", WGPU_STRLEN };
-    bufferDesc.size = sizeof(Engine::Uuid);
-    bufferDesc.usage = wgpu::BufferUsage::MapRead | wgpu::BufferUsage::CopyDst;
-    m_ReadbackBuffer = Engine::GraphicsContext::GetDevice().createBuffer(bufferDesc);
-
-    Resize(1, 1); // Initialize with dummy size
-  }
-
   EditorPicker::~EditorPicker()
   {
     if (m_ReadbackBuffer) m_ReadbackBuffer.release();
     if (m_UniformBuffer) m_UniformBuffer.release();
   }
 
+  void EditorPicker::Initialize()
+  {
+    CreateBindGroupLayout();
+    CreatePipeline();
+
+    wgpu::BufferDescriptor bufferDesc;
+    bufferDesc.label = { "EditorPickerReadbackBuffer", WGPU_STRLEN };
+    bufferDesc.size = sizeof(Engine::Uuid);
+    bufferDesc.usage = wgpu::BufferUsage::MapRead | wgpu::BufferUsage::CopyDst;
+    m_ReadbackBuffer = Engine::GraphicsContext::GetDevice().createBuffer(bufferDesc);
+  }
+
   Engine::Uuid EditorPicker::Pick(uint32_t x, uint32_t y, const Engine::RenderContext& context)
   {
-		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
-		entt::registry& registry = scene.GetRegistry();
-
-
-    // Out of bounds check
     if (x >= m_Width || y >= m_Height) return Engine::Uuid(0);
 
-    // 1. Create a dedicated command encoder for the pick operation
-    wgpu::CommandEncoderDescriptor encoderDesc{};
+    wgpu::CommandEncoderDescriptor encoderDesc;
     encoderDesc.label = { "EditorPickerEncoder", WGPU_STRLEN };
     wgpu::CommandEncoder encoder = Engine::GraphicsContext::GetDevice().createCommandEncoder(encoderDesc);
 
-    // 2. Setup Render Pass
-    wgpu::RenderPassColorAttachment colorAttach{};
+    wgpu::RenderPassColorAttachment colorAttach;
     colorAttach.view = m_ColorTextureView;
     colorAttach.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
     colorAttach.loadOp = wgpu::LoadOp::Clear;
     colorAttach.storeOp = wgpu::StoreOp::Store;
     colorAttach.clearValue = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-    wgpu::RenderPassDepthStencilAttachment depthAttach{};
+    wgpu::RenderPassDepthStencilAttachment depthAttach;
     depthAttach.view = m_DepthTextureView;
     depthAttach.depthClearValue = 1.0f;
     depthAttach.depthLoadOp = wgpu::LoadOp::Clear;
     depthAttach.depthStoreOp = wgpu::StoreOp::Store;
     depthAttach.depthReadOnly = false;
 
-    wgpu::RenderPassDescriptor passDescriptor{};
+    wgpu::RenderPassDescriptor passDescriptor;
     passDescriptor.label = { "EditorPickerPass", WGPU_STRLEN };
     passDescriptor.colorAttachmentCount = 1;
     passDescriptor.colorAttachments = &colorAttach;
@@ -91,8 +75,10 @@ namespace Editor
       uint32_t dynamicOffset = draw.modelIndex * Engine::GraphicsContext::GetUniformBufferOffsetAlignment();
       pass.setBindGroup(1, context.modelBindGroup, 1, &dynamicOffset);
 
-			Engine::Uuid uuid = registry.get<Engine::IdentityComponent>(draw.entity).id;
-      Engine::GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, dynamicOffset, &uuid, sizeof(Engine::Uuid));
+      entt::registry& registry = context.scene->GetRegistry();
+
+			Engine::Uuid id = registry.get<Engine::IdentityComponent>(draw.entity).id;
+      Engine::GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, dynamicOffset, &id, sizeof(Engine::Uuid));
       pass.setBindGroup(2, m_BindGroup, 1, &dynamicOffset);
 
       const Engine::SubMesh* sub = draw.subMesh;
@@ -101,12 +87,11 @@ namespace Editor
 
     pass.end();
 
-    // 4. Copy that exact 1 pixel to the readback buffer
-    wgpu::TexelCopyTextureInfo src{};
+    wgpu::TexelCopyTextureInfo src;
     src.texture = m_ColorTexture;
     src.origin = { x, y, 0 };
 
-    wgpu::TexelCopyBufferInfo dst{};
+    wgpu::TexelCopyBufferInfo dst;
     dst.buffer = m_ReadbackBuffer;
     dst.layout.bytesPerRow = 256; // WebGPU minimum alignment
     dst.layout.rowsPerImage = 1;
@@ -114,37 +99,32 @@ namespace Editor
     wgpu::Extent3D copySize{ 1, 1, 1 };
     encoder.copyTextureToBuffer(src, dst, copySize);
 
-    // Submit to GPU immediately
     wgpu::CommandBuffer cmdBuffer = encoder.finish();
     Engine::GraphicsContext::GetQueue().submit(1, &cmdBuffer);
 
-    // 5. Synchronous map and read (Acceptable for an on-click editor action)
-    wgpu::BufferMapCallbackInfo callbackInfo{};
+    wgpu::BufferMapCallbackInfo callbackInfo;
     callbackInfo.mode = wgpu::CallbackMode::WaitAnyOnly;
-    callbackInfo.callback = [](WGPUMapAsyncStatus status, WGPUStringView message, void*, void*) {
-      if (status != wgpu::MapAsyncStatus::Success) 
+    callbackInfo.callback = [](WGPUMapAsyncStatus status, WGPUStringView message, void*, void*) 
       {
-        LOG_ERROR("Picker readback map failed: {}", message.data);
-      }
+        if (status != wgpu::MapAsyncStatus::Success) { LOG_ERROR("Picker readback map failed: {}", message.data); }
       };
 
     wgpu::Future future = m_ReadbackBuffer.mapAsync(wgpu::MapMode::Read, 0, sizeof(Engine::Uuid), callbackInfo);
 
     wgpu::FutureWaitInfo waitInfo;
     waitInfo.future = future;
-    wgpuInstanceWaitAny(Engine::GraphicsContext::GetInstance(), 1, &waitInfo, 100000000); // Wait up to 0.1s
+    wgpuInstanceWaitAny(Engine::GraphicsContext::GetInstance(), 1, &waitInfo, 100000000); // wait up to 0.1s
 
-    const uint8_t* mapped = static_cast<const uint8_t*>(m_ReadbackBuffer.getConstMappedRange(0, sizeof(Engine::Uuid)));
+    const uint8_t* mapped = static_cast<const uint8_t*>(m_ReadbackBuffer.getConstMappedRange(0, sizeof(Engine::Uuid))); //TODO: why uint8_t??? why not directly uint64_t?
 
-    Engine::Uuid pickedId(0);
+    Engine::Uuid pickedId{};
     if (mapped)
     {
       const uint64_t* pixel = reinterpret_cast<const uint64_t*>(mapped);
       pickedId = Engine::Uuid(*pixel);
     }
 
-    m_ReadbackBuffer.unmap(); // Critical: Unmap so it can be used for the next click
-
+    m_ReadbackBuffer.unmap();
     return pickedId;
   }
 
@@ -155,7 +135,7 @@ namespace Editor
     m_Height = height;
 
     // Color Target (Entity IDs)
-    wgpu::TextureDescriptor colorDesc{};
+    wgpu::TextureDescriptor colorDesc;
     colorDesc.label = { "EditorPickerColorTexture", WGPU_STRLEN };
     colorDesc.dimension = wgpu::TextureDimension::_2D;
     colorDesc.format = wgpu::TextureFormat::RG32Uint;
@@ -163,17 +143,15 @@ namespace Editor
     colorDesc.mipLevelCount = 1;
     colorDesc.sampleCount = 1;
     colorDesc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
-
     m_ColorTexture = Engine::GraphicsContext::GetDevice().createTexture(colorDesc);
 
-    wgpu::TextureViewDescriptor colorViewDesc{};
+    wgpu::TextureViewDescriptor colorViewDesc;
     colorViewDesc.format = colorDesc.format;
 		colorViewDesc.arrayLayerCount = 1;
 		colorViewDesc.mipLevelCount = 1;
     m_ColorTextureView = m_ColorTexture.createView(colorViewDesc);
 
-    // Dedicated Depth Target
-    wgpu::TextureDescriptor depthDesc{};
+    wgpu::TextureDescriptor depthDesc;
     depthDesc.label = { "EditorPickerDepthTexture", WGPU_STRLEN };
     depthDesc.dimension = wgpu::TextureDimension::_2D;
     depthDesc.format = wgpu::TextureFormat::Depth24Plus;
@@ -181,10 +159,9 @@ namespace Editor
     depthDesc.mipLevelCount = 1;
     depthDesc.sampleCount = 1;
     depthDesc.usage = wgpu::TextureUsage::RenderAttachment;
-
     m_DepthTexture = Engine::GraphicsContext::GetDevice().createTexture(depthDesc);
 
-    wgpu::TextureViewDescriptor depthViewDesc{};
+    wgpu::TextureViewDescriptor depthViewDesc;
     depthViewDesc.format = depthDesc.format;
     depthViewDesc.arrayLayerCount = 1;
     depthViewDesc.mipLevelCount = 1;

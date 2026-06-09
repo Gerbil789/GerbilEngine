@@ -11,9 +11,9 @@ namespace Editor
   {
 		Engine::EventBus::Get().Subscribe<Engine::KeyPressedEvent>([](auto e) 
       {
-        if ((e.GetKey() == Engine::KeyCode::Z || e.GetKey() == Engine::KeyCode::Y) && Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl))
+        if ((e.key == Engine::Key::Z || e.key == Engine::Key::Y) && Engine::Input::IsKeyDown(Engine::Key::LeftControl))
         {
-          (!Engine::Input::IsKeyDown(Engine::KeyCode::LeftShift) ? Undo() : Redo());
+          (!Engine::Input::IsKeyDown(Engine::Key::LeftShift) ? Undo() : Redo());
         }
       });
   }
@@ -82,7 +82,7 @@ namespace Editor
     s_UndoStack.push(std::move(cmd));
   }
 
-  void EditorCommandManager::Flush()
+  void EditorCommandManager::ExecuteDefferedCommands()
   {
     for (auto& cmd : s_Deferred)
     {

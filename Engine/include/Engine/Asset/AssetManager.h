@@ -13,7 +13,6 @@ namespace Engine::AssetManager
 	template<typename T>
 	ENGINE_API T& GetAsset(Uuid id);
 
-	//TODO: make this editor only, we dont want to create assets in game code
 	template<typename T>
 	ENGINE_API T& CreateAsset(const std::filesystem::path& path);
 

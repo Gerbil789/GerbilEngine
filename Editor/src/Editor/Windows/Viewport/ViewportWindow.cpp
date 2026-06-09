@@ -1,15 +1,11 @@
 #include "ViewportWindow.h"
-
 #include "Editor/Windows/Utility/ScopedStyle.h"
-#include "Editor/Core/SelectionManager.h"
+#include "Editor/Windows/Viewport/ViewportCameraController.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Command/TransformEntity.h"
+#include "Editor/Command/ChangeEditorStateCommand.h"
 #include "Editor/Core/EditorPicker.h"
-#include "Editor/Core/EditorContext.h"
-#include "Editor/Windows/Viewport/ViewportCameraController.h"
-
 #include "Engine/Core/Input.h"
-#include "Engine/Core/KeyCodes.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Event/MouseEvent.h"
@@ -17,9 +13,6 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Graphics/RenderPass/RenderPassRegistry.h"
-#include "Engine/Core/Runtime.h"
-
 #include <ImGuizmo.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -28,9 +21,8 @@ namespace Editor
 {
 	namespace
 	{
-		static Engine::Camera m_Camera;
-		static EditorPicker* s_EntityPicker = nullptr; //TODO: why is this a pointer?
-		static ViewportCameraController s_Controller;
+		EditorPicker m_EntityPicker;
+		ViewportCameraController m_CameraController;
 
 		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
@@ -40,7 +32,7 @@ namespace Editor
 		std::unordered_map<entt::entity, glm::mat4> m_InitialWorldTransforms;
 		glm::mat4 m_InitialPrimaryWorld = glm::mat4(1.0f);
 
-		static ImGuizmo::OPERATION gizmoType = ImGuizmo::OPERATION::TRANSLATE;
+		ImGuizmo::OPERATION gizmoType = ImGuizmo::OPERATION::TRANSLATE;
 	}
 
 	void ViewportWindow::Initialize()
@@ -48,15 +40,9 @@ namespace Editor
 		ImGuizmo::AllowAxisFlip(true);
 		ImGuizmo::SetGizmoSizeClipSpace(0.15f);
 
-		m_Camera.SetBackground(Engine::Camera::Background::Skybox);
-		m_Camera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
-
-		s_Controller.Initialize(&m_Camera);
-		Engine::g_Renderer.SetCamera(&m_Camera);
+		m_CameraController.Initialize();
 
 		Engine::g_Renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque/* | Engine::RenderPassType::Normal | Engine::RenderPassType::Wireframe*/);
-
-		s_EntityPicker = new EditorPicker();
 
 		Engine::EventBus::Get().Subscribe<Engine::MouseButtonPressedEvent>([](const Engine::MouseButtonPressedEvent& e)
 			{
@@ -66,7 +52,7 @@ namespace Editor
 					return;
 				}
 
-				if (e.GetMouseButton() == Engine::MouseCode::ButtonLeft && !ImGuizmo::IsOver())
+				if (e.button == Engine::Mouse::ButtonLeft && !ImGuizmo::IsOver())
 				{
 					ImVec2 mousePos = ImGui::GetMousePos();
 					if (mousePos.x < m_ViewportBounds[0].x || mousePos.y < m_ViewportBounds[0].y || mousePos.x > m_ViewportBounds[1].x || mousePos.y > m_ViewportBounds[1].y)
@@ -77,31 +63,24 @@ namespace Editor
 					const uint32_t mx = static_cast<uint32_t>(mousePos.x - m_ViewportBounds[0].x);
 					const uint32_t my = static_cast<uint32_t>(mousePos.y - m_ViewportBounds[0].y);
 
-					Engine::Uuid uuid = s_EntityPicker->Pick(mx, my, Engine::g_Renderer.GetRenderContext());
+					Engine::Uuid id = m_EntityPicker.Pick(mx, my, Engine::g_Renderer.GetRenderContext());
 
-					if (uuid)
-					{	
-						SelectionManager::Select(SelectionType::Entity, uuid, Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl) || Engine::Input::IsKeyDown(Engine::KeyCode::LeftShift));
-					}
-					else
-					{
-						SelectionManager::Clear(SelectionType::Entity);
-					}
+					bool additive = Engine::Input::IsKeyDown(Engine::Key::LeftControl) || Engine::Input::IsKeyDown(Engine::Key::LeftShift);
+					SelectionManager::Entities.Select(id, additive);
 				}
 			});
 
 		Engine::EventBus::Get().Subscribe<Engine::KeyPressedEvent>([](const Engine::KeyPressedEvent& e)
 			{
-				if (EditorContext::state == EditorState::Play)
-				{
-					return;
-				}
+				if (EditorContext::state == EditorState::Play) return;
 
-				if (e.GetKey() == Engine::KeyCode::Q) gizmoType = static_cast<ImGuizmo::OPERATION>(0);
-				if (e.GetKey() == Engine::KeyCode::W) gizmoType = ImGuizmo::OPERATION::TRANSLATE;
-				if (e.GetKey() == Engine::KeyCode::E) gizmoType = ImGuizmo::OPERATION::ROTATE;
-				if (e.GetKey() == Engine::KeyCode::R) gizmoType = ImGuizmo::OPERATION::SCALE;
+				if (e.key == Engine::Key::Q) gizmoType = static_cast<ImGuizmo::OPERATION>(0);
+				if (e.key == Engine::Key::W) gizmoType = ImGuizmo::OPERATION::TRANSLATE;
+				if (e.key == Engine::Key::E) gizmoType = ImGuizmo::OPERATION::ROTATE;
+				if (e.key == Engine::Key::R) gizmoType = ImGuizmo::OPERATION::SCALE;
 			});
+
+		m_EntityPicker.Initialize();
 	}
 
 	static void UpdateViewportSize()
@@ -111,7 +90,7 @@ namespace Editor
 		if (newSize.x != m_ViewportSize.x || newSize.y != m_ViewportSize.y)
 		{
 			m_ViewportSize = { newSize.x, newSize.y };
-			m_Camera.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
+			EditorContext::editorCamera.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
 
 			if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
 			{
@@ -168,7 +147,7 @@ namespace Editor
 
 				// Entity picker
 				{
-					s_EntityPicker->Resize(size.width, size.height);
+					m_EntityPicker.Resize(size.width, size.height);
 				}
 			}
 		}
@@ -181,35 +160,28 @@ namespace Editor
 		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 	}
 
-	void DrawGizmos()
+	void DrawGizmos(Engine::Scene& scene)
 	{
-		if (gizmoType == 0)
-		{
-			return;
-		}
+		if (gizmoType == 0) return;
 
-		auto selectedId = SelectionManager::GetPrimary(SelectionType::Entity);
-		if (!selectedId)
-		{
-			return;
-		}
-		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+		Engine::Uuid selectedId = SelectionManager::Entities.GetPrimary();
+		if (!selectedId) return;
+
 		entt::registry& registry = scene.GetRegistry();
 
 		entt::entity selectedEntity = scene.GetEntity(selectedId);
 
 		ImGuizmo::SetDrawlist();
-
 		ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
-		const glm::mat4& cameraProjection = m_Camera.GetProjectionMatrix();
-		glm::mat4 cameraView = m_Camera.GetViewMatrix();
+		const glm::mat4& cameraProjection = EditorContext::editorCamera.GetProjectionMatrix();
+		glm::mat4 cameraView = EditorContext::editorCamera.GetViewMatrix();
 
 		auto& transformComponent = registry.get<Engine::TransformComponent>(selectedEntity);
 		glm::mat4 worldTransform = transformComponent.worldMatrix;
 
 		float* snapValue = nullptr;
-		if (Engine::Input::IsKeyDown(Engine::KeyCode::LeftControl))
+		if (Engine::Input::IsKeyDown(Engine::Key::LeftControl))
 		{
 			static float snapTranslateScale[3] = { 0.5f, 0.5f, 0.5f };
 			static float snapRotate[3] = { 45.0f, 45.0f, 45.0f };
@@ -224,7 +196,7 @@ namespace Editor
 		{
 			m_InitialWorldTransforms.clear();
 
-			auto selection = SelectionManager::GetAll(SelectionType::Entity);
+			const std::vector<Engine::Uuid>& selection = SelectionManager::Entities.GetAll();
 
 			for (auto id : selection)
 			{
@@ -241,7 +213,7 @@ namespace Editor
 			glm::mat4 newPrimaryWorld = worldTransform;
 			glm::mat4 delta = newPrimaryWorld * glm::inverse(m_InitialPrimaryWorld);
 
-			for (auto id : SelectionManager::GetAll(SelectionType::Entity))
+			for (auto id : SelectionManager::Entities.GetAll())
 			{
 				entt::entity entity = scene.GetEntity(id);
 				auto& tc = registry.get<Engine::TransformComponent>(entity);
@@ -269,7 +241,7 @@ namespace Editor
 
 		if (!isUsing && m_GizmoPreviouslyUsed)
 		{
-			auto selection = SelectionManager::GetAll(SelectionType::Entity);
+			auto selection = SelectionManager::Entities.GetAll();
 
 			std::vector<TransformData> before, after;
 
@@ -331,52 +303,31 @@ namespace Editor
 
 		// ---- CENTER BUTTON ----
 		{
-			float buttonWidth = 60.0f;
-
-			ImGui::SetCursorPos(ImVec2(
-				size.x * 0.5f - buttonWidth * 0.5f,
-				4.0f
-			));
+			constexpr float buttonWidth = 60.0f;
+			ImGui::SetCursorPos(ImVec2(size.x * 0.5f - buttonWidth * 0.5f, 4.0f));
 
 			if (EditorContext::state == EditorState::Edit)
 			{
 				if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
 				{
-					Engine::Runtime::Start();
-					EditorContext::state = EditorState::Play;
-
-					SelectionManager::Clear(SelectionType::Entity);
-
-					Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
-					Engine::Camera* camera = scene.GetActiveCamera();
-					if (camera)
-					{
-						camera->SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
-						Engine::g_Renderer.SetCamera(camera);
-					}
+					EditorCommandManager::Enqueue(std::make_unique<ChangeEditorStateCommand>(EditorState::Play));
 				}
 			}
 			else
 			{
 				if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
 				{
-					Engine::Runtime::Stop();
-					EditorContext::state = EditorState::Edit;
-					Engine::g_Renderer.SetCamera(&m_Camera);
+					EditorCommandManager::Enqueue(std::make_unique<ChangeEditorStateCommand>(EditorState::Edit));
 				}
 			}
 		}
 
 		// ---- RIGHT COMBO ----
 		{
-			float comboWidth = 120.0f;
-			float margin = 8.0f;
+			constexpr float comboWidth = 120.0f;
+			constexpr float margin = 8.0f;
 
-			ImGui::SetCursorPos(ImVec2(
-				size.x - comboWidth - margin,
-				4.0f
-			));
-
+			ImGui::SetCursorPos(ImVec2(size.x - comboWidth - margin, 4.0f));
 			ImGui::SetNextItemWidth(comboWidth);
 
 			if (ImGui::BeginCombo("##ViewportOptions", "Passes"))
@@ -427,11 +378,30 @@ namespace Editor
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
 		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
-		Engine::g_Renderer.RenderScene(scene);
+
+		if (EditorContext::state == EditorState::Edit)
+		{
+			Engine::g_Renderer.RenderScene(scene, EditorContext::editorCamera);
+		}
+		else
+		{
+			auto camera = scene.GetActiveCamera();
+			if(camera)
+			{
+				camera->SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
+				Engine::g_Renderer.RenderScene(scene, *camera);
+			}
+			else
+			{
+				Engine::g_Renderer.RenderScene(scene, EditorContext::editorCamera);
+			}
+		}
+
+
 		ImGui::Image(static_cast<WGPUTextureView>(Engine::g_Renderer.GetTextureView()), viewportSize);
 
 		DrawOverlay(imagePos, viewportSize);
-		DrawGizmos();
+		DrawGizmos(scene);
 
 		ImGui::End();
 	}

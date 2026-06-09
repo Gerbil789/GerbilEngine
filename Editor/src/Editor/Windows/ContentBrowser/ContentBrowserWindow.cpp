@@ -15,13 +15,12 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Command/SceneCommands.h"
-//#include <GLFW/glfw3.h>
 
 namespace Editor
 {
 	namespace
 	{
-		ThumbnailRenderer m_Renderer;
+		ThumbnailRenderer m_ThumbnailRenderer;
 
 		float m_IconSize = 64.0f;
 		ImVec2 m_LayoutItemSize;
@@ -265,7 +264,7 @@ namespace Editor
 			view = Engine::AssetManager::GetAsset<Engine::Texture2D>(record.id).GetTextureView(); //TODO: use downscaled texture for thumbnail
 			break;
 		case Engine::AssetType::Material:
-			view = m_Renderer.GetThumbnail(record.id);
+			view = m_ThumbnailRenderer.GetThumbnail(record.id);
 			break;
 		default:
 			Engine::SubTexture2D& icon = IconManager::GetIcon(record.type);
@@ -391,7 +390,7 @@ namespace Editor
 						{
 							if (assetRecord->type != Engine::AssetType::Directory)
 							{
-								SelectionManager::Select(SelectionType::Asset, assetRecord->id);
+								SelectionManager::Assets.Select(assetRecord->id);
 							}
 						}
 						else if (interaction == ItemInteraction::DoubleClicked)
@@ -411,7 +410,6 @@ namespace Editor
 								break;
 							}
 						}
-
 					}
 
 					ProcessDragAndDrop(assetRecord);
@@ -445,26 +443,9 @@ namespace Editor
 
 	void ContentBrowserWindow::Initialize()
 	{
-		m_Renderer.Initialize();
-
+		m_ThumbnailRenderer.Initialize();
 		m_CurrentDirectory = Engine::Project::GetActive().GetAssetsDirectory();
 		RefreshDirectory();
-
-		/*glfwSetDropCallback(static_cast<GLFWwindow*>(Engine::Application::GetWindow().GetNativeWindow()), [](GLFWwindow*, int count, const char* paths[])
-			{
-				for (int i = 0; i < count; i++)
-				{
-					std::filesystem::path path = paths[i];
-					if (std::filesystem::is_directory(path))
-					{
-						LOG_INFO("Dropped directory: {0}", path);
-					}
-					else
-					{
-						LOG_INFO("Dropped file: {0}", path);
-					}
-				}
-			});*/
 	}
 
 	void ContentBrowserWindow::Draw()

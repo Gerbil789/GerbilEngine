@@ -2,9 +2,9 @@
 
 #include "Engine/Script/Script.h"
 
-class PlayerController : public Engine::Script
+class FPSPlayerController : public Engine::Script
 {
-	SCRIPT_CLASS(PlayerController)
+	SCRIPT_CLASS(FPSPlayerController)
 
 public:
 

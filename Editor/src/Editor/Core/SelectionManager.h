@@ -2,127 +2,32 @@
 
 #include "Engine/Core/UUID.h"
 
-//TODO: move implementation into .cpp
 namespace Editor
 {
-	enum class SelectionType
-	{
-		None = 0,
-		Entity,
-		Asset
-	};
+  enum class SelectionContext { Entity, Asset };
 
-	struct SelectionEntry
-	{
-		SelectionType type = SelectionType::None;
-		Engine::Uuid id = Engine::Uuid{ 0 };
+  class SelectionGroup
+  {
+  public:
+    SelectionGroup(SelectionContext context) : m_Context(context) {}
 
-		bool Is(SelectionType otherType) const { return type == otherType; }
+    void Select(Engine::Uuid id, bool additive = false);
+    void Toggle(Engine::Uuid id);
+    void Clear();
+    bool IsSelected(Engine::Uuid id) const;
+    Engine::Uuid GetPrimary() const;
+    const std::vector<Engine::Uuid>& GetAll() const;
 
-		bool operator==(const SelectionEntry& other) const { return type == other.type && id == other.id; }
-	};
+  private:
+    SelectionContext m_Context;
+    std::vector<Engine::Uuid> m_Selection;
+  };
+
 
   class SelectionManager
   {
   public:
-    using SelectionCallback = std::function<void(const std::vector<SelectionEntry>&)>;
-
-    static void Subscribe(SelectionCallback callback)
-    {
-      m_Subscribers.push_back(callback);
-    }
-
-    static void Select(SelectionType type, Engine::Uuid id, bool additive = false)
-    {
-      if(additive)
-      {
-        for (const auto& entry : m_Selections)
-        {
-          if (entry.type == type && entry.id == id)
-            return;
-        }
-      }
-			else
-      {
-        ClearInternal(type);
-      }
-
-      m_Selections.push_back({ type, id });
-      NotifySubscribers();
-    }
-
-    static void Clear(SelectionType type)
-    {
-      if (ClearInternal(type))
-      {
-        NotifySubscribers();
-      }
-    }
-
-    static void ClearAll()
-    {
-      if (m_Selections.empty()) return;
-      m_Selections.clear();
-      NotifySubscribers();
-    }
-
-    static bool IsSelected(SelectionType type, Engine::Uuid id)
-    {
-      for (const auto& entry : m_Selections)
-      {
-        if (entry.type == type && entry.id == id)
-          return true;
-      }
-      return false;
-    }
-
-    static Engine::Uuid GetPrimary(SelectionType type)
-    {
-      // Search backwards to get the most recently clicked item
-      for (auto it = m_Selections.rbegin(); it != m_Selections.rend(); ++it)
-      {
-        if (it->type == type)
-          return it->id;
-      }
-      return Engine::Uuid{ 0 };
-    }
-
-    // Multi-select
-    static std::vector<Engine::Uuid> GetAll(SelectionType type)
-    {
-      std::vector<Engine::Uuid> result;
-      for (const auto& entry : m_Selections)
-      {
-        if (entry.type == type)
-          result.push_back(entry.id);
-      }
-      return result;
-    }
-
-  private:
-    // Helper to remove items without triggering an event (prevents double-firing)
-    static bool ClearInternal(SelectionType type)
-    {
-      auto it = std::remove_if(m_Selections.begin(), m_Selections.end(),
-        [type](const SelectionEntry& entry) { return entry.type == type; });
-
-      if (it != m_Selections.end())
-      {
-        m_Selections.erase(it, m_Selections.end());
-        return true;
-      }
-      return false;
-    }
-
-    static void NotifySubscribers()
-    {
-      for (const auto& callback : m_Subscribers)
-      {
-        callback(m_Selections);
-      }
-    }
-
-    inline static std::vector<SelectionEntry> m_Selections;
-    inline static std::vector<SelectionCallback> m_Subscribers;
+    inline static SelectionGroup Entities{ SelectionContext::Entity };
+    inline static SelectionGroup Assets{ SelectionContext::Asset };
   };
 }

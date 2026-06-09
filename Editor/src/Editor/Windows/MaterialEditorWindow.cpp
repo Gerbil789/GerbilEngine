@@ -4,6 +4,8 @@
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Graphics/Material.h"
 #include "Editor/Core/SelectionManager.h"
+#include "Engine/Event/EventBus.h"
+#include "Editor/Core/EditorEvent.h"
 #include <imgui.h>
 
 namespace Editor
@@ -24,11 +26,6 @@ namespace Editor
 			return;
 		}
 
-
-		Engine::Uuid currentShaderId = m_Material->GetShader();
-		const Engine::Shader& currentShader = Engine::AssetManager::GetAsset<Engine::Shader>(currentShaderId);
-
-
 		if (ImGui::BeginTable("MaterialHeader", 2, ImGuiTableFlags_SizingStretchProp))
 		{
 			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
@@ -46,27 +43,20 @@ namespace Editor
 			ImGui::TableSetColumnIndex(1); // Shader column
 			ImGui::SetNextItemWidth(-FLT_MIN);
 
+			auto& currentShaderRecord = Engine::AssetManager::GetAssetRegistry().GetRecord(m_Material->GetShader());
 
-
-			if (ImGui::BeginCombo("##Shader", currentShader.EditorOnly.name.c_str()))
+			if (ImGui::BeginCombo("##Shader", currentShaderRecord.GetName().c_str()))
 			{
-				auto shaderRecords = Engine::AssetManager::GetAssetRegistry().GetRecords(Engine::AssetType::Shader);
-
-				for (auto* record : shaderRecords)
-				{
-					Engine::Shader& shader = Engine::AssetManager::GetAsset<Engine::Shader>(record->id);
-
-					bool isSelected = (record->id == currentShaderId);
-					if (ImGui::Selectable(shader.EditorOnly.name.c_str(), isSelected))
+				Engine::AssetManager::GetAssetRegistry().ForEachRecord(Engine::AssetType::Shader, [&](const Engine::AssetRecord& record)
 					{
-						m_Material->SetShader(record->id);
-					}
+						bool isSelected = (record.id == m_Material->GetShader());
+						if (ImGui::Selectable(record.GetName().c_str(), isSelected))
+						{
+							m_Material->SetShader(record.id);
+						}
 
-					if (isSelected)
-					{
-						ImGui::SetItemDefaultFocus();
-					}
-				}
+						if (isSelected) ImGui::SetItemDefaultFocus();
+					});
 
 				ImGui::EndCombo();
 			}
@@ -81,7 +71,8 @@ namespace Editor
 			ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthFixed, 100.0f);
 			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
-			auto bindings = currentShader.GetMaterialBindings();
+			Engine::Shader& shader = Engine::AssetManager::GetAsset<Engine::Shader>(m_Material->GetShader());
+			auto bindings = shader.GetMaterialBindings();
 
 			for (auto& binding : bindings)
 			{
@@ -102,7 +93,7 @@ namespace Editor
 							{
 								using T = std::decay_t<decltype(arg)>;
 
-								// 3. Compile-time branching. The compiler strips out the blocks that don't match!
+								// Compile-time branching. The compiler strips out the blocks that don't match!
 								if constexpr (std::is_same_v<T, float>)
 								{
 									if (FloatField(param.name.c_str(), arg).changed)
@@ -123,7 +114,7 @@ namespace Editor
 									ImGui::TextUnformatted("<Unsupported Type>");
 								}
 
-							}, variantValue); // Pass the variant into the visitor
+							}, variantValue);
 					}
 				}
 
@@ -136,13 +127,11 @@ namespace Editor
 					ImGui::TableSetColumnIndex(1);
 
 					Engine::Uuid id = m_Material->GetTexture(binding.name);
-					//Engine::Texture2D* texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(id);
 
 					if (TextureField(binding.name, id).changed)
 					{
 						m_Material->SetTexture(binding.name, id);
 					}
-
 				}
 			}
 
@@ -181,27 +170,15 @@ namespace Editor
 
 	void MaterialEditorWindow::Initialize()
 	{
-		SelectionManager::Subscribe([](const std::vector<SelectionEntry>& selections)
-		{
-			for (const auto& entry : selections)
+		Engine::EventBus::Get().Subscribe<SelectionChangedEvent>([](const SelectionChangedEvent& e)
 			{
-				if (entry.type == SelectionType::Asset)
+				if(e.context != SelectionContext::Asset) return;
+
+				auto type = Engine::AssetManager::GetAssetRegistry().GetType(e.id);
+				if (type == Engine::AssetType::Material)
 				{
-					if (Engine::AssetManager::GetAssetRegistry().GetType(entry.id) == Engine::AssetType::Material)
-					{
-						m_Material = &(Engine::AssetManager::GetAsset<Engine::Material>(entry.id));
-						return;
-					}
+					m_Material = &(Engine::AssetManager::GetAsset<Engine::Material>(e.id));
 				}
-			}
 			});
 	}
-
-	void MaterialEditorWindow::SetMaterial(Engine::Material& material)
-	{
-		m_Material = &material;
-	}
-
-
 }
-

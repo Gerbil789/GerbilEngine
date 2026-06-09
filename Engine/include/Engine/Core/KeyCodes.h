@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	enum class KeyCode : uint16_t
+	enum class Key : uint16_t
 	{
 		Space = 32,
 		Apostrophe = 39, /* ' */
@@ -138,7 +138,7 @@ namespace Engine
 		Menu = 348
 	};
 
-	enum class MouseCode : uint16_t
+	enum class Mouse : uint16_t
 	{
 		Button0 = 0,
 		Button1 = 1,

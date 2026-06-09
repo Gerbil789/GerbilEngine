@@ -75,10 +75,11 @@ namespace Editor
 		//Engine::Scene& newScene = Engine::AssetManager::CreateAsset<Engine::Scene>();
 		//newScene = scene;
 
-
-
 		Engine::SceneManager::SetActiveScene(scene.id);
 		EditorCommandManager::SetContext(&scene);
+
+		EditorContext::editorCamera.SetBackground(Engine::Camera::Background::Skybox);
+		EditorContext::editorCamera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
 
 		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
 		LOG_INFO("--- Editor initialization complete ---");
@@ -111,7 +112,7 @@ namespace Editor
 			Engine::TransformSystem::Update();
 
 			EditorWindowManager::Update();		// update editor UI, render viewport, ...
-			EditorCommandManager::Flush();		// execute queued commands (deffered execution)
+			EditorCommandManager::ExecuteDefferedCommands();		// execute queued commands (deffered execution)
 			
 			if (EditorContext::state == EditorState::Play)
 			{

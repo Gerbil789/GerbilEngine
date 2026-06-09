@@ -6,7 +6,9 @@
 namespace Engine
 {
 	//TODO: remove "Other"
-	enum class AssetType { Unknown = 0, Texture2D, Mesh, Shader, Material, Audio, Scene, Script, Other, Directory, EmptyDirectory }; //TODO: reorder this, and regenerate the registry
+	//TODO: reorder this and regenerate the registry
+	//TODO: make serialization store enums as strings, not numbers
+	enum class AssetType { Unknown = 0, Texture2D, Mesh, Shader, Material, Audio, Scene, Script, Other, Directory, EmptyDirectory }; 
 
 	//TODO: move implementaitions to .cpp file
 	inline AssetType GetAssetTypeFromExtension(const std::string& extension)
@@ -74,7 +76,4 @@ namespace Engine
 		std::string GetName() const { return path.stem().string(); }
 		bool IsValid() const { return id; }
 	};
-
-
-
 };

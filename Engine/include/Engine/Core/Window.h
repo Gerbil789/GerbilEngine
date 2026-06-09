@@ -19,7 +19,7 @@ namespace GLFW
 
 namespace Engine
 {
-	class Event;
+	struct Event;
 
 	enum class WindowMode { Windowed, BorderlessFullscreen };
 

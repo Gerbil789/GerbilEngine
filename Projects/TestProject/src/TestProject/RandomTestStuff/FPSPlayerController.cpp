@@ -1,4 +1,4 @@
-#include "PlayerController.h"
+#include "FPSPlayerController.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Graphics/Material.h"
@@ -17,14 +17,14 @@
 
 using namespace Engine;
 
-void PlayerController::OnStart()
+void FPSPlayerController::OnStart()
 {
 	Input::SetCursorMode(Input::CursorMode::Disabled);
 	m_LastMouseX = Input::GetMousePosition().x;
 	m_LastMouseY = Input::GetMousePosition().y;
 }
 
-void PlayerController::OnUpdate()
+void FPSPlayerController::OnUpdate()
 {
 	float delta = Time::DeltaTime();
 	auto& transform = GetComponent<TransformComponent>();
@@ -38,22 +38,22 @@ void PlayerController::OnUpdate()
 	float rightZ = -std::sin(yawRadians);
 
 	// movement
-	if (Input::IsKeyDown(KeyCode::W))
+	if (Input::IsKeyDown(Key::W))
 	{
 		transform.position.x += forwardX * m_MoveSpeed * delta;
 		transform.position.z += forwardZ * m_MoveSpeed * delta;
 	}
-	if (Input::IsKeyDown(KeyCode::S))
+	if (Input::IsKeyDown(Key::S))
 	{
 		transform.position.x -= forwardX * m_MoveSpeed * delta;
 		transform.position.z -= forwardZ * m_MoveSpeed * delta;
 	}
-	if (Input::IsKeyDown(KeyCode::D))
+	if (Input::IsKeyDown(Key::D))
 	{
 		transform.position.x += rightX * m_MoveSpeed * delta;
 		transform.position.z += rightZ * m_MoveSpeed * delta;
 	}
-	if (Input::IsKeyDown(KeyCode::A))
+	if (Input::IsKeyDown(Key::A))
 	{
 		transform.position.x -= rightX * m_MoveSpeed * delta;
 		transform.position.z -= rightZ * m_MoveSpeed * delta;
@@ -71,14 +71,14 @@ void PlayerController::OnUpdate()
 	m_Scene->GetRegistry().patch<Engine::TransformComponent>(m_Entity);
 }
 
-void PlayerController::OnDestroy()
+void FPSPlayerController::OnDestroy()
 {
 
 }
 
-void PlayerController::OnEvent(const Engine::Event& event)
+void FPSPlayerController::OnEvent(const Engine::Event& event)
 {
-	if(event.GetEventType() == EventType::MouseMoved)
+	/*if(event.GetEventType() == EventType::MouseMoved)
 	{
 		const auto& e = static_cast<const MouseMovedEvent&>(event);
 
@@ -112,7 +112,7 @@ void PlayerController::OnEvent(const Engine::Event& event)
 		{
 			m_VelocityY = m_JumpStrength;
 		}
-	}
+	}*/
 }
 
 //void PlayerController::OnCollisionEnter(entt::entity other)

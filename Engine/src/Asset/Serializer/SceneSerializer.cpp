@@ -270,19 +270,15 @@ namespace Engine
 
 		for (const auto& eJson : sceneData)
 		{
-			entt::entity entity = scene.CreateEntity();
+			Uuid entityId = eJson.ID;
+			std::string name = eJson.Name.value_or("Entity");
+
+			entt::entity entity = scene.CreateEntity(name, entityId);
 
 			// Identity
 			auto& identity = registry.get<IdentityComponent>(entity);
-			identity.id = eJson.ID;
 			identity.enabled = eJson.Enabled;
-			entityMap[eJson.ID] = entity;
-
-			// Name
-			if (eJson.Name.has_value())
-			{
-				registry.get<NameComponent>(entity).name = eJson.Name.value();
-			}
+			entityMap[entityId] = entity;
 
 			// Transform
 			if (eJson.Transform.has_value())

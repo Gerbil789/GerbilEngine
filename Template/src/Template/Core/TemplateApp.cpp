@@ -33,6 +33,8 @@ namespace Template
 	uint32_t m_Width = 1600;
 	uint32_t m_Height = 900;
 
+	Engine::Camera* m_Camera = nullptr;
+
 	static void UpdateSize(uint32_t width, uint32_t height)
 	{
 		m_Width = width;
@@ -144,16 +146,9 @@ namespace Template
 			throw std::runtime_error("No camera found in the scene. Please add a camera entity with a CameraComponent.");
 		}
 
-
 		entt::registry& registry = activeScene.GetRegistry();
-		for(auto camera : cameras)
-		{
-			if (activeScene.GetRegistry().get<Engine::CameraComponent>(camera).primary)
-			{
-				Engine::g_Renderer.SetCamera(registry.get<Engine::CameraComponent>(camera).camera);
-				break;
-			}
-		}
+		entt::entity camera = cameras[0];
+		m_Camera = registry.get<Engine::CameraComponent>(camera).camera;
 
 		UpdateSize(m_Width, m_Height);
 
@@ -214,7 +209,7 @@ namespace Template
 			}
 
 			Engine::g_Renderer.SetColorTarget(targetView);
-			Engine::g_Renderer.RenderScene(Engine::SceneManager::GetActiveScene());
+			Engine::g_Renderer.RenderScene(Engine::SceneManager::GetActiveScene(), *m_Camera);
 
 			surface.present();
 		}

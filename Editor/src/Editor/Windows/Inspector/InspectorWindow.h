@@ -12,13 +12,5 @@ namespace Editor
 	public:
 		void Initialize() override;
 		void Draw() override;
-
-	private:
-		void DrawAssetPanel(Engine::Uuid assetID);
-
-	private:
-		EntityInspectorPanel m_EntityInspector;
-		ShaderInspectorPanel m_ShaderInspector;
-		AudioInspectorPanel m_AudioInspector;
 	};
 }

@@ -6,7 +6,7 @@
 struct GLFWwindow;
 namespace Engine 
 { 
-	class Event; 
+	struct Event; 
 
 }
 
@@ -18,11 +18,11 @@ namespace Engine::Input
 	ENGINE_API void Update();
 	//ENGINE_API void OnEvent(Event& e);
 
-	ENGINE_API bool IsKeyDown(KeyCode key);
-	ENGINE_API bool IsKeyPressedOnce(KeyCode key);
-	ENGINE_API bool IsKeyReleased(KeyCode key);
+	ENGINE_API bool IsKeyDown(Key key);
+	ENGINE_API bool IsKeyPressedOnce(Key key);
+	ENGINE_API bool IsKeyReleased(Key key);
 
-	ENGINE_API bool IsMouseButtonPressed(MouseCode button);
+	ENGINE_API bool IsMouseButtonPressed(Mouse button);
 	ENGINE_API glm::vec2 GetMousePosition();
 
 	ENGINE_API void SetCursorMode(CursorMode mode);

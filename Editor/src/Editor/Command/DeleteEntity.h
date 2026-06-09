@@ -3,6 +3,8 @@
 #include "Editor/Command/ICommand.h"
 #include "Engine/Scene/Scene.h"
 #include "Editor/Core/SelectionManager.h"
+#include "Engine/Event/EventBus.h"
+#include "Editor/Core/EditorEvent.h"
 
 namespace Editor
 {
@@ -22,7 +24,8 @@ namespace Editor
     {
       if (m_Entity == entt::null) return;
 
-      SelectionManager::Clear(SelectionType::Entity);
+      FocusEntityEvent e{0};
+			Engine::EventBus::Get().Publish(e);
       m_Scene->GetRegistry().destroy(m_Entity);
     }
 
@@ -34,7 +37,8 @@ namespace Editor
       m_Entity = scene.CreateEntity(m_Name);
 			auto id = registry.get<Engine::IdentityComponent>(m_Entity).id;
 
-			SelectionManager::Select(SelectionType::Entity, id);
+      FocusEntityEvent e{ id };
+      Engine::EventBus::Get().Publish(e);
     }
 
   private:

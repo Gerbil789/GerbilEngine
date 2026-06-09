@@ -33,7 +33,6 @@ namespace Editor
 
 		renderer.Initialize();
 		renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Opaque);
-		renderer.SetCamera(&camera);
 	}
 
 	wgpu::TextureView Render(Engine::Uuid id)
@@ -80,7 +79,7 @@ namespace Editor
 			renderer.SetDepthTarget(depthTexture.createView(depthViewDesc));
 		}
 
-		renderer.RenderScene(scene);
+		renderer.RenderScene(scene, camera);
 		return thumbnailView;
 	}
 
