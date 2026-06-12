@@ -144,7 +144,7 @@ namespace Engine
     }
 
     {
-      MaterialSpecification spec{ .shaderId = RESOURCES::SHADER::FLAT };
+      MaterialSpecification spec{ .shaderId = RESOURCES::SHADER::DEFAULT };
       Material pinkMaterial = Material(spec);
       pinkMaterial.id = RESOURCES::MATERIAL::PINK;
 
@@ -182,7 +182,7 @@ namespace Engine
     }
     else if constexpr (std::is_same_v<T, AudioClip>)
     {
-      return LoadAssetInternal(id, m_AudioClips, RESOURCES::INVALID_UUID, AudioImporter::LoadAudioClip);
+      return LoadAssetInternal(id, m_AudioClips, Uuid{}, AudioImporter::LoadAudioClip);
     }
     else if constexpr (std::is_same_v<T, Scene>)
     {
@@ -212,7 +212,7 @@ namespace Engine
       };
 
       Material material(spec);
-      material.id = Uuid();
+      material.id = Uuid::Generate();
 
       LOG_TRACE("Created asset '{}'", material.id);
       auto [insertedIt, success] = m_Materials.insert_or_assign(material.id, std::move(material));
@@ -226,7 +226,7 @@ namespace Engine
     else if constexpr (std::is_same_v<T, Scene>)
     {
       Scene scene;
-      scene.id = Uuid();
+      scene.id = Uuid::Generate();
 
       LOG_TRACE("Created asset '{}'", scene.id);
       auto [insertedIt, success] = m_Scenes.insert_or_assign(scene.id, std::move(scene));

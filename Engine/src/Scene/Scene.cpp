@@ -1,5 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Scene/Scene.h"
+#include "Engine/Asset/AssetManager.h"
 
 namespace Engine
 {
@@ -18,7 +19,7 @@ namespace Engine
 		auto view = other.m_Registry.view<const IdentityComponent>();
 		for (auto srcEntity : view)
 		{
-			auto uuid = other.m_Registry.get<IdentityComponent>(srcEntity).id;
+			Uuid uuid = other.m_Registry.get<IdentityComponent>(srcEntity).id;
 			auto name = other.m_Registry.get<NameComponent>(srcEntity).name;
 
 			entt::entity dstEntity = CreateEntity(name);
@@ -57,7 +58,8 @@ namespace Engine
 	entt::entity Scene::CreateEntity(const std::string& name)
 	{
 		entt::entity entity = m_Registry.create();
-		Uuid uuid = m_Registry.emplace<IdentityComponent>(entity, Uuid()).id;
+		Uuid uuid = Uuid::Generate();
+		m_Registry.emplace<IdentityComponent>(entity, uuid);
 		m_Registry.emplace<NameComponent>(entity, name);
 		m_Registry.emplace<TransformComponent>(entity);
 

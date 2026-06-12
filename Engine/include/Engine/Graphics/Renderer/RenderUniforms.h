@@ -22,10 +22,4 @@ namespace Engine
 		float padding;
 	};
 	static_assert(sizeof(ViewUniforms) % 16 == 0);
-
-	struct alignas(16) ModelUniforms
-	{
-		glm::mat4 modelMatrix;
-	};
-	static_assert(sizeof(ModelUniforms) % 16 == 0);
 }

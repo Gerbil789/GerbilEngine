@@ -36,7 +36,7 @@ namespace Engine
         s_Passes[RenderPassType::Background] = std::make_unique<BackgroundPass>();
         s_Passes[RenderPassType::Opaque] = std::make_unique<OpaquePass>();
         s_Passes[RenderPassType::Shadow] = std::make_unique<ShadowPass>();
-        s_Passes[RenderPassType::Light] = std::make_unique<LightPass>();
+        //s_Passes[RenderPassType::Light] = std::make_unique<LightPass>();
         s_Passes[RenderPassType::Wireframe] = std::make_unique<WireframePass>();
         s_Passes[RenderPassType::Normal] = std::make_unique<NormalPass>();
       }

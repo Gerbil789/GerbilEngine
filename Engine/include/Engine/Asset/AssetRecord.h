@@ -69,8 +69,8 @@ namespace Engine
 
 	struct AssetRecord
 	{
-		Uuid id = Uuid{ 0 };
-		std::filesystem::path path = {};
+		Uuid id;
+		std::filesystem::path path;
 		AssetType type = AssetType::Unknown;
 
 		std::string GetName() const { return path.stem().string(); }

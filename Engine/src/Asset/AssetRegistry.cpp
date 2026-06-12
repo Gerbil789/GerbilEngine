@@ -130,7 +130,7 @@ namespace Engine
 			}
 		}
 
-		auto id = Uuid(); // generate new UUID
+		Uuid id = Uuid::Generate();
 		auto [it, inserted] = m_Records.try_emplace(id, AssetRecord{id, assetsDir / path, GetAssetTypeFromExtension(path.extension().string())});
 
 		Save(Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.json");
@@ -199,7 +199,7 @@ namespace Engine
 			auto it = std::find_if(m_Records.begin(), m_Records.end(), [&path](const auto& pair) { return pair.second.path == path; });
 			if (it == m_Records.end())
 			{
-				AssetRecord record{ Uuid(), path, type };
+				AssetRecord record{ Uuid::Generate(), path, type };
 
 				LOG_INFO("Discovered new asset '{}'", path);
 				m_Records[record.id] = std::move(record);

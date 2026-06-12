@@ -120,15 +120,15 @@ namespace Editor
 
 				if (binding.type == Engine::BindingType::Texture2D)
 				{
-					ImGui::TableNextRow();
+					/*ImGui::TableNextRow();
 					ImGui::TableSetColumnIndex(0);
 					ImGui::TextUnformatted(binding.name.c_str());
 
-					ImGui::TableSetColumnIndex(1);
+					ImGui::TableSetColumnIndex(1);*/
 
 					Engine::Uuid id = m_Material->GetTexture(binding.name);
 
-					if (TextureField(binding.name, id).changed)
+					if (AssetField(binding.name.c_str(), id, Engine::AssetType::Texture2D).changed)
 					{
 						m_Material->SetTexture(binding.name, id);
 					}

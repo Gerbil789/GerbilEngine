@@ -164,7 +164,7 @@ namespace Engine
 			{
 				const auto& m = registry.get<MeshComponent>(entity);
 				MeshComponentJSON mJson{ m.meshId };
-				for (auto id : m.materials) mJson.Materials.push_back((uint64_t)id);
+				for (Uuid id : m.materials) mJson.Materials.push_back((uint64_t)id);
 				eJson.MeshComponent = mJson;
 			}
 
@@ -270,7 +270,7 @@ namespace Engine
 
 		for (const auto& eJson : sceneData)
 		{
-			Uuid entityId = eJson.ID;
+			Uuid entityId{ eJson.ID };
 			std::string name = eJson.Name.value_or("Entity");
 
 			entt::entity entity = scene.CreateEntity(name, entityId);
@@ -298,7 +298,7 @@ namespace Engine
 			{
 				auto& mComp = registry.emplace<MeshComponent>(entity);
 				const auto& mJson = eJson.MeshComponent.value();
-				mComp.meshId = mJson.Mesh;
+				mComp.meshId = Uuid{ mJson.Mesh };
 
 				if(!assetRegistry.GetRecord(mComp.meshId).IsValid())
 				{
@@ -307,11 +307,12 @@ namespace Engine
 
 				mComp.materials.reserve(mJson.Materials.size());
 
-				for (auto id : mJson.Materials)
+				for (auto rawId : mJson.Materials)
 				{
+					Engine::Uuid id{ static_cast<uint64_t>(rawId) };
 					if (assetRegistry.GetRecord(id).IsValid())
 					{
-						mComp.materials.push_back(Uuid(id));
+						mComp.materials.push_back(Uuid{ id });
 					}
 					else
 					{
@@ -325,7 +326,7 @@ namespace Engine
 			{
 				auto& cComp = registry.emplace<ColliderComponent>(entity);
 				const auto& cJson = eJson.ColliderComponent.value();
-				cComp.meshId = cJson.Mesh;
+				cComp.meshId = Uuid{ cJson.Mesh };
 				cComp.type = static_cast<BodyType>(cJson.Type);
 				cComp.isTrigger = cJson.IsTrigger;
 			}
@@ -398,16 +399,16 @@ namespace Engine
 						if (node.is_number()) *reinterpret_cast<float*>(fieldPtr) = static_cast<float>(node.get_number());
 						break;
 					case ScriptFieldType::Texture:
-						if (node.is_number()) *reinterpret_cast<Texture2D**>(fieldPtr) = &Engine::AssetManager::GetAsset<Texture2D>(static_cast<uint64_t>(node.get_number()));
+						if (node.is_number()) *reinterpret_cast<Texture2D**>(fieldPtr) = &Engine::AssetManager::GetAsset<Texture2D>(Uuid{ static_cast<uint64_t>(node.get_number()) });
 						break;
 					case ScriptFieldType::AudioClip:
-						if (node.is_number()) *reinterpret_cast<AudioClip**>(fieldPtr) = &Engine::AssetManager::GetAsset<AudioClip>(static_cast<uint64_t>(node.get_number()));
+						if (node.is_number()) *reinterpret_cast<AudioClip**>(fieldPtr) = &Engine::AssetManager::GetAsset<AudioClip>(Uuid{ static_cast<uint64_t>(node.get_number()) });
 						break;
 					case ScriptFieldType::Mesh:
-						if (node.is_number()) *reinterpret_cast<Mesh**>(fieldPtr) = &Engine::AssetManager::GetAsset<Mesh>(static_cast<uint64_t>(node.get_number()));
+						if (node.is_number()) *reinterpret_cast<Mesh**>(fieldPtr) = &Engine::AssetManager::GetAsset<Mesh>(Uuid{ static_cast<uint64_t>(node.get_number()) });
 						break;
 					case ScriptFieldType::Material:
-						if (node.is_number()) *reinterpret_cast<Material**>(fieldPtr) = &Engine::AssetManager::GetAsset<Material>(static_cast<uint64_t>(node.get_number()));
+						if (node.is_number()) *reinterpret_cast<Material**>(fieldPtr) = &Engine::AssetManager::GetAsset<Material>(Uuid{ static_cast<uint64_t>(node.get_number()) });
 						break;
 					}
 				}

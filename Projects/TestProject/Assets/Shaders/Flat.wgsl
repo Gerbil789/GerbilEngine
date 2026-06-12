@@ -19,9 +19,9 @@ struct FrameUniforms
 	_padding: f32,
 };
 
-struct ModelUniforms 
+struct ModelBuffer
 {
-	model: mat4x4f,
+  models: array<mat4x4f>,
 };
 
 struct MaterialUniforms 
@@ -30,14 +30,15 @@ struct MaterialUniforms
 };
 
 @group(0) @binding(0) var<uniform> uFrame: FrameUniforms;
-@group(1) @binding(0) var<uniform> uModel: ModelUniforms;
+@group(3) @binding(0) var<storage, read> uModelData: ModelBuffer;
 @group(2) @binding(0) var<uniform> uMaterial: MaterialUniforms;
 
 @vertex
-fn vs_main(in: VertexInput) -> VertexOutput 
+fn vs_main(in: VertexInput, @builtin(instance_index) instanceIdx: u32) -> VertexOutput 
 {
 	var out: VertexOutput; 
-	out.position = uFrame.projection * uFrame.view * uModel.model * vec4f(in.position, 1.0);
+	let modelMatrix = uModelData.models[instanceIdx];
+	out.position = uFrame.projection * uFrame.view * modelMatrix * vec4f(in.position, 1.0);
 	out.uv = in.uv;
 	return out;
 }

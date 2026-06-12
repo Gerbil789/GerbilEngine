@@ -1,6 +1,4 @@
 #include "Property.h"
-#include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/Texture/TextureCube.h"	
 #include "Engine/Audio/AudioClip.h"
@@ -8,288 +6,62 @@
 #include "Engine/Graphics/Material.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
-#include <cstdio> // For std::snprintf
 
 namespace Editor
 {
-	bool CheckAssetType(Engine::Uuid id, Engine::AssetType expectedType)
+	EditResult AssetField(std::string_view label, Engine::Uuid& id, Engine::AssetType type)
 	{
-		return Engine::AssetManager::GetAssetRegistry().GetType(id) == expectedType;
-	}
-
-	EditResult TextureField(const std::string& label, Engine::Uuid& textureId)
-	{
+		PropertyRow row(label);
 		EditResult result;
-		const ImVec2 buttonSize = ImVec2(64, 64);
 
-		ImGui::PushID(label.c_str());
+		const std::string& assetName = Engine::AssetManager::GetAssetRegistry().GetRecord(id).GetName();
 
-		if (!textureId)
-		{
-			ImGui::Button("empty", buttonSize);
-		}
-		else 
-		{
-			const Engine::Texture2D& texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(textureId);
-			ImGui::ImageButton(label.c_str(), (ImTextureID)(intptr_t)(WGPUTextureView)texture.GetTextureView(), buttonSize);
-		}
+		bool isTexture = (type == Engine::AssetType::Texture2D);
+		ImVec2 size = isTexture ? ImVec2(64, 64) : ImVec2(-FLT_MIN, 0);
 
-		if(textureId)
+		if (isTexture)
 		{
-			if (ImGui::BeginDragDropSource())
+			if (id)
 			{
-				ImGui::SetDragDropPayload("UUID", &textureId, sizeof(textureId));
-				ImGui::Text("%llu", static_cast<unsigned long long>((uint64_t)textureId));
-				ImGui::EndDragDropSource();
+				const auto& texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(id);
+				auto textureView = (WGPUTextureView)texture.GetTextureView();
+				result.changed = ImGui::ImageButton("##TexturePreview", (ImTextureID)(intptr_t)textureView, size);
+			}
+			else
+			{
+				result.changed = ImGui::ImageButton("##TexturePreviewBlank", nullptr, size);
 			}
 		}
-
-
-		if (ImGui::BeginDragDropTarget())
+		else
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
-			{
-				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-
-				if(droppedUUID)
-				{
-					textureId = droppedUUID;
-					result.changed = true;
-				}
-			}
-			ImGui::EndDragDropTarget();
+			result.changed = ImGui::Button(assetName.c_str(), size);
 		}
 
-		if (textureId && ImGui::BeginPopupContextItem("TextureOptions"))
-		{
-			if (ImGui::MenuItem("Remove Texture"))
-			{
-				textureId = Engine::Uuid{ 0 };
-				result.changed = true;
-			}
-			ImGui::EndPopup();
-		}
 
 		result.active = ImGui::IsItemActive();
 		result.started = ImGui::IsItemActivated();
 		result.finished = ImGui::IsItemDeactivatedAfterEdit();
 
-		ImGui::PopID();
-		return result;
-	}
+		DragDropSource dragSource(assetName, id);
+		result.changed |= DragDropTarget{}.AcceptAsset([&id](Engine::Uuid newId) {id = newId; }, type);
 
-	EditResult AudioClipField(const std::string& label, Engine::AudioClip*& audioClip)
-	{
-		EditResult result;
-
-		ImGui::PushID(label.c_str());
-
-		std::string buttonText = audioClip != nullptr ? Engine::AssetManager::GetAssetRegistry().GetPath(audioClip->id).stem().string() : "##Clip";
-		ImGui::Button(buttonText.c_str(), ImVec2(-FLT_MIN, 0));
-
-		if (audioClip)
+		if (PopupContextItem contextMenu{ "AssetOptionsPopup" })
 		{
-			if (ImGui::BeginDragDropSource())
+			if (ImGui::MenuItem("Clear", nullptr, false, static_cast<bool>(id)))
 			{
-				Engine::Uuid uuid = audioClip->id;
-				ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
-				ImGui::Text("%llu", static_cast<unsigned long long>((uint64_t)audioClip->id));
-				ImGui::EndDragDropSource();
-			}
-		}
-
-
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
-			{
-				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				if (Engine::AssetManager::GetAssetRegistry().GetType(droppedUUID) == Engine::AssetType::Audio)
-				{
-					audioClip = &(Engine::AssetManager::GetAsset<Engine::AudioClip>(droppedUUID));
-					result.changed = true;
-				}
-
-			}
-			ImGui::EndDragDropTarget();
-		}
-
-		if (audioClip && ImGui::BeginPopupContextItem("Options"))
-		{
-			if (ImGui::MenuItem("Remove"))
-			{
-				audioClip = nullptr;
+				id = Engine::Uuid{};
 				result.changed = true;
 			}
-			ImGui::EndPopup();
 		}
 
-		result.active = ImGui::IsItemActive();
-		result.started = ImGui::IsItemActivated();
-		result.finished = ImGui::IsItemDeactivatedAfterEdit();
-
-		ImGui::PopID();
 		return result;
 	}
 
-	EditResult MeshField(const std::string& label, Engine::Mesh*& mesh)
+	EditResult IntField(std::string_view label, int& value, int min, int max)
 	{
 		EditResult result;
 
-		ImGui::PushID(label.c_str());
-
-		std::string buttonText = mesh != nullptr ? Engine::AssetManager::GetAssetRegistry().GetPath(mesh->id).stem().string() : "##Mesh";
-		ImGui::Button(buttonText.c_str(), ImVec2(-FLT_MIN, 0));
-
-		if (mesh)
-		{
-			if (ImGui::BeginDragDropSource())
-			{
-				Engine::Uuid uuid = mesh->id;
-				ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
-				ImGui::Text("%llu", static_cast<unsigned long long>((uint64_t)mesh->id));
-				ImGui::EndDragDropSource();
-			}
-		}
-
-
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
-			{
-				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				if (Engine::AssetManager::GetAssetRegistry().GetType(droppedUUID) == Engine::AssetType::Mesh)
-				{
-					mesh = &(Engine::AssetManager::GetAsset<Engine::Mesh>(droppedUUID));
-					result.changed = true;
-				}
-
-			}
-			ImGui::EndDragDropTarget();
-		}
-
-		if (mesh && ImGui::BeginPopupContextItem("Options"))
-		{
-			if (ImGui::MenuItem("Remove"))
-			{
-				mesh = nullptr;
-				result.changed = true;
-			}
-			ImGui::EndPopup();
-		}
-
-		result.active = ImGui::IsItemActive();
-		result.started = ImGui::IsItemActivated();
-		result.finished = ImGui::IsItemDeactivatedAfterEdit();
-
-		ImGui::PopID();
-		return result;
-	}
-
-	EditResult ShaderField(const std::string& label, Engine::Shader*& shader)
-	{
-		EditResult result;
-		ImGui::PushID(label.c_str());
-		std::string buttonText = shader != nullptr ? Engine::AssetManager::GetAssetRegistry().GetPath(shader->id).stem().string() : "##Shader";
-		ImGui::Button(buttonText.c_str(), ImVec2(-FLT_MIN, 0));
-		if (shader)
-		{
-			if (ImGui::BeginDragDropSource())
-			{
-				Engine::Uuid uuid = shader->id;
-				ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
-				ImGui::Text("%llu", static_cast<unsigned long long>((uint64_t)shader->id));
-				ImGui::EndDragDropSource();
-			}
-		}
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
-			{
-				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				if (Engine::AssetManager::GetAssetRegistry().GetType(droppedUUID) == Engine::AssetType::Shader)
-				{
-					shader = &(Engine::AssetManager::GetAsset<Engine::Shader>(droppedUUID));
-					result.changed = true;
-				}
-			}
-			ImGui::EndDragDropTarget();
-		}
-		if (shader && ImGui::BeginPopupContextItem("Options"))
-		{
-			if (ImGui::MenuItem("Remove"))
-			{
-				shader = nullptr;
-				result.changed = true;
-			}
-			ImGui::EndPopup();
-		}
-		result.active = ImGui::IsItemActive();
-		result.started = ImGui::IsItemActivated();
-		result.finished = ImGui::IsItemDeactivatedAfterEdit();
-		ImGui::PopID();
-		return result;
-		
-	}
-
-	EditResult MaterialField(const std::string& label, Engine::Material*& material)
-	{
-		EditResult result;
-
-		ImGui::PushID(label.c_str());
-
-		std::string buttonText = material != nullptr ? Engine::AssetManager::GetAssetRegistry().GetPath(material->id).stem().string() : "##Material";
-		ImGui::Button(buttonText.c_str(), ImVec2(-FLT_MIN, 0));
-
-		if (material)
-		{
-			if (ImGui::BeginDragDropSource())
-			{
-				Engine::Uuid uuid = material->id;
-				ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
-				ImGui::Text("%llu", static_cast<unsigned long long>((uint64_t)material->id));
-				ImGui::EndDragDropSource();
-			}
-		}
-
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
-			{
-				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				if (Engine::AssetManager::GetAssetRegistry().GetType(droppedUUID) == Engine::AssetType::Material)
-				{
-					material = &(Engine::AssetManager::GetAsset<Engine::Material>(droppedUUID));
-					result.changed = true;
-				}
-
-			}
-			ImGui::EndDragDropTarget();
-		}
-
-		if (material && ImGui::BeginPopupContextItem("Options"))
-		{
-			if (ImGui::MenuItem("Remove"))
-			{
-				material = nullptr;
-				result.changed = true;
-			}
-			ImGui::EndPopup();
-		}
-
-		result.active = ImGui::IsItemActive();
-		result.started = ImGui::IsItemActivated();
-		result.finished = ImGui::IsItemDeactivatedAfterEdit();
-
-		ImGui::PopID();
-		return result;
-	}
-
-	EditResult IntField(const std::string& label, int& value, int min, int max)
-	{
-		EditResult result;
-
-		ImGui::PushID(label.c_str());
+		ImGui::PushID(label.data());
 
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 		if (ImGui::DragInt("##input", &value, 1.0f, min, max, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
@@ -306,11 +78,11 @@ namespace Editor
 
 	}
 
-	EditResult FloatField(const std::string& label, float& value, float min, float max, float speed)
+	EditResult FloatField(std::string_view label, float& value, float min, float max, float speed)
 	{
 		EditResult result;
 
-		ImGui::PushID(label.c_str());
+		ImGui::PushID(label.data());
 
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 		if (ImGui::DragFloat(("##" + std::string(label)).c_str(), &value, speed, min, max, "%.2f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat))
@@ -326,10 +98,10 @@ namespace Editor
 		return result;
 	}
 
-	EditResult FloatSliderField(const std::string& label, float& value, float min, float max)
+	EditResult FloatSliderField(std::string_view label, float& value, float min, float max)
 	{
 		EditResult result;
-		ImGui::PushID(label.c_str());
+		ImGui::PushID(label.data());
 
 		float fullWidth = ImGui::GetContentRegionAvail().x;
 		float inputWidth = 70.0f;
@@ -349,10 +121,10 @@ namespace Editor
 		return result;
 	}
 
-	EditResult Vec2Field(const std::string& label, glm::vec2& value)
+	EditResult Vec2Field(std::string_view label, glm::vec2& value)
 	{
 		EditResult result;
-		ImGui::PushID(label.c_str());
+		ImGui::PushID(label.data());
 
 		//TODO: this is not perfectly aligned with other fields...
 		//float fieldWidth = ImGui::GetContentRegionAvail().x / 2.0f - ImGui::GetStyle().ItemSpacing.x - 14.0f;
@@ -386,10 +158,10 @@ namespace Editor
 		return result;
 	}
 
-	EditResult Vec3Field(const std::string& label, glm::vec3& value, float min, float max, float speed)
+	EditResult Vec3Field(std::string_view label, glm::vec3& value, float min, float max, float speed)
 	{
 		EditResult result;
-		ImGui::PushID(label.c_str());
+		ImGui::PushID(label.data());
 
 		float itemSpacing = ImGui::GetStyle().ItemSpacing.x;
 		float fullWidth = ImGui::GetContentRegionAvail().x - itemSpacing;
@@ -420,10 +192,10 @@ namespace Editor
 		return result;
 	}
 
-	EditResult BoolField(const std::string& label, bool& value)
+	EditResult BoolField(std::string_view label, bool& value)
 	{
 		EditResult result;
-		ImGui::PushID(label.c_str());
+		ImGui::PushID(label.data());
 		if (ImGui::Checkbox("##checkbox", &value))
 		{
 			result.changed = true;
@@ -435,10 +207,10 @@ namespace Editor
 		return result;
 	}
 
-	bool FloatSliderControl(const std::string& label, float& value, float min, float max)
+	bool FloatSliderControl(std::string_view label, float& value, float min, float max)
 	{
 		bool valueChanged = false;
-		ImGui::PushID(label.c_str());
+		ImGui::PushID(label.data());
 		ImGui::PushItemWidth(-1);
 		if (ImGui::SliderFloat("##value", &value, min, max))
 		{
@@ -450,10 +222,10 @@ namespace Editor
 		return valueChanged;
 	}
 
-	EditResult EnumField(const std::string& label, int& value, const std::vector<std::string>& options)
+	EditResult EnumField(std::string_view label, int& value, const std::vector<std::string>& options)
 	{
 		EditResult result;
-		ImGui::PushID(label.c_str());
+		ImGui::PushID(label.data());
 
 		if (ImGui::BeginCombo("##value", value >= 0 ? options[value].c_str() : nullptr))
 		{
@@ -481,11 +253,11 @@ namespace Editor
 		return result;
 	}
 
-	EditResult ColorField(const std::string& label, glm::vec4& color)
+	EditResult ColorField(std::string_view label, glm::vec4& color)
 	{
 		EditResult result;
 
-		ImGui::PushID(label.c_str());
+		ImGui::PushID(label.data());
 		ImGui::BeginGroup(); 
 
 		if (ImGui::ColorButton("##ColorPreview", ImVec4(color.r, color.g, color.b, color.a), ImGuiColorEditFlags_NoPicker, ImVec2(ImGui::GetContentRegionAvail().x, 24.0f)))
@@ -509,11 +281,11 @@ namespace Editor
 		return result;
 	}
 
-	EditResult ColorField(const std::string& label, glm::vec3& color)
+	EditResult ColorField(std::string_view label, glm::vec3& color)
 	{
 		EditResult result;
 
-		ImGui::PushID(label.c_str());
+		ImGui::PushID(label.data());
 		ImGui::BeginGroup();  // Group the controls to keep them together
 
 
@@ -539,7 +311,7 @@ namespace Editor
 		return result;
 	}
 
-	EditResult TextField(const std::string& label, std::string& text)
+	EditResult TextField(std::string_view label, std::string& text)
 	{
 		std::array<char, 256> buffer{};
 

@@ -1,5 +1,3 @@
-
-
 #define WEBGPU_CPP_IMPLEMENTATION
 
 #include "TemplateApp.h"
@@ -34,6 +32,7 @@ namespace Template
 	uint32_t m_Height = 900;
 
 	Engine::Camera* m_Camera = nullptr;
+	Engine::Renderer m_Renderer;
 
 	static void UpdateSize(uint32_t width, uint32_t height)
 	{
@@ -67,7 +66,7 @@ namespace Template
 				view.mipLevelCount = 1;
 				view.baseArrayLayer = 0;
 				view.arrayLayerCount = 1;
-				Engine::g_Renderer.SetColorTarget(colorTexture.createView(view));
+				m_Renderer.SetColorTarget(colorTexture.createView(view));
 			}
 
 			// Depth
@@ -93,7 +92,7 @@ namespace Template
 				view.dimension = wgpu::TextureViewDimension::_2D;
 				view.format = wgpu::TextureFormat::Depth24Plus;
 
-				Engine::g_Renderer.SetDepthTarget(depthTexture.createView(view));
+				m_Renderer.SetDepthTarget(depthTexture.createView(view));
 			}
 		}
 	}
@@ -117,7 +116,7 @@ namespace Template
 
 		Engine::Input::SetActiveWindow(*m_Window.GetNativeWindow());
 
-		Engine::g_Renderer.Initialize();
+		m_Renderer.Initialize();
 
 		Engine::Audio::Initialize();
 
@@ -125,7 +124,7 @@ namespace Template
 		Engine::Runtime::LoadScripts(dllPath);
 
 
-		auto id = project.GetDefaultSceneId();
+		Engine::Uuid id = project.GetDefaultSceneId();
 
 		//if (!Engine::AssetManager::GetAssetRegistry().GetRecord(id).IsValid())
 		//{
@@ -136,7 +135,7 @@ namespace Template
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
 		Engine::SceneManager::SetActiveScene(scene.id);
 
-		Engine::g_Renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque);
+		m_Renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque);
 
 		Engine::Scene& activeScene = Engine::SceneManager::GetActiveScene();
 
@@ -208,8 +207,8 @@ namespace Template
 				return;
 			}
 
-			Engine::g_Renderer.SetColorTarget(targetView);
-			Engine::g_Renderer.RenderScene(Engine::SceneManager::GetActiveScene(), *m_Camera);
+			m_Renderer.SetColorTarget(targetView);
+			m_Renderer.RenderScene(Engine::SceneManager::GetActiveScene(), *m_Camera);
 
 			surface.present();
 		}

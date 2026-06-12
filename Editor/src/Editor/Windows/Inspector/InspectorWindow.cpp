@@ -41,6 +41,7 @@ namespace Editor
 		{
 			ImGui::Text("Nothing selected");
 			ImGui::End();
+			return;
 		}
 
 		if (m_Context == SelectionContext::Entity)

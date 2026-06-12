@@ -85,7 +85,7 @@ namespace Engine
 				auto it = spec.textures.find(binding.name);
 				if (it == spec.textures.end())
 				{
-					SetTexture(binding.name, RESOURCES::INVALID_UUID);
+					SetTexture(binding.name, Uuid{});
 				}
 			}
 		}
@@ -110,7 +110,7 @@ namespace Engine
 		{
 			if (binding.type == BindingType::Texture2D)
 			{
-				SetTexture(binding.name, RESOURCES::INVALID_UUID);
+				SetTexture(binding.name, Uuid{});
 			}
 		}
 
@@ -152,7 +152,7 @@ namespace Engine
 		{
 			return it->second;
 		}
-		return RESOURCES::INVALID_UUID;
+		return Uuid{};
 	}
 
 	void Material::CreateUniformBuffer()

@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Engine/Core/UUID.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Graphics/Renderer/RenderContext.h"
 #include <webgpu/webgpu.hpp>
 
 namespace Editor
@@ -15,7 +13,7 @@ namespace Editor
 		void Initialize();
 
     void Resize(uint32_t width, uint32_t height);
-    Engine::Uuid Pick(uint32_t mouseX, uint32_t mouseY, const Engine::RenderContext& context);
+    Engine::Uuid Pick(uint32_t mouseX, uint32_t mouseY);
 
   private:
     void CreateBindGroupLayout();
@@ -29,7 +27,7 @@ namespace Editor
     wgpu::TextureView m_DepthTextureView;
 
     wgpu::Buffer m_ReadbackBuffer;
-    wgpu::Buffer m_UniformBuffer;
+    wgpu::Buffer m_IdStorageBuffer;
 
     wgpu::RenderPipeline m_Pipeline;
     wgpu::BindGroupLayout m_BindGroupLayout;

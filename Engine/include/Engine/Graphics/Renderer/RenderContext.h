@@ -27,7 +27,7 @@ namespace Engine
 
     // Model 
     wgpu::BindGroup modelBindGroup = nullptr;
-    wgpu::Buffer modelUniformBuffer = nullptr;
+    wgpu::Buffer modelStorageBuffer = nullptr;
 
 		// Environment
     wgpu::BindGroup environmentBindGroup = nullptr;

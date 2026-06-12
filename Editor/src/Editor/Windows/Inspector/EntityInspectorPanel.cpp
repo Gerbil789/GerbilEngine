@@ -208,47 +208,41 @@ namespace Editor
 		ComponentHeader header("Mesh", menuActions);
 		if (!header.open) return;
 
-		auto& component = registry.get<Engine::MeshComponent>(entity);
+		Engine::MeshComponent& component = registry.get<Engine::MeshComponent>(entity);
 
 		PropertyTable table;
 		if (!table) return;
 
+		if (AssetField("Mesh", component.meshId, Engine::AssetType::Mesh).changed)
 		{
-			PropertyRow row("Mesh");
 			if(component.meshId)
 			{
 				Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(component.meshId);
-				ImGui::Button(mesh.EditorOnly.name.c_str(), ImVec2(-FLT_MIN, 0));
+
+				uint32_t materialCount = 0;
+				for(const auto& sub : mesh.GetSubMeshes())
+				{
+					if(sub.materialIndex > materialCount)
+					{
+						materialCount = sub.materialIndex;
+					}
+				}
+				component.materials.resize(materialCount + 1);
 			}
 			else
 			{
-				ImGui::Button("##Mesh", ImVec2(-FLT_MIN, 0));
+				component.materials.clear();
 			}
-
-			DragDropTarget{}.AcceptAsset<Engine::AssetType::Mesh>([&](Engine::Uuid id) {component.meshId = id; });
 		}
 
-		if (!component.meshId) return;
+		ImGui::Separator();
 
-		auto materials = component.materials; //TODO: dont use index for loop?
-
-		for (size_t i = 0; i < materials.size(); i++)
+		for(auto&& [i, id] : std::views::enumerate(component.materials))
 		{
-			auto materialId = materials[i];
-			std::string text = "##Material";
-			if (materialId)
+			if (AssetField(std::format("Material {}", i), id, Engine::AssetType::Material).changed)
 			{
-				text = Engine::AssetManager::GetAsset<Engine::Material>(materialId).EditorOnly.name;
+				SelectionManager::Assets.Select(id);
 			}
-
-			PropertyRow row("Material");
-			ImGui::PushID(static_cast<int>(i));
-			if (ImGui::Button(text.c_str(), ImVec2(-FLT_MIN, 0)))
-			{
-				SelectionManager::Assets.Select(materialId);
-			}
-			DragDropTarget{}.AcceptAsset<Engine::AssetType::Material>([&](Engine::Uuid id) { component.materials[i] = id; });
-			ImGui::PopID();
 		}
 	}
 
@@ -279,9 +273,10 @@ namespace Editor
 		if (!table) return;
 
 		{
+			//TODO: use structures in propertis.h
 			PropertyRow row("Mesh");
 			ImGui::Button(meshText.c_str(), ImVec2(-FLT_MIN, 0));
-			DragDropTarget{}.AcceptAsset<Engine::AssetType::Mesh>([&](Engine::Uuid id) { component.meshId = id; });
+			DragDropTarget{}.AcceptAsset([&](Engine::Uuid id) { component.meshId = id; }, Engine::AssetType::Mesh);
 		}
 
 		{
@@ -443,35 +438,35 @@ namespace Editor
 			case Engine::ScriptFieldType::Texture:
 			{
 				Engine::Texture2D*& texture = *reinterpret_cast<Engine::Texture2D**>(fieldPtr);
-				TextureField(field.name, texture->id);
+				AssetField(field.name.c_str(), texture->id, Engine::AssetType::Texture2D);
 				break;
 			}
 
 			case Engine::ScriptFieldType::AudioClip:
 			{
 				Engine::AudioClip*& audioClip = *reinterpret_cast<Engine::AudioClip**>(fieldPtr);
-				AudioClipField(field.name, audioClip);
+				AssetField(field.name.c_str(), audioClip->id, Engine::AssetType::Audio);
 				break;
 			}
 
 			case Engine::ScriptFieldType::Mesh:
 			{
 				Engine::Mesh*& mesh = *reinterpret_cast<Engine::Mesh**>(fieldPtr);
-				MeshField(field.name, mesh);
+				AssetField(field.name.c_str(), mesh->id, Engine::AssetType::Mesh);
 				break;
 			}
 
 			case Engine::ScriptFieldType::Shader:
 			{
 				Engine::Shader*& shader = *reinterpret_cast<Engine::Shader**>(fieldPtr);
-				ShaderField(field.name, shader);
+				AssetField(field.name.c_str(), shader->id, Engine::AssetType::Shader);
 				break;
 			}
 
 			case Engine::ScriptFieldType::Material:
 			{
 				Engine::Material*& material = *reinterpret_cast<Engine::Material**>(fieldPtr);
-				MaterialField(field.name, material);
+				AssetField(field.name.c_str(), material->id, Engine::AssetType::Material);
 				break;
 			}
 			}

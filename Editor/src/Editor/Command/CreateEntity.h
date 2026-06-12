@@ -16,7 +16,7 @@ namespace Editor
     void Execute() override 
     {
 			m_Entity = m_Scene->CreateEntity(m_Name);
-			auto id = m_Scene->GetRegistry().get<Engine::IdentityComponent>(m_Entity).id;
+			Engine::Uuid id = m_Scene->GetRegistry().get<Engine::IdentityComponent>(m_Entity).id;
 
 			//SelectionManager::Select(SelectionType::Entity, id);
       FocusEntityEvent e{ id };

@@ -26,6 +26,6 @@ namespace Engine
 		std::filesystem::path m_ProjectDirectory;
 		std::filesystem::path m_AssetsDirectory;
 		std::string m_Title = "Untitled";
-		Engine::Uuid m_DefaultSceneId = Engine::Uuid{ 0 };
+		Engine::Uuid m_DefaultSceneId;
 	};
 }

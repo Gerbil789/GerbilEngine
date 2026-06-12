@@ -9,6 +9,7 @@ namespace Editor
 {
 	EditorState EditorContext::state = EditorState::Edit;
 	PlayMode EditorContext::playMode = PlayMode::PIE;
+	Engine::Renderer EditorContext::renderer;
 	Engine::Camera EditorContext::editorCamera;
 
 

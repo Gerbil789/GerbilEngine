@@ -15,7 +15,7 @@ namespace Engine
 		glm::vec3 max = glm::vec3(std::numeric_limits<float>::lowest());
 	};
 
-	struct Vertex 
+	struct Vertex
 	{
 		glm::vec3 position;
 		glm::vec3 normal;
@@ -34,9 +34,7 @@ namespace Engine
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 		std::vector<SubMesh> subMeshes;
-
-		//TODO: add compile time macro to disable in export game builds
-		std::vector<uint32_t> wireIndices;
+		std::vector<uint32_t> wireIndices;	//TODO: add compile time macro to disable in export game builds
 	};
 
 	class ENGINE_API Mesh : public Asset
@@ -45,11 +43,9 @@ namespace Engine
 		Mesh(const MeshSpecification& specification);
 		~Mesh();
 
-		// 1. Declare Move Constructor and Move Assignment
 		Mesh(Mesh&& other) noexcept;
 		Mesh& operator=(Mesh&& other) noexcept;
 
-		// 2. Explicitly delete Copying (optional, but good practice for GPU resources)
 		Mesh(const Mesh&) = delete;
 		Mesh& operator=(const Mesh&) = delete;
 

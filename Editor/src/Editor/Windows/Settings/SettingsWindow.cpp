@@ -8,6 +8,7 @@
 #include "Engine/Graphics/Texture/TextureCube.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/RenderPass/ShadowPass.h"
+#include "Engine/Scene/SceneManager.h"
 #include <imgui.h>
 
 namespace Editor
@@ -69,13 +70,15 @@ namespace Editor
 			PropertyTable table;
 
 			{
-				PropertyRow row("Environment");
+				//PropertyRow row("Environment");
 
-				Engine::Uuid textureId = Engine::g_Renderer.GetRenderContext().environment.TextureHDR.id;
+				Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+				Engine::Uuid id = scene.GetEnvironmentTexture();
 
-				if (TextureField("Environment Texture", textureId).changed)
+				if (AssetField("Environment", id, Engine::AssetType::Texture2D).changed)
 				{
-					Engine::g_Renderer.SetEnvironmentTexture(textureId);
+					scene.SetEnvironmentTexture(id);
+					EditorContext::renderer.SetEnvironmentTexture(id);
 				}
 			}
 		}

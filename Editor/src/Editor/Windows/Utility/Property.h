@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Engine/Core/UUID.h"
-#include <string>
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetRegistry.h"
 #include <imgui.h>
 #include <glm/glm.hpp>
 #include <limits>
 
-namespace Engine { class Texture2D; class AudioClip; class Mesh; class Material; class TextureCube; class Shader; enum class AssetType;}
+namespace Engine { enum class AssetType;}
 
 namespace Editor
 {
@@ -60,16 +60,37 @@ namespace Editor
 
 	struct PropertyRow
 	{
-		PropertyRow(const char* label)
+		PropertyRow(std::string_view label)
 		{
+			ImGui::PushID(label.data(), label.data() + label.size());
+
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0);
-			ImGui::TextUnformatted(label);
+			ImGui::TextUnformatted(label.data(), label.data() + label.size());
 			ImGui::TableSetColumnIndex(1);
+		}
+
+		~PropertyRow()
+		{
+			ImGui::PopID();
 		}
 	};
 
-	bool CheckAssetType(Engine::Uuid id, Engine::AssetType expectedType);
+	struct DragDropSource
+	{
+		DragDropSource(std::string_view label, Engine::Uuid id)
+		{
+			if (!id) return;
+
+			if (ImGui::BeginDragDropSource())
+			{
+				ImGui::SetDragDropPayload("UUID", &id, sizeof(Engine::Uuid));
+				ImGui::Text("%s", label.data());
+				ImGui::EndDragDropSource();
+			}
+		}
+
+	};
 
 	struct DragDropTarget
 	{
@@ -83,43 +104,62 @@ namespace Editor
 			if (active) ImGui::EndDragDropTarget();
 		}
 
-		template<Engine::AssetType ExpectedType, typename Fn>
-		void AcceptAsset(Fn&& fn)
+		template<typename Fn>
+		bool AcceptAsset(Fn&& fn, Engine::AssetType expectedType)
 		{
 			static_assert(std::is_invocable_v<Fn, Engine::Uuid>, "Callback must take an Engine::Uuid");
 
-			if (!active) return;
-
+			if (!active) return false;
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
 			{
 				assert(payload->DataSize == sizeof(Engine::Uuid) && "Drag drop payload size mismatch!");
-				Engine::Uuid id = *static_cast<const Engine::Uuid*>(payload->Data);
+				Engine::Uuid id = *static_cast<const Engine::Uuid*>(payload->Data); //TODO: better way to handle this?
 
-				if (CheckAssetType(id, ExpectedType))
+				if (Engine::AssetManager::GetAssetRegistry().GetType(id) == expectedType)
 				{
 					std::forward<Fn>(fn)(id);
+					return true;
 				}
 			}
+			return false;
 		}
 
 	private:
 		bool active = false;
 	};
 
+	struct PopupContextItem
+	{
+		PopupContextItem(const char* name = nullptr, ImGuiPopupFlags popupFlags = 1)
+		{
+			isOpen = ImGui::BeginPopupContextItem(name, popupFlags);
+		}
 
-	EditResult TextureField(const std::string& label, Engine::Uuid& textureId);
-	EditResult AudioClipField(const std::string& label, Engine::AudioClip*& audioClip);
-	EditResult MeshField(const std::string& label, Engine::Mesh*& mesh);
-	EditResult ShaderField(const std::string& label, Engine::Shader*& shader);
-	EditResult MaterialField(const std::string& label, Engine::Material*& material);
-	EditResult IntField(const std::string& label, int& value, int min = intMin, int max = intMax);
-	EditResult FloatField(const std::string& label, float& value, float min = fltMin, float max = fltMax, float speed = 0.05f);
-	EditResult FloatSliderField(const std::string& label, float& value, float min = 0, float max = 1);
-	EditResult Vec2Field(const std::string& label, glm::vec2& value);
-	EditResult Vec3Field(const std::string& label, glm::vec3& value, float min = fltMin, float max = fltMax, float speed = 0.01f);
-	EditResult BoolField(const std::string& label, bool& value);
-	EditResult ColorField(const std::string& label, glm::vec4& color);
-	EditResult ColorField(const std::string& label, glm::vec3& color);
-	EditResult EnumField(const std::string& label, int& value, const std::vector<std::string>& options);
-	EditResult TextField(const std::string& label, std::string& text);
+		~PopupContextItem()
+		{
+			if (isOpen)
+			{
+				ImGui::EndPopup();
+			}
+		}
+
+		explicit operator bool() const { return isOpen; }
+
+	private:
+		bool isOpen = false;
+	};
+
+
+	EditResult AssetField(std::string_view label, Engine::Uuid& id, Engine::AssetType type);
+
+	EditResult IntField(std::string_view label, int& value, int min = intMin, int max = intMax);
+	EditResult FloatField(std::string_view label, float& value, float min = fltMin, float max = fltMax, float speed = 0.05f);
+	EditResult FloatSliderField(std::string_view label, float& value, float min = 0, float max = 1);
+	EditResult Vec2Field(std::string_view label, glm::vec2& value);
+	EditResult Vec3Field(std::string_view label, glm::vec3& value, float min = fltMin, float max = fltMax, float speed = 0.01f);
+	EditResult BoolField(std::string_view label, bool& value);
+	EditResult ColorField(std::string_view label, glm::vec4& color);
+	EditResult ColorField(std::string_view label, glm::vec3& color);
+	EditResult EnumField(std::string_view label, int& value, const std::vector<std::string>& options);
+	EditResult TextField(std::string_view label, std::string& text);
 }

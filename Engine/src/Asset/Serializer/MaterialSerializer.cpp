@@ -142,7 +142,7 @@ namespace Engine
 		// Deserialize Textures
 		for (const auto& [name, id] : data.Textures)
 		{
-			spec.textures[name] = Uuid(id);
+			spec.textures[name] = Uuid{ id };
 		}
 
 		return Material(spec);

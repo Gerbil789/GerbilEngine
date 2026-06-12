@@ -4,8 +4,6 @@
 
 namespace RESOURCES
 {
-	static constexpr Engine::Uuid INVALID_UUID = Engine::Uuid{ 0 };
-
 	namespace MESH
 	{
 		static constexpr Engine::Uuid EMPTY = Engine::Uuid{ 1 };

@@ -18,14 +18,12 @@
 
 namespace Engine
 {
-	Renderer g_Renderer;
-
 	void Renderer::Initialize()
 	{
 		CreateViewUniformBuffer();
 		CreateViewBindGroup();
 
-		CreateModelUniformBuffer();
+		CreateModelStorageBuffer();
 		CreateModelBindGroup();
 
 		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(Engine::AssetManager::GetAsset<Texture2D>(RESOURCES::TEXTURE::HDR));
@@ -35,16 +33,6 @@ namespace Engine
 		CreateEnvironmentUniformBuffer();
 		CreateEnvironmentBindGroup();
 	}
-
-	//void Renderer::SetCamera(Camera* camera)
-	//{
-	//	m_RenderContext.camera = camera;
-	//}
-
-	//Camera* Renderer::GetCamera() const
-	//{
-	//	return m_RenderContext.camera;
-	//}
 
 	void Renderer::SetColorTarget(wgpu::TextureView colorView)
 	{
@@ -58,16 +46,15 @@ namespace Engine
 
 	void Renderer::SetEnvironmentTexture(Uuid textureId)
 	{
+		if(!textureId)
+		{
+			textureId = RESOURCES::TEXTURE::HDR;
+		}
+
 		Texture2D& texture = Engine::AssetManager::GetAsset<Texture2D>(textureId);
 		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(texture);
 		CreateEnvironmentBindGroup();
 	}
-
-	RenderContext& Renderer::GetRenderContext()
-	{
-		return m_RenderContext;
-	}
-	
 
 	void Renderer::CreateViewUniformBuffer()
 	{
@@ -95,25 +82,25 @@ namespace Engine
 		m_RenderContext.viewBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
 	}
 
-	void Renderer::CreateModelUniformBuffer()
+	void Renderer::CreateModelStorageBuffer()
 	{
 		// max 1024 unique transforms per frame //TODO: make this configurable or dynamic
-		const size_t bufferSize = 1024 * GraphicsContext::GetUniformBufferOffsetAlignment();
+		const uint64_t bufferSize = 1024 * sizeof(glm::mat4);
 
 		wgpu::BufferDescriptor bufferDesc;
-		bufferDesc.label = { "ModelUniformBuffer", WGPU_STRLEN };
+		bufferDesc.label = { "ModelStorageBuffer", WGPU_STRLEN };
 		bufferDesc.size = bufferSize;
-		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-		m_RenderContext.modelUniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
+		bufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
+		m_RenderContext.modelStorageBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
 	}
 
 	void Renderer::CreateModelBindGroup()
 	{
 		wgpu::BindGroupEntry bindGroupEntry;
 		bindGroupEntry.binding = 0;
-		bindGroupEntry.buffer = m_RenderContext.modelUniformBuffer;
+		bindGroupEntry.buffer = m_RenderContext.modelStorageBuffer;
 		bindGroupEntry.offset = 0;
-		bindGroupEntry.size = sizeof(ModelUniforms);
+		bindGroupEntry.size = m_RenderContext.modelStorageBuffer.getSize();
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
 		bindGroupDesc.label = { "ModelBindGroup", WGPU_STRLEN };
@@ -230,7 +217,6 @@ namespace Engine
 	{
 		m_RenderContext.scene = &scene;
 		m_RenderContext.camera = &camera;
-		entt::registry& registry = scene.GetRegistry();
 
 		ViewUniforms viewUniforms;
 		viewUniforms.view = m_RenderContext.camera->GetViewMatrix();
@@ -241,26 +227,25 @@ namespace Engine
 		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder();
 
 		m_RenderContext.drawList = DrawList::CreateFromScene(scene);
+		entt::registry& registry = scene.GetRegistry();
 
-		std::vector<glm::mat4> models(m_RenderContext.drawList.size());
-
-		std::for_each(m_RenderContext.drawList.begin(), m_RenderContext.drawList.end(), [&](const DrawItem& item)
-			{
-				models[item.modelIndex] = registry.get<TransformComponent>(item.entity).worldMatrix;
-			});
-
-
+		std::vector<glm::mat4> modelMatrices;
+		modelMatrices.reserve(m_RenderContext.drawList.size());
 		for (const DrawItem& item : m_RenderContext.drawList)
 		{
-			uint32_t offset = item.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment(); //TODO: cache the offset?
-			GraphicsContext::GetQueue().writeBuffer(m_RenderContext.modelUniformBuffer, offset, &models[item.modelIndex], sizeof(glm::mat4));
+			modelMatrices.push_back(registry.get<TransformComponent>(item.entity).worldMatrix);
+		}
+
+		if (!modelMatrices.empty())
+		{
+			GraphicsContext::GetQueue().writeBuffer(m_RenderContext.modelStorageBuffer, 0, modelMatrices.data(), modelMatrices.size() * sizeof(glm::mat4));
 		}
 
 		static const RenderPassType order[] = {
 				RenderPassType::Shadow,
 				RenderPassType::Background,
 				RenderPassType::Opaque,
-				RenderPassType::Light,
+				//RenderPassType::Light,
 				RenderPassType::Normal,
 				RenderPassType::Wireframe
 		};

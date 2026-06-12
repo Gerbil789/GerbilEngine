@@ -2,9 +2,10 @@
 #include "Engine/Graphics/RenderPass/NormalPass.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/WebGPUUtils.h"
-#include "Engine/Utility/File.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Utility/File.h"
 
 namespace Engine
 {
@@ -125,25 +126,21 @@ namespace Engine
 		pass.setPipeline(m_NormalPipeline);
 
 		pass.setBindGroup(0, context.viewBindGroup, 0, nullptr);
+		pass.setBindGroup(1, context.modelBindGroup, 0, nullptr);
 
-		Mesh* mesh = nullptr;
+		Engine::Uuid lastMeshId{};
 
-		for (const DrawItem& item : context.drawList)
+		for (auto [i, item] : std::views::enumerate(context.drawList))
 		{
-			if (!item.mesh) continue;
-
-			if (item.mesh != mesh)
+			if (item.meshId != lastMeshId)
 			{
-				mesh = item.mesh;
-				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
-				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetIndexBuffer().getSize());
+				lastMeshId = item.meshId;
+				const Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(lastMeshId);
+				pass.setVertexBuffer(0, mesh.GetVertexBuffer(), 0, mesh.GetVertexBuffer().getSize());
+				pass.setIndexBuffer(mesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh.GetIndexBuffer().getSize());
 			}
 
-			const SubMesh* sub = item.subMesh;
-
-			uint32_t dynamicOffset = item.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();
-			pass.setBindGroup(1, context.modelBindGroup, 1, &dynamicOffset);
-			pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);
+			pass.drawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));
 		}
 		pass.end();
 	}

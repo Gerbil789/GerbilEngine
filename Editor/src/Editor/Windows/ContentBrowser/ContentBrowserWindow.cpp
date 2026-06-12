@@ -56,11 +56,11 @@ namespace Editor
 			{
 				if (std::filesystem::is_empty(path))
 				{
-					m_Items.emplace_back(Engine::Uuid{}, path, Engine::AssetType::EmptyDirectory);
+					m_Items.emplace_back(Engine::Uuid::Generate(), path, Engine::AssetType::EmptyDirectory);
 				}
 				else
 				{
-					m_Items.emplace_back(Engine::Uuid{}, path, Engine::AssetType::Directory);
+					m_Items.emplace_back(Engine::Uuid::Generate(), path, Engine::AssetType::Directory);
 				}
 			}
 		}
@@ -169,11 +169,12 @@ namespace Editor
 		}
 	}
 
+	//TODO: use the structures in "properties.h"
 	void ProcessDragAndDrop(Engine::AssetRecord* record)
 	{
 		if (ImGui::BeginDragDropSource())
 		{
-			Engine::Uuid uuid = record->id;
+			Engine::Uuid uuid{ record->id };
 			ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
 			ImGui::Text("%s", record->path.filename().string().c_str());
 			ImGui::EndDragDropSource();

@@ -1,19 +1,20 @@
 #pragma once
 
+#include "Engine/Core/UUID.h"
 #include <entt.hpp>
 
 namespace Engine
 {
 	class Scene;
-	class Mesh;
-	struct SubMesh;
 
 	struct DrawItem
 	{
-		entt::entity entity{ entt::null };
-		Mesh* mesh;
-		const SubMesh* subMesh;
-		uint32_t modelIndex; // index into model buffer
+		Engine::Uuid meshId;
+		Engine::Uuid materialId;
+		uint32_t subMeshIndex;
+		uint32_t indexCount;
+		uint32_t firstIndex;
+		entt::entity entity;
 	};
 
 	class DrawList
@@ -21,11 +22,9 @@ namespace Engine
 	public:
 		static DrawList CreateFromScene(Scene& scene);
 
-		// Non-const iterators
 		auto begin() { return items.begin(); }
 		auto end() { return items.end(); }
 
-		// Const iterators
 		auto begin() const { return items.begin(); }
 		auto end()   const { return items.end(); }
 

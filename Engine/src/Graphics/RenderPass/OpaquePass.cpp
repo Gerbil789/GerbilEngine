@@ -40,54 +40,34 @@ namespace Engine
 
 		pass.setBindGroup(0, context.viewBindGroup, 0, nullptr);
 		pass.setBindGroup(1, context.environmentBindGroup, 0, nullptr);
+		pass.setBindGroup(3, context.modelBindGroup, 0, nullptr);
 
-		Engine::Uuid materialId{ 0 };
-		Engine::Material* material = nullptr;
-		Mesh* mesh = nullptr;
+		Engine::Uuid lastMeshId{};
+		Engine::Uuid lastMaterialId{};
 
-		for (const DrawItem& item : context.drawList)
+		for (auto [i, item] : std::views::enumerate(context.drawList))
 		{
-			if (item.mesh == nullptr) continue;
-
-			if (item.mesh != mesh)
+			if (item.meshId != lastMeshId)
 			{
-				mesh = item.mesh;
-				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
-				pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetIndexBuffer().getSize());
-			}
-			const SubMesh* sub = item.subMesh;
-
-			auto meshMaterials = context.scene->GetRegistry().get<MeshComponent>(item.entity).materials;
-			if(meshMaterials.size() < 1)
-			{
-				continue;
+				lastMeshId = item.meshId;
+				const Mesh& meshAsset = Engine::AssetManager::GetAsset<Mesh>(lastMeshId);
+				pass.setVertexBuffer(0, meshAsset.GetVertexBuffer(), 0, meshAsset.GetVertexBuffer().getSize());
+				pass.setIndexBuffer(meshAsset.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, meshAsset.GetIndexBuffer().getSize());
 			}
 
-			Engine::Uuid subMaterial;
-			if(sub->materialIndex >= meshMaterials.size())
+			if (item.materialId != lastMaterialId)
 			{
-				subMaterial = meshMaterials[0];
-			}
-			else
-			{
-				subMaterial = meshMaterials[sub->materialIndex];
-			}
+				lastMaterialId = item.materialId;
+				const Material& material = Engine::AssetManager::GetAsset<Material>(lastMaterialId);
+				GraphicsContext::GetQueue().writeBuffer(material.GetUniformBuffer(), 0, material.GetUniformData().data(), material.GetUniformData().size());
+				pass.setBindGroup(2, material.GetBindGroup(), 0, nullptr);
 
-			if (subMaterial && (subMaterial != materialId))
-			{
-				materialId = subMaterial;
-				material = &Engine::AssetManager::GetAsset<Material>(subMaterial);
-				GraphicsContext::GetQueue().writeBuffer(material->GetUniformBuffer(), 0, material->GetUniformData().data(), material->GetUniformData().size());
-				pass.setBindGroup(2, material->GetBindGroup(), 0, nullptr);
-
-				wgpu::RenderPipeline pipeline = PipelineCache::GetOrCreatePipeline(material->GetPipelineSpec());
+				//TODO: cache pipeline
+				wgpu::RenderPipeline pipeline = PipelineCache::GetOrCreatePipeline(material.GetPipelineSpec());
 				pass.setPipeline(pipeline);
 			}
 
-			uint32_t dynamicOffset = item.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();
-			pass.setBindGroup(3, context.modelBindGroup, 1, &dynamicOffset);
-
-			pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);
+			pass.drawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));
 		}
 
 		pass.end();

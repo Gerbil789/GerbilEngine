@@ -9,6 +9,7 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Utility/File.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
+#include "Engine/Asset/AssetManager.h"
 #include <glm/gtx/quaternion.hpp>
 
 namespace Engine
@@ -218,9 +219,9 @@ namespace Engine
 			}
 		}
 
-		for (int i = 0; i < s_ShadowCascadeCount; i++)
+		for (int index = 0; index < s_ShadowCascadeCount; index++)
 		{
-			GraphicsContext::GetQueue().writeBuffer(m_ShadowUniformBuffer, i * GraphicsContext::GetUniformBufferOffsetAlignment(), &m_LightViewProjMatrices[i], sizeof(glm::mat4));
+			GraphicsContext::GetQueue().writeBuffer(m_ShadowUniformBuffer, index * GraphicsContext::GetUniformBufferOffsetAlignment(), &m_LightViewProjMatrices[index], sizeof(glm::mat4));
 		}
 
 		GraphicsContext::GetQueue().writeBuffer(context.environmentUniformBuffer, 0, &envUniforms, sizeof(EnvironmentUniforms));
@@ -241,37 +242,31 @@ namespace Engine
 		desc.colorAttachments = nullptr;
 		desc.depthStencilAttachment = &depth;
 
-		for (int i = 0; i < s_ShadowCascadeCount; i++)
+		for (int index = 0; index < s_ShadowCascadeCount; index++)
 		{
-
-			depth.view = context.depthTextureViews[i];
+			depth.view = context.depthTextureViews[index];
 
 			wgpu::RenderPassEncoder pass = encoder.beginRenderPass(desc);
 
 			pass.setPipeline(m_ShadowPipeline);
 
-			uint32_t offset = i * GraphicsContext::GetUniformBufferOffsetAlignment();
+			uint32_t offset = index * GraphicsContext::GetUniformBufferOffsetAlignment();
 			pass.setBindGroup(0, m_ShadowBindGroup, 1, &offset);
+			pass.setBindGroup(1, context.modelBindGroup, 0, nullptr);
 
+			Uuid lastMeshId{};
 
-			Mesh* mesh = nullptr;
-
-			for (const DrawItem& item : context.drawList)
+			for (auto [i, item] : std::views::enumerate(context.drawList))
 			{
-				if (item.mesh == nullptr) continue;
-
-				if (item.mesh != mesh)
+				if (item.meshId != lastMeshId)
 				{
-					mesh = item.mesh;
-					pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
-					pass.setIndexBuffer(mesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetIndexBuffer().getSize());
+					lastMeshId = item.meshId;
+					const Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(item.meshId);
+					pass.setVertexBuffer(0, mesh.GetVertexBuffer(), 0, mesh.GetVertexBuffer().getSize());
+					pass.setIndexBuffer(mesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh.GetIndexBuffer().getSize());
 				}
-				const SubMesh* sub = item.subMesh;
 
-				uint32_t dynamicOffset = item.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();
-				pass.setBindGroup(1, context.modelBindGroup, 1, &dynamicOffset);
-
-				pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);
+				pass.drawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));
 			}
 
 			pass.end();

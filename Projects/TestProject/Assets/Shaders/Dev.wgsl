@@ -41,10 +41,10 @@ struct MaterialUniforms
 	_padding: vec2f,
 };
 
-// uses dynamic offset
-struct ModelUniforms 
+// storage buffer
+struct ModelBuffer
 {
-	model: mat4x4f,
+  models: array<mat4x4f>,
 };
 
 //view
@@ -69,7 +69,7 @@ struct ModelUniforms
 @group(2) @binding(6) var AmbientTexture: texture_2d<f32>;
 
 //model
-@group(3) @binding(0) var<uniform> uModel: ModelUniforms;
+@group(3) @binding(0) var<storage, read> uModelData: ModelBuffer;
 
 fn FresnelSchlick(cosTheta: f32, F0: vec3f) -> vec3f
 {
@@ -77,14 +77,15 @@ fn FresnelSchlick(cosTheta: f32, F0: vec3f) -> vec3f
 }
 
 @vertex
-fn vs_main(in: VertexInput) -> VertexOutput 
+fn vs_main(in: VertexInput, @builtin(instance_index) instanceIdx: u32) -> VertexOutput 
 {
 	var out: VertexOutput; 
 
-	let worldPos = uModel.model * vec4f(in.position, 1.0);
+	let modelMatrix = uModelData.models[instanceIdx];
+  let worldPos = modelMatrix * vec4f(in.position, 1.0);
 
 	out.position = uView.projection * uView.view * worldPos;
-	out.normal = normalize((uModel.model * vec4f(in.normal, 0.0)).xyz);
+	out.normal = normalize((modelMatrix * vec4f(in.normal, 0.0)).xyz);
 	out.uv = in.uv;
 	out.worldPos = worldPos.xyz;
 

@@ -18,8 +18,8 @@ namespace Engine
     if (type == "mat3x3f")   return ShaderValueType::Mat3;
     if (type == "mat4x4f")   return ShaderValueType::Mat4;
 
-		if (type == "array<mat4x4f") return ShaderValueType::ArrayMat4;
-		if (type == "array<f32") return ShaderValueType::ArrayFloat;
+		if (type == "array<mat4x4f>") return ShaderValueType::ArrayMat4;
+		if (type == "array<f32>") return ShaderValueType::ArrayFloat;
 
     // fallback
 		LOG_WARNING("ParseValueType - Unknown type: {}", type);

@@ -1,11 +1,12 @@
 #include "enginepch.h"
 #include "Engine/Graphics/RenderPass/WireframePass.h"
 #include "Engine/Graphics/Mesh.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Utility/File.h"
+//#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Utility/File.h"
 
 namespace Engine
 {
@@ -187,29 +188,25 @@ namespace Engine
 
 		pass.setPipeline(m_WireframePipeline);
 		pass.setBindGroup(0, context.viewBindGroup, 0, nullptr);
+		pass.setBindGroup(1, context.modelBindGroup, 0, nullptr);
 
 		GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, 0, &m_UniformData, sizeof(WireframeUniform));
 		pass.setBindGroup(2, m_ShadowBindGroup, 0, nullptr);
 
-		Mesh* mesh = nullptr;
+		Engine::Uuid lastMeshId{};
 
-		for (const DrawItem& item : context.drawList)
+
+		for (auto [i, item] : std::views::enumerate(context.drawList))
 		{
-			if (!item.mesh) continue;
-
-			if (item.mesh != mesh)
+			if (item.meshId != lastMeshId)
 			{
-				mesh = item.mesh;
-				pass.setVertexBuffer(0, mesh->GetVertexBuffer(), 0, mesh->GetVertexBuffer().getSize());
-				pass.setIndexBuffer(mesh->GetWireIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh->GetWireIndexBuffer().getSize());
+				lastMeshId = item.meshId;
+				Mesh& meshAsset = Engine::AssetManager::GetAsset<Mesh>(lastMeshId);
+				pass.setVertexBuffer(0, meshAsset.GetVertexBuffer(), 0, meshAsset.GetVertexBuffer().getSize());
+				pass.setIndexBuffer(meshAsset.GetWireIndexBuffer(), wgpu::IndexFormat::Uint32, 0, meshAsset.GetWireIndexBuffer().getSize());
 			}
 
-			const SubMesh* sub = item.subMesh;
-
-			uint32_t dynamicOffset = item.modelIndex * GraphicsContext::GetUniformBufferOffsetAlignment();
-			pass.setBindGroup(1, context.modelBindGroup, 1, &dynamicOffset);
-
-			pass.drawIndexed(sub->indexCount * 2, 1, sub->firstIndex * 2, 0, 0);
+			pass.drawIndexed(item.indexCount * 2, 1, item.firstIndex * 2, 0, static_cast<uint32_t>(i));
 		}
 		pass.end();
 	}

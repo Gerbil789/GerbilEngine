@@ -5,7 +5,6 @@
 
 namespace Engine
 {
-	class Camera;
 	class Scene;
 	class TextureCube;
 
@@ -19,12 +18,10 @@ namespace Engine
 		void DisableFlag(RenderPassType flag) { m_EnabledPasses &= ~flag; }
 		RenderPassType GetEnabledFlags() const { return m_EnabledPasses; }
 
-		//void SetCamera(Camera* camera);
-		//Camera* GetCamera() const;
 		void SetColorTarget(wgpu::TextureView colorView);
 		void SetDepthTarget(wgpu::TextureView depthView);
 		void SetEnvironmentTexture(Uuid textureId);
-		RenderContext& GetRenderContext();
+		const RenderContext& GetRenderContext() const { return m_RenderContext; }
 
 		void RenderScene(Scene& scene, Camera& camera);
 		wgpu::TextureView GetTextureView() const;
@@ -33,7 +30,7 @@ namespace Engine
 		void CreateViewUniformBuffer();
 		void CreateViewBindGroup();
 
-		void CreateModelUniformBuffer();
+		void CreateModelStorageBuffer();
 		void CreateModelBindGroup();
 
 		void CreateEnvironmentUniformBuffer();
@@ -45,6 +42,4 @@ namespace Engine
 		RenderContext m_RenderContext;
 		RenderPassType m_EnabledPasses = RenderPassType::None;
 	};
-
-	extern ENGINE_API Renderer g_Renderer;
 }

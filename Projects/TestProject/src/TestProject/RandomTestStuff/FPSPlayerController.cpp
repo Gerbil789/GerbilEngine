@@ -76,7 +76,7 @@ void FPSPlayerController::OnDestroy()
 
 }
 
-void FPSPlayerController::OnEvent(const Engine::Event& event)
+void FPSPlayerController::OnEvent(const Engine::Event&)
 {
 	/*if(event.GetEventType() == EventType::MouseMoved)
 	{

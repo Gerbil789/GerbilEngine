@@ -7,10 +7,11 @@
 
 namespace Engine
 {
+	//TODO: delete this base class?
 	class ENGINE_API Asset
 	{
 	public:
-		Uuid id = Uuid{ 0 };
+		Uuid id{};
 
 #ifdef GERBIL_EDITOR
 		struct

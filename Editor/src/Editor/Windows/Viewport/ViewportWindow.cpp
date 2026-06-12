@@ -42,7 +42,7 @@ namespace Editor
 
 		m_CameraController.Initialize();
 
-		Engine::g_Renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque/* | Engine::RenderPassType::Normal | Engine::RenderPassType::Wireframe*/);
+		EditorContext::renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque/* | Engine::RenderPassType::Normal | Engine::RenderPassType::Wireframe*/);
 
 		Engine::EventBus::Get().Subscribe<Engine::MouseButtonPressedEvent>([](const Engine::MouseButtonPressedEvent& e)
 			{
@@ -63,7 +63,7 @@ namespace Editor
 					const uint32_t mx = static_cast<uint32_t>(mousePos.x - m_ViewportBounds[0].x);
 					const uint32_t my = static_cast<uint32_t>(mousePos.y - m_ViewportBounds[0].y);
 
-					Engine::Uuid id = m_EntityPicker.Pick(mx, my, Engine::g_Renderer.GetRenderContext());
+					Engine::Uuid id = m_EntityPicker.Pick(mx, my);
 
 					bool additive = Engine::Input::IsKeyDown(Engine::Key::LeftControl) || Engine::Input::IsKeyDown(Engine::Key::LeftShift);
 					SelectionManager::Entities.Select(id, additive);
@@ -116,7 +116,7 @@ namespace Editor
 					view.mipLevelCount = 1;
 					view.baseArrayLayer = 0;
 					view.arrayLayerCount = 1;
-					Engine::g_Renderer.SetColorTarget(colorTexture.createView(view));
+					EditorContext::renderer.SetColorTarget(colorTexture.createView(view));
 				}
 
 				// Depth
@@ -142,7 +142,7 @@ namespace Editor
 					view.dimension = wgpu::TextureViewDimension::_2D;
 					view.format = wgpu::TextureFormat::Depth24Plus;
 
-					Engine::g_Renderer.SetDepthTarget(depthTexture.createView(view));
+					EditorContext::renderer.SetDepthTarget(depthTexture.createView(view));
 				}
 
 				// Entity picker
@@ -198,7 +198,7 @@ namespace Editor
 
 			const std::vector<Engine::Uuid>& selection = SelectionManager::Entities.GetAll();
 
-			for (auto id : selection)
+			for (Engine::Uuid id : selection)
 			{
 				entt::entity entity = scene.GetEntity(id);
 				auto& tc = registry.get<Engine::TransformComponent>(entity);
@@ -213,7 +213,7 @@ namespace Editor
 			glm::mat4 newPrimaryWorld = worldTransform;
 			glm::mat4 delta = newPrimaryWorld * glm::inverse(m_InitialPrimaryWorld);
 
-			for (auto id : SelectionManager::Entities.GetAll())
+			for (Engine::Uuid id : SelectionManager::Entities.GetAll())
 			{
 				entt::entity entity = scene.GetEntity(id);
 				auto& tc = registry.get<Engine::TransformComponent>(entity);
@@ -265,7 +265,7 @@ namespace Editor
 			std::vector<entt::entity> entities;
 			entities.reserve(selection.size());
 
-			for (auto id : selection)
+			for (Engine::Uuid id : selection)
 			{
 				entt::entity entity = scene.GetEntity(id);
 				entities.push_back(entity);
@@ -332,7 +332,7 @@ namespace Editor
 
 			if (ImGui::BeginCombo("##ViewportOptions", "Passes"))
 			{
-				auto flags = Engine::g_Renderer.GetEnabledFlags();
+				auto flags = EditorContext::renderer.GetEnabledFlags();
 
 				auto RenderPassToggle = [&](const char* label, Engine::RenderPassType flag) {
 					// Check if the bit is currently set
@@ -341,9 +341,9 @@ namespace Editor
 					if (ImGui::Checkbox(label, &isEnabled))
 					{
 						if (isEnabled)
-							Engine::g_Renderer.EnableFlag(flag);
+							EditorContext::renderer.EnableFlag(flag);
 						else
-							Engine::g_Renderer.DisableFlag(flag);
+							EditorContext::renderer.DisableFlag(flag);
 					}
 					};
 
@@ -381,7 +381,7 @@ namespace Editor
 
 		if (EditorContext::state == EditorState::Edit)
 		{
-			Engine::g_Renderer.RenderScene(scene, EditorContext::editorCamera);
+			EditorContext::renderer.RenderScene(scene, EditorContext::editorCamera);
 		}
 		else
 		{
@@ -389,16 +389,16 @@ namespace Editor
 			if(camera)
 			{
 				camera->SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
-				Engine::g_Renderer.RenderScene(scene, *camera);
+				EditorContext::renderer.RenderScene(scene, *camera);
 			}
 			else
 			{
-				Engine::g_Renderer.RenderScene(scene, EditorContext::editorCamera);
+				EditorContext::renderer.RenderScene(scene, EditorContext::editorCamera);
 			}
 		}
 
 
-		ImGui::Image(static_cast<WGPUTextureView>(Engine::g_Renderer.GetTextureView()), viewportSize);
+		ImGui::Image(static_cast<WGPUTextureView>(EditorContext::renderer.GetTextureView()), viewportSize);
 
 		DrawOverlay(imagePos, viewportSize);
 		DrawGizmos(scene);

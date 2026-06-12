@@ -8,6 +8,8 @@ struct VertexInput
 struct VertexOutput 
 {
     @builtin(position) position: vec4f,
+		// Integer attributes passed between stages must be decorated with @interpolate(flat)
+    @location(0) @interpolate(flat) instanceIdx: u32,
 };
 
 struct ViewUniforms 
@@ -18,24 +20,34 @@ struct ViewUniforms
     _padding: f32,
 };
 
-struct ModelUniforms {
-    model: mat4x4f,
+struct ModelBuffer
+{
+  models: array<mat4x4f>,
+};
+
+struct IdBuffer
+{
+    ids: array<vec2<u32>>,
 };
 
 @group(0) @binding(0) var<uniform> uView: ViewUniforms;
-@group(1) @binding(0) var<uniform> uModel: ModelUniforms;
-@group(2) @binding(0) var<uniform> u_EntityID : vec2<u32>;
+@group(1) @binding(0) var<storage, read> uModelData: ModelBuffer;
+@group(2) @binding(0) var<storage, read> uIdData: IdBuffer;
 
 @vertex
-fn vs_main(in: VertexInput) -> VertexOutput 
+fn vs_main(in: VertexInput, @builtin(instance_index) instanceIdx: u32) -> VertexOutput 
 {
     var out: VertexOutput; 
-    out.position = uView.projection * uView.view * uModel.model * vec4f(in.position, 1.0);
+    
+    let modelMatrix = uModelData.models[instanceIdx];
+    out.position = uView.projection * uView.view * modelMatrix * vec4f(in.position, 1.0);
+    
+    out.instanceIdx = instanceIdx;
     return out;
 }
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec2<u32> 
 {
-    return u_EntityID;
+    return uIdData.ids[in.instanceIdx];
 }

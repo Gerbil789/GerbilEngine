@@ -35,7 +35,7 @@ namespace Editor
       entt::registry& registry = scene.GetRegistry();
 
       m_Entity = scene.CreateEntity(m_Name);
-			auto id = registry.get<Engine::IdentityComponent>(m_Entity).id;
+			Engine::Uuid id = registry.get<Engine::IdentityComponent>(m_Entity).id;
 
       FocusEntityEvent e{ id };
       Engine::EventBus::Get().Publish(e);

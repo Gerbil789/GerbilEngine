@@ -35,9 +35,9 @@ namespace Engine
 
 		entries[0].binding = 0;
 		entries[0].visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
-		entries[0].buffer.hasDynamicOffset = true;
-		entries[0].buffer.type = wgpu::BufferBindingType::Uniform;
-		entries[0].buffer.minBindingSize = sizeof(ModelUniforms);
+		entries[0].buffer.hasDynamicOffset = false;
+		entries[0].buffer.type = wgpu::BufferBindingType::ReadOnlyStorage;
+		entries[0].buffer.minBindingSize = sizeof(glm::mat4);
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
 		bindGroupLayoutDesc.label = { "ModelBindGroupLayout", WGPU_STRLEN };

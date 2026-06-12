@@ -82,7 +82,7 @@ namespace Engine
 		project.m_ProjectDirectory = path;
 		project.m_AssetsDirectory = path / "Assets";
 		project.m_Title = data.Title;
-		project.m_DefaultSceneId = Engine::Uuid(data.StartScene);
+		project.m_DefaultSceneId = Engine::Uuid{data.StartScene};
 
 		LOG_INFO("Loaded project '{}' from {}", project.m_Title, configPath);
 		s_ActiveProject = project;

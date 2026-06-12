@@ -3,6 +3,7 @@
 #include "Engine/Asset/Asset.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/TransformSystem.h"
+#include "Engine/Graphics/Texture/Environment.h"
 
 namespace Engine
 {
@@ -24,9 +25,12 @@ namespace Engine
 		entt::entity CreateEntity(const std::string& name, Uuid entityId);
 
 		entt::entity GetEntity(Uuid uuid);
-		entt::registry& GetRegistry() { return m_Registry; }
+		entt::registry& GetRegistry() { return m_Registry; } //TODO: const version needed
 
 		Camera* GetActiveCamera() const;
+
+		Uuid GetEnvironmentTexture() const { return m_EnvironmentTextureId; }
+		void SetEnvironmentTexture(Uuid textureId) { m_EnvironmentTextureId = textureId; }
 
 		template<typename... Components>
 		std::vector<entt::entity> GetEntities(bool includeDisabled = false)
@@ -57,5 +61,7 @@ namespace Engine
 	private:
 		entt::registry m_Registry;
 		std::unordered_map<Engine::Uuid, entt::entity> m_EntityMap; // for faster lookup by UUID
+
+		Uuid m_EnvironmentTextureId;
 	};
 }

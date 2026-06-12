@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/Camera.h"
 #include <filesystem>
 #include <glm/glm.hpp>
-
 
 namespace Editor
 {
@@ -14,10 +14,12 @@ namespace Editor
 	{
 		static EditorState state;
 		static PlayMode playMode;
+
+		static Engine::Renderer renderer;
 		static Engine::Camera editorCamera;
 	};
 
-	namespace EditorSettings //TODP: convert to struct and move to its own file
+	namespace EditorSettings //TODO: convert to struct and move to its own file
 	{
 		inline std::filesystem::path projectDirectory = std::filesystem::path();
 		inline bool showGrid = true;

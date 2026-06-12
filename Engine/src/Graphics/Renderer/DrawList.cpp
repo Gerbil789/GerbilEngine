@@ -9,32 +9,37 @@ namespace Engine
 	DrawList DrawList::CreateFromScene(Scene& scene)
 	{
 		DrawList list;
-		uint32_t modelIndex = 0;
 
 		entt::registry& registry = scene.GetRegistry();
 		auto view = registry.view<IdentityComponent, TransformComponent, MeshComponent>();
 
-		view.each([&](auto entity, IdentityComponent& identity, TransformComponent&, MeshComponent& mc)
+		for (auto [entity, identity, transform, mc] : view.each())
 		{
-				if (!identity.enabled || !mc.meshId)
+			if (!identity.enabled || !mc.meshId) continue;
+
+			const Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(mc.meshId);
+			const auto& subMeshes = mesh.GetSubMeshes();
+
+			for (uint32_t i = 0; i < subMeshes.size(); ++i)
+			{
+				const auto& subMesh = subMeshes[i];
+				Engine::Uuid materialId{ RESOURCES::MATERIAL::PINK };
+				if (subMesh.materialIndex < mc.materials.size() && mc.materials[subMesh.materialIndex])
 				{
-					return;
+					materialId = mc.materials[subMesh.materialIndex];
 				}
 
-				Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(mc.meshId);
-				for (const auto& subMesh : mesh.GetSubMeshes())
-				{
-					list.items.emplace_back(DrawItem{ entity, &mesh, &subMesh, modelIndex++ });
-				}
-		});
+				list.items.emplace_back(DrawItem{ mc.meshId, materialId, i, subMesh.indexCount, subMesh.firstIndex, entity });
+			}
+		}
 
 		std::sort(list.begin(), list.end(), [](const DrawItem& a, const DrawItem& b)
 			{
-				if (a.subMesh->materialIndex != b.subMesh->materialIndex)
+				if (a.materialId != b.materialId)
 				{
-					return a.subMesh->materialIndex < b.subMesh->materialIndex;
+					return a.materialId < b.materialId;
 				}
-				return a.subMesh < b.subMesh;
+				return a.meshId < b.meshId;
 			});
 
 		return list;

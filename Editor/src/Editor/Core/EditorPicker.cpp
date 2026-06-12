@@ -1,15 +1,18 @@
 #include "EditorPicker.h"
+#include "Editor/Core/EditorContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
+#include "Engine/Asset/AssetManager.h"
+#include <ranges>
 
 namespace Editor
 {
   EditorPicker::~EditorPicker()
   {
     if (m_ReadbackBuffer) m_ReadbackBuffer.release();
-    if (m_UniformBuffer) m_UniformBuffer.release();
+    if (m_IdStorageBuffer) m_IdStorageBuffer.release();
   }
 
   void EditorPicker::Initialize()
@@ -24,9 +27,29 @@ namespace Editor
     m_ReadbackBuffer = Engine::GraphicsContext::GetDevice().createBuffer(bufferDesc);
   }
 
-  Engine::Uuid EditorPicker::Pick(uint32_t x, uint32_t y, const Engine::RenderContext& context)
+  Engine::Uuid EditorPicker::Pick(uint32_t x, uint32_t y)
   {
-    if (x >= m_Width || y >= m_Height) return Engine::Uuid(0);
+    if (x >= m_Width || y >= m_Height) return Engine::Uuid{};
+
+    const Engine::RenderContext& context = EditorContext::renderer.GetRenderContext();
+    if (context.drawList.size() == 0) return Engine::Uuid{};
+
+    std::vector<Engine::Uuid> entityIds;
+    entityIds.reserve(context.drawList.size());
+
+    entt::registry& registry = context.scene->GetRegistry();
+
+    for (const auto& item : context.drawList)
+    {
+      if (!item.meshId)
+      {
+        entityIds.push_back(Engine::Uuid{});
+        continue;
+      }
+      entityIds.push_back(registry.get<Engine::IdentityComponent>(item.entity).id);
+    }
+
+    Engine::GraphicsContext::GetQueue().writeBuffer(m_IdStorageBuffer, 0, entityIds.data(), entityIds.size() * sizeof(Engine::Uuid));
 
     wgpu::CommandEncoderDescriptor encoderDesc;
     encoderDesc.label = { "EditorPickerEncoder", WGPU_STRLEN };
@@ -58,31 +81,22 @@ namespace Editor
     pass.setScissorRect(x, y, 1, 1);
 
     pass.setBindGroup(0, context.viewBindGroup, 0, nullptr);
+    pass.setBindGroup(1, context.modelBindGroup, 0, nullptr);
+    pass.setBindGroup(2, m_BindGroup, 0, nullptr);
 
-    Engine::Mesh* currentMesh = nullptr;
+    Engine::Uuid currentMesh{};
 
-    for (const Engine::DrawItem& draw : context.drawList)
+    for (const auto [i, item] : std::views::enumerate(context.drawList))
     {
-      if (!draw.mesh) continue;
-
-      if (draw.mesh != currentMesh)
+      if (item.meshId != currentMesh)
       {
-        currentMesh = draw.mesh;
-        pass.setVertexBuffer(0, currentMesh->GetVertexBuffer(), 0, currentMesh->GetVertexBuffer().getSize());
-        pass.setIndexBuffer(currentMesh->GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, currentMesh->GetIndexBuffer().getSize());
+        currentMesh = item.meshId;
+				const Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(currentMesh);
+        pass.setVertexBuffer(0, mesh.GetVertexBuffer(), 0, mesh.GetVertexBuffer().getSize());
+        pass.setIndexBuffer(mesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh.GetIndexBuffer().getSize());
       }
 
-      uint32_t dynamicOffset = draw.modelIndex * Engine::GraphicsContext::GetUniformBufferOffsetAlignment();
-      pass.setBindGroup(1, context.modelBindGroup, 1, &dynamicOffset);
-
-      entt::registry& registry = context.scene->GetRegistry();
-
-			Engine::Uuid id = registry.get<Engine::IdentityComponent>(draw.entity).id;
-      Engine::GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, dynamicOffset, &id, sizeof(Engine::Uuid));
-      pass.setBindGroup(2, m_BindGroup, 1, &dynamicOffset);
-
-      const Engine::SubMesh* sub = draw.subMesh;
-      pass.drawIndexed(sub->indexCount, 1, sub->firstIndex, 0, 0);
+      pass.drawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));
     }
 
     pass.end();
@@ -121,7 +135,7 @@ namespace Editor
     if (mapped)
     {
       const uint64_t* pixel = reinterpret_cast<const uint64_t*>(mapped);
-      pickedId = Engine::Uuid(*pixel);
+      pickedId = Engine::Uuid{ *pixel };
     }
 
     m_ReadbackBuffer.unmap();
@@ -173,9 +187,9 @@ namespace Editor
     wgpu::BindGroupLayoutEntry entry;
     entry.binding = 0;
     entry.visibility = wgpu::ShaderStage::Fragment;
-    entry.buffer.type = wgpu::BufferBindingType::Uniform;
+    entry.buffer.type = wgpu::BufferBindingType::ReadOnlyStorage;
     entry.buffer.minBindingSize = sizeof(Engine::Uuid);
-    entry.buffer.hasDynamicOffset = true;
+    entry.buffer.hasDynamicOffset = false;
 
     wgpu::BindGroupLayoutDescriptor layoutDesc;
     layoutDesc.label = { "EditorPickerBindGroupLayout", WGPU_STRLEN };
@@ -187,14 +201,14 @@ namespace Editor
     wgpu::BufferDescriptor bufferDesc;
     bufferDesc.label = { "EditorPickerUniformBuffer", WGPU_STRLEN };
     bufferDesc.size = 1024 * 256 * sizeof(Engine::Uuid);
-    bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-    m_UniformBuffer = Engine::GraphicsContext::GetDevice().createBuffer(bufferDesc);
+    bufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
+    m_IdStorageBuffer = Engine::GraphicsContext::GetDevice().createBuffer(bufferDesc);
 
     wgpu::BindGroupEntry bindGroupEntry;
     bindGroupEntry.binding = 0;
-    bindGroupEntry.buffer = m_UniformBuffer;
+    bindGroupEntry.buffer = m_IdStorageBuffer;
     bindGroupEntry.offset = 0;
-    bindGroupEntry.size = sizeof(Engine::Uuid);
+    bindGroupEntry.size = bufferDesc.size;
 
     wgpu::BindGroupDescriptor bindGroupDesc;
     bindGroupDesc.label = { "EditorPickerBindGroup", WGPU_STRLEN };

@@ -145,7 +145,7 @@ namespace Editor
 	{
 		EditorRenderer::BeginFrame();
 		BeginDockSpace();
-		
+
 		m_MenuBar.Draw();
 		PopupManager::Draw();
 		std::apply([](auto&&... win) {(win.Draw(), ...); }, m_Windows);

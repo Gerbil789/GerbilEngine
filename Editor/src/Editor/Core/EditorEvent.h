@@ -16,14 +16,14 @@ namespace Editor
 
 	struct FocusAssetEvent : public Engine::Event
 	{
-		Engine::Uuid id{};
+		Engine::Uuid id;
 
 		FocusAssetEvent(const Engine::Uuid& id) : id(id) {}
 	};
 
 	struct FocusEntityEvent : public Engine::Event
 	{
-		Engine::Uuid id{};
+		Engine::Uuid id;
 
 		FocusEntityEvent(const Engine::Uuid& id) : id(id) {}
 	};

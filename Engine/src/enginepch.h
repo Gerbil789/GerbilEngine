@@ -12,7 +12,7 @@
 #include <fstream>
 #include <cstdint>
 #include <cstring>
-
+#include <ranges>
 #include <glm/glm.hpp>
 
 #include "Engine/Core/Log.h"

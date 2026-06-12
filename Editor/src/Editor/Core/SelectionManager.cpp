@@ -50,7 +50,7 @@ namespace Editor
 
   Engine::Uuid SelectionGroup::GetPrimary() const
   {
-    return m_Selection.empty() ? Engine::Uuid{ 0 } : m_Selection.back();
+    return m_Selection.empty() ? Engine::Uuid{} : m_Selection.back();
   }
 
   const std::vector<Engine::Uuid>& SelectionGroup::GetAll() const

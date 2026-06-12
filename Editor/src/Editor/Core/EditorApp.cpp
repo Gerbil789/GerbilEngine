@@ -52,7 +52,7 @@ namespace Editor
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());
 
 		Engine::Input::SetActiveWindow(*m_Window.GetNativeWindow());
-		Engine::g_Renderer.Initialize(); //TODO: i dont like global variable
+		EditorContext::renderer.Initialize();
 		EditorCommandManager::Initialize();
 		FileWatcher::WatchDirectory(project.GetAssetsDirectory());
 		Engine::Audio::Initialize();
@@ -62,7 +62,7 @@ namespace Editor
 		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / Engine::Configuration / (project.GetTitle() + ".dll");
 		Engine::Runtime::LoadScripts(dllPath);
 
-		auto id = project.GetDefaultSceneId();
+		Engine::Uuid id = project.GetDefaultSceneId();
 
 		//if(!Engine::AssetManager::GetAssetRegistry().GetRecord(id).IsValid())
 		//{
@@ -80,6 +80,7 @@ namespace Editor
 
 		EditorContext::editorCamera.SetBackground(Engine::Camera::Background::Skybox);
 		EditorContext::editorCamera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
+
 
 		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
 		LOG_INFO("--- Editor initialization complete ---");

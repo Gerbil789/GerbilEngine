@@ -7,7 +7,7 @@ struct Tile
   int x = 0;
   int y = 0;
 
-  Engine::Uuid entityId{};
+  Engine::Uuid entityId;
   bool isWalkable = true;
 
   bool IsOccupied() const { return entityId; }

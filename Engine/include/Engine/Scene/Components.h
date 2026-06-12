@@ -15,7 +15,7 @@ namespace Engine
 
 	struct ENGINE_API IdentityComponent
 	{
-		Uuid id{ 0 };
+		Uuid id{};
 		bool enabled = true;
 	};
 
@@ -38,7 +38,7 @@ namespace Engine
 
 	struct ENGINE_API MeshComponent
 	{
-		Uuid meshId{ 0 };
+		Uuid meshId{};
 		std::vector<Uuid> materials{};
 	};
 
