@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Asset/Asset.h"
 #include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/Pipeline.h"
@@ -22,7 +21,7 @@ namespace Engine
 		TextureWrap wrap = TextureWrap::Repeat;
 	};
 
-	class ENGINE_API Material : public Asset
+	class ENGINE_API Material
 	{
 	public:
 		Material(const MaterialSpecification& spec);
@@ -51,6 +50,7 @@ namespace Engine
 		void SetParameter(const std::string& paramName, const T& value);
 
 		const MaterialValue& GetParameterVariant(const std::string& name) const;
+		Uuid id;
 
 	private:
 		void CreateUniformBuffer();
@@ -58,7 +58,6 @@ namespace Engine
 
 	private:
 		Uuid m_ShaderId;
-
 		std::vector<std::byte> m_UniformData; // parameters data packed according to shader layout (material uniform layout)
 		std::unordered_map<std::string, Uuid> m_Textures;
 		wgpu::BindGroup m_BindGroup;

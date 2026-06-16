@@ -40,11 +40,11 @@ namespace Editor
 		{
 			ImGui::PushID(static_cast<int>(entity));
 
-			BoolField("Enabled", registry.get<Engine::IdentityComponent>(entity).enabled);
+			PropertyField("Enabled", registry.get<Engine::IdentityComponent>(entity).enabled, { .showLabel = false });
 			ImGui::SameLine();
 
 			std::string& name = registry.get<Engine::NameComponent>(entity).name;
-			if (TextField("Name", name).finished)
+			if (PropertyField("Name", name, { .showLabel = false }).finished)
 			{
 				//TODO: somehow store the original name
 				//EditorCommandManager::ModifyComponent<Engine::NameComponent>(entity, { name }, { name });
@@ -112,20 +112,9 @@ namespace Editor
 		PropertyTable table;
 		if (!table) return;
 
-		{
-			PropertyRow row("Position");
-			result |= Vec3Field("Position", tc.position);
-		}
-
-		{
-			PropertyRow row("Rotation");
-			result |= Vec3Field("Rotation", tc.rotation);
-		}
-
-		{
-			PropertyRow row("Scale");
-			result |= Vec3Field("Scale", tc.scale);
-		}
+		result |= PropertyField("Position", tc.position);
+		result |= PropertyField("Rotation", tc.rotation);
+		result |= PropertyField("Scale", tc.scale);
 
 		if (result.started)
 		{
@@ -150,42 +139,32 @@ namespace Editor
 		if (!header.open) return;
 
 		auto& component = registry.get<Engine::CameraComponent>(entity);
-		Engine::Camera* camera = component.camera;
+		Engine::Camera& camera = *component.camera;
 
 		PropertyTable table;
 		if (!table) return;
 
-		{
-			PropertyRow row("Projection");
-			Engine::Camera::Projection projType = camera->GetProjection();
-			int current = static_cast<int>(projType);
+		PropertyField("Primary", component.primary);
 
-			if (EnumField("Projection", current, { "Perspective", "Orthographic" }).changed) //TODO: use static reflection? (cpp26)
-			{
-				camera->SetProjection(static_cast<Engine::Camera::Projection>(current));
-			}
+		Engine::Camera::Projection projType = camera.GetProjection();
+		int currentProjection = static_cast<int>(projType);
+
+		if (EnumField("Projection", currentProjection, { "Perspective", "Orthographic" }).changed)
+		{
+			camera.SetProjection(static_cast<Engine::Camera::Projection>(currentProjection));
 		}
 
-		{
-			PropertyRow row("Background");
-			Engine::Camera::Background bg = camera->GetBackground();
-			int current = static_cast<int>(bg);
+		Engine::Camera::Background bg = camera.GetBackground();
+		int currentBg = static_cast<int>(bg);
 
-			if (EnumField("Background", current, { "Color", "Skybox" }).changed) //TODO: use static reflection? (cpp26)
-			{
-				camera->SetBackground(static_cast<Engine::Camera::Background>(current));
-			}
+		if (EnumField("Background", currentBg, { "Color", "Skybox" }).changed)
+		{
+			camera.SetBackground(static_cast<Engine::Camera::Background>(currentBg));
 		}
 
-		if (camera->GetBackground() == Engine::Camera::Background::Color)
+		if (camera.GetBackground() == Engine::Camera::Background::Color)
 		{
-			PropertyRow row("Clear Color");
-
-			glm::vec4 color = camera->GetClearColor();
-			if (ColorField("Clear Color", color).changed)
-			{
-				camera->SetClearColor(color);
-			}
+			PropertyField("Clear Color", camera.GetClearColor(), { .mode = DisplayMode::Color });
 		}
 	}
 
@@ -197,7 +176,7 @@ namespace Editor
 		{
 			{ "Reset", [&] {auto before = registry.get<Engine::MeshComponent>(entity);
 				auto after = before;
-				after.meshId = 0;
+				after.meshId = {};
 				after.materials.clear();
 				EditorCommandManager::ModifyComponent<Engine::MeshComponent>(entity, before, after); }
 			},
@@ -215,14 +194,15 @@ namespace Editor
 
 		if (AssetField("Mesh", component.meshId, Engine::AssetType::Mesh).changed)
 		{
-			if(component.meshId)
+			if (component.meshId)
 			{
 				Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(component.meshId);
 
+				//TODO: store material count in mesh?
 				uint32_t materialCount = 0;
-				for(const auto& sub : mesh.GetSubMeshes())
+				for (const auto& sub : mesh.GetSubMeshes())
 				{
-					if(sub.materialIndex > materialCount)
+					if (sub.materialIndex > materialCount)
 					{
 						materialCount = sub.materialIndex;
 					}
@@ -237,7 +217,7 @@ namespace Editor
 
 		ImGui::Separator();
 
-		for(auto&& [i, id] : std::views::enumerate(component.materials))
+		for (auto&& [i, id] : std::views::enumerate(component.materials))
 		{
 			if (AssetField(std::format("Material {}", i), id, Engine::AssetType::Material).changed)
 			{
@@ -254,7 +234,7 @@ namespace Editor
 		{
 			{ "Reset", [&] {auto before = registry.get<Engine::ColliderComponent>(entity);
 				auto after = before;
-				after.meshId = 0;
+				after.meshId = {};
 				EditorCommandManager::ModifyComponent<Engine::ColliderComponent>(entity, before, after); }
 			},
 
@@ -266,23 +246,11 @@ namespace Editor
 
 		auto& component = registry.get<Engine::ColliderComponent>(entity);
 
-		std::string meshText = component.meshId ? Engine::AssetManager::GetAsset<Engine::Mesh>(component.meshId).EditorOnly.name : "##Mesh";
-
-
 		PropertyTable table;
 		if (!table) return;
 
-		{
-			//TODO: use structures in propertis.h
-			PropertyRow row("Mesh");
-			ImGui::Button(meshText.c_str(), ImVec2(-FLT_MIN, 0));
-			DragDropTarget{}.AcceptAsset([&](Engine::Uuid id) { component.meshId = id; }, Engine::AssetType::Mesh);
-		}
-
-		{
-			PropertyRow row("Is trigger");
-			BoolField("Is trigger", component.isTrigger);
-		}
+		AssetField("Mesh", component.meshId, Engine::AssetType::Mesh);
+		PropertyField("Is trigger", component.isTrigger);
 	}
 
 	void DrawLight(entt::registry& registry, entt::entity entity)
@@ -309,32 +277,18 @@ namespace Editor
 		PropertyTable table;
 		if (!table) return;
 
+		int current = static_cast<int>(component.type);
+		if (EnumField("Type", current, { "Directional", "Spot", "Point" }).changed)
 		{
-			PropertyRow row("Type");
-			Engine::LightType type = component.type;
-			int current = static_cast<int>(type);
-			if (EnumField("Type", current, { "Directional", "Spot", "Point" }).changed)
-			{
-				component.type = static_cast<Engine::LightType>(current);
-			}
+			component.type = static_cast<Engine::LightType>(current);
 		}
 
-		{
-			PropertyRow row("Color");
-			ColorField("Color", component.color);
-		}
-
-		{
-			PropertyRow row("Intensity");
-			FloatField("Intensity", component.intensity, 0.0f);
-		}
+		PropertyField("Color", component.color, { .mode = DisplayMode::Color });
+		PropertyField("Intensity", component.intensity, { .min = 0.0f });
 
 		if (component.type == Engine::LightType::Spot)
 		{
-			{
-				PropertyRow row("Angle");
-				FloatField("Angle", component.angle, 0.0f, 180.0f);
-			}
+			PropertyField("Angle", component.angle, { .min = 0.0f, .max = 180.0f });
 		}
 	}
 
@@ -342,13 +296,13 @@ namespace Editor
 	{
 		if (!registry.any_of<Engine::ScriptComponent>(entity)) return;
 
-		static int id = -1;
+		static uint32_t id = 0;
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
-			{ "Reset", [&] {id = -1; auto before = registry.get<Engine::ScriptComponent>(entity);
+			{ "Reset", [&] {id = 0; auto before = registry.get<Engine::ScriptComponent>(entity);
 				auto after = before;
-				after.id.clear();
+				after.id = 0;
 				after.instance = nullptr;
 				EditorCommandManager::ModifyComponent<Engine::ScriptComponent>(entity, before, after); }
 			},
@@ -360,16 +314,16 @@ namespace Editor
 		if (!header.open) return;
 
 		PropertyTable table;
-		if (!table) return;
+		if (!table.open) return;
 
 		Engine::ScriptComponent& component = registry.get<Engine::ScriptComponent>(entity);
 
-		const std::vector<std::string>& scriptNames = Engine::g_ScriptRegistry.GetAllScriptNames();
+		const auto& scripts = Engine::ScriptRegistry::GetScripts();
 
 		{
 			PropertyRow row("Script");
 
-			if (ImGui::BeginCombo("##Combo", id >= 0 ? scriptNames[id].c_str() : nullptr, ImGuiComboFlags_NoArrowButton))
+			if (ImGui::BeginCombo("##Combo", id > 0 ? scripts.at(id).name.c_str() : nullptr, ImGuiComboFlags_NoArrowButton))
 			{
 				static ImGuiTextFilter filter;
 				if (ImGui::IsWindowAppearing())
@@ -379,16 +333,16 @@ namespace Editor
 				}
 
 				filter.Draw("##Filter", -FLT_MIN);
-				for (size_t n = 0; n < scriptNames.size(); n++)
+				for (const auto& [scriptId, scriptDesc] : scripts)
 				{
-					const bool is_selected = (id == static_cast<int>(n));
-					if (filter.PassFilter(scriptNames[n].c_str()))
+					const bool is_selected = (id == scriptId);
+					if (filter.PassFilter(scriptDesc.name.c_str()))
 					{
-						if (ImGui::Selectable(scriptNames[n].c_str(), is_selected))
+						if (ImGui::Selectable(scriptDesc.name.c_str(), is_selected))
 						{
-							id = static_cast<int>(n);
-							const Engine::ScriptDescriptor& desc = Engine::g_ScriptRegistry.GetDescriptor(scriptNames[n]);
-							component.id = desc.name;
+							id = scriptId;
+							const Engine::ScriptDescriptor& desc = Engine::ScriptRegistry::GetDescriptor(scriptId);
+							component.id = desc.id;
 							component.instance = desc.factory();
 							component.instance->m_Entity = entity;
 							component.instance->OnCreate();
@@ -403,70 +357,57 @@ namespace Editor
 
 		ImGui::Separator();
 
-		Engine::ScriptDescriptor& desc = Engine::g_ScriptRegistry.GetDescriptor(component.id);
+		const Engine::ScriptDescriptor& desc = Engine::ScriptRegistry::GetDescriptor(component.id);
 
 		for (const Engine::ScriptField& field : desc.fields)
 		{
-			PropertyRow row(field.name.c_str());
-
-			std::byte* base = reinterpret_cast<std::byte*>(component.instance);
-			void* fieldPtr = base + field.offset;
-
 			switch (field.type)
 			{
 			case Engine::ScriptFieldType::Float:
 			{
-				float& value = *reinterpret_cast<float*>(fieldPtr);
-				FloatField(field.name.c_str(), value);
+				PropertyField(field.name.c_str(), field.GetValue<float>(component.instance));
 				break;
 			}
 
 			case Engine::ScriptFieldType::Bool:
 			{
-				bool& value = *reinterpret_cast<bool*>(fieldPtr);
-				BoolField(field.name.c_str(), value);
+				PropertyField(field.name.c_str(), field.GetValue<bool>(component.instance));
 				break;
 			}
 
 			case Engine::ScriptFieldType::Int:
 			{
-				int& value = *reinterpret_cast<int*>(fieldPtr);
-				IntField(field.name.c_str(), value);
+				PropertyField(field.name.c_str(), field.GetValue<int>(component.instance));
 				break;
 			}
 
 			case Engine::ScriptFieldType::Texture:
 			{
-				Engine::Texture2D*& texture = *reinterpret_cast<Engine::Texture2D**>(fieldPtr);
-				AssetField(field.name.c_str(), texture->id, Engine::AssetType::Texture2D);
+				AssetField(field.name.c_str(), field.GetValue<Engine::Uuid>(component.instance), Engine::AssetType::Texture2D);
 				break;
 			}
 
 			case Engine::ScriptFieldType::AudioClip:
 			{
-				Engine::AudioClip*& audioClip = *reinterpret_cast<Engine::AudioClip**>(fieldPtr);
-				AssetField(field.name.c_str(), audioClip->id, Engine::AssetType::Audio);
+				AssetField(field.name.c_str(), field.GetValue<Engine::Uuid>(component.instance), Engine::AssetType::Audio);
 				break;
 			}
 
 			case Engine::ScriptFieldType::Mesh:
 			{
-				Engine::Mesh*& mesh = *reinterpret_cast<Engine::Mesh**>(fieldPtr);
-				AssetField(field.name.c_str(), mesh->id, Engine::AssetType::Mesh);
+				AssetField(field.name.c_str(), field.GetValue<Engine::Uuid>(component.instance), Engine::AssetType::Mesh);
 				break;
 			}
 
 			case Engine::ScriptFieldType::Shader:
 			{
-				Engine::Shader*& shader = *reinterpret_cast<Engine::Shader**>(fieldPtr);
-				AssetField(field.name.c_str(), shader->id, Engine::AssetType::Shader);
+				AssetField(field.name.c_str(), field.GetValue<Engine::Uuid>(component.instance), Engine::AssetType::Shader);
 				break;
 			}
 
 			case Engine::ScriptFieldType::Material:
 			{
-				Engine::Material*& material = *reinterpret_cast<Engine::Material**>(fieldPtr);
-				AssetField(field.name.c_str(), material->id, Engine::AssetType::Material);
+				AssetField(field.name.c_str(), field.GetValue<Engine::Uuid>(component.instance), Engine::AssetType::Material);
 				break;
 			}
 			}

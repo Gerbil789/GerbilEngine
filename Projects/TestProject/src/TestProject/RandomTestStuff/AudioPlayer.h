@@ -1,9 +1,6 @@
 #pragma once
 
 #include "Engine/Script/Script.h"
-#include "Engine/Audio/AudioClip.h"
-#include "Engine/Audio/Audio.h"
-
 
 class AudioPlayer : public Engine::Script
 {
@@ -12,7 +9,7 @@ class AudioPlayer : public Engine::Script
 public:
 
   PROPERTY(m_Clip, "Audio Clip")
-    Engine::AudioClip* m_Clip = nullptr;
+		Engine::AudioClipHandle m_Clip;
 
   PROPERTY(m_PlayOnAwake, "Play On Awake")
     bool m_PlayOnAwake = false;

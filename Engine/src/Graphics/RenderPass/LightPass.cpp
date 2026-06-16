@@ -239,7 +239,7 @@ namespace Engine
 
 	//	Mesh* mesh = nullptr;
 
-	//	for (auto [i, item] : std::views::enumerate(context.drawList))
+	//	for (const auto& [i, item] : std::views::enumerate(context.drawList))
 	//	{
 	//		if (!item.mesh) continue;
 

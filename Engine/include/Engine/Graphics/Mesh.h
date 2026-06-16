@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Asset/Asset.h"
 #include <memory>
 #include <glm/glm.hpp>
 #include <vector>
@@ -37,7 +36,7 @@ namespace Engine
 		std::vector<uint32_t> wireIndices;	//TODO: add compile time macro to disable in export game builds
 	};
 
-	class ENGINE_API Mesh : public Asset
+	class ENGINE_API Mesh
 	{
 	public:
 		Mesh(const MeshSpecification& specification);
@@ -55,6 +54,8 @@ namespace Engine
 		const wgpu::Buffer& GetWireIndexBuffer() const;
 
 		AABB aabb;
+		Uuid id;
+
 	private:
 		std::vector<SubMesh> m_SubMeshes;
 

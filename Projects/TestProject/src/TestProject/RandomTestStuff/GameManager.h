@@ -8,7 +8,7 @@ class GameManager : public Engine::Script
 
 public:
   PROPERTY(m_Shader, "Shader")
-    Engine::Shader* m_Shader = nullptr;
+    Engine::ShaderHandle m_Shader;
 
   void OnStart() override;
   void OnUpdate() override;

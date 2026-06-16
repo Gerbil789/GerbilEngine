@@ -99,7 +99,7 @@ namespace Engine
 		m_Background = background;
 	}
 
-	const glm::vec4& Camera::GetClearColor() const
+	glm::vec4& Camera::GetClearColor()
 	{ 
 		return m_ClearColor; 
 	}

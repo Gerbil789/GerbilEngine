@@ -1,13 +1,13 @@
 ﻿#pragma once
 
-#include "Engine/Asset/Asset.h"
+#include "Engine/Core/UUID.h"
 #include "Engine/Graphics/ShaderSpecification.h"
 #include <webgpu/webgpu.hpp>
 #include <ranges>
 
 namespace Engine
 {
-	class Shader : public Asset
+	class Shader
 	{
 	public:
 		Shader() = default;
@@ -38,6 +38,8 @@ namespace Engine
 
 			throw std::runtime_error("Binding not found: " + name); //TODO: better error handling
 		}
+
+		Uuid id;
 
 	private:
 		ShaderSpecification m_Specification;

@@ -261,7 +261,7 @@ namespace Engine
 				}
 				else
 				{
-					LOG_ERROR("Render pass not found for type: {}", static_cast<uint32_t>(type));
+					LOG_ERROR("Render pass not found for type: {}", static_cast<uint32_t>(type)); //TODO: C++26 reflection here
 				}
 			}
 		}

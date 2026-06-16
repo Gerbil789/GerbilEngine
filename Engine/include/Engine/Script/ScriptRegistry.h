@@ -7,107 +7,53 @@
 #include <unordered_map>
 #include <functional>
 #include <typeinfo>
-
-#if defined(DIST) // Or a specific STATIC define if you prefer
-  #define GAME_API 
-#elif defined(ENGINE_PLATFORM_WINDOWS)
-  #ifdef GAME_SHARED_EXPORT
-    #define GAME_API __declspec(dllexport)
-  #else
-    #define GAME_API __declspec(dllimport)
-  #endif
-#else
-  #define GAME_API
-#endif
+#include <xhash>
 
 namespace Engine
 {
   class Script;
   enum class ScriptFieldType { Float, Int, Bool, Texture, AudioClip, Mesh, Shader, Material };
 
-  struct ScriptField
+  struct ENGINE_API ScriptField
   {
     std::string name;
     ScriptFieldType type;
     size_t offset;
+
+    template<typename T>
+    T& GetValue(Engine::Script* instance) const
+    {
+      std::byte* base = reinterpret_cast<std::byte*>(instance);
+      return *reinterpret_cast<T*>(base + offset);
+    }
   };
 
-  struct ScriptDescriptor
+  struct ENGINE_API ScriptDescriptor
   {
+		uint32_t id;
     std::string name;
     std::vector<ScriptField> fields;
     std::function<Script* ()> factory;
   };
 
-  class ScriptRegistry
+  namespace ScriptRegistry
   {
-  public:
-    ScriptRegistry() = default;
-    ScriptRegistry(const ScriptRegistry&) = delete;
-    ScriptRegistry& operator=(const ScriptRegistry&) = delete;
+    ENGINE_API const std::unordered_map<uint32_t, ScriptDescriptor>& GetScripts();
+    ENGINE_API const ScriptDescriptor& GetDescriptor(uint32_t id);
+    ENGINE_API bool HasScript(uint32_t id);
 
-    inline std::string ScriptName(std::string name)
-    {
-      constexpr std::string_view struct_kw = "struct ";
-      constexpr std::string_view class_kw = "class ";
-
-      if (name.starts_with(struct_kw))
-        name.erase(0, struct_kw.size());
-      else if (name.starts_with(class_kw))
-        name.erase(0, class_kw.size());
-
-      return name;
-    }
+    ENGINE_API void Internal_AddScript(const ScriptDescriptor& desc);
 
     template<typename T>
-    void Register()
+    void Register(const char* scriptName)
     {
-      auto name = ScriptName(typeid(T).name());
-
       ScriptDescriptor desc;
-      desc.name = name;
+      desc.id = static_cast<uint32_t>(std::hash<std::string>{}(scriptName));
+      desc.name = scriptName;
       desc.factory = [] { return new T(); };
       desc.fields = T::GetProperties();
-      m_Registry.emplace(name, std::move(desc));
+
+      Internal_AddScript(desc);
     }
-
-    inline ScriptDescriptor& GetDescriptor(std::string id) { return m_Registry.at(id); }
-
-    inline std::vector<const ScriptDescriptor*> GetAllDescriptors() const
-    {
-      std::vector<const ScriptDescriptor*> result;
-      result.reserve(m_Registry.size());
-
-      for (auto& [_, desc] : m_Registry)
-        result.push_back(&desc);
-
-      return result;
-    }
-
-    inline std::vector<std::string> GetAllScriptNames()
-    {
-      std::vector<std::string> scriptNames; //TODO: cache this, this is getting called every frame
-      scriptNames.reserve(m_Registry.size());
-      for (const auto& [_, desc] : m_Registry)
-        scriptNames.push_back(desc.name);
-      return scriptNames;
-    }
-
-    inline void Clear()
-    {
-      m_Registry.clear();
-    }
-
-  private:
-		std::unordered_map<std::string, ScriptDescriptor> m_Registry;
   };
-
-
-  extern ENGINE_API ScriptRegistry g_ScriptRegistry;
-}
-
-
-extern "C"
-{
-  GAME_API void RegisterScripts(Engine::ScriptRegistry& registry);
 }

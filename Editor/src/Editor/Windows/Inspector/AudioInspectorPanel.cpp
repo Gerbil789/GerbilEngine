@@ -14,46 +14,48 @@ namespace Editor
 			return;
 		}
 
-		if(Engine::Audio::IsPlaying(clip))
-		{
-			if (ImGui::Button("Stop"))
-			{
-				Engine::Audio::Stop(clip);
-			}
-		}
-		else
-		{
-			if (ImGui::Button("Play"))
-			{
-				Engine::Audio::Play2D(clip);
-			}
-		}
+		ImGui::Text("Commented out :P");
+
+		//if(Engine::Audio::IsPlaying(clip))
+		//{
+		//	if (ImGui::Button("Stop"))
+		//	{
+		//		Engine::Audio::Stop(clip);
+		//	}
+		//}
+		//else
+		//{
+		//	if (ImGui::Button("Play"))
+		//	{
+		//		Engine::Audio::Play2D(clip);
+		//	}
+		//}
 
 
-		static struct AudioInspectorState
-		{
-			float time = 0.0f;
-			bool  isEditing = false;
-		} state;
+		//static struct AudioInspectorState
+		//{
+		//	float time = 0.0f;
+		//	bool  isEditing = false;
+		//} state;
 
-		float duration = clip->GetDurationSeconds();
+		////float duration = clip->GetDurationSeconds();
 
-		if (!state.isEditing)
-		{
-			state.time = clip->GetCurrentTimeSeconds();
-		}
+		//if (!state.isEditing)
+		//{
+		//	state.time = clip->GetCurrentTimeSeconds();
+		//}
 
-		auto result = FloatSliderField("CurrentTime", state.time, 0.0f, duration);
+		//auto result = PropertyField<float>("Current Time", state.time);
 
-		if (result.started)
-		{
-			state.isEditing = true;
-		}
+		//if (result.started)
+		//{
+		//	state.isEditing = true;
+		//}
 
-		if (result.finished)
-		{
-			clip->SetCurrentTimeSeconds(state.time);
-			state.isEditing = false;
-		}
+		//if (result.finished)
+		//{
+		//	clip->SetCurrentTimeSeconds(state.time);
+		//	state.isEditing = false;
+		//}
 	}
 }

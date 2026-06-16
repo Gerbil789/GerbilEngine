@@ -35,13 +35,7 @@ void GameManager::OnStart()
 			std::string path = std::format("Materials/tmp/tmp_{}.mat", i);
 			Material& mat = AssetManager::CreateAsset<Material>(path);
 
-#ifdef GERBIL_EDITOR
-			mat.EditorOnly.name = std::format("Mat_{}", i);
-			mat.EditorOnly.type = AssetType::Material;
-			mat.EditorOnly.path = path;
-#endif
-
-			mat.SetShader(m_Shader->id);
+			mat.SetShader(m_Shader);
 
 			mat.SetParameter("albedo", glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f });
 			mat.SetParameter("tiling", glm::vec2{ 1.0f, 1.0f });

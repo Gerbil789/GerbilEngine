@@ -34,11 +34,15 @@ namespace Editor
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0); // Name column
 
-			if (TextField("MaterialName", m_Material->EditorOnly.name).finished)
-			{
-				//record.path = record.path.parent_path() / (name + record.path.extension().string());
-				//TODO: SAVE CHANGE
-			}
+			//auto& registry = Engine::AssetManager::GetAssetRegistry();
+			//const auto& record = registry.GetRecord(m_Material->id);
+			//const std::string& currentName = record.GetName();
+
+			//if (TextField("MaterialName", currentName).finished)
+			//{
+			//	//record.path = record.path.parent_path() / (name + record.path.extension().string());
+			//	//TODO: SAVE CHANGE
+			//}
 
 			ImGui::TableSetColumnIndex(1); // Shader column
 			ImGui::SetNextItemWidth(-FLT_MIN);
@@ -93,27 +97,19 @@ namespace Editor
 							{
 								using T = std::decay_t<decltype(arg)>;
 
-								// Compile-time branching. The compiler strips out the blocks that don't match!
-								if constexpr (std::is_same_v<T, float>)
+								DisplayMode mode = DisplayMode::Default;
+
+								std::string lowerName = param.name;
+								std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
+								if (lowerName.find("color") != std::string::npos || lowerName.find("albedo") != std::string::npos)
 								{
-									if (FloatField(param.name.c_str(), arg).changed)
-										m_Material->SetParameter(param.name, arg);
-								}
-								else if constexpr (std::is_same_v<T, glm::vec2>)
-								{
-									if (Vec2Field(param.name.c_str(), arg).changed)
-										m_Material->SetParameter(param.name, arg);
-								}
-								else if constexpr (std::is_same_v<T, glm::vec4>)
-								{
-									if (ColorField(param.name.c_str(), arg).changed)
-										m_Material->SetParameter(param.name, arg);
-								}
-								else
-								{
-									ImGui::TextUnformatted("<Unsupported Type>");
+									mode = DisplayMode::Color;
 								}
 
+								if(PropertyField<T>(param.name.c_str(), arg, {.mode = mode}).changed)
+								{
+									m_Material->SetParameter(param.name, arg);
+								}
 							}, variantValue);
 					}
 				}

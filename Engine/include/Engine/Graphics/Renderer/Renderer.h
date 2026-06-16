@@ -1,12 +1,10 @@
 #pragma once
 
 #include "Engine/Graphics/RenderPass/RenderPass.h"
-#include "Engine/Graphics/Texture/Texture2D.h"
 
 namespace Engine
 {
 	class Scene;
-	class TextureCube;
 
 	class ENGINE_API Renderer
 	{

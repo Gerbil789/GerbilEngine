@@ -95,9 +95,10 @@ namespace Engine
 		};
 	};
 
+
 	struct ENGINE_API ScriptComponent
 	{
-		std::string id; //TODO: dont use string as id
+		uint32_t id{ 0 };
 		Script* instance = nullptr;
 	};
 }

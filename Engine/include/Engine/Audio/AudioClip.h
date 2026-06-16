@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Engine/Asset/Asset.h"
+#include "Engine/Core/UUID.h"
 #include <filesystem>
 
 class ma_sound;
 
 namespace Engine
 {
-	class ENGINE_API AudioClip : public Asset
+	class ENGINE_API AudioClip
 	{
 	public:
 		AudioClip();
@@ -27,6 +27,7 @@ namespace Engine
 		void  SetCurrentTimeSeconds(float time);
 
 		ma_sound& GetSound();
+		Uuid id;
 
 	private:
 		struct Impl;

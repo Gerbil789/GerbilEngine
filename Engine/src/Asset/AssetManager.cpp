@@ -58,11 +58,6 @@ namespace Engine
       {
         importedAsset->id = id;
 
-#ifdef GERBIL_EDITOR
-				importedAsset->EditorOnly.name = record.GetName();
-				importedAsset->EditorOnly.type = record.type;
-				importedAsset->EditorOnly.path = record.path;
-#endif
         auto [insertedIt, success] = map.insert_or_assign(id, std::move(*importedAsset));
         LOG_TRACE("Loaded asset '{}'", id);
         return insertedIt->second;
@@ -73,19 +68,13 @@ namespace Engine
     }
 
     template<typename T, typename ImporterFunc>
-    void LoadBuiltInAsset(Uuid id, const std::string& filepath, std::unordered_map<Uuid, T>& map, ImporterFunc importFunc, const char* editorName = nullptr)
+    void LoadBuiltInAsset(Uuid id, const std::string& filepath, std::unordered_map<Uuid, T>& map, ImporterFunc importFunc, const char* = nullptr)
     {
       auto importedAsset = importFunc(filepath);
       if (importedAsset)
       {
         importedAsset->id = id;
 
-#ifdef GERBIL_EDITOR
-        if (editorName)
-        {
-          importedAsset->EditorOnly.name = editorName;
-        }
-#endif
         map.insert_or_assign(id, std::move(*importedAsset));
         LOG_TRACE("Loaded built-in asset '{}' from '{}'", id, filepath);
       }
@@ -135,11 +124,6 @@ namespace Engine
       Material whiteMaterial = Material(spec);
       whiteMaterial.SetParameter("albedo", glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f });
       whiteMaterial.id = RESOURCES::MATERIAL::WHITE;
-
-#ifdef GERBIL_EDITOR
-			whiteMaterial.EditorOnly.type = AssetType::Material;
-			whiteMaterial.EditorOnly.name = "White Material";
-#endif
       m_Materials.insert_or_assign(RESOURCES::MATERIAL::WHITE, std::move(whiteMaterial));
     }
 
@@ -147,11 +131,6 @@ namespace Engine
       MaterialSpecification spec{ .shaderId = RESOURCES::SHADER::DEFAULT };
       Material pinkMaterial = Material(spec);
       pinkMaterial.id = RESOURCES::MATERIAL::PINK;
-
-#ifdef GERBIL_EDITOR
-			pinkMaterial.EditorOnly.type = AssetType::Material;
-			pinkMaterial.EditorOnly.name   = "Pink Material";
-#endif
       m_Materials.insert_or_assign(RESOURCES::MATERIAL::PINK, std::move(pinkMaterial));
     }
   }

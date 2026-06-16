@@ -18,7 +18,7 @@ namespace Editor
 			m_Entity = m_Scene->CreateEntity(m_Name);
 			Engine::Uuid id = m_Scene->GetRegistry().get<Engine::IdentityComponent>(m_Entity).id;
 
-			//SelectionManager::Select(SelectionType::Entity, id);
+			SelectionManager::Assets.Select(id);
       FocusEntityEvent e{ id };
 			Engine::EventBus::Get().Publish(e);
     }

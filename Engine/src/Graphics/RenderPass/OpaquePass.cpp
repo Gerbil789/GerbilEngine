@@ -45,7 +45,7 @@ namespace Engine
 		Engine::Uuid lastMeshId{};
 		Engine::Uuid lastMaterialId{};
 
-		for (auto [i, item] : std::views::enumerate(context.drawList))
+		for (const auto& [i, item] : std::views::enumerate(context.drawList))
 		{
 			if (item.meshId != lastMeshId)
 			{

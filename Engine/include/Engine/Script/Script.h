@@ -8,44 +8,37 @@
 #include "Engine/Audio/AudioClip.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Event/Event.h"
+#include "Engine/Asset/AssetManager.h"
 #include <entt.hpp>
 
 namespace Engine 
 {
+  template <typename T>
+  struct AssetRef
+  {
+    Engine::Uuid id{};
+    explicit operator bool() const { return static_cast<bool>(id); }
+    operator Engine::Uuid& () { return id; }
+    T& Get() { return Engine::AssetManager::GetAsset<T>(id); }
+  };
+
+  using Texture2DHandle = Engine::AssetRef<Engine::Texture2D>;
+  using AudioClipHandle = Engine::AssetRef<Engine::AudioClip>;
+  using MeshHandle = Engine::AssetRef<Engine::Mesh>;
+  using ShaderHandle = Engine::AssetRef<Engine::Shader>;
+  using MaterialHandle = Engine::AssetRef<Engine::Material>;
+
   template<typename T>
   struct ScriptFieldTypeMap;
 
-  template<> struct ScriptFieldTypeMap<float> {
-    static constexpr ScriptFieldType value = ScriptFieldType::Float;
-  };
-
-  template<> struct ScriptFieldTypeMap<int> {
-    static constexpr ScriptFieldType value = ScriptFieldType::Int;
-  };
-
-  template<> struct ScriptFieldTypeMap<bool> {
-    static constexpr ScriptFieldType value = ScriptFieldType::Bool;
-  };
-
-  template<> struct ScriptFieldTypeMap<Texture2D*> {
-    static constexpr ScriptFieldType value = ScriptFieldType::Texture;
-  };
-
-  template<> struct ScriptFieldTypeMap<AudioClip*> {
-    static constexpr ScriptFieldType value = ScriptFieldType::AudioClip;
-	};
-
-	template<> struct ScriptFieldTypeMap<Mesh*> {
-    static constexpr ScriptFieldType value = ScriptFieldType::Mesh;
-	};
-
-  template<> struct ScriptFieldTypeMap<Shader*> {
-		static constexpr ScriptFieldType value = ScriptFieldType::Shader;
-  };
-
-  template<> struct ScriptFieldTypeMap<Material*> {
-    static constexpr ScriptFieldType value = ScriptFieldType::Material;
-	};
+  template<> struct ScriptFieldTypeMap<float> { static constexpr ScriptFieldType value = ScriptFieldType::Float;};
+  template<> struct ScriptFieldTypeMap<int> { static constexpr ScriptFieldType value = ScriptFieldType::Int;};
+  template<> struct ScriptFieldTypeMap<bool> { static constexpr ScriptFieldType value = ScriptFieldType::Bool;};
+  template<> struct ScriptFieldTypeMap<Texture2DHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Texture; };
+  template<> struct ScriptFieldTypeMap<AudioClipHandle> { static constexpr ScriptFieldType value = ScriptFieldType::AudioClip; };
+	template<> struct ScriptFieldTypeMap<MeshHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Mesh; };
+  template<> struct ScriptFieldTypeMap<ShaderHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Shader; };
+  template<> struct ScriptFieldTypeMap<MaterialHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Material; };
 }
 
 namespace Engine
@@ -83,6 +76,8 @@ namespace Engine
     Scene* m_Scene = nullptr;
   };
 }
+
+//TODO: Cpp26 reflection will replace this
 
 #define SCRIPT_CLASS(Type) \
 public: \

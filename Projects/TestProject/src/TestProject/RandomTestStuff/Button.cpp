@@ -17,7 +17,7 @@ void Button::OnUpdate()
 void Button::OnTriggerEnter(entt::entity other)
 {
 	Engine::TransformComponent& transform = GetComponent<Engine::TransformComponent>();
-	Engine::Audio::Play3D(m_PressSound, transform.position);
+	Engine::Audio::Play3D(&m_PressSound.Get(), transform.position);
 	m_Pressed = true;
 	LOG_TRACE("Button pressed by entity {}", (uint32_t)other);
 }
@@ -25,7 +25,7 @@ void Button::OnTriggerEnter(entt::entity other)
 void Button::OnTriggerExit(entt::entity other)
 {
 	Engine::TransformComponent& transform = GetComponent<Engine::TransformComponent>();
-	Engine::Audio::Play3D(m_ReleaseSound, transform.position);
+	Engine::Audio::Play3D(&m_ReleaseSound.Get(), transform.position);
 	m_Pressed = false;
 	LOG_TRACE("Button released by entity {}", (uint32_t)other);
 }

@@ -1,9 +1,7 @@
 #pragma once
 
-#include "Engine/Asset/Asset.h"
+#include "Engine/Core/UUID.h"
 #include <webgpu/webgpu.hpp>
-
-
 
 namespace Engine
 {
@@ -16,7 +14,7 @@ namespace Engine
 		bool generateMips = false;
 	};
 
-	class ENGINE_API Texture : public Asset
+	class ENGINE_API Texture
 	{
 	public:
 		uint32_t GetWidth() const { return m_Width; }
@@ -24,6 +22,7 @@ namespace Engine
 		wgpu::Texture GetTexture() const { return m_Texture; }
 		wgpu::TextureView GetTextureView() const { return m_TextureView; }
 		wgpu::TextureFormat GetFormat() const { return m_TextureFormat; }
+		Uuid id;
 
 	protected:
 		uint32_t m_Width = 0;

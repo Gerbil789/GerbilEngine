@@ -4,9 +4,10 @@
 
 namespace Editor
 {
-	void ShaderInspectorPanel::Draw(Engine::Shader* shader)
+	//TODO: fix this
+	void ShaderInspectorPanel::Draw(Engine::Shader*)
 	{
-		ImGui::TextUnformatted(shader->EditorOnly.name.c_str());
+		/*ImGui::TextUnformatted(shader->id);*/
 
 		//ImGui::Separator();
 

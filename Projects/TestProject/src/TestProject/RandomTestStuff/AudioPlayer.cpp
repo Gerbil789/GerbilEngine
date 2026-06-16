@@ -1,6 +1,8 @@
 #include "AudioPlayer.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Scene/Components.h"
+#include "Engine/Audio/Audio.h"
+#include "Engine/Audio/AudioClip.h"
 
 void AudioPlayer::OnStart()
 {
@@ -10,7 +12,7 @@ void AudioPlayer::OnStart()
 		glm::vec3 localPosition = transform.position;
     glm::vec3 worldPosition =  transform.worldMatrix * glm::vec4(localPosition, 1.0f);
 
-    Engine::Audio::Play3D(m_Clip, worldPosition);
+    Engine::Audio::Play3D(&m_Clip.Get(), worldPosition);
   }
 }
 
@@ -22,5 +24,5 @@ void AudioPlayer::OnUpdate()
   glm::vec3 localPosition = transform.position;
   glm::vec3 worldPosition = transform.worldMatrix * glm::vec4(localPosition, 1.0f);
 
-  Engine::Audio::SetSourcePosition(m_Clip, worldPosition);
+  Engine::Audio::SetSourcePosition(&m_Clip.Get(), worldPosition);
 }

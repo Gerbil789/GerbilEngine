@@ -33,8 +33,3 @@ filter { "system:windows", "configurations:not Dist" }
 	{
 		"{COPYFILE} %{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Engine.dll %{cfg.targetdir}"
 	}
-
-	defines
-	{
-		"GAME_SHARED_EXPORT",
-	}

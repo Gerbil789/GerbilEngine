@@ -83,6 +83,7 @@ namespace Engine
 		m_TextureView = m_Texture.createView(viewDesc);
 	}
 
+	//TODO: remove these defaults
 	Texture2D* Texture2D::GetDefault()
 	{
 		if (!s_DefaultWhiteTexture)

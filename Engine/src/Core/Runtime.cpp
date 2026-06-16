@@ -20,7 +20,7 @@
 #endif
 
 #ifndef ENGINE_SHARED_EXPORT
-extern "C" void RegisterScripts(Engine::ScriptRegistry&);
+extern "C" void RegisterScripts();
 #endif
 
 namespace Engine
@@ -38,7 +38,7 @@ namespace Engine
 			throw std::runtime_error("Script library path does not exist: " + dllPath.string());
 		}
 
-		using GameRegisterScriptsFn = void(*)(Engine::ScriptRegistry&);
+		using GameRegisterScriptsFn = void(*)();
 		GameRegisterScriptsFn Game_Register_Fn = nullptr;
 
 		HMODULE gameModule = LoadLibraryA(dllPath.string().c_str());
@@ -51,28 +51,44 @@ namespace Engine
 			throw std::runtime_error("Failed to load RegisterScripts function from scripts library");
 		}
 
-		Game_Register_Fn(Engine::g_ScriptRegistry);
+		Game_Register_Fn();
 #else
 		LOG_INFO("Static build detected. Ignoring dynamic path and calling linked RegisterScripts directly.");
-		RegisterScripts(Engine::g_ScriptRegistry);
+		RegisterScripts();
 #endif
 
-		auto scripts = Engine::g_ScriptRegistry.GetAllDescriptors();
+		//const auto& scripts = Engine::ScriptRegistry::GetScripts();
 
-		LOG_INFO("Total Registered Scripts: {}", scripts.size());
-		for (const auto& script : scripts)
-		{
-			LOG_INFO("  {}", script->name);
-		}
+		//LOG_INFO("Total Registered Scripts: {}", scripts.size());
+		//for (const auto& [id, script] : scripts)
+		//{
+		//	LOG_INFO("  {}", script.name);
+		//}
 	}
 
 	void Runtime::Start()
 	{
 		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+		entt::registry& registry = scene.GetRegistry();
 
-		for (entt::entity entity : scene.GetEntities<Engine::ScriptComponent>())
+	/*	for(entt::entity cameraEntity : registry.view<Engine::CameraComponent>())
 		{
-			auto& sc = scene.GetRegistry().get<Engine::ScriptComponent>(entity);
+			auto& cameraComp = registry.get<Engine::CameraComponent>(cameraEntity);
+			if (cameraComp.primary && cameraComp.camera)
+			{
+				const auto& pos = registry.get<Engine::TransformComponent>(cameraEntity).position;
+				const auto& forward = cameraComp.camera->GetForward();
+				const auto& up = cameraComp.camera->GetUp();
+				Engine::Audio::SetListener(pos.x, pos.y, pos.z, forward.x, forward.y, forward.z, up.x, up.y, up.z);
+				scene.SetActiveCamera(cameraComp.camera);
+				break;
+			}
+		}*/
+
+
+		for (entt::entity entity : registry.view<Engine::ScriptComponent>())
+		{
+			auto& sc = registry.get<Engine::ScriptComponent>(entity);
 			if (sc.instance)
 			{
 				sc.instance->m_Entity = entity;
@@ -80,19 +96,6 @@ namespace Engine
 				sc.instance->OnStart();
 			}
 		}
-
-		/*m_Token = Engine::EventBus::Get().Subscribe([](Engine::Event& e)
-			{
-				auto& scene = Engine::SceneManager::GetActiveScene();
-				for (entt::entity entity : scene.GetEntities<Engine::ScriptComponent>())
-				{
-					auto& sc = scene.GetRegistry().get<Engine::ScriptComponent>(entity);
-					if (sc.instance)
-					{
-						sc.instance->OnEvent(e);
-					}
-				}
-			});*/
 	}
 
 	void Runtime::Stop()

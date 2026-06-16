@@ -56,7 +56,7 @@ namespace Editor
 			{
 				if (std::filesystem::is_empty(path))
 				{
-					m_Items.emplace_back(Engine::Uuid::Generate(), path, Engine::AssetType::EmptyDirectory);
+					m_Items.emplace_back(Engine::Uuid::Generate(), path, Engine::AssetType::EmptyDirectory); //TODO: generating random uuids is not ideal...
 				}
 				else
 				{

@@ -7,21 +7,20 @@
 #include "TestProject/RandomTestStuff/GameManager.h"
 #include "TestProject/RandomTestStuff/Button.h"
 
-
 #include "TestProject/Combat/BattleControllerScript.h"
 
 extern "C"
 {
-  GAME_API void RegisterScripts(Engine::ScriptRegistry& registry)
+  __declspec(dllexport) void RegisterScripts()
   {
     // random test scripts
-    registry.Register<FPSPlayerController>();
-    registry.Register<RandomMovement>();
-		registry.Register<AudioPlayer>();
-		registry.Register<GameManager>();
-    registry.Register<Button>();
+    Engine::ScriptRegistry::Register<FPSPlayerController>("FPSPlayerController");
+    Engine::ScriptRegistry::Register<RandomMovement>("RandomMovement");
+		Engine::ScriptRegistry::Register<AudioPlayer>("AudioPlayer");
+		Engine::ScriptRegistry::Register<GameManager>("GameManager");
+    Engine::ScriptRegistry::Register<Button>("Button");
 
 		// combat game scripts
-		registry.Register<BattleControllerScript>();
+    Engine::ScriptRegistry::Register<BattleControllerScript>("BattleControllerScript");
   }
 }

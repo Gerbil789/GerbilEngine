@@ -76,7 +76,7 @@ namespace Engine
 	};
 
 	struct ScriptComponentJSON {
-		std::string Script;
+		uint32_t Script;
 		std::map<std::string, glz::generic> Fields; // Dynamic variables
 	};
 
@@ -201,37 +201,37 @@ namespace Engine
 			//}
 
 			// Script
-			if (registry.any_of<ScriptComponent>(entity))
-			{
-				const auto& s = registry.get<ScriptComponent>(entity);
-				auto& desc = Engine::g_ScriptRegistry.GetDescriptor(s.id);
-				std::byte* base = reinterpret_cast<std::byte*>(s.instance);
+			//if (registry.any_of<ScriptComponent>(entity))
+			//{
+			//	const auto& s = registry.get<ScriptComponent>(entity);
+			//	auto& desc = Engine::ScriptRegistry::GetDescriptor(s.id);
+			//	std::byte* base = reinterpret_cast<std::byte*>(s.instance);
 
-				ScriptComponentJSON sJson;
-				sJson.Script = desc.name;
+			//	ScriptComponentJSON sJson;
+			//	sJson.Script = s.id;
 
-				for (const auto& field : desc.fields)
-				{
-					void* fieldPtr = base + field.offset;
-					switch (field.type)
-					{
-					case ScriptFieldType::Bool:  sJson.Fields[field.name] = *reinterpret_cast<bool*>(fieldPtr); break;
-					case ScriptFieldType::Int:   sJson.Fields[field.name] = *reinterpret_cast<int*>(fieldPtr); break;
-					case ScriptFieldType::Float: sJson.Fields[field.name] = *reinterpret_cast<float*>(fieldPtr); break;
+			//	for (const auto& field : desc.fields)
+			//	{
+			//		void* fieldPtr = base + field.offset;
+			//		switch (field.type)
+			//		{
+			//		case ScriptFieldType::Bool:  sJson.Fields[field.name] = *reinterpret_cast<bool*>(fieldPtr); break;
+			//		case ScriptFieldType::Int:   sJson.Fields[field.name] = *reinterpret_cast<int*>(fieldPtr); break;
+			//		case ScriptFieldType::Float: sJson.Fields[field.name] = *reinterpret_cast<float*>(fieldPtr); break;
 
-						// For assets, we store the UUID
-					case ScriptFieldType::Texture:
-						if (auto* tex = *reinterpret_cast<Texture2D**>(fieldPtr)) sJson.Fields[field.name] = (uint64_t)tex->id; break;
-					case ScriptFieldType::AudioClip:
-						if (auto* clip = *reinterpret_cast<AudioClip**>(fieldPtr)) sJson.Fields[field.name] = (uint64_t)clip->id; break;
-					case ScriptFieldType::Mesh:
-						if (auto* mesh = *reinterpret_cast<Mesh**>(fieldPtr)) sJson.Fields[field.name] = (uint64_t)mesh->id; break;
-					case ScriptFieldType::Material:
-						if (auto* mat = *reinterpret_cast<Material**>(fieldPtr)) sJson.Fields[field.name] = (uint64_t)mat->id; break;
-					}
-				}
-				eJson.ScriptComponent = sJson;
-			}
+			//			// For assets, we store the UUID
+			//		case ScriptFieldType::Texture:
+			//			if (auto* tex = *reinterpret_cast<Texture2D**>(fieldPtr)) sJson.Fields[field.name] = (uint64_t)tex->id; break;
+			//		case ScriptFieldType::AudioClip:
+			//			if (auto* clip = *reinterpret_cast<AudioClip**>(fieldPtr)) sJson.Fields[field.name] = (uint64_t)clip->id; break;
+			//		case ScriptFieldType::Mesh:
+			//			if (auto* mesh = *reinterpret_cast<Mesh**>(fieldPtr)) sJson.Fields[field.name] = (uint64_t)mesh->id; break;
+			//		case ScriptFieldType::Material:
+			//			if (auto* mat = *reinterpret_cast<Material**>(fieldPtr)) sJson.Fields[field.name] = (uint64_t)mat->id; break;
+			//		}
+			//	}
+			//	eJson.ScriptComponent = sJson;
+			//}
 
 			sceneData.push_back(std::move(eJson));
 		}
@@ -368,13 +368,13 @@ namespace Engine
 			}
 
 			// Script
-			if (eJson.ScriptComponent.has_value())
+			/*if (eJson.ScriptComponent.has_value())
 			{
 				auto& sComp = registry.emplace<ScriptComponent>(entity);
 				const auto& sJson = eJson.ScriptComponent.value();
 
-				auto desc = Engine::g_ScriptRegistry.GetDescriptor(sJson.Script);
-				sComp.id = desc.name;
+				auto desc = Engine::ScriptRegistry::GetDescriptor(sJson.Script);
+				sComp.id = sJson.Script;
 				sComp.instance = desc.factory();
 				sComp.instance->m_Entity = entity;
 				sComp.instance->OnCreate();
@@ -412,7 +412,7 @@ namespace Engine
 						break;
 					}
 				}
-			}
+			}*/
 		}
 
 		// Rebuild Parent-Child hierarchy

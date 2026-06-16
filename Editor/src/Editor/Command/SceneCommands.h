@@ -5,12 +5,14 @@
 #include "Engine/Asset/AssetRegistry.h"
 #include "Editor/Utility/File.h"
 #include "Engine/Core/Project.h"
+#include "Engine/Scene/Scene.h"
 
 namespace Editor
 {
 	inline void SaveScene()
 	{
-		auto path = Engine::SceneManager::GetActiveScene().EditorOnly.path;
+		const Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+		auto& path = Engine::AssetManager::GetAssetRegistry().GetRecord(scene.id).path;
 
 		if (path.empty())
 		{
