@@ -1,12 +1,13 @@
 #pragma once
 
+#include "Engine/Core/UUID.h"
 #include <glm/glm.hpp>
 
 class ma_engine;
 
 namespace Engine
 {
-	class AudioClip;
+  using AudioInstance = Uuid;
 
   class ENGINE_API Audio
   {
@@ -16,17 +17,17 @@ namespace Engine
 
     static void Update();
 
-    static ma_engine& GetAudioEngine();
     static void SetListener(float px, float py, float pz, float fx, float fy, float fz, float ux, float uy, float uz);
-		static void SetSourcePosition(AudioClip* clip, const glm::vec3& position);
 
-    static void Play2D(AudioClip* clip);
-    static void Play3D(AudioClip* clip, const glm::vec3& position);
-		static void Stop(AudioClip* clip);
-		static bool IsPlaying(AudioClip* clip);
+    static AudioInstance Play2D(Uuid clip);
+    static AudioInstance Play3D(Uuid clip, const glm::vec3& position);
 
-    static void SetVolume(AudioClip* clip, float volume);
-    static void SetLooping(AudioClip* clip, bool loop);
+    static void SetSourcePosition(AudioInstance instance, const glm::vec3& position);
+		static void Stop(AudioInstance instance);
+		static bool IsPlaying(AudioInstance instance);
+
+    static void SetVolume(AudioInstance instance, float volume);
+    static void SetLooping(AudioInstance instance, bool loop);
 
 		static void StopAll();
   };

@@ -1,30 +1,21 @@
 #include "EntityInspectorPanel.h"
 
-#include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Editor/Windows/Utility/Property.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Command/TransformEntity.h"
-
-#include "Engine/Scene/Components.h"
-#include "Engine/Scene/SceneManager.h"
-#include "Engine/Scene/Scene.h"
-#include "Engine/Asset/AssetManager.h"
-#include "Engine/Graphics/Mesh.h"
-#include "Engine/Graphics/Material.h"
-#include "Engine/Graphics/Camera.h"
-#include "Engine/Audio/AudioClip.h"
-
-#include "Editor/Core/SelectionManager.h"
-
-#include "Engine/Script/ScriptRegistry.h"
-#include "Engine/Asset/AssetRegistry.h"
-#include "Engine/Script/Script.h"
-
 #include "Editor/Command/PropertyChangeCommand.h"
 #include "Editor/Command/ComponentSnapshotCommand.h"
 #include "Editor/Command/AddComponentCommand.h"
 #include "Editor/Command/RemoveComponentCommand.h"
 
+#include "Engine/Scene/Components.h"
+#include "Engine/Scene/SceneManager.h"
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Graphics/Camera.h"
+#include "Editor/Core/SelectionManager.h"
+#include "Engine/Script/ScriptRegistry.h"
+#include "Engine/Asset/AssetRegistry.h"
+#include "Engine/Script/Script.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -110,7 +101,6 @@ namespace Editor
 		static TransformData s_TransformBefore;
 
 		PropertyTable table;
-		if (!table) return;
 
 		result |= PropertyField("Position", tc.position);
 		result |= PropertyField("Rotation", tc.rotation);
@@ -142,7 +132,6 @@ namespace Editor
 		Engine::Camera& camera = *component.camera;
 
 		PropertyTable table;
-		if (!table) return;
 
 		PropertyField("Primary", component.primary);
 
@@ -190,7 +179,6 @@ namespace Editor
 		Engine::MeshComponent& component = registry.get<Engine::MeshComponent>(entity);
 
 		PropertyTable table;
-		if (!table) return;
 
 		if (AssetField("Mesh", component.meshId, Engine::AssetType::Mesh).changed)
 		{
@@ -247,7 +235,6 @@ namespace Editor
 		auto& component = registry.get<Engine::ColliderComponent>(entity);
 
 		PropertyTable table;
-		if (!table) return;
 
 		AssetField("Mesh", component.meshId, Engine::AssetType::Mesh);
 		PropertyField("Is trigger", component.isTrigger);
@@ -275,7 +262,6 @@ namespace Editor
 		if (!header.open) return;
 
 		PropertyTable table;
-		if (!table) return;
 
 		int current = static_cast<int>(component.type);
 		if (EnumField("Type", current, { "Directional", "Spot", "Point" }).changed)
@@ -314,7 +300,6 @@ namespace Editor
 		if (!header.open) return;
 
 		PropertyTable table;
-		if (!table.open) return;
 
 		Engine::ScriptComponent& component = registry.get<Engine::ScriptComponent>(entity);
 

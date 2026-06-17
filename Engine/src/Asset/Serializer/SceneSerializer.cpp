@@ -268,6 +268,8 @@ namespace Engine
 		std::unordered_map<uint64_t, entt::entity> entityMap;
 		std::unordered_map<uint64_t, uint64_t> entityParentMap;
 
+		scene.SetEnvironmentTexture(RESOURCES::TEXTURE::HDR); //TODO: store in scene file
+
 		for (const auto& eJson : sceneData)
 		{
 			Uuid entityId{ eJson.ID };
@@ -300,7 +302,7 @@ namespace Engine
 				const auto& mJson = eJson.MeshComponent.value();
 				mComp.meshId = Uuid{ mJson.Mesh };
 
-				if(!assetRegistry.GetRecord(mComp.meshId).IsValid())
+				if(!assetRegistry.GetRecord(mComp.meshId))
 				{
 					mComp.meshId = RESOURCES::MESH::EMPTY;
 				}
@@ -310,7 +312,7 @@ namespace Engine
 				for (auto rawId : mJson.Materials)
 				{
 					Engine::Uuid id{ static_cast<uint64_t>(rawId) };
-					if (assetRegistry.GetRecord(id).IsValid())
+					if (assetRegistry.GetRecord(id))
 					{
 						mComp.materials.push_back(Uuid{ id });
 					}

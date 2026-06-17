@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Engine/Asset/Asset.h"
 #include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/Pipeline.h"
@@ -10,7 +11,7 @@ namespace Engine
 {
 	using MaterialValue = std::variant<float, glm::vec2, glm::vec3, glm::vec4>;
 
-	struct MaterialSpecification
+	struct MaterialSpecification 
 	{
 		Uuid shaderId;
 
@@ -21,7 +22,7 @@ namespace Engine
 		TextureWrap wrap = TextureWrap::Repeat;
 	};
 
-	class ENGINE_API Material
+	class ENGINE_API Material : public Asset
 	{
 	public:
 		Material(const MaterialSpecification& spec);
@@ -50,7 +51,6 @@ namespace Engine
 		void SetParameter(const std::string& paramName, const T& value);
 
 		const MaterialValue& GetParameterVariant(const std::string& name) const;
-		Uuid id;
 
 	private:
 		void CreateUniformBuffer();

@@ -8,30 +8,29 @@
 
 namespace Engine::SceneManager
 {
-	static Scene* s_ActiveScene = nullptr;
+	static Uuid m_ActiveScene;
 
 	void SetActiveScene(Uuid id)
 	{
-		if(s_ActiveScene && s_ActiveScene->id == id)
+		if(m_ActiveScene == id)
 		{
 			LOG_WARNING("Scene {} is already active", id);
 			return;
 		}
 
-		auto& scene = AssetManager::GetAsset<Scene>(id);
-		s_ActiveScene = &scene;
-		LOG_INFO("Active scene set to {}", id);
+		m_ActiveScene = id;
+		LOG_INFO("Active scene set to {}", m_ActiveScene);
 	}
 
 	Scene& GetActiveScene()
 	{
-		return *s_ActiveScene;
+		return AssetManager::GetAsset<Scene>(m_ActiveScene);
 	}
 
 	void SaveScene(const std::filesystem::path& path)
 	{
-		SceneSerializer::Serialize(*s_ActiveScene, path);
-		LOG_INFO("Scene {} saved to file {}", s_ActiveScene->id, path);
+		SceneSerializer::Serialize(AssetManager::GetAsset<Scene>(m_ActiveScene), path);
+		LOG_INFO("Scene {} saved to file {}", m_ActiveScene, path);
 	}
 
 	void SaveSceneAs()

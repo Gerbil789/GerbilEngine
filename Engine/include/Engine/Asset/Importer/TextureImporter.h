@@ -10,6 +10,6 @@ namespace Engine
 	class ENGINE_API TextureImporter
 	{
 	public:
-		static std::optional<Texture2D> LoadTexture(const std::filesystem::path& path);
+		static std::optional<Texture2D> LoadTexture2D(const std::filesystem::path& path);
 	};
 }

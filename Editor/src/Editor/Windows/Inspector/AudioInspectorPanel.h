@@ -1,12 +1,12 @@
 #pragma once
 
-namespace Engine { class AudioClip; }
+#include "Engine/Core/Uuid.h"
 
 namespace Editor
 {
 	class AudioInspectorPanel
 	{
 	public:
-		void Draw(Engine::AudioClip* clip);
+		void Draw(Engine::Uuid id);
 	};
 }

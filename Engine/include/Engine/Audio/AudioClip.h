@@ -1,36 +1,26 @@
 #pragma once
 
-#include "Engine/Core/UUID.h"
+#include "Engine/Asset/Asset.h"
 #include <filesystem>
-
-class ma_sound;
+#include <vector>
 
 namespace Engine
 {
-	class ENGINE_API AudioClip
+	class ENGINE_API AudioClip : public Asset
 	{
 	public:
-		AudioClip();
 		AudioClip(const std::filesystem::path& path);
-		~AudioClip();
-
-		// 1. Declare Move Constructor and Move Assignment
-		AudioClip(AudioClip&& other) noexcept;
-		AudioClip& operator=(AudioClip&& other) noexcept;
-
-		// 2. Explicitly delete Copying (optional, but good practice for GPU resources)
-		AudioClip(const AudioClip&) = delete;
-		AudioClip& operator=(const AudioClip&) = delete;
 
 		float GetDurationSeconds() const;
-		float GetCurrentTimeSeconds() const;
-		void  SetCurrentTimeSeconds(float time);
-
-		ma_sound& GetSound();
-		Uuid id;
+		const float* GetPCMData() const { return m_PCMData.data(); }
+		uint64_t GetTotalFrames() const { return m_TotalFrames; }
+		uint32_t GetChannels() const { return m_Channels; }
+		uint32_t GetSampleRate() const { return m_SampleRate; }
 
 	private:
-		struct Impl;
-		std::unique_ptr<Impl> m_Impl;
+		std::vector<float> m_PCMData;
+		uint64_t m_TotalFrames = 0;
+		uint32_t m_Channels = 0;
+		uint32_t m_SampleRate = 0;
 	};
 }

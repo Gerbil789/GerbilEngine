@@ -53,7 +53,7 @@ namespace Engine
 		AssetType GetType(Uuid id) const
 		{
 			const AssetRecord& record = GetRecord(id);
-			if (!record.IsValid())
+			if (!record)
 			{
 				return AssetType::Unknown;
 			}

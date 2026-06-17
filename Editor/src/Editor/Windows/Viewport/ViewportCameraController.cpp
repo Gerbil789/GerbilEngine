@@ -32,6 +32,8 @@ namespace Editor
 
 	void ViewportCameraController::OnMouseScroll(Engine::MouseScrolledEvent& e)
 	{
+		if (!m_ViewportHovered) return;
+
 		float delta = static_cast<float>(e.yOffset) * m_ScrollSensitivity;
 		glm::vec3 position = EditorContext::editorCamera.GetPosition();
 		EditorContext::editorCamera.SetPosition(position + EditorContext::editorCamera.GetForward() * delta * m_ScrollSensitivity);
@@ -39,6 +41,8 @@ namespace Editor
 
 	void ViewportCameraController::OnMouseButtonPressed(Engine::MouseButtonPressedEvent& e)
 	{
+		if (!m_ViewportHovered) return;
+
 		if (e.button == Engine::Mouse::ButtonRight)
 		{
 			m_RotateDragging = true;

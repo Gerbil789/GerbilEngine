@@ -7,208 +7,248 @@
 
 namespace Engine
 {
-	static ma_engine s_AudioEngine;
+  static ma_engine s_AudioEngine;
 
-	struct Voice
-	{
-		ma_sound sound{};
-		bool active = false;
-	};
+  struct Voice
+  {
+    ma_sound sound{};
+    ma_audio_buffer buffer{};
+    AudioInstance instance{};
+    bool active = false;
+    bool paused = false;
+  };
 
-	static constexpr uint32_t MaxVoices = 32;
-	static Voice s_Voices[MaxVoices];
+  static constexpr uint32_t MaxVoices = 32;
+  static Voice s_Voices[MaxVoices];
 
-	static Voice* AcquireVoice()
-	{
-		for (uint32_t i = 0; i < MaxVoices; i++)
-		{
-			if (!s_Voices[i].active)
-			{
-				return &s_Voices[i];
-			}
-		}
-		return nullptr; // no free voices
-	}
+  static Voice* AcquireVoice(AudioInstance newInstanceId)
+  {
+    for (uint32_t i = 0; i < MaxVoices; i++)
+    {
+      if (!s_Voices[i].active)
+      {
+        s_Voices[i].instance = newInstanceId;
+        s_Voices[i].active = true;
+        return &s_Voices[i];
+      }
+    }
+    return nullptr;
+  }
 
-	void Audio::Initialize()
-	{
-		if (ma_engine_init(nullptr, &s_AudioEngine) != MA_SUCCESS)
-		{
-			throw std::runtime_error("Failed to initialize audio engine");
-		}
+  static Voice* GetVoice(AudioInstance instance)
+  {
+    if (!instance) return nullptr;
 
-		ma_engine_listener_set_position(&s_AudioEngine, 0, 0, 0, 0);
-		ma_engine_listener_set_direction(&s_AudioEngine, 0, 0, 0, -1);
-		ma_engine_listener_set_world_up(&s_AudioEngine, 0, 0, 1, 0);
+    for (uint32_t i = 0; i < MaxVoices; i++)
+    {
+      if (s_Voices[i].active && s_Voices[i].instance == instance)
+      {
+        return &s_Voices[i];
+      }
+    }
+    return nullptr;
+  }
 
-		//auto clips = Engine::g_AssetManager->GetAssetsOfType<AudioClip>(AssetType::Audio);
+  void Audio::Initialize()
+  {
+    if (ma_engine_init(nullptr, &s_AudioEngine) != MA_SUCCESS)
+    {
+      throw std::runtime_error("Failed to initialize audio engine");
+    }
 
-		//auto assets = Engine::g_AssetManager->GetAssetsOfType<Asset>(AssetType::Audio);
-	}
+    ma_engine_listener_set_position(&s_AudioEngine, 0, 0, 0, 0);
+    ma_engine_listener_set_direction(&s_AudioEngine, 0, 0, 0, -1);
+    ma_engine_listener_set_world_up(&s_AudioEngine, 0, 0, 1, 0);
+  }
 
-	void Audio::Shutdown()
-	{
-		ma_engine_uninit(&s_AudioEngine);
-	}
+  void Audio::Shutdown()
+  {
+    ma_engine_uninit(&s_AudioEngine);
+  }
 
-	void Audio::Update()
-	{
-		for (uint32_t i = 0; i < MaxVoices; i++)
-		{
-			Voice& voice = s_Voices[i];
+  void Audio::Update()
+  {
+    for (uint32_t i = 0; i < MaxVoices; i++)
+    {
+      Voice& voice = s_Voices[i];
 
-			if (!voice.active)
-				continue;
+      if (!voice.active)
+        continue;
 
-			if (!ma_sound_is_playing(&voice.sound))
-			{
-				ma_sound_uninit(&voice.sound);
-				voice.active = false;
-			}
-		}
-	}
+      if (!ma_sound_is_playing(&voice.sound))
+      {
+        ma_sound_uninit(&voice.sound);
+        ma_audio_buffer_uninit(&voice.buffer);
+        voice.active = false;
+        voice.instance = 0;
+      }
+    }
+  }
 
-	ma_engine& Audio::GetAudioEngine()
-	{
-		return s_AudioEngine;
-	}
+  void Audio::SetListener(float px, float py, float pz, float fx, float fy, float fz, float ux, float uy, float uz)
+  {
+    ma_engine_listener_set_position(&s_AudioEngine, 0, px, py, pz);
+    ma_engine_listener_set_direction(&s_AudioEngine, 0, -fx, -fy, -fz);
+    ma_engine_listener_set_world_up(&s_AudioEngine, 0, ux, uy, uz);
+  }
 
-	void Audio::SetListener(float px, float py, float pz, float fx, float fy, float fz, float ux, float uy, float uz)
-	{
-		ma_engine_listener_set_position(&s_AudioEngine, 0, px, py, pz);
-		ma_engine_listener_set_direction(&s_AudioEngine, 0, -fx, -fy, -fz);
-		ma_engine_listener_set_world_up(&s_AudioEngine, 0, ux, uy, uz);
-	}
+  void Audio::SetSourcePosition(AudioInstance instance, const glm::vec3& position)
+  {
+    Voice* voice = GetVoice(instance);
+    if (!voice) return;
 
-	void Audio::SetSourcePosition(AudioClip* clip, const glm::vec3& position)
-	{
-		if (!clip) return;
-		ma_sound_set_position(&clip->GetSound(), position.x, position.y, position.z);
-	}
+    ma_sound_set_position(&voice->sound, position.x, position.y, position.z);
+  }
 
-	void Audio::Play2D(AudioClip* clip)
-	{
-		if (!clip)
-		{
-			LOG_WARNING("AudioClip is null");
-			return;
-		}
+  AudioInstance Audio::Play2D(Uuid clip)
+  {
+    if (!clip)
+    {
+      LOG_WARNING("AudioClip is invalid/null");
+      return Uuid{};
+    }
 
-		Voice* voice = AcquireVoice();
-		if (!voice)
-		{
-			LOG_WARNING("No available audio voices");
-			return;
-		}
+    AudioInstance newInstance = Uuid::Generate();
 
-		if (ma_sound_init_copy(&s_AudioEngine, &clip->GetSound(), 0, nullptr, &voice->sound) != MA_SUCCESS)
-		{
-			LOG_ERROR("Failed to initialize audio voice");
-			return;
-		}
+    Voice* voice = AcquireVoice(newInstance);
+    if (!voice)
+    {
+      LOG_WARNING("No available audio voices");
+      return Uuid{};
+    }
 
-		if (ma_sound_start(&voice->sound) != MA_SUCCESS)
-		{
-			LOG_ERROR("Failed to start audio voice");
-			return;
-		}
+    AudioClip& audioClip = Engine::AssetManager::GetAsset<AudioClip>(clip);
 
-		voice->active = true;
-	}
+    ma_audio_buffer_config bufferConfig = ma_audio_buffer_config_init(
+      ma_format_f32,
+      audioClip.GetChannels(),
+      audioClip.GetTotalFrames(),
+      audioClip.GetPCMData(),
+      nullptr
+    );
+    bufferConfig.sampleRate = audioClip.GetSampleRate();
 
-	void Audio::Play3D(AudioClip* clip, const glm::vec3& position) //TODO: take uuid, not ponter
-	{
-		if(!clip)
-		{
-			LOG_WARNING("AudioClip is null");
-			return;
-		}
+    if (ma_audio_buffer_init(&bufferConfig, &voice->buffer) != MA_SUCCESS)
+    {
+      LOG_ERROR("Failed to init audio buffer");
+      return Uuid{};
+    }
 
-		Voice* voice = AcquireVoice();
-		if (!voice)
-		{
-			LOG_WARNING("No available audio voices");
-			return;
-		}
 
-		if (ma_sound_init_copy(&s_AudioEngine, &clip->GetSound(), 0, nullptr, &voice->sound) != MA_SUCCESS)
-		{
-			LOG_ERROR("Failed to initialize audio voice");
-			return;
-		}
+    if (ma_sound_init_from_data_source(&s_AudioEngine, &voice->buffer, 0, nullptr, &voice->sound) != MA_SUCCESS)
+    {
+      LOG_ERROR("Failed to initialize audio voice");
+      ma_audio_buffer_uninit(&voice->buffer); // Cleanup
+      return Uuid{};
+    }
 
-		ma_sound_set_position(&voice->sound, position.x, position.y, position.z);
-		ma_sound_set_spatialization_enabled(&voice->sound, MA_TRUE);
+    ma_sound_start(&voice->sound);
+    return newInstance;
+  }
 
-		if (ma_sound_start(&voice->sound) != MA_SUCCESS)
-		{
-			LOG_ERROR("Failed to start audio voice");
-			return;
-		}
+  AudioInstance Audio::Play3D(Uuid clip, const glm::vec3& position)
+  {
+    if (!clip)
+    {
+      LOG_WARNING("AudioClip is invalid/null");
+			return Uuid{};
+    }
 
-		voice->active = true;
-	}
+		AudioInstance newInstance = Uuid::Generate();
 
-	void Audio::Stop(AudioClip* clip)
-	{
-		if (!clip)
-		{
-			LOG_WARNING("AudioClip is null");
-			return;
-		}
+    Voice* voice = AcquireVoice(newInstance);
+    if (!voice)
+    {
+      LOG_WARNING("No available audio voices");
+      return Uuid{};
+    }
 
-		ma_sound& sound = clip->GetSound();
+    Engine::AudioClip& audioClip = Engine::AssetManager::GetAsset<Engine::AudioClip>(clip);
 
-		if (ma_sound_stop(&sound) != MA_SUCCESS)
-		{
-			LOG_ERROR("Failed to stop audio");
-		}
-	}
+    ma_audio_buffer_config bufferConfig = ma_audio_buffer_config_init(
+      ma_format_f32,
+      audioClip.GetChannels(),
+      audioClip.GetTotalFrames(),
+      audioClip.GetPCMData(),
+      nullptr
+    );
+    bufferConfig.sampleRate = audioClip.GetSampleRate();
 
-	bool Audio::IsPlaying(AudioClip* clip)
-	{
-		if (!clip)
-		{
-			LOG_ERROR("AudioClip is null");
-			return false;
-		}
+    if (ma_audio_buffer_init(&bufferConfig, &voice->buffer) != MA_SUCCESS)
+    {
+      LOG_ERROR("Failed to init audio buffer");
+      return Uuid{};
+    }
 
-		return ma_sound_is_playing(&clip->GetSound()) == MA_TRUE;
-	}
+    // 2. Initialize the sound using the buffer as its source!
+    if (ma_sound_init_from_data_source(&s_AudioEngine, &voice->buffer, 0, nullptr, &voice->sound) != MA_SUCCESS)
+    {
+      LOG_ERROR("Failed to initialize audio voice");
+      ma_audio_buffer_uninit(&voice->buffer); // Cleanup
+      return Uuid{};
+    }
 
-	void Audio::SetVolume(AudioClip* clip, float volume)
-	{
-		if (!clip)
-		{
-			LOG_ERROR("AudioClip is null");
-			return;
-		}
+    // 3. Start playing
+    ma_sound_set_position(&voice->sound, position.x, position.y, position.z);
+    ma_sound_set_spatialization_enabled(&voice->sound, MA_TRUE);
+    ma_sound_start(&voice->sound);
+    return newInstance;
+  }
 
-		ma_sound_set_volume(&clip->GetSound(), volume);
-	}
+  void Audio::Stop(AudioInstance instance)
+  {
+    Voice* voice = GetVoice(instance);
+    if (!voice) return;
 
-	void Audio::SetLooping(AudioClip* clip, bool loop)
-	{
-		if (!clip)
-		{
-			LOG_ERROR("AudioClip is null");
-			return;
-		}
+    if (ma_sound_stop(&voice->sound) != MA_SUCCESS)
+    {
+      LOG_ERROR("Failed to stop audio");
+    }
+    else
+    {
+      ma_sound_uninit(&voice->sound);
+      ma_audio_buffer_uninit(&voice->buffer);
+      voice->active = false;
+      voice->instance = 0;
+    }
+  }
 
-		ma_sound_set_looping(&clip->GetSound(), loop);
-	}
+  bool Audio::IsPlaying(AudioInstance instance)
+  {
+    Voice* voice = GetVoice(instance);
+    if (!voice) return false;
 
-	void Audio::StopAll()
-	{
-		for (uint32_t i = 0; i < MaxVoices; i++)
-		{
-			Voice& voice = s_Voices[i];
+    return ma_sound_is_playing(&voice->sound) == MA_TRUE;
+  }
 
-			if (!voice.active) continue;
+  void Audio::SetVolume(AudioInstance instance, float volume)
+  {
+    Voice* voice = GetVoice(instance);
+    if (!voice) return;
 
-			ma_sound_stop(&voice.sound);
-			ma_sound_uninit(&voice.sound);
-			voice.active = false;
-		}
-	}
+    ma_sound_set_volume(&voice->sound, volume);
+  }
+
+  void Audio::SetLooping(AudioInstance instance, bool loop)
+  {
+    Voice* voice = GetVoice(instance);
+    if (!voice) return;
+
+    ma_sound_set_looping(&voice->sound, loop);
+  }
+
+  void Audio::StopAll()
+  {
+    for (uint32_t i = 0; i < MaxVoices; i++)
+    {
+      Voice& voice = s_Voices[i];
+
+      if (!voice.active) continue;
+
+      ma_sound_stop(&voice.sound);
+      ma_sound_uninit(&voice.sound);
+      voice.active = false;
+      voice.instance = 0;
+    }
+  }
 }

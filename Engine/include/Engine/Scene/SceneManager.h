@@ -2,6 +2,8 @@
 
 #include "Engine/Scene/Scene.h"
 
+namespace Engine { class Scene; }
+
 namespace Engine::SceneManager
 {
 	ENGINE_API void SetActiveScene(Uuid id);

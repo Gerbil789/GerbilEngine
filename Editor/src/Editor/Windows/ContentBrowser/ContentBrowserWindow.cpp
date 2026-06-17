@@ -269,7 +269,8 @@ namespace Editor
 			break;
 		default:
 			Engine::SubTexture2D& icon = IconManager::GetIcon(record.type);
-			view = icon.GetTexture().GetTextureView();
+
+			view = Engine::AssetManager::GetAsset<Engine::Texture2D>(icon.GetTexture()).GetTextureView();
 			uv_min = ImVec2(icon.GetUVMin().x, icon.GetUVMin().y);
 			uv_max = ImVec2(icon.GetUVMax().x, icon.GetUVMax().y);
 			break;

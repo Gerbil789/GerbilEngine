@@ -38,7 +38,7 @@ namespace Engine
 		return AssetType::Unknown;
 	}
 
-
+	//TODO: static reflection cpp26
 	inline std::string_view AssetTypeToString(AssetType type)
 	{
 		switch (type)
@@ -74,6 +74,7 @@ namespace Engine
 		AssetType type = AssetType::Unknown;
 
 		std::string GetName() const { return path.stem().string(); }
-		bool IsValid() const { return id; }
+
+		operator bool() const { return id; }
 	};
 };

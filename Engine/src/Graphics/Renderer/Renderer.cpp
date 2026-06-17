@@ -26,12 +26,13 @@ namespace Engine
 		CreateModelStorageBuffer();
 		CreateModelBindGroup();
 
-		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(Engine::AssetManager::GetAsset<Texture2D>(RESOURCES::TEXTURE::HDR));
 
 		CreateShadowTexture();
 
 		CreateEnvironmentUniformBuffer();
-		CreateEnvironmentBindGroup();
+		//CreateEnvironmentBindGroup();
+
+		SetEnvironmentTexture(RESOURCES::TEXTURE::HDR);
 	}
 
 	void Renderer::SetColorTarget(wgpu::TextureView colorView)
@@ -51,8 +52,7 @@ namespace Engine
 			textureId = RESOURCES::TEXTURE::HDR;
 		}
 
-		Texture2D& texture = Engine::AssetManager::GetAsset<Texture2D>(textureId);
-		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(texture);
+		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(textureId);
 		CreateEnvironmentBindGroup();
 	}
 
@@ -139,7 +139,7 @@ namespace Engine
 		entries[1].binding = 1;
 		entries[1].sampler = envSampler;
 
-		auto brdfTexture = TextureImporter::LoadTexture("Resources/Engine/hdr/brdf_integration_map_ct_ggx.hdr").value();
+		auto brdfTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/brdf_integration_map_ct_ggx.hdr").value();
 		entries[2].binding = 2;
 		entries[2].textureView = brdfTexture.GetTextureView();
 

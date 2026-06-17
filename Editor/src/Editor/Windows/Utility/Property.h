@@ -47,8 +47,6 @@ namespace Editor
 
 	struct PropertyTable
 	{
-		bool open = false;
-
 		PropertyTable(float labelWidth = 100.0f)
 		{
 			open = ImGui::BeginTable("table", 2, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_NoBordersInBody);
@@ -65,7 +63,8 @@ namespace Editor
 			if (open) { ImGui::EndTable(); }
 		}
 
-		explicit operator bool() const { return open; }
+	private:
+		bool open = false;
 	};
 
 	struct PropertyRow
@@ -73,7 +72,6 @@ namespace Editor
 		PropertyRow(std::string_view label)
 		{
 			ImGui::PushID(label.data(), label.data() + label.size());
-
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0);
 			ImGui::TextUnformatted(label.data(), label.data() + label.size());
@@ -99,7 +97,6 @@ namespace Editor
 				ImGui::EndDragDropSource();
 			}
 		}
-
 	};
 
 	struct DragDropTarget
@@ -120,17 +117,29 @@ namespace Editor
 			static_assert(std::is_invocable_v<Fn, Engine::Uuid>, "Callback must take an Engine::Uuid");
 
 			if (!active) return false;
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
-			{
-				assert(payload->DataSize == sizeof(Engine::Uuid) && "Drag drop payload size mismatch!");
-				Engine::Uuid id = *static_cast<const Engine::Uuid*>(payload->Data); //TODO: better way to handle this?
 
-				if (Engine::AssetManager::GetAssetRegistry().GetType(id) == expectedType)
-				{
-					std::forward<Fn>(fn)(id);
-					return true;
-				}
+			const ImGuiPayload* payload = ImGui::GetDragDropPayload();
+			bool isValidAsset = false;
+
+			if (payload && payload->IsDataType("UUID"))
+			{
+				Engine::Uuid id = *static_cast<const Engine::Uuid*>(payload->Data);
+				isValidAsset = (Engine::AssetManager::GetAssetRegistry().GetType(id) == expectedType);
 			}
+
+			ImVec4 targetColor = isValidAsset ? ImVec4(0.2f, 0.8f, 0.2f, 1.0f) : ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
+
+			ImGui::PushStyleColor(ImGuiCol_DragDropTarget, targetColor);
+			const ImGuiPayload* droppedPayload = ImGui::AcceptDragDropPayload("UUID");
+			ImGui::PopStyleColor();
+
+			if (droppedPayload && isValidAsset)
+			{
+				Engine::Uuid id = *static_cast<const Engine::Uuid*>(droppedPayload->Data);
+				std::forward<Fn>(fn)(id);
+				return true;
+			}
+
 			return false;
 		}
 
@@ -170,16 +179,13 @@ namespace Editor
 
 		if (showLabel)
 		{
-			// This draws the left column label and safely pushes the ImGui ID
 			row.emplace(label);
 		}
 		else
 		{
-			// Bypass the row/table entirely, but we still need a unique ID for the widget!
 			ImGui::PushID(label.data());
 		}
 
-		// Execute the type-specific ImGui drawing logic passed via lambda
 		if (drawFunc())
 		{
 			result.changed = true;

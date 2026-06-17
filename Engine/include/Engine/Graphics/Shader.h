@@ -1,16 +1,15 @@
 ﻿#pragma once
 
-#include "Engine/Core/UUID.h"
+#include "Engine/Asset/Asset.h"
 #include "Engine/Graphics/ShaderSpecification.h"
 #include <webgpu/webgpu.hpp>
 #include <ranges>
 
 namespace Engine
 {
-	class Shader
+	class Shader : public Asset
 	{
 	public:
-		Shader() = default;
 		Shader(const std::string& source);
 
 		size_t GetMaterialUniformBufferSize() const { return m_MaterialUniformBufferSize; }
@@ -38,8 +37,6 @@ namespace Engine
 
 			throw std::runtime_error("Binding not found: " + name); //TODO: better error handling
 		}
-
-		Uuid id;
 
 	private:
 		ShaderSpecification m_Specification;

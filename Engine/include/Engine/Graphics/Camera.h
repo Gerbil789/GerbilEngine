@@ -12,6 +12,14 @@ namespace Engine
 		enum class Background { Color, Skybox };
 
 	public:
+		Camera() = default;
+
+		Camera(Camera&& other) noexcept = default;
+		Camera& operator=(Camera&& other) noexcept = default;
+
+		Camera(const Camera&) = delete;
+		Camera& operator=(const Camera&) = delete;
+
 		Projection GetProjection() const;
 		void SetProjection(Projection projection);
 

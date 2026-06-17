@@ -109,7 +109,7 @@ namespace Template
 		Engine::GraphicsContext::Initialize();
 		GLFW::Initialize();
 
-		m_Window.Initialize(Engine::WindowSpecification{ "Game", m_Width, m_Height, "Resources/Editor/icons/logo.png" }); //TODO: make this configurable
+		m_Window.Initialize(Engine::WindowSpecification{ "Game", m_Width, m_Height, "Resources/Engine/icons/logo.png" }); //TODO: make this configurable
 		m_Window.SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
 
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());

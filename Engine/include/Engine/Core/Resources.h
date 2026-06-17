@@ -17,6 +17,7 @@ namespace RESOURCES
 		static constexpr Engine::Uuid BLACK = Engine::Uuid{ 5 };
 		static constexpr Engine::Uuid NORMAL = Engine::Uuid{ 6 };
 		static constexpr Engine::Uuid HDR = Engine::Uuid{ 7 };
+		static constexpr Engine::Uuid EDITOR_ICONS = Engine::Uuid{ 13 };
 	}
 
 	namespace SHADER

@@ -5,24 +5,26 @@
 #include "Engine/Graphics/Texture/Utility.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
+#include "Engine/Asset/AssetManager.h"
 #include <webgpu/webgpu.hpp>
 
 namespace Engine
 {
-	Environment EnvironmentBaker::BakeEnvironment(Texture2D& equirectangularHDR)
+	Environment EnvironmentBaker::BakeEnvironment(Uuid equirectangularHDR)
 	{
     Environment env;
-		env.TextureHDR = equirectangularHDR;
 		env.BaseCubemap = EquirectangularToCubemap(equirectangularHDR);
     env.IrradianceMap = CalculateIrradiance(env.BaseCubemap);
     env.PrefilteredMap = CalculatePrefiltered(env.BaseCubemap);
 		return env;
 	}
 
-  TextureCube EnvironmentBaker::EquirectangularToCubemap(Texture2D& source)
+  TextureCube EnvironmentBaker::EquirectangularToCubemap(Uuid source)
   {
-    uint32_t faceSize = source.GetHeight() / 2;
-    wgpu::TextureFormat format = source.GetFormat();
+		const Texture2D& sourceTexture = Engine::AssetManager::GetAsset<Texture2D>(source);
+
+    uint32_t faceSize = sourceTexture.GetHeight() / 2;
+    wgpu::TextureFormat format = sourceTexture.GetFormat();
 
     TextureSpecification spec;
     spec.width = faceSize;
@@ -42,7 +44,7 @@ namespace Engine
     sourceViewDesc.baseArrayLayer = 0;
     sourceViewDesc.arrayLayerCount = 1;
     sourceViewDesc.aspect = wgpu::TextureAspect::All;
-    wgpu::TextureView sourceTextureView = source.GetTexture().createView(sourceViewDesc);
+    wgpu::TextureView sourceTextureView = sourceTexture.GetTexture().createView(sourceViewDesc);
 
     // View for WRITING to the 6 faces of the target cubemap (Mip Level 0)
     wgpu::TextureViewDescriptor targetViewDesc;
@@ -154,8 +156,24 @@ namespace Engine
 
 	TextureCube EnvironmentBaker::CalculatePrefiltered(TextureCube& sourceCubemap)
 	{
-		ImportanceSample(sourceCubemap.GetTexture());
-		return sourceCubemap;
+		//ImportanceSample(sourceCubemap.GetTexture(), prefilteredMap.GetTexture());
+		//return sourceCubemap;
+
+    TextureSpecification spec;
+    spec.width = 128; // Standard starting size for prefiltered map
+    spec.height = 128;
+    spec.format = sourceCubemap.GetFormat();
+    // Needs StorageBinding to write to it, and CopyDst to copy mip 0
+    spec.usage = wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc;
+    spec.generateMips = true;
+
+    TextureCube prefilteredMap(spec);
+
+    // Pass BOTH the high-res source and the target map to the compute function
+    ImportanceSample(sourceCubemap.GetTexture(), prefilteredMap.GetTexture());
+
+    // Moves the newly created map back to the Environment struct safely
+    return prefilteredMap;
 		
 	}
 }

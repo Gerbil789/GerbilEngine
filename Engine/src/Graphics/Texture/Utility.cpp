@@ -46,7 +46,9 @@ namespace Engine
 			if (level > 0)
 			{
 				wgpu::Extent3D previousSize = textureMipSizes[level - 1];
-				textureMipSizes[level] = { previousSize.width / 2, previousSize.height / 2, 6 };
+				//textureMipSizes[level] = { previousSize.width / 2, previousSize.height / 2, 6 };
+
+				textureMipSizes[level] = {std::max(1u, previousSize.width / 2), std::max(1u, previousSize.height / 2), 6};
 			}
 		}
 
@@ -131,15 +133,15 @@ namespace Engine
 		Engine::GraphicsContext::GetQueue().submit(1, &commandBuffer);
 	}
 
-	void ImportanceSample(wgpu::Texture texture)
+	void ImportanceSample(wgpu::Texture sourceCubemap, wgpu::Texture targetCubemap)
 	{
 		std::vector<wgpu::TextureView> textureMipViews;
 		std::vector<wgpu::Extent3D> textureMipSizes;
 		wgpu::TextureView inputTextureView;
 
-		wgpu::TextureFormat format = texture.getFormat();
+		wgpu::TextureFormat format = targetCubemap.getFormat();
 
-		wgpu::Extent3D baseSize = { texture.getWidth(), texture.getHeight(), 1 };
+		wgpu::Extent3D baseSize = { targetCubemap.getWidth(), targetCubemap.getHeight(), 1 };
 		auto mipCount = GetMaxMipLevelCount(baseSize);
 
 
@@ -163,12 +165,13 @@ namespace Engine
 			std::string label = "MIP level #" + std::to_string(level);
 			textureViewDesc.label = { label.c_str(), WGPU_STRLEN };
 			textureViewDesc.baseMipLevel = level;
-			textureMipViews.push_back(texture.createView(textureViewDesc));
+			textureMipViews.push_back(targetCubemap.createView(textureViewDesc));
 
 			if (level > 0)
 			{
 				wgpu::Extent3D previousSize = textureMipSizes[level - 1];
-				textureMipSizes[level] = { previousSize.width / 2, previousSize.height / 2, 6 };
+				//textureMipSizes[level] = { previousSize.width / 2, previousSize.height / 2, 6 };
+				textureMipSizes[level] = { std::max(1u, previousSize.width / 2), std::max(1u, previousSize.height / 2), 6 };
 			}
 		}
 
@@ -176,7 +179,7 @@ namespace Engine
 		textureViewDesc.label = { "Input texture view", WGPU_STRLEN };
 		textureViewDesc.baseMipLevel = 0;
 		textureViewDesc.mipLevelCount = 1;
-		inputTextureView = texture.createView(textureViewDesc);
+		inputTextureView = sourceCubemap.createView(textureViewDesc);
 
 		wgpu::ShaderModule computeShaderModule = LoadWGSLShader("Resources/Engine/shaders/compute/importanceSampling.wgsl");
 
@@ -215,9 +218,6 @@ namespace Engine
 		computePipelineDesc.compute.module = computeShaderModule;
 		computePipelineDesc.layout = pipelineLayout;
 		wgpu::ComputePipeline computeMipmapPipeline = GraphicsContext::GetDevice().createComputePipeline(computePipelineDesc);
-
-
-
 
 		wgpu::SamplerDescriptor samplerDesc{};
 		samplerDesc.label = { "LinearEnvSampler", WGPU_STRLEN };
@@ -374,7 +374,7 @@ namespace Engine
 		computePass.setPipeline(computePipeline);
 		computePass.setBindGroup(0, bindGroup, 0, nullptr);
 
-		uint32_t irradianceSize = 32;
+		uint32_t irradianceSize = targetCubemap.getWidth();
 		uint32_t workgroupSizePerDim = 8;
 		uint32_t workgroupCountX = (irradianceSize + workgroupSizePerDim - 1) / workgroupSizePerDim;
 		uint32_t workgroupCountY = (irradianceSize + workgroupSizePerDim - 1) / workgroupSizePerDim;

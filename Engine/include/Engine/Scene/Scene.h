@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Engine/Asset/Asset.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/TransformSystem.h"
 #include "Engine/Graphics/Texture/Environment.h"
@@ -8,17 +9,17 @@ namespace Engine
 {
 	class Camera;
 
-	class ENGINE_API Scene
+	class ENGINE_API Scene : public Asset
 	{
 	public:
 		Scene() = default;
 		~Scene();
 
-		Scene(const Scene& other);
-		Scene& operator=(const Scene& other);
+		Scene(Scene&&) noexcept = default;
+		Scene& operator=(Scene&&) noexcept = default;
 
-		Scene(Scene&& other) noexcept;
-		Scene& operator=(Scene&& other) noexcept;
+		Scene(const Scene&) = delete;
+		Scene& operator=(const Scene&) = delete;
 
 		entt::entity CreateEntity(const std::string& name = "new entity");
 		entt::entity CreateEntity(const std::string& name, Uuid entityId);
@@ -30,8 +31,6 @@ namespace Engine
 
 		Uuid GetEnvironmentTexture() const { return m_EnvironmentTextureId; }
 		void SetEnvironmentTexture(Uuid textureId) { m_EnvironmentTextureId = textureId; }
-
-		Uuid id;
 
 		template<typename... Components>
 		std::vector<entt::entity> GetEntities(bool includeDisabled = false)
@@ -48,16 +47,6 @@ namespace Engine
 				entities.push_back(entity);
 			}
 			return entities;
-		}
-
-	private:
-		template<typename T>
-		void CopyComponentIfExists(entt::entity dst, entt::entity src, const entt::registry& srcRegistry)
-		{
-			if (srcRegistry.any_of<T>(src))
-			{
-				m_Registry.emplace_or_replace<T>(dst, srcRegistry.get<T>(src));
-			}
 		}
 
 	private:

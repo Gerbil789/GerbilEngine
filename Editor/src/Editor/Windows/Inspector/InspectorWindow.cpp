@@ -11,8 +11,8 @@ namespace Editor
 {
 	namespace
 	{
-		Engine::Uuid m_Id{};
-		SelectionContext m_Context{};
+		Engine::Uuid m_Id;
+		SelectionContext m_Context;
 
 		EntityInspectorPanel m_EntityInspector;
 		ShaderInspectorPanel m_ShaderInspector;
@@ -62,12 +62,12 @@ namespace Editor
 
 			case Engine::AssetType::Shader:
 			{
-				m_ShaderInspector.Draw(&(Engine::AssetManager::GetAsset<Engine::Shader>(m_Id)));
+				m_ShaderInspector.Draw(m_Id);
 				break;
 			}
 			case Engine::AssetType::Audio:
 			{
-				m_AudioInspector.Draw(&(Engine::AssetManager::GetAsset<Engine::AudioClip>(m_Id)));
+				m_AudioInspector.Draw(m_Id);
 				break;
 			}
 			default:

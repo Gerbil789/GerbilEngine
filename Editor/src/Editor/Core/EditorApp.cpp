@@ -46,13 +46,14 @@ namespace Editor
 		Engine::GraphicsContext::Initialize();
 		GLFW::Initialize();
 
-		m_Window.Initialize({ std::format("Gerbil Editor - {}", Engine::Configuration) , 1600, 900, "Resources/Editor/icons/logo.png" });
+		m_Window.Initialize({ std::format("Gerbil Editor - {}", Engine::Configuration) , 1600, 900, "Resources/Engine/icons/logo.png" });
 		m_Window.SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
 
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());
 
 		Engine::Input::SetActiveWindow(*m_Window.GetNativeWindow());
 		EditorContext::renderer.Initialize();
+		EditorContext::renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque/* | Engine::RenderPassType::Normal | Engine::RenderPassType::Wireframe*/);
 		EditorCommandManager::Initialize();
 		FileWatcher::WatchDirectory(project.GetAssetsDirectory());
 		Engine::Audio::Initialize();
@@ -64,18 +65,9 @@ namespace Editor
 
 		Engine::Uuid id = project.GetDefaultSceneId();
 
-		//if(!Engine::AssetManager::GetAssetRegistry().GetRecord(id).IsValid())
-		//{
-		//	LOG_ERROR("Failed to load default scene '{}', loading empty scene instead!", id);
-		//	id = RESOURCES::SCENE::DEFAULT;
-		//}
+		Engine::SceneManager::SetActiveScene(id);
 
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
-
-		//Engine::Scene& newScene = Engine::AssetManager::CreateAsset<Engine::Scene>();
-		//newScene = scene;
-
-		Engine::SceneManager::SetActiveScene(scene.id);
 		EditorCommandManager::SetContext(&scene);
 
 		EditorContext::editorCamera.SetBackground(Engine::Camera::Background::Skybox);

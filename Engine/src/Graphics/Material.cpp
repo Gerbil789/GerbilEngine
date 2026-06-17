@@ -192,7 +192,7 @@ namespace Engine
 					m_Textures[binding.name] = RESOURCES::TEXTURE::WHITE; 
 				}
 
-				const Texture& tex = Engine::AssetManager::GetAsset<Texture2D>(m_Textures[binding.name]);
+				const Texture2D& tex = Engine::AssetManager::GetAsset<Texture2D>(m_Textures[binding.name]);
 				entry.textureView = tex.GetTextureView();
 			}
 			else if (binding.type == BindingType::Sampler)

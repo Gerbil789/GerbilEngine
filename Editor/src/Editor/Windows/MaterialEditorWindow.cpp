@@ -86,11 +86,6 @@ namespace Editor
 					{
 						if (param.name[0] == '_') continue;
 
-						ImGui::TableNextRow();
-						ImGui::TableSetColumnIndex(0);
-						ImGui::TextUnformatted(param.name.c_str());
-						ImGui::TableSetColumnIndex(1);
-
 						Engine::MaterialValue variantValue = m_Material->GetParameterVariant(param.name);
 
 						std::visit([&](auto& arg)
@@ -116,24 +111,15 @@ namespace Editor
 
 				if (binding.type == Engine::BindingType::Texture2D)
 				{
-					/*ImGui::TableNextRow();
-					ImGui::TableSetColumnIndex(0);
-					ImGui::TextUnformatted(binding.name.c_str());
-
-					ImGui::TableSetColumnIndex(1);*/
-
-					Engine::Uuid id = m_Material->GetTexture(binding.name);
-
-					if (AssetField(binding.name.c_str(), id, Engine::AssetType::Texture2D).changed)
+					Engine::Uuid texture = m_Material->GetTexture(binding.name);
+					if (AssetField(binding.name.c_str(), texture, Engine::AssetType::Texture2D).changed)
 					{
-						m_Material->SetTexture(binding.name, id);
+						m_Material->SetTexture(binding.name, texture);
 					}
 				}
 			}
 
 			{
-				ImGui::Separator();
-
 				ImGui::TableNextRow();
 				ImGui::TableSetColumnIndex(0);
 

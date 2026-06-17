@@ -1,66 +1,36 @@
 #include "enginepch.h"
 #include "Engine/Audio/AudioClip.h"
-#include "Engine/Audio/Audio.h"
 #include "Engine/Core/Log.h"
 #include <miniaudio.h>   
 
 namespace Engine
 {
-	struct AudioClip::Impl
+	AudioClip::AudioClip(const std::filesystem::path& path)
 	{
-		ma_sound sound;
-	};
+		ma_decoder decoder;
+		// 0, 0 means "use the file's native channel count and sample rate"
+		ma_decoder_config config = ma_decoder_config_init(ma_format_f32, 0, 0);
 
-	AudioClip::AudioClip() = default;
-
-	AudioClip::AudioClip(const std::filesystem::path& path) : m_Impl(std::make_unique<Impl>())
-	{
-		if(ma_sound_init_from_file(&Audio::GetAudioEngine() , path.string().c_str(), MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_ASYNC | MA_SOUND_FLAG_NO_DEFAULT_ATTACHMENT, nullptr, nullptr, &m_Impl->sound) != MA_SUCCESS)
+		if (ma_decoder_init_file(path.string().c_str(), &config, &decoder) != MA_SUCCESS)
 		{
-			LOG_ERROR("Failed to load audio from file: {}", path);
+			LOG_ERROR("Failed to load audio file: {0}", path.string());
+			return;
 		}
 
-		ma_sound_set_spatialization_enabled(&m_Impl->sound, MA_TRUE);
-		ma_sound_set_attenuation_model(&m_Impl->sound, ma_attenuation_model_linear);
+		m_Channels = decoder.outputChannels;
+		m_SampleRate = decoder.outputSampleRate;
 
-		ma_sound_set_min_distance(&m_Impl->sound, 10.0f);
-		ma_sound_set_max_distance(&m_Impl->sound, 200.0f);
-		ma_sound_set_rolloff(&m_Impl->sound, 1.0f);
+		ma_decoder_get_length_in_pcm_frames(&decoder, &m_TotalFrames);
+
+		m_PCMData.resize(m_TotalFrames * m_Channels);
+		ma_decoder_read_pcm_frames(&decoder, m_PCMData.data(), m_TotalFrames, nullptr);
+
+		ma_decoder_uninit(&decoder);
 	}
-
-	AudioClip::~AudioClip()
-	{
-		ma_sound_uninit(&m_Impl->sound);
-	}
-
-	AudioClip::AudioClip(AudioClip&& other) noexcept = default;
-
-	AudioClip& AudioClip::operator=(AudioClip&& other) noexcept = default;
 
 	float AudioClip::GetDurationSeconds() const
 	{
-		ma_uint64 frames = 0;
-		ma_sound_get_length_in_pcm_frames(&m_Impl->sound, &frames);
-		return static_cast<float>(frames) / ma_engine_get_sample_rate(m_Impl->sound.engineNode.pEngine);
-	}
-
-	float AudioClip::GetCurrentTimeSeconds() const
-	{
-		ma_uint64 cursor = 0;
-		ma_sound_get_cursor_in_pcm_frames(&m_Impl->sound, &cursor);
-
-		return static_cast<float>(cursor) / ma_engine_get_sample_rate(m_Impl->sound.engineNode.pEngine);
-	}
-
-	void AudioClip::SetCurrentTimeSeconds(float time)
-	{
-		const ma_uint32 sr = ma_engine_get_sample_rate(m_Impl->sound.engineNode.pEngine);
-
-		ma_sound_seek_to_pcm_frame(&m_Impl->sound, static_cast<ma_uint64>(time * sr));
-	}
-
-	ma_sound& AudioClip::GetSound()
-	{
-		return m_Impl->sound;
+		if (m_SampleRate == 0) return 0.0f;
+		return static_cast<float>(m_TotalFrames) / static_cast<float>(m_SampleRate);
 	}
 }

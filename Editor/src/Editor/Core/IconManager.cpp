@@ -1,5 +1,6 @@
 #include "IconManager.h"
-#include "Engine/Asset/Importer/TextureImporter.h"
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Core/Resources.h"
 #include "Engine/Asset/AssetRecord.h"
 #include <glm/glm.hpp>
 #include <array>
@@ -21,27 +22,16 @@ namespace Editor
 				glm::ivec2{7, 0}, // Mesh
 		};
 
-		Engine::Texture2D m_TextureAtlas;
 		constexpr glm::ivec2 m_CellSize{ 64, 64 };
 		std::vector<Engine::SubTexture2D> m_Icons;
 	}
 
 	void IconManager::Initialize()
 	{
-		const std::filesystem::path path = "Resources/Editor/icons/icons.png";
-
-		auto texture = Engine::TextureImporter::LoadTexture(path);
-		if (!texture)
-		{
-			throw std::runtime_error("Failed to load icon texture atlas: " + path.string());
-		}
-
-		m_TextureAtlas = *texture;
-
 		m_Icons.reserve(IconCoords.size());
 		for (size_t i = 0; i < IconCoords.size(); ++i)
 		{
-			m_Icons.emplace_back(Engine::SubTexture2D::CreateFromGrid(m_TextureAtlas, IconCoords[i], m_CellSize));
+			m_Icons.emplace_back(Engine::SubTexture2D::CreateFromGrid(RESOURCES::TEXTURE::EDITOR_ICONS, IconCoords[i], m_CellSize));
 		}
 	}
 

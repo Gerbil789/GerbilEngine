@@ -38,18 +38,13 @@ namespace Engine
     template<typename T, typename ImporterFunc>
     T& LoadAssetInternal(Uuid id, std::unordered_map<Uuid, T>& map, Uuid fallbackId, ImporterFunc importFunc)
     {
-      auto it = map.find(id);
-      if (it != map.end())
+      if (auto it = map.find(id); it != map.end())
       {
         return it->second;
       }
 
       const Engine::AssetRecord& record = m_AssetRegistry.GetRecord(id);
-      if (!record.IsValid())
-      {
-        //LOG_ERROR("Failed to load asset '{}', Record not found", id);
-        return map.at(fallbackId);
-      }
+      if (!record) return map.at(fallbackId);
 
       auto path = m_AssetsDirectory / record.path;
       std::optional<T> importedAsset = importFunc(path);
@@ -58,9 +53,9 @@ namespace Engine
       {
         importedAsset->id = id;
 
-        auto [insertedIt, success] = map.insert_or_assign(id, std::move(*importedAsset));
+        auto [it, ok] = map.try_emplace(id, std::move(*importedAsset));
         LOG_TRACE("Loaded asset '{}'", id);
-        return insertedIt->second;
+        return it->second;
       }
 
       LOG_ERROR("Asset import failed! '{}'", id);
@@ -94,29 +89,28 @@ namespace Engine
     emptyMesh.id = RESOURCES::MESH::EMPTY;
     m_Meshes.insert_or_assign(RESOURCES::MESH::EMPTY, std::move(emptyMesh));
 
-    auto whiteTexture = Texture2D::GetDefault();
-    if (whiteTexture)
     {
-      whiteTexture->id = RESOURCES::TEXTURE::WHITE;
-      m_Textures.insert_or_assign(RESOURCES::TEXTURE::WHITE, std::move(*whiteTexture));
+      TextureSpecification spec;
+      constexpr uint32_t whitePixel = 0xFFFFFFFF;
+      Texture2D whiteTexture(spec, &whitePixel);
+      whiteTexture.id = RESOURCES::TEXTURE::WHITE;
+      m_Textures.insert_or_assign(RESOURCES::TEXTURE::WHITE, std::move(whiteTexture));
     }
 
-    auto normalTexture = Texture2D::GetDefaultNormal();
-    if (normalTexture)
     {
-      normalTexture->id = RESOURCES::TEXTURE::NORMAL;
-      m_Textures.insert_or_assign(RESOURCES::TEXTURE::NORMAL, std::move(*normalTexture));
+      TextureSpecification spec;
+      constexpr uint8_t normalPixel[4] = { 128, 128, 255, 255 }; // Blue-ish
+      Texture2D normalTexture(spec, &normalPixel);
+      normalTexture.id = RESOURCES::TEXTURE::NORMAL;
+      m_Textures.insert_or_assign(RESOURCES::TEXTURE::NORMAL, std::move(normalTexture));
     }
-
 
     LoadBuiltInAsset(RESOURCES::MESH::CUBE, "Resources/Engine/models/cube.glb", m_Meshes, MeshImporter::LoadMesh, "Cube");
     LoadBuiltInAsset(RESOURCES::MESH::SPHERE, "Resources/Engine/models/sphere.glb", m_Meshes, MeshImporter::LoadMesh, "Sphere");
-
-    LoadBuiltInAsset(RESOURCES::TEXTURE::HDR, "Resources/Engine/hdr/lebombo_4k.hdr", m_Textures, TextureImporter::LoadTexture, "HDR Environment");
-
+    LoadBuiltInAsset(RESOURCES::TEXTURE::HDR, "Resources/Engine/hdr/lebombo_4k.hdr", m_Textures, TextureImporter::LoadTexture2D, "HDR Environment");
+    LoadBuiltInAsset(RESOURCES::TEXTURE::EDITOR_ICONS, "Resources/Engine/icons/icons.png", m_Textures, TextureImporter::LoadTexture2D, "Editor Icons");
     LoadBuiltInAsset(RESOURCES::SHADER::DEFAULT, "Resources/Engine/shaders/pink.wgsl", m_Shaders, ShaderImporter::LoadShader, "Pink Shader");
     LoadBuiltInAsset(RESOURCES::SHADER::FLAT, "Resources/Engine/shaders/flat.wgsl", m_Shaders, ShaderImporter::LoadShader, "Flat Shader");
-
     LoadBuiltInAsset(RESOURCES::SCENE::DEFAULT, "Resources/Engine/scenes/default.scene", m_Scenes, SceneImporter::LoadScene, "Default Scene");
 
     {
@@ -145,7 +139,7 @@ namespace Engine
   {
     if constexpr (std::is_same_v<T, Texture2D>)
     {
-      return LoadAssetInternal(id, m_Textures, RESOURCES::TEXTURE::WHITE, TextureImporter::LoadTexture);
+      return LoadAssetInternal(id, m_Textures, RESOURCES::TEXTURE::WHITE, TextureImporter::LoadTexture2D);
     }
     else if constexpr (std::is_same_v<T, Mesh>)
     {

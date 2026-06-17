@@ -31,9 +31,9 @@ namespace Editor
 		auto view = registry.view<Engine::TransformComponent>();
 
 		int i = 0;
-		for(auto [entity, transform] : view.each())
+		for (auto [entity, transform] : view.each())
 		{
-			if(transform.parent != entt::null) continue;
+			if (transform.parent != entt::null) continue;
 
 			DrawReorderDropTarget(registry, entt::null, i);
 			DrawEntityNode(registry, entity);
@@ -105,23 +105,23 @@ namespace Editor
 			ImGui::EndDragDropTarget();
 		}
 
-		if(ImGui::BeginPopupContextItem())
+		if (ImGui::BeginPopupContextItem())
 		{
-			if(ImGui::MenuItem("Delete"))
+			if (ImGui::MenuItem("Delete"))
 			{
 				EditorCommandManager::DeleteEntity(entity);
 			}
 			ImGui::EndPopup();
 		}
 
-		if(opened)
+		if (opened)
 		{
 			auto view = registry.view<Engine::TransformComponent>();
 
 			int i = 0;
-			for(auto[childEntity, transform] : view.each())
+			for (auto [childEntity, transform] : view.each())
 			{
-				if(transform.parent == entity)
+				if (transform.parent == entity)
 				{
 					DrawReorderDropTarget(registry, entity, i);
 					DrawEntityNode(registry, childEntity);
@@ -154,5 +154,4 @@ namespace Editor
 		}
 		ImGui::PopID();
 	}
-
 }

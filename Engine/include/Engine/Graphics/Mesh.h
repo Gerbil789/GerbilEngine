@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Engine/Asset/Asset.h"
 #include <memory>
 #include <glm/glm.hpp>
 #include <vector>
-
-namespace wgpu { class Buffer; }
+#include <webgpu/webgpu.hpp>
 
 namespace Engine
 {
@@ -36,30 +36,22 @@ namespace Engine
 		std::vector<uint32_t> wireIndices;	//TODO: add compile time macro to disable in export game builds
 	};
 
-	class ENGINE_API Mesh
+	class ENGINE_API Mesh : public Asset
 	{
 	public:
 		Mesh(const MeshSpecification& specification);
-		~Mesh();
-
-		Mesh(Mesh&& other) noexcept;
-		Mesh& operator=(Mesh&& other) noexcept;
-
-		Mesh(const Mesh&) = delete;
-		Mesh& operator=(const Mesh&) = delete;
 
 		const std::vector<SubMesh>& GetSubMeshes() const { return m_SubMeshes; }
-		const wgpu::Buffer& GetVertexBuffer() const;
-		const wgpu::Buffer& GetIndexBuffer() const;
-		const wgpu::Buffer& GetWireIndexBuffer() const;
+		const wgpu::Buffer GetVertexBuffer() const { return vertexBuffer; }
+		const wgpu::Buffer GetIndexBuffer() const { return indexBuffer; }
+		const wgpu::Buffer GetWireIndexBuffer() const { return wireIndexBuffer; }
 
 		AABB aabb;
-		Uuid id;
 
 	private:
 		std::vector<SubMesh> m_SubMeshes;
-
-		struct MeshGPUData;
-		std::unique_ptr<MeshGPUData> m_GPU;
+		wgpu::Buffer vertexBuffer;
+		wgpu::Buffer indexBuffer;
+		wgpu::Buffer wireIndexBuffer;
 	};
 }

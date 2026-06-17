@@ -9,33 +9,18 @@
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/RenderPass/ShadowPass.h"
 #include "Engine/Scene/SceneManager.h"
+#include "Engine/Core/Resources.h"
 #include <imgui.h>
 
 namespace Editor
 {
-	//namespace
-	//{
-	//	ImGuiTextFilter m_Filter;
-	//}
-
 	void SettingsWindow::Draw()
 	{
 		ImGui::Begin("Settings");
 
-		//m_Filter.Draw("##SearchSettings");
-
-		ImGui::Separator();
-		ImGui::Spacing();
-
 		if (ImGui::CollapsingHeader("Editor"))
 		{
-
 			PropertyTable table;
-
-			//{
-			//	PropertyRow row("Show Grid");
-			//	BoolField("Show Grid", EditorSettings::showGrid);
-			//}
 
 			if (PropertyField("Wireframe color", EditorSettings::wireframeColor, { .mode = Editor::DisplayMode::Color }).changed)
 			{
@@ -46,14 +31,10 @@ namespace Editor
 				}
 			}
 
-
-
 			if (ImGui::Button("Reset default editor layout"))
 			{
 				ImGui::LoadIniSettingsFromDisk("Resources/Editor/layouts/default.ini");
 			}
-
-			ImGui::SameLine();
 
 			if (ImGui::Button("Save current layout"))
 			{
@@ -70,11 +51,12 @@ namespace Editor
 
 			if (AssetField("Environment", id, Engine::AssetType::Texture2D).changed)
 			{
+				if(!id) { id = RESOURCES::TEXTURE::HDR; }
+
 				scene.SetEnvironmentTexture(id);
 				EditorContext::renderer.SetEnvironmentTexture(id);
 			}
 		}
-
 
 		if (ImGui::CollapsingHeader("Shadows"))
 		{
