@@ -25,7 +25,7 @@ struct ViewUniforms
 	_padding: f32,
 };
 
-struct EnvironmentUniforms
+struct ShadowUniforms
 {
 	lightViewProj : array<mat4x4f, NUM_SHADOW_CASCADES>,
 	cascadeSplits : array<f32, NUM_SHADOW_CASCADES>,
@@ -50,14 +50,15 @@ struct ModelBuffer
 //view
 @group(0) @binding(0) var<uniform> uView: ViewUniforms;
 
-//environment
-@group(1) @binding(0) var<uniform> uEnvironment : EnvironmentUniforms;
-@group(1) @binding(1) var EnvSampler: sampler;
-@group(1) @binding(2) var BRDFIntMap: texture_2d<f32>;
-@group(1) @binding(3) var IrradianceMap: texture_cube<f32>;
-@group(1) @binding(4) var PrefilteredEnvMap: texture_cube<f32>;
-@group(1) @binding(5) var shadowSampler : sampler_comparison;
-@group(1) @binding(6) var shadowMap : texture_depth_2d_array;
+//environment & shadow
+@group(1) @binding(0) var EnvironmentSampler: sampler;
+@group(1) @binding(1) var EnvironmentMap: texture_cube<f32>;
+@group(1) @binding(2) var IrradianceMap: texture_cube<f32>;
+@group(1) @binding(3) var PrefilteredSpecularMap: texture_cube<f32>;
+@group(1) @binding(4) var BRDFIntMap: texture_2d<f32>;
+@group(1) @binding(5) var<uniform> uShadow : ShadowUniforms;
+@group(1) @binding(6) var ShadowSampler : sampler_comparison;
+@group(1) @binding(7) var ShadowMap : texture_depth_2d_array;
 
 //material
 @group(2) @binding(0) var<uniform> uMaterial: MaterialUniforms;
@@ -102,14 +103,14 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 
 	for (var i: i32 = 0; i < NUM_SHADOW_CASCADES; i = i + 1)
 	{
-		if (depth < uEnvironment.cascadeSplits[i])
+		if (depth < uShadow.cascadeSplits[i])
 		{
 				cascadeIndex = i;
 				break;
 		}
 	}
 
-	let lightPos4 = uEnvironment.lightViewProj[cascadeIndex] * vec4f(in.worldPos, 1.0);
+	let lightPos4 = uShadow.lightViewProj[cascadeIndex] * vec4f(in.worldPos, 1.0);
 	let lightPos = lightPos4.xyz / lightPos4.w;
 
 	let light_uv = vec2f((lightPos.x + 1.0) * 0.5, -(lightPos.y - 1.0) * 0.5);
@@ -125,8 +126,8 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 			let offset = vec2f(f32(x), f32(y)) * texelSize;
 	
 			visibility += textureSampleCompare(
-				shadowMap,
-				shadowSampler,
+				ShadowMap,
+				ShadowSampler,
 				light_uv + offset,
 				cascadeIndex,
 				lightPos.z
@@ -178,20 +179,29 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 	let F = FresnelSchlick(NdotV, F0);
 	let Fd = (vec3f(1.0) - F) * (1.0 - metallic);
 
-	let irradiance = textureSample(IrradianceMap, EnvSampler, N).rgb;
+
+	// return vec4f(N * 0.5 + 0.5, 1.0); //test normals
+
+	let irradiance = textureSample(IrradianceMap, EnvironmentSampler, N).rgb;
 	let diffuse = Fd * albedo * irradiance;
 
-
-	let maxMipLevel = f32(textureNumLevels(PrefilteredEnvMap)) - 1.0;
+	let maxMipLevel = f32(textureNumLevels(PrefilteredSpecularMap)) - 1.0;
 	let lod = pow(roughness, 2.0) * maxMipLevel;
-	let env = textureSampleLevel(PrefilteredEnvMap, EnvSampler, R, lod).rgb;
+	let env = textureSampleLevel(PrefilteredSpecularMap, EnvironmentSampler, R, lod).rgb;
 
-	let brdf = textureSample(BRDFIntMap, EnvSampler, vec2(NdotV, roughness)).rg;
+	let brdf = textureSample(BRDFIntMap, EnvironmentSampler, vec2(NdotV, roughness)).rg;
 
 	let specular = env * (F0 * brdf.r + brdf.g);
 
-	let color = ((diffuse + specular) * shadow) * ao;
+	let color = diffuse * ao + specular * ao;
+	// let color = ((diffuse + specular) * shadow) * ao;
 	
 	let gammaCorrected = pow(color, vec3f(1.0 / 2.2));
 	return vec4f(gammaCorrected, uMaterial.albedo.a);
+
+	//return vec4f(vec3f(maxMipLevel / 10.0), 1.0);
+	//return vec4f(vec3f(roughness), 1.0);
+	//return vec4f(vec3f(lod / 10.0), 1.0);
+
+	//return vec4f(textureSampleLevel(PrefilteredSpecularMap, EnvironmentSampler, R, 6.0).rgb, 1.0);
 }

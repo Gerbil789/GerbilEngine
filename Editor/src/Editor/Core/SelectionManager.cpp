@@ -8,7 +8,7 @@ namespace Editor
   {
     if (!id) return;
 
-    if (std::find(m_Selection.begin(), m_Selection.end(), id) == m_Selection.end())
+    //if (std::find(m_Selection.begin(), m_Selection.end(), id) == m_Selection.end())
     {
       if (!additive)
       {

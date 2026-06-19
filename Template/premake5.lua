@@ -42,20 +42,13 @@ defines
 	"GLM_ENABLE_EXPERIMENTAL",
 }
 
-postbuildcommands 
-{
-	"{ECHO} Copying dependencies...",
-	"{COPYDIR} %{wks.location}/Resources %{cfg.targetdir}/Resources",
-}
+-- postbuildcommands 
+-- {
+-- 	"{ECHO} Copying dependencies...",
+-- 	"{COPYDIR} %{wks.location}/Resources %{cfg.targetdir}/Resources",
+-- }
 
 filter "configurations:not Dist"
-	postbuildcommands 
-  {
-    -- "{COPYFILE} %{wks.location}/bin/" .. outputdir .. "/Engine/Engine.dll %{cfg.targetdir}",
-    -- "{COPYFILE} %{wks.location}/bin/" .. outputdir .. "/glfw/glfw.dll %{cfg.targetdir}",
-    "{COPYFILE} %{wks.location}/vendor/dawn/shared/webgpu_dawn.dll %{cfg.targetdir}",
-  }
-
 	removelinks
 	{
 		"TestProject",

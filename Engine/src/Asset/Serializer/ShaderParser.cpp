@@ -85,7 +85,6 @@ namespace Engine
 			attrib.shaderLocation = std::stoi(match[1].str());
       //attrib.label = match[2].str();
       attrib.format = StringToVertexFormat(match[3].str());
-
       spec.vertexAttributes.push_back(attrib);
       begin = match.suffix().first;
     }

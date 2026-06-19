@@ -60,11 +60,6 @@ namespace Engine
 		return GraphicsContext::GetInstance().createSurface(surfaceDesc);
 	}
 
-	Window::Window(const WindowSpecification& specification)
-	{
-		Initialize(specification);
-	}
-
 	void Window::Initialize(const WindowSpecification& specification)
 	{
 		m_Data.width = specification.width;
@@ -97,11 +92,6 @@ namespace Engine
 			glfwDestroyWindow(m_Window);
 			m_Window = nullptr;
 		}
-	}
-
-	Window::~Window()
-	{
-		Shutdown();
 	}
 
 	WGPUSurface Window::GetSurface() const

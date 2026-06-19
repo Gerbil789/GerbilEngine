@@ -5,13 +5,13 @@ removeplatforms { "Linux", "Web" }
 files
 {
 	"src/Editor/**.h",
-	"src/Editor/**.cpp"
+	"src/Editor/**.cpp",
 }
 
 includedirs
 {
 	"src",
-	"%{wks.location}/Engine/include"
+	"%{wks.location}/Engine/include",
 }
 
 externalincludedirs
@@ -43,15 +43,14 @@ defines
 
 postbuildcommands 
 {
+	"{ECHO} Copying renderdoc.dll",
 	"{COPYFILE} %{wks.location}/vendor/renderdoc/renderdoc.dll %{cfg.targetdir}",
-	"{COPYDIR} %{wks.location}/Resources %{cfg.targetdir}/Resources",
 }
 
 filter "configurations:not Dist"
 	postbuildcommands 
   {
-    -- "{COPYFILE} %{wks.location}/bin/" .. outputdir .. "/Engine/Engine.dll %{cfg.targetdir}",
-    -- "{COPYFILE} %{wks.location}/bin/" .. outputdir .. "/glfw/glfw.dll %{cfg.targetdir}",
+		"{ECHO} Copying webgpu_dawn.dll",
     "{COPYFILE} %{wks.location}/vendor/dawn/shared/webgpu_dawn.dll %{cfg.targetdir}",
   }
 

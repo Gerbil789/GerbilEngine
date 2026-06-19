@@ -21,21 +21,22 @@ namespace Engine
 
 		auto vertexAttributes = shader.GetSpecification().vertexAttributes;
 
-		const uint64_t offset = std::accumulate(vertexAttributes.begin(), vertexAttributes.end(), 0ull,
-			[](uint64_t sum, const wgpu::VertexAttribute& attr)
-			{
-				return sum + GetVertexFormatSize(attr.format);
-			}
-		);
+		uint64_t currentStride = 0;
+
+		for (auto& attr : vertexAttributes)
+		{
+			uint64_t formatSize = GetVertexFormatSize(attr.format);
+			attr.offset = currentStride;
+			currentStride += formatSize;
+		}
 
 		wgpu::VertexBufferLayout vertexBufferLayout;
 		vertexBufferLayout.attributeCount = vertexAttributes.size();
 		vertexBufferLayout.attributes = vertexAttributes.data();
-		vertexBufferLayout.arrayStride = offset;
+		vertexBufferLayout.arrayStride = currentStride;
 		vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
 
 		wgpu::RenderPipelineDescriptor pipelineDesc;
-		//std::string pipelineLabel = std::format("{} Shader Pipeline", name);
 		pipelineDesc.label = { "Shader Pipeline", WGPU_STRLEN};
 
 		pipelineDesc.vertex.bufferCount = 1;
@@ -71,15 +72,15 @@ namespace Engine
 		fragmentState.targets = &colorTarget;
 		pipelineDesc.fragment = &fragmentState;
 
-		wgpu::DepthStencilState depthStencilState {};
+		wgpu::DepthStencilState depthStencilState;
 		depthStencilState.depthCompare = wgpu::CompareFunction::Less;
 		depthStencilState.depthWriteEnabled = wgpu::OptionalBool::True;
 		depthStencilState.format = wgpu::TextureFormat::Depth24Plus;
 		depthStencilState.stencilReadMask = 0xFFFFFFFF;
 		depthStencilState.stencilWriteMask = 0xFFFFFFFF;
 
-		depthStencilState.depthBias = 2;
-		depthStencilState.depthBiasSlopeScale = 2.0f;
+		depthStencilState.depthBias = 0;
+		depthStencilState.depthBiasSlopeScale = 0.0f;
 		depthStencilState.depthBiasClamp = 0.0f;
 
 		pipelineDesc.depthStencil = &depthStencilState;

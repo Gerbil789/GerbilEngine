@@ -7,7 +7,7 @@ namespace Engine
 {
 	constexpr static int s_ShadowCascadeCount = 4;
 
-	struct alignas(16) EnvironmentUniforms
+	struct alignas(16) EnvironmentUniforms //TODO: rename to shadow uniforms
 	{
 		std::array<glm::mat4, s_ShadowCascadeCount> lightViewProj = {};
 		std::array<float, s_ShadowCascadeCount> cascadeSplits = {};

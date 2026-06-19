@@ -222,7 +222,7 @@ namespace Editor
   {
     wgpu::ShaderModule shaderModule = Engine::LoadWGSLShader("Resources/Engine/shaders/picker.wgsl");
 
-    std::vector<wgpu::VertexAttribute> vertexAttribs(3);
+    std::array<wgpu::VertexAttribute, 3> vertexAttribs;
     vertexAttribs[0].shaderLocation = 0;
     vertexAttribs[0].format = wgpu::VertexFormat::Float32x3;
     vertexAttribs[0].offset = 0;

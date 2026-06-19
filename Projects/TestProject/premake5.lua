@@ -31,5 +31,6 @@ filter { "system:windows", "configurations:not Dist" }
 	kind "SharedLib"
 	postbuildcommands 
 	{
+		"{ECHO} Copying Engine.dll",
 		"{COPYFILE} %{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Engine.dll %{cfg.targetdir}"
 	}

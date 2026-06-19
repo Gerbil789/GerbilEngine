@@ -3,7 +3,6 @@
 #include "Engine/Core/API.h"
 #include <filesystem>
 #include <functional>
-#include <string>
 
 struct GLFWwindow;
 
@@ -35,11 +34,8 @@ namespace Engine
 	class ENGINE_API Window
 	{
 	public:
-		Window() = default;
-		Window(const WindowSpecification& specification);
 		void Initialize(const WindowSpecification& specification);
 		void Shutdown();
-		~Window();
 
 		uint32_t GetWidth() const { return m_Data.width; }
 		uint32_t GetHeight() const { return m_Data.height; }

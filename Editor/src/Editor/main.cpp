@@ -1,8 +1,10 @@
+#include "Engine/Utility/Path.h"
 #include "Engine/Core/Log.h"
 #include "Editor/Core/EditorApp.h"
 
 int main()
 {
+	SetupWorkingDirectory();
   Engine::Log::Initialize();
 
   try

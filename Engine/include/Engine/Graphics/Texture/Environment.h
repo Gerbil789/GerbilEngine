@@ -6,9 +6,9 @@ namespace Engine
 {
   struct Environment
   {
-    TextureCube BaseCubemap;
+    TextureCube EnvironmentMap;
     TextureCube IrradianceMap;
-    TextureCube PrefilteredMap;
+    TextureCube PrefilteredSpecularMap;
   };
 
   class ENGINE_API EnvironmentBaker
@@ -17,8 +17,7 @@ namespace Engine
     static Environment BakeEnvironment(Uuid equirectangularHDR);
 
   private:
-    static TextureCube EquirectangularToCubemap(Uuid source); //TODO: move to utils
-    static TextureCube CalculateIrradiance(TextureCube& sourceCubemap);
-    static TextureCube CalculatePrefiltered(TextureCube& sourceCubemap);
+    static TextureCube CreateIrradianceMap(const TextureCube& sourceCubemap);
+    static TextureCube CreatePrefilteredSpecularMap(const TextureCube& sourceCubemap);
   };
 }

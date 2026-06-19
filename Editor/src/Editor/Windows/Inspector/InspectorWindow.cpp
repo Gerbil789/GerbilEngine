@@ -5,6 +5,12 @@
 #include "Engine/Audio/AudioClip.h"
 #include "Engine/Event/EventBus.h"
 #include "Editor/Core/EditorEvent.h"
+
+#include "EntityInspectorPanel.h"
+#include "ShaderInspectorPanel.h"
+#include "AudioInspectorPanel.h"
+#include "TextureInspectorPanel.h"
+
 #include <imgui.h>
 
 namespace Editor
@@ -17,6 +23,7 @@ namespace Editor
 		EntityInspectorPanel m_EntityInspector;
 		ShaderInspectorPanel m_ShaderInspector;
 		AudioInspectorPanel m_AudioInspector;
+		TextureInspectorPanel m_TextureInspector;
 	}
 
 	void InspectorWindow::Initialize()
@@ -56,7 +63,7 @@ namespace Editor
 			{
 			case Engine::AssetType::Texture2D:
 			{
-				ImGui::Text("Texture2D selected");
+				m_TextureInspector.Draw(m_Id);
 				break;
 			}
 

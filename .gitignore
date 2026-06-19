@@ -1,6 +1,7 @@
 .vs/
 bin/
 bin-int/
+captures/
 
 *.sln
 *.vcxproj

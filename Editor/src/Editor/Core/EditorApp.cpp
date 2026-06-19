@@ -1,5 +1,5 @@
 #ifndef DIST
-#define WEBGPU_CPP_IMPLEMENTATION
+#define WEBGPU_CPP_IMPLEMENTATION //TODO: handle macros in premake
 #endif
 
 #include "EditorApp.h"
@@ -9,36 +9,34 @@
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Utility/FileWatcher.h"
 
+#include "Engine/Core/Log.h"
 #include "Engine/Core/Time.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Core/Project.h"
 #include "Engine/Core/Runtime.h"
-
-#include "Engine/Asset/AssetManager.h"
-#include "Engine/Scene/SceneManager.h"
-#include "Engine/Audio/Audio.h"
-
+#include "Engine/Core/Window.h"
+#include "Engine/Core/Configuration.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/WindowEvent.h"
-
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Scene/SceneManager.h"
+#include "Engine/Scene/TransformSystem.h" //TODO: i dont like this system
+#include "Engine/Audio/Audio.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
-
 #include "Engine/Physics/Physics.h"
-
 #include "Engine/Debug/RenderDoc.h"
-#include "Engine/Core/Log.h"
-#include "Engine/Scene/TransformSystem.h"
-
-#include "Engine/Core/Resources.h"
-#include "Engine/Asset/AssetRegistry.h"
-#include "Engine/Core/Configuration.h"
 
 namespace Editor
 {
+	namespace
+	{
+		Engine::Window m_Window;
+		bool m_Running = true;
+	}
+
 	EditorApp::EditorApp()
 	{
-		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
+		RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
 		EditorSettings::Load();
 		Engine::Project::Load(EditorSettings::projectDirectory);
 		const Engine::Project& project = Engine::Project::GetActive();
@@ -72,7 +70,6 @@ namespace Editor
 
 		EditorContext::editorCamera.SetBackground(Engine::Camera::Background::Skybox);
 		EditorContext::editorCamera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
-
 
 		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
 		LOG_INFO("--- Editor initialization complete ---");

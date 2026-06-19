@@ -30,8 +30,6 @@ namespace Engine
 		CreateShadowTexture();
 
 		CreateEnvironmentUniformBuffer();
-		//CreateEnvironmentBindGroup();
-
 		SetEnvironmentTexture(RESOURCES::TEXTURE::HDR);
 	}
 
@@ -121,48 +119,76 @@ namespace Engine
 
 	void Renderer::CreateEnvironmentBindGroup()
 	{
-		std::array<wgpu::BindGroupEntry, 7> entries;
+		std::array<wgpu::BindGroupEntry, 8> entries;
 
-		entries[0].binding = 0;
-		entries[0].buffer = m_RenderContext.environmentUniformBuffer;
-		entries[0].offset = 0;
-		entries[0].size = sizeof(EnvironmentUniforms);
+		// 0 - EnvironmentSampler
+		{
+			wgpu::SamplerDescriptor envSamplerDesc;
+			envSamplerDesc.label = { "EnvironmentSampler", WGPU_STRLEN };
+			envSamplerDesc.minFilter = wgpu::FilterMode::Linear;
+			envSamplerDesc.magFilter = wgpu::FilterMode::Linear;
+			envSamplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
+			envSamplerDesc.maxAnisotropy = 1;
+			envSamplerDesc.lodMinClamp = 0.0f;
+			envSamplerDesc.lodMaxClamp = 32.0f;
 
-		wgpu::SamplerDescriptor envSamplerDesc;
-		envSamplerDesc.label = { "EnvironmentSampler", WGPU_STRLEN };
-		envSamplerDesc.minFilter = wgpu::FilterMode::Linear;
-		envSamplerDesc.magFilter = wgpu::FilterMode::Linear;
-		envSamplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
-		envSamplerDesc.maxAnisotropy = 1;
+			wgpu::Sampler envSampler = GraphicsContext::GetDevice().createSampler(envSamplerDesc);
+			entries[0].binding = 0;
+			entries[0].sampler = envSampler;
+		}
+		
+		// 1 - EnvironmentMap
+		{
+			entries[1].binding = 1;
+			entries[1].textureView = m_RenderContext.environment.EnvironmentMap.GetTextureView();
+		}
 
-		wgpu::Sampler envSampler = GraphicsContext::GetDevice().createSampler(envSamplerDesc);
-		entries[1].binding = 1;
-		entries[1].sampler = envSampler;
+		// 2 - IrradianceMap
+		{
+			entries[2].binding = 2;
+			entries[2].textureView = m_RenderContext.environment.IrradianceMap.GetTextureView();
+		}
 
-		auto brdfTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/brdf_integration_map_ct_ggx.hdr").value();
-		entries[2].binding = 2;
-		entries[2].textureView = brdfTexture.GetTextureView();
+		// 3 - PrefilteredSpecularMap
+		{
+			entries[3].binding = 3;
+			entries[3].textureView = m_RenderContext.environment.PrefilteredSpecularMap.GetTextureView();
+		}
 
-		entries[3].binding = 3;
-		entries[3].textureView = m_RenderContext.environment.IrradianceMap.GetTextureView();
+		// 4 - BRDFIntMap
+		{
+			auto brdfTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/brdf_integration_map_ct_ggx.hdr").value(); //TODO: is this memory leak?
+			entries[4].binding = 4;
+			entries[4].textureView = brdfTexture.GetTextureView();
+		}
 
-		entries[4].binding = 4;
-		entries[4].textureView = m_RenderContext.environment.PrefilteredMap.GetTextureView();
+		// 5 - ShadowUniforms
+		{
+			entries[5].binding = 5;
+			entries[5].buffer = m_RenderContext.environmentUniformBuffer;
+			entries[5].offset = 0;
+			entries[5].size = sizeof(EnvironmentUniforms);
+		}
 
-		wgpu::SamplerDescriptor desc;
-		desc.label = { "ShadowSampler", WGPU_STRLEN };
-		desc.compare = wgpu::CompareFunction::LessEqual;
-		desc.minFilter = wgpu::FilterMode::Linear;
-		desc.magFilter = wgpu::FilterMode::Linear;
-		desc.maxAnisotropy = 1;
+		// 6 -ShadowSampler
+		{
+			wgpu::SamplerDescriptor desc;
+			desc.label = { "ShadowSampler", WGPU_STRLEN };
+			desc.compare = wgpu::CompareFunction::LessEqual;
+			desc.minFilter = wgpu::FilterMode::Linear;
+			desc.magFilter = wgpu::FilterMode::Linear;
+			desc.maxAnisotropy = 1;
+			wgpu::Sampler shadowSampler = GraphicsContext::GetDevice().createSampler(desc);
 
-		wgpu::Sampler shadowSampler = GraphicsContext::GetDevice().createSampler(desc);
+			entries[6].binding = 6;
+			entries[6].sampler = shadowSampler;
+		}
 
-		entries[5].binding = 5;
-		entries[5].sampler = shadowSampler;
-
-		entries[6].binding = 6;
-		entries[6].textureView = m_RenderContext.depthTextureArrayView;
+		// 7 - ShadowMap
+		{
+			entries[7].binding = 7;
+			entries[7].textureView = m_RenderContext.depthTextureArrayView;
+		}
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
 		bindGroupDesc.label = { "EnvironmentBindGroup", WGPU_STRLEN };

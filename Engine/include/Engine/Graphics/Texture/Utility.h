@@ -4,9 +4,10 @@
 
 namespace Engine
 {
+	class TextureCube;
+
 	uint32_t GetMaxMipLevelCount(const wgpu::Extent3D& textureSize);
+	TextureCube EquirectangularToCubemap(Uuid equirectangularTexture);
 
 	void GenerateMipmaps(wgpu::Texture texture);
-	void ImportanceSample(wgpu::Texture sourceCubemap, wgpu::Texture targetCubemap);
-	void ComputeIrradiance(wgpu::Texture sourceCubemap, wgpu::Texture targetCubemap);
 }

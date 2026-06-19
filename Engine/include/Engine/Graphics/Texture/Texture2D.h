@@ -1,11 +1,20 @@
 #pragma once
 
 #include "Engine/Asset/Asset.h"
-#include "Engine/Graphics/Texture/TextureSpecification.h"
 #include <glm/glm.hpp>
+#include <webgpu/webgpu.hpp>
 
 namespace Engine
 {
+	struct TextureSpecification
+	{
+		uint32_t width = 1;
+		uint32_t height = 1;
+		wgpu::TextureFormat format = wgpu::TextureFormat::RGBA8Unorm;
+		wgpu::TextureUsage usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
+		bool generateMips = false;
+	};
+
 	class ENGINE_API Texture2D : public Asset
 	{
 	public:
@@ -25,6 +34,7 @@ namespace Engine
 		wgpu::TextureFormat m_TextureFormat;
 	};
 
+	//TODO: move subtexture to its own file, and probably rework it...
 	class ENGINE_API SubTexture2D
 	{
 	public:

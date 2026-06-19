@@ -1,10 +1,11 @@
 const PI: f32 = 3.14159265359;
 
+override PREFILTER_SIZE: f32 = 128.0;
+
 @group(0) @binding(0) var envSampler: sampler;
 @group(0) @binding(1) var baseCubemap: texture_cube<f32>;
 @group(0) @binding(2) var outputMipLevel: texture_storage_2d_array<rgba16float,write>;
 
-// (Keep your cubemapDirection function here)
 fn cubemapDirection(face: u32, uv: vec2f) -> vec3f 
 {
   let x = uv.x;
@@ -37,21 +38,26 @@ fn hammersley(i: u32, N: u32) -> vec2f {
 }
 
 // Transforms the 2D point into a 3D direction biased by roughness (GGX)
-fn importanceSampleGGX(Xi: vec2f, N_dir: vec3f, roughness: f32) -> vec3f {
-    let a = roughness * roughness;
-    let phi = 2.0 * PI * Xi.x;
-    let cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a*a - 1.0) * Xi.y));
-    let sinTheta = sqrt(1.0 - cosTheta*cosTheta);
+fn importanceSampleGGX(Xi: vec2f, N_dir: vec3f, roughness: f32) -> vec3f 
+{
+  let a = roughness * roughness;
+	let a2 = a * a;
+	let denom = (a2 - 1.0) * Xi.y + 1.0;
 
-    // from spherical to cartesian
-    let H = vec3f(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+  let phi = 2.0 * PI * Xi.x;
+ 	let cosTheta = sqrt(max((1.0 - Xi.y) / denom, 0.0));
+  let sinTheta = sqrt(1.0 - cosTheta*cosTheta);
 
-    // tangent space to world space
-    let up = select(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 0.0, 1.0), abs(N_dir.z) < 0.999);
-    let tangent = normalize(cross(up, N_dir));
-    let bitangent = cross(N_dir, tangent);
+  // from spherical to cartesian
+  let H = vec3f(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
 
-    return normalize(tangent * H.x + bitangent * H.y + N_dir * H.z);
+  // tangent space to world space
+  let up = select(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 0.0, 1.0), abs(N_dir.z) < 0.999);
+
+  let tangent = normalize(cross(up, N_dir));
+  let bitangent = cross(N_dir, tangent);
+
+  return normalize(tangent * H.x + bitangent * H.y + N_dir * H.z);
 }
 
 @compute @workgroup_size(8, 8, 1)
@@ -70,17 +76,19 @@ fn computeMipMap(@builtin(global_invocation_id) id: vec3<u32>)
     // let roughness = currentMip / max(numMips - 1.0, 1.0);
 
 // Calculate total mips mathematically (equivalent to C++ std::bit_width)
-    let maxDim = max(f32(baseSize.x), f32(baseSize.y));
-    let numMips = floor(log2(maxDim)) + 1.0;
+    //let maxDim = max(f32(baseSize.x), f32(baseSize.y));
+    // let numMips = floor(log2(maxDim)) + 1.0;
     
-    // Calculate which mip we are currently writing to
-    let currentMip = log2(f32(baseSize.x) / f32(size.x));
+    // // Calculate which mip we are currently writing to
+    // let currentMip = log2(f32(baseSize.x) / f32(size.x));
+
+
+		// let PREFILTER_SIZE = 128.0; 
+		let numMips = floor(log2(PREFILTER_SIZE)) + 1.0;
+		let currentMip = log2(PREFILTER_SIZE / f32(size.x));
     
-    // Map mip level to a roughness value [0.0, 1.0]
-    let roughness = currentMip / max(numMips - 1.0, 1.0);
-
-
-
+    // Map mip level to a roughness value [0.04, 1.0]
+		let roughness = max(currentMip / (numMips - 1.0), 0.001);
 
     let uv = (vec2f(id.xy) + 0.5) / vec2f(size.xy);
     let uvRemapped = uv * 2.0 - 1.0; 
@@ -94,20 +102,28 @@ fn computeMipMap(@builtin(global_invocation_id) id: vec3<u32>)
     var totalWeight = 0.0;
     var prefilteredColor = vec3f(0.0);
 
-    for(var i = 0u; i < SAMPLE_COUNT; i++) {
+    for(var i = 0u; i < SAMPLE_COUNT; i++) 
+		{
         let Xi = hammersley(i, SAMPLE_COUNT);
         let H = importanceSampleGGX(Xi, N_dir, roughness);
         let L = normalize(2.0 * dot(V, H) * H - V);
 
         let NdotL = max(dot(N_dir, L), 0.0);
-        if(NdotL > 0.0) {
-            // Sample the environment map using the 3D direction vector
+        if(NdotL > 0.0) 
+				{
             prefilteredColor += textureSampleLevel(baseCubemap, envSampler, L, 0.0).rgb * NdotL;
             totalWeight += NdotL;
         }
     }
 
-    prefilteredColor = prefilteredColor / totalWeight;
+		if (totalWeight > 0.0001) 
+		{
+    	prefilteredColor /= totalWeight;
+		} 
+		else 
+		{
+    	prefilteredColor = vec3f(0.0);
+		}
 
     textureStore(outputMipLevel, id.xy, id.z, vec4f(prefilteredColor, 1.0));
 }
