@@ -14,7 +14,6 @@
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/Importer/MeshImporter.h"
 #include "Engine/Asset/Importer/ShaderImporter.h"
-#include "Engine/Asset/Importer/MaterialImporter.h"
 #include "Engine/Asset/Importer/SceneImporter.h"
 #include "Engine/Asset/Importer/AudioImporter.h"
 
@@ -152,7 +151,7 @@ namespace Engine
     }
     else if constexpr (std::is_same_v<T, Material>)
     {
-      return LoadAssetInternal(id, m_Materials, RESOURCES::MATERIAL::WHITE, MaterialImporter::LoadMaterial);
+      return LoadAssetInternal(id, m_Materials, RESOURCES::MATERIAL::WHITE, MaterialSerializer::Deserialize);
     }
     else if constexpr (std::is_same_v<T, AudioClip>)
     {
@@ -193,7 +192,7 @@ namespace Engine
 
 
       m_AssetRegistry.Create(path); // save record in assetRegistry.json
-      MaterialSerializer::Serialize(insertedIt->second, path); // immediately serialize to create .mat file
+      MaterialSerializer::Serialize(material.id, path); // immediately serialize to create .mat file
 
       return insertedIt->second;
     }

@@ -6,7 +6,7 @@
 
 class PlayerController : public ICombatController {
 public:
-  PlayerController(CombatManager* manager, Grid* grid) : m_combatManager(manager), m_grid(grid) {}
+  PlayerController(CombatManager* manager) : m_combatManager(manager){}
 
   void BeginTurn(Engine::Uuid activeUnitId) override 
   {
@@ -28,7 +28,6 @@ public:
 
 private:
   CombatManager* m_combatManager;
-  Grid* m_grid;
   Engine::Uuid m_activeUnitId;
 	TurnState m_currentState = TurnState::Idle;
 };

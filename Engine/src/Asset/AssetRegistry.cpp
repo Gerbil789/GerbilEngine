@@ -162,7 +162,7 @@ namespace Engine
 
 	}
 
-	std::vector<const AssetRecord*> AssetRegistry::GetAllRecords() const
+	std::vector<const AssetRecord*> AssetRegistry::GetAllRecords() const //TODO: remove this method, use views instead
 	{
 		std::vector<const AssetRecord*> records;
 		records.reserve(m_Records.size());
@@ -173,9 +173,23 @@ namespace Engine
 		return records;
 	}
 
+	void AssetRegistry::MarkDirty(Uuid id)
+	{
+		if (m_Records.contains(id))
+		{
+			m_DirtySet.insert(id);
+		}
+	}
+
+	void AssetRegistry::ClearDirtySet()
+	{
+		m_DirtySet.clear();
+	}
+
 	void AssetRegistry::Clear()
 	{ 
 		m_Records.clear(); 
+		m_DirtySet.clear();
 	}
 
 	void AssetRegistry::ScanDirectory(const std::filesystem::path& directory)

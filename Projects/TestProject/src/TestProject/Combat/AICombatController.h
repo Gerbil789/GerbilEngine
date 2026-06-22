@@ -6,7 +6,7 @@
 class AIController : public ICombatController 
 {
 public:
-  AIController(CombatManager* manager, Grid* grid) : m_combatManager(manager), m_grid(grid) {}
+  AIController(CombatManager* manager) : m_combatManager(manager) {}
 
   void BeginTurn(Engine::Uuid activeUnitId) override 
   {
@@ -29,7 +29,6 @@ public:
 
 private:
   CombatManager* m_combatManager;
-  Grid* m_grid;
   Engine::Uuid m_activeUnitId;
   bool m_isThinking = false;
 };

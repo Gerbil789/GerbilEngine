@@ -26,46 +26,23 @@ namespace Editor
 			return;
 		}
 
-		if (ImGui::BeginTable("MaterialHeader", 2, ImGuiTableFlags_SizingStretchProp))
+		auto& registry = Engine::AssetManager::GetAssetRegistry();
+
+		ImGui::Text("Material: %s", registry.GetRecord(m_Material->id).GetName().c_str());
+
+		auto& record = registry.GetRecord(m_Material->GetShader());
+
+		if (ImGui::BeginCombo("##Shader", record.GetName().c_str()))
 		{
-			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableSetupColumn("Shader", ImGuiTableColumnFlags_WidthFixed, 120.0f);
-
-			ImGui::TableNextRow();
-			ImGui::TableSetColumnIndex(0); // Name column
-
-			//auto& registry = Engine::AssetManager::GetAssetRegistry();
-			//const auto& record = registry.GetRecord(m_Material->id);
-			//const std::string& currentName = record.GetName();
-
-			//if (TextField("MaterialName", currentName).finished)
-			//{
-			//	//record.path = record.path.parent_path() / (name + record.path.extension().string());
-			//	//TODO: SAVE CHANGE
-			//}
-
-			ImGui::TableSetColumnIndex(1); // Shader column
-			ImGui::SetNextItemWidth(-FLT_MIN);
-
-			auto& currentShaderRecord = Engine::AssetManager::GetAssetRegistry().GetRecord(m_Material->GetShader());
-
-			if (ImGui::BeginCombo("##Shader", currentShaderRecord.GetName().c_str()))
-			{
-				Engine::AssetManager::GetAssetRegistry().ForEachRecord(Engine::AssetType::Shader, [&](const Engine::AssetRecord& record)
+			registry.ForEachRecord(Engine::AssetType::Shader, [&](const Engine::AssetRecord& record)
+				{
+					if (ImGui::Selectable(record.GetName().c_str()))
 					{
-						bool isSelected = (record.id == m_Material->GetShader());
-						if (ImGui::Selectable(record.GetName().c_str(), isSelected))
-						{
-							m_Material->SetShader(record.id);
-						}
+						m_Material->SetShader(record.id);
+					}
+				});
 
-						if (isSelected) ImGui::SetItemDefaultFocus();
-					});
-
-				ImGui::EndCombo();
-			}
-
-			ImGui::EndTable();
+			ImGui::EndCombo();
 		}
 
 		ImGui::Separator();
@@ -159,7 +136,7 @@ namespace Editor
 				auto type = Engine::AssetManager::GetAssetRegistry().GetType(e.id);
 				if (type == Engine::AssetType::Material)
 				{
-					m_Material = &(Engine::AssetManager::GetAsset<Engine::Material>(e.id));
+					m_Material = &Engine::AssetManager::GetAsset<Engine::Material>(e.id);
 				}
 			});
 	}

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <Engine/Asset/AssetRecord.h>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace Engine
 {
@@ -24,20 +26,6 @@ namespace Engine
 			return invalidRecord;
 		}
 
-		//template<typename Self>
-		//std::vector<AssetRecord*> GetRecords(this Self&& self, AssetType type)
-		//{
-		//	std::vector<AssetRecord*> records;
-		//	for (auto& [id, record] : ((AssetRegistry&)self).m_Records)
-		//	{
-		//		if (record.type == type)
-		//		{
-		//			records.push_back(&record);
-		//		}
-		//	}
-		//	return records;
-		//}
-
 		template<typename Func>
 		void ForEachRecord(AssetType type, Func&& callback) const
 		{
@@ -47,6 +35,19 @@ namespace Engine
 				{
 					callback(record);
 				}
+			}
+		}
+
+		template<typename Func>
+		void ForEachDirty(Func&& func)
+		{
+			for (Uuid id : m_DirtySet)
+			{
+				auto it = m_Records.find(id);
+				if (it == m_Records.end())
+					continue;
+
+				func(it->second);
 			}
 		}
 
@@ -63,6 +64,10 @@ namespace Engine
 		std::filesystem::path GetPath(const Uuid& id) const;
 		std::filesystem::path GetRelativePath(const Uuid& id) const;
 		std::vector<const AssetRecord*> GetAllRecords() const;
+
+		void MarkDirty(Uuid id);
+		void ClearDirtySet();
+
 		void Clear();
 
 	private:
@@ -70,5 +75,6 @@ namespace Engine
 
 	private:
 		std::unordered_map<Uuid, AssetRecord> m_Records;
+		std::unordered_set<Uuid> m_DirtySet;
 	};
 }

@@ -48,7 +48,7 @@ namespace Engine
   public:
     virtual ~Script() = default;
 
-    template<typename T>
+    template<typename T> 
     T& GetComponent()
     {
       return m_Scene->GetRegistry().get<T>(m_Entity);

@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Engine/Core/Resources.h"
-#include "Engine/Graphics/Mesh.h" //TODO: remove this dependency, only need AABB
-#include <glm/glm.hpp>
+#include "Engine/Math/AABB.h"
 #include <entt.hpp>
 
 namespace Engine
@@ -43,12 +42,14 @@ namespace Engine
 	};
 
 	enum class BodyType { Static = 0, Dynamic, Kinematic };
+	enum class ColliderShape { Box, Sphere, Mesh };
 
 	struct ENGINE_API ColliderComponent
 	{
-		Uuid meshId{ RESOURCES::MESH::SPHERE };
-		AABB worldAABB;
+		ColliderShape shape = ColliderShape::Box;
 		BodyType type = BodyType::Dynamic;
+		Uuid collisionMeshId{};
+		AABB worldAABB;
 		bool isTrigger = false;
 	};
 

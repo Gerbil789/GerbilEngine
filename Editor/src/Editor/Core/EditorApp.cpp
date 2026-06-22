@@ -36,7 +36,7 @@ namespace Editor
 
 	EditorApp::EditorApp()
 	{
-		RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
+		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
 		EditorSettings::Load();
 		Engine::Project::Load(EditorSettings::projectDirectory);
 		const Engine::Project& project = Engine::Project::GetActive();

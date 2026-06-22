@@ -18,7 +18,7 @@ enum class TurnState
 class CombatManager 
 {
 public:
-  CombatManager(Grid* grid, ICombatController* attackerControl, ICombatController* defenderControl);
+  CombatManager(ICombatController* attackerControl, ICombatController* defenderControl);
 
   void AddUnitToBattle(const Unit& unit);
   void StartBattle();
@@ -30,7 +30,6 @@ public:
   const std::vector<Engine::Uuid>& GetTurnQueue() const { return m_turnQueue; }
 
 private:
-  Grid* m_grid;
   std::map<Team, ICombatController*> m_controllers;
   ICombatController* m_activeController = nullptr;
 

@@ -222,7 +222,7 @@ namespace Editor
 		{
 			{ "Reset", [&] {auto before = registry.get<Engine::ColliderComponent>(entity);
 				auto after = before;
-				after.meshId = {};
+				after.collisionMeshId = {};
 				EditorCommandManager::ModifyComponent<Engine::ColliderComponent>(entity, before, after); }
 			},
 
@@ -236,7 +236,7 @@ namespace Editor
 
 		PropertyTable table;
 
-		AssetField("Mesh", component.meshId, Engine::AssetType::Mesh);
+		AssetField("Mesh", component.collisionMeshId, Engine::AssetType::Mesh);
 		PropertyField("Is trigger", component.isTrigger);
 	}
 

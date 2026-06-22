@@ -65,6 +65,9 @@ namespace Engine
 
 		std::array<glm::vec3, 8> GetFrustumCornersWorld(float near, float far) const;
 
+
+		void ScreenToWorldRay(float mouseX, float mouseY, glm::vec3& outOrigin, glm::vec3& outDir) const;
+
 	private:
 		void UpdateProjectionMatrix();
 		void UpdateViewMatrix();
@@ -73,8 +76,8 @@ namespace Engine
 		Projection m_Projection = Projection::Perspective;
 		float m_AspectRatio = { 16.0f / 9.0f };
 
-		glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
-		glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
+		glm::mat4 m_ProjectionMatrix = glm::mat4{ 1.0f };
+		glm::mat4 m_ViewMatrix = glm::mat4{ 1.0f };
 
 		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 m_Rotation = { 0.0f, 0.0f, 0.0f };

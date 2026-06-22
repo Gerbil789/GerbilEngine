@@ -1,19 +1,14 @@
 #pragma once
 
 #include "Engine/Asset/Asset.h"
-#include <memory>
-#include <glm/glm.hpp>
+#include "Engine/Math/AABB.h"
+//#include <memory>
+//#include <glm/glm.hpp>
 #include <vector>
 #include <webgpu/webgpu.hpp>
 
 namespace Engine
 {
-	struct AABB
-	{
-		glm::vec3 min = glm::vec3(std::numeric_limits<float>::max());
-		glm::vec3 max = glm::vec3(std::numeric_limits<float>::lowest());
-	};
-
 	struct Vertex
 	{
 		glm::vec3 position;

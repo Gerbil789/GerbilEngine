@@ -1,5 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Camera.h"
+#include "Engine/Core/State.h"
 #include <glm/gtx/quaternion.hpp>
 
 namespace Engine
@@ -222,5 +223,25 @@ namespace Engine
 		}
 
 		return corners;
+	}
+
+	void Camera::ScreenToWorldRay(float mouseX, float mouseY, glm::vec3& outOrigin, glm::vec3& outDir) const
+	{
+		float ndcX = (2.0f * mouseX) / viewportState.width - 1.0f;
+		float ndcY = 1.0f - (2.0f * mouseY) / viewportState.height;
+
+		glm::vec4 clipNear = glm::vec4(ndcX, ndcY, 0.0f, 1.0f);
+		glm::vec4 clipFar = glm::vec4(ndcX, ndcY, 1.0f, 1.0f);
+
+		glm::mat4 invViewProj = glm::inverse(m_ProjectionMatrix * m_ViewMatrix);
+
+		glm::vec4 worldNear = invViewProj * clipNear;
+		glm::vec4 worldFar = invViewProj * clipFar;
+
+		worldNear /= worldNear.w;
+		worldFar /= worldFar.w;
+
+		outOrigin = glm::vec3(worldNear);
+		outDir = glm::normalize(glm::vec3(worldFar - worldNear));
 	}
 }

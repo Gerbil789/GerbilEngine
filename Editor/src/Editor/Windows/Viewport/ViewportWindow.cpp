@@ -8,6 +8,7 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Core/State.h"
 #include <glm/glm.hpp>
 
 namespace Editor
@@ -98,6 +99,12 @@ namespace Editor
 
 			EditorContext::renderer.SetDepthTarget(depthTexture.createView(view));
 		}
+
+		Engine::viewportState.width = m_ViewportSize.x;
+		Engine::viewportState.height = m_ViewportSize.y;
+
+		Engine::viewportState.positionX = m_ViewportBounds[0].x;
+		Engine::viewportState.positionY = m_ViewportBounds[0].y;
 	}
 
 	void DrawOverlay(const ImVec2& imagePos, const ImVec2& size)
@@ -216,7 +223,7 @@ namespace Editor
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 		{
-			if (!m_TransformController.IsGizmoOver())
+			if (EditorContext::state == EditorState::Edit && !m_TransformController.IsGizmoOver())
 			{
 				ImVec2 mousePos = ImGui::GetMousePos();
 

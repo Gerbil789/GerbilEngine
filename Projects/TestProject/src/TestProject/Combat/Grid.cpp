@@ -15,12 +15,10 @@ Grid::Grid(int width, int height) : m_width(width), m_height(height)
   }
 }
 
-Tile* Grid::GetTile(int x, int y)
+std::optional<Tile> Grid::GetTile(int x, int y)
 {
-  if (!IsValidPosition(x, y)) {
-    return nullptr;
-  }
-  return &m_tiles[GetIndex(x, y)];
+  if (!IsValidPosition(x, y)) return std::nullopt;
+  return m_tiles[GetIndex(x, y)];
 }
 
 bool Grid::IsValidPosition(int x, int y) const

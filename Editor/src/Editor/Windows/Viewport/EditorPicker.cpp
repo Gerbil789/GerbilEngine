@@ -2,6 +2,7 @@
 #include "Editor/Core/EditorContext.h"
 #include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Graphics/Mesh.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Asset/AssetManager.h"

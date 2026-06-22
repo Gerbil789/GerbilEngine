@@ -1,7 +1,7 @@
 #include "CombatManager.h"
 #include <algorithm>
 
-CombatManager::CombatManager(Grid* grid, ICombatController* attackerControl, ICombatController* defenderControl) : m_grid(grid)
+CombatManager::CombatManager(ICombatController* attackerControl, ICombatController* defenderControl)
 {
   m_controllers[Team::Attacker] = attackerControl;
   m_controllers[Team::Defender] = defenderControl;

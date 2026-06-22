@@ -71,7 +71,7 @@ namespace Engine
 
 		for (auto [entity, transform, collider] : view.each())
       {
-        const auto& mesh = AssetManager::GetAsset<Engine::Mesh>(collider.meshId);
+        const auto& mesh = AssetManager::GetAsset<Engine::Mesh>(collider.collisionMeshId);
         collider.worldAABB = CalculateWorldAABB(mesh.aabb, transform.worldMatrix);
 		};
 

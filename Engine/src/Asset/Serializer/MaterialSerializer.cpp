@@ -1,5 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
+#include "Engine/Graphics/Material.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/Resources.h"
 #include "Engine/Core/Project.h"
@@ -34,8 +35,16 @@ struct glz::meta<Engine::MaterialJSON> {
 
 namespace Engine
 {
-	void MaterialSerializer::Serialize(const Material& material, const std::filesystem::path& path)
+	void MaterialSerializer::Serialize(Uuid id, const std::filesystem::path& path)
 	{
+		if(!id) 
+		{
+			LOG_ERROR("Attempted to serialize null material with ID '{}'", id);
+			return;
+		}
+
+		const Material& material = AssetManager::GetAsset<Material>(id);
+
 		MaterialJSON outData;
 		outData.Shader = static_cast<uint64_t>(material.GetShader());
 		outData.Filter = static_cast<uint32_t>(material.GetTextureFilter());

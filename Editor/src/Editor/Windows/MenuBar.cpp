@@ -8,9 +8,10 @@
 #include "Engine/Core/Project.h"
 //#include "Engine/Core/Log.h"
 //#include "Engine/Asset/AssetManager.h"
-//#include "Engine/Asset/AssetRegistry.h"
+#include "Engine/Asset/AssetRecord.h"
+#include "Engine/Asset/AssetRegistry.h"
 //#include "Engine/Graphics/Material.h"
-//#include "Engine/Asset/Serializer/MaterialSerializer.h"
+#include "Engine/Asset/Serializer/MaterialSerializer.h"
 #include <imgui.h>
 
 namespace Editor
@@ -33,13 +34,21 @@ namespace Editor
 		{ "File", {
 			{"Save scene", "ctrl+s", [] {
 				Editor::SaveScene();
+				auto& registry = Engine::AssetManager::GetAssetRegistry();
 
-				//auto records = Engine::AssetManager::GetAssetRegistry().GetRecords(Engine::AssetType::Material);
-				//for (auto record : records)
-				//{
-				//	const Engine::Material& material = Engine::AssetManager::GetAsset<Engine::Material>(record->id);
-				//	Engine::MaterialSerializer::Serialize(material, record->path);
-				//}
+				registry.ForEachDirty([&registry](Engine::AssetRecord& record)
+					{
+						switch(record.type)
+						{
+						case Engine::AssetType::Material:
+						{
+							Engine::MaterialSerializer::Serialize(record.id, record.path);
+							break;
+						}
+						}
+					});
+
+				registry.ClearDirtySet();
 			}},
 			//{"Open scene", "", [] { Editor::OpenScene(); },
 		}},

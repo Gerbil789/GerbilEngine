@@ -26,6 +26,13 @@ namespace Engine
       std::byte* base = reinterpret_cast<std::byte*>(instance);
       return *reinterpret_cast<T*>(base + offset);
     }
+
+		template <typename T>
+    void SetValue(Engine::Script* instance, const T& value) const
+    {
+      std::byte* base = reinterpret_cast<std::byte*>(instance);
+      *reinterpret_cast<T*>(base + offset) = value;
+		}
   };
 
   struct ENGINE_API ScriptDescriptor

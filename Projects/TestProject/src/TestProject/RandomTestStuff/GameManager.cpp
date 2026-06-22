@@ -47,7 +47,7 @@ void GameManager::OnStart()
 			mat.SetParameter("roughness", roughness);
 			mat.SetParameter("metallic", metallic);
 
-			MaterialSerializer::Serialize(mat, path);
+			//MaterialSerializer::Serialize(mat, path);
 
 			auto& mc = registry.emplace<MeshComponent>(sphere, RESOURCES::MESH::SPHERE);
 			mc.materials = { mat.id };

@@ -43,6 +43,7 @@ namespace Editor
 
 	void TransformController::DrawGizmo(Engine::Scene& scene, float x, float y, float width, float height)
 	{
+		if (EditorContext::state == EditorState::Play) return;
 		if (gizmoType == 0) return;
 
 		Engine::Uuid selectedId = SelectionManager::Entities.GetPrimary();
