@@ -22,8 +22,9 @@ namespace Editor
 				glm::ivec2{7, 0}, // Mesh
 		};
 
+		constexpr glm::ivec2 m_TextureSize{ 1024, 1024 };
 		constexpr glm::ivec2 m_CellSize{ 64, 64 };
-		std::vector<Engine::SubTexture2D> m_Icons;
+		std::vector<Engine::Sprite> m_Icons;
 	}
 
 	void IconManager::Initialize()
@@ -31,16 +32,16 @@ namespace Editor
 		m_Icons.reserve(IconCoords.size());
 		for (size_t i = 0; i < IconCoords.size(); ++i)
 		{
-			m_Icons.emplace_back(Engine::SubTexture2D::CreateFromGrid(RESOURCES::TEXTURE::EDITOR_ICONS, IconCoords[i], m_CellSize));
+			m_Icons.emplace_back(Engine::Sprite::CreateFromGrid(RESOURCES::TEXTURE::EDITOR_ICONS, m_TextureSize, IconCoords[i], m_CellSize));
 		}
 	}
 
-	Engine::SubTexture2D& IconManager::GetIcon(Icon icon)
+	Engine::Sprite& IconManager::GetIcon(Icon icon)
 	{
 		return m_Icons[static_cast<size_t>(icon)];
 	}
 
-	Engine::SubTexture2D& IconManager::GetIcon(Engine::AssetType assetType)
+	Engine::Sprite& IconManager::GetIcon(Engine::AssetType assetType)
 	{
 		static constexpr std::array<std::pair<Engine::AssetType, Icon>, IconCount> map
 		{

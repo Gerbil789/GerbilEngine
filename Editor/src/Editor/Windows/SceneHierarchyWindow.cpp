@@ -25,7 +25,7 @@ namespace Editor
 
 		ImGui::Begin("Scene Hierarchy");
 
-		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 		entt::registry& registry = scene.GetRegistry();
 
 		auto view = registry.view<Engine::TransformComponent>();

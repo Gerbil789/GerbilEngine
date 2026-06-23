@@ -2,7 +2,6 @@
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/Texture/Utility.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Asset/AssetManager.h"
 
 namespace Engine
 {
@@ -58,12 +57,10 @@ namespace Engine
 
 		GraphicsContext::GetQueue().writeTexture(dst, data, m_Width * m_Height * bytesPerPixel, layout, size);
 
-
 		if (specification.generateMips)
 		{
 			GenerateMipmaps(m_Texture);
 		}
-
 
 		wgpu::TextureViewDescriptor viewDesc;
 		viewDesc.label = { "Texture2DView", WGPU_STRLEN };
@@ -76,27 +73,4 @@ namespace Engine
 		viewDesc.aspect = wgpu::TextureAspect::All;
 		m_TextureView = m_Texture.createView(viewDesc);
 	}
-
-	SubTexture2D::SubTexture2D(Uuid texture, const glm::vec2& min, const glm::vec2& max) : m_Texture(texture), m_UVMin(min), m_UVMax(max) {}
-
-	SubTexture2D SubTexture2D::CreateFromGrid(Uuid texture, const glm::ivec2& cellCoords, const glm::ivec2& cellSize, const glm::ivec2& spriteSize)
-	{
-		const Texture2D& textureAsset = AssetManager::GetAsset<Texture2D>(texture);
-
-		glm::vec2 texSize = { static_cast<float>(textureAsset.GetWidth()), static_cast<float>(textureAsset.GetHeight()) };
-		glm::vec2 min
-		{
-				(cellCoords.x * cellSize.x) / texSize.x,
-				(cellCoords.y * cellSize.y) / texSize.y
-		};
-
-		glm::vec2 max
-		{
-				((cellCoords.x + spriteSize.x) * cellSize.x) / texSize.x,
-				((cellCoords.y + spriteSize.y) * cellSize.y) / texSize.y
-		};
-
-		return SubTexture2D(texture, min, max);
-	}
-
 }

@@ -70,14 +70,11 @@ namespace Editor
 								using T = std::decay_t<decltype(arg)>;
 
 								DisplayMode mode = DisplayMode::Default;
-
-								std::string lowerName = param.name;
-								std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
-								if (lowerName.find("color") != std::string::npos || lowerName.find("albedo") != std::string::npos)
+								if(param.isColor)
 								{
 									mode = DisplayMode::Color;
 								}
-
+	
 								if(PropertyField<T>(param.name.c_str(), arg, {.mode = mode}).changed)
 								{
 									m_Material->SetParameter(param.name, arg);

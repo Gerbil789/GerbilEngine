@@ -9,6 +9,7 @@
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/RenderPass/ShadowPass.h"
 #include "Engine/Scene/SceneManager.h"
+#include "Engine/Scene/Scene.h"
 #include "Engine/Core/Resources.h"
 #include <imgui.h>
 
@@ -46,7 +47,7 @@ namespace Editor
 		{
 			PropertyTable table;
 
-			Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 			Engine::Uuid id = scene.GetEnvironmentTexture();
 
 			if (AssetField("Environment", id, Engine::AssetType::Texture2D).changed)

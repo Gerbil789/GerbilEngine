@@ -75,11 +75,15 @@ public:
       int x = static_cast<int>(std::floor(local.x / tileSize));
       int y = static_cast<int>(std::floor(local.z / tileSize));
 
+			GameContext::mousePosition = { x, y };
+
 			GameContext::hoveredTile = GameContext::grid.GetTile(x, y);
     }
     else
     {
       GameContext::hoveredTile = std::nullopt;
+      GameContext::mousePosition = { -1.0f, -1.0f };
+
     }
   }
 

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Engine/Graphics/Texture/Texture2D.h"
-#include <filesystem>
+#include "Engine/Graphics/Sprite.h"
 
 namespace Engine { enum class AssetType; }
 
@@ -24,7 +23,7 @@ namespace Editor
 	{
 	public:
 		static void Initialize();
-		static Engine::SubTexture2D& GetIcon(Icon icon);
-		static Engine::SubTexture2D& GetIcon(Engine::AssetType assetType);
+		static Engine::Sprite& GetIcon(Icon icon);
+		static Engine::Sprite& GetIcon(Engine::AssetType assetType);
 	};
 }

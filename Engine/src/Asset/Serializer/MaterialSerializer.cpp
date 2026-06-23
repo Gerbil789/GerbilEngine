@@ -129,7 +129,7 @@ namespace Engine
 				{
 					spec.parameters[name] = glm::vec2(arr[0].get<double>(), arr[1].get<double>());
 				}
-				else if (size == 3) // Instantly works now!
+				else if (size == 3)
 				{
 					spec.parameters[name] = glm::vec3(arr[0].get<double>(), arr[1].get<double>(), arr[2].get<double>());
 				}

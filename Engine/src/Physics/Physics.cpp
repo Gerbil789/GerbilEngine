@@ -62,7 +62,7 @@ namespace Engine
 
   void PhysicsSystem::Update()
   {
-    Scene& scene = SceneManager::GetActiveScene();
+    Scene& scene = AssetManager::GetAsset<Scene>(SceneManager::GetActiveScene());
 		entt::registry& registry = scene.GetRegistry();
 
 		auto view = registry.view<TransformComponent, ColliderComponent>();
@@ -71,7 +71,7 @@ namespace Engine
 
 		for (auto [entity, transform, collider] : view.each())
       {
-        const auto& mesh = AssetManager::GetAsset<Engine::Mesh>(collider.collisionMeshId);
+        const auto& mesh = AssetManager::GetAsset<Mesh>(collider.collisionMeshId);
         collider.worldAABB = CalculateWorldAABB(mesh.aabb, transform.worldMatrix);
 		};
 

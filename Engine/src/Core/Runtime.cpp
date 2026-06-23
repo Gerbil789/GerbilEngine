@@ -68,7 +68,7 @@ namespace Engine
 
 	void Runtime::Start()
 	{
-		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Scene>(Engine::SceneManager::GetActiveScene());
 		entt::registry& registry = scene.GetRegistry();
 
 	/*	for(entt::entity cameraEntity : registry.view<Engine::CameraComponent>())
@@ -100,7 +100,7 @@ namespace Engine
 
 	void Runtime::Stop()
 	{
-		auto& scene = Engine::SceneManager::GetActiveScene();
+		auto& scene = Engine::AssetManager::GetAsset<Scene>(Engine::SceneManager::GetActiveScene());
 		for (entt::entity entity : scene.GetEntities<Engine::ScriptComponent>())
 		{
 			auto& sc = scene.GetRegistry().get<Engine::ScriptComponent>(entity);
@@ -123,7 +123,7 @@ namespace Engine
 			Engine::Input::SetCursorMode(Engine::Input::CursorMode::Normal);
 		}
 
-		auto& scene = Engine::SceneManager::GetActiveScene();
+		auto& scene = Engine::AssetManager::GetAsset<Scene>(Engine::SceneManager::GetActiveScene());
 
 		// update scripts
 		for (entt::entity entity : scene.GetEntities<Engine::ScriptComponent>())

@@ -1,12 +1,15 @@
 #pragma once
 
 #include <vector>
+#include <variant>
+#include <optional>
+#include <glm/glm.hpp>
 #include <webgpu/webgpu.hpp>
 
 namespace Engine
 {
 	enum class BindingType {Undefined, UniformBuffer, StorageBuffer, Sampler, Texture2D, Texture3D, TextureCube };
-	enum class ShaderValueType { Bool, Int, UInt, Float, Vec2, Vec3, Vec4, Mat3, Mat4, ArrayMat4, ArrayFloat };
+	enum class ShaderValueType { Bool, Int, UInt, Float, Vec2, Vec3, Vec4, Vec2i, Mat3, Mat4, ArrayMat4, ArrayFloat };
 
 	struct ShaderParameter
 	{
@@ -14,6 +17,12 @@ namespace Engine
 		ShaderValueType type;
 		size_t offset = 0;
 		size_t size = 0;
+
+		std::variant<float, glm::vec2, glm::vec3, glm::vec4, glm::ivec2> defaultValue;
+		bool isColor = false;
+
+		std::optional<float> min;
+		std::optional<float> max;
 	};
 
 	struct Binding

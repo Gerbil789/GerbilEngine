@@ -9,7 +9,7 @@
 
 namespace Engine
 {
-	using MaterialValue = std::variant<float, glm::vec2, glm::vec3, glm::vec4>;
+	using MaterialValue = std::variant<float, glm::vec2, glm::vec3, glm::vec4, glm::ivec2>;
 
 	struct MaterialSpecification 
 	{

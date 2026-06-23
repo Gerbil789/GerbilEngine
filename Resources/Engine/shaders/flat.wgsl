@@ -26,7 +26,7 @@ struct ModelBuffer
 
 struct MaterialUniforms 
 {
-	albedo: vec4f,
+	albedo: vec4f,	// @color @default(1,1,1,1)
 };
 
 @group(0) @binding(0) var<uniform> uView: ViewUniforms;

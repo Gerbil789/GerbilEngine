@@ -294,6 +294,11 @@ namespace Editor
 					return ImGui::DragFloat4("##input", glm::value_ptr(value), options.step);
 				}
 			}
+			else if constexpr (std::is_same_v<T, glm::ivec2>)
+			{
+				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+				return ImGui::DragInt2("##input", glm::value_ptr(value), options.step);
+			}
 			else if constexpr (std::is_same_v<T, std::string>)
 			{
 				std::array<char, 256> buffer{};

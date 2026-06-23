@@ -7,6 +7,7 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Scene/Components.h"
+#include "Engine/Asset/AssetManager.h"
 
 namespace Editor
 {
@@ -95,7 +96,7 @@ namespace Editor
 
 	void ViewportCameraController::OnEntityFocus(Engine::Uuid entityId, float distance)
 	{
-		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 		entt::entity entity = scene.GetEntity(entityId);
 		if (entity == entt::null) return;
 

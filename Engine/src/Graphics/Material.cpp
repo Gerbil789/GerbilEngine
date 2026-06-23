@@ -103,12 +103,23 @@ namespace Engine
 
 		const Shader& shader = Engine::AssetManager::GetAsset<Shader>(shaderId);
 		m_UniformData.assign(shader.GetMaterialUniformBufferSize(), std::byte{});
-
 		CreateUniformBuffer();
 
 		for (const auto& binding : shader.GetMaterialBindings())
 		{
-			if (binding.type == BindingType::Texture2D)
+			if (binding.type == BindingType::UniformBuffer)
+			{
+				for (const auto& param : binding.parameters)
+				{
+					if (param.name[0] == '_') continue; // skip private parameters
+
+					std::visit([&](auto&& value)
+						{
+							SetParameter(param.name, value);
+						}, param.defaultValue);
+				}
+			}
+			else if (binding.type == BindingType::Texture2D)
 			{
 				SetTexture(binding.name, Uuid{});
 			}
@@ -213,4 +224,5 @@ namespace Engine
 	template ENGINE_API void Material::SetParameter<glm::vec2>(const std::string&, const glm::vec2&);
 	template ENGINE_API void Material::SetParameter<glm::vec3>(const std::string&, const glm::vec3&);
 	template ENGINE_API void Material::SetParameter<glm::vec4>(const std::string&, const glm::vec4&);
+	template ENGINE_API void Material::SetParameter<glm::ivec2>(const std::string&, const glm::ivec2&);
 }

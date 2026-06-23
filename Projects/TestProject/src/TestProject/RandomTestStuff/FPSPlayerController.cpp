@@ -78,59 +78,5 @@ void FPSPlayerController::OnDestroy()
 
 void FPSPlayerController::OnEvent(const Engine::Event&)
 {
-	/*if(event.GetEventType() == EventType::MouseMoved)
-	{
-		const auto& e = static_cast<const MouseMovedEvent&>(event);
 
-		float xOffset = e.GetX() - m_LastMouseX;
-		float yOffset = m_LastMouseY - e.GetY();
-
-		m_LastMouseX = e.GetX();
-		m_LastMouseY = e.GetY();
-
-		auto& transform = GetComponent<TransformComponent>();
-
-		transform.rotation.y += xOffset * m_MouseSensitivity;
-		transform.rotation.x -= yOffset * m_MouseSensitivity;
-
-		if (transform.rotation.x > 89.0f) transform.rotation.x = 89.0f;
-		if (transform.rotation.x < -89.0f) transform.rotation.x = -89.0f;
-	}
-
-	if (event.GetEventType() == EventType::KeyPressed)
-	{
-		const auto& e = static_cast<const KeyPressedEvent&>(event);
-		auto& transform = GetComponent<TransformComponent>();
-		bool isGrounded = (transform.position.y <= m_Ground);
-
-		if(!isGrounded)
-		{
-			return;
-		}
-
-		if (e.GetKey() == KeyCode::Space)
-		{
-			m_VelocityY = m_JumpStrength;
-		}
-	}*/
 }
-
-//void PlayerController::OnCollisionEnter(entt::entity other)
-//{
-//	//LOG_INFO("Collided with entity {}", other.GetName());
-//}
-//
-//void PlayerController::OnCollisionExit(entt::entity other)
-//{
-//	//LOG_INFO("Stopped colliding with entity {}", other.GetName());
-//}
-//
-//void PlayerController::OnTriggerEnter(entt::entity other)
-//{
-//	//LOG_CRITICAL("Entered trigger of entity {}", other.GetName());
-//}
-//
-//void PlayerController::OnTriggerExit(entt::entity other)
-//{
-//	//LOG_CRITICAL("Exited trigger of entity {}", other.GetName());
-//}

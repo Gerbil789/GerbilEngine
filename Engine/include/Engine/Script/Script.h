@@ -11,70 +11,70 @@
 #include "Engine/Asset/AssetManager.h"
 #include <entt.hpp>
 
-namespace Engine 
+namespace Engine
 {
-  template <typename T>
-  struct AssetRef
-  {
-    Engine::Uuid id{};
-    explicit operator bool() const { return static_cast<bool>(id); }
-    operator Engine::Uuid& () { return id; }
-    T& Get() { return Engine::AssetManager::GetAsset<T>(id); }
-  };
+	template <typename T>
+	struct AssetRef
+	{
+		Engine::Uuid id{};
+		explicit operator bool() const { return static_cast<bool>(id); }
+		operator Engine::Uuid& () { return id; }
+		T& Get() { return Engine::AssetManager::GetAsset<T>(id); }
+	};
 
-  using Texture2DHandle = Engine::AssetRef<Engine::Texture2D>;
-  using AudioClipHandle = Engine::AssetRef<Engine::AudioClip>;
-  using MeshHandle = Engine::AssetRef<Engine::Mesh>;
-  using ShaderHandle = Engine::AssetRef<Engine::Shader>;
-  using MaterialHandle = Engine::AssetRef<Engine::Material>;
+	using Texture2DHandle = Engine::AssetRef<Engine::Texture2D>;
+	using AudioClipHandle = Engine::AssetRef<Engine::AudioClip>;
+	using MeshHandle = Engine::AssetRef<Engine::Mesh>;
+	using ShaderHandle = Engine::AssetRef<Engine::Shader>;
+	using MaterialHandle = Engine::AssetRef<Engine::Material>;
 
-  template<typename T>
-  struct ScriptFieldTypeMap;
+	template<typename T>
+	struct ScriptFieldTypeMap;
 
-  template<> struct ScriptFieldTypeMap<float> { static constexpr ScriptFieldType value = ScriptFieldType::Float;};
-  template<> struct ScriptFieldTypeMap<int> { static constexpr ScriptFieldType value = ScriptFieldType::Int;};
-  template<> struct ScriptFieldTypeMap<bool> { static constexpr ScriptFieldType value = ScriptFieldType::Bool;};
-  template<> struct ScriptFieldTypeMap<Texture2DHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Texture; };
-  template<> struct ScriptFieldTypeMap<AudioClipHandle> { static constexpr ScriptFieldType value = ScriptFieldType::AudioClip; };
+	template<> struct ScriptFieldTypeMap<float> { static constexpr ScriptFieldType value = ScriptFieldType::Float; };
+	template<> struct ScriptFieldTypeMap<int> { static constexpr ScriptFieldType value = ScriptFieldType::Int; };
+	template<> struct ScriptFieldTypeMap<bool> { static constexpr ScriptFieldType value = ScriptFieldType::Bool; };
+	template<> struct ScriptFieldTypeMap<Texture2DHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Texture; };
+	template<> struct ScriptFieldTypeMap<AudioClipHandle> { static constexpr ScriptFieldType value = ScriptFieldType::AudioClip; };
 	template<> struct ScriptFieldTypeMap<MeshHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Mesh; };
-  template<> struct ScriptFieldTypeMap<ShaderHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Shader; };
-  template<> struct ScriptFieldTypeMap<MaterialHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Material; };
+	template<> struct ScriptFieldTypeMap<ShaderHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Shader; };
+	template<> struct ScriptFieldTypeMap<MaterialHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Material; };
 }
 
 namespace Engine
 {
-  class Script
-  {
-  public:
-    virtual ~Script() = default;
+	class Script
+	{
+	public:
+		virtual ~Script() = default;
 
-    template<typename T> 
-    T& GetComponent()
-    {
-      return m_Scene->GetRegistry().get<T>(m_Entity);
-    }
+		template<typename T>
+		T& GetComponent()
+		{
+			return m_Scene->GetRegistry().get<T>(m_Entity);
+		}
 
-    template<typename T, typename... Args>
-    T& AddComponent(Args&&... args)
-    {
-      return m_Scene->GetRegistry().emplace<T>(m_Entity, std::forward<Args>(args)...);
-    }
+		template<typename T, typename... Args>
+		T& AddComponent(Args&&... args)
+		{
+			return m_Scene->GetRegistry().emplace<T>(m_Entity, std::forward<Args>(args)...);
+		}
 
-    virtual void OnCreate() {}
-    virtual void OnStart() {}
-    virtual void OnUpdate() {}
-    virtual void OnDestroy() {}
+		virtual void OnCreate() {}
+		virtual void OnStart() {}
+		virtual void OnUpdate() {}
+		virtual void OnDestroy() {}
 		virtual void OnEvent([[maybe_unused]] const Event& event) {}
 
 		virtual void OnCollisionEnter([[maybe_unused]] entt::entity other) {}
-    virtual void OnCollisionExit([[maybe_unused]] entt::entity other) {}
+		virtual void OnCollisionExit([[maybe_unused]] entt::entity other) {}
 
-    virtual void OnTriggerEnter([[maybe_unused]] entt::entity other) {}
-    virtual void OnTriggerExit([[maybe_unused]] entt::entity other) {}
+		virtual void OnTriggerEnter([[maybe_unused]] entt::entity other) {}
+		virtual void OnTriggerExit([[maybe_unused]] entt::entity other) {}
 
-    entt::entity m_Entity{ entt::null };
-    Scene* m_Scene = nullptr;
-  };
+		entt::entity m_Entity{ entt::null };
+		Scene* m_Scene = nullptr;
+	};
 }
 
 //TODO: Cpp26 reflection will replace this

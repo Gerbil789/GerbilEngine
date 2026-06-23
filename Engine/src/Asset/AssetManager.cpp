@@ -179,35 +179,38 @@ namespace Engine
   {
     if constexpr (std::is_same_v<T, Material>)
     {
+      Uuid id = Uuid::Generate();
+
       MaterialSpecification spec
       {
         .shaderId = RESOURCES::SHADER::DEFAULT,
       };
 
       Material material(spec);
-      material.id = Uuid::Generate();
+      material.id = id;
 
-      LOG_TRACE("Created asset '{}'", material.id);
       auto [insertedIt, success] = m_Materials.insert_or_assign(material.id, std::move(material));
 
+      m_AssetRegistry.Create(id, path); // save record in assetRegistry.json
+      MaterialSerializer::Serialize(id, path); // immediately serialize to create .mat file
 
-      m_AssetRegistry.Create(path); // save record in assetRegistry.json
-      MaterialSerializer::Serialize(material.id, path); // immediately serialize to create .mat file
+      LOG_TRACE("Created material asset '{}'", id);
 
       return insertedIt->second;
     }
     else if constexpr (std::is_same_v<T, Scene>)
     {
+      Uuid id = Uuid::Generate();
+
       Scene scene;
-      scene.id = Uuid::Generate();
+      scene.id = id;
 
-      LOG_TRACE("Created asset '{}'", scene.id);
-      auto [insertedIt, success] = m_Scenes.insert_or_assign(scene.id, std::move(scene));
+      auto [insertedIt, success] = m_Scenes.insert_or_assign(id, std::move(scene));
 
-      m_AssetRegistry.Create(path); // save record in assetRegistry.json
-      SceneSerializer::Serialize(insertedIt->second, path); // immediately serialize to create .scene file
+      m_AssetRegistry.Create(id, path); // save record in assetRegistry.json
+      SceneSerializer::Serialize(id, path); // immediately serialize to create .scene file
 
-
+      LOG_TRACE("Created scene asset '{}'", id);
       return insertedIt->second;
     }
   }

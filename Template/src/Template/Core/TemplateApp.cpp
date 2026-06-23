@@ -39,7 +39,7 @@ namespace Template
 		m_Width = width;
 		m_Height = height;
 
-		Engine::Scene& activeScene = Engine::SceneManager::GetActiveScene();
+		Engine::Scene& activeScene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 		Engine::Camera* camera = activeScene.GetActiveCamera();
 		camera->SetAspectRatio(static_cast<float>(m_Width) / static_cast<float>(m_Height));
 
@@ -126,18 +126,12 @@ namespace Template
 
 		Engine::Uuid id = project.GetDefaultSceneId();
 
-		//if (!Engine::AssetManager::GetAssetRegistry().GetRecord(id).IsValid())
-		//{
-		//	LOG_ERROR("Failed to load default scene '{}', loading empty scene instead!", id);
-		//	id = RESOURCES::SCENE::DEFAULT;
-		//}
-
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
 		Engine::SceneManager::SetActiveScene(scene.id);
 
 		m_Renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque);
 
-		Engine::Scene& activeScene = Engine::SceneManager::GetActiveScene();
+		Engine::Scene& activeScene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 
 		auto cameras = activeScene.GetEntities<Engine::CameraComponent>();
 		if (cameras.empty())
@@ -208,7 +202,7 @@ namespace Template
 			}
 
 			m_Renderer.SetColorTarget(targetView);
-			m_Renderer.RenderScene(Engine::SceneManager::GetActiveScene(), *m_Camera);
+			m_Renderer.RenderScene(Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene()), *m_Camera);
 
 			surface.present();
 		}

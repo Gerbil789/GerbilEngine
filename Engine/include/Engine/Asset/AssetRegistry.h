@@ -12,7 +12,7 @@ namespace Engine
 		void Load(const std::filesystem::path& path);
 		void Save(const std::filesystem::path& path);
 
-		const AssetRecord* Create(const std::filesystem::path& path);
+		const void Create(Uuid id, const std::filesystem::path& path);
 
 		template<typename Self>
 		AssetRecord& GetRecord(this Self&& self, Uuid id)
@@ -24,6 +24,16 @@ namespace Engine
 
 			static AssetRecord invalidRecord;
 			return invalidRecord;
+		}
+
+
+		template<typename Func>
+		void ForEachRecord(Func&& callback) const
+		{
+			for (const auto& [id, record] : m_Records)
+			{
+				callback(record);
+			}
 		}
 
 		template<typename Func>
@@ -63,7 +73,6 @@ namespace Engine
 
 		std::filesystem::path GetPath(const Uuid& id) const;
 		std::filesystem::path GetRelativePath(const Uuid& id) const;
-		std::vector<const AssetRecord*> GetAllRecords() const;
 
 		void MarkDirty(Uuid id);
 		void ClearDirtySet();

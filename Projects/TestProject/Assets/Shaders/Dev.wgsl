@@ -33,11 +33,11 @@ struct ShadowUniforms
 
 struct MaterialUniforms 
 {
-	albedo: vec4f,
-	roughness: f32,
-	metallic: f32,
-	tiling: vec2f,
-	offset: vec2f,
+	albedo: vec4f, 	// @color @default(1,1,1,1)
+	roughness: f32,	// @range(0,1) @default(1)
+	metallic: f32,	// @range(0,1) @default(0)
+	tiling: vec2f,	// @default(1,1)
+	offset: vec2f,	// @default(0,0)
 	_padding: vec2f,
 };
 

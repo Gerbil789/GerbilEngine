@@ -117,7 +117,7 @@ namespace Engine
 	}
 
 
-	const AssetRecord* AssetRegistry::Create(const std::filesystem::path& path)
+	const void AssetRegistry::Create(Uuid id, const std::filesystem::path& path)
 	{
 		auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
 
@@ -126,16 +126,16 @@ namespace Engine
 			if (record.path == path)
 			{
 				LOG_WARNING("Asset '{}' already exists", path);
-				return &record;
+				return;
 			}
 		}
 
-		Uuid id = Uuid::Generate();
-		auto [it, inserted] = m_Records.try_emplace(id, AssetRecord{id, assetsDir / path, GetAssetTypeFromExtension(path.extension().string())});
+		auto type = GetAssetTypeFromExtension(path.extension().string());
+		auto [it, inserted] = m_Records.try_emplace(id, AssetRecord{id, assetsDir / path, type });
 
 		Save(Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.json");
 		LOG_TRACE("Added asset '{}' to registry.", path);
-		return &it->second;
+		return;
 	}
 
 	std::filesystem::path AssetRegistry::GetPath(const Uuid& id) const
@@ -160,17 +160,6 @@ namespace Engine
 		}
 		return emptyPath;
 
-	}
-
-	std::vector<const AssetRecord*> AssetRegistry::GetAllRecords() const //TODO: remove this method, use views instead
-	{
-		std::vector<const AssetRecord*> records;
-		records.reserve(m_Records.size());
-		for (const auto& [id, record] : m_Records)
-		{
-			records.push_back(&record);
-		}
-		return records;
 	}
 
 	void AssetRegistry::MarkDirty(Uuid id)

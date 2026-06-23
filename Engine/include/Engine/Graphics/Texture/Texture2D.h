@@ -33,22 +33,4 @@ namespace Engine
 		wgpu::TextureView m_TextureView;
 		wgpu::TextureFormat m_TextureFormat;
 	};
-
-	//TODO: move subtexture to its own file, and probably rework it...
-	class ENGINE_API SubTexture2D
-	{
-	public:
-		SubTexture2D(Uuid texture, const glm::vec2& min, const glm::vec2& max);
-
-		const Uuid GetTexture() const { return m_Texture; }
-		const glm::vec2& GetUVMin() const { return m_UVMin; }
-		const glm::vec2& GetUVMax() const { return m_UVMax; }
-
-		static SubTexture2D CreateFromGrid(Uuid texture, const glm::ivec2& cellCoords, const glm::ivec2& cellSize, const glm::ivec2& spriteSize = { 1,1 });
-
-	private:
-		Uuid m_Texture;
-		glm::vec2 m_UVMin;
-		glm::vec2 m_UVMax;
-	};
 }

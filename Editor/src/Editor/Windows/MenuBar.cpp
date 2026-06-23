@@ -3,15 +3,13 @@
 #include "Editor/Core/EditorWindowManager.h"
 #include "Editor/Core/PopupWindowManager.h"
 #include "Editor/Utility/File.h"
-//#include "Engine/Scene/SceneManager.h"
-#include "Editor/Command/SceneCommands.h"
 #include "Engine/Core/Project.h"
-//#include "Engine/Core/Log.h"
-//#include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/AssetRecord.h"
 #include "Engine/Asset/AssetRegistry.h"
-//#include "Engine/Graphics/Material.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
+#include "Engine/Scene/SceneManager.h"
+#include "Engine/Asset/Serializer/SceneSerializer.h"
+#include "Engine/Asset/AssetManager.h"
 #include <imgui.h>
 
 namespace Editor
@@ -29,11 +27,24 @@ namespace Editor
 		std::vector<MenuEntry> entries;
 	};
 
+	inline void SaveScene()
+	{
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		auto& path = Engine::AssetManager::GetAssetRegistry().GetRecord(scene.id).path;
+
+		if (path.empty())
+		{
+			path = Editor::FileDialog::SelectPath({ {"Scene Files", "*.scene"} }, "scene"); //prompt user to select path
+		}
+
+		Engine::SceneSerializer::Serialize(scene.id, Engine::Project::GetActive().GetAssetsDirectory() / path);
+	}
+
 	static const std::vector<MenuCategory> MainMenuBar
 	{
 		{ "File", {
 			{"Save scene", "ctrl+s", [] {
-				Editor::SaveScene();
+				SaveScene();
 				auto& registry = Engine::AssetManager::GetAssetRegistry();
 
 				registry.ForEachDirty([&registry](Engine::AssetRecord& record)

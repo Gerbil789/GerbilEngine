@@ -463,7 +463,7 @@ namespace Editor
 
 	void EntityInspectorPanel::Draw(Engine::Uuid entityId)
 	{
-		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 		entt::entity entity = scene.GetEntity(entityId);
 		if (entity == entt::null) return;
 

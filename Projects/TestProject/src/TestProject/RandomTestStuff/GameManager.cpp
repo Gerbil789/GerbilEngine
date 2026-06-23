@@ -20,41 +20,41 @@ using namespace Engine;
 
 void GameManager::OnStart()
 {
-	Scene& scene = SceneManager::GetActiveScene();
-	auto& registry = scene.GetRegistry();
-	int i = 1;
+	//Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+	//auto& registry = scene.GetRegistry();
+	//int i = 1;
 
-	for(int x = 0; x < 5; x++)
-	{
-		for(int z = 0; z < 5; z++)
-		{
-			auto sphere = scene.CreateEntity(std::format("Sphere_{}", i));
+	//for(int x = 0; x < 5; x++)
+	//{
+	//	for(int z = 0; z < 5; z++)
+	//	{
+	//		auto sphere = scene.CreateEntity(std::format("Sphere_{}", i));
 
-			registry.get<TransformComponent>(sphere).position = { static_cast<float>(x) * 3.0f, 0.0f, static_cast<float>(z) * 3.0f };
+	//		registry.get<TransformComponent>(sphere).position = { static_cast<float>(x) * 3.0f, 0.0f, static_cast<float>(z) * 3.0f };
 
-			std::string path = std::format("Materials/tmp/tmp_{}.mat", i);
-			Material& mat = AssetManager::CreateAsset<Material>(path);
+	//		std::string path = std::format("Materials/tmp/tmp_{}.mat", i);
+	//		Material& mat = AssetManager::CreateAsset<Material>(path);
 
-			mat.SetShader(m_Shader);
+	//		mat.SetShader(m_Shader);
 
-			mat.SetParameter("albedo", glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f });
-			mat.SetParameter("tiling", glm::vec2{ 1.0f, 1.0f });
-			mat.SetTexture("NormalTexture", RESOURCES::TEXTURE::NORMAL);
+	//		mat.SetParameter("albedo", glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f });
+	//		mat.SetParameter("tiling", glm::vec2{ 1.0f, 1.0f });
+	//		mat.SetTexture("NormalTexture", RESOURCES::TEXTURE::NORMAL);
 
-			float roughness = static_cast<float>(x) / 4.0f;
-			float metallic = static_cast<float>(z) / 4.0f;
+	//		float roughness = static_cast<float>(x) / 4.0f;
+	//		float metallic = static_cast<float>(z) / 4.0f;
 
-			mat.SetParameter("roughness", roughness);
-			mat.SetParameter("metallic", metallic);
+	//		mat.SetParameter("roughness", roughness);
+	//		mat.SetParameter("metallic", metallic);
 
-			//MaterialSerializer::Serialize(mat, path);
+	//		//MaterialSerializer::Serialize(mat, path);
 
-			auto& mc = registry.emplace<MeshComponent>(sphere, RESOURCES::MESH::SPHERE);
-			mc.materials = { mat.id };
+	//		auto& mc = registry.emplace<MeshComponent>(sphere, RESOURCES::MESH::SPHERE);
+	//		mc.materials = { mat.id };
 
-			i++;
-		}
-	}
+	//		i++;
+	//	}
+	//}
 }
 
 void GameManager::OnUpdate()

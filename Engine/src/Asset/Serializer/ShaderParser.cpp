@@ -15,6 +15,7 @@ namespace Engine
     if (type == "vec2f")     return ShaderValueType::Vec2;
     if (type == "vec3f")     return ShaderValueType::Vec3;
     if (type == "vec4f")     return ShaderValueType::Vec4;
+		if (type == "vec2i")     return ShaderValueType::Vec2i;
     if (type == "mat3x3f")   return ShaderValueType::Mat3;
     if (type == "mat4x4f")   return ShaderValueType::Mat4;
 
@@ -37,6 +38,7 @@ namespace Engine
     case ShaderValueType::Vec2: return 8;
     case ShaderValueType::Vec3: return 12;
     case ShaderValueType::Vec4: return 16;
+		case ShaderValueType::Vec2i: return 8;
     case ShaderValueType::Mat3: return 48;
     case ShaderValueType::Mat4: return 64;
 		case ShaderValueType::ArrayMat4: return 64 * 4; //TODO: dont hardcode array size, need to parse it from shader source
@@ -44,6 +46,50 @@ namespace Engine
     }
 
     std::unreachable();
+  }
+
+
+  void ParseParameterAttributes(ShaderParameter& param, const std::string& attributes)
+  {
+    std::smatch match;
+    std::regex defaultRegex(R"(@default\(([^)]*)\))");
+
+    if (std::regex_search(attributes, match, defaultRegex))
+    {
+      std::string values = match[1].str();
+
+      std::vector<float> nums;
+      std::stringstream ss(values);
+      std::string token;
+
+      while (std::getline(ss, token, ','))
+        nums.push_back(std::stof(token));
+
+      switch (param.type)
+      {
+      case ShaderValueType::Float:
+        param.defaultValue = nums[0];
+        break;
+
+      case ShaderValueType::Vec2:
+        param.defaultValue = glm::vec2(nums[0], nums[1]);
+        break;
+
+      case ShaderValueType::Vec3:
+        param.defaultValue = glm::vec3(nums[0], nums[1], nums[2]);
+        break;
+
+      case ShaderValueType::Vec4:
+        param.defaultValue =
+          glm::vec4(nums[0], nums[1], nums[2], nums[3]);
+        break;
+      }
+    }
+
+    if (attributes.find("@color") != std::string::npos)
+    {
+      param.isColor = true;
+    }
   }
 
 	ShaderSpecification ShaderParser::GetSpecification(const std::string& source)
@@ -107,7 +153,11 @@ namespace Engine
       std::vector<ShaderParameter> params;
       size_t offset = 0;
 
-      std::regex memberRegex(R"(\s*(\w+)\s*:\s*([a-zA-Z0-9_<>]+))");
+      //std::regex memberRegex(R"(\s*(\w+)\s*:\s*([a-zA-Z0-9_<>]+))");
+
+      std::regex memberRegex(
+        R"(\s*(\w+)\s*:\s*([a-zA-Z0-9_<>]+)\s*,?\s*(?://(.*))?)"
+      );
 
       std::smatch memberMatch;
       auto mbegin = body.cbegin();
@@ -117,10 +167,11 @@ namespace Engine
       {
         ShaderParameter param;
         param.name = memberMatch[1].str();
-
         param.type = ParseValueType(memberMatch[2].str());
+        ParseParameterAttributes(param, memberMatch[3].str());
         param.offset = offset;
         param.size = GetTypeSize(param.type);
+
         params.push_back(param);
 
         offset += param.size;
@@ -135,7 +186,6 @@ namespace Engine
   }
   void ShaderParser::ParseBindings(const std::string& source, const std::unordered_map<std::string, std::vector<ShaderParameter>>& structs, ShaderSpecification& spec)
   {
-    // --- Step 1: collect entry points ---
     struct EntryPoint { std::string name; wgpu::ShaderStage stage; };
     std::vector<EntryPoint> entryPoints;
 
@@ -181,7 +231,6 @@ namespace Engine
       binding.name = match[4].str();
       std::string typeName = match[5].str();
 
-      // --- Determine type ---
       if (varKind == "uniform")
         binding.type = BindingType::UniformBuffer;
       else if (varKind == "storage")
@@ -193,18 +242,14 @@ namespace Engine
       else if (typeName == "sampler")
         binding.type = BindingType::Sampler;
 
-      // --- Expand struct parameters if needed ---
       auto it = structs.find(typeName);
       if (it != structs.end())
         binding.parameters = it->second;
 
-			// --- Determine size ---
 			binding.size = 0;
       for (const auto& param : binding.parameters)
 				binding.size += param.size;
 
-
-      // --- Step 3: determine visibility ---
       for (auto& ep : entryPoints)
       {
         std::regex usageRegex("\\b" + binding.name + R"([\.\[])", std::regex::optimize);

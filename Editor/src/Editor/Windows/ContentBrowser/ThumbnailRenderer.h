@@ -12,5 +12,4 @@ namespace Editor
 		void Initialize();
 		wgpu::TextureView GetThumbnail(Engine::Uuid id);
 	};
-
 }

@@ -2,6 +2,8 @@
 #include "Engine/Scene/TransformSystem.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Components.h"
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Scene/Scene.h"
 #include <glm/gtx/quaternion.hpp>
 
 namespace Engine
@@ -25,7 +27,7 @@ namespace Engine
 
   void TransformSystem::Update()
   {
-    Scene& scene = SceneManager::GetActiveScene();
+    Scene& scene = Engine::AssetManager::GetAsset<Scene>(Engine::SceneManager::GetActiveScene());
     entt::registry& registry = scene.GetRegistry();
 
 		auto view = registry.view<TransformComponent>();

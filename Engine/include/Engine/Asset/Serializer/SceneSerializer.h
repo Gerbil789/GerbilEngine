@@ -9,7 +9,7 @@ namespace Engine
 	class ENGINE_API SceneSerializer
 	{
 	public:
-		static void Serialize(Scene& scene, const std::filesystem::path& path);
+		static void Serialize(Uuid id, const std::filesystem::path& path);
 		static std::optional<Scene> Deserialize(const std::filesystem::path& path);
 	};
 }

@@ -116,8 +116,10 @@ struct glz::meta<Engine::EntityJSON>
 
 namespace Engine
 {
-	void SceneSerializer::Serialize(Scene& scene, const std::filesystem::path& path)
+	void SceneSerializer::Serialize(Uuid id, const std::filesystem::path& path)
 	{
+		auto& scene = AssetManager::GetAsset<Scene>(id);
+
 		if (path.extension() != ".json" && path.extension() != ".scene")
 		{
 			LOG_ERROR("Expected '.scene' or '.json' extension in save path: '{}'", path);
@@ -164,7 +166,7 @@ namespace Engine
 				const auto& m = registry.get<MeshComponent>(entity);
 				MeshComponentJSON mJson{ m.meshId };
 				mJson.Materials.reserve(m.materials.size());
-				for (Uuid id : m.materials) mJson.Materials.push_back((uint64_t)id);
+				for (Uuid material : m.materials) mJson.Materials.push_back(static_cast<uint64_t>(material));
 				eJson.MeshComponent = mJson;
 			}
 

@@ -29,6 +29,8 @@ void BattleControllerScript::OnStart()
 void BattleControllerScript::OnUpdate()
 {
 	gridInteractionSystem.Update(*m_Scene->GetActiveCamera());
+  m_TileMaterial.Get().SetParameter("hoveredTile", GameContext::mousePosition);
+
 
   //if (m_combatManager)
   //{

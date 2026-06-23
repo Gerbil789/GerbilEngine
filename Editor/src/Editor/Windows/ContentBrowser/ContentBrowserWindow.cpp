@@ -14,7 +14,7 @@
 #include "Engine/Core/Log.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Editor/Command/EditorCommandManager.h"
-#include "Editor/Command/SceneCommands.h"
+#include "Editor/Windows/Utility/Property.h"
 
 namespace Editor
 {
@@ -33,7 +33,7 @@ namespace Editor
 		SelectionWithDeletion m_Selection;
 		std::filesystem::path m_CurrentDirectory;
 
-		std::vector<Engine::AssetRecord> m_Items;
+		std::vector<Engine::AssetRecord> m_Records;
 
 		enum class ItemInteraction
 		{
@@ -45,7 +45,7 @@ namespace Editor
 
 	void RefreshDirectory()
 	{
-		m_Items.clear();
+		m_Records.clear();
 		m_Selection.Clear();
 
 		// find directories first
@@ -56,23 +56,23 @@ namespace Editor
 			{
 				if (std::filesystem::is_empty(path))
 				{
-					m_Items.emplace_back(Engine::Uuid::Generate(), path, Engine::AssetType::EmptyDirectory); //TODO: generating random uuids is not ideal...
+					m_Records.emplace_back(Engine::Uuid::Generate(), path, Engine::AssetType::EmptyDirectory); //TODO: generating random uuids is not ideal...
 				}
 				else
 				{
-					m_Items.emplace_back(Engine::Uuid::Generate(), path, Engine::AssetType::Directory);
+					m_Records.emplace_back(Engine::Uuid::Generate(), path, Engine::AssetType::Directory);
 				}
 			}
 		}
 
-		// then find files
-		for (auto& record : Engine::AssetManager::GetAssetRegistry().GetAllRecords())
+
+		Engine::AssetManager::GetAssetRegistry().ForEachRecord([&](const Engine::AssetRecord& record)
 		{
-			if (record->path.parent_path() == m_CurrentDirectory)
+			if (record.path.parent_path() == m_CurrentDirectory)
 			{
-				m_Items.emplace_back(record->id, record->path, record->type);
+				m_Records.emplace_back(record.id, record.path, record.type);
 			}
-		}
+		});
 	}
 
 	void OpenDirectory(const std::filesystem::path& path)
@@ -87,7 +87,7 @@ namespace Editor
 
 		m_LayoutItemSize = ImVec2(m_IconSize, m_IconSize + 20.0f);
 		m_LayoutColumnCount = std::max(static_cast<int>(ImGui::GetContentRegionAvail().x / (m_LayoutItemSize.x + itemSpacing)), 1);
-		m_LayoutLineCount = static_cast<int>((m_Items.size()) + m_LayoutColumnCount - 1) / m_LayoutColumnCount;
+		m_LayoutLineCount = static_cast<int>((m_Records.size()) + m_LayoutColumnCount - 1) / m_LayoutColumnCount;
 		m_LayoutItemStep = ImVec2(m_LayoutItemSize.x + itemSpacing, m_LayoutItemSize.y + itemSpacing);
 		m_LayoutOuterPadding = itemSpacing * 0.5f;
 	}
@@ -127,7 +127,7 @@ namespace Editor
 			}
 		}
 
-		std::string text = std::format("Selected: {}/{} items", m_Selection.Size, m_Items.size());
+		std::string text = std::format("Selected: {}/{} items", m_Selection.Size, m_Records.size());
 		float textWidth = ImGui::CalcTextSize(text.c_str()).x;
 		float regionMaxX = ImGui::GetContentRegionMax().x;
 		float pos = regionMaxX - textWidth;
@@ -169,28 +169,13 @@ namespace Editor
 		}
 	}
 
-	//TODO: use the structures in "properties.h"
-	void ProcessDragAndDrop(Engine::AssetRecord* record)
+	void ProcessDragAndDrop(const Engine::AssetRecord& record)
 	{
-		if (ImGui::BeginDragDropSource())
+		DragDropSource source(record.GetName(), record.id);
+		DragDropTarget{}.AcceptAsset([record](Engine::Uuid droppedId)
 		{
-			Engine::Uuid uuid{ record->id };
-			ImGui::SetDragDropPayload("UUID", &uuid, sizeof(uuid));
-			ImGui::Text("%s", record->path.filename().string().c_str());
-			ImGui::EndDragDropSource();
-		}
-
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("UUID"))
-			{
-				Engine::Uuid droppedUUID = *static_cast<const Engine::Uuid*>(payload->Data);
-				auto path = Engine::AssetManager::GetAssetRegistry().GetPath(droppedUUID);
-
-				LOG_INFO("Dropped file path: {} onto {}", path, record->path.filename().string().c_str());
-			}
-			ImGui::EndDragDropTarget();
-		}
+			LOG_INFO("Dropped: {} into {}", droppedId, record.GetName());
+			}, Engine::AssetType::Texture2D);
 	}
 
 	void ContentBrowserContextMenu()
@@ -209,14 +194,15 @@ namespace Editor
 
 				if (ImGui::MenuItem("Scene"))
 				{
+					Engine::AssetManager::CreateAsset<Engine::Scene>(m_CurrentDirectory / "newScene.scene");
 					RefreshDirectory();
 				}
 
-				//if (ImGui::MenuItem("Material"))
-				//{
-				//	Engine::Materials::CreateMaterial(m_CurrentDirectory / "newMaterial.mat"); //TODO: this is just bad
-				//	RefreshDirectory();
-				//}
+				if (ImGui::MenuItem("Material"))
+				{
+					Engine::AssetManager::CreateAsset<Engine::Material>(m_CurrentDirectory / "material.mat");
+					RefreshDirectory();
+				}
 
 				ImGui::EndMenu();// End Create Menu
 			}
@@ -236,11 +222,17 @@ namespace Editor
 	{
 		if (ImGui::BeginPopupContextItem("ItemContextMenu"))
 		{
-			if (ImGui::MenuItem("Delete", "Del", false, m_Selection.Size > 0))
+			if (ImGui::MenuItem("Delete", "", false, m_Selection.Size > 0))
 			{
 				m_RequestDelete = true;
 			}
+
 			ImGui::Separator();
+
+			if (ImGui::MenuItem("Rename", "", false, m_Selection.Size > 0))
+			{
+				//TODO: Implement rename functionality
+			}
 
 			if (ImGui::MenuItem("Open in file explorer"))
 			{
@@ -262,13 +254,13 @@ namespace Editor
 		switch (record.type)
 		{
 		case Engine::AssetType::Texture2D:
-			view = Engine::AssetManager::GetAsset<Engine::Texture2D>(record.id).GetTextureView(); //TODO: use downscaled texture for thumbnail
+			view = Engine::AssetManager::GetAsset<Engine::Texture2D>(record.id).GetTextureView();
 			break;
 		case Engine::AssetType::Material:
 			view = m_ThumbnailRenderer.GetThumbnail(record.id);
 			break;
 		default:
-			Engine::SubTexture2D& icon = IconManager::GetIcon(record.type);
+			Engine::Sprite& icon = IconManager::GetIcon(record.type);
 
 			view = Engine::AssetManager::GetAsset<Engine::Texture2D>(icon.GetTexture()).GetTextureView();
 			uv_min = ImVec2(icon.GetUVMin().x, icon.GetUVMin().y);
@@ -276,12 +268,7 @@ namespace Editor
 			break;
 		}
 
-		draw_list->AddImage(
-			static_cast<ImTextureRef>(static_cast<WGPUTextureView>(view)),
-			box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x),
-			uv_min, uv_max
-		);
-
+		draw_list->AddImage(ImTextureRef{ static_cast<WGPUTextureView>(view) }, box_min, ImVec2(box_max.x, pos.y + box_max.x - pos.x), uv_min, uv_max);
 
 		// label
 		const float padding = 4.0f;
@@ -333,15 +320,15 @@ namespace Editor
 		ImGui::SetCursorScreenPos(startPos);
 
 		ImGuiMultiSelectFlags flags = ImGuiMultiSelectFlags_ClearOnEscape | ImGuiMultiSelectFlags_ClearOnClickVoid | ImGuiMultiSelectFlags_BoxSelect2d | ImGuiMultiSelectFlags_SelectOnClickRelease;
-		ImGuiMultiSelectIO* io = ImGui::BeginMultiSelect(flags, m_Selection.Size, static_cast<int>(m_Items.size()));
+		ImGuiMultiSelectIO* io = ImGui::BeginMultiSelect(flags, m_Selection.Size, static_cast<int>(m_Records.size()));
 
 		// Use custom selection adapter: store ID in selection
 		m_Selection.UserData = nullptr;
-		m_Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage*, int idx) { return static_cast<unsigned int>(static_cast<uint64_t>(m_Items[idx].id)); };
+		m_Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage*, int idx) { return static_cast<ImGuiID>(m_Records[idx].id); };
 		m_Selection.ApplyRequests(io);
 
 		m_RequestDelete |= (ImGui::Shortcut(ImGuiKey_Delete, ImGuiInputFlags_Repeat) && (m_Selection.Size > 0));
-		const int item_curr_idx_to_focus = m_RequestDelete ? m_Selection.ApplyDeletionPreLoop(io, static_cast<int>(m_Items.size())) : -1;
+		const int item_curr_idx_to_focus = m_RequestDelete ? m_Selection.ApplyDeletionPreLoop(io, static_cast<int>(m_Records.size())) : -1;
 
 		ImGuiListClipper clipper;
 		clipper.Begin(m_LayoutLineCount, m_LayoutItemStep.y);
@@ -361,19 +348,19 @@ namespace Editor
 			for (int line_idx = clipper.DisplayStart; line_idx < clipper.DisplayEnd; line_idx++)
 			{
 				const int item_min_idx_for_current_line = line_idx * m_LayoutColumnCount;
-				const int item_max_idx_for_current_line = std::min((line_idx + 1) * m_LayoutColumnCount, static_cast<int>(m_Items.size()));
+				const int item_max_idx_for_current_line = std::min((line_idx + 1) * m_LayoutColumnCount, static_cast<int>(m_Records.size()));
 
 				for (int item_idx = item_min_idx_for_current_line; item_idx < item_max_idx_for_current_line; ++item_idx)
 				{
-					Engine::AssetRecord* assetRecord = &m_Items[item_idx];
-					ImGui::PushID(static_cast<unsigned int>(static_cast<uint64_t>(assetRecord->id)));
+					const Engine::AssetRecord& assetRecord = m_Records[item_idx];
+					ImGui::PushID(static_cast<unsigned int>(static_cast<uint64_t>(assetRecord.id)));
 
 					// Position item
 					ImVec2 pos = ImVec2(startPos.x + (item_idx % m_LayoutColumnCount) * m_LayoutItemStep.x, startPos.y + line_idx * m_LayoutItemStep.y);
 					ImGui::SetCursorScreenPos(pos);
 
 					ImGui::SetNextItemSelectionUserData(item_idx);
-					bool item_is_selected = m_Selection.Contains(static_cast<unsigned int>(static_cast<uint64_t>(assetRecord->id)));
+					bool item_is_selected = m_Selection.Contains(static_cast<unsigned int>(static_cast<uint64_t>(assetRecord.id)));
 					bool item_is_visible = ImGui::IsRectVisible(m_LayoutItemSize);
 					ImGui::Selectable("##unique_id", item_is_selected, ImGuiSelectableFlags_None, m_LayoutItemSize);
 
@@ -386,24 +373,24 @@ namespace Editor
 					{
 						ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
 
-						ItemInteraction interaction = DrawItem(*assetRecord, drawList, pos, label_col);
+						ItemInteraction interaction = DrawItem(assetRecord, drawList, pos, label_col);
 
 						if (interaction == ItemInteraction::Clicked)
 						{
-							if (assetRecord->type != Engine::AssetType::Directory)
+							if (assetRecord.type != Engine::AssetType::Directory)
 							{
-								SelectionManager::Assets.Select(assetRecord->id);
+								SelectionManager::Assets.Select(assetRecord.id);
 							}
 						}
 						else if (interaction == ItemInteraction::DoubleClicked)
 						{
-							switch (assetRecord->type)
+							switch (assetRecord.type)
 							{
 							case Engine::AssetType::Directory:
-								nextDirectory = assetRecord->path;
+								nextDirectory = assetRecord.path;
 								break;
 							case Engine::AssetType::Scene:
-								Editor::EditorCommandManager::Enqueue(std::make_unique<Editor::OpenSceneCommand>(assetRecord->id));
+								//Editor::EditorCommandManager::Enqueue(std::make_unique<Editor::OpenSceneCommand>(assetRecord.id));
 								break;
 							case Engine::AssetType::Material:
 								LOG_INFO("Opening Material Editor...");
@@ -428,7 +415,7 @@ namespace Editor
 		m_Selection.ApplyRequests(io);
 		if (m_RequestDelete)
 		{
-			m_Selection.ApplyDeletionPostLoop(io, m_Items, item_curr_idx_to_focus);
+			m_Selection.ApplyDeletionPostLoop(io, m_Records, item_curr_idx_to_focus);
 			m_RequestDelete = false;
 
 			LOG_WARNING("Delete functionality is not implemented yet");

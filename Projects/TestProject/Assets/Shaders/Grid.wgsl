@@ -22,9 +22,11 @@ struct ViewUniforms
 
 struct MaterialUniforms 
 {
-	albedo: vec4f,
-	tiling: vec2f,
-	offset: vec2f,
+	albedo: vec4f,			// @color @default(1,1,1,1)
+	tiling: vec2f,			// @default(1,1)
+	offset: vec2f,			// @default(0,0)
+	hoveredTile: vec2f,	// @default(0,0)
+	_padding: vec2f,
 };
 
 // storage buffer
@@ -66,7 +68,16 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 	let uv = in.uv * uMaterial.tiling + uMaterial.offset;
 	let albedo = textureSample(AlbedoTexture, MaterialSampler, uv).rgb * uMaterial.albedo.rgb;
 
-	let color = uMaterial.albedo.rgb * albedo;
+	let tileCoord = vec2i(floor(in.uv * uMaterial.tiling));
+	let hovered = vec2i(floor(uMaterial.hoveredTile));
+
+
+	var color = albedo;
+
+	if (tileCoord.x == hovered.x && tileCoord.y == hovered.y)
+	{
+    color = albedo * vec3f(1.0, 0.0, 0.0);
+	}
 
 	let gammaCorrected = pow(color, vec3f(1.0 / 2.2));
 	return vec4f(gammaCorrected, uMaterial.albedo.a);

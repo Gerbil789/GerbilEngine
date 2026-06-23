@@ -8,6 +8,7 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/State.h"
 #include <glm/glm.hpp>
 
@@ -199,7 +200,7 @@ namespace Editor
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		Engine::Scene& scene = Engine::SceneManager::GetActiveScene();
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 
 		if (EditorContext::state == EditorState::Edit)
 		{
