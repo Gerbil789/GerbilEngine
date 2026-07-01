@@ -30,14 +30,16 @@ namespace Editor
 		ImGuizmo::AllowAxisFlip(true);
 		ImGuizmo::SetGizmoSizeClipSpace(0.15f);
 
-		Engine::EventBus::Get().Subscribe<Engine::KeyPressedEvent>([](const Engine::KeyPressedEvent& e)
+		Engine::EventBus::Subscribe<Engine::KeyPressedEvent>([](const Engine::KeyPressedEvent& e)
 			{
-				if (EditorContext::state == EditorState::Play) return;
+				if (EditorContext::state == EditorState::Play) return false;;
 
 				if (e.key == Engine::Key::Q) gizmoType = static_cast<ImGuizmo::OPERATION>(0);
 				if (e.key == Engine::Key::W) gizmoType = ImGuizmo::OPERATION::TRANSLATE;
 				if (e.key == Engine::Key::E) gizmoType = ImGuizmo::OPERATION::ROTATE;
 				if (e.key == Engine::Key::R) gizmoType = ImGuizmo::OPERATION::SCALE;
+
+				return false;
 			});
 	}
 

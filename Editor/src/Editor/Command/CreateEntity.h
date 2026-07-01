@@ -20,7 +20,7 @@ namespace Editor
 
 			SelectionManager::Assets.Select(id);
       FocusEntityEvent e{ id };
-			Engine::EventBus::Get().Publish(e);
+			Engine::EventBus::Publish(e);
     }
 
     void Undo() override 
@@ -28,7 +28,7 @@ namespace Editor
       if (m_Entity == entt::null) return;
 
       FocusEntityEvent e {0};
-      Engine::EventBus::Get().Publish(e);
+      Engine::EventBus::Publish(e);
       m_Scene->GetRegistry().destroy(m_Entity);
     }
 

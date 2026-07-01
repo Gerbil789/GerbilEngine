@@ -1,21 +1,14 @@
 #pragma once
 
 #include "Engine/Event/Event.h"
+#include "Engine/Core/UUID.h"
 
 namespace Engine
 {
-	struct AppTickEvent : public Event
+	struct SceneChangedEvent : public Event
 	{
+		Uuid id;
 
-	};
-
-	struct AppUpdateEvent : public Event
-	{
-
-	};
-
-	struct AppRenderEvent : public Event
-	{
-
+		SceneChangedEvent(Uuid id) : id(id) {}
 	};
 }

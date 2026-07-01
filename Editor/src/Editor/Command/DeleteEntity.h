@@ -25,7 +25,7 @@ namespace Editor
       if (m_Entity == entt::null) return;
 
       FocusEntityEvent e{0};
-			Engine::EventBus::Get().Publish(e);
+			Engine::EventBus::Publish(e);
       m_Scene->GetRegistry().destroy(m_Entity);
     }
 
@@ -38,7 +38,7 @@ namespace Editor
 			Engine::Uuid id = registry.get<Engine::IdentityComponent>(m_Entity).id;
 
       FocusEntityEvent e{ id };
-      Engine::EventBus::Get().Publish(e);
+      Engine::EventBus::Publish(e);
     }
 
   private:

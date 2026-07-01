@@ -5,25 +5,24 @@
 
 namespace Engine
 {
-  struct FileEvent : public Event
+  struct FileAddedEvent : public Event
+	{
+    std::filesystem::path path;
+
+    FileAddedEvent(const std::filesystem::path& path) : path(path) {}
+	};
+
+  struct FileRemovedEvent : public Event
   {
     std::filesystem::path path;
 
-    FileEvent(const std::filesystem::path& path) : path(path) {}
-  };
-
-  struct FileAddedEvent : public FileEvent
-	{
-    FileAddedEvent(const std::filesystem::path& path) : FileEvent(path) {}
+    FileRemovedEvent(const std::filesystem::path& path) : path(path) {}
 	};
 
-  struct FileRemovedEvent : public FileEvent
+  struct FileModifiedEvent : public Event
   {
-    FileRemovedEvent(const std::filesystem::path& path) : FileEvent(path) {}
-	};
+    std::filesystem::path path;
 
-  struct FileModifiedEvent : public FileEvent
-  {
-    FileModifiedEvent(const std::filesystem::path& path) : FileEvent(path) {}
+    FileModifiedEvent(const std::filesystem::path& path) : path(path) {}
   };
 }

@@ -4,9 +4,6 @@
 #include "Engine/Core/Log.h"
 
 #include "Grid.h"
-#include "CombatManager.h"
-#include "PlayerCombatController.h"
-#include "AICombatController.h"
 
 class BattleControllerScript : public Engine::Script 
 {

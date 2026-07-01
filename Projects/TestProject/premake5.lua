@@ -20,11 +20,18 @@ externalincludedirs
 	"%{wks.location}/vendor/dawn/include",
 	"%{wks.location}/vendor/glm",
 	"%{wks.location}/vendor/entt/include",
+	"%{wks.location}/vendor/imgui",
 }
 
 links
 {
 	"Engine",
+	"ImGui",
+}
+
+defines 
+{ 
+	"IMGUI_IMPL_WEBGPU_BACKEND_DAWN",
 }
 
 filter { "system:windows", "configurations:not Dist" }

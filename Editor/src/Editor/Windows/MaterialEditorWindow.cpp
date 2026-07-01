@@ -70,12 +70,12 @@ namespace Editor
 								using T = std::decay_t<decltype(arg)>;
 
 								DisplayMode mode = DisplayMode::Default;
-								if(param.isColor)
+								if (param.isColor)
 								{
 									mode = DisplayMode::Color;
 								}
-	
-								if(PropertyField<T>(param.name.c_str(), arg, {.mode = mode}).changed)
+
+								if (PropertyField<T>(param.name.c_str(), arg, { .mode = mode }).changed)
 								{
 									m_Material->SetParameter(param.name, arg);
 								}
@@ -126,15 +126,16 @@ namespace Editor
 
 	void MaterialEditorWindow::Initialize()
 	{
-		Engine::EventBus::Get().Subscribe<SelectionChangedEvent>([](const SelectionChangedEvent& e)
+		Engine::EventBus::Subscribe<SelectionChangedEvent>([](const SelectionChangedEvent& e)
 			{
-				if(e.context != SelectionContext::Asset) return;
+				if (e.context != SelectionContext::Asset) return false;;
 
 				auto type = Engine::AssetManager::GetAssetRegistry().GetType(e.id);
 				if (type == Engine::AssetType::Material)
 				{
 					m_Material = &Engine::AssetManager::GetAsset<Engine::Material>(e.id);
 				}
+				return false;
 			});
 	}
 }

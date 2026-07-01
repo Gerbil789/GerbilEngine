@@ -20,6 +20,9 @@
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 
+#include "Engine/Event/EventBus.h"
+#include "Engine/Event/FileEvent.h"
+
 namespace Engine
 {
   namespace 
@@ -84,6 +87,24 @@ namespace Engine
     m_AssetRegistry.Load(projectDirectory / "assetRegistry.json");
 		m_AssetsDirectory = projectDirectory / "Assets";
 
+    Engine::EventBus::Subscribe<Engine::FileAddedEvent>([](const Engine::FileAddedEvent& event)
+      {
+        LOG_WARNING("File added event received");
+        m_AssetRegistry.Create(Uuid::Generate(), event.path);
+        return false;
+      });
+
+    Engine::EventBus::Subscribe<Engine::FileRemovedEvent>([](const Engine::FileRemovedEvent& event)
+      {
+        LOG_WARNING("File removed event received");
+				m_AssetRegistry.Remove(event.path);
+        return false;
+      });
+
+
+
+
+
     auto emptyMesh = Mesh(MeshSpecification{});
     emptyMesh.id = RESOURCES::MESH::EMPTY;
     m_Meshes.insert_or_assign(RESOURCES::MESH::EMPTY, std::move(emptyMesh));
@@ -132,6 +153,11 @@ namespace Engine
   AssetRegistry& AssetManager::GetAssetRegistry()
   {
 		return m_AssetRegistry;
+  }
+
+  bool AssetManager::Exists(Uuid id)
+  {
+    return m_AssetRegistry.Exists(id);
   }
 
   template<typename T>

@@ -2,75 +2,78 @@
 
 #include "Engine/Core/API.h"
 #include "Engine/Event/Event.h"
+#include "Engine/Event/EventListener.h"
 #include <unordered_map>
 #include <functional>
 #include <type_traits>
 
 namespace Engine
 {
-  using EventToken = uint32_t;
-
   template<typename T>
   concept IsEvent = std::is_base_of_v<Event, std::remove_cvref_t<T>>;
 
-  class ENGINE_API EventBus
+  class EventBus
   {
+  public:
+    EventBus() = delete;
+
   private:
     struct Handler
     {
-      EventToken Token;
-      std::function<void(Engine::Event&)> Callback;
+      uint32_t Token;
+      std::function<bool(Event&)> Callback;
     };
 
-  public:
-    static EventBus& Get()
-    {
-      static EventBus instance;
-      return instance;
-    }
+    static inline uint32_t s_NextToken = 0;
+    static inline std::unordered_map<size_t, std::vector<Handler>> s_Subscribers;
 
+  public:
     template<IsEvent T>
-    EventToken Subscribe(std::function<void(const T&)> callback)
+    static EventListener Subscribe(std::function<bool(const T&)> callback)
     {
       size_t typeHash = typeid(T).hash_code();
 
-      auto wrapper = [callback](Engine::Event& e)
+      uint32_t token = ++s_NextToken;
+
+      Handler h;
+      h.Token = token;
+
+      h.Callback = [callback](Event& e) -> bool
         {
-          callback(static_cast<const T&>(e));
+          return callback(static_cast<const T&>(e));
         };
 
-      EventToken id = ++m_NextToken;
-      m_Subscribers[typeHash].push_back({ id, wrapper });
-      return id;
+      s_Subscribers[typeHash].push_back(std::move(h));
+
+      return EventListener(token);
     }
 
-    void Unsubscribe(EventToken token)
+    static void Unsubscribe(uint32_t token)
     {
-      for (auto& [hash, handlers] : m_Subscribers)
+      for (auto& [hash, handlers] : s_Subscribers)
       {
-        std::erase_if(handlers, [token](const Handler& h) { return h.Token == token; });
+        std::erase_if(handlers,
+          [token](const Handler& h)
+          {
+            return h.Token == token;
+          });
       }
     }
 
     template<IsEvent T>
-    void Publish(T&& e)
+    static void Publish(T&& e)
     {
       size_t typeHash = typeid(e).hash_code();
 
-      if (!m_Subscribers.contains(typeHash)) return;
+      auto it = s_Subscribers.find(typeHash);
+      if (it == s_Subscribers.end())
+        return;
 
-      for (auto& handler : m_Subscribers[typeHash])
+      for (auto& handler : it->second)
       {
-        if (e.Handled) break; // Support for consuming events
-        handler.Callback(e);
+        if (handler.Callback(e))
+          break;
       }
     }
-
-  private:
-    EventBus() = default;
-    ~EventBus() = default;
-
-    EventToken m_NextToken = 0;
-    std::unordered_map<size_t, std::vector<Handler>> m_Subscribers;
   };
 }

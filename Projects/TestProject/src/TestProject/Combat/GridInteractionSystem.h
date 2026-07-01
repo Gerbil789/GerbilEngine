@@ -21,7 +21,7 @@ public:
 
   void Initialize()
   {
-    Engine::EventBus::Get().Subscribe<Engine::MouseButtonReleasedEvent>([this](auto e) {OnMouseButtonReleased(e); });
+    Engine::EventBus::Subscribe<Engine::MouseButtonReleasedEvent>([this](auto e) {OnMouseButtonReleased(e); return false; });
 	}
 
   void OnMouseButtonReleased(Engine::MouseButtonReleasedEvent& e)
@@ -51,7 +51,8 @@ public:
 
     if(!inside)
     {
-      GameContext::hoveredTile = std::nullopt;
+      GameContext::hoveredTile = nullptr;
+      GameContext::mousePosition = { -1.0f, -1.0f };
       return;
 		}
 
@@ -81,7 +82,7 @@ public:
     }
     else
     {
-      GameContext::hoveredTile = std::nullopt;
+      GameContext::hoveredTile = nullptr;
       GameContext::mousePosition = { -1.0f, -1.0f };
 
     }

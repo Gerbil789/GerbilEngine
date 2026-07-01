@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Engine/Core/UUID.h"
-#include <optional>
 
 struct Tile 
 {
@@ -23,7 +22,7 @@ public:
   int GetWidth() const { return m_width; }
   int GetHeight() const { return m_height; }
 
-  std::optional<Tile> GetTile(int x, int y);
+  Tile* GetTile(int x, int y);
 
   bool IsValidPosition(int x, int y) const;
 

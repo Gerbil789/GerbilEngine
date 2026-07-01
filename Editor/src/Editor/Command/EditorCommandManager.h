@@ -6,6 +6,7 @@
 #include "Editor/Command/ComponentSnapshotCommand.h"
 #include "Editor/Command/TransformEntity.h"
 #include "Engine/Scene/Scene.h"
+#include "Engine/Event/EventBus.h"
 #include <stack>
 #include <vector>
 
@@ -55,5 +56,7 @@ namespace Editor
     inline static std::stack<std::unique_ptr<ICommand>> s_UndoStack;
     inline static std::stack<std::unique_ptr<ICommand>> s_RedoStack;
     inline static std::vector<std::unique_ptr<ICommand>> s_Deferred;
+
+		inline static Engine::EventListener s_SceneChangedListener;
   };
 }

@@ -25,11 +25,6 @@ extern "C" void RegisterScripts();
 
 namespace Engine
 {
-	namespace
-	{
-		Engine::EventToken m_Token;
-	}
-
 	void Runtime::LoadScripts([[maybe_unused]] const std::filesystem::path& dllPath)
 	{
 #ifdef ENGINE_SHARED_EXPORT
@@ -110,7 +105,7 @@ namespace Engine
 			}
 		}
 
-		Engine::EventBus::Get().Unsubscribe(m_Token);
+		//Engine::EventBus::Unsubscribe();
 
 		Engine::Audio::StopAll();
 		Engine::Input::SetCursorMode(Engine::Input::CursorMode::Normal);

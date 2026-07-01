@@ -1,5 +1,8 @@
 #include "enginepch.h"
 #include "Engine/Scene/SceneManager.h"
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Event/EventBus.h"
+#include "Engine/Event/ApplicationEvent.h"
 #include "Engine/Core/Log.h"
 
 namespace Engine::SceneManager
@@ -8,13 +11,15 @@ namespace Engine::SceneManager
 
 	void SetActiveScene(Uuid id)
 	{
-		if(!id)
+		if (!AssetManager::Exists(id))
 		{
-			LOG_ERROR("Invalid scene ID provided to SetActiveScene");
+			LOG_ERROR("Scene with ID {} does not exist", id);
 			return;
 		}
 
 		m_ActiveScene = id;
+		Engine::EventBus::Publish(SceneChangedEvent{ m_ActiveScene });
+
 		LOG_INFO("Active scene set to {}", m_ActiveScene);
 	}
 

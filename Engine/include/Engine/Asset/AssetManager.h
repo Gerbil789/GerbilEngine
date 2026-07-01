@@ -13,6 +13,8 @@ namespace Engine::AssetManager
 	template<typename T>
 	ENGINE_API T& GetAsset(Uuid id);
 
+	ENGINE_API bool Exists(Uuid id);
+
 	template<typename T>
 	ENGINE_API T& CreateAsset(const std::filesystem::path& path);
 

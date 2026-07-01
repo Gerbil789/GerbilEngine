@@ -110,7 +110,7 @@ namespace Template
 		GLFW::Initialize();
 
 		m_Window.Initialize(Engine::WindowSpecification{ "Game", m_Width, m_Height, "Resources/Engine/icons/logo.png" }); //TODO: make this configurable
-		m_Window.SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
+		m_Window.SetEventCallback([](auto& e) {Engine::EventBus::Publish(e); });
 
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());
 
@@ -145,7 +145,7 @@ namespace Template
 
 		UpdateSize(m_Width, m_Height);
 
-		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
+		Engine::EventBus::Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); return false; });
 	}
 
 	TemplateApp::~TemplateApp()

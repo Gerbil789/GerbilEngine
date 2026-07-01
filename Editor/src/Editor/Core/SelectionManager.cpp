@@ -17,7 +17,7 @@ namespace Editor
 
       m_Selection.push_back(id);
 
-      Engine::EventBus::Get().Publish(SelectionChangedEvent{ m_Context, id });
+      Engine::EventBus::Publish(SelectionChangedEvent{ m_Context, id });
     }
   }
 
@@ -33,14 +33,14 @@ namespace Editor
       m_Selection.push_back(id);
     }
 
-    Engine::EventBus::Get().Publish(SelectionChangedEvent{ m_Context, id });
+    Engine::EventBus::Publish(SelectionChangedEvent{ m_Context, id });
   }
 
   void SelectionGroup::Clear()
   {
     if (m_Selection.empty()) return;
     m_Selection.clear();
-    Engine::EventBus::Get().Publish(SelectionChangedEvent{ m_Context, 0 });
+    Engine::EventBus::Publish(SelectionChangedEvent{ m_Context, 0 });
   }
 
   bool SelectionGroup::IsSelected(Engine::Uuid id) const

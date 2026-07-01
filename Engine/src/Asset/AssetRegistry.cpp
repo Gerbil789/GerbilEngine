@@ -117,7 +117,7 @@ namespace Engine
 	}
 
 
-	const void AssetRegistry::Create(Uuid id, const std::filesystem::path& path)
+	void AssetRegistry::Create(Uuid id, const std::filesystem::path& path)
 	{
 		auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
 
@@ -136,6 +136,40 @@ namespace Engine
 		Save(Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.json");
 		LOG_TRACE("Added asset '{}' to registry.", path);
 		return;
+	}
+
+	bool AssetRegistry::Exists(Uuid id) const
+	{
+		return m_Records.find(id) != m_Records.end();
+	}
+
+	void AssetRegistry::Remove(Uuid id)
+	{
+		if (m_Records.erase(id) > 0)
+		{
+			LOG_TRACE("Removed asset '{}' from registry.", id);
+			Save(Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.json");
+		}
+		else
+		{
+			LOG_WARNING("Attempted to remove non-existent asset '{}' from registry.", id);
+		}
+	}
+
+	void AssetRegistry::Remove(const std::filesystem::path& path)
+	{
+		auto it = std::find_if(m_Records.begin(), m_Records.end(), [&path](const auto& pair) { return pair.second.path == path; });
+		if (it != m_Records.end())
+		{
+			Uuid id = it->first;
+			m_Records.erase(it);
+			LOG_TRACE("Removed asset '{}' from registry.", path);
+			Save(Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.json");
+		}
+		else
+		{
+			LOG_WARNING("Attempted to remove non-existent asset '{}' from registry.", path);
+		}
 	}
 
 	std::filesystem::path AssetRegistry::GetPath(const Uuid& id) const

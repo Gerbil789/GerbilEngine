@@ -9,12 +9,13 @@ namespace Editor
 {
   void EditorCommandManager::Initialize()
   {
-		Engine::EventBus::Get().Subscribe<Engine::KeyPressedEvent>([](auto e) 
+    s_SceneChangedListener = Engine::EventBus::Subscribe<Engine::KeyPressedEvent>([](auto e)
       {
         if ((e.key == Engine::Key::Z || e.key == Engine::Key::Y) && Engine::Input::IsKeyDown(Engine::Key::LeftControl))
         {
           (!Engine::Input::IsKeyDown(Engine::Key::LeftShift) ? Undo() : Redo());
         }
+        return false;
       });
   }
 

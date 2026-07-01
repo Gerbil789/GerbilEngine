@@ -18,7 +18,9 @@
 #include "Engine/Core/Configuration.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/WindowEvent.h"
+#include "Engine/Event/ApplicationEvent.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/TransformSystem.h" //TODO: i dont like this system
 #include "Engine/Audio/Audio.h"
@@ -45,7 +47,8 @@ namespace Editor
 		GLFW::Initialize();
 
 		m_Window.Initialize({ std::format("Gerbil Editor - {}", Engine::Configuration) , 1600, 900, "Resources/Engine/icons/logo.png" });
-		m_Window.SetEventCallback([](Engine::Event& e) {Engine::EventBus::Get().Publish(e); });
+		
+		m_Window.SetEventCallback([](auto& e) {Engine::EventBus::Publish(e); });
 
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());
 
@@ -57,6 +60,13 @@ namespace Editor
 		Engine::Audio::Initialize();
 		IconManager::Initialize();
 		EditorWindowManager::Initialize(m_Window);
+
+		Engine::EventBus::Subscribe<Engine::SceneChangedEvent>([this](auto& e) 
+			{
+				const auto& registry = Engine::AssetManager::GetAssetRegistry();
+				m_Window.SetTitle(std::format("Gerbil Editor - {} - Scene: {}", Engine::Configuration, registry.GetRecord(e.id).GetName()));
+				return false;
+			});
 
 		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / Engine::Configuration / (project.GetTitle() + ".dll");
 		Engine::Runtime::LoadScripts(dllPath);
@@ -71,7 +81,7 @@ namespace Editor
 		EditorContext::editorCamera.SetBackground(Engine::Camera::Background::Skybox);
 		EditorContext::editorCamera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
 
-		Engine::EventBus::Get().Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); });
+		static auto applicationCloseListener = Engine::EventBus::Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); return false; });
 		LOG_INFO("--- Editor initialization complete ---");
 	}
 

@@ -67,19 +67,19 @@ namespace Editor
         case FILE_ACTION_ADDED:
         {
           auto e = Engine::FileAddedEvent(fullPath);
-          Engine::EventBus::Get().Publish(e);
+          Engine::EventBus::Publish(e);
           break;
         }
         case FILE_ACTION_REMOVED:
         {
 					auto e = Engine::FileRemovedEvent(fullPath);
-          Engine::EventBus::Get().Publish(e);
+          Engine::EventBus::Publish(e);
           break;
         }
         case FILE_ACTION_MODIFIED:
         {
 					auto e = Engine::FileModifiedEvent(fullPath);
-          Engine::EventBus::Get().Publish(e);
+          Engine::EventBus::Publish(e);
           break;
         }
         /* case FILE_ACTION_RENAMED_OLD_NAME:

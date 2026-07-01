@@ -30,30 +30,34 @@ namespace Engine::Input
 
 		//TODO: subscribe only once, not every time we set active window
 
-		EventBus::Get().Subscribe<KeyPressedEvent>([&state](auto& e) 
+		EventBus::Subscribe<KeyPressedEvent>([&state](auto& e) 
 			{
 				int key = static_cast<int>(e.key);
 				if (!state.KeyDown[key]) state.KeyPressed[key] = true;
 				state.KeyDown[key] = true;
+				return false;
 			});
 
-		EventBus::Get().Subscribe<KeyReleasedEvent>([&state](auto& e)
+		EventBus::Subscribe<KeyReleasedEvent>([&state](auto& e)
 			{
 				int key = static_cast<int>(e.key);
 				state.KeyDown[key] = false;
 				state.KeyReleased[key] = true;
+				return false;
 			});
 
-		EventBus::Get().Subscribe<MouseButtonPressedEvent>([&state](auto& e)
+		EventBus::Subscribe<MouseButtonPressedEvent>([&state](auto& e)
 			{
 				int button = static_cast<int>(e.button);
 				state.MouseDown[button] = true;
+				return false;
 			});
 
-		EventBus::Get().Subscribe<MouseButtonReleasedEvent>([&state](auto& e)
+		EventBus::Subscribe<MouseButtonReleasedEvent>([&state](auto& e)
 			{
 				int button = static_cast<int>(e.button);
 				state.MouseDown[button] = false;
+				return false;
 			});
 
 		//TODO: handle change focus

@@ -24,14 +24,14 @@ namespace Editor
 
 	void ViewportCameraController::Initialize()
 	{
-		Engine::EventBus::Get().Subscribe<Engine::MouseScrolledEvent>([this](auto e) {OnMouseScroll(e); });
-		Engine::EventBus::Get().Subscribe<Engine::MouseButtonPressedEvent>([this](auto e) {OnMouseButtonPressed(e); });
-		Engine::EventBus::Get().Subscribe<Engine::MouseButtonReleasedEvent>([this](auto e) {OnMouseButtonReleased(e); });
-		Engine::EventBus::Get().Subscribe<Engine::MouseMovedEvent>([this](auto e) {OnMouseMoved(e); });
-		Engine::EventBus::Get().Subscribe<FocusEntityEvent>([this](const FocusEntityEvent& e) {OnEntityFocus(e.id); });
+		Engine::EventBus::Subscribe<Engine::MouseScrolledEvent>([this](const auto& e) {OnMouseScroll(e); return false; });
+		Engine::EventBus::Subscribe<Engine::MouseButtonPressedEvent>([this](const auto& e) {OnMouseButtonPressed(e); return false; });
+		Engine::EventBus::Subscribe<Engine::MouseButtonReleasedEvent>([this](const auto& e) {OnMouseButtonReleased(e); return false; });
+		Engine::EventBus::Subscribe<Engine::MouseMovedEvent>([this](const auto& e) {OnMouseMoved(e); return false; });
+		Engine::EventBus::Subscribe<FocusEntityEvent>([this](const FocusEntityEvent& e) {OnEntityFocus(e.id); return false; });
 	}
 
-	void ViewportCameraController::OnMouseScroll(Engine::MouseScrolledEvent& e)
+	void ViewportCameraController::OnMouseScroll(const Engine::MouseScrolledEvent& e)
 	{
 		if (!m_ViewportHovered) return;
 
@@ -40,7 +40,7 @@ namespace Editor
 		EditorContext::editorCamera.SetPosition(position + EditorContext::editorCamera.GetForward() * delta * m_ScrollSensitivity);
 	}
 
-	void ViewportCameraController::OnMouseButtonPressed(Engine::MouseButtonPressedEvent& e)
+	void ViewportCameraController::OnMouseButtonPressed(const Engine::MouseButtonPressedEvent& e)
 	{
 		if (!m_ViewportHovered) return;
 
@@ -56,7 +56,7 @@ namespace Editor
 		}
 	}
 
-	void ViewportCameraController::OnMouseButtonReleased(Engine::MouseButtonReleasedEvent& e)
+	void ViewportCameraController::OnMouseButtonReleased(const Engine::MouseButtonReleasedEvent& e)
 	{
 		if (e.button == Engine::Mouse::ButtonRight)
 		{
@@ -68,7 +68,7 @@ namespace Editor
 		}
 	}
 
-	void ViewportCameraController::OnMouseMoved(Engine::MouseMovedEvent& e)
+	void ViewportCameraController::OnMouseMoved(const Engine::MouseMovedEvent& e)
 	{
 		if (!m_RotateDragging && !m_PanDragging) return;
 

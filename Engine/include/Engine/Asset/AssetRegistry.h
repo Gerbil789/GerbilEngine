@@ -12,7 +12,12 @@ namespace Engine
 		void Load(const std::filesystem::path& path);
 		void Save(const std::filesystem::path& path);
 
-		const void Create(Uuid id, const std::filesystem::path& path);
+		void Create(Uuid id, const std::filesystem::path& path);
+
+		bool Exists(Uuid id) const;
+
+		void Remove(Uuid id);
+		void Remove(const std::filesystem::path& path);
 
 		template<typename Self>
 		AssetRecord& GetRecord(this Self&& self, Uuid id)

@@ -28,15 +28,16 @@ namespace Editor
 
 	void InspectorWindow::Initialize()
 	{
-		Engine::EventBus::Get().Subscribe<SelectionChangedEvent>([](const SelectionChangedEvent& e)
+		Engine::EventBus::Subscribe<SelectionChangedEvent>([](const SelectionChangedEvent& e)
 			{
 				if(e.context == SelectionContext::Asset && Engine::AssetManager::GetAssetRegistry().GetType(e.id) == Engine::AssetType::Material)
 				{
-					return;
+					return false;
 				}
 
 				m_Context = e.context;
 				m_Id = e.id;
+				return false;
 			});
 	}
 

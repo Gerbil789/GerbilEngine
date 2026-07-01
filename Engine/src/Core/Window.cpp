@@ -165,19 +165,17 @@ namespace Engine
 				if (width == 0 || height == 0) { return; }
 
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				data.width = width;
-				data.height = height;
-
-				data.self->ConfigureSurface(width, height);
-
-				WindowResizeEvent event(width, height);
+				data.width = static_cast<uint32_t>(width);
+				data.height = static_cast<uint32_t>(height);
+				data.self->ConfigureSurface(data.width, data.height);
+				WindowResizeEvent event{ data.width, data.height };
 				data.callback(event);
 			});
 
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				WindowCloseEvent event;
+				WindowCloseEvent event{};
 				data.callback(event);
 			});
 
