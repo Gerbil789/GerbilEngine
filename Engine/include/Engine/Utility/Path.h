@@ -25,55 +25,6 @@ inline std::filesystem::path GetExecutableDir()
 #endif
 }
 
-
-//TODO: ditch this thing, dont store stuff in appdata
-inline std::filesystem::path GetSettingsFilePath(const std::string& appName) 
-{
-  std::filesystem::path configDir;
-
-#if defined(ENGINE_PLATFORM_WINDOWS)
-  char* appData = nullptr;
-  size_t len = 0;
-
-  if (_dupenv_s(&appData, &len, "APPDATA") == 0 && appData)
-  {
-    configDir = std::filesystem::path(appData) / appName;
-    free(appData);
-  }
-#elif defined(__APPLE__)
-  // macOS: ~/Library/Application Support/MyAwesomeEditor
-  const char* home = std::getenv("HOME");
-  if (home) {
-    configDir = std::filesystem::path(home) / "Library" / "Application Support" / appName;
-  }
-#else 
-  // Linux/Unix: ~/.config/MyAwesomeEditor (XDG Base Directory Spec)
-  const char* xdgConfig = std::getenv("XDG_CONFIG_HOME");
-  if (xdgConfig && std::string(xdgConfig) != "") {
-    configDir = std::filesystem::path(xdgConfig) / appName;
-  }
-  else {
-    const char* home = std::getenv("HOME");
-    if (home) {
-      configDir = std::filesystem::path(home) / ".config" / appName;
-    }
-  }
-#endif
-
-  // Fallback just in case environment variables fail
-  if (configDir.empty()) {
-    configDir = std::filesystem::current_path() / appName;
-  }
-
-  // Ensure the folder actually exists before we try to save a file inside it
-  if (!std::filesystem::exists(configDir)) {
-    std::filesystem::create_directories(configDir);
-  }
-
-  // Return the full path including the file name
-  return configDir / "editor_settings.yaml";
-}
-
 inline void SetupWorkingDirectory()
 {
   std::filesystem::path exeDir = GetExecutableDir();
@@ -94,6 +45,7 @@ inline void SetupWorkingDirectory()
     }
     searchPath = searchPath.parent_path();
   }
+
 
   throw std::runtime_error("Resources folder not found. Please ensure the working directory is set correctly.");
 }

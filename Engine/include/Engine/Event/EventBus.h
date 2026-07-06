@@ -20,7 +20,7 @@ namespace Engine
   private:
     struct Handler
     {
-      uint32_t Token;
+      uint32_t Token = 0;
       std::function<bool(Event&)> Callback;
     };
 

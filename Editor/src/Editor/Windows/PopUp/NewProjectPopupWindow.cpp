@@ -1,6 +1,7 @@
 #include "NewProjectPopupWindow.h"
 #include "Engine/Core/Project.h"
 #include "Editor/Utility/File.h"
+#include "Engine/Core/Log.h"
 #include <imgui.h>
 
 namespace Editor
@@ -34,7 +35,8 @@ namespace Editor
 			if (ImGui::Button("Create"))
 			{
 				std::filesystem::path fullPath = std::filesystem::path(m_Path) / m_Name;
-				Engine::Project::New(fullPath);
+				//Engine::Project::New(fullPath);
+				LOG_WARNING("New project creation is not implemented. Would create project at: {}", fullPath);
 				ImGui::CloseCurrentPopup();
 			}
 

@@ -38,7 +38,7 @@ namespace Engine
 	wgpu::Surface m_Surface;
 	wgpu::TextureFormat m_SurfaceFormat;
 
-	wgpu::Surface CreateSurface(GLFWwindow* window)
+	static wgpu::Surface CreateSurface(GLFWwindow* window)
 	{
 		wgpu::SurfaceDescriptor surfaceDesc;
 		surfaceDesc.label = { "MainSurface", WGPU_STRLEN };

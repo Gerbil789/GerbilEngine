@@ -37,7 +37,7 @@ namespace Editor
 		if (newSize.x == m_ViewportSize.x && newSize.y == m_ViewportSize.y) return;
 
 		m_ViewportSize = { newSize.x, newSize.y };
-		EditorContext::editorCamera.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
+		Editor::editorContext.editorCamera.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
 
 		ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		ImVec2 viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -72,7 +72,7 @@ namespace Editor
 			view.mipLevelCount = 1;
 			view.baseArrayLayer = 0;
 			view.arrayLayerCount = 1;
-			EditorContext::renderer.SetColorTarget(colorTexture.createView(view));
+			Editor::editorContext.renderer.SetColorTarget(colorTexture.createView(view));
 		}
 
 		// Depth
@@ -98,7 +98,7 @@ namespace Editor
 			view.dimension = wgpu::TextureViewDimension::_2D;
 			view.format = wgpu::TextureFormat::Depth24Plus;
 
-			EditorContext::renderer.SetDepthTarget(depthTexture.createView(view));
+			Editor::editorContext.renderer.SetDepthTarget(depthTexture.createView(view));
 		}
 
 		Engine::viewportState.width = m_ViewportSize.x;
@@ -108,7 +108,7 @@ namespace Editor
 		Engine::viewportState.positionY = m_ViewportBounds[0].y;
 	}
 
-	void DrawOverlay(const ImVec2& imagePos, const ImVec2& size)
+	static void DrawOverlay(const ImVec2& imagePos, const ImVec2& size)
 	{
 		const float overlayHeight = 32.0f;
 
@@ -130,18 +130,18 @@ namespace Editor
 			constexpr float buttonWidth = 60.0f;
 			ImGui::SetCursorPos(ImVec2(size.x * 0.5f - buttonWidth * 0.5f, 4.0f));
 
-			if (EditorContext::state == EditorState::Edit)
+			if (Editor::editorContext.editorMode == EditorMode::Edit)
 			{
 				if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
 				{
-					EditorCommandManager::Enqueue(std::make_unique<ChangeEditorStateCommand>(EditorState::Play));
+					EditorCommandManager::Enqueue(std::make_unique<ChangeEditorStateCommand>(EditorMode::Play));
 				}
 			}
 			else
 			{
 				if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
 				{
-					EditorCommandManager::Enqueue(std::make_unique<ChangeEditorStateCommand>(EditorState::Edit));
+					EditorCommandManager::Enqueue(std::make_unique<ChangeEditorStateCommand>(EditorMode::Edit));
 				}
 			}
 		}
@@ -155,7 +155,7 @@ namespace Editor
 
 			if (ImGui::BeginCombo("##ViewportOptions", "Passes"))
 			{
-				auto flags = EditorContext::renderer.GetEnabledFlags();
+				auto flags = Editor::editorContext.renderer.GetEnabledFlags();
 
 				auto RenderPassToggle = [&](const char* label, Engine::RenderPassType flag) {
 					bool isEnabled = (flags & flag) != Engine::RenderPassType::None;
@@ -163,9 +163,9 @@ namespace Editor
 					if (ImGui::Checkbox(label, &isEnabled))
 					{
 						if (isEnabled)
-							EditorContext::renderer.EnableFlag(flag);
+							Editor::editorContext.renderer.EnableFlag(flag);
 						else
-							EditorContext::renderer.DisableFlag(flag);
+							Editor::editorContext.renderer.DisableFlag(flag);
 					}
 					};
 
@@ -202,9 +202,9 @@ namespace Editor
 
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 
-		if (EditorContext::state == EditorState::Edit)
+		if (Editor::editorContext.editorMode == EditorMode::Edit)
 		{
-			EditorContext::renderer.RenderScene(scene, EditorContext::editorCamera);
+			Editor::editorContext.renderer.RenderScene(scene, Editor::editorContext.editorCamera);
 		}
 		else
 		{
@@ -212,19 +212,19 @@ namespace Editor
 			if (camera)
 			{
 				camera->SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
-				EditorContext::renderer.RenderScene(scene, *camera);
+				Editor::editorContext.renderer.RenderScene(scene, *camera);
 			}
 			else
 			{
-				EditorContext::renderer.RenderScene(scene, EditorContext::editorCamera);
+				Editor::editorContext.renderer.RenderScene(scene, Editor::editorContext.editorCamera);
 			}
 		}
 
-		ImGui::Image(static_cast<WGPUTextureView>(EditorContext::renderer.GetTextureView()), viewportSize);
+		ImGui::Image(static_cast<WGPUTextureView>(Editor::editorContext.renderer.GetTextureView()), viewportSize);
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 		{
-			if (EditorContext::state == EditorState::Edit && !m_TransformController.IsGizmoOver())
+			if (Editor::editorContext.editorMode == EditorMode::Edit && !m_TransformController.IsGizmoOver())
 			{
 				ImVec2 mousePos = ImGui::GetMousePos();
 

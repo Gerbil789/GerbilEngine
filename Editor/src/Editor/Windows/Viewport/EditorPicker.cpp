@@ -32,7 +32,7 @@ namespace Editor
   {
     if (x >= m_Width || y >= m_Height) return Engine::Uuid{};
 
-    const Engine::RenderContext& context = EditorContext::renderer.GetRenderContext();
+    const Engine::RenderContext& context = Editor::editorContext.renderer.GetRenderContext();
     if (context.drawList.size() == 0) return Engine::Uuid{};
 
     std::vector<Engine::Uuid> entityIds;

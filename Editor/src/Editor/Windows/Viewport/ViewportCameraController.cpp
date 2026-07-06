@@ -36,8 +36,8 @@ namespace Editor
 		if (!m_ViewportHovered) return;
 
 		float delta = static_cast<float>(e.yOffset) * m_ScrollSensitivity;
-		glm::vec3 position = EditorContext::editorCamera.GetPosition();
-		EditorContext::editorCamera.SetPosition(position + EditorContext::editorCamera.GetForward() * delta * m_ScrollSensitivity);
+		glm::vec3 position = Editor::editorContext.editorCamera.GetPosition();
+		Editor::editorContext.editorCamera.SetPosition(position + Editor::editorContext.editorCamera.GetForward() * delta * m_ScrollSensitivity);
 	}
 
 	void ViewportCameraController::OnMouseButtonPressed(const Engine::MouseButtonPressedEvent& e)
@@ -78,19 +78,19 @@ namespace Editor
 
 		if (m_RotateDragging)
 		{
-			float yaw = EditorContext::editorCamera.GetYaw() + delta.x;
-			float pitch = EditorContext::editorCamera.GetPitch() + delta.y;
-			EditorContext::editorCamera.SetRotation(pitch, yaw);
+			float yaw = Editor::editorContext.editorCamera.GetYaw() + delta.x;
+			float pitch = Editor::editorContext.editorCamera.GetPitch() + delta.y;
+			Editor::editorContext.editorCamera.SetRotation(pitch, yaw);
 
 		}
 		else if (m_PanDragging)
 		{
-			glm::vec3 position = EditorContext::editorCamera.GetPosition();
-			glm::vec3 right = EditorContext::editorCamera.GetRight();
-			glm::vec3 up = EditorContext::editorCamera.GetUp();
+			glm::vec3 position = Editor::editorContext.editorCamera.GetPosition();
+			glm::vec3 right = Editor::editorContext.editorCamera.GetRight();
+			glm::vec3 up = Editor::editorContext.editorCamera.GetUp();
 			position -= right * delta.x * m_PanSpeed;
 			position += up * delta.y * m_PanSpeed;
-			EditorContext::editorCamera.SetPosition(position);
+			Editor::editorContext.editorCamera.SetPosition(position);
 		}
 	}
 
@@ -101,7 +101,7 @@ namespace Editor
 		if (entity == entt::null) return;
 
 		glm::vec3 focusPoint = scene.GetRegistry().get<Engine::TransformComponent>(entity).position;
-		glm::vec3 position = focusPoint - EditorContext::editorCamera.GetForward() * distance;
-		EditorContext::editorCamera.SetPosition(position);
+		glm::vec3 position = focusPoint - Editor::editorContext.editorCamera.GetForward() * distance;
+		Editor::editorContext.editorCamera.SetPosition(position);
 	}
 }

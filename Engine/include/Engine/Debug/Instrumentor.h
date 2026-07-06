@@ -11,6 +11,21 @@
 #include <mutex>
 #include <sstream>
 
+//#define ENGINE_PROFILE
+
+//#ifdef ENGINE_PROFILE
+//#include "Engine/Debug/Instrumentor.h"
+//#define ENGINE_PROFILE_BEGIN(name, filepath)::Engine::Instrumentor::Get().BeginSession(name, filepath)
+//#define ENGINE_PROFILE_END()::Engine::Instrumentor::Get().EndSession()
+//#define ENGINE_PROFILE_SCOPE(name)::Engine::InstrumentationTimer timer##__LINE__(name);
+//#define ENGINE_PROFILE_FUNCTION() ENGINE_PROFILE_SCOPE(__FUNCSIG__)
+//#else
+//#define ENGINE_PROFILE_BEGIN(name, filepath)
+//#define ENGINE_PROFILE_END()
+//#define ENGINE_PROFILE_SCOPE(name)
+//#define ENGINE_PROFILE_FUNCTION()
+//#endif
+
 namespace Engine {
 
 	using FloatingPointMicroseconds = std::chrono::duration<double, std::micro>;

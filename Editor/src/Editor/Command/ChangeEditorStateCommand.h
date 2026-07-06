@@ -10,22 +10,22 @@ namespace Editor
   class ChangeEditorStateCommand : public ICommand
   {
   public:
-    ChangeEditorStateCommand(EditorState newState) : m_State(newState) {}
+    ChangeEditorStateCommand(EditorMode newState) : m_State(newState) {}
 
     void Execute() override
     {
-			EditorContext::state = m_State;
+			Editor::editorContext.editorMode = m_State;
 
 			switch(m_State)
 			{
-				case EditorState::Play:
+				case EditorMode::Play:
 				{
 					Engine::Runtime::Start();
 					SelectionManager::Entities.Clear();
 					break;
 				}
 	
-				case EditorState::Edit:
+				case EditorMode::Edit:
 				{
 					Engine::Runtime::Stop();
 					break;
@@ -36,6 +36,6 @@ namespace Editor
     void Undo() override {}
 
   private:
-		EditorState m_State;
+		EditorMode m_State;
   };
 }

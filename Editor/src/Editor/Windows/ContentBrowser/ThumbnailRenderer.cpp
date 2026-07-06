@@ -2,19 +2,66 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/Camera.h"
+#include "Engine/Graphics/Sprite.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Core/Resources.h"
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetRecord.h"
 
 namespace Editor
 {
 	namespace
 	{
+		const std::unordered_map<Engine::AssetType, glm::ivec2> AssetIconMap
+		{
+			{Engine::AssetType::EmptyDirectory, {0, 0}},
+			{Engine::AssetType::Directory,      {1, 0}},
+			{Engine::AssetType::Material,       {2, 0}},
+			{Engine::AssetType::Shader,         {2, 0}},
+			{Engine::AssetType::Audio,          {4, 0}},
+			{Engine::AssetType::Scene,          {5, 0}},
+			{Engine::AssetType::Mesh,           {7, 0}},
+			{Engine::AssetType::Unknown,        {6, 0}},
+			{Engine::AssetType::Other,          {6, 0}},
+		};
+
+		constexpr glm::ivec2 m_SpritesheetSize{ 1024, 1024 };
+		constexpr glm::ivec2 m_CellSize{ 64, 64 };
+
+		std::unordered_map<Engine::AssetType, Engine::Sprite> m_IconSprites;
+		std::unordered_map<Engine::Uuid, Thumbnail> m_ThumbnailCache;
+
 		Engine::Scene scene;
 		entt::entity entity;
 		Engine::Camera camera;
 		Engine::Renderer renderer;
 
-		std::unordered_map<Engine::Uuid, wgpu::TextureView> m_ThumbnailCache;
+		struct PreviewRequest 
+		{
+			Engine::Uuid meshId;
+			Engine::Uuid materialId;
+		};
+
+		constexpr int AtlasSizePx = 2048;
+		constexpr int CellsPerSide = AtlasSizePx / 64;
+
+		wgpu::Texture m_AtlasTexture;
+		wgpu::TextureView m_AtlasView;
+		int m_NextFreeSlot = 0;
+
+		wgpu::Texture m_ScratchpadTexture;
+		wgpu::TextureView m_ScratchpadView;
+		wgpu::Texture m_DepthTexture;
+		wgpu::TextureView m_DepthView;
+	}
+
+	static const Engine::Sprite& GetIcon(Engine::AssetType assetType) 
+	{
+		if (m_IconSprites.contains(assetType))
+		{
+			return m_IconSprites.at(assetType);
+		}
+		return m_IconSprites.at(Engine::AssetType::Unknown);
 	}
 
 	void ThumbnailRenderer::Initialize()
@@ -33,65 +80,116 @@ namespace Editor
 
 		renderer.Initialize();
 		renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Opaque);
+
+		for (const auto& [type, coords] : AssetIconMap)
+		{
+			m_IconSprites.emplace(type, Engine::Sprite::CreateFromGrid(RESOURCES::TEXTURE::EDITOR_ICONS, m_SpritesheetSize, coords, m_CellSize));
+		}
+
+		wgpu::TextureDescriptor atlasDesc;
+		atlasDesc.label = { "ThumbnailAtlas", WGPU_STRLEN };
+		atlasDesc.dimension = wgpu::TextureDimension::_2D;
+		atlasDesc.sampleCount = 1;
+		atlasDesc.mipLevelCount = 1;
+		atlasDesc.size = { AtlasSizePx, AtlasSizePx, 1 };
+		atlasDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+		atlasDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
+		m_AtlasTexture = Engine::GraphicsContext::GetDevice().createTexture(atlasDesc);
+		m_AtlasView = m_AtlasTexture.createView();
+
+		wgpu::TextureDescriptor scratchDesc;
+		scratchDesc.label = { "ThumbnailScratchpad", WGPU_STRLEN };
+		scratchDesc.dimension = wgpu::TextureDimension::_2D;
+		scratchDesc.sampleCount = 1;
+		scratchDesc.mipLevelCount = 1;
+		scratchDesc.size = { 64, 64, 1 };
+		scratchDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+		scratchDesc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
+		m_ScratchpadTexture = Engine::GraphicsContext::GetDevice().createTexture(scratchDesc);
+		m_ScratchpadView = m_ScratchpadTexture.createView();
+
+		wgpu::TextureDescriptor depthDesc;
+		depthDesc.label = { "ThumbnailDepth", WGPU_STRLEN };
+		depthDesc.dimension = wgpu::TextureDimension::_2D;
+		depthDesc.size = { 64, 64, 1 };
+		depthDesc.format = wgpu::TextureFormat::Depth24Plus;
+		depthDesc.mipLevelCount = 1;
+		depthDesc.sampleCount = 1;
+		depthDesc.usage = wgpu::TextureUsage::RenderAttachment;
+		m_DepthTexture = Engine::GraphicsContext::GetDevice().createTexture(depthDesc);
+		m_DepthView = m_DepthTexture.createView();
 	}
 
-	wgpu::TextureView Render(Engine::Uuid id)
+	static Thumbnail RenderToAtlas(const PreviewRequest& request)
 	{
+		int slot = m_NextFreeSlot++;
+		int x = (slot % CellsPerSide) * 64;
+		int y = (slot / CellsPerSide) * 64;
+
 		entt::registry& registry = scene.GetRegistry();
-		registry.get<Engine::MeshComponent>(entity).materials[0] = id;
+		auto& mc = registry.get<Engine::MeshComponent>(entity);
 
-		wgpu::TextureDescriptor desc;
-		desc.label = { "ThumbnailTexture", WGPU_STRLEN };
-		desc.dimension = wgpu::TextureDimension::_2D;
-		desc.format = wgpu::TextureFormat::RGBA8Unorm;
-		desc.size = { 64, 64, 1 };
-		desc.mipLevelCount = 1;
-		desc.sampleCount = 1;
-		desc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
+		mc.meshId = request.meshId;
+		mc.materials[0] = request.materialId;
 
-		wgpu::Texture thumbnailTexture = Engine::GraphicsContext::GetDevice().createTexture(desc);
-
-		wgpu::TextureViewDescriptor viewDesc;
-		viewDesc.dimension = wgpu::TextureViewDimension::_2D;
-		viewDesc.format = desc.format;
-		viewDesc.arrayLayerCount = 1;
-		viewDesc.mipLevelCount = 1;
-		wgpu::TextureView thumbnailView = thumbnailTexture.createView(viewDesc);
-
-		renderer.SetColorTarget(thumbnailView);
-
-		//set depth target
-		{
-			wgpu::TextureDescriptor depthDesc;
-			depthDesc.label = { "ThumbnailDepthTexture", WGPU_STRLEN };
-			depthDesc.dimension = wgpu::TextureDimension::_2D;
-			depthDesc.format = wgpu::TextureFormat::Depth24Plus;
-			depthDesc.mipLevelCount = 1;
-			depthDesc.sampleCount = 1;
-			depthDesc.size = { 64, 64, 1 };
-			depthDesc.usage = wgpu::TextureUsage::RenderAttachment;
-			wgpu::Texture depthTexture = Engine::GraphicsContext::GetDevice().createTexture(depthDesc);
-			wgpu::TextureViewDescriptor depthViewDesc;
-			depthViewDesc.dimension = wgpu::TextureViewDimension::_2D;
-			depthViewDesc.format = depthDesc.format;
-			depthViewDesc.arrayLayerCount = 1;
-			depthViewDesc.mipLevelCount = 1;
-			renderer.SetDepthTarget(depthTexture.createView(depthViewDesc));
-		}
-
+		renderer.SetColorTarget(m_ScratchpadView);
+		renderer.SetDepthTarget(m_DepthView);
 		renderer.RenderScene(scene, camera);
-		return thumbnailView;
+
+		// Copy to Atlas
+		wgpu::TexelCopyTextureInfo src;
+		src.texture = m_ScratchpadTexture;
+		src.mipLevel = 0;
+		src.origin = { 0, 0, 0 };
+
+		wgpu::TexelCopyTextureInfo dst;
+		dst.texture = m_AtlasTexture;
+		dst.mipLevel = 0;
+		dst.origin = { (uint32_t)x, (uint32_t)y, 0 };
+
+		wgpu::Extent3D copySize = { 64, 64, 1 };
+
+		// TODO: batch commands and send to gpu once, dont create encoder per thumbnail
+		auto encoder = Engine::GraphicsContext::GetDevice().createCommandEncoder({});
+		encoder.copyTextureToTexture(src, dst, copySize);
+		auto cmd = encoder.finish();
+		Engine::GraphicsContext::GetQueue().submit(1, &cmd);
+
+		Thumbnail thumb;
+		thumb.view = m_AtlasView;
+		thumb.uv_min = { static_cast<float>(x) / AtlasSizePx, static_cast<float>(y) / AtlasSizePx };
+		thumb.uv_max = { static_cast<float>(x + 64) / AtlasSizePx, static_cast<float>(y + 64) / AtlasSizePx };
+		return thumb;
 	}
 
-	wgpu::TextureView ThumbnailRenderer::GetThumbnail(Engine::Uuid id)
+	const Thumbnail& ThumbnailRenderer::GetThumbnail(const Engine::AssetRecord& record)
 	{
-		if (m_ThumbnailCache.contains(id))
+		if (m_ThumbnailCache.contains(record.id))
 		{
-			return m_ThumbnailCache[id];
+			return m_ThumbnailCache[record.id];
 		}
 
-		wgpu::TextureView newView = Render(id);
-		m_ThumbnailCache[id] = newView;
-		return newView;
+		Thumbnail thumbnail;
+
+		switch (record.type)
+		{
+		case Engine::AssetType::Texture2D:
+			thumbnail.view = Engine::AssetManager::GetAsset<Engine::Texture2D>(record.id).GetTextureView();
+			break;
+		case Engine::AssetType::Material:
+			thumbnail = RenderToAtlas({ RESOURCES::MESH::SPHERE, record.id });
+			break;
+		case Engine::AssetType::Mesh:
+			thumbnail = RenderToAtlas({ record.id, RESOURCES::MATERIAL::WHITE });
+			break;
+		default:
+			const Engine::Sprite& sprite = GetIcon(record.type);
+			const Engine::Texture2D& texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(sprite.GetTexture());
+			thumbnail = { texture.GetTextureView(), sprite.GetUVMin(), sprite.GetUVMax() };
+			break;
+		}
+
+		m_ThumbnailCache[record.id] = thumbnail;
+		return m_ThumbnailCache[record.id];
 	}
 }

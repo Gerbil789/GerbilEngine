@@ -10,3 +10,5 @@ captures/
 *.log
 
 Makefile
+
+editor_state.json

@@ -5,7 +5,6 @@
 #include "EditorApp.h"
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Core/EditorWindowManager.h"
-#include "Editor/Core/IconManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Utility/FileWatcher.h"
 
@@ -27,6 +26,7 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Physics/Physics.h"
 #include "Engine/Debug/RenderDoc.h"
+#include "Editor/Core/EditorState.h"
 
 namespace Editor
 {
@@ -39,8 +39,8 @@ namespace Editor
 	EditorApp::EditorApp()
 	{
 		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
-		EditorSettings::Load();
-		Engine::Project::Load(EditorSettings::projectDirectory);
+
+		Engine::Project::Load(Editor::GetProjectPath());
 		const Engine::Project& project = Engine::Project::GetActive();
 
 		Engine::GraphicsContext::Initialize();
@@ -53,12 +53,11 @@ namespace Editor
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());
 
 		Engine::Input::SetActiveWindow(*m_Window.GetNativeWindow());
-		EditorContext::renderer.Initialize();
-		EditorContext::renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque/* | Engine::RenderPassType::Normal | Engine::RenderPassType::Wireframe*/);
+		Editor::editorContext.renderer.Initialize();
+		Editor::editorContext.renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque/* | Engine::RenderPassType::Normal | Engine::RenderPassType::Wireframe*/);
 		EditorCommandManager::Initialize();
 		FileWatcher::WatchDirectory(project.GetAssetsDirectory());
 		Engine::Audio::Initialize();
-		IconManager::Initialize();
 		EditorWindowManager::Initialize(m_Window);
 
 		Engine::EventBus::Subscribe<Engine::SceneChangedEvent>([this](auto& e) 
@@ -78,8 +77,8 @@ namespace Editor
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
 		EditorCommandManager::SetContext(&scene);
 
-		EditorContext::editorCamera.SetBackground(Engine::Camera::Background::Skybox);
-		EditorContext::editorCamera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
+		Editor::editorContext.editorCamera.SetBackground(Engine::Camera::Background::Skybox);
+		Editor::editorContext.editorCamera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
 
 		static auto applicationCloseListener = Engine::EventBus::Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); return false; });
 		LOG_INFO("--- Editor initialization complete ---");
@@ -114,7 +113,7 @@ namespace Editor
 			EditorWindowManager::Update();		// update editor UI, render viewport, ...
 			EditorCommandManager::ExecuteDefferedCommands();		// execute queued commands (deffered execution)
 			
-			if (EditorContext::state == EditorState::Play)
+			if (Editor::editorContext.editorMode == EditorMode::Play)
 			{
 				Engine::PhysicsSystem::Update();
 				Engine::Runtime::Update();			// update game runtime (scripts, audio listener, etc...)

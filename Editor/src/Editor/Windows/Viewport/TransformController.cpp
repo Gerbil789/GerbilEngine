@@ -32,7 +32,7 @@ namespace Editor
 
 		Engine::EventBus::Subscribe<Engine::KeyPressedEvent>([](const Engine::KeyPressedEvent& e)
 			{
-				if (EditorContext::state == EditorState::Play) return false;;
+				if (Editor::editorContext.editorMode == EditorMode::Play) return false;;
 
 				if (e.key == Engine::Key::Q) gizmoType = static_cast<ImGuizmo::OPERATION>(0);
 				if (e.key == Engine::Key::W) gizmoType = ImGuizmo::OPERATION::TRANSLATE;
@@ -45,7 +45,7 @@ namespace Editor
 
 	void TransformController::DrawGizmo(Engine::Scene& scene, float x, float y, float width, float height)
 	{
-		if (EditorContext::state == EditorState::Play) return;
+		if (Editor::editorContext.editorMode == EditorMode::Play) return;
 		if (gizmoType == 0) return;
 
 		Engine::Uuid selectedId = SelectionManager::Entities.GetPrimary();
@@ -58,8 +58,8 @@ namespace Editor
 		ImGuizmo::SetDrawlist();
 		ImGuizmo::SetRect(x, y, width, height);
 
-		const glm::mat4& cameraProjection = EditorContext::editorCamera.GetProjectionMatrix();
-		glm::mat4 cameraView = EditorContext::editorCamera.GetViewMatrix();
+		const glm::mat4& cameraProjection = Editor::editorContext.editorCamera.GetProjectionMatrix();
+		glm::mat4 cameraView = Editor::editorContext.editorCamera.GetViewMatrix();
 
 		auto& transformComponent = registry.get<Engine::TransformComponent>(selectedEntity);
 		glm::mat4 worldTransform = transformComponent.worldMatrix;

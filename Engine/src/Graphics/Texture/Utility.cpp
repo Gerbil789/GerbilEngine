@@ -5,6 +5,7 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/Texture/TextureCube.h"
+#include "Engine/Core/Assert.h"
 #include <bit>
 
 namespace Engine
@@ -15,7 +16,7 @@ namespace Engine
 	}
 
 	//TODO: cache the pipeline and layouts for cubemap creation
-	wgpu::BindGroupLayout CreateBindGroupLayout(wgpu::TextureFormat format)
+	static wgpu::BindGroupLayout CreateBindGroupLayout(wgpu::TextureFormat format)
 	{
 		std::vector<wgpu::BindGroupLayoutEntry> bindings(3, wgpu::Default);
 		bindings[0].binding = 0;
@@ -41,7 +42,7 @@ namespace Engine
 		return bindGroupLayout;
 	}
 
-	wgpu::ComputePipeline CreateComputePipeline(wgpu::BindGroupLayout layout)
+	static wgpu::ComputePipeline CreateComputePipeline(wgpu::BindGroupLayout layout)
 	{
 		wgpu::ShaderModule computeShaderModule = LoadWGSLShader("Resources/Engine/shaders/compute/cubemap.wgsl");
 
@@ -59,7 +60,7 @@ namespace Engine
 		return computePipeline;
 	}
 
-	wgpu::Sampler CreateSampler()
+	static wgpu::Sampler CreateSampler()
 	{
 		wgpu::SamplerDescriptor samplerDesc;
 		samplerDesc.magFilter = wgpu::FilterMode::Linear;
@@ -69,7 +70,7 @@ namespace Engine
 		return linearSampler;
 	}
 
-	wgpu::BindGroup CreateBindGroup(wgpu::Sampler sampler, wgpu::TextureView sourceView, wgpu::TextureView targetView, wgpu::BindGroupLayout layout)
+	static wgpu::BindGroup CreateBindGroup(wgpu::Sampler sampler, wgpu::TextureView sourceView, wgpu::TextureView targetView, wgpu::BindGroupLayout layout)
 	{
 		std::vector<wgpu::BindGroupEntry> entries(3, wgpu::Default);
 		entries[0].binding = 0;
@@ -92,7 +93,7 @@ namespace Engine
 	{
 		const Texture2D& sourceTexture = Engine::AssetManager::GetAsset<Texture2D>(equirectangularTexture);
 
-		assert(sourceTexture.GetWidth() == sourceTexture.GetHeight() * 2);
+		ENGINE_ASSERT(sourceTexture.GetWidth() == sourceTexture.GetHeight() * 2, "Equirectangular texture must have a 2:1 aspect ratio.");
 
 		TextureCubeSpecification spec;
 		spec.size = sourceTexture.GetHeight() / 2;

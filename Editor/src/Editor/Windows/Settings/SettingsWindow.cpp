@@ -11,6 +11,7 @@
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Core/Resources.h"
+#include "Editor/Core/EditorSettings.h"
 #include <imgui.h>
 
 namespace Editor
@@ -23,12 +24,12 @@ namespace Editor
 		{
 			PropertyTable table;
 
-			if (PropertyField("Wireframe color", EditorSettings::wireframeColor, { .mode = Editor::DisplayMode::Color }).changed)
+			if (PropertyField("Wireframe color", Editor::editorContext.settings.wireframeColor, { .mode = Editor::DisplayMode::Color }).changed)
 			{
 				auto wireframePass = Engine::RenderPassRegistry::GetPass(Engine::RenderPassType::Wireframe);
 				if (wireframePass)
 				{
-					static_cast<Engine::WireframePass*>(wireframePass)->SetColor(EditorSettings::wireframeColor);
+					static_cast<Engine::WireframePass*>(wireframePass)->SetColor(Editor::editorContext.settings.wireframeColor);
 				}
 			}
 
@@ -55,7 +56,7 @@ namespace Editor
 				if(!id) { id = RESOURCES::TEXTURE::HDR; }
 
 				scene.SetEnvironmentTexture(id);
-				EditorContext::renderer.SetEnvironmentTexture(id);
+				Editor::editorContext.renderer.SetEnvironmentTexture(id);
 			}
 		}
 
@@ -65,7 +66,7 @@ namespace Editor
 
 			PropertyField("Lambda", Engine::ShadowPass::s_Lambda, { .min = 0.0f, .max = 1.0f, .step = 0.01f });
 
-			Engine::Camera& camera = EditorContext::editorCamera;
+			Engine::Camera& camera = Editor::editorContext.editorCamera;
 
 			float near = camera.GetPerspectiveNear();
 			if (PropertyField("Near", near, { .min = 0.01f, .max = camera.GetPerspectiveFar(), .step = 0.01f }).changed)
