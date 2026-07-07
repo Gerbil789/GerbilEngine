@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Core/UUID.h"
-#include <entt.hpp>
+#include <glm/glm.hpp>
 
 namespace Engine
 {
@@ -14,7 +14,7 @@ namespace Engine
 		uint32_t subMeshIndex;
 		uint32_t indexCount;
 		uint32_t firstIndex;
-		entt::entity entity;
+		Engine::Uuid entityId; //TODO: remove this? its used only for editor picker
 	};
 
 	class DrawList
@@ -22,15 +22,14 @@ namespace Engine
 	public:
 		static DrawList CreateFromScene(Scene& scene);
 
-		auto begin() { return items.begin(); }
-		auto end() { return items.end(); }
+		const std::vector<DrawItem>& GetItems() const { return m_Items; }
+		const std::vector<glm::mat4>& GetTransforms() const { return m_Transforms; }
 
-		auto begin() const { return items.begin(); }
-		auto end()   const { return items.end(); }
-
-		auto size() const { return items.size(); }
+		auto size() const { return m_Items.size(); }
+		bool empty() const { return m_Items.empty(); }
 
 	private:
-		std::vector<DrawItem> items;
+		std::vector<DrawItem> m_Items;
+		std::vector<glm::mat4> m_Transforms;
 	};
 }

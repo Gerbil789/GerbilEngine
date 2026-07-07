@@ -2,7 +2,11 @@
 
 #include "Engine/Core/Resources.h"
 #include "Engine/Math/AABB.h"
-#include <entt.hpp>
+
+#include "Engine/Scene/Entity.h"
+#include <string>
+
+//TODO: split components into individual files
 
 namespace Engine
 {
@@ -12,10 +16,11 @@ namespace Engine
 	class AudioClip;
 	class Script;
 
+	struct ENGINE_API DisabledTag {};
+
 	struct ENGINE_API IdentityComponent
 	{
 		Uuid id{};
-		bool enabled = true;
 	};
 
 	struct ENGINE_API NameComponent
@@ -29,10 +34,12 @@ namespace Engine
 		glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
 
-		entt::entity parent{ entt::null };
+		Entity parent;
 
 		glm::mat4 localMatrix{ 1.0f };
 		glm::mat4 worldMatrix{ 1.0f };
+
+		void UpdateMatrix();
 	};
 
 	struct ENGINE_API MeshComponent

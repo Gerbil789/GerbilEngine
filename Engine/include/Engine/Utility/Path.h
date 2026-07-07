@@ -2,8 +2,6 @@
 
 #include <filesystem>
 
-//TODO: fix this file
-
 #ifdef ENGINE_PLATFORM_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -45,7 +43,6 @@ inline void SetupWorkingDirectory()
     }
     searchPath = searchPath.parent_path();
   }
-
 
   throw std::runtime_error("Resources folder not found. Please ensure the working directory is set correctly.");
 }

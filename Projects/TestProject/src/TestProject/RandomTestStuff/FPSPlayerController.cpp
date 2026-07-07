@@ -27,7 +27,7 @@ void FPSPlayerController::OnStart()
 void FPSPlayerController::OnUpdate()
 {
 	float delta = Time::DeltaTime();
-	auto& transform = GetComponent<TransformComponent>();
+	auto& transform = m_Entity.GetComponent<TransformComponent>();
 
 	float yawRadians = glm::radians(transform.rotation.y);
 
@@ -67,8 +67,6 @@ void FPSPlayerController::OnUpdate()
 		transform.position.y = m_Ground; 
 		m_VelocityY = 0.0f;
 	}
-
-	m_Scene->GetRegistry().patch<Engine::TransformComponent>(m_Entity);
 }
 
 void FPSPlayerController::OnDestroy()

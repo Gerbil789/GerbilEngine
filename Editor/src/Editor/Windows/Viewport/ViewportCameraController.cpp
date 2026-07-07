@@ -97,10 +97,10 @@ namespace Editor
 	void ViewportCameraController::OnEntityFocus(Engine::Uuid entityId, float distance)
 	{
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
-		entt::entity entity = scene.GetEntity(entityId);
-		if (entity == entt::null) return;
+		Engine::Entity entity = scene.GetEntity(entityId);
+		if (!entity.IsValid()) return;
 
-		glm::vec3 focusPoint = scene.GetRegistry().get<Engine::TransformComponent>(entity).position;
+		glm::vec3 focusPoint = entity.GetComponent<Engine::TransformComponent>().position;
 		glm::vec3 position = focusPoint - Editor::editorContext.editorCamera.GetForward() * distance;
 		Editor::editorContext.editorCamera.SetPosition(position);
 	}

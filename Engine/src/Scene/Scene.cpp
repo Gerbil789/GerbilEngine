@@ -1,5 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Scene/Scene.h"
+#include "Engine/Scene/Components.h"
 #include "Engine/Asset/AssetManager.h"
 
 namespace Engine
@@ -9,7 +10,7 @@ namespace Engine
 		m_Registry.clear();
 	}
 
-	entt::entity Scene::CreateEntity(const std::string& name)
+	Entity Scene::CreateEntity(const std::string& name)
 	{
 		entt::entity entity = m_Registry.create();
 		Uuid uuid = Uuid::Generate();
@@ -18,10 +19,10 @@ namespace Engine
 		m_Registry.emplace<TransformComponent>(entity);
 
 		m_EntityMap[uuid] = entity;
-		return entity;
+		return Entity(static_cast<uint32_t>(entity), this);
 	}
 
-	entt::entity Scene::CreateEntity(const std::string& name, Uuid entityId)
+	Entity Scene::CreateEntity(const std::string& name, Uuid entityId)
 	{
 		entt::entity entity = m_Registry.create();
 		m_Registry.emplace<IdentityComponent>(entity, entityId);
@@ -29,16 +30,26 @@ namespace Engine
 		m_Registry.emplace<TransformComponent>(entity);
 		
 		m_EntityMap[entityId] = entity;
-		return entity;
+		return Entity(static_cast<uint32_t>(entity), this);
 	}
 
-	entt::entity Scene::GetEntity(Uuid uuid)
+	void Scene::DestroyEntity(Entity entity)
+	{
+		if (entity.IsValid())
+		{
+			Uuid uuid = m_Registry.get<IdentityComponent>(static_cast<entt::entity>(entity.GetHandle())).id;
+			m_Registry.destroy(static_cast<entt::entity>(entity.GetHandle()));
+			m_EntityMap.erase(uuid);
+		}
+	}
+
+	Entity Scene::GetEntity(Uuid uuid)
 	{
 		if (m_EntityMap.find(uuid) != m_EntityMap.end()) 
 		{
-			return m_EntityMap.at(uuid);
+			return Entity(static_cast<uint32_t>(m_EntityMap[uuid]), this);
 		}
-		return entt::null;
+		return Entity(0xFFFFFFFF, this);
 	}
 
 	Camera* Scene::GetActiveCamera() const

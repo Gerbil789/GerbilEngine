@@ -9,23 +9,22 @@ void Button::OnUpdate()
 	if (!m_Pressed) return;
 
 	auto delta = Engine::Time::DeltaTime() * m_Speed;
-	auto& transform = GetComponent<Engine::TransformComponent>();
+	auto& transform = m_Entity.GetComponent<Engine::TransformComponent>();
 	transform.rotation.y += delta;
-	m_Scene->GetRegistry().patch<Engine::TransformComponent>(m_Entity);
 }
 
-void Button::OnTriggerEnter(entt::entity other)
+void Button::OnTriggerEnter(Engine::Entity other)
 {
-	Engine::TransformComponent& transform = GetComponent<Engine::TransformComponent>();
+	Engine::TransformComponent& transform = m_Entity.GetComponent<Engine::TransformComponent>();
 	Engine::Audio::Play3D(m_PressSound, transform.position);
 	m_Pressed = true;
-	LOG_TRACE("Button pressed by entity {}", (uint32_t)other);
+	LOG_TRACE("Button pressed by entity {}", other.GetHandle());
 }
 
-void Button::OnTriggerExit(entt::entity other)
+void Button::OnTriggerExit(Engine::Entity other)
 {
-	Engine::TransformComponent& transform = GetComponent<Engine::TransformComponent>();
+	Engine::TransformComponent& transform = m_Entity.GetComponent<Engine::TransformComponent>();
 	Engine::Audio::Play3D(m_ReleaseSound, transform.position);
 	m_Pressed = false;
-	LOG_TRACE("Button released by entity {}", (uint32_t)other);
+	LOG_TRACE("Button released by entity {}", other.GetHandle());
 }

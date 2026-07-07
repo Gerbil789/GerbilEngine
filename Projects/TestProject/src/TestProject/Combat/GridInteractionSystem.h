@@ -7,8 +7,6 @@
 #include "Engine/Core/State.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Core/Input.h"
-#include <entt.hpp>
-
 
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/MouseEvent.h"

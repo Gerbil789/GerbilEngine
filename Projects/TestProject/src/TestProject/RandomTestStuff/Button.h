@@ -17,8 +17,8 @@ public:
     Engine::AudioClipHandle m_ReleaseSound;
 
 	void OnUpdate() override;
-  void OnTriggerEnter(entt::entity other) override;
-  void OnTriggerExit(entt::entity other) override;
+  void OnTriggerEnter(Engine::Entity other) override;
+  void OnTriggerExit(Engine::Entity other) override;
 
 private:
 	bool m_Pressed = false;

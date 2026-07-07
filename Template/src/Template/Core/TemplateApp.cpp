@@ -133,15 +133,7 @@ namespace Template
 
 		Engine::Scene& activeScene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 
-		auto cameras = activeScene.GetEntities<Engine::CameraComponent>();
-		if (cameras.empty())
-		{
-			throw std::runtime_error("No camera found in the scene. Please add a camera entity with a CameraComponent.");
-		}
-
-		entt::registry& registry = activeScene.GetRegistry();
-		entt::entity camera = cameras[0];
-		m_Camera = registry.get<Engine::CameraComponent>(camera).camera;
+		m_Camera = activeScene.GetActiveCamera();
 
 		UpdateSize(m_Width, m_Height);
 
@@ -172,7 +164,6 @@ namespace Template
 			Engine::Time::BeginFrame();				// update delta time and FPS counters
 			Engine::Input::Update();					// poll input events
 			Engine::Audio::Update();					// release finished audio voices back to pool
-			Engine::TransformSystem::Update();
 			Engine::PhysicsSystem::Update();
 			Engine::Runtime::Update();				// update game runtime (scripts, audio listener, etc...)
 

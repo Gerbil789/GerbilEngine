@@ -10,6 +10,7 @@
 #include "Engine/Script/Script.h"
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Core/Resources.h"
+#include "Engine/Scene/Components.h"
 #include <glaze/glaze.hpp>
 #include <fstream>
 
@@ -136,11 +137,16 @@ namespace Engine
 		{
 			EntityJSON eJson;
 
+			//DisabledTag
+			if (registry.any_of<DisabledTag>(entity))
+			{
+				eJson.Enabled = false;
+			}
+
 			// Identity
 			{
 				const auto& identity = registry.get<IdentityComponent>(entity);
 				eJson.ID = identity.id;
-				eJson.Enabled = identity.enabled;
 			}
 
 			// Name
@@ -150,12 +156,12 @@ namespace Engine
 
 			// Transform
 			{
-				const auto& t = registry.get<TransformComponent>(entity);
+				auto& t = registry.get<TransformComponent>(entity);
 				TransformJSON tJson{ t.position, t.rotation, t.scale };
 
-				if (t.parent != entt::null)
+				if (t.parent.IsValid())
 				{
-					tJson.Parent = registry.get<IdentityComponent>(t.parent).id;
+					tJson.Parent = t.parent.GetComponent<IdentityComponent>().id;
 				}
 				eJson.Transform = tJson;
 			}
@@ -286,8 +292,7 @@ namespace Engine
 		}
 
 		Scene scene;
-		entt::registry& registry = scene.GetRegistry();
-		std::unordered_map<uint64_t, entt::entity> entityMap;
+		std::unordered_map<uint64_t, Entity> entityMap;
 		std::unordered_map<uint64_t, uint64_t> entityParentMap;
 
 		scene.SetEnvironmentTexture(RESOURCES::TEXTURE::HDR); //TODO: store in scene file
@@ -297,17 +302,22 @@ namespace Engine
 			Uuid entityId{ eJson.ID };
 			std::string name = eJson.Name.value_or("Entity");
 
-			entt::entity entity = scene.CreateEntity(name, entityId);
+			Entity entity = scene.CreateEntity(name, entityId);
+
+			// DisabledTag
+			if (!eJson.Enabled)
+			{
+				entity.SetActive(false);
+			}
 
 			// Identity
-			auto& identity = registry.get<IdentityComponent>(entity);
-			identity.enabled = eJson.Enabled;
+			//auto& identity = entity.GetComponent<IdentityComponent>();
 			entityMap[entityId] = entity;
 
 			// Transform
 			if (eJson.Transform.has_value())
 			{
-				auto& tComp = registry.get<TransformComponent>(entity);
+				auto& tComp = entity.GetComponent<TransformComponent>();
 				const auto& tJson = eJson.Transform.value();
 				tComp.position = tJson.Position;
 				tComp.rotation = tJson.Rotation;
@@ -315,12 +325,14 @@ namespace Engine
 
 				if (tJson.Parent.has_value())
 					entityParentMap[eJson.ID] = tJson.Parent.value();
+
+				tComp.UpdateMatrix();
 			}
 
 			// Mesh
 			if (eJson.MeshComponent.has_value())
 			{
-				auto& mComp = registry.emplace<MeshComponent>(entity);
+				auto& mComp = entity.AddComponent<MeshComponent>();
 				const auto& mJson = eJson.MeshComponent.value();
 				mComp.meshId = Uuid{ mJson.Mesh };
 
@@ -348,7 +360,7 @@ namespace Engine
 			// Collider
 			if (eJson.ColliderComponent.has_value())
 			{
-				auto& cComp = registry.emplace<ColliderComponent>(entity);
+				auto& cComp = entity.AddComponent<ColliderComponent>();
 				const auto& cJson = eJson.ColliderComponent.value();
 				cComp.collisionMeshId = Uuid{ cJson.Mesh };
 				cComp.type = static_cast<BodyType>(cJson.Type);
@@ -358,7 +370,7 @@ namespace Engine
 			// Camera
 			if (eJson.CameraComponent.has_value())
 			{
-				auto& cComp = registry.emplace<CameraComponent>(entity);
+				auto& cComp = entity.AddComponent<CameraComponent>();
 				const auto& cJson = eJson.CameraComponent.value();
 
 				std::unique_ptr<Camera> camera = std::make_unique<Camera>();
@@ -384,7 +396,7 @@ namespace Engine
 			// Light
 			if (eJson.LightComponent.has_value())
 			{
-				auto& lComp = registry.emplace<LightComponent>(entity);
+				auto& lComp = entity.AddComponent<LightComponent>();
 				const auto& lJson = eJson.LightComponent.value();
 				lComp.type = static_cast<LightType>(lJson.Type);
 				lComp.color = lJson.Color;
@@ -396,7 +408,7 @@ namespace Engine
 			// Script
 			if (eJson.ScriptComponent.has_value())
 			{
-				auto& sComp = registry.emplace<ScriptComponent>(entity);
+				auto& sComp = entity.AddComponent<ScriptComponent>();
 				const auto& sJson = eJson.ScriptComponent.value();
 
 				const Engine::ScriptDescriptor& desc = Engine::ScriptRegistry::GetDescriptor(sJson.Script);
@@ -456,10 +468,16 @@ namespace Engine
 		{
 			if (parentID != 0 && entityMap.find(parentID) != entityMap.end())
 			{
-				entt::entity child = scene.GetEntity(childID);
-				entt::entity parent = scene.GetEntity(parentID);
-				registry.get<Engine::TransformComponent>(child).parent = parent;
+				Entity child = scene.GetEntity(childID);
+				Entity parent = scene.GetEntity(parentID);
+				child.GetComponent<Engine::TransformComponent>().parent = parent;
 			}
+		}
+
+		//update all transform matrices after loading
+		for (auto& [id, entity] : entityMap)
+		{
+			entity.GetComponent<TransformComponent>().UpdateMatrix();
 		}
 
 		return scene;

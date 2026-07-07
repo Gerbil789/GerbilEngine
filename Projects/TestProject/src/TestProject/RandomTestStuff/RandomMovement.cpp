@@ -13,7 +13,7 @@ void RandomMovement::OnCreate()
 
 void RandomMovement::OnUpdate()
 {
-	auto& transform = GetComponent<TransformComponent>();
+	auto& transform = m_Entity.GetComponent<TransformComponent>();
 
 	m_ElapsedTime += Time::DeltaTime();
 
@@ -23,4 +23,5 @@ void RandomMovement::OnUpdate()
   float scale = m_MinScale + t * (m_MaxScale - m_MinScale);
 
   transform.scale = { scale, scale, scale };
+  transform.UpdateMatrix();
 }

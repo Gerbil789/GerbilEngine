@@ -15,4 +15,6 @@
 #include <ranges>
 #include <glm/glm.hpp>
 
+#include <entt/entt.hpp>
+
 #include "Engine/Core/Log.h"

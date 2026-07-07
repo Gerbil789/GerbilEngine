@@ -6,6 +6,7 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Scene/Components.h"
 #include <ranges>
 
 namespace Editor
@@ -38,16 +39,14 @@ namespace Editor
     std::vector<Engine::Uuid> entityIds;
     entityIds.reserve(context.drawList.size());
 
-    entt::registry& registry = context.scene->GetRegistry();
-
-    for (const auto& item : context.drawList)
+    for (const auto& item : context.drawList.GetItems())
     {
       if (!item.meshId)
       {
         entityIds.push_back(Engine::Uuid{});
         continue;
       }
-      entityIds.push_back(registry.get<Engine::IdentityComponent>(item.entity).id);
+      entityIds.push_back(item.entityId);
     }
 
     Engine::GraphicsContext::GetQueue().writeBuffer(m_IdStorageBuffer, 0, entityIds.data(), entityIds.size() * sizeof(Engine::Uuid));
@@ -87,7 +86,7 @@ namespace Editor
 
     Engine::Uuid currentMesh{};
 
-    for (const auto& [i, item] : std::views::enumerate(context.drawList))
+    for (const auto& [i, item] : std::views::enumerate(context.drawList.GetItems()))
     {
       if (item.meshId != currentMesh)
       {

@@ -86,8 +86,7 @@ namespace Engine
 			auto& sc = registry.get<Engine::ScriptComponent>(entity);
 			if (sc.instance)
 			{
-				sc.instance->m_Entity = entity;
-				sc.instance->m_Scene = &scene;
+				sc.instance->m_Entity = Entity(static_cast<uint32_t>(entity), &scene);
 				sc.instance->OnStart();
 			}
 		}
@@ -96,9 +95,12 @@ namespace Engine
 	void Runtime::Stop()
 	{
 		auto& scene = Engine::AssetManager::GetAsset<Scene>(Engine::SceneManager::GetActiveScene());
-		for (entt::entity entity : scene.GetEntities<Engine::ScriptComponent>())
+		entt::registry& registry = scene.GetRegistry();
+
+		auto view = registry.view<ScriptComponent>(entt::exclude<DisabledTag>);
+
+		for (auto&& [entity, sc] : view.each())
 		{
-			auto& sc = scene.GetRegistry().get<Engine::ScriptComponent>(entity);
 			if (sc.instance)
 			{
 				sc.instance->OnDestroy();
@@ -119,30 +121,38 @@ namespace Engine
 		}
 
 		auto& scene = Engine::AssetManager::GetAsset<Scene>(Engine::SceneManager::GetActiveScene());
+		entt::registry& registry = scene.GetRegistry();
 
 		// update scripts
-		for (entt::entity entity : scene.GetEntities<Engine::ScriptComponent>())
 		{
-			auto& scriptComp = scene.GetRegistry().get<Engine::ScriptComponent>(entity);
-			if (scriptComp.instance)
+			auto view = registry.view<ScriptComponent>(entt::exclude<DisabledTag>);
+
+			for (auto&& [entity, sc] : view.each())
 			{
-				scriptComp.instance->OnUpdate();
+				if (sc.instance)
+				{
+					sc.instance->OnUpdate();
+				}
 			}
 		}
 
 		// update camera & audio listener
-		for (entt::entity entity : scene.GetEntities<Engine::CameraComponent>())
 		{
-			auto& cameraComp = scene.GetRegistry().get<Engine::CameraComponent>(entity);
-			Engine::Camera* cam = cameraComp.camera;
-			const auto& pos = scene.GetRegistry().get<Engine::TransformComponent>(entity).position;
-			const auto& forward = cam->GetForward();
-			const auto& up = cam->GetUp();
-			Engine::Audio::SetListener(pos.x, pos.y, pos.z, forward.x, forward.y, forward.z, up.x, up.y, up.z);
-			cam->SetPosition(pos);
+			auto view = registry.view<CameraComponent>(entt::exclude<DisabledTag>);
 
-			const auto& rot = scene.GetRegistry().get<Engine::TransformComponent>(entity).rotation;
-			cam->SetRotation(rot);
+			for (auto&& [entity, cc] : view.each())
+			{
+				Engine::Camera* cam = cc.camera;
+				const auto& pos = scene.GetRegistry().get<Engine::TransformComponent>(entity).position;
+				const auto& forward = cam->GetForward();
+				const auto& up = cam->GetUp();
+				Engine::Audio::SetListener(pos.x, pos.y, pos.z, forward.x, forward.y, forward.z, up.x, up.y, up.z);
+				cam->SetPosition(pos);
+
+				const auto& rot = scene.GetRegistry().get<Engine::TransformComponent>(entity).rotation;
+				cam->SetRotation(rot);
+			}
 		}
+		
 	}
 }

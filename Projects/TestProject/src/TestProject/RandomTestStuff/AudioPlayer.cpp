@@ -8,7 +8,7 @@ void AudioPlayer::OnStart()
 {
   if (m_PlayOnAwake && m_Clip)
   {
-    auto& transform = GetComponent<Engine::TransformComponent>();
+		auto& transform = m_Entity.GetComponent<Engine::TransformComponent>();
 		glm::vec3 localPosition = transform.position;
     glm::vec3 worldPosition =  transform.worldMatrix * glm::vec4(localPosition, 1.0f);
 
@@ -20,7 +20,7 @@ void AudioPlayer::OnUpdate()
 {
   if (!m_Clip) return;
 
-  auto& transform = GetComponent<Engine::TransformComponent>();
+  auto& transform = m_Entity.GetComponent<Engine::TransformComponent>();
   glm::vec3 localPosition = transform.position;
   glm::vec3 worldPosition = transform.worldMatrix * glm::vec4(localPosition, 1.0f);
 

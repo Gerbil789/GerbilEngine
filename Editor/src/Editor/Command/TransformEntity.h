@@ -2,6 +2,7 @@
 
 #include "Editor/Command/ICommand.h"
 #include "Engine/Scene/Components.h"
+#include "Engine/Scene/Entity.h"
 
 namespace Editor
 {
@@ -15,7 +16,7 @@ namespace Editor
   class TransformEntityCommand : public ICommand
   {
   public:
-    TransformEntityCommand(entt::registry& registry, entt::entity entity, const TransformData& before, const TransformData& after) : m_Registry(&registry), m_Entity(entity), m_Before(before), m_After(after) {}
+    TransformEntityCommand(Engine::Entity entity, const TransformData& before, const TransformData& after) : m_Entity(entity), m_Before(before), m_After(after) {}
 
     void Execute() override
     {
@@ -30,15 +31,16 @@ namespace Editor
   private:
     void Apply(const TransformData& data)
     {
-			auto& tc = m_Registry->get<Engine::TransformComponent>(m_Entity);
-      tc.position = data.Position;
-      tc.rotation = data.Rotation;
-      tc.scale = data.Scale;
+			auto& tc = m_Entity.GetComponent<Engine::TransformComponent>();
+
+			tc.position = data.Position;
+			tc.rotation = data.Rotation;
+			tc.scale = data.Scale;
+			tc.UpdateMatrix();
     }
 
   private:
-    entt::registry* m_Registry;
-    entt::entity m_Entity;
+    Engine::Entity m_Entity;
     TransformData m_Before, m_After;
   };
 
@@ -46,8 +48,8 @@ namespace Editor
   class TransformEntitiesCommand : public ICommand
   {
   public:
-    TransformEntitiesCommand(entt::registry& registry, std::vector<entt::entity> entities, const std::vector<TransformData>& before, const std::vector<TransformData>& after)
-      : m_Registry(&registry), m_Entities(entities), m_Before(before), m_After(after) {}
+    TransformEntitiesCommand(std::vector<Engine::Entity> entities, const std::vector<TransformData>& before, const std::vector<TransformData>& after)
+      : m_Entities(entities), m_Before(before), m_After(after) {}
 
     void Execute() override
     {
@@ -64,16 +66,16 @@ namespace Editor
     {
       for (size_t i = 0; i < m_Entities.size(); i++)
       {
-        auto& tc = m_Registry->get<Engine::TransformComponent>(m_Entities[i]);
-        tc.position = data[i].Position;
-        tc.rotation = data[i].Rotation;
-        tc.scale = data[i].Scale;
+				auto& tc = m_Entities[i].GetComponent<Engine::TransformComponent>();
+				tc.position = data[i].Position;
+				tc.rotation = data[i].Rotation;
+				tc.scale = data[i].Scale;
+				tc.UpdateMatrix();
       }
     }
 
   private:
-		entt::registry* m_Registry;
-    std::vector<entt::entity> m_Entities;
+    std::vector<Engine::Entity> m_Entities;
     std::vector<TransformData> m_Before, m_After;
   };
 

@@ -4,6 +4,7 @@
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Core/Input.h"
+#include "Engine/Scene/SceneManager.h"
 
 namespace Editor
 {
@@ -19,42 +20,39 @@ namespace Editor
       });
   }
 
-  void EditorCommandManager::SetContext(Engine::Scene* scene)
-  { 
-    s_Context = scene;
-
-		//clear stacks
-    while (!s_UndoStack.empty())
-    {
-      s_UndoStack.pop();
-    }
-    while (!s_RedoStack.empty())
-    {
-      s_RedoStack.pop();
-    }
-		s_Deferred.clear();
-  }
+  //void EditorCommandManager::SetContext(Engine::Scene* scene)
+  //{ 
+		////clear stacks
+  //  while (!s_UndoStack.empty())
+  //  {
+  //    s_UndoStack.pop();
+  //  }
+  //  while (!s_RedoStack.empty())
+  //  {
+  //    s_RedoStack.pop();
+  //  }
+		//s_Deferred.clear();
+  //}
 
 	void EditorCommandManager::CreateEntity(const std::string& name)
   {
-    Enqueue(std::make_unique<CreateEntityCommand>(s_Context, name));
+    Engine::Uuid id = Engine::SceneManager::GetActiveScene();
+    Enqueue(std::make_unique<CreateEntityCommand>(id, name));
   }
 
-	void EditorCommandManager::DeleteEntity(entt::entity entity)
+	void EditorCommandManager::DeleteEntity(Engine::Entity entity)
   {
-    Enqueue(std::make_unique<DeleteEntityCommand>(s_Context, entity));
+    Enqueue(std::make_unique<DeleteEntityCommand>(entity));
   }
 
-  void EditorCommandManager::TransformEntity(entt::entity entity, const TransformData& before, const TransformData& after)
+  void EditorCommandManager::TransformEntity(Engine::Entity entity, const TransformData& before, const TransformData& after)
   {
-		entt::registry& registry = s_Context->GetRegistry();
-		Enqueue(std::make_unique<TransformEntityCommand>(registry, entity, before, after));
+		Enqueue(std::make_unique<TransformEntityCommand>(entity, before, after));
   }
 
-  void EditorCommandManager::TransformEntities(const std::vector<entt::entity>& entities, const std::vector<TransformData>& before, const std::vector<TransformData>& after)
+  void EditorCommandManager::TransformEntities(const std::vector<Engine::Entity>& entities, const std::vector<TransformData>& before, const std::vector<TransformData>& after)
   {
-		entt::registry& registry = s_Context->GetRegistry();
-		Enqueue(std::make_unique<TransformEntitiesCommand>(registry, entities, before, after));
+		Enqueue(std::make_unique<TransformEntitiesCommand>(entities, before, after));
   }
 
   void EditorCommandManager::Enqueue(std::unique_ptr<ICommand> cmd)

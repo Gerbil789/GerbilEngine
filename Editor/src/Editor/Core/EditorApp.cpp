@@ -21,7 +21,6 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Scene/SceneManager.h"
-#include "Engine/Scene/TransformSystem.h" //TODO: i dont like this system
 #include "Engine/Audio/Audio.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Physics/Physics.h"
@@ -71,11 +70,7 @@ namespace Editor
 		Engine::Runtime::LoadScripts(dllPath);
 
 		Engine::Uuid id = project.GetDefaultSceneId();
-
 		Engine::SceneManager::SetActiveScene(id);
-
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
-		EditorCommandManager::SetContext(&scene);
 
 		Editor::editorContext.editorCamera.SetBackground(Engine::Camera::Background::Skybox);
 		Editor::editorContext.editorCamera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
@@ -108,10 +103,9 @@ namespace Editor
 			Engine::Time::BeginFrame();				// update delta time and FPS counters
 			Engine::Input::Update();					// poll input events
 			Engine::Audio::Update();					// release finished audio voices back to pool
-			Engine::TransformSystem::Update();
 
 			EditorWindowManager::Update();		// update editor UI, render viewport, ...
-			EditorCommandManager::ExecuteDefferedCommands();		// execute queued commands (deffered execution)
+			EditorCommandManager::ExecuteDefferedCommands();		// execute queued commands
 			
 			if (Editor::editorContext.editorMode == EditorMode::Play)
 			{

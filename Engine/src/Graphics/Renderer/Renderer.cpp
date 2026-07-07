@@ -253,20 +253,11 @@ namespace Engine
 		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder();
 
 		m_RenderContext.drawList = DrawList::CreateFromScene(scene);
-		entt::registry& registry = scene.GetRegistry();
 
-		std::vector<glm::mat4> modelMatrices;
-		modelMatrices.reserve(m_RenderContext.drawList.size());
-		for (const DrawItem& item : m_RenderContext.drawList)
-		{
-			modelMatrices.push_back(registry.get<TransformComponent>(item.entity).worldMatrix);
-		}
-
-		if (!modelMatrices.empty())
-		{
-			GraphicsContext::GetQueue().writeBuffer(m_RenderContext.modelStorageBuffer, 0, modelMatrices.data(), modelMatrices.size() * sizeof(glm::mat4));
-		}
-
+		const std::vector<glm::mat4>& modelMatrices = m_RenderContext.drawList.GetTransforms();
+		
+		GraphicsContext::GetQueue().writeBuffer(m_RenderContext.modelStorageBuffer, 0, modelMatrices.data(), modelMatrices.size() * sizeof(glm::mat4));
+		
 		static const RenderPassType order[] = {
 				RenderPassType::Shadow,
 				RenderPassType::Background,

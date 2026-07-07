@@ -1,9 +1,8 @@
 #pragma once
 
 #include "Engine/Asset/Asset.h"
-#include "Engine/Scene/Components.h"
-#include "Engine/Scene/TransformSystem.h"
-#include "Engine/Graphics/Texture/Environment.h"
+#include "Engine/Scene/Entity.h"
+#include <entt/entity/registry.hpp>
 
 namespace Engine
 {
@@ -21,33 +20,19 @@ namespace Engine
 		Scene(const Scene&) = delete;
 		Scene& operator=(const Scene&) = delete;
 
-		entt::entity CreateEntity(const std::string& name = "new entity");
-		entt::entity CreateEntity(const std::string& name, Uuid entityId);
+		Entity CreateEntity(const std::string& name = "new entity");
+		Entity CreateEntity(const std::string& name, Uuid entityId);
 
-		entt::entity GetEntity(Uuid uuid);
-		entt::registry& GetRegistry() { return m_Registry; } //TODO: const version needed
+		void DestroyEntity(Entity entity);
+
+		Entity GetEntity(Uuid uuid);
+
+		entt::registry& GetRegistry() { return m_Registry; }
 
 		Camera* GetActiveCamera() const;
 
 		Uuid GetEnvironmentTexture() const { return m_EnvironmentTextureId; }
 		void SetEnvironmentTexture(Uuid textureId) { m_EnvironmentTextureId = textureId; }
-
-		template<typename... Components>
-		std::vector<entt::entity> GetEntities(bool includeDisabled = false)
-		{
-			std::vector<entt::entity> entities;
-
-			auto view = m_Registry.view<IdentityComponent, Components...>();
-			for (auto entity : view)
-			{
-				if(!includeDisabled && !m_Registry.get<IdentityComponent>(entity).enabled)
-				{
-					continue;
-				}
-				entities.push_back(entity);
-			}
-			return entities;
-		}
 
 	private:
 		entt::registry m_Registry;

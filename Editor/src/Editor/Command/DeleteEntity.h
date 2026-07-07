@@ -11,31 +11,29 @@ namespace Editor
   class DeleteEntityCommand : public ICommand
   {
   public:
-    DeleteEntityCommand(Engine::Scene* scene, entt::entity entity) : m_Scene(scene), m_Entity(entity)
+    DeleteEntityCommand(Engine::Entity entity) : m_Entity(entity)
     {
-      if (entity != entt::null)
+      if (entity.IsValid())
       {
-        m_Name = m_Scene->GetRegistry().get<Engine::NameComponent>(entity).name;
+        m_Name = m_Entity.GetComponent<Engine::NameComponent>().name;
         m_Entity = entity;
+        m_Scene = m_Entity.GetScene();
 			}
     } 
 
     void Execute() override
     {
-      if (m_Entity == entt::null) return;
+      if (!m_Entity.IsValid()) return;
 
       FocusEntityEvent e{0};
 			Engine::EventBus::Publish(e);
-      m_Scene->GetRegistry().destroy(m_Entity);
+      m_Entity.Destroy();
     }
 
     void Undo() override
     {
-      Engine::Scene& scene = *m_Scene;
-      entt::registry& registry = scene.GetRegistry();
-
-      m_Entity = scene.CreateEntity(m_Name);
-			Engine::Uuid id = registry.get<Engine::IdentityComponent>(m_Entity).id;
+      m_Entity = m_Scene->CreateEntity(m_Name);
+			Engine::Uuid id = m_Entity.GetComponent<Engine::IdentityComponent>().id;
 
       FocusEntityEvent e{ id };
       Engine::EventBus::Publish(e);
@@ -44,6 +42,6 @@ namespace Editor
   private:
 		Engine::Scene* m_Scene;
     std::string m_Name;
-		entt::entity m_Entity = entt::null;
+    Engine::Entity m_Entity;
   };
 }

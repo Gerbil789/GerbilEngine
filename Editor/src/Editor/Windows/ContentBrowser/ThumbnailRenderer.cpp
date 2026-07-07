@@ -6,7 +6,9 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Core/Resources.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Scene/Components.h"
 #include "Engine/Asset/AssetRecord.h"
+#include "Engine/Graphics/Mesh.h"
 
 namespace Editor
 {
@@ -32,7 +34,7 @@ namespace Editor
 		std::unordered_map<Engine::Uuid, Thumbnail> m_ThumbnailCache;
 
 		Engine::Scene scene;
-		entt::entity entity;
+		Engine::Entity entity;
 		Engine::Camera camera;
 		Engine::Renderer renderer;
 
@@ -67,16 +69,20 @@ namespace Editor
 	void ThumbnailRenderer::Initialize()
 	{
 		camera.SetBackground(Engine::Camera::Background::Color);
+		camera.SetProjection(Engine::Camera::Projection::Perspective);
 		camera.SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
 		camera.SetAspectRatio(1.0f);
 		camera.SetPosition({ 0.0f, 0.0f, 3.0f });
 		camera.SetRotation({ 0.0f, 180.0f, 0.0f });
 
 		entity = scene.CreateEntity("PreviewEntity");
-		entt::registry& registry = scene.GetRegistry();
-		auto& mc = registry.emplace<Engine::MeshComponent>(entity);
+		auto& mc = entity.AddComponent<Engine::MeshComponent>();
 		mc.meshId = RESOURCES::MESH::SPHERE;
 		mc.materials.push_back(RESOURCES::MATERIAL::PINK);
+
+		auto& tc = entity.GetComponent<Engine::TransformComponent>();
+		tc.rotation = { 15.0f, 45.0f, 0.0f };
+		tc.UpdateMatrix();
 
 		renderer.Initialize();
 		renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Opaque);
@@ -126,11 +132,15 @@ namespace Editor
 		int x = (slot % CellsPerSide) * 64;
 		int y = (slot / CellsPerSide) * 64;
 
-		entt::registry& registry = scene.GetRegistry();
-		auto& mc = registry.get<Engine::MeshComponent>(entity);
+		auto& mc = entity.GetComponent<Engine::MeshComponent>();
 
 		mc.meshId = request.meshId;
 		mc.materials[0] = request.materialId;
+
+		const Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(mc.meshId);
+		float distance = glm::length(mesh.aabb.max - mesh.aabb.min);
+
+		camera.SetPosition({ 0.0f, 0.0f, distance });
 
 		renderer.SetColorTarget(m_ScratchpadView);
 		renderer.SetDepthTarget(m_DepthView);

@@ -5,18 +5,20 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Event/EventBus.h"
 #include "Editor/Core/EditorEvent.h"
+#include "Engine/Asset/AssetManager.h"
 
 namespace Editor
 {
   class CreateEntityCommand : public ICommand 
   {
   public:
-    CreateEntityCommand(Engine::Scene* scene, const std::string& name = "Empty Entity") : m_Scene(scene), m_Name(name) {}
+    CreateEntityCommand(Engine::Uuid sceneId, const std::string& name = "Empty Entity") : m_SceneId(sceneId), m_Name(name) {}
 
     void Execute() override 
     {
-			m_Entity = m_Scene->CreateEntity(m_Name);
-			Engine::Uuid id = m_Scene->GetRegistry().get<Engine::IdentityComponent>(m_Entity).id;
+			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(m_SceneId);
+			m_Entity = scene.CreateEntity(m_Name);
+			Engine::Uuid id = m_Entity.GetComponent<Engine::IdentityComponent>().id;
 
 			SelectionManager::Assets.Select(id);
       FocusEntityEvent e{ id };
@@ -25,16 +27,16 @@ namespace Editor
 
     void Undo() override 
     {
-      if (m_Entity == entt::null) return;
+      if (!m_Entity.IsValid()) return;
 
       FocusEntityEvent e {0};
       Engine::EventBus::Publish(e);
-      m_Scene->GetRegistry().destroy(m_Entity);
+      m_Entity.Destroy();
     }
 
   private:
-		Engine::Scene* m_Scene;
+		Engine::Uuid m_SceneId;
     std::string m_Name;
-		entt::entity m_Entity = entt::null;
+    Engine::Entity m_Entity;
   };
 }
