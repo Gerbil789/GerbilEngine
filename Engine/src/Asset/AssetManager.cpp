@@ -37,6 +37,8 @@ namespace Engine
 		std::unordered_map<Uuid, AudioClip> m_AudioClips;
 		std::unordered_map<Uuid, Scene> m_Scenes;
 
+    std::vector<Uuid> m_DirtySet;
+
     template<typename T, typename ImporterFunc>
     T& LoadAssetInternal(Uuid id, std::unordered_map<Uuid, T>& map, Uuid fallbackId, ImporterFunc importFunc)
     {
@@ -84,20 +86,22 @@ namespace Engine
 
   void AssetManager::Initialize(const std::filesystem::path& projectDirectory)
   {
-    m_AssetRegistry.Load(projectDirectory / "assetRegistry.json");
+    m_AssetRegistry.Load();
 		m_AssetsDirectory = projectDirectory / "Assets";
 
     Engine::EventBus::Subscribe<Engine::FileAddedEvent>([](const Engine::FileAddedEvent& event)
       {
         LOG_WARNING("File added event received");
-        m_AssetRegistry.Create(Uuid::Generate(), event.path);
+        m_AssetRegistry.AddRecord(Uuid::Generate(), event.path);
         return false;
       });
 
     Engine::EventBus::Subscribe<Engine::FileRemovedEvent>([](const Engine::FileRemovedEvent& event)
       {
         LOG_WARNING("File removed event received");
-				m_AssetRegistry.Remove(event.path);
+
+        Engine::Uuid id = m_AssetRegistry.GetIdFromPath(event.path);
+				m_AssetRegistry.RemoveRecord(id);
         return false;
       });
 
@@ -127,7 +131,6 @@ namespace Engine
 
     LoadBuiltInAsset(RESOURCES::MESH::CUBE, "Resources/Engine/models/cube.glb", m_Meshes, MeshImporter::LoadMesh, "Cube");
     LoadBuiltInAsset(RESOURCES::MESH::SPHERE, "Resources/Engine/models/sphere.glb", m_Meshes, MeshImporter::LoadMesh, "Sphere");
-    //LoadBuiltInAsset(RESOURCES::TEXTURE::HDR, "Resources/Engine/hdr/lebombo_128x64.hdr", m_Textures, TextureImporter::LoadTexture2D, "HDR Environment");
     LoadBuiltInAsset(RESOURCES::TEXTURE::HDR, "Resources/Engine/hdr/lebombo_4k.hdr", m_Textures, TextureImporter::LoadTexture2D, "HDR Environment");
     LoadBuiltInAsset(RESOURCES::TEXTURE::EDITOR_ICONS, "Resources/Engine/icons/icons.png", m_Textures, TextureImporter::LoadTexture2D, "Editor Icons");
     LoadBuiltInAsset(RESOURCES::SHADER::DEFAULT, "Resources/Engine/shaders/pink.wgsl", m_Shaders, ShaderImporter::LoadShader, "Pink Shader");
@@ -200,6 +203,30 @@ namespace Engine
   template ENGINE_API AudioClip& AssetManager::GetAsset<AudioClip>(Uuid id);
   template ENGINE_API Scene& AssetManager::GetAsset<Scene>(Uuid id);
 
+  AssetType AssetManager::GetAssetType(Uuid id)
+  {
+    return m_AssetRegistry.GetType(id);
+  }
+
+  const std::filesystem::path& AssetManager::GetAssetPath(Uuid id)
+  {
+		return m_AssetRegistry.GetRecord(id).path;
+  }
+
+  std::vector<Uuid> AssetManager::GetAssetsOfType(AssetType type)
+  {
+    switch(type)
+    {
+    case AssetType::Texture: return m_Textures | std::views::keys | std::ranges::to<std::vector<Uuid>>(); break;
+		case AssetType::Mesh: return m_Meshes | std::views::keys | std::ranges::to<std::vector<Uuid>>(); break;
+		case AssetType::Shader: return m_Shaders | std::views::keys | std::ranges::to<std::vector<Uuid>>(); break;
+		case AssetType::Material: return m_Materials | std::views::keys | std::ranges::to<std::vector<Uuid>>(); break;
+		case AssetType::Audio: return m_AudioClips | std::views::keys | std::ranges::to<std::vector<Uuid>>(); break;
+		case AssetType::Scene: return m_Scenes | std::views::keys | std::ranges::to<std::vector<Uuid>>(); break;
+		default: return {}; break;
+    }
+  }
+
   template<typename T>
   T& AssetManager::CreateAsset<T>(const std::filesystem::path& path)
   {
@@ -217,7 +244,7 @@ namespace Engine
 
       auto [insertedIt, success] = m_Materials.insert_or_assign(material.id, std::move(material));
 
-      m_AssetRegistry.Create(id, path); // save record in assetRegistry.json
+      m_AssetRegistry.AddRecord(id, path); // save record in assetRegistry.json
       MaterialSerializer::Serialize(id, path); // immediately serialize to create .mat file
 
       LOG_TRACE("Created material asset '{}'", id);
@@ -233,7 +260,7 @@ namespace Engine
 
       auto [insertedIt, success] = m_Scenes.insert_or_assign(id, std::move(scene));
 
-      m_AssetRegistry.Create(id, path); // save record in assetRegistry.json
+      m_AssetRegistry.AddRecord(id, path); // save record in assetRegistry.json
       SceneSerializer::Serialize(id, path); // immediately serialize to create .scene file
 
       LOG_TRACE("Created scene asset '{}'", id);
@@ -243,4 +270,33 @@ namespace Engine
 
 	template ENGINE_API Material& AssetManager::CreateAsset<Material>(const std::filesystem::path& path);
 	template ENGINE_API Scene& AssetManager::CreateAsset<Scene>(const std::filesystem::path& path);
+
+
+
+  void AssetManager::MarkAssetDirty(Uuid id)
+  {
+    if (Exists(id))
+    {
+      m_DirtySet.push_back(id);
+    }
+  }
+
+  void AssetManager::SaveDirtyAssets()
+  {
+    for (const auto& id : m_DirtySet)
+    {
+      const auto& record = m_AssetRegistry.GetRecord(id);
+
+      switch (record.type)
+      {
+      case Engine::AssetType::Material:
+      {
+        Engine::MaterialSerializer::Serialize(record.id, record.path);
+        break;
+      }
+      }
+    }
+
+    m_DirtySet.clear();
+  }
 }

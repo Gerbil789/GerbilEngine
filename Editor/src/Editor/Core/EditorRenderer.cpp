@@ -18,7 +18,7 @@ namespace Editor
 
 		ImGui_ImplWGPU_InitInfo initInfo;
 		initInfo.Device = Engine::GraphicsContext::GetDevice();
-		initInfo.RenderTargetFormat = static_cast<WGPUTextureFormat>(window.GetSurfaceFormat());
+		initInfo.RenderTargetFormat = Engine::GraphicsContext::GetSurfaceFormat();
 		initInfo.DepthStencilFormat = wgpu::TextureFormat::Undefined;
 		ImGui_ImplWGPU_Init(&initInfo);
 	}

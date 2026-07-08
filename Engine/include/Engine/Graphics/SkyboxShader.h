@@ -9,7 +9,8 @@ namespace Engine
 	{
 	public:
 		SkyboxShader() = default;
-		SkyboxShader(const std::filesystem::path& path);
+		void Initialize(const std::filesystem::path& path);
+
 		wgpu::RenderPipeline GetRenderPipeline() const { return m_RenderPipeline; }
 
 	private:

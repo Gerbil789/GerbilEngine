@@ -26,12 +26,11 @@ namespace Editor
 		int m_ColumnCount = 0;
 		int m_LineCount = 0;
 
-		constexpr float itemSpacing = 10.0f;
+		constexpr float m_ItemSpacing = 10.0f;
 
 		std::filesystem::path m_CurrentDirectory;
 
 		ImGuiSelectionBasicStorage m_Selection;
-		std::vector<Engine::AssetRecord> m_Records;
 
 		enum class ItemInteraction
 		{
@@ -39,50 +38,80 @@ namespace Editor
 			Clicked,
 			DoubleClicked
 		};
+
+		enum class ContentBrowserItemType
+		{
+			Directory,
+			Asset
+		};
+
+		struct ContentBrowserItem
+		{
+			ContentBrowserItemType Type;
+			std::string Name;
+			std::filesystem::path Path;
+
+			// Valid only if Type == Directory
+			bool IsEmptyDirectory = false;
+
+			// Valid only if Type == Asset
+			Engine::Uuid AssetId;
+			Engine::AssetType AssetType;
+
+			// Generate a stable ImGuiID. 
+			// Assets use their UUID. Directories use a hash of their relative path.
+			ImGuiID GetID() const
+			{
+				if (Type == ContentBrowserItemType::Asset)
+					return static_cast<ImGuiID>(static_cast<uint64_t>(AssetId));
+
+				return static_cast<ImGuiID>(std::hash<std::string>{}(Path.string()));
+			}
+		};
+
+		std::vector<ContentBrowserItem> m_Items;
 	}
 
 	static void RefreshDirectory()
 	{
-		m_Records.clear();
+		m_Items.clear();
 		m_Selection.Clear();
 
-		// find directories first
-		for (auto& entry : std::filesystem::directory_iterator(m_CurrentDirectory))
+		std::filesystem::path relativeDir = std::filesystem::relative(m_CurrentDirectory, Engine::Project::GetActive().GetAssetsDirectory());
+
+		const Engine::DirectoryNode* node = Engine::AssetManager::GetAssetRegistry().GetDirectoryNode(relativeDir);
+		if (!node) return;
+
+		// 3. Add Sub-directories (Fast O(1) for this folder level)
+		for (const auto& [folderName, childNode] : node->subdirectories)
 		{
-			auto& path = entry.path();
-			if (entry.is_directory())
-			{
-				if (std::filesystem::is_empty(path))
-				{
-					m_Records.emplace_back(Engine::Uuid::Generate(), path, Engine::AssetType::EmptyDirectory); //TODO: generating random uuids is not ideal...
-				}
-				else
-				{
-					m_Records.emplace_back(Engine::Uuid::Generate(), path, Engine::AssetType::Directory);
-				}
-			}
+			ContentBrowserItem item;
+			item.Type = ContentBrowserItemType::Directory;
+			item.Name = folderName;
+			item.Path = m_CurrentDirectory / folderName;
+			item.IsEmptyDirectory = childNode.subdirectories.empty() && childNode.assets.empty();
+
+			m_Items.push_back(item);
 		}
 
-		// then find assets
-		Engine::AssetManager::GetAssetRegistry().ForEachRecord([&](const Engine::AssetRecord& record)
-			{
-				if (record.path.parent_path() == m_CurrentDirectory)
-				{
-					m_Records.emplace_back(record.id, record.path, record.type);
-				}
-			});
+		// 4. Add Assets (Fast O(1) for this folder level)
+		for (Engine::Uuid id : node->assets)
+		{
+			ContentBrowserItem item;
+			item.Type = ContentBrowserItemType::Asset;
+			item.Path = Engine::AssetManager::GetAssetPath(id);
+			item.Name = item.Path.stem().string();
+			item.AssetId = id;
+			item.AssetType = Engine::AssetManager::GetAssetType(id);
+
+			m_Items.push_back(item);
+		}
 	}
 
 	static void OpenDirectory(const std::filesystem::path& path)
 	{
 		m_CurrentDirectory = path;
 		RefreshDirectory();
-	}
-
-	static void UpdateLayoutSizes()
-	{
-		m_ColumnCount = std::max(static_cast<int>(ImGui::GetContentRegionAvail().x / (m_ItemSize.x + itemSpacing)), 1);
-		m_LineCount = (static_cast<int>(m_Records.size()) + m_ColumnCount - 1) / m_ColumnCount;
 	}
 
 	static void DrawNavigationBar()
@@ -120,7 +149,7 @@ namespace Editor
 		}
 
 		{
-			const std::string text = std::format("Selected: {}/{} items", m_Selection.Size, m_Records.size());
+			const std::string text = std::format("Selected: {}/{} items", m_Selection.Size, m_Items.size());
 			float textWidth = ImGui::CalcTextSize(text.c_str()).x;
 			float pos = ImGui::GetContentRegionMax().x - textWidth;
 			ImGui::SameLine(pos);
@@ -143,8 +172,8 @@ namespace Editor
 			zoomWheelAccum += io.MouseWheel;
 			if (fabsf(zoomWheelAccum) >= 1.0f)
 			{
-				int hovered_item_nx = static_cast<int>((io.MousePos.x - start_pos.x + itemSpacing * 0.5f) / (m_ItemSize.x + itemSpacing));
-				int hovered_item_ny = static_cast<int>((io.MousePos.y - start_pos.y + itemSpacing * 0.5f) / (m_ItemSize.y + itemSpacing + 20.0f));
+				int hovered_item_nx = static_cast<int>((io.MousePos.x - start_pos.x + m_ItemSpacing * 0.5f) / (m_ItemSize.x + m_ItemSpacing));
+				int hovered_item_ny = static_cast<int>((io.MousePos.y - start_pos.y + m_ItemSpacing * 0.5f) / (m_ItemSize.y + m_ItemSpacing + 20.0f));
 				int hovered_item_idx = (hovered_item_ny * m_ColumnCount) + hovered_item_nx;
 
 				// Zoom
@@ -154,9 +183,8 @@ namespace Editor
 				m_ItemSize.x = std::clamp(m_ItemSize.x, 32.0f, 128.0f);
 				m_ItemSize.y = std::clamp(m_ItemSize.y, 32.0f, 128.0f);
 				zoomWheelAccum -= (int)zoomWheelAccum;
-				UpdateLayoutSizes();
 
-				float hovered_item_rel_pos_y = (static_cast<float>(hovered_item_idx / m_ColumnCount) + fmodf(static_cast<float>(hovered_item_ny), 1.0f)) * (m_ItemSize.y + itemSpacing + 20.0f);
+				float hovered_item_rel_pos_y = (static_cast<float>(hovered_item_idx / m_ColumnCount) + fmodf(static_cast<float>(hovered_item_ny), 1.0f)) * (m_ItemSize.y + m_ItemSpacing + 20.0f);
 				hovered_item_rel_pos_y += ImGui::GetStyle().WindowPadding.y;
 				float mouse_local_y = io.MousePos.y - ImGui::GetWindowPos().y;
 				ImGui::SetScrollY(hovered_item_rel_pos_y - mouse_local_y);
@@ -229,20 +257,23 @@ namespace Editor
 		}
 	}
 
-	static ItemInteraction DrawItem(const Engine::AssetRecord& record, ImDrawList* draw_list, ImVec2 pos, ImU32 label_col)
+	static ItemInteraction DrawItem(const ContentBrowserItem& item, ImDrawList* draw_list, ImVec2 pos, ImU32 label_col)
 	{
 		// thumbnail
-		const Thumbnail& thumbnail = m_ThumbnailRenderer.GetThumbnail(record);
+		const Thumbnail& thumbnail = (item.Type == ContentBrowserItemType::Directory)
+			? m_ThumbnailRenderer.GetDirectoryThumbnail(item.IsEmptyDirectory)
+			: m_ThumbnailRenderer.GetThumbnail(item.AssetId, item.AssetType);
+
+
 		ImVec2 icon_min = pos;
 		ImVec2 icon_max = { pos.x + m_ItemSize.x, pos.y + m_ItemSize.x };
 		draw_list->AddImage(static_cast<WGPUTextureView>(thumbnail.view), icon_min, icon_max, ImVec2(thumbnail.uv_min.x, thumbnail.uv_min.y), ImVec2(thumbnail.uv_max.x, thumbnail.uv_max.y));
 
 		// label
 		ImRect label_rect = ImRect{ pos.x, icon_max.y, pos.x + m_ItemSize.x, pos.y + m_ItemSize.y + 20.0f };
-		const std::string name = record.path.filename().stem().string();
-		const ImVec2 text_size = ImGui::CalcTextSize(name.c_str());
+		const ImVec2 text_size = ImGui::CalcTextSize(item.Name.c_str());
 		ImVec2 text_pos = { label_rect.Min.x + (label_rect.GetWidth() - text_size.x) * 0.5f, label_rect.Min.y + 2.0f };
-		draw_list->AddText(text_pos, label_col, name.c_str());
+		draw_list->AddText(text_pos, label_col, item.Name.c_str());
 
 		ItemInteraction interaction = ItemInteraction::None;
 
@@ -264,7 +295,8 @@ namespace Editor
 
 	static void DrawMainContent()
 	{
-		UpdateLayoutSizes();
+		m_ColumnCount = std::max(static_cast<int>(ImGui::GetContentRegionAvail().x / (m_ItemSize.x + m_ItemSpacing)), 1);
+		m_LineCount = (static_cast<int>(m_Items.size()) + m_ColumnCount - 1) / m_ColumnCount;
 
 		constexpr float layoutOuterPadding = 5.0f;
 
@@ -279,66 +311,71 @@ namespace Editor
 		ImGui::SetCursorScreenPos(startPos);
 
 		ImGuiMultiSelectFlags flags = ImGuiMultiSelectFlags_ClearOnEscape | ImGuiMultiSelectFlags_ClearOnClickVoid | ImGuiMultiSelectFlags_BoxSelect2d | ImGuiMultiSelectFlags_SelectOnClickRelease;
-		ImGuiMultiSelectIO* io = ImGui::BeginMultiSelect(flags, m_Selection.Size, static_cast<int>(m_Records.size()));
+		ImGuiMultiSelectIO* io = ImGui::BeginMultiSelect(flags, m_Selection.Size, static_cast<int>(m_Items.size()));
 
-		m_Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage*, int id) { return static_cast<ImGuiID>(static_cast<uint64_t>(m_Records[id].id)); };
+		m_Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage*, int id) { return static_cast<ImGuiID>(static_cast<uint64_t>(m_Items[id].GetID())); };
 		m_Selection.ApplyRequests(io);
 
 		ImGuiListClipper clipper;
-		clipper.Begin(m_LineCount, m_ItemSize.y + itemSpacing + 20.0f);
+		clipper.Begin(m_LineCount, m_ItemSize.y + m_ItemSpacing + 20.0f);
 
 		while (clipper.Step())
 		{
 			for (int line_id = clipper.DisplayStart; line_id < clipper.DisplayEnd; ++line_id)
 			{
 				const int min_id = line_id * m_ColumnCount;
-				const int max_id = std::min(min_id + m_ColumnCount, static_cast<int>(m_Records.size()));
+				const int max_id = std::min(min_id + m_ColumnCount, static_cast<int>(m_Items.size()));
 
 				for (int item_id = min_id; item_id < max_id; ++item_id)
 				{
-					const Engine::AssetRecord& assetRecord = m_Records[item_id];
-					ImGui::PushID(static_cast<ImGuiID>(static_cast<uint64_t>(assetRecord.id)));
+					const ContentBrowserItem& item = m_Items[item_id];
+					ImGui::PushID(item.GetID());
 
-					ImVec2 pos = ImVec2(startPos.x + (item_id % m_ColumnCount) * (m_ItemSize.x + itemSpacing), startPos.y + line_id * (m_ItemSize.y + itemSpacing + 20.0f));
+					ImVec2 pos = ImVec2(startPos.x + (item_id % m_ColumnCount) * (m_ItemSize.x + m_ItemSpacing), startPos.y + line_id * (m_ItemSize.y + m_ItemSpacing + 20.0f));
 					ImGui::SetCursorScreenPos(pos);
 
 					ImGui::SetNextItemSelectionUserData(item_id);
-					bool item_is_selected = m_Selection.Contains(static_cast<ImGuiID>(static_cast<uint64_t>(assetRecord.id)));
+					bool item_is_selected = m_Selection.Contains(item.GetID());
 					ImGui::Selectable("", item_is_selected, ImGuiSelectableFlags_AllowOverlap, m_ItemSize);
 
 					if (ImGui::IsRectVisible(m_ItemSize))
 					{
 						ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
 
-						ItemInteraction interaction = DrawItem(assetRecord, drawList, pos, label_col);
+						ItemInteraction interaction = DrawItem(item, drawList, pos, label_col);
 
 						if (interaction == ItemInteraction::Clicked)
 						{
-							if (assetRecord.type != Engine::AssetType::Directory)
+							if (item.Type == ContentBrowserItemType::Asset)
 							{
-								SelectionManager::Assets.Select(assetRecord.id);
+								SelectionManager::Assets.Select(item.AssetId);
 							}
 						}
 						else if (interaction == ItemInteraction::DoubleClicked)
 						{
-							switch (assetRecord.type)
+							if (item.Type == ContentBrowserItemType::Directory)
 							{
-							case Engine::AssetType::Directory:
-								directoryToOpen = assetRecord.path;
-								break;
-							case Engine::AssetType::Scene:
-								Engine::SceneManager::SetActiveScene(assetRecord.id);
-								break;
-							case Engine::AssetType::Material:
-								break;
-							default:
-								break;
+								directoryToOpen = item.Path;
+							}
+							else if (item.Type == ContentBrowserItemType::Asset)
+							{
+								switch (item.AssetType)
+								{
+								case Engine::AssetType::Scene:
+									Engine::SceneManager::SetActiveScene(item.AssetId);
+									break;
+									// ... other asset types ...
+								}
 							}
 						}
 					}
 
-					DragDropSource source(assetRecord.GetName(), assetRecord.id);
-					//DragDropTarget{}.AcceptAsset([record](Engine::Uuid droppedId) { LOG_INFO("Dropped: {} into {}", droppedId, record.GetName()); }, Engine::AssetType::Texture2D);
+					if (item.Type == ContentBrowserItemType::Asset)
+					{
+						DragDropSource source(item.Name, item.AssetId);
+					}
+
+
 
 					ImGui::PopID();
 				}

@@ -10,6 +10,7 @@
 #include "Editor/Windows/MaterialEditorWindow.h"
 #include "Editor/Windows/Settings/SettingsWindow.h"
 #include "Editor/Windows/Viewport/ViewportWindow.h"
+#include "Editor/Windows/AssetRegistryWindow.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Editor/Windows/PopUp/NewProjectPopupWindow.h"
 #include "Engine/Utility/File.h"
@@ -105,7 +106,8 @@ namespace Editor
 			SettingsWindow,
 			InspectorWindow,
 			MaterialEditorWindow,
-			StatisticsWindow
+			StatisticsWindow,
+			AssetRegistryWindow
 		> m_Windows;
 	}
 

@@ -7,7 +7,7 @@
 #include "Engine/Core/Resources.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Scene/Components.h"
-#include "Engine/Asset/AssetRecord.h"
+#include "Engine/Asset/AssetType.h"
 #include "Engine/Graphics/Mesh.h"
 
 namespace Editor
@@ -16,21 +16,27 @@ namespace Editor
 	{
 		const std::unordered_map<Engine::AssetType, glm::ivec2> AssetIconMap
 		{
-			{Engine::AssetType::EmptyDirectory, {0, 0}},
-			{Engine::AssetType::Directory,      {1, 0}},
 			{Engine::AssetType::Material,       {2, 0}},
 			{Engine::AssetType::Shader,         {2, 0}},
 			{Engine::AssetType::Audio,          {4, 0}},
 			{Engine::AssetType::Scene,          {5, 0}},
 			{Engine::AssetType::Mesh,           {7, 0}},
 			{Engine::AssetType::Unknown,        {6, 0}},
-			{Engine::AssetType::Other,          {6, 0}},
+		};
+
+		const std::unordered_map<EditorIcon, glm::ivec2> EditorIconMap
+		{
+				{EditorIcon::EmptyDirectory, {0, 0}},
+				{EditorIcon::Directory,      {1, 0}},
+				{EditorIcon::Unknown,        {6, 0}},
 		};
 
 		constexpr glm::ivec2 m_SpritesheetSize{ 1024, 1024 };
 		constexpr glm::ivec2 m_CellSize{ 64, 64 };
 
 		std::unordered_map<Engine::AssetType, Engine::Sprite> m_IconSprites;
+		std::unordered_map<EditorIcon, Engine::Sprite> m_EditorSprites;
+
 		std::unordered_map<Engine::Uuid, Thumbnail> m_ThumbnailCache;
 
 		Engine::Scene scene;
@@ -92,13 +98,18 @@ namespace Editor
 			m_IconSprites.emplace(type, Engine::Sprite::CreateFromGrid(RESOURCES::TEXTURE::EDITOR_ICONS, m_SpritesheetSize, coords, m_CellSize));
 		}
 
+		for (const auto& [iconType, coords] : EditorIconMap)
+		{
+			m_EditorSprites.emplace(iconType, Engine::Sprite::CreateFromGrid(RESOURCES::TEXTURE::EDITOR_ICONS, m_SpritesheetSize, coords, m_CellSize));
+		}
+
 		wgpu::TextureDescriptor atlasDesc;
 		atlasDesc.label = { "ThumbnailAtlas", WGPU_STRLEN };
 		atlasDesc.dimension = wgpu::TextureDimension::_2D;
 		atlasDesc.sampleCount = 1;
 		atlasDesc.mipLevelCount = 1;
 		atlasDesc.size = { AtlasSizePx, AtlasSizePx, 1 };
-		atlasDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+		atlasDesc.format = Engine::GraphicsContext::GetSurfaceFormat();
 		atlasDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
 		m_AtlasTexture = Engine::GraphicsContext::GetDevice().createTexture(atlasDesc);
 		m_AtlasView = m_AtlasTexture.createView();
@@ -109,7 +120,7 @@ namespace Editor
 		scratchDesc.sampleCount = 1;
 		scratchDesc.mipLevelCount = 1;
 		scratchDesc.size = { 64, 64, 1 };
-		scratchDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+		scratchDesc.format = Engine::GraphicsContext::GetSurfaceFormat();
 		scratchDesc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
 		m_ScratchpadTexture = Engine::GraphicsContext::GetDevice().createTexture(scratchDesc);
 		m_ScratchpadView = m_ScratchpadTexture.createView();
@@ -172,34 +183,46 @@ namespace Editor
 		return thumb;
 	}
 
-	const Thumbnail& ThumbnailRenderer::GetThumbnail(const Engine::AssetRecord& record)
+	const Thumbnail& ThumbnailRenderer::GetThumbnail(Engine::Uuid id, Engine::AssetType type)
 	{
-		if (m_ThumbnailCache.contains(record.id))
+		if (m_ThumbnailCache.contains(id))
 		{
-			return m_ThumbnailCache[record.id];
+			return m_ThumbnailCache[id];
 		}
 
 		Thumbnail thumbnail;
 
-		switch (record.type)
+		switch (type)
 		{
-		case Engine::AssetType::Texture2D:
-			thumbnail.view = Engine::AssetManager::GetAsset<Engine::Texture2D>(record.id).GetTextureView();
+		case Engine::AssetType::Texture:
+			thumbnail.view = Engine::AssetManager::GetAsset<Engine::Texture2D>(id).GetTextureView();
 			break;
 		case Engine::AssetType::Material:
-			thumbnail = RenderToAtlas({ RESOURCES::MESH::SPHERE, record.id });
+			thumbnail = RenderToAtlas({ RESOURCES::MESH::SPHERE, id });
 			break;
 		case Engine::AssetType::Mesh:
-			thumbnail = RenderToAtlas({ record.id, RESOURCES::MATERIAL::WHITE });
+			thumbnail = RenderToAtlas({ id, RESOURCES::MATERIAL::WHITE });
 			break;
 		default:
-			const Engine::Sprite& sprite = GetIcon(record.type);
+			const Engine::Sprite& sprite = GetIcon(type);
 			const Engine::Texture2D& texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(sprite.GetTexture());
 			thumbnail = { texture.GetTextureView(), sprite.GetUVMin(), sprite.GetUVMax() };
 			break;
 		}
 
-		m_ThumbnailCache[record.id] = thumbnail;
-		return m_ThumbnailCache[record.id];
+		m_ThumbnailCache[id] = thumbnail;
+		return m_ThumbnailCache[id];
+	}
+
+	const Thumbnail& ThumbnailRenderer::GetDirectoryThumbnail(bool isEmpty)
+	{
+		EditorIcon iconType = isEmpty ? EditorIcon::EmptyDirectory : EditorIcon::Directory;
+		const Engine::Sprite& sprite = m_EditorSprites.at(iconType);
+		const Engine::Texture2D& texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(sprite.GetTexture());
+
+		// You could cache this, but constructing the struct is essentially free
+		static Thumbnail thumb;
+		thumb = { texture.GetTextureView(), sprite.GetUVMin(), sprite.GetUVMax() };
+		return thumb;
 	}
 }

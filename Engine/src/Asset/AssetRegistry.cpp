@@ -4,111 +4,86 @@
 #include <glaze/glaze.hpp>
 #include <fstream>
 
-//TODO: also keep track of directories
-
-template <>
-struct glz::meta<Engine::AssetType> {
-	using enum Engine::AssetType;
-	static constexpr auto value = enumerate(
-		"Unknown", Unknown,
-		"Texture", Texture2D,
-		"Mesh", Mesh,
-		"Shader", Shader,
-		"Material", Material,
-		"Audio", Audio,
-		"Scene", Scene,
-		"Script", Script,
-		"Other", Other,
-		"Directory", Directory,
-		"EmptyDirectory", EmptyDirectory
-	);
-};
-
-// Assuming Uuid contains a uint64_t. We tell Glaze to treat Uuid as its underlying integer.
 template <>
 struct glz::meta<Engine::Uuid> {
 	static constexpr auto value = [](auto& self) -> auto& {
-		// Cast to uint64_t reference. Adjust this if your Uuid internal member is named differently!
 		return reinterpret_cast<uint64_t&>(self);
 		};
 };
 
 template <>
 struct glz::meta<Engine::AssetRecord> {
-	using T = Engine::AssetRecord;
 	static constexpr auto value = object(
-		"ID", &T::id,
-		"Path", &T::path, // Glaze supports std::filesystem::path natively!
-		"Type", &T::type
+		"ID", &Engine::AssetRecord::id,
+		"Path", &Engine::AssetRecord::path
 	);
 };
 
 namespace Engine
 {
-	// A tiny wrapper just for the root JSON object
-	struct RegistryFile 
+	void AssetRegistry::Load()
 	{
-		std::vector<AssetRecord> Assets;
-	};
+		const std::filesystem::path& path = Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.json";
 
-	void AssetRegistry::Load(const std::filesystem::path& path)
-	{
 		if (!std::filesystem::exists(path))
 		{
 			LOG_WARNING("Asset registry file '{}' does not exist, creating new one...", path);
 			std::ofstream outFile(path);
 			if (!outFile)
 			{
-				LOG_ERROR("Failed to create asset registry file at '{}'", path);
-				return;
+				throw std::runtime_error("Could not create asset registry file.");
 			}
-			outFile << "{\n  \"Assets\": []\n}"; // Write an empty registry structure
 		}
-
-		RegistryFile fileData;
-		std::string buffer;
-		auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
 		m_Records.clear();
 
-		auto ec = glz::read_file_json(fileData, path.string(), buffer);
+		std::vector<AssetRecord> assets;
+		std::string buffer;
+		const std::filesystem::path& assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
 
-		if (ec) 
+		if (auto ec = glz::read_file_json(assets, path.string(), buffer))
 		{
 			LOG_ERROR("Registry Load Error: {}", glz::format_error(ec, buffer));
 			return;
 		}
 
-		for (auto& record : fileData.Assets)
+		for (AssetRecord& record : assets)
 		{
 			record.path = assetsDir / record.path;
 
-			if (record.type == AssetType::Other || !std::filesystem::exists(record.path))
+			if (!std::filesystem::exists(record.path)) 
+			{
+				LOG_WARNING("Asset file '{}' does not exist, skipping...", record.path);
 				continue;
+			}
+				
+			record.type = GetAssetTypeFromExtension(record.path.extension().string());
 
 			m_Records[record.id] = std::move(record);
 		}
 
 		ScanDirectory(assetsDir); // look for new files
-
-		Save(path);
+		RebuildVirtualFileSystem();
+		Save();
 	}
 
-	void AssetRegistry::Save(const std::filesystem::path& path)
+	void AssetRegistry::Save()
 	{
-		auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
+		const std::filesystem::path& path = Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.json";
+		const std::filesystem::path& assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
 
-		RegistryFile outData;
-		outData.Assets.reserve(m_Records.size());
+		std::vector<AssetRecord> assets;
+		assets.reserve(m_Records.size());
 
 		for (const auto& [id, record] : m_Records)
 		{
 			AssetRecord diskCopy = record;
 			diskCopy.path = std::filesystem::relative(record.path, assetsDir);
-			outData.Assets.push_back(std::move(diskCopy));
+			assets.push_back(std::move(diskCopy));
 		}
 
 		std::string buffer;
-		auto ec = glz::write_file_json(outData, path.string(), buffer);
+		auto ec = glz::write_file_json<glz::opts{ .prettify = true }>(assets, path.string(), buffer);
+
 
 		if (ec) 
 		{
@@ -117,7 +92,7 @@ namespace Engine
 	}
 
 
-	void AssetRegistry::Create(Uuid id, const std::filesystem::path& path)
+	void AssetRegistry::AddRecord(Uuid id, const std::filesystem::path& path)
 	{
 		auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
 
@@ -133,7 +108,12 @@ namespace Engine
 		auto type = GetAssetTypeFromExtension(path.extension().string());
 		auto [it, inserted] = m_Records.try_emplace(id, AssetRecord{id, assetsDir / path, type });
 
-		Save(Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.json");
+		if (inserted)
+		{
+			AddToVFS(m_Records[id]);
+		}
+
+		Save();
 		LOG_TRACE("Added asset '{}' to registry.", path);
 		return;
 	}
@@ -143,12 +123,16 @@ namespace Engine
 		return m_Records.find(id) != m_Records.end();
 	}
 
-	void AssetRegistry::Remove(Uuid id)
+	void AssetRegistry::RemoveRecord(Uuid id)
 	{
-		if (m_Records.erase(id) > 0)
+		const auto it = m_Records.find(id);
+
+		if (it != m_Records.end())
 		{
+			RebuildVirtualFileSystem();
+			m_Records.erase(it);
 			LOG_TRACE("Removed asset '{}' from registry.", id);
-			Save(Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.json");
+			Save();
 		}
 		else
 		{
@@ -156,20 +140,23 @@ namespace Engine
 		}
 	}
 
-	void AssetRegistry::Remove(const std::filesystem::path& path)
+	static AssetRecord s_NullRecord{};
+
+	const AssetRecord& AssetRegistry::GetRecord(Uuid id) const
 	{
-		auto it = std::find_if(m_Records.begin(), m_Records.end(), [&path](const auto& pair) { return pair.second.path == path; });
-		if (it != m_Records.end())
+		if (auto it = m_Records.find(id); it != m_Records.end())
 		{
-			Uuid id = it->first;
-			m_Records.erase(it);
-			LOG_TRACE("Removed asset '{}' from registry.", path);
-			Save(Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.json");
+			return it->second;
 		}
-		else
-		{
-			LOG_WARNING("Attempted to remove non-existent asset '{}' from registry.", path);
-		}
+
+		return s_NullRecord;
+	}
+
+	AssetType AssetRegistry::GetType(Uuid id) const
+	{
+		if (!Exists(id)) return AssetType::Unknown;
+		const AssetRecord& record = GetRecord(id);
+		return record.type;
 	}
 
 	std::filesystem::path AssetRegistry::GetPath(const Uuid& id) const
@@ -196,37 +183,16 @@ namespace Engine
 
 	}
 
-	void AssetRegistry::MarkDirty(Uuid id)
-	{
-		if (m_Records.contains(id))
-		{
-			m_DirtySet.insert(id);
-		}
-	}
-
-	void AssetRegistry::ClearDirtySet()
-	{
-		m_DirtySet.clear();
-	}
-
-	void AssetRegistry::Clear()
-	{ 
-		m_Records.clear(); 
-		m_DirtySet.clear();
-	}
-
 	void AssetRegistry::ScanDirectory(const std::filesystem::path& directory)
 	{
 		for (const auto& entry : std::filesystem::recursive_directory_iterator(directory))
 		{
-			if (!entry.is_regular_file()) continue;
-
 			const auto& path = entry.path();
-			if (!path.has_extension()) continue;
+
+			if (!entry.is_regular_file() || !path.has_extension()) continue;
 
 			AssetType type = GetAssetTypeFromExtension(path.extension().string());
 
-			if (type == AssetType::Other) continue;
 			if (type == AssetType::Unknown)
 			{
 				LOG_WARNING("File '{}' has unknown asset type, skipping.", path);
@@ -242,5 +208,79 @@ namespace Engine
 				m_Records[record.id] = std::move(record);
 			}
 		}
+	}
+
+	void AssetRegistry::RebuildVirtualFileSystem()
+	{
+		m_RootNode.subdirectories.clear();
+		m_RootNode.assets.clear();
+
+		for (const auto& [id, record] : m_Records)
+		{
+			AddToVFS(record);
+		}
+	}
+
+	void AssetRegistry::AddToVFS(const AssetRecord& record)
+	{
+		auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
+
+		// Get the path relative to the assets folder (e.g., "Textures/Props/box.png")
+		std::filesystem::path relativePath = std::filesystem::relative(record.path, assetsDir);
+		std::filesystem::path parentDir = relativePath.parent_path();
+
+		DirectoryNode* currentNode = &m_RootNode;
+
+		// Traverse down the tree, creating nodes if they don't exist
+		if (!parentDir.empty() && parentDir != ".")
+		{
+			for (const auto& component : parentDir)
+			{
+				currentNode = &currentNode->subdirectories[component.string()];
+			}
+		}
+
+		// Add the asset ID to the final directory node
+		currentNode->assets.push_back(record.id);
+	}
+
+	const DirectoryNode* AssetRegistry::GetDirectoryNode(const std::filesystem::path& relativePath) const
+	{
+		const DirectoryNode* currentNode = &m_RootNode;
+
+		if (!relativePath.empty() && relativePath != ".")
+		{
+			for (const auto& component : relativePath)
+			{
+				auto it = currentNode->subdirectories.find(component.string());
+				if (it == currentNode->subdirectories.end())
+				{
+					return nullptr; // Directory doesn't exist in VFS
+				}
+				currentNode = &it->second;
+			}
+		}
+
+		return currentNode;
+	}
+
+	Uuid AssetRegistry::GetIdFromPath(const std::filesystem::path& path) const
+	{
+		const DirectoryNode* current = &m_RootNode;
+
+		for (const auto& part : path)
+		{
+			// Skip root slash or empty parts
+			if (part == "/" || part.empty()) continue;
+
+			auto it = current->subdirectories.find(part.string());
+			if (it == current->subdirectories.end())
+			{
+				return Uuid{};
+			}
+			current = &it->second;
+		}
+
+		return current->assets.empty() ? Uuid{} : current->assets.front();
 	}
 }

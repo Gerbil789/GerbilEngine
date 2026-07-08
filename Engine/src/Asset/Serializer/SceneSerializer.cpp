@@ -1,7 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
@@ -280,8 +279,6 @@ namespace Engine
 			return std::nullopt;
 		}
 
-		AssetRegistry& assetRegistry = AssetManager::GetAssetRegistry();
-
 		std::vector<EntityJSON> sceneData;
 		std::string buffer;
 
@@ -336,7 +333,7 @@ namespace Engine
 				const auto& mJson = eJson.MeshComponent.value();
 				mComp.meshId = Uuid{ mJson.Mesh };
 
-				if(!assetRegistry.GetRecord(mComp.meshId))
+				if(!AssetManager::Exists(mComp.meshId))
 				{
 					mComp.meshId = RESOURCES::MESH::EMPTY;
 				}
@@ -346,7 +343,7 @@ namespace Engine
 				for (auto rawId : mJson.Materials)
 				{
 					Engine::Uuid id{ static_cast<uint64_t>(rawId) };
-					if (assetRegistry.GetRecord(id))
+					if (AssetManager::Exists(id))
 					{
 						mComp.materials.push_back(Uuid{ id });
 					}

@@ -1,6 +1,5 @@
 #include "TextureInspectorPanel.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include <imgui.h>
 #include <string>
@@ -10,11 +9,10 @@ namespace Editor
 {
 	void TextureInspectorPanel::Draw(Engine::Uuid id)
 	{
-		const Engine::AssetRecord& record = Engine::AssetManager::GetAssetRegistry().GetRecord(id);
+		const std::string& name = Engine::AssetManager::GetAssetPath(id).stem().string();
 		const Engine::Texture2D& texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(id);
 
-		ImGui::TextUnformatted(std::format("Texture: {} ({}x{}))", record.GetName(), texture.GetWidth(), texture.GetHeight()).c_str());
-
+		ImGui::TextUnformatted(std::format("Texture: {} ({}x{}))", name, texture.GetWidth(), texture.GetHeight()).c_str());
 
 		ImVec2 available = ImGui::GetContentRegionAvail();
 

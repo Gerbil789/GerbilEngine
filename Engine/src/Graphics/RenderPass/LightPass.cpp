@@ -101,7 +101,7 @@ namespace Engine
 		//blend.alpha.dstFactor = wgpu::BlendFactor::One;
 
 		//wgpu::ColorTargetState colorTarget;
-		//colorTarget.format = wgpu::TextureFormat::RGBA8Unorm;
+		//colorTarget.format = GraphicsContext::GetSurfaceFormat();
 		//colorTarget.writeMask = wgpu::ColorWriteMask::All;
 		//colorTarget.blend = &blend;
 

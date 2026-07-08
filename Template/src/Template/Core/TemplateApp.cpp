@@ -36,6 +36,8 @@ namespace Template
 
 	static void UpdateSize(uint32_t width, uint32_t height)
 	{
+		if (width == 0 || height == 0) return;
+
 		m_Width = width;
 		m_Height = height;
 
@@ -43,65 +45,65 @@ namespace Template
 		Engine::Camera* camera = activeScene.GetActiveCamera();
 		camera->SetAspectRatio(static_cast<float>(m_Width) / static_cast<float>(m_Height));
 
-		if (m_Width > 0 && m_Height > 0)
+		wgpu::Extent3D size = { m_Width, m_Height, 1 };
+
+		// Color
 		{
-			wgpu::Extent3D size = { m_Width, m_Height, 1 };
-			// Color
-			{
-				wgpu::TextureDescriptor desc;
-				desc.label = { "RendererColorTexture", WGPU_STRLEN };
-				desc.dimension = wgpu::TextureDimension::_2D;
-				desc.format = wgpu::TextureFormat::RGBA8Unorm;
-				desc.size = size;
-				desc.mipLevelCount = 1;
-				desc.sampleCount = 1;
-				desc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
-				wgpu::Texture colorTexture = Engine::GraphicsContext::GetDevice().createTexture(desc);
+			wgpu::TextureDescriptor desc;
+			desc.label = { "RendererColorTexture", WGPU_STRLEN };
+			desc.dimension = wgpu::TextureDimension::_2D;
+			desc.format = Engine::GraphicsContext::GetSurfaceFormat();
+			desc.size = size;
+			desc.mipLevelCount = 1;
+			desc.sampleCount = 1;
+			desc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
+			wgpu::Texture colorTexture = Engine::GraphicsContext::GetDevice().createTexture(desc);
 
-				wgpu::TextureViewDescriptor view;
-				view.label = { "RendererColorTextureView", WGPU_STRLEN };
-				view.dimension = wgpu::TextureViewDimension::_2D;
-				view.format = desc.format;
-				view.baseMipLevel = 0;
-				view.mipLevelCount = 1;
-				view.baseArrayLayer = 0;
-				view.arrayLayerCount = 1;
-				m_Renderer.SetColorTarget(colorTexture.createView(view));
-			}
-
-			// Depth
-			{
-				wgpu::TextureDescriptor desc;
-				desc.label = { "RendererDepthTextureView", WGPU_STRLEN };
-				desc.dimension = wgpu::TextureDimension::_2D;
-				desc.format = wgpu::TextureFormat::Depth24Plus;
-				desc.mipLevelCount = 1;
-				desc.sampleCount = 1;
-				desc.size = size;
-				desc.usage = wgpu::TextureUsage::RenderAttachment;
-				desc.viewFormatCount = 1;
-				desc.viewFormats = &wgpu::TextureFormat::Depth24Plus;
-				wgpu::Texture depthTexture = Engine::GraphicsContext::GetDevice().createTexture(desc);
-
-				wgpu::TextureViewDescriptor view;
-				view.aspect = wgpu::TextureAspect::DepthOnly;
-				view.baseArrayLayer = 0;
-				view.arrayLayerCount = 1;
-				view.baseMipLevel = 0;
-				view.mipLevelCount = 1;
-				view.dimension = wgpu::TextureViewDimension::_2D;
-				view.format = wgpu::TextureFormat::Depth24Plus;
-
-				m_Renderer.SetDepthTarget(depthTexture.createView(view));
-			}
+			wgpu::TextureViewDescriptor view;
+			view.label = { "RendererColorTextureView", WGPU_STRLEN };
+			view.dimension = wgpu::TextureViewDimension::_2D;
+			view.format = desc.format;
+			view.baseMipLevel = 0;
+			view.mipLevelCount = 1;
+			view.baseArrayLayer = 0;
+			view.arrayLayerCount = 1;
+			m_Renderer.SetColorTarget(colorTexture.createView(view));
 		}
+
+		// Depth
+		{
+			wgpu::TextureDescriptor desc;
+			desc.label = { "RendererDepthTextureView", WGPU_STRLEN };
+			desc.dimension = wgpu::TextureDimension::_2D;
+			desc.format = wgpu::TextureFormat::Depth24Plus;
+			desc.mipLevelCount = 1;
+			desc.sampleCount = 1;
+			desc.size = size;
+			desc.usage = wgpu::TextureUsage::RenderAttachment;
+			desc.viewFormatCount = 1;
+			desc.viewFormats = &wgpu::TextureFormat::Depth24Plus;
+			wgpu::Texture depthTexture = Engine::GraphicsContext::GetDevice().createTexture(desc);
+
+			wgpu::TextureViewDescriptor view;
+			view.aspect = wgpu::TextureAspect::DepthOnly;
+			view.baseArrayLayer = 0;
+			view.arrayLayerCount = 1;
+			view.baseMipLevel = 0;
+			view.mipLevelCount = 1;
+			view.dimension = wgpu::TextureViewDimension::_2D;
+			view.format = wgpu::TextureFormat::Depth24Plus;
+
+			m_Renderer.SetDepthTarget(depthTexture.createView(view));
+		}
+
 	}
 
 
 	TemplateApp::TemplateApp()
 	{
-		std::filesystem::current_path(GetExecutableDir());
-		std::filesystem::path projectDir = "../../../Projects/TestProject"; //TODO: dont hardcode paths
+		std::filesystem::path cwd = std::filesystem::current_path();
+
+		std::filesystem::path projectDir = cwd / "Projects/TestProject/project.json"; //TODO: dont hardcode paths
 
 		Engine::Project::Load(projectDir);
 		const Engine::Project& project = Engine::Project::GetActive();
@@ -109,7 +111,7 @@ namespace Template
 		Engine::GraphicsContext::Initialize();
 		GLFW::Initialize();
 
-		m_Window.Initialize(Engine::WindowSpecification{ "Game", m_Width, m_Height, "Resources/Engine/icons/logo.png" }); //TODO: make this configurable
+		m_Window.Initialize({ std::format("Game - {}", Engine::Configuration) , m_Width, m_Height, "Resources/Engine/icons/logo.png" });
 		m_Window.SetEventCallback([](auto& e) {Engine::EventBus::Publish(e); });
 
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());
@@ -117,27 +119,27 @@ namespace Template
 		Engine::Input::SetActiveWindow(*m_Window.GetNativeWindow());
 
 		m_Renderer.Initialize();
+		m_Renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque);
 
 		Engine::Audio::Initialize();
 
 		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / Engine::Configuration / (project.GetTitle() + ".dll");
 		Engine::Runtime::LoadScripts(dllPath);
 
-
 		Engine::Uuid id = project.GetDefaultSceneId();
-
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(id);
-		Engine::SceneManager::SetActiveScene(scene.id);
-
-		m_Renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque);
+		Engine::SceneManager::SetActiveScene(id);
 
 		Engine::Scene& activeScene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
-
 		m_Camera = activeScene.GetActiveCamera();
+
+		m_Camera->SetBackground(Engine::Camera::Background::Skybox);
+
 
 		UpdateSize(m_Width, m_Height);
 
 		Engine::EventBus::Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); return false; });
+
+		LOG_INFO("--- Game initialization complete ---");
 	}
 
 	TemplateApp::~TemplateApp()
@@ -161,13 +163,13 @@ namespace Template
 			}
 
 
-			Engine::Time::BeginFrame();				// update delta time and FPS counters
-			Engine::Input::Update();					// poll input events
-			Engine::Audio::Update();					// release finished audio voices back to pool
+			Engine::Time::BeginFrame();	
+			Engine::Input::Update();
+			Engine::Audio::Update();
 			Engine::PhysicsSystem::Update();
-			Engine::Runtime::Update();				// update game runtime (scripts, audio listener, etc...)
+			Engine::Runtime::Update();
 
-			wgpu::Surface surface = reinterpret_cast<WGPUSurface>(m_Window.GetSurface());
+			wgpu::Surface surface = m_Window.GetSurface();
 			wgpu::SurfaceTexture surfaceTexture;
 
 			surface.getCurrentTexture(&surfaceTexture);

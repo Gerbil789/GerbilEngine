@@ -16,5 +16,8 @@ namespace Engine::GraphicsContext
 	ENGINE_API uint32_t GetUniformBufferOffsetAlignment();
 	ENGINE_API uint32_t GetStorageBufferOffsetAlignment();
 
+	ENGINE_API void SetSurfaceFormat(wgpu::TextureFormat format);
+	ENGINE_API wgpu::TextureFormat GetSurfaceFormat();
+
 	//TODO: add minimum system requirements for the graphics context
 }

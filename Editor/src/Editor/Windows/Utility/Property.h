@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/AssetRegistry.h"
 #include <imgui.h>
 #include <glm/glm.hpp>
 #include <limits>
@@ -124,7 +123,7 @@ namespace Editor
 			if (payload && payload->IsDataType("UUID"))
 			{
 				Engine::Uuid id = *static_cast<const Engine::Uuid*>(payload->Data);
-				isValidAsset = (Engine::AssetManager::GetAssetRegistry().GetType(id) == expectedType);
+				isValidAsset = (Engine::AssetManager::GetAssetType(id) == expectedType);
 			}
 
 			ImVec4 targetColor = isValidAsset ? ImVec4(0.2f, 0.8f, 0.2f, 1.0f) : ImVec4(0.8f, 0.2f, 0.2f, 1.0f);

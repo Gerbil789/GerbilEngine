@@ -1,7 +1,6 @@
 #include "InspectorWindow.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Editor/Core/SelectionManager.h"
-#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Audio/AudioClip.h"
 #include "Engine/Event/EventBus.h"
 #include "Editor/Core/EditorEvent.h"
@@ -30,7 +29,7 @@ namespace Editor
 	{
 		Engine::EventBus::Subscribe<SelectionChangedEvent>([](const SelectionChangedEvent& e)
 			{
-				if(e.context == SelectionContext::Asset && Engine::AssetManager::GetAssetRegistry().GetType(e.id) == Engine::AssetType::Material)
+				if(e.context == SelectionContext::Asset && Engine::AssetManager::GetAssetType(e.id) == Engine::AssetType::Material)
 				{
 					return false;
 				}
@@ -58,11 +57,11 @@ namespace Editor
 		}
 		else if (m_Context == SelectionContext::Asset)
 		{
-			auto type = Engine::AssetManager::GetAssetRegistry().GetType(m_Id);
+			auto type = Engine::AssetManager::GetAssetType(m_Id);
 
 			switch (type)
 			{
-			case Engine::AssetType::Texture2D:
+			case Engine::AssetType::Texture:
 			{
 				m_TextureInspector.Draw(m_Id);
 				break;

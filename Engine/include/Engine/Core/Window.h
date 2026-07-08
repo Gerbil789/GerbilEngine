@@ -3,11 +3,12 @@
 #include "Engine/Core/API.h"
 #include <filesystem>
 #include <functional>
+#include <webgpu/webgpu.hpp>
 
 struct GLFWwindow;
 
-struct WGPUSurfaceImpl;
-using WGPUSurface = WGPUSurfaceImpl*;
+//struct WGPUSurfaceImpl;
+//using WGPUSurface = WGPUSurfaceImpl*;
 
 namespace GLFW
 {
@@ -40,8 +41,7 @@ namespace Engine
 		uint32_t GetWidth() const { return m_Data.width; }
 		uint32_t GetHeight() const { return m_Data.height; }
 		GLFWwindow* GetNativeWindow() const { return m_Window; }
-		WGPUSurface GetSurface() const;
-		uint32_t GetSurfaceFormat() const;
+		wgpu::Surface GetSurface() const;
 
 		void SetEventCallback(const std::function<void(Event&)>& callback) { m_Data.callback = callback; }
 

@@ -51,7 +51,7 @@ namespace Editor
 			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 			Engine::Uuid id = scene.GetEnvironmentTexture();
 
-			if (AssetField("Environment", id, Engine::AssetType::Texture2D).changed)
+			if (AssetField("Environment", id, Engine::AssetType::Texture).changed)
 			{
 				if(!id) { id = RESOURCES::TEXTURE::HDR; }
 

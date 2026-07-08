@@ -14,7 +14,6 @@
 #include "Engine/Graphics/Camera.h"
 #include "Editor/Core/SelectionManager.h"
 #include "Engine/Script/ScriptRegistry.h"
-#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Script/Script.h"
 
 #include <imgui.h>
@@ -372,7 +371,7 @@ namespace Editor
 
 			case Engine::ScriptFieldType::Texture:
 			{
-				AssetField(field.name.c_str(), field.GetValue<Engine::Uuid>(component.instance), Engine::AssetType::Texture2D);
+				AssetField(field.name.c_str(), field.GetValue<Engine::Uuid>(component.instance), Engine::AssetType::Texture);
 				break;
 			}
 

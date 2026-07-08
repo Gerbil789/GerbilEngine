@@ -1,6 +1,13 @@
 {
-   "Shader": 8,
-   "Attributes": {},
+   "Shader": 2286500515546692760,
+   "Attributes": {
+      "albedo": [
+         1,
+         1,
+         1,
+         1
+      ]
+   },
    "Textures": {},
    "Filter": 1,
    "Wrap": 0

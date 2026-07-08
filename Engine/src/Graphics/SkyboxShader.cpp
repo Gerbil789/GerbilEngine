@@ -7,7 +7,7 @@
 
 namespace Engine
 {
-	Engine::SkyboxShader::SkyboxShader(const std::filesystem::path& path)
+	void SkyboxShader::Initialize(const std::filesystem::path& path)
 	{
 		wgpu::ShaderModule shaderModule = LoadWGSLShader(path);
 
@@ -17,7 +17,7 @@ namespace Engine
 		pipelineDesc.vertex.bufferCount = 0;
 		//pipelineDesc.vertex.buffers = &vertexBufferLayout;
 		pipelineDesc.vertex.module = shaderModule;
-		pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN};
+		pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN };
 		pipelineDesc.vertex.constantCount = 0;
 		pipelineDesc.vertex.constants = nullptr;
 
@@ -35,7 +35,7 @@ namespace Engine
 		blendState.alpha.operation = wgpu::BlendOperation::Add;
 
 		wgpu::ColorTargetState colorTarget;
-		colorTarget.format = wgpu::TextureFormat::RGBA8Unorm;
+		colorTarget.format = GraphicsContext::GetSurfaceFormat();
 		colorTarget.blend = &blendState;
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 

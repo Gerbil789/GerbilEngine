@@ -19,7 +19,6 @@
 #include "Engine/Event/WindowEvent.h"
 #include "Engine/Event/ApplicationEvent.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Audio/Audio.h"
 #include "Engine/Graphics/GraphicsContext.h"
@@ -61,8 +60,8 @@ namespace Editor
 
 		Engine::EventBus::Subscribe<Engine::SceneChangedEvent>([this](auto& e) 
 			{
-				const auto& registry = Engine::AssetManager::GetAssetRegistry();
-				m_Window.SetTitle(std::format("Gerbil Editor - {} - Scene: {}", Engine::Configuration, registry.GetRecord(e.id).GetName()));
+				const std::string& name = Engine::AssetManager::GetAssetPath(e.id).stem().string();
+				m_Window.SetTitle(std::format("Gerbil Editor - {} - Scene: {}", Engine::Configuration, name));
 				return false;
 			});
 

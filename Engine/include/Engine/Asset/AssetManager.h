@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Core/UUID.h"
+#include "Engine/Asset/AssetType.h"
 #include <filesystem>
 
 namespace Engine { class AssetRegistry; }
@@ -8,15 +9,19 @@ namespace Engine { class AssetRegistry; }
 namespace Engine::AssetManager
 {
 	ENGINE_API void Initialize(const std::filesystem::path& projectDirectory);
-	ENGINE_API AssetRegistry& GetAssetRegistry(); //TODO: asset registry should be interal to asset manager only, dont expose it
-
-	template<typename T>
-	ENGINE_API T& GetAsset(Uuid id);
+	ENGINE_API AssetRegistry& GetAssetRegistry();
 
 	ENGINE_API bool Exists(Uuid id);
 
 	template<typename T>
+	ENGINE_API T& GetAsset(Uuid id);
+	ENGINE_API AssetType GetAssetType(Uuid id);
+	ENGINE_API const std::filesystem::path& GetAssetPath(Uuid id);
+	ENGINE_API std::vector<Uuid> GetAssetsOfType(AssetType type);
+
+	template<typename T>
 	ENGINE_API T& CreateAsset(const std::filesystem::path& path);
 
-	//TODO: save asset, delete asset, etc.
+	ENGINE_API void MarkAssetDirty(Uuid id);
+	ENGINE_API void SaveDirtyAssets();
 }

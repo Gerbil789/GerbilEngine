@@ -11,7 +11,6 @@
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Core/Resources.h"
-#include "Engine/Asset/AssetRegistry.h"
 #include <format>
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
 #include "Engine/Graphics/Texture/Texture2D.h"

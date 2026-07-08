@@ -15,6 +15,8 @@ namespace Engine::GraphicsContext
 
 		uint32_t s_UniformBufferOffsetAlignment;
 		uint32_t s_StorageBufferOffsetAlignment;
+
+		wgpu::TextureFormat s_SurfaceFormat;
 	}
 
 	void Initialize()
@@ -130,5 +132,15 @@ namespace Engine::GraphicsContext
 	uint32_t GetStorageBufferOffsetAlignment()
 	{
 		return s_StorageBufferOffsetAlignment;
+	}
+
+	void SetSurfaceFormat(wgpu::TextureFormat format)
+	{
+		s_SurfaceFormat = format;
+	}
+
+	wgpu::TextureFormat GetSurfaceFormat()
+	{
+		return s_SurfaceFormat;
 	}
 }

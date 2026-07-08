@@ -1,12 +1,14 @@
 #pragma once
 
+#include "Engine/Core/UUID.h"
+#include "Engine/Asset/AssetType.h"
 #include <webgpu/webgpu.hpp>
 #include <glm/glm.hpp>
 
-namespace Engine { struct AssetRecord; }
-
 namespace Editor
 {
+	enum class EditorIcon { Directory, EmptyDirectory, Unknown };
+
 	struct Thumbnail
 	{
 		wgpu::TextureView view;
@@ -18,6 +20,7 @@ namespace Editor
 	{
 	public:
 		void Initialize();
-		const Thumbnail& GetThumbnail(const Engine::AssetRecord& record);
+		const Thumbnail& GetThumbnail(Engine::Uuid id, Engine::AssetType type);
+		const Thumbnail& GetDirectoryThumbnail(bool isEmpty);
 	};
 }

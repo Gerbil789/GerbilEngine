@@ -1,7 +1,6 @@
 #include "MaterialEditorWindow.h"
 #include "Editor/Windows/Utility/Property.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Graphics/Material.h"
 #include "Editor/Core/SelectionManager.h"
 #include "Engine/Event/EventBus.h"
@@ -26,21 +25,27 @@ namespace Editor
 			return;
 		}
 
-		auto& registry = Engine::AssetManager::GetAssetRegistry();
+		const std::string& materialName = Engine::AssetManager::GetAssetPath(m_Material->id).stem().string();
+		ImGui::Text("Material: %s", materialName.c_str());
 
-		ImGui::Text("Material: %s", registry.GetRecord(m_Material->id).GetName().c_str());
+		const std::string& shaderName = Engine::AssetManager::GetAssetPath(m_Material->GetShader()).stem().string();
 
-		auto& record = registry.GetRecord(m_Material->GetShader());
 
-		if (ImGui::BeginCombo("##Shader", record.GetName().c_str()))
+		if (ImGui::BeginCombo("##Shader", shaderName.c_str()))
 		{
-			registry.ForEachRecord(Engine::AssetType::Shader, [&](const Engine::AssetRecord& record)
+			const std::vector<Engine::Uuid>& shaders = Engine::AssetManager::GetAssetsOfType(Engine::AssetType::Shader);
+
+			for(const Engine::Uuid& shaderId : shaders)
+			{
+				if (static_cast<uint64_t>(shaderId) <= 1000) continue; // skip built-in shaders
+
+				const std::string& name = Engine::AssetManager::GetAssetPath(shaderId).stem().string();
+
+				if (ImGui::Selectable(name.c_str()))
 				{
-					if (ImGui::Selectable(record.GetName().c_str()))
-					{
-						m_Material->SetShader(record.id);
-					}
-				});
+					m_Material->SetShader(shaderId);
+				}
+			}
 
 			ImGui::EndCombo();
 		}
@@ -86,7 +91,7 @@ namespace Editor
 				if (binding.type == Engine::BindingType::Texture2D)
 				{
 					Engine::Uuid texture = m_Material->GetTexture(binding.name);
-					if (AssetField(binding.name.c_str(), texture, Engine::AssetType::Texture2D).changed)
+					if (AssetField(binding.name.c_str(), texture, Engine::AssetType::Texture).changed)
 					{
 						m_Material->SetTexture(binding.name, texture);
 					}
@@ -130,7 +135,7 @@ namespace Editor
 			{
 				if (e.context != SelectionContext::Asset) return false;;
 
-				auto type = Engine::AssetManager::GetAssetRegistry().GetType(e.id);
+				auto type = Engine::AssetManager::GetAssetType(e.id);
 				if (type == Engine::AssetType::Material)
 				{
 					m_Material = &Engine::AssetManager::GetAsset<Engine::Material>(e.id);

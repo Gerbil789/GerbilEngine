@@ -36,7 +36,6 @@ namespace GLFW
 namespace Engine
 {
 	wgpu::Surface m_Surface;
-	wgpu::TextureFormat m_SurfaceFormat;
 
 	static wgpu::Surface CreateSurface(GLFWwindow* window)
 	{
@@ -56,7 +55,6 @@ namespace Engine
 		x11Desc.window = glfwGetX11Window(window);
 		surfaceDesc.nextInChain = &x11Desc.chain;
 #endif
-
 		return GraphicsContext::GetInstance().createSurface(surfaceDesc);
 	}
 
@@ -82,6 +80,12 @@ namespace Engine
 		SetWindowIcon(specification.iconPath);
 
 		m_Surface = CreateSurface(static_cast<GLFWwindow*>(m_Window));
+
+		wgpu::SurfaceCapabilities capabilities;
+		m_Surface.getCapabilities(GraphicsContext::GetAdapter(), &capabilities);
+		GraphicsContext::SetSurfaceFormat(capabilities.formats[0]);
+		capabilities.freeMembers();
+
 		ConfigureSurface(m_Data.width, m_Data.height);
 	}
 
@@ -94,14 +98,9 @@ namespace Engine
 		}
 	}
 
-	WGPUSurface Window::GetSurface() const
+	wgpu::Surface Window::GetSurface() const
 	{
 		return m_Surface;
-	}
-
-	uint32_t Window::GetSurfaceFormat() const
-	{
-		return static_cast<uint32_t>(m_SurfaceFormat);
 	}
 
 	void Window::SetTitle(const std::string& title)
@@ -264,16 +263,11 @@ namespace Engine
 
 	void Window::ConfigureSurface(uint32_t width, uint32_t height)
 	{
-		wgpu::SurfaceCapabilities capabilities;
-		m_Surface.getCapabilities(GraphicsContext::GetAdapter(), &capabilities);
-
-		m_SurfaceFormat = capabilities.formats[0];
-
 		wgpu::SurfaceConfiguration config;
 		config.width = width;
 		config.height = height;
 		config.device = GraphicsContext::GetDevice();
-		config.format = m_SurfaceFormat;
+		config.format = GraphicsContext::GetSurfaceFormat();
 		config.usage = wgpu::TextureUsage::RenderAttachment;
 		config.presentMode = wgpu::PresentMode::Immediate;
 		config.alphaMode = wgpu::CompositeAlphaMode::Opaque;
@@ -282,7 +276,6 @@ namespace Engine
 		config.nextInChain = nullptr;
 
 		m_Surface.configure(config);
-		capabilities.freeMembers();
 	}
 
 	void Window::SetWindowIcon(const std::filesystem::path& path)

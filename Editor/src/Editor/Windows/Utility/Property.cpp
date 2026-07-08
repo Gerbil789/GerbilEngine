@@ -14,10 +14,10 @@ namespace Editor
 		PropertyRow row(label);
 		EditResult result;
 
-		auto& registry = Engine::AssetManager::GetAssetRegistry();
-		const std::string& assetName = registry.GetRecord(id).GetName();
 
-		bool isTexture = (type == Engine::AssetType::Texture2D);
+		const std::string& assetName = Engine::AssetManager::GetAssetPath(id).stem().string();
+
+		bool isTexture = (type == Engine::AssetType::Texture);
 		ImVec2 size = isTexture ? ImVec2(64, 64) : ImVec2(-FLT_MIN, 0);
 
 		if (isTexture)
@@ -57,7 +57,7 @@ namespace Editor
 
 		if(result.changed)
 		{
-			registry.MarkDirty(id);
+			Engine::AssetManager::MarkAssetDirty(id);
 		}
 
 		return result;

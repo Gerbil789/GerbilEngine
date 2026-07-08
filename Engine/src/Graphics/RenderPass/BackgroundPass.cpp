@@ -12,7 +12,7 @@ namespace Engine
 
 	BackgroundPass::BackgroundPass()
 	{
-		m_SkyboxShader = SkyboxShader("Resources/Engine/shaders/skybox.wgsl");
+		m_SkyboxShader.Initialize("Resources/Engine/shaders/skybox.wgsl");
 	}
 
 	void BackgroundPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
@@ -24,7 +24,7 @@ namespace Engine
 		color.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 		color.loadOp = wgpu::LoadOp::Clear;
 		color.storeOp = wgpu::StoreOp::Store;
-		color.clearValue = wgpu::Color(col.r, col.g, col.b, col.a);
+		color.clearValue = wgpu::Color{ col.r, col.g, col.b, col.a };
 
 		wgpu::RenderPassDescriptor passDescriptor;
 		passDescriptor.label = { "BackgroundRenderPass", WGPU_STRLEN };
@@ -37,7 +37,7 @@ namespace Engine
 
 		if (context.camera->GetProjection() == Camera::Projection::Perspective)
 		{
-			if(context.camera->GetBackground() == Camera::Background::Skybox)
+			if (context.camera->GetBackground() == Camera::Background::Skybox)
 			{
 				pass.setPipeline(m_SkyboxShader.GetRenderPipeline());
 				pass.setBindGroup(1, context.environmentBindGroup, 0, nullptr);
