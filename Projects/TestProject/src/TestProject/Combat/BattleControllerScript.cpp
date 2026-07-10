@@ -32,7 +32,7 @@ void BattleControllerScript::OnStart()
 
 	Engine::TransformComponent& transform = m_Entity.GetComponent<Engine::TransformComponent>();
 	transform.scale = { static_cast<float>(m_GridWidth) * 2, 1.0f, static_cast<float>(m_GridHeight) * 2 };
-	transform.UpdateMatrix();
+  m_Entity.SetDirty();
 
   gridInteractionSystem.Initialize();
 

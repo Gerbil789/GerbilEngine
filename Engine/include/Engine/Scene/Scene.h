@@ -23,11 +23,19 @@ namespace Engine
 		Entity CreateEntity(const std::string& name = "new entity");
 		Entity CreateEntity(const std::string& name, Uuid entityId);
 
+		Entity GetOrCreateEntity(Uuid entityId);
+
 		void DestroyEntity(Entity entity);
 
-		Entity GetEntity(Uuid uuid);
+		Entity GetEntity(Uuid entityId);
+		const std::vector<entt::entity>& GetRootEntities() const;
+
+		void InsertRootEntity(entt::entity entity, size_t index);
+		void RemoveRootEntity(entt::entity entity);
 
 		entt::registry& GetRegistry() { return m_Registry; }
+
+
 
 		Camera* GetActiveCamera() const;
 
@@ -37,6 +45,7 @@ namespace Engine
 	private:
 		entt::registry m_Registry;
 		std::unordered_map<Engine::Uuid, entt::entity> m_EntityMap; // for faster lookup by UUID
+		std::vector<entt::entity> m_RootEntities;
 
 		Uuid m_EnvironmentTextureId;
 	};

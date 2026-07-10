@@ -41,4 +41,19 @@ namespace Engine
 		default:                      return AssetType::Unknown;
 		}
 	}
+
+	std::string_view AssetTypeToString(AssetType type)
+	{
+		switch (type)
+		{
+		case AssetType::Texture:  return "Texture";
+		case AssetType::Mesh:     return "Mesh";
+		case AssetType::Shader:   return "Shader";
+		case AssetType::Material: return "Material";
+		case AssetType::Audio:    return "Audio";
+		case AssetType::Scene:    return "Scene";
+		case AssetType::Script:   return "Script";
+		default:                  return "Unknown";
+		}
+	}
 }

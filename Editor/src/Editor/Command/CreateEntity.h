@@ -27,7 +27,7 @@ namespace Editor
 
     void Undo() override 
     {
-      if (!m_Entity.IsValid()) return;
+      if (!m_Entity) return;
 
       FocusEntityEvent e {0};
       Engine::EventBus::Publish(e);

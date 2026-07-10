@@ -29,6 +29,8 @@ namespace Engine
 		std::filesystem::path GetPath(const Uuid& id) const;
 		std::filesystem::path GetRelativePath(const Uuid& id) const;
 
+		const std::unordered_map<Uuid, AssetRecord>& GetAllRecords() const { return m_Records; }
+
 	private:
 		void ScanDirectory(const std::filesystem::path& directory);
 		void RebuildVirtualFileSystem();

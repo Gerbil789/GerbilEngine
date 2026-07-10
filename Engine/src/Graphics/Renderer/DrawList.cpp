@@ -4,6 +4,7 @@
 #include "Engine/Scene/Components.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Core/Resources.h"
 
 namespace Engine
 {
@@ -19,13 +20,13 @@ namespace Engine
 		DrawList list;
 		entt::registry& registry = scene.GetRegistry();
 
-		auto view = registry.view<MeshComponent, TransformComponent, IdentityComponent>(entt::exclude<DisabledTag>);
+		auto view = registry.view<MeshComponent, WorldTransformComponent, IdentityComponent>(entt::exclude<DisabledTag>);
 
 		std::vector<SortableDrawData> tempDrawData;
 
 		tempDrawData.reserve(view.size_hint());
 
-		for (auto&& [entity, mc, tc, ic] : view.each())
+		for (auto&& [entity, mc, wtc, ic] : view.each())
 		{
 			if (!mc.meshId) continue;
 
@@ -42,7 +43,7 @@ namespace Engine
 					materialId = mc.materials[subMesh.materialIndex];
 				}
 
-				tempDrawData.push_back({DrawItem{ mc.meshId, materialId, i, subMesh.indexCount, subMesh.firstIndex, ic.id }, tc.worldMatrix });
+				tempDrawData.push_back({DrawItem{ mc.meshId, materialId, i, subMesh.indexCount, subMesh.firstIndex, ic.id }, wtc.worldMatrix });
 			}
 		}
 

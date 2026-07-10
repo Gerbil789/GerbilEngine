@@ -86,7 +86,7 @@ namespace Engine
 			auto& sc = registry.get<Engine::ScriptComponent>(entity);
 			if (sc.instance)
 			{
-				sc.instance->m_Entity = Entity(static_cast<uint32_t>(entity), &scene);
+				sc.instance->m_Entity = Entity(entity, &scene);
 				sc.instance->OnStart();
 			}
 		}

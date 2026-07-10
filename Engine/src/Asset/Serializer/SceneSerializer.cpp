@@ -22,10 +22,9 @@ struct glz::meta<glm::vec3> { static constexpr auto value = array(&glm::vec3::x,
 template <>
 struct glz::meta<glm::vec4> { static constexpr auto value = array(&glm::vec4::x, &glm::vec4::y, &glm::vec4::z, &glm::vec4::w); };
 
-
 namespace Engine
 {
-	struct TransformJSON 
+	struct TransformJSON
 	{
 		glm::vec3 Position{ 0.0f };
 		glm::vec3 Rotation{ 0.0f };
@@ -33,30 +32,30 @@ namespace Engine
 		std::optional<uint64_t> Parent;
 	};
 
-	struct MeshComponentJSON 
+	struct MeshComponentJSON
 	{
 		uint64_t Mesh = 0;
 		std::vector<uint64_t> Materials;
 	};
 
-	struct ColliderComponentJSON 
+	struct ColliderComponentJSON
 	{
 		uint64_t Mesh = 0;
 		uint32_t Type = 0;
 		bool IsTrigger = false;
 	};
 
-	struct CameraPerspectiveJSON 
+	struct CameraPerspectiveJSON
 	{
 		float FOV = 0.0f, Near = 0.0f, Far = 0.0f;
 	};
 
-	struct CameraOrthographicJSON 
+	struct CameraOrthographicJSON
 	{
 		float Size = 0.0f, Near = 0.0f, Far = 0.0f;
 	};
 
-	struct CameraComponentJSON 
+	struct CameraComponentJSON
 	{
 		uint32_t Projection = 0;
 		float AspectRatio = 1.0f;
@@ -67,7 +66,7 @@ namespace Engine
 		bool primary = false;
 	};
 
-	struct LightComponentJSON 
+	struct LightComponentJSON
 	{
 		uint32_t Type = 0;
 		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
@@ -76,13 +75,13 @@ namespace Engine
 		float Angle = 1.0f;
 	};
 
-	struct ScriptComponentJSON 
+	struct ScriptComponentJSON
 	{
 		uint32_t Script;
 		std::map<std::string, glz::generic> Fields;
 	};
 
-	struct EntityJSON 
+	struct EntityJSON
 	{
 		uint64_t ID = 0;
 		bool Enabled = true;
@@ -96,9 +95,8 @@ namespace Engine
 	};
 }
 
-
 template <>
-struct glz::meta<Engine::EntityJSON> 
+struct glz::meta<Engine::EntityJSON>
 {
 	using T = Engine::EntityJSON;
 	static constexpr auto value = object(
@@ -116,6 +114,11 @@ struct glz::meta<Engine::EntityJSON>
 
 namespace Engine
 {
+	namespace
+	{
+		std::string buffer;
+	}
+
 	void SceneSerializer::Serialize(Uuid id, const std::filesystem::path& path)
 	{
 		auto& scene = AssetManager::GetAsset<Scene>(id);
@@ -155,15 +158,20 @@ namespace Engine
 
 			// Transform
 			{
-				auto& t = registry.get<TransformComponent>(entity);
-				TransformJSON tJson{ t.position, t.rotation, t.scale };
+				auto& tc = registry.get<TransformComponent>(entity);
+				TransformJSON tJson{ tc.position, tc.rotation, tc.scale };
 
-				if (t.parent.IsValid())
+				auto* hc = registry.try_get<HierarchyComponent>(entity);
+				if (hc && hc->parent != entt::null)
 				{
-					tJson.Parent = t.parent.GetComponent<IdentityComponent>().id;
+					auto& parentIdentity = registry.get<IdentityComponent>(hc->parent);
+					tJson.Parent = parentIdentity.id;
 				}
+
 				eJson.Transform = tJson;
 			}
+
+
 
 			// Mesh
 			if (registry.any_of<MeshComponent>(entity))
@@ -263,8 +271,8 @@ namespace Engine
 			sceneData.push_back(std::move(eJson));
 		}
 
-		std::string buffer{};
-		if (auto ec = glz::write_file_json(sceneData, path.string(), buffer))
+
+		if (auto ec = glz::write_file_json<glz::opts{ .prettify = true }>(sceneData, path.string(), buffer))
 		{
 			LOG_ERROR("Failed to save scene file '{}': {}", path.string(), glz::format_error(ec));
 		}
@@ -279,27 +287,21 @@ namespace Engine
 			return std::nullopt;
 		}
 
-		std::vector<EntityJSON> sceneData;
-		std::string buffer;
+		std::vector<EntityJSON> json;
+		std::vector<entt::entity> rootEntities;
 
-		if (auto ec = glz::read_file_json(sceneData, path.string(), buffer))
+		if (auto ec = glz::read_file_json(json, path.string(), buffer))
 		{
-			LOG_ERROR("Failed to load scene file '{}': {}", path.string(), glz::format_error(ec, buffer));
+			LOG_ERROR("Failed to load scene file '{}': {}", path, glz::format_error(ec, buffer));
 			return std::nullopt;
 		}
 
 		Scene scene;
-		std::unordered_map<uint64_t, Entity> entityMap;
-		std::unordered_map<uint64_t, uint64_t> entityParentMap;
-
 		scene.SetEnvironmentTexture(RESOURCES::TEXTURE::HDR); //TODO: store in scene file
 
-		for (const auto& eJson : sceneData)
+		for (const EntityJSON& eJson : json)
 		{
-			Uuid entityId{ eJson.ID };
-			std::string name = eJson.Name.value_or("Entity");
-
-			Entity entity = scene.CreateEntity(name, entityId);
+			Entity entity = scene.GetOrCreateEntity(Uuid{ eJson.ID });
 
 			// DisabledTag
 			if (!eJson.Enabled)
@@ -307,24 +309,37 @@ namespace Engine
 				entity.SetActive(false);
 			}
 
-			// Identity
-			//auto& identity = entity.GetComponent<IdentityComponent>();
-			entityMap[entityId] = entity;
+			// Name
+			if (eJson.Name.has_value())
+			{
+				auto& nc = entity.GetComponent<NameComponent>();
+				nc.name = eJson.Name.value();
+			}
 
 			// Transform
 			if (eJson.Transform.has_value())
 			{
-				auto& tComp = entity.GetComponent<TransformComponent>();
+				auto& tc = entity.GetComponent<TransformComponent>();
 				const auto& tJson = eJson.Transform.value();
-				tComp.position = tJson.Position;
-				tComp.rotation = tJson.Rotation;
-				tComp.scale = tJson.Scale;
+				tc.position = tJson.Position;
+				tc.rotation = tJson.Rotation;
+				tc.scale = tJson.Scale;
+				entity.SetDirty();
 
 				if (tJson.Parent.has_value())
-					entityParentMap[eJson.ID] = tJson.Parent.value();
+				{
+					auto& hc = entity.GetComponent<HierarchyComponent>();
+					Entity parentEntity = scene.GetOrCreateEntity(Uuid{ tJson.Parent.value() });
 
-				tComp.UpdateMatrix();
+					hc.parent = static_cast<entt::entity>(parentEntity.GetHandle());
+					parentEntity.GetComponent<HierarchyComponent>().children.push_back(static_cast<entt::entity>(entity.GetHandle()));
+				}
+				else
+				{
+					rootEntities.push_back(static_cast<entt::entity>(entity.GetHandle()));
+				}
 			}
+
 
 			// Mesh
 			if (eJson.MeshComponent.has_value())
@@ -333,7 +348,7 @@ namespace Engine
 				const auto& mJson = eJson.MeshComponent.value();
 				mComp.meshId = Uuid{ mJson.Mesh };
 
-				if(!AssetManager::Exists(mComp.meshId))
+				if (!AssetManager::Exists(mComp.meshId))
 				{
 					mComp.meshId = RESOURCES::MESH::EMPTY;
 				}
@@ -452,29 +467,18 @@ namespace Engine
 						if (node.is_string())
 							field.SetValue<MaterialHandle>(sComp.instance, MaterialHandle{ .id = Uuid{ std::stoull(node.get_string()) } });
 						break;
-					default: 
-						LOG_WARNING("Unsupported script field type for deserialization: {}",static_cast<uint32_t>(field.type));
+					default:
+						LOG_WARNING("Unsupported script field type for deserialization: {}", static_cast<uint32_t>(field.type));
 						break;
 					}
 				}
 			}
 		}
 
-		// Rebuild Parent-Child hierarchy
-		for (const auto& [childID, parentID] : entityParentMap)
+		// Set root entities
+		for(auto [i, handle] : std::views::enumerate(rootEntities))
 		{
-			if (parentID != 0 && entityMap.find(parentID) != entityMap.end())
-			{
-				Entity child = scene.GetEntity(childID);
-				Entity parent = scene.GetEntity(parentID);
-				child.GetComponent<Engine::TransformComponent>().parent = parent;
-			}
-		}
-
-		//update all transform matrices after loading
-		for (auto& [id, entity] : entityMap)
-		{
-			entity.GetComponent<TransformComponent>().UpdateMatrix();
+			scene.InsertRootEntity(handle, i);
 		}
 
 		return scene;

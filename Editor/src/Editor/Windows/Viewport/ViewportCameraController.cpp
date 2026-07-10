@@ -98,7 +98,7 @@ namespace Editor
 	{
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 		Engine::Entity entity = scene.GetEntity(entityId);
-		if (!entity.IsValid()) return;
+		if (!entity) return;
 
 		glm::vec3 focusPoint = entity.GetComponent<Engine::TransformComponent>().position;
 		glm::vec3 position = focusPoint - Editor::editorContext.editorCamera.GetForward() * distance;

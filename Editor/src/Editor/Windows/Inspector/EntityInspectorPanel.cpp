@@ -91,7 +91,7 @@ namespace Editor
 				after.position = { 0.0f, 0.0f, 0.0f };
 				after.rotation = { 0.0f, 0.0f, 0.0f };
 				after.scale = { 1.0f, 1.0f, 1.0f };
-				after.UpdateMatrix();
+				entity.SetDirty();
 				EditorCommandManager::ModifyComponent<Engine::TransformComponent>(entity, before, after); } },
 		};
 
@@ -121,6 +121,10 @@ namespace Editor
 			{
 				EditorCommandManager::TransformEntity(entity, s_TransformBefore, after);
 			}
+		}
+		else if (result.changed)
+		{
+			entity.SetDirty();
 		}
 	}
 
@@ -468,7 +472,7 @@ namespace Editor
 	{
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 		Engine::Entity entity = scene.GetEntity(entityId);
-		if (!entity.IsValid()) return;
+		if (!entity) return;
 
 		EntityHeader header(entity);
 

@@ -25,6 +25,7 @@
 #include "Engine/Physics/Physics.h"
 #include "Engine/Debug/RenderDoc.h"
 #include "Editor/Core/EditorState.h"
+#include "Engine/Scene/TransformSystem.h"
 
 namespace Editor
 {
@@ -74,7 +75,7 @@ namespace Editor
 		Editor::editorContext.editorCamera.SetBackground(Engine::Camera::Background::Skybox);
 		Editor::editorContext.editorCamera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
 
-		static auto applicationCloseListener = Engine::EventBus::Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); return false; });
+		static Engine::EventListener applicationCloseListener = Engine::EventBus::Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); return false; });
 		LOG_INFO("--- Editor initialization complete ---");
 	}
 
@@ -99,17 +100,19 @@ namespace Editor
 				continue;
 			}
 
-			Engine::Time::BeginFrame();				// update delta time and FPS counters
-			Engine::Input::Update();					// poll input events
-			Engine::Audio::Update();					// release finished audio voices back to pool
+			Engine::Time::BeginFrame();
+			Engine::Input::Update();
+			Engine::Audio::Update();
 
-			EditorWindowManager::Update();		// update editor UI, render viewport, ...
-			EditorCommandManager::ExecuteDefferedCommands();		// execute queued commands
+			EditorWindowManager::Update();
+			EditorCommandManager::ExecuteDefferedCommands();
 			
+			Engine::TransformSystem::Update();
+
 			if (Editor::editorContext.editorMode == EditorMode::Play)
 			{
 				Engine::PhysicsSystem::Update();
-				Engine::Runtime::Update();			// update game runtime (scripts, audio listener, etc...)
+				Engine::Runtime::Update();
 			}
 		}
 	}

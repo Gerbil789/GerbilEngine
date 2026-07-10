@@ -13,7 +13,7 @@ namespace Editor
   public:
     DeleteEntityCommand(Engine::Entity entity) : m_Entity(entity)
     {
-      if (entity.IsValid())
+      if (entity)
       {
         m_Name = m_Entity.GetComponent<Engine::NameComponent>().name;
         m_Entity = entity;
@@ -23,7 +23,7 @@ namespace Editor
 
     void Execute() override
     {
-      if (!m_Entity.IsValid()) return;
+      if (!m_Entity) return;
 
       FocusEntityEvent e{0};
 			Engine::EventBus::Publish(e);

@@ -1,26 +1,40 @@
-#include "SceneHierarchyWindow.h"
-#include "Editor/Windows/Utility/Property.h"
-#include "Engine/Scene/Components.h"
+#include "Editor/Windows/SceneHierarchyWindow.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
-#include "Engine/Core/Input.h"
 #include "Editor/Core/SelectionManager.h"
 #include "Editor/Command/EditorCommandManager.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Engine/Scene/SceneManager.h"
-#include <imgui.h>
-#include <glm/gtc/type_ptr.hpp>
-#include "Engine/Core/KeyCodes.h"
-#include <imgui_internal.h>
-#include "Engine/Event/EventBus.h"
-#include "Editor/Core/EditorEvent.h"
 #include "Engine/Scene/Scene.h"
+#include "Engine/Scene/Components.h"
+#include "Engine/Core/Input.h"
+#include "Engine/Event/EventBus.h"
+#include <imgui.h>
 
 namespace Editor
 {
-	void DrawEntityNode(Engine::Entity entity)
+	bool IsDescendant(entt::registry& registry, entt::entity ancestor, entt::entity entity)
+	{
+		while (entity != entt::null)
+		{
+			if (entity == ancestor)
+			{
+				return true;
+			}
+			entity = registry.get<Engine::HierarchyComponent>(entity).parent;
+		}
+		return false;
+	}
+
+	void DrawEntityNode(Engine::Scene& scene, entt::registry& registry, entt::entity entity)
 	{
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-		Engine::Uuid id = entity.GetComponent<Engine::IdentityComponent>().id;
+		Engine::Uuid id = registry.get<Engine::IdentityComponent>(entity).id;
+		const std::string& name = registry.get<Engine::NameComponent>(entity).name;
+
+		auto& hc = registry.get<Engine::HierarchyComponent>(entity);
+		if (hc.children.empty()) flags |= ImGuiTreeNodeFlags_Leaf;
+
 		bool selected = SelectionManager::Entities.IsSelected(id);
 
 		if (selected)
@@ -28,87 +42,139 @@ namespace Editor
 			flags |= ImGuiTreeNodeFlags_Selected;
 		}
 
-		ImGui::PushID(entity.GetHandle());
+		ImGui::PushID(static_cast<int>(entity));
 
-		const std::string& name = entity.GetComponent<Engine::NameComponent>().name;
 		bool opened = ImGui::TreeNodeEx(name.c_str(), flags);
 
-		// Handle selection
 		if (ImGui::IsItemClicked())
 		{
 			bool additive = Engine::Input::IsKeyDown(Engine::Key::LeftControl) || Engine::Input::IsKeyDown(Engine::Key::LeftShift);
 			SelectionManager::Entities.Select(id, additive);
 		}
 
-		// Drag source
+		// drag source
 		if (ImGui::BeginDragDropSource())
 		{
-			ImGui::SetDragDropPayload("ENTITY", &entity, sizeof(Engine::Entity));
+			ImGui::SetDragDropPayload("ENTITY", &entity, sizeof(entt::entity));
 			ImGui::Text("%s", name.c_str());
 			ImGui::EndDragDropSource();
 		}
 
-		// Drop target
+		// drop target directly on the node
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY"))
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY", ImGuiDragDropFlags_AcceptBeforeDelivery | ImGuiDragDropFlags_AcceptNoDrawDefaultRect))
 			{
-				Engine::Entity dropped = *(Engine::Entity*)payload->Data;
-				auto& childTC = dropped.GetComponent<Engine::TransformComponent>();
-				childTC.parent = entity;
+				entt::entity dropped = *(const entt::entity*)payload->Data;
+
+				if (dropped != entity && !IsDescendant(registry, dropped, entity))
+				{
+					ImVec2 mousePos = ImGui::GetMousePos();
+					ImVec2 itemMin = ImGui::GetItemRectMin();
+					ImVec2 itemMax = ImGui::GetItemRectMax();
+					float itemHeight = itemMax.y - itemMin.y;
+
+					// define thresholds (top 25%, middle 50%, bottom 25%)
+					float threshold = itemHeight * 0.25f;
+
+					enum class DropMode { Before, After, Child };
+					DropMode mode = DropMode::Child;
+
+					if (mousePos.y < itemMin.y + threshold) mode = DropMode::Before;
+					else if (mousePos.y > itemMax.y - threshold) mode = DropMode::After;
+
+					// Visual Feedback
+					ImDrawList* drawList = ImGui::GetWindowDrawList();
+					ImU32 highlightColor = IM_COL32(255, 255, 0, 255); // Yellow
+					float lineThickness = 2.0f;
+
+					if (mode == DropMode::Before)
+					{
+						drawList->AddLine(itemMin, ImVec2(itemMax.x, itemMin.y), highlightColor, lineThickness);
+					}
+					else if (mode == DropMode::After)
+					{
+						drawList->AddLine(ImVec2(itemMin.x, itemMax.y), itemMax, highlightColor, lineThickness);
+					}
+					else
+					{
+						drawList->AddRect(itemMin, itemMax, highlightColor);
+					}
+
+					// actual Drop Processing
+					if (ImGui::AcceptDragDropPayload("ENTITY"))
+					{
+						auto& droppedHC = registry.get<Engine::HierarchyComponent>(dropped);
+
+						// detach from current parent
+						if (droppedHC.parent != entt::null)
+						{
+							auto& oldParentHC = registry.get<Engine::HierarchyComponent>(droppedHC.parent);
+							std::erase(oldParentHC.children, dropped); // Requires C++20 <vector>
+						}
+						else
+						{
+							scene.RemoveRootEntity(dropped);
+						}
+
+						// attach to new location
+						if (mode == DropMode::Child)
+						{
+							droppedHC.parent = entity;
+							hc.children.push_back(dropped);
+						}
+						else
+						{
+							entt::entity targetParent = hc.parent;
+							droppedHC.parent = targetParent;
+
+							if (targetParent != entt::null)
+							{
+								auto& parentHC = registry.get<Engine::HierarchyComponent>(targetParent);
+								auto it = std::find(parentHC.children.begin(), parentHC.children.end(), entity);
+
+								if (mode == DropMode::After && it != parentHC.children.end()) ++it;
+								parentHC.children.insert(it, dropped);
+							}
+							else
+							{
+								// target is a root entity
+								const auto& roots = scene.GetRootEntities();
+								auto it = std::find(roots.begin(), roots.end(), entity);
+								size_t index = (it != roots.end()) ? std::distance(roots.begin(), it) : roots.size();
+
+								if (mode == DropMode::After) ++index;
+								scene.InsertRootEntity(dropped, index);
+							}
+						}
+						registry.emplace_or_replace<Engine::DirtyTag>(dropped);
+					}
+				}
 			}
 			ImGui::EndDragDropTarget();
 		}
 
+		// context menu
 		if (ImGui::BeginPopupContextItem())
 		{
-			if (ImGui::MenuItem("Delete"))
-			{
-				EditorCommandManager::DeleteEntity(entity);
-			}
+			//if (ImGui::MenuItem("Delete"))
+			//{
+			//	EditorCommandManager::DeleteEntity(entity);
+			//}
 			ImGui::EndPopup();
 		}
 
 		if (opened)
 		{
-		/*	auto view = registry.view<Engine::TransformComponent>();
-
-			int i = 0;
-			for (auto [childEntity, transform] : view.each())
+			for (entt::entity child : hc.children)
 			{
-				if (transform.parent == entity)
-				{
-					DrawReorderDropTarget(entity, i);
-					DrawEntityNode(childEntity);
-					i++;
-				}
+				DrawEntityNode(scene, registry, child);
 			}
-			DrawReorderDropTarget(entity, i);*/
-
 			ImGui::TreePop();
 		}
 
 		ImGui::PopID();
 	}
-
-	void DrawReorderDropTarget(Engine::Entity parent, size_t index)
-	{
-		ImGui::PushID((int)index);
-		ImGui::Selectable("##DropTarget", false, ImGuiSelectableFlags_SpanAllColumns, ImVec2(0, 1));
-
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY"))
-			{
-				Engine::Entity dropped = *(Engine::Entity*)payload->Data;
-				auto& childTC = dropped.GetComponent<Engine::TransformComponent>();
-				childTC.parent = parent;
-			}
-			ImGui::EndDragDropTarget();
-		}
-		ImGui::PopID();
-	}
-
 
 	void SceneHierarchyWindow::Draw()
 	{
@@ -123,19 +189,12 @@ namespace Editor
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 		entt::registry& registry = scene.GetRegistry();
 
-		auto view = registry.view<Engine::TransformComponent>();
+		const std::vector<entt::entity>& rootEntities = scene.GetRootEntities();
 
-		int i = 0;
-		for (auto [entity, transform] : view.each())
+		for (entt::entity entity : rootEntities)
 		{
-			if (transform.parent.IsValid()) continue;
-
-			DrawReorderDropTarget(Engine::Entity{}, i);
-			DrawEntityNode(Engine::Entity{ static_cast<uint32_t>(entity), &scene });
-			i++;
+			DrawEntityNode(scene, registry, entity);
 		}
-
-		DrawReorderDropTarget(Engine::Entity{}, i);
 
 		// deselect on empty space click
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
@@ -143,7 +202,7 @@ namespace Editor
 			//Engine::EventBus::Get().Publish(FocusEntityEvent{ 0 });
 		}
 
-		// right-click context menu
+		// context menu
 		if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
@@ -151,6 +210,29 @@ namespace Editor
 				EditorCommandManager::CreateEntity("Empty");
 			}
 			ImGui::EndPopup();
+		}
+
+		// empty space drop target
+		ImGui::Dummy(ImGui::GetContentRegionAvail());
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY"))
+			{
+				entt::entity dropped = *(const entt::entity*)payload->Data;
+				auto& droppedHC = registry.get<Engine::HierarchyComponent>(dropped);
+
+				if (droppedHC.parent != entt::null)
+				{
+					auto& oldParentHC = registry.get<Engine::HierarchyComponent>(droppedHC.parent);
+					std::erase(oldParentHC.children, dropped);
+					droppedHC.parent = entt::null;
+
+
+					scene.InsertRootEntity(dropped, scene.GetRootEntities().size());
+					registry.emplace_or_replace<Engine::DirtyTag>(dropped);
+				}
+			}
+			ImGui::EndDragDropTarget();
 		}
 
 		ImGui::End();

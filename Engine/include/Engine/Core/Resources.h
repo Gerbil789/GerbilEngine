@@ -2,6 +2,8 @@
 
 #include "Engine/Core/UUID.h"
 
+//TODO: move this file to assets directory, it should not be in core
+
 namespace RESOURCES
 {
 	namespace MESH

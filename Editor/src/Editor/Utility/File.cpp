@@ -1,5 +1,4 @@
 #include "File.h"
-
 #include <windows.h>
 #include <commdlg.h>
 #include <shlobj.h>
@@ -135,7 +134,37 @@ namespace Editor::FileDialog
 		std::thread([p]() {
 			std::string winPath = p;
 			std::replace(winPath.begin(), winPath.end(), '/', '\\');
-			ShellExecuteA(nullptr, "open", winPath.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+
+			// Use cmd's 'start' command to mimic ShellExecute's file association lookup.
+			// Note: The empty "" after 'start' is required! 'start' treats the first quoted 
+			// string as a window title. If we don't put "", it might fail on paths with spaces.
+			std::string cmdArgs = "cmd.exe /c start \"\" \"" + winPath + "\"";
+
+			STARTUPINFOA si;
+			ZeroMemory(&si, sizeof(si));
+			si.cb = sizeof(si);
+
+			PROCESS_INFORMATION pi;
+			ZeroMemory(&pi, sizeof(pi));
+
+			// CreateProcess gives us exact control over how the new process starts
+			if (CreateProcessA(
+				nullptr,                             // Application name
+				cmdArgs.data(),                      // Command line (mutable in C++17)
+				nullptr,                             // Process attributes
+				nullptr,                             // Thread attributes
+				FALSE,                               // bInheritHandles: THIS FIXES THE LOG SPAM!
+				CREATE_NO_WINDOW | DETACHED_PROCESS, // Creation flags: Fully separate window/console
+				nullptr,                             // Environment
+				nullptr,                             // Current directory
+				&si,                                 // Startup info
+				&pi                                  // Process information
+			))
+			{
+				// We successfully launched the process, clean up our handles to it
+				CloseHandle(pi.hProcess);
+				CloseHandle(pi.hThread);
+			}
 			}).detach();
 	}
 }

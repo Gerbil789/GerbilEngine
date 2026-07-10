@@ -36,7 +36,7 @@ namespace Editor
 			tc.position = data.Position;
 			tc.rotation = data.Rotation;
 			tc.scale = data.Scale;
-			tc.UpdateMatrix();
+      m_Entity.SetDirty();
     }
 
   private:
@@ -64,13 +64,13 @@ namespace Editor
   private:
     void Apply(const std::vector<TransformData>& data)
     {
-      for (size_t i = 0; i < m_Entities.size(); i++)
+			for (size_t i = 0; i < m_Entities.size(); i++) //TODO: use ranges::views::zip ?
       {
 				auto& tc = m_Entities[i].GetComponent<Engine::TransformComponent>();
 				tc.position = data[i].Position;
 				tc.rotation = data[i].Rotation;
 				tc.scale = data[i].Scale;
-				tc.UpdateMatrix();
+				m_Entities[i].SetDirty();
       }
     }
 

@@ -1,26 +1,21 @@
 #pragma once
 
-#include "Engine/Core/Resources.h"
+#include "Engine/Core/UUID.h"
 #include "Engine/Math/AABB.h"
-
-#include "Engine/Scene/Entity.h"
 #include <string>
-
-//TODO: split components into individual files
+#include <entt/fwd.hpp>
 
 namespace Engine
 {
 	class Camera;
-	class Mesh;
-	class Material;
-	class AudioClip;
 	class Script;
 
 	struct ENGINE_API DisabledTag {};
+	struct ENGINE_API DirtyTag {};
 
 	struct ENGINE_API IdentityComponent
 	{
-		Uuid id{};
+		Uuid id;
 	};
 
 	struct ENGINE_API NameComponent
@@ -33,19 +28,23 @@ namespace Engine
 		glm::vec3 position = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
+	};
 
-		Entity parent;
-
-		glm::mat4 localMatrix{ 1.0f };
+	struct ENGINE_API WorldTransformComponent
+	{
 		glm::mat4 worldMatrix{ 1.0f };
+	};
 
-		void UpdateMatrix();
+	struct ENGINE_API HierarchyComponent
+	{
+		entt::entity parent{ entt::null };
+		std::vector<entt::entity> children;
 	};
 
 	struct ENGINE_API MeshComponent
 	{
-		Uuid meshId{};
-		std::vector<Uuid> materials{};
+		Uuid meshId;
+		std::vector<Uuid> materials;
 	};
 
 	enum class BodyType { Static = 0, Dynamic, Kinematic };
@@ -55,7 +54,7 @@ namespace Engine
 	{
 		ColliderShape shape = ColliderShape::Box;
 		BodyType type = BodyType::Dynamic;
-		Uuid collisionMeshId{};
+		Uuid collisionMeshId;
 		AABB worldAABB;
 		bool isTrigger = false;
 	};
@@ -102,7 +101,6 @@ namespace Engine
 			} point;
 		};
 	};
-
 
 	struct ENGINE_API ScriptComponent
 	{

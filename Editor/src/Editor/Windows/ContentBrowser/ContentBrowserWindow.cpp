@@ -1,65 +1,39 @@
-#include "ContentBrowserWindow.h"
+#include "Editor/Windows/ContentBrowser/ContentBrowserWindow.h"
 #include "Editor/Windows/ContentBrowser/ThumbnailRenderer.h"
-#include "Engine/Graphics/Material.h"
-#include "Engine/Scene/Scene.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
-#include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/AssetRegistry.h"
+#include "Editor/Windows/Utility/Property.h"
 #include "Editor/Utility/File.h"
 #include "Editor/Core/SelectionManager.h"
-#include "Engine/Core/Project.h"
-#include "Engine/Core/Log.h"
-#include "Engine/Scene/SceneManager.h"
 #include "Editor/Command/EditorCommandManager.h"
-#include "Editor/Windows/Utility/Property.h"
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetRegistry.h"
+#include "Engine/Core/Project.h"
+#include "Engine/Scene/SceneManager.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/FileEvent.h"
 #include <imgui_internal.h>
+
+namespace Engine
+{
+	class Material;
+}
 
 namespace Editor
 {
 	namespace
 	{
-		ThumbnailRenderer m_ThumbnailRenderer;
-
-		ImVec2 m_ItemSize{ 64.0f, 64.0f };
-		int m_ColumnCount = 0;
-		int m_LineCount = 0;
-
-		constexpr float m_ItemSpacing = 10.0f;
-
-		std::filesystem::path m_CurrentDirectory;
-
-		ImGuiSelectionBasicStorage m_Selection;
-
-		enum class ItemInteraction
-		{
-			None,
-			Clicked,
-			DoubleClicked
-		};
-
-		enum class ContentBrowserItemType
-		{
-			Directory,
-			Asset
-		};
+		enum class ItemInteraction { None, Clicked, DoubleClicked };
+		enum class ContentBrowserItemType { Directory, Asset };
 
 		struct ContentBrowserItem
 		{
 			ContentBrowserItemType Type;
+			Engine::AssetType AssetType;
 			std::string Name;
 			std::filesystem::path Path;
-
-			// Valid only if Type == Directory
+			Engine::Uuid AssetId;
 			bool IsEmptyDirectory = false;
 
-			// Valid only if Type == Asset
-			Engine::Uuid AssetId;
-			Engine::AssetType AssetType;
-
-			// Generate a stable ImGuiID. 
-			// Assets use their UUID. Directories use a hash of their relative path.
 			ImGuiID GetID() const
 			{
 				if (Type == ContentBrowserItemType::Asset)
@@ -69,6 +43,16 @@ namespace Editor
 			}
 		};
 
+		ThumbnailRenderer m_ThumbnailRenderer;
+
+		ImVec2 m_ItemSize{ 64.0f, 64.0f };
+		int m_ColumnCount = 0;
+		int m_LineCount = 0;
+		constexpr float m_ItemSpacing = 10.0f;
+
+		std::filesystem::path m_CurrentDirectory;
+
+		ImGuiSelectionBasicStorage m_Selection;
 		std::vector<ContentBrowserItem> m_Items;
 	}
 
@@ -82,25 +66,25 @@ namespace Editor
 		const Engine::DirectoryNode* node = Engine::AssetManager::GetAssetRegistry().GetDirectoryNode(relativeDir);
 		if (!node) return;
 
-		// 3. Add Sub-directories (Fast O(1) for this folder level)
-		for (const auto& [folderName, childNode] : node->subdirectories)
+		m_Items.reserve(node->subdirectories.size() + node->assets.size());
+
+		for (const auto& [directoryName, subDirectory] : node->subdirectories)
 		{
 			ContentBrowserItem item;
 			item.Type = ContentBrowserItemType::Directory;
-			item.Name = folderName;
-			item.Path = m_CurrentDirectory / folderName;
-			item.IsEmptyDirectory = childNode.subdirectories.empty() && childNode.assets.empty();
+			item.Name = directoryName;
+			item.Path = m_CurrentDirectory / directoryName;
+			item.IsEmptyDirectory = subDirectory.subdirectories.empty() && subDirectory.assets.empty();
 
 			m_Items.push_back(item);
 		}
 
-		// 4. Add Assets (Fast O(1) for this folder level)
 		for (Engine::Uuid id : node->assets)
 		{
 			ContentBrowserItem item;
 			item.Type = ContentBrowserItemType::Asset;
-			item.Path = Engine::AssetManager::GetAssetPath(id);
-			item.Name = item.Path.stem().string();
+			//item.Path = Engine::AssetManager::GetAssetPath(id);
+			item.Name = Engine::AssetManager::GetAssetPath(id).stem().string();
 			item.AssetId = id;
 			item.AssetType = Engine::AssetManager::GetAssetType(id);
 
@@ -146,14 +130,6 @@ namespace Editor
 					OpenDirectory(pathSoFar);
 				}
 			}
-		}
-
-		{
-			const std::string text = std::format("Selected: {}/{} items", m_Selection.Size, m_Items.size());
-			float textWidth = ImGui::CalcTextSize(text.c_str()).x;
-			float pos = ImGui::GetContentRegionMax().x - textWidth;
-			ImGui::SameLine(pos);
-			ImGui::TextUnformatted(text.c_str());
 		}
 
 		ImGui::EndChild();
@@ -296,7 +272,7 @@ namespace Editor
 	static void DrawMainContent()
 	{
 		m_ColumnCount = std::max(static_cast<int>(ImGui::GetContentRegionAvail().x / (m_ItemSize.x + m_ItemSpacing)), 1);
-		m_LineCount = (static_cast<int>(m_Items.size()) + m_ColumnCount - 1) / m_ColumnCount;
+		m_LineCount = (static_cast<int>(m_Items.size()) + m_ColumnCount) / m_ColumnCount;
 
 		constexpr float layoutOuterPadding = 5.0f;
 
@@ -372,7 +348,7 @@ namespace Editor
 
 					if (item.Type == ContentBrowserItemType::Asset)
 					{
-						DragDropSource source(item.Name, item.AssetId);
+						DragDropSource<Engine::Uuid>("UUID", item.AssetId, item.Name);
 					}
 
 

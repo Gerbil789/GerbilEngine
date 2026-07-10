@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Core/API.h"
-#include <cstdint>
+#include <entt/entity/entity.hpp>
 
 namespace Engine
 {
@@ -11,7 +11,7 @@ namespace Engine
   {
   public:
 		Entity() = default;
-    Entity(uint32_t handle, Scene* scene);
+    Entity(entt::entity handle, Scene* scene);
 
 		void SetActive(bool active);
     bool IsActive() const;
@@ -30,14 +30,16 @@ namespace Engine
     template<typename T>
     void RemoveComponent();
 
-		uint32_t GetHandle() const { return m_Handle; }
+    entt::entity GetHandle() const { return m_Handle; }
 		Scene* GetScene() const { return m_Scene; }
-		bool IsValid() const { return m_Handle != 0xFFFFFFFF && m_Scene != nullptr; }
 
+    void SetDirty();
+
+		explicit operator bool() const { return m_Handle != entt::null && m_Scene != nullptr; }
 		bool operator==(const Entity& other) const { return m_Handle == other.m_Handle && m_Scene == other.m_Scene; }
 
   private:
-    uint32_t m_Handle = 0xFFFFFFFF;
+    entt::entity m_Handle{ entt::null };
     Scene* m_Scene = nullptr;
   };
 }

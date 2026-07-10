@@ -10,9 +10,9 @@ void AudioPlayer::OnStart()
   {
 		auto& transform = m_Entity.GetComponent<Engine::TransformComponent>();
 		glm::vec3 localPosition = transform.position;
-    glm::vec3 worldPosition =  transform.worldMatrix * glm::vec4(localPosition, 1.0f);
+    //glm::vec3 worldPosition =  transform.worldMatrix * glm::vec4(localPosition, 1.0f);
 
-    Engine::Audio::Play3D(m_Clip, worldPosition);
+    Engine::Audio::Play3D(m_Clip, localPosition);
   }
 }
 
@@ -22,7 +22,7 @@ void AudioPlayer::OnUpdate()
 
   auto& transform = m_Entity.GetComponent<Engine::TransformComponent>();
   glm::vec3 localPosition = transform.position;
-  glm::vec3 worldPosition = transform.worldMatrix * glm::vec4(localPosition, 1.0f);
+  //glm::vec3 worldPosition = transform.worldMatrix * glm::vec4(localPosition, 1.0f);
 
-  Engine::Audio::SetSourcePosition(m_Clip, worldPosition);
+  Engine::Audio::SetSourcePosition(m_Clip, localPosition);
 }

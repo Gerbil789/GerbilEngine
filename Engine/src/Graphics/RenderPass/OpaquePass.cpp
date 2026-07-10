@@ -2,10 +2,7 @@
 #include "Engine/Graphics/RenderPass/OpaquePass.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/Pipeline.h"
-#include "Engine/Scene/Components.h"
-#include "Engine/Scene/Scene.h"
 #include "Engine/Asset/AssetManager.h"
 
 namespace Engine
@@ -42,15 +39,15 @@ namespace Engine
 		pass.setBindGroup(1, context.environmentBindGroup, 0, nullptr);
 		pass.setBindGroup(3, context.modelBindGroup, 0, nullptr);
 
-		Engine::Uuid lastMeshId{};
-		Engine::Uuid lastMaterialId{};
+		Uuid lastMeshId;
+		Uuid lastMaterialId;
 
 		for (const auto& [i, item] : std::views::enumerate(context.drawList.GetItems()))
 		{
 			if (item.meshId != lastMeshId)
 			{
 				lastMeshId = item.meshId;
-				const Mesh& meshAsset = Engine::AssetManager::GetAsset<Mesh>(lastMeshId);
+				const Mesh& meshAsset = AssetManager::GetAsset<Mesh>(lastMeshId);
 				pass.setVertexBuffer(0, meshAsset.GetVertexBuffer(), 0, meshAsset.GetVertexBuffer().getSize());
 				pass.setIndexBuffer(meshAsset.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, meshAsset.GetIndexBuffer().getSize());
 			}
@@ -58,11 +55,10 @@ namespace Engine
 			if (item.materialId != lastMaterialId)
 			{
 				lastMaterialId = item.materialId;
-				const Material& material = Engine::AssetManager::GetAsset<Material>(lastMaterialId);
+				const Material& material = AssetManager::GetAsset<Material>(lastMaterialId);
 				GraphicsContext::GetQueue().writeBuffer(material.GetUniformBuffer(), 0, material.GetUniformData().data(), material.GetUniformData().size());
 				pass.setBindGroup(2, material.GetBindGroup(), 0, nullptr);
 
-				//TODO: cache pipeline
 				wgpu::RenderPipeline pipeline = PipelineCache::GetOrCreatePipeline(material.GetPipelineSpec());
 				pass.setPipeline(pipeline);
 			}

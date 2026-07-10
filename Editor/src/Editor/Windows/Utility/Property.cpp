@@ -14,7 +14,6 @@ namespace Editor
 		PropertyRow row(label);
 		EditResult result;
 
-
 		const std::string& assetName = Engine::AssetManager::GetAssetPath(id).stem().string();
 
 		bool isTexture = (type == Engine::AssetType::Texture);
@@ -43,8 +42,8 @@ namespace Editor
 		result.started = ImGui::IsItemActivated();
 		result.finished = ImGui::IsItemDeactivatedAfterEdit();
 
-		DragDropSource dragSource(assetName, id);
-		result.changed |= DragDropTarget{}.AcceptAsset([&id](Engine::Uuid newId) {id = newId; }, type);
+		DragDropSource<Engine::Uuid>("UUID", id, assetName);
+		result.changed |= DragDropTarget{}.AcceptAsset(type, [&id](Engine::Uuid newId) {id = newId; });
 
 		if (PopupContextItem contextMenu{ "AssetOptionsPopup" })
 		{

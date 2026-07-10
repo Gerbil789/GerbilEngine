@@ -17,9 +17,11 @@ namespace Engine
 		m_Registry.emplace<IdentityComponent>(entity, uuid);
 		m_Registry.emplace<NameComponent>(entity, name);
 		m_Registry.emplace<TransformComponent>(entity);
+		m_Registry.emplace<WorldTransformComponent>(entity);
+		m_Registry.emplace<HierarchyComponent>(entity);
 
 		m_EntityMap[uuid] = entity;
-		return Entity(static_cast<uint32_t>(entity), this);
+		return Entity(entity, this);
 	}
 
 	Entity Scene::CreateEntity(const std::string& name, Uuid entityId)
@@ -28,14 +30,36 @@ namespace Engine
 		m_Registry.emplace<IdentityComponent>(entity, entityId);
 		m_Registry.emplace<NameComponent>(entity, name);
 		m_Registry.emplace<TransformComponent>(entity);
-		
+		m_Registry.emplace<WorldTransformComponent>(entity);
+		m_Registry.emplace<HierarchyComponent>(entity);
+
 		m_EntityMap[entityId] = entity;
-		return Entity(static_cast<uint32_t>(entity), this);
+		return Entity(entity, this);
+	}
+
+	Entity Scene::GetOrCreateEntity(Uuid entityId)
+	{
+		if (m_EntityMap.find(entityId) != m_EntityMap.end())
+		{
+			return Entity(m_EntityMap[entityId], this);
+		}
+		else
+		{
+			entt::entity entity = m_Registry.create();
+			m_Registry.emplace<IdentityComponent>(entity, entityId);
+			m_Registry.emplace<NameComponent>(entity, "Entity");
+			m_Registry.emplace<TransformComponent>(entity);
+			m_Registry.emplace<WorldTransformComponent>(entity);
+			m_Registry.emplace<HierarchyComponent>(entity);
+
+			m_EntityMap[entityId] = entity;
+			return Entity(entity, this);
+		}
 	}
 
 	void Scene::DestroyEntity(Entity entity)
 	{
-		if (entity.IsValid())
+		if (entity)
 		{
 			Uuid uuid = m_Registry.get<IdentityComponent>(static_cast<entt::entity>(entity.GetHandle())).id;
 			m_Registry.destroy(static_cast<entt::entity>(entity.GetHandle()));
@@ -43,13 +67,36 @@ namespace Engine
 		}
 	}
 
-	Entity Scene::GetEntity(Uuid uuid)
+	Entity Scene::GetEntity(Uuid entityId)
 	{
-		if (m_EntityMap.find(uuid) != m_EntityMap.end()) 
+		if (m_EntityMap.find(entityId) != m_EntityMap.end())
 		{
-			return Entity(static_cast<uint32_t>(m_EntityMap[uuid]), this);
+			return Entity(m_EntityMap[entityId], this);
 		}
-		return Entity(0xFFFFFFFF, this);
+		return Entity{};
+	}
+
+	const std::vector<entt::entity>& Scene::GetRootEntities() const
+	{
+		return m_RootEntities;
+	}
+
+	void Scene::InsertRootEntity(entt::entity entity, size_t index)
+	{
+		if (index > m_RootEntities.size())
+		{
+			index = m_RootEntities.size();
+		}
+		m_RootEntities.insert(m_RootEntities.begin() + index, entity);
+	}
+
+	void Scene::RemoveRootEntity(entt::entity entity)
+	{
+		auto it = std::find(m_RootEntities.begin(), m_RootEntities.end(), entity);
+		if (it != m_RootEntities.end())
+		{
+			m_RootEntities.erase(it);
+		}
 	}
 
 	Camera* Scene::GetActiveCamera() const

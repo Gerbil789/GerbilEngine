@@ -5,61 +5,59 @@
 
 namespace Engine
 {
-	Entity::Entity(uint32_t handle, Scene* scene) : m_Handle(handle), m_Scene(scene) {}
+	Entity::Entity(entt::entity handle, Scene* scene) : m_Handle(handle), m_Scene(scene) {}
 
 	void Entity::SetActive(bool active)
 	{
-		if (!IsValid()) return;
-
 		if (active)
 		{
-			m_Scene->GetRegistry().remove<DisabledTag>(static_cast<entt::entity>(m_Handle));
+			m_Scene->GetRegistry().remove<DisabledTag>(m_Handle);
 		}
 		else
 		{
-			m_Scene->GetRegistry().emplace<DisabledTag>(static_cast<entt::entity>(m_Handle));
+			m_Scene->GetRegistry().emplace<DisabledTag>(m_Handle);
 		}
 	}
 
 	bool Entity::IsActive() const
 	{
-		if (!IsValid()) return false;
-		return !m_Scene->GetRegistry().all_of<DisabledTag>(static_cast<entt::entity>(m_Handle));
+		return !m_Scene->GetRegistry().all_of<DisabledTag>(m_Handle);
 	}
-
 
 	void Entity::Destroy()
 	{
-		if (IsValid())
-		{
-			m_Scene->DestroyEntity(*this);
-			m_Handle = 0xFFFFFFFF; // Invalidate this handle immediately!
-			m_Scene = nullptr;
-		}
+		m_Scene->DestroyEntity(*this);
+		m_Handle = entt::null;
+		m_Scene = nullptr;
+	}
+
+	void Entity::SetDirty()
+	{
+		m_Scene->GetRegistry().emplace<DirtyTag>(m_Handle);
 	}
 
 	template<typename T>
 	T& Entity::AddComponent()
 	{
-		return m_Scene->GetRegistry().emplace<T>(static_cast<entt::entity>(m_Handle));
+		return m_Scene->GetRegistry().emplace<T>(m_Handle);
 	}
 
 	template<typename T>
 	T& Entity::GetComponent()
 	{
-		return m_Scene->GetRegistry().get<T>(static_cast<entt::entity>(m_Handle));
+		return m_Scene->GetRegistry().get<T>(m_Handle);
 	}
 
 	template<typename T>
 	bool Entity::HasComponent()
 	{
-		return m_Scene->GetRegistry().all_of<T>(static_cast<entt::entity>(m_Handle));
+		return m_Scene->GetRegistry().all_of<T>(m_Handle);
 	}
 
 	template<typename T>
 	void Entity::RemoveComponent()
 	{
-		m_Scene->GetRegistry().remove<T>(static_cast<entt::entity>(m_Handle));
+		m_Scene->GetRegistry().remove<T>(m_Handle);
 	}
 
 
@@ -76,6 +74,10 @@ namespace Engine
 	INSTANTIATE_COMPONENT(NameComponent)
 
 	INSTANTIATE_COMPONENT(TransformComponent)
+
+	INSTANTIATE_COMPONENT(WorldTransformComponent)
+
+	INSTANTIATE_COMPONENT(HierarchyComponent)
 
 	INSTANTIATE_COMPONENT(MeshComponent)
 

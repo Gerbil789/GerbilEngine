@@ -83,15 +83,14 @@ namespace Editor
 		}
 	};
 
+	template<typename T>
 	struct DragDropSource
 	{
-		DragDropSource(std::string_view label, Engine::Uuid id)
+		DragDropSource(const char* payloadId, const T& payloadData, std::string_view label = "")
 		{
-			if (!id) return;
-
 			if (ImGui::BeginDragDropSource())
 			{
-				ImGui::SetDragDropPayload("UUID", &id, sizeof(Engine::Uuid));
+				ImGui::SetDragDropPayload(payloadId, &payloadData, sizeof(Engine::Uuid));
 				ImGui::Text("%s", label.data());
 				ImGui::EndDragDropSource();
 			}
@@ -110,10 +109,28 @@ namespace Editor
 			if (active) ImGui::EndDragDropTarget();
 		}
 
-		template<typename Fn>
-		bool AcceptAsset(Fn&& fn, Engine::AssetType expectedType)
+		// Generic Accept for any type (Entities, Strings, etc.)
+		template<typename T, typename Fn>
+		bool AcceptPayload(const char* payloadId, Fn&& fn)
 		{
-			static_assert(std::is_invocable_v<Fn, Engine::Uuid>, "Callback must take an Engine::Uuid");
+			static_assert(std::is_invocable_v<Fn, T>, "Callback parameter type mismatch");
+
+			if (!active) return false;
+
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(payloadId))
+			{
+				T data = *static_cast<const T*>(payload->Data);
+				std::forward<Fn>(fn)(data);
+				return true;
+			}
+
+			return false;
+		}
+
+		template<typename Fn>
+		bool AcceptAsset(Engine::AssetType expectedType, Fn&& fn)
+		{
+			static_assert(std::is_invocable_v<Fn, Engine::Uuid>, "Asset callback must take an Engine::Uuid");
 
 			if (!active) return false;
 

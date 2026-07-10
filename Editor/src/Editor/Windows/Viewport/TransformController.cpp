@@ -61,8 +61,8 @@ namespace Editor
 		const glm::mat4& cameraProjection = Editor::editorContext.editorCamera.GetProjectionMatrix();
 		glm::mat4 cameraView = Editor::editorContext.editorCamera.GetViewMatrix();
 
-		auto& transformComponent = selectedEntity.GetComponent<Engine::TransformComponent>();
-		glm::mat4 worldTransform = transformComponent.worldMatrix;
+		auto& wtc = selectedEntity.GetComponent<Engine::WorldTransformComponent>();
+		glm::mat4 worldTransform = wtc.worldMatrix;
 
 		float* snapValue = nullptr;
 		if (Engine::Input::IsKeyDown(Engine::Key::LeftControl))
@@ -85,8 +85,8 @@ namespace Editor
 			for (Engine::Uuid id : selection)
 			{
 				Engine::Entity entity = scene.GetEntity(id);
-				auto& tc = entity.GetComponent<Engine::TransformComponent>();
-				m_InitialWorldTransforms[static_cast<entt::entity>(entity.GetHandle())] = tc.worldMatrix;
+				auto& wc = entity.GetComponent<Engine::WorldTransformComponent>();
+				m_InitialWorldTransforms[static_cast<entt::entity>(entity.GetHandle())] = wc.worldMatrix;
 			}
 
 			m_InitialPrimaryWorld = m_InitialWorldTransforms[static_cast<entt::entity>(selectedEntity.GetHandle())];
@@ -100,15 +100,22 @@ namespace Editor
 			for (Engine::Uuid id : SelectionManager::Entities.GetAll())
 			{
 				Engine::Entity entity = scene.GetEntity(id);
-				auto& tc = entity.GetComponent<Engine::TransformComponent>();
 
 				glm::mat4 originalWorld = m_InitialWorldTransforms[static_cast<entt::entity>(entity.GetHandle())];
 				glm::mat4 newWorld = delta * originalWorld;
 
-				glm::mat4 parentWorld = glm::mat4(1.0f);
-				if (tc.parent.IsValid())
+				glm::mat4 parentWorld = glm::mat4{ 1.0f };
+
+				if (entity.HasComponent<Engine::HierarchyComponent>())
 				{
-					parentWorld = tc.parent.GetComponent<Engine::TransformComponent>().worldMatrix;
+					auto& hc = entity.GetComponent<Engine::HierarchyComponent>();
+
+					if (hc.parent != entt::null)
+					{
+						Engine::Entity parentEntity = Engine::Entity(hc.parent, &scene);
+						const auto& parentWTC = parentEntity.GetComponent<Engine::WorldTransformComponent>();
+						parentWorld = parentWTC.worldMatrix;
+					}
 				}
 
 				glm::mat4 newLocal = glm::inverse(parentWorld) * newWorld;
@@ -116,10 +123,11 @@ namespace Editor
 				glm::vec3 trans, scale;
 				ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(newLocal), glm::value_ptr(trans), glm::value_ptr(rot), glm::value_ptr(scale));
 
+				auto& tc = entity.GetComponent<Engine::TransformComponent>();
 				tc.position = trans;
 				tc.rotation = rot;
 				tc.scale = scale;
-				tc.UpdateMatrix();
+				entity.SetDirty();
 			}
 		}
 
@@ -131,12 +139,14 @@ namespace Editor
 
 			for (auto& [entity, initialWorld] : m_InitialWorldTransforms)
 			{
-				auto& tc = registry.get<Engine::TransformComponent>(static_cast<entt::entity>(entity));
+				auto& hc = registry.get<Engine::HierarchyComponent>(static_cast<entt::entity>(entity));
 				{
-					glm::mat4 parentWorld = glm::mat4(1.0f);
-					if (tc.parent.IsValid())
+					glm::mat4 parentWorld = glm::mat4{ 1.0f };
+					if (hc.parent != entt::null)
 					{
-						parentWorld = tc.parent.GetComponent<Engine::TransformComponent>().worldMatrix;
+						Engine::Entity parentEntity = Engine::Entity(hc.parent, &scene);
+						const auto& parentWTC = parentEntity.GetComponent<Engine::WorldTransformComponent>();
+						parentWorld = parentWTC.worldMatrix;
 					}
 					glm::mat4 initialLocal = glm::inverse(parentWorld) * initialWorld;
 					glm::vec3 rot;
