@@ -1,11 +1,10 @@
-#include "TransformController.h"
+#include "Editor/Windows/Viewport/TransformController.h"
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Core/SelectionManager.h"
 #include "Editor/Command/EditorCommandManager.h"
-#include "Editor/Command/TransformEntity.h"
 #include "Engine/Core/Input.h"
-#include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Scene/Scene.h"
+#include "Engine/Scene/Components.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/KeyEvent.h"
 #include <imgui.h>
@@ -135,7 +134,7 @@ namespace Editor
 		{
 			auto selection = SelectionManager::Entities.GetAll();
 
-			std::vector<TransformData> before, after;
+			std::vector<Engine::TransformComponent> before, after;
 
 			for (auto& [entity, initialWorld] : m_InitialWorldTransforms)
 			{
@@ -163,15 +162,11 @@ namespace Editor
 			{
 				Engine::Entity entity = scene.GetEntity(id);
 				entities.push_back(entity);
-				auto& tc = entity.GetComponent<Engine::TransformComponent>();
-				TransformData afterData;
-				afterData.Position = tc.position;
-				afterData.Rotation = tc.rotation;
-				afterData.Scale = tc.scale;
+				Engine::TransformComponent afterData = entity.GetComponent<Engine::TransformComponent>();
 				after.push_back(afterData);
 			}
 
-			EditorCommandManager::TransformEntities(entities, before, after);
+			EditorCommandManager::ModifyComponents<Engine::TransformComponent>(entities, before, after);
 		}
 
 		m_GizmoPreviouslyUsed = isUsing;

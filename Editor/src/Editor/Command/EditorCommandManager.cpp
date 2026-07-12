@@ -1,16 +1,16 @@
 #include "EditorCommandManager.h"
 #include "Editor/Command/CreateEntity.h"
 #include "Editor/Command/DeleteEntity.h"
+#include "Editor/Command/OpenSceneCommand.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Core/Input.h"
-#include "Engine/Scene/SceneManager.h"
 
 namespace Editor
 {
   void EditorCommandManager::Initialize()
   {
-    s_SceneChangedListener = Engine::EventBus::Subscribe<Engine::KeyPressedEvent>([](auto e)
+    Engine::EventBus::Subscribe<Engine::KeyPressedEvent>([](auto e)
       {
         if ((e.key == Engine::Key::Z || e.key == Engine::Key::Y) && Engine::Input::IsKeyDown(Engine::Key::LeftControl))
         {
@@ -20,39 +20,19 @@ namespace Editor
       });
   }
 
-  //void EditorCommandManager::SetContext(Engine::Scene* scene)
-  //{ 
-		////clear stacks
-  //  while (!s_UndoStack.empty())
-  //  {
-  //    s_UndoStack.pop();
-  //  }
-  //  while (!s_RedoStack.empty())
-  //  {
-  //    s_RedoStack.pop();
-  //  }
-		//s_Deferred.clear();
-  //}
-
-	void EditorCommandManager::CreateEntity(const std::string& name)
+	void EditorCommandManager::CreateEntity(const std::string& name, entt::entity parent)
   {
-    Engine::Uuid id = Engine::SceneManager::GetActiveScene();
-    Enqueue(std::make_unique<CreateEntityCommand>(id, name));
+    Enqueue(std::make_unique<CreateEntityCommand>(name, parent));
   }
 
-	void EditorCommandManager::DeleteEntity(Engine::Entity entity)
+	void EditorCommandManager::DeleteEntity(Engine::Uuid entityId)
   {
-    Enqueue(std::make_unique<DeleteEntityCommand>(entity));
+    Enqueue(std::make_unique<DeleteEntityCommand>(entityId));
   }
 
-  void EditorCommandManager::TransformEntity(Engine::Entity entity, const TransformData& before, const TransformData& after)
+  void EditorCommandManager::OpenScene(Engine::Uuid sceneId)
   {
-		Enqueue(std::make_unique<TransformEntityCommand>(entity, before, after));
-  }
-
-  void EditorCommandManager::TransformEntities(const std::vector<Engine::Entity>& entities, const std::vector<TransformData>& before, const std::vector<TransformData>& after)
-  {
-		Enqueue(std::make_unique<TransformEntitiesCommand>(entities, before, after));
+		Enqueue(std::make_unique<OpenSceneCommand>(sceneId));
   }
 
   void EditorCommandManager::Enqueue(std::unique_ptr<ICommand> cmd)
@@ -81,7 +61,7 @@ namespace Editor
     s_UndoStack.push(std::move(cmd));
   }
 
-  void EditorCommandManager::ExecuteDefferedCommands()
+  void EditorCommandManager::ExecuteDeferredCommands()
   {
     for (auto& cmd : s_Deferred)
     {
@@ -96,6 +76,18 @@ namespace Editor
     {
       s_RedoStack.pop();
     }
-
   }
+
+  void EditorCommandManager::Clear()
+  {
+    while (!s_UndoStack.empty())
+    {
+      s_UndoStack.pop();
+    }
+    while (!s_RedoStack.empty())
+    {
+      s_RedoStack.pop();
+    }
+    s_Deferred.clear();
+	}
 }

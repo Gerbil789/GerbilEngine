@@ -7,6 +7,7 @@
 #include <wrl/client.h> // For Microsoft::WRL::ComPtr
 #include <thread>
 #include <algorithm>
+#include <shlobj.h> // Required for Shell API
 
 namespace Editor::FileDialog
 {
@@ -128,42 +129,45 @@ namespace Editor::FileDialog
 
 	void OpenFileExplorer(const std::filesystem::path& path)
 	{
-		std::string p = path.string();
+		// 1. Ensure the path is absolute and uses native Windows backslashes
+		std::filesystem::path absPath = std::filesystem::absolute(path);
+		absPath.make_preferred();
+		std::wstring wPath = absPath.wstring();
+
+		std::error_code ec;
+		bool isDirectory = std::filesystem::is_directory(absPath, ec);
 
 		// Run in background so UI doesn't freeze
-		std::thread([p]() {
-			std::string winPath = p;
-			std::replace(winPath.begin(), winPath.end(), '/', '\\');
-
-			// Use cmd's 'start' command to mimic ShellExecute's file association lookup.
-			// Note: The empty "" after 'start' is required! 'start' treats the first quoted 
-			// string as a window title. If we don't put "", it might fail on paths with spaces.
-			std::string cmdArgs = "cmd.exe /c start \"\" \"" + winPath + "\"";
-
-			STARTUPINFOA si;
-			ZeroMemory(&si, sizeof(si));
-			si.cb = sizeof(si);
-
-			PROCESS_INFORMATION pi;
-			ZeroMemory(&pi, sizeof(pi));
-
-			// CreateProcess gives us exact control over how the new process starts
-			if (CreateProcessA(
-				nullptr,                             // Application name
-				cmdArgs.data(),                      // Command line (mutable in C++17)
-				nullptr,                             // Process attributes
-				nullptr,                             // Thread attributes
-				FALSE,                               // bInheritHandles: THIS FIXES THE LOG SPAM!
-				CREATE_NO_WINDOW | DETACHED_PROCESS, // Creation flags: Fully separate window/console
-				nullptr,                             // Environment
-				nullptr,                             // Current directory
-				&si,                                 // Startup info
-				&pi                                  // Process information
-			))
+		std::thread([wPath, isDirectory]() {
+			// 2. Initialize COM on this background thread
+			HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+			if (SUCCEEDED(hr))
 			{
-				// We successfully launched the process, clean up our handles to it
-				CloseHandle(pi.hProcess);
-				CloseHandle(pi.hThread);
+				// 3. Convert the string path into a Windows Item ID List (PIDL)
+				LPITEMIDLIST pidl = ILCreateFromPathW(wPath.c_str());
+				if (pidl)
+				{
+					if (isDirectory)
+					{
+						// Open the directory directly
+						SHOpenFolderAndSelectItems(pidl, 0, nullptr, 0);
+					}
+					else
+					{
+						// To reliably select a file, Windows needs the PIDL of the parent folder 
+						// and a relative child PIDL for the file itself.
+						LPITEMIDLIST pidlParent = ILClone(pidl);
+						ILRemoveLastID(pidlParent);
+						LPCITEMIDLIST pidlChild = ILFindLastID(pidl);
+
+						// This native call guarantees the file will be selected, even on the first open
+						SHOpenFolderAndSelectItems(pidlParent, 1, &pidlChild, 0);
+
+						ILFree(pidlParent);
+					}
+					ILFree(pidl); // Clean up memory
+				}
+				CoUninitialize();
 			}
 			}).detach();
 	}

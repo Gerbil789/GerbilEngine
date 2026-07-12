@@ -28,7 +28,7 @@ namespace Editor
 		Engine::EventBus::Subscribe<Engine::MouseButtonPressedEvent>([this](const auto& e) {OnMouseButtonPressed(e); return false; });
 		Engine::EventBus::Subscribe<Engine::MouseButtonReleasedEvent>([this](const auto& e) {OnMouseButtonReleased(e); return false; });
 		Engine::EventBus::Subscribe<Engine::MouseMovedEvent>([this](const auto& e) {OnMouseMoved(e); return false; });
-		Engine::EventBus::Subscribe<FocusEntityEvent>([this](const FocusEntityEvent& e) {OnEntityFocus(e.id); return false; });
+		Engine::EventBus::Subscribe<FocusEntityEvent>([this](const auto& e) {OnEntityFocus(e.id); return false; });
 	}
 
 	void ViewportCameraController::OnMouseScroll(const Engine::MouseScrolledEvent& e)

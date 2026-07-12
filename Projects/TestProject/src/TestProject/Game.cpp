@@ -9,6 +9,8 @@
 
 #include "TestProject/Combat/BattleControllerScript.h"
 
+#include "TestProject/Benchmark/SpawnEntitiesScript.h"
+
 extern "C"
 {
   __declspec(dllexport) void RegisterScripts()
@@ -22,5 +24,8 @@ extern "C"
 
 		// combat game scripts
     Engine::ScriptRegistry::Register<BattleControllerScript>("BattleControllerScript");
+
+		// benchmark scripts
+		Engine::ScriptRegistry::Register<SpawnEntitiesScript>("SpawnEntitiesScript");
   }
 }

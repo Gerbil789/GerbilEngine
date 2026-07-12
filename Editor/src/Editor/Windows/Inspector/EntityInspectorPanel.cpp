@@ -2,7 +2,6 @@
 
 #include "Editor/Windows/Utility/Property.h"
 #include "Editor/Command/EditorCommandManager.h"
-#include "Editor/Command/TransformEntity.h"
 #include "Editor/Command/PropertyChangeCommand.h"
 #include "Editor/Command/ComponentSnapshotCommand.h"
 #include "Editor/Command/AddComponentCommand.h"
@@ -86,13 +85,11 @@ namespace Editor
 	{
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
-			{ "Reset", [&] {auto before = entity.GetComponent<Engine::TransformComponent>();
-				auto after = before;
-				after.position = { 0.0f, 0.0f, 0.0f };
-				after.rotation = { 0.0f, 0.0f, 0.0f };
-				after.scale = { 1.0f, 1.0f, 1.0f };
-				entity.SetDirty();
-				EditorCommandManager::ModifyComponent<Engine::TransformComponent>(entity, before, after); } },
+			{ "Reset", [&] {
+				auto before = entity.GetComponent<Engine::TransformComponent>();
+				auto after = Engine::TransformComponent{};
+				EditorCommandManager::ModifyComponent<Engine::TransformComponent>(entity, before, after);
+			} },
 		};
 
 		ComponentHeader header("Transform", menuActions);
@@ -101,7 +98,7 @@ namespace Editor
 		auto& tc = entity.GetComponent<Engine::TransformComponent>();
 
 		EditResult result;
-		static TransformData s_TransformBefore;
+		static Engine::TransformComponent s_TransformBefore;
 
 		PropertyTable table;
 
@@ -115,12 +112,7 @@ namespace Editor
 		}
 		else if (result.finished)
 		{
-			TransformData after{ tc.position, tc.rotation, tc.scale };
-
-			if (memcmp(&s_TransformBefore, &after, sizeof(TransformData)) != 0) //TODO: float comparison is unsafe
-			{
-				EditorCommandManager::TransformEntity(entity, s_TransformBefore, after);
-			}
+			EditorCommandManager::ModifyComponent<Engine::TransformComponent>(entity, s_TransformBefore, tc);
 		}
 		else if (result.changed)
 		{
@@ -465,8 +457,6 @@ namespace Editor
 			ImGui::EndPopup();
 		}
 	}
-
-
 
 	void EntityInspectorPanel::Draw(Engine::Uuid entityId)
 	{

@@ -83,8 +83,8 @@ namespace Editor
 		{
 			ContentBrowserItem item;
 			item.Type = ContentBrowserItemType::Asset;
-			//item.Path = Engine::AssetManager::GetAssetPath(id);
-			item.Name = Engine::AssetManager::GetAssetPath(id).stem().string();
+			item.Path = Engine::AssetManager::GetAssetPath(id);
+			item.Name = item.Path.stem().string();
 			item.AssetId = id;
 			item.AssetType = Engine::AssetManager::GetAssetType(id);
 
@@ -208,25 +208,25 @@ namespace Editor
 		}
 	}
 
-	static void ItemContextMenu()
+	static void ItemContextMenu(const ContentBrowserItem& item)
 	{
 		if (ImGui::BeginPopupContextItem("ItemContextMenu"))
 		{
-			//if (ImGui::MenuItem("Delete", "", false, m_Selection.Size > 0))
-			//{
-			//	//m_RequestDelete = true;
-			//}
+			if (ImGui::MenuItem("Delete", "", false, m_Selection.Size > 0))
+			{
+				/*EditorCommandManager::DeleteEntity(item.AssetId);*/
+			}
 
-			//ImGui::Separator();
+			ImGui::Separator();
 
-			//if (ImGui::MenuItem("Rename", "", false, m_Selection.Size > 0))
-			//{
-			//	//TODO: Implement rename functionality
-			//}
+			if (ImGui::MenuItem("Rename", "", false, m_Selection.Size > 0))
+			{
+
+			}
 
 			if (ImGui::MenuItem("Open in file explorer"))
 			{
-				Editor::FileDialog::OpenFileExplorer(m_CurrentDirectory);
+				Editor::FileDialog::OpenFileExplorer(item.Path);
 			}
 
 			ImGui::EndPopup();
@@ -245,16 +245,33 @@ namespace Editor
 		ImVec2 icon_max = { pos.x + m_ItemSize.x, pos.y + m_ItemSize.x };
 		draw_list->AddImage(static_cast<WGPUTextureView>(thumbnail.view), icon_min, icon_max, ImVec2(thumbnail.uv_min.x, thumbnail.uv_min.y), ImVec2(thumbnail.uv_max.x, thumbnail.uv_max.y));
 
+
 		// label
 		ImRect label_rect = ImRect{ pos.x, icon_max.y, pos.x + m_ItemSize.x, pos.y + m_ItemSize.y + 20.0f };
-		const ImVec2 text_size = ImGui::CalcTextSize(item.Name.c_str());
+		std::string displayName = item.Name;
+		ImVec2 text_size = ImGui::CalcTextSize(displayName.c_str());
+
+		if (text_size.x > m_ItemSize.x)
+		{
+			const float ellipsis_width = ImGui::CalcTextSize("...").x;
+
+			while (!displayName.empty() && ImGui::CalcTextSize(displayName.c_str()).x + ellipsis_width > m_ItemSize.x)
+			{
+				displayName.pop_back();
+			}
+			displayName += "...";
+			text_size = ImGui::CalcTextSize(displayName.c_str());
+		}
+
 		ImVec2 text_pos = { label_rect.Min.x + (label_rect.GetWidth() - text_size.x) * 0.5f, label_rect.Min.y + 2.0f };
-		draw_list->AddText(text_pos, label_col, item.Name.c_str());
+		draw_list->AddText(text_pos, label_col, displayName.c_str());
 
 		ItemInteraction interaction = ItemInteraction::None;
 
 		if (ImGui::IsItemHovered())
 		{
+			ImGui::SetTooltip("%s", item.Name.c_str());
+
 			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 			{
 				interaction = ItemInteraction::DoubleClicked;
@@ -265,7 +282,7 @@ namespace Editor
 			}
 		}
 
-		ItemContextMenu();
+		ItemContextMenu(item);
 		return interaction;
 	}
 
@@ -338,9 +355,8 @@ namespace Editor
 								switch (item.AssetType)
 								{
 								case Engine::AssetType::Scene:
-									Engine::SceneManager::SetActiveScene(item.AssetId);
+									EditorCommandManager::OpenScene(item.AssetId);
 									break;
-									// ... other asset types ...
 								}
 							}
 						}

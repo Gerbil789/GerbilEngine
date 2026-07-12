@@ -59,7 +59,7 @@ namespace Editor
 		Engine::Audio::Initialize();
 		EditorWindowManager::Initialize(m_Window);
 
-		Engine::EventBus::Subscribe<Engine::SceneChangedEvent>([this](auto& e) 
+		Engine::EventBus::Subscribe<Engine::SceneChangedEvent>([this](auto& e)
 			{
 				const std::string& name = Engine::AssetManager::GetAssetPath(e.id).stem().string();
 				m_Window.SetTitle(std::format("Gerbil Editor - {} - Scene: {}", Engine::Configuration, name));
@@ -75,7 +75,7 @@ namespace Editor
 		Editor::editorContext.editorCamera.SetBackground(Engine::Camera::Background::Skybox);
 		Editor::editorContext.editorCamera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
 
-		static Engine::EventListener applicationCloseListener = Engine::EventBus::Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); return false; });
+		Engine::EventBus::Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); return false; });
 		LOG_INFO("--- Editor initialization complete ---");
 	}
 
@@ -105,7 +105,7 @@ namespace Editor
 			Engine::Audio::Update();
 
 			EditorWindowManager::Update();
-			EditorCommandManager::ExecuteDefferedCommands();
+			EditorCommandManager::ExecuteDeferredCommands();
 			
 			Engine::TransformSystem::Update();
 

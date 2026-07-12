@@ -11,37 +11,36 @@ namespace Editor
   class DeleteEntityCommand : public ICommand
   {
   public:
-    DeleteEntityCommand(Engine::Entity entity) : m_Entity(entity)
+    DeleteEntityCommand(Engine::Uuid entityId) : m_EntityId(entityId)
     {
+			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+
+			Engine::Entity entity = scene.GetEntity(m_EntityId);
+
       if (entity)
       {
-        m_Name = m_Entity.GetComponent<Engine::NameComponent>().name;
-        m_Entity = entity;
-        m_Scene = m_Entity.GetScene();
+        m_Name = entity.GetComponent<Engine::NameComponent>().name;
 			}
     } 
 
     void Execute() override
     {
-      if (!m_Entity) return;
-
-      FocusEntityEvent e{0};
-			Engine::EventBus::Publish(e);
-      m_Entity.Destroy();
+      Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+			Engine::Entity entity = scene.GetEntity(m_EntityId);
+      entity.Destroy();
     }
 
     void Undo() override
     {
-      m_Entity = m_Scene->CreateEntity(m_Name);
-			Engine::Uuid id = m_Entity.GetComponent<Engine::IdentityComponent>().id;
+      Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+      Engine::Entity entity = scene.CreateEntity(m_Name);
 
-      FocusEntityEvent e{ id };
-      Engine::EventBus::Publish(e);
+      auto& idc = entity.GetComponent<Engine::IdentityComponent>();
+			idc.id = m_EntityId;
     }
 
   private:
-		Engine::Scene* m_Scene;
     std::string m_Name;
-    Engine::Entity m_Entity;
+    Engine::Uuid m_EntityId;
   };
 }

@@ -3,6 +3,8 @@
 #include "Editor/Command/ICommand.h"
 #include "Editor/Core/SelectionManager.h"
 #include "Engine/Scene/Scene.h"
+#include "Engine/Scene/SceneManager.h"
+#include "Engine/Scene/Components.h"
 #include "Engine/Event/EventBus.h"
 #include "Editor/Core/EditorEvent.h"
 #include "Engine/Asset/AssetManager.h"
@@ -12,14 +14,25 @@ namespace Editor
   class CreateEntityCommand : public ICommand 
   {
   public:
-    CreateEntityCommand(Engine::Uuid sceneId, const std::string& name = "Empty Entity") : m_SceneId(sceneId), m_Name(name) {}
+    CreateEntityCommand(const std::string& name = "Empty Entity", entt::entity parent = entt::null) : m_Name(name), m_Parent(parent) {}
 
     void Execute() override 
     {
-			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(m_SceneId);
+			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 			m_Entity = scene.CreateEntity(m_Name);
-			Engine::Uuid id = m_Entity.GetComponent<Engine::IdentityComponent>().id;
 
+      if(m_Parent != entt::null)
+      {
+        auto& hc = m_Entity.GetComponent<Engine::HierarchyComponent>();
+        hc.parent = m_Parent;
+        scene.GetRegistry().get<Engine::HierarchyComponent>(m_Parent).children.push_back(m_Entity.GetHandle());
+			}
+      else
+      {
+				scene.InsertRootEntity(m_Entity.GetHandle(), scene.GetRootEntities().size());
+      }
+
+			Engine::Uuid id = m_Entity.GetComponent<Engine::IdentityComponent>().id;
 			SelectionManager::Assets.Select(id);
       FocusEntityEvent e{ id };
 			Engine::EventBus::Publish(e);
@@ -35,7 +48,7 @@ namespace Editor
     }
 
   private:
-		Engine::Uuid m_SceneId;
+    entt::entity m_Parent;
     std::string m_Name;
     Engine::Entity m_Entity;
   };

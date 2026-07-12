@@ -2,7 +2,6 @@
 
 #include "Engine/Core/API.h"
 #include "Engine/Event/Event.h"
-#include "Engine/Event/EventListener.h"
 #include <unordered_map>
 #include <functional>
 #include <type_traits>
@@ -12,7 +11,7 @@ namespace Engine
   template<typename T>
   concept IsEvent = std::is_base_of_v<Event, std::remove_cvref_t<T>>;
 
-  class EventBus
+  class ENGINE_API EventBus
   {
   public:
     EventBus() = delete;
@@ -29,7 +28,7 @@ namespace Engine
 
   public:
     template<IsEvent T>
-    static EventListener Subscribe(std::function<bool(const T&)> callback)
+    static uint32_t Subscribe(std::function<bool(const T&)> callback)
     {
       size_t typeHash = typeid(T).hash_code();
 
@@ -45,15 +44,14 @@ namespace Engine
 
       s_Subscribers[typeHash].push_back(std::move(h));
 
-      return EventListener(token);
+      return token;
     }
 
     static void Unsubscribe(uint32_t token)
     {
       for (auto& [hash, handlers] : s_Subscribers)
       {
-        std::erase_if(handlers,
-          [token](const Handler& h)
+        std::erase_if(handlers, [token](const Handler& h)
           {
             return h.Token == token;
           });

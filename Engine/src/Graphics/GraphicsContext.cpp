@@ -22,6 +22,20 @@ namespace Engine::GraphicsContext
 	void Initialize()
 	{
 		wgpu::InstanceDescriptor desc;
+
+		//TODO: use macro to dissable toggles in release builds
+		//wgpu::DawnTogglesDescriptor togglesDesc;
+		//togglesDesc.chain.next = nullptr;
+		//togglesDesc.chain.sType = wgpu::SType::DawnTogglesDescriptor;
+
+		//std::vector<const char*> enabledToggles = { "allow_unsafe_apis" };
+
+		//togglesDesc.enabledToggles = enabledToggles.data();
+		//togglesDesc.enabledToggleCount = enabledToggles.size();
+		//togglesDesc.disabledToggleCount = 0;
+
+		//desc.nextInChain = &togglesDesc.chain;
+		
 		desc.setDefault();
 
 		std::array<wgpu::InstanceFeatureName, 1> features = { wgpu::InstanceFeatureName::TimedWaitAny };

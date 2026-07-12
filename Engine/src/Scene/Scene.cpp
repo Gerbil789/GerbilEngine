@@ -14,6 +14,7 @@ namespace Engine
 	{
 		entt::entity entity = m_Registry.create();
 		Uuid uuid = Uuid::Generate();
+
 		m_Registry.emplace<IdentityComponent>(entity, uuid);
 		m_Registry.emplace<NameComponent>(entity, name);
 		m_Registry.emplace<TransformComponent>(entity);
@@ -24,47 +25,13 @@ namespace Engine
 		return Entity(entity, this);
 	}
 
-	Entity Scene::CreateEntity(const std::string& name, Uuid entityId)
-	{
-		entt::entity entity = m_Registry.create();
-		m_Registry.emplace<IdentityComponent>(entity, entityId);
-		m_Registry.emplace<NameComponent>(entity, name);
-		m_Registry.emplace<TransformComponent>(entity);
-		m_Registry.emplace<WorldTransformComponent>(entity);
-		m_Registry.emplace<HierarchyComponent>(entity);
-
-		m_EntityMap[entityId] = entity;
-		return Entity(entity, this);
-	}
-
-	Entity Scene::GetOrCreateEntity(Uuid entityId)
-	{
-		if (m_EntityMap.find(entityId) != m_EntityMap.end())
-		{
-			return Entity(m_EntityMap[entityId], this);
-		}
-		else
-		{
-			entt::entity entity = m_Registry.create();
-			m_Registry.emplace<IdentityComponent>(entity, entityId);
-			m_Registry.emplace<NameComponent>(entity, "Entity");
-			m_Registry.emplace<TransformComponent>(entity);
-			m_Registry.emplace<WorldTransformComponent>(entity);
-			m_Registry.emplace<HierarchyComponent>(entity);
-
-			m_EntityMap[entityId] = entity;
-			return Entity(entity, this);
-		}
-	}
-
 	void Scene::DestroyEntity(Entity entity)
 	{
-		if (entity)
-		{
-			Uuid uuid = m_Registry.get<IdentityComponent>(static_cast<entt::entity>(entity.GetHandle())).id;
-			m_Registry.destroy(static_cast<entt::entity>(entity.GetHandle()));
-			m_EntityMap.erase(uuid);
-		}
+		if (!entity) return;
+
+		Uuid uuid = m_Registry.get<IdentityComponent>(entity.GetHandle()).id;
+		m_Registry.destroy(entity.GetHandle());
+		m_EntityMap.erase(uuid);
 	}
 
 	Entity Scene::GetEntity(Uuid entityId)

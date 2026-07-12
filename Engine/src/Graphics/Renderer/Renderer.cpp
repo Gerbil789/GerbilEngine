@@ -82,8 +82,8 @@ namespace Engine
 
 	void Renderer::CreateModelStorageBuffer()
 	{
-		// max 1024 unique transforms per frame //TODO: make this configurable or dynamic
-		const uint64_t bufferSize = 1024 * sizeof(glm::mat4);
+		// max 1024 * 256 unique transforms per frame //TODO: make this configurable or dynamic
+		const uint64_t bufferSize = 1024 * 256 * sizeof(glm::mat4);
 
 		wgpu::BufferDescriptor bufferDesc;
 		bufferDesc.label = { "ModelStorageBuffer", WGPU_STRLEN };

@@ -288,7 +288,8 @@ namespace Engine
 		}
 
 		std::vector<EntityJSON> json;
-		std::vector<entt::entity> rootEntities;
+
+		std::map<Uuid, Uuid> parentMap; // child ID -> parent ID
 
 		if (auto ec = glz::read_file_json(json, path.string(), buffer))
 		{
@@ -299,52 +300,65 @@ namespace Engine
 		Scene scene;
 		scene.SetEnvironmentTexture(RESOURCES::TEXTURE::HDR); //TODO: store in scene file
 
+		entt::registry& registry = scene.GetRegistry();
+
 		for (const EntityJSON& eJson : json)
 		{
-			Entity entity = scene.GetOrCreateEntity(Uuid{ eJson.ID });
+			Uuid id = Uuid{ eJson.ID };
 
-			// DisabledTag
+			if(!id)
+			{
+				LOG_WARNING("Entity has invalid ID, skipping");
+				continue;
+			}
+
+			entt::entity handle = registry.create();
+
+			// identity
+			{
+				registry.emplace<IdentityComponent>(handle, id);
+				scene.m_EntityMap[id] = handle;
+			}
+
+			// disabled tag
 			if (!eJson.Enabled)
 			{
-				entity.SetActive(false);
+				registry.emplace<DisabledTag>(handle);
 			}
 
-			// Name
-			if (eJson.Name.has_value())
+			// name
+			if (!eJson.Name.has_value()) throw std::runtime_error("Entity has no name: " + std::to_string(static_cast<uint64_t>(id)));
+
+			auto& nc = registry.emplace<NameComponent>(handle);
+			nc.name = eJson.Name.value();
+
+			// transform
+			if (!eJson.Transform.has_value()) throw std::runtime_error("Entity has no transform: " + std::to_string(static_cast<uint64_t>(id)));
+
+			auto& tc = registry.emplace<TransformComponent>(handle);
+			const auto& tJson = eJson.Transform.value();
+			tc.position = tJson.Position;
+			tc.rotation = tJson.Rotation;
+			tc.scale = tJson.Scale;
+
+			registry.emplace<DirtyTag>(handle);
+			registry.emplace<WorldTransformComponent>(handle);
+			registry.emplace<HierarchyComponent>(handle);
+
+			if (tJson.Parent.has_value())
 			{
-				auto& nc = entity.GetComponent<NameComponent>();
-				nc.name = eJson.Name.value();
+				Uuid parentId{ tJson.Parent.value() };
+				parentMap[id] = parentId;
 			}
-
-			// Transform
-			if (eJson.Transform.has_value())
+			else
 			{
-				auto& tc = entity.GetComponent<TransformComponent>();
-				const auto& tJson = eJson.Transform.value();
-				tc.position = tJson.Position;
-				tc.rotation = tJson.Rotation;
-				tc.scale = tJson.Scale;
-				entity.SetDirty();
-
-				if (tJson.Parent.has_value())
-				{
-					auto& hc = entity.GetComponent<HierarchyComponent>();
-					Entity parentEntity = scene.GetOrCreateEntity(Uuid{ tJson.Parent.value() });
-
-					hc.parent = static_cast<entt::entity>(parentEntity.GetHandle());
-					parentEntity.GetComponent<HierarchyComponent>().children.push_back(static_cast<entt::entity>(entity.GetHandle()));
-				}
-				else
-				{
-					rootEntities.push_back(static_cast<entt::entity>(entity.GetHandle()));
-				}
+				scene.m_RootEntities.push_back(handle);
 			}
 
-
-			// Mesh
+			// mesh
 			if (eJson.MeshComponent.has_value())
 			{
-				auto& mComp = entity.AddComponent<MeshComponent>();
+				auto& mComp = registry.emplace<MeshComponent>(handle);
 				const auto& mJson = eJson.MeshComponent.value();
 				mComp.meshId = Uuid{ mJson.Mesh };
 
@@ -357,22 +371,15 @@ namespace Engine
 
 				for (auto rawId : mJson.Materials)
 				{
-					Engine::Uuid id{ static_cast<uint64_t>(rawId) };
-					if (AssetManager::Exists(id))
-					{
-						mComp.materials.push_back(Uuid{ id });
-					}
-					else
-					{
-						mComp.materials.push_back(RESOURCES::MATERIAL::PINK);
-					}
+					Engine::Uuid materialId{ static_cast<uint64_t>(rawId) };
+					mComp.materials.push_back(Uuid{ materialId });
 				}
 			}
 
-			// Collider
+			// collider
 			if (eJson.ColliderComponent.has_value())
 			{
-				auto& cComp = entity.AddComponent<ColliderComponent>();
+				auto& cComp = registry.emplace<ColliderComponent>(handle);
 				const auto& cJson = eJson.ColliderComponent.value();
 				cComp.collisionMeshId = Uuid{ cJson.Mesh };
 				cComp.type = static_cast<BodyType>(cJson.Type);
@@ -382,7 +389,7 @@ namespace Engine
 			// Camera
 			if (eJson.CameraComponent.has_value())
 			{
-				auto& cComp = entity.AddComponent<CameraComponent>();
+				auto& cComp = registry.emplace<CameraComponent>(handle);
 				const auto& cJson = eJson.CameraComponent.value();
 
 				std::unique_ptr<Camera> camera = std::make_unique<Camera>();
@@ -405,10 +412,10 @@ namespace Engine
 				cComp.camera = camera.release(); // TODO: manage memory lifecycle
 			}
 
-			// Light
+			// light
 			if (eJson.LightComponent.has_value())
 			{
-				auto& lComp = entity.AddComponent<LightComponent>();
+				auto& lComp = registry.emplace<LightComponent>(handle);
 				const auto& lJson = eJson.LightComponent.value();
 				lComp.type = static_cast<LightType>(lJson.Type);
 				lComp.color = lJson.Color;
@@ -417,17 +424,17 @@ namespace Engine
 				lComp.angle = lJson.Angle;
 			}
 
-			// Script
+			// script
 			if (eJson.ScriptComponent.has_value())
 			{
-				auto& sComp = entity.AddComponent<ScriptComponent>();
+				auto& sComp = registry.emplace<ScriptComponent>(handle);
 				const auto& sJson = eJson.ScriptComponent.value();
 
 				const Engine::ScriptDescriptor& desc = Engine::ScriptRegistry::GetDescriptor(sJson.Script);
 
 				sComp.id = sJson.Script;
 				sComp.instance = desc.factory();
-				sComp.instance->m_Entity = entity;
+				sComp.instance->m_Entity = Entity{ handle, &scene }; //TODO: is scene valid after this functin?
 				sComp.instance->OnCreate();
 
 				for (const auto& field : desc.fields)
@@ -475,10 +482,18 @@ namespace Engine
 			}
 		}
 
-		// Set root entities
-		for(auto [i, handle] : std::views::enumerate(rootEntities))
+
+		// set parent-child relationships
+		for (const auto& [childId, parentId] : parentMap)
 		{
-			scene.InsertRootEntity(handle, i);
+			Entity childEntity = scene.GetEntity(childId);
+			Entity parentEntity = scene.GetEntity(parentId);
+
+			auto& childHC = childEntity.GetComponent<HierarchyComponent>();
+			childHC.parent = static_cast<entt::entity>(parentEntity.GetHandle());
+
+			auto& parentHC = parentEntity.GetComponent<HierarchyComponent>();
+			parentHC.children.push_back(static_cast<entt::entity>(childEntity.GetHandle()));
 		}
 
 		return scene;

@@ -4,8 +4,8 @@
 #include "Editor/Command/RemoveComponentCommand.h"
 #include "Editor/Command/AddComponentCommand.h"
 #include "Editor/Command/ComponentSnapshotCommand.h"
-#include "Editor/Command/TransformEntity.h"
-#include "Engine/Event/EventBus.h"
+#include "Editor/Command/BatchCommand.h"
+#include "Engine/Core/UUID.h"
 #include <stack>
 #include <vector>
 
@@ -16,33 +16,47 @@ namespace Editor
   public:
 		static void Initialize();
 
-    static void CreateEntity(const std::string& name = "Empty");
-    static void DeleteEntity(Engine::Entity entity);
-    static void TransformEntity(Engine::Entity entity, const TransformData& before, const TransformData& after);
-    static void TransformEntities(const std::vector<Engine::Entity>& entities, const std::vector<TransformData>& before, const std::vector<TransformData>& after);
+    static void CreateEntity(const std::string& name = "Empty", entt::entity parent = entt::null);
+    static void DeleteEntity(Engine::Uuid entityId);
+		static void OpenScene(Engine::Uuid sceneId);
 
     template<typename T>
-    static void AddComponent(Engine::Entity e, const T& initial)
+    static void AddComponent(Engine::Entity entity, const T& initial)
     {
-      Enqueue(std::make_unique<AddComponentCommand<T>>(e, initial));
+      Enqueue(std::make_unique<AddComponentCommand<T>>(entity, initial));
     }
 
     template<typename T>
-    static void RemoveComponent(Engine::Entity e)
+    static void RemoveComponent(Engine::Entity entity)
     {
-      Enqueue(std::make_unique<RemoveComponentCommand<T>>(e));
+      Enqueue(std::make_unique<RemoveComponentCommand<T>>(entity));
     }
 
     template<typename T>
-    static void ModifyComponent(Engine::Entity e, const T& before, const T& after)
+    static void ModifyComponent(Engine::Entity entity, const T& before, const T& after)
     {
-      Enqueue(std::make_unique<ComponentSnapshotCommand<T>>(e, before, after));
+      ModifyComponents<T>({ entity }, { before }, { after });
+    }
+
+    template<typename T>
+    static void ModifyComponents(const std::vector<Engine::Entity>& entities, const std::vector<T>& before, const std::vector<T>& after)
+    {
+      std::vector<std::unique_ptr<ICommand>> commands;
+			commands.reserve(entities.size());
+
+      for (size_t i = 0; i < entities.size(); ++i)
+      {
+        commands.push_back(std::make_unique<ComponentSnapshotCommand<T>>(entities[i], before[i], after[i]));
+      }
+
+      Enqueue(std::make_unique<BatchCommand>(std::move(commands)));
     }
 
     static void Enqueue(std::unique_ptr<ICommand> cmd);
     static void Undo();
     static void Redo();
-    static void ExecuteDefferedCommands();
+    static void ExecuteDeferredCommands();
+		static void Clear();
    
   private:
 		//const static int s_MaxUndoSteps = 128; //TODO: limit undo steps
@@ -50,7 +64,5 @@ namespace Editor
     inline static std::stack<std::unique_ptr<ICommand>> s_UndoStack;
     inline static std::stack<std::unique_ptr<ICommand>> s_RedoStack;
     inline static std::vector<std::unique_ptr<ICommand>> s_Deferred;
-
-		inline static Engine::EventListener s_SceneChangedListener;
   };
 }

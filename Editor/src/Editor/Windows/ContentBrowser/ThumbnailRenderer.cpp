@@ -90,6 +90,8 @@ namespace Editor
 		tc.rotation = { 15.0f, 45.0f, 0.0f };
 		entity.SetDirty();
 
+		//TODO: transform is not getting updated...
+
 		renderer.Initialize();
 		renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Opaque);
 

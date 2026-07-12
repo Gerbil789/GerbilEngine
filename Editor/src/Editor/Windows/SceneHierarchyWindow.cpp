@@ -157,10 +157,16 @@ namespace Editor
 		// context menu
 		if (ImGui::BeginPopupContextItem())
 		{
-			//if (ImGui::MenuItem("Delete"))
-			//{
-			//	EditorCommandManager::DeleteEntity(entity);
-			//}
+			if (ImGui::MenuItem("Create Entity"))
+			{
+				EditorCommandManager::CreateEntity("Empty", entity);
+			}
+
+			if (ImGui::MenuItem("Delete"))
+			{
+				EditorCommandManager::DeleteEntity(id);
+			}
+
 			ImGui::EndPopup();
 		}
 
@@ -205,7 +211,7 @@ namespace Editor
 		// context menu
 		if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
 		{
-			if (ImGui::MenuItem("Create Empty Entity"))
+			if (ImGui::MenuItem("Create Entity"))
 			{
 				EditorCommandManager::CreateEntity("Empty");
 			}
