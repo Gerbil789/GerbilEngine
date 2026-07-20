@@ -107,4 +107,25 @@ namespace Engine
 		uint32_t id{ 0 };
 		Script* instance = nullptr;
 	};
+
+
+	namespace UI
+	{
+		struct ENGINE_API UITag {};
+
+		struct ENGINE_API Rect
+		{
+			glm::vec2 position{ 0.0f, 0.0f };
+			glm::vec2 size{ 100.0f, 100.0f };
+
+			glm::vec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
+			Uuid textureId;
+
+			std::string icon;
+		};
+	}
+
+
+
+
 }

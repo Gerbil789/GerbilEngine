@@ -26,16 +26,17 @@ namespace RESOURCES
 	{
 		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 8 };
 		static constexpr Engine::Uuid FLAT = Engine::Uuid{ 9 };
+		static constexpr Engine::Uuid UI = Engine::Uuid{ 10 };
 	}
 
 	namespace MATERIAL
 	{
-		static constexpr Engine::Uuid WHITE = Engine::Uuid{ 10 };
-		static constexpr Engine::Uuid PINK = Engine::Uuid{ 11 };
+		static constexpr Engine::Uuid WHITE = Engine::Uuid{ 11 };
+		static constexpr Engine::Uuid PINK = Engine::Uuid{ 12 };
 	}
 
 	namespace SCENE
 	{
-		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 12 };
+		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 13 };
 	}
 }

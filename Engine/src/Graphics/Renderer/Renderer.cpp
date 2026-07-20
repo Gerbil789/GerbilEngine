@@ -264,7 +264,8 @@ namespace Engine
 				RenderPassType::Opaque,
 				//RenderPassType::Light,
 				RenderPassType::Normal,
-				RenderPassType::Wireframe
+				RenderPassType::Wireframe,
+				RenderPassType::UI
 		};
 
 		for (RenderPassType type : order)

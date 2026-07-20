@@ -22,7 +22,13 @@ namespace Engine
     T& AddComponent();
 
     template<typename T>
+    T& GetOrAddComponent();
+
+    template<typename T>
     T& GetComponent();
+
+    template<typename T>
+    T* TryGetComponent();
 
     template<typename T>
     bool HasComponent();

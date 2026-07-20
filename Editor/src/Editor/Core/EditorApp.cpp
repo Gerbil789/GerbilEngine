@@ -7,6 +7,7 @@
 #include "Editor/Core/EditorWindowManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Utility/FileWatcher.h"
+#include "Editor/Core/SelectionManager.h"
 
 #include "Engine/Core/Log.h"
 #include "Engine/Core/Time.h"
@@ -53,11 +54,12 @@ namespace Editor
 
 		Engine::Input::SetActiveWindow(*m_Window.GetNativeWindow());
 		Editor::editorContext.renderer.Initialize();
-		Editor::editorContext.renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque/* | Engine::RenderPassType::Normal | Engine::RenderPassType::Wireframe*/);
+		Editor::editorContext.renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque | Engine::RenderPassType::UI/* | Engine::RenderPassType::Normal | Engine::RenderPassType::Wireframe*/);
 		EditorCommandManager::Initialize();
 		FileWatcher::WatchDirectory(project.GetAssetsDirectory());
 		Engine::Audio::Initialize();
 		EditorWindowManager::Initialize(m_Window);
+		SelectionManager::Initialize();
 
 		Engine::EventBus::Subscribe<Engine::SceneChangedEvent>([this](auto& e)
 			{

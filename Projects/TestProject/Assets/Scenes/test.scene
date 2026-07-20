@@ -1,5 +1,283 @@
 [
-  {"ID":74634645,"Enabled":true,"Name":"Ground","Transform":{"Position":[0,-0.5,0],"Rotation":[0,-0,0],"Scale":[50,1,50]},"MeshComponent":{"Mesh":13129306156431109372,"Materials":[11188487221712526061]}},
-  {"ID":63444,"Enabled":true,"Name":"Cube","Transform":{"Position":[0,13.4,0],"Rotation":[0,-0,0],"Scale":[1,1,1]},"MeshComponent":{"Mesh":13129306156431109372,"Materials":[11188487221712526061]},"ScriptComponent":{"Script":2364710404,"Fields":{"Audio Clip":"5864055833164282400","Play On Awake":true}}},
-  {"ID":456774,"Enabled":true,"Name":"Grid","Transform":{"Position":[0,0,0],"Rotation":[0,-0,0],"Scale":[20,1,20]},"MeshComponent":{"Mesh":13129306156431109372,"Materials":[2768523626656369607]},"ScriptComponent":{"Script":3533687996,"Fields":{"grid height":10,"grid width":10,"tile material":"2768523626656369607","tile mesh":"13129306156431109372"}}},
-  {"ID":4563445,"Enabled":true,"Name":"Camera","Transform":{"Position":[0,50.7,-23.1],"Rotation":[65.9,-0,0],"Scale":[1,1,1]},"CameraComponent":{"Projection":0,"AspectRatio":1.3086003,"Perspective":{"FOV":0.7853982,"Near":0.1,"Far":512},"Orthographic":{"Size":10,"Near":-1,"Far":512},"Background":1,"ClearColor":[1,0.05,1,1],"primary":true}}]
+   {
+      "id": 6717787272,
+      "name": "Camera",
+      "transform": {
+         "position": [
+            0,
+            50.7,
+            -23.1
+         ],
+         "rotation": [
+            65.9,
+            -0,
+            0
+         ],
+         "scale": [
+            1,
+            1,
+            1
+         ]
+      },
+      "enabled": true,
+      "hierarchy": {
+         "parent": 0
+      },
+      "camera": {
+         "Projection": 0,
+         "AspectRatio": 1.3086003,
+         "Perspective": {
+            "FOV": 0.7853982,
+            "Near": 0.1,
+            "Far": 512
+         },
+         "Orthographic": {
+            "Size": 10,
+            "Near": -1,
+            "Far": 512
+         },
+         "Background": 1,
+         "ClearColor": [
+            1,
+            0.05,
+            1,
+            1
+         ],
+         "primary": true
+      }
+   },
+   {
+      "id": 15188374409814919639,
+      "name": "Empty",
+      "transform": {
+         "position": [
+            0,
+            0,
+            0
+         ],
+         "rotation": [
+            0,
+            0,
+            0
+         ],
+         "scale": [
+            1,
+            1,
+            1
+         ]
+      },
+      "enabled": true,
+      "hierarchy": {
+         "parent": 0
+      }
+   },
+   {
+      "id": 1177250237532371712,
+      "name": "Empty",
+      "transform": {
+         "position": [
+            0,
+            0,
+            0
+         ],
+         "rotation": [
+            0,
+            0,
+            0
+         ],
+         "scale": [
+            1,
+            1,
+            1
+         ]
+      },
+      "enabled": true,
+      "hierarchy": {
+         "parent": 15188374409814919639
+      }
+   },
+   {
+      "id": 16282982766914275946,
+      "name": "Empty",
+      "transform": {
+         "position": [
+            0,
+            0,
+            0
+         ],
+         "rotation": [
+            0,
+            0,
+            0
+         ],
+         "scale": [
+            1,
+            1,
+            1
+         ]
+      },
+      "enabled": true,
+      "hierarchy": {
+         "parent": 1177250237532371712
+      }
+   },
+   {
+      "id": 8095040555241357881,
+      "name": "Empty",
+      "transform": {
+         "position": [
+            0,
+            0,
+            0
+         ],
+         "rotation": [
+            0,
+            0,
+            0
+         ],
+         "scale": [
+            1,
+            1,
+            1
+         ]
+      },
+      "enabled": true,
+      "hierarchy": {
+         "parent": 15188374409814919639
+      }
+   },
+   {
+      "id": 677827993,
+      "name": "Grid",
+      "transform": {
+         "position": [
+            0,
+            0,
+            0
+         ],
+         "rotation": [
+            0,
+            -0,
+            0
+         ],
+         "scale": [
+            20,
+            1,
+            20
+         ]
+      },
+      "enabled": true,
+      "hierarchy": {
+         "parent": 0
+      },
+      "mesh": {
+         "meshId": 13129306156431109372,
+         "materials": [
+            2768523626656369607
+         ]
+      },
+      "script": {
+         "Script": 3533687996,
+         "Fields": {
+            "grid height": 10,
+            "grid width": 10,
+            "tile material": "2768523626656369607",
+            "tile mesh": "13129306156431109372"
+         }
+      }
+   },
+   {
+      "id": 639834454554,
+      "name": "Cube",
+      "transform": {
+         "position": [
+            0,
+            13.4,
+            0
+         ],
+         "rotation": [
+            0,
+            -0,
+            0
+         ],
+         "scale": [
+            1,
+            1,
+            1
+         ]
+      },
+      "enabled": true,
+      "hierarchy": {
+         "parent": 0
+      },
+      "mesh": {
+         "meshId": 5939929548458604568,
+         "materials": [
+            6143687928775972355
+         ]
+      },
+      "script": {
+         "Script": 2364710404,
+         "Fields": {
+            "Audio Clip": "5864055833164282400",
+            "Play On Awake": true
+         }
+      }
+   },
+   {
+      "id": 4513515,
+      "name": "Ground",
+      "transform": {
+         "position": [
+            0,
+            -0.5,
+            0
+         ],
+         "rotation": [
+            0,
+            -0,
+            0
+         ],
+         "scale": [
+            50,
+            1,
+            50
+         ]
+      },
+      "enabled": true,
+      "hierarchy": {
+         "parent": 0
+      },
+      "mesh": {
+         "meshId": 13129306156431109372,
+         "materials": [
+            11188487221712526061
+         ]
+      }
+   },
+   {
+      "id": 77277271,
+      "name": "UI",
+      "transform": {
+         "position": [
+            0,
+            0,
+            0
+         ],
+         "rotation": [
+            0,
+            0,
+            0
+         ],
+         "scale": [
+            1,
+            1,
+            1
+         ]
+      },
+      "enabled": true,
+      "hierarchy": {
+         "parent": 0
+      }
+   }
+]

@@ -16,7 +16,7 @@ namespace Engine
 		Shader& shader = Engine::AssetManager::GetAsset<Shader>(m_ShaderId);
 		auto binding = shader.GetBinding("uMaterial");
 
-		if (binding.type != BindingType::UniformBuffer)
+		if (binding.type != BindingType::Uniform)
 		{
 			LOG_WARNING("Parameter 'uMaterial' is not a uniform buffer!");
 			return;
@@ -107,7 +107,7 @@ namespace Engine
 
 		for (const auto& binding : shader.GetMaterialBindings())
 		{
-			if (binding.type == BindingType::UniformBuffer)
+			if (binding.type == BindingType::Uniform)
 			{
 				for (const auto& param : binding.parameters)
 				{
@@ -118,6 +118,9 @@ namespace Engine
 							SetParameter(param.name, value);
 						}, param.defaultValue);
 				}
+			}
+			else if(binding.type == BindingType::Storage)
+			{
 			}
 			else if (binding.type == BindingType::Texture2D)
 			{
@@ -168,11 +171,21 @@ namespace Engine
 
 	void Material::CreateUniformBuffer()
 	{
-		wgpu::BufferDescriptor bufferDesc{};
+		wgpu::BufferDescriptor bufferDesc;
 		bufferDesc.label = { "MaterialUniformBuffer", WGPU_STRLEN }; //TODO: add material name
-		bufferDesc.size = Engine::AssetManager::GetAsset<Shader>(m_ShaderId).GetMaterialUniformBufferSize();
+		bufferDesc.size = Engine::AssetManager::GetAsset<Shader>(m_ShaderId).GetMaterialUniformBufferSize(); //TODO: pass size as parameter
 		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 		m_UniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
+	}
+
+	void Material::CreateStorageBuffer()
+	{
+		wgpu::BufferDescriptor bufferDesc;
+		bufferDesc.label = { "MaterialStorageBuffer", WGPU_STRLEN }; //TODO: add material name
+		//bufferDesc.size = Engine::AssetManager::GetAsset<Shader>(m_ShaderId).GetMaterialStorageBufferSize();
+		bufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
+		m_StorageBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
+
 	}
 
 	void Material::CreateBindGroup()
@@ -190,7 +203,7 @@ namespace Engine
 			wgpu::BindGroupEntry& entry = entries[index++];
 			entry.binding = binding.binding;
 
-			if (binding.type == BindingType::UniformBuffer)
+			if (binding.type == BindingType::Uniform)
 			{
 				entry.buffer = m_UniformBuffer;
 				entry.offset = 0;

@@ -1,5 +1,6 @@
 #include "SelectionManager.h"
 #include "Engine/Event/EventBus.h"
+#include "Engine/Event/ApplicationEvent.h"
 #include "Editor/Core/EditorEvent.h"
 
 namespace Editor
@@ -53,5 +54,15 @@ namespace Editor
 	const std::vector<Engine::Uuid>& SelectionGroup::GetAll() const
 	{
 		return m_Selection;
+	}
+
+
+	void SelectionManager::Initialize()
+	{
+		Engine::EventBus::Subscribe<Engine::SceneChangedEvent>([](const Engine::SceneChangedEvent& e)
+			{
+				Entities.Clear();
+				return false;
+			});
 	}
 }

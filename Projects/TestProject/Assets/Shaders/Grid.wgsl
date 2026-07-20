@@ -22,7 +22,7 @@ struct ViewUniforms
 
 struct MaterialUniforms 
 {
-	albedo: vec4f,			// @color @default(1,1,1,1)
+	albedo: vec4f,			// @default(1,1,1,1) @color
 	tiling: vec2f,			// @default(1,1)
 	offset: vec2f,			// @default(0,0)
 	hoveredTile: vec2f,	// @default(0,0)

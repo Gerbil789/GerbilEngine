@@ -62,7 +62,7 @@ namespace Editor
 
 			for (auto& binding : bindings)
 			{
-				if (binding.type == Engine::BindingType::UniformBuffer)
+				if (binding.type == Engine::BindingType::Uniform)
 				{
 					for (auto& param : binding.parameters)
 					{

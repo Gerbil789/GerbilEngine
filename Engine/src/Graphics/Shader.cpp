@@ -34,7 +34,7 @@ namespace Engine
 
 			switch (binding.type)
 			{
-			case BindingType::UniformBuffer:
+			case BindingType::Uniform:
 				entry.buffer.type = wgpu::BufferBindingType::Uniform;
 				entry.buffer.hasDynamicOffset = false;
 				entry.buffer.minBindingSize = 0;
@@ -49,7 +49,7 @@ namespace Engine
 				break;
 
 			case BindingType::Sampler:
-				entry.sampler.type = binding.samplerType;
+				entry.sampler.type = wgpu::SamplerBindingType::Filtering;
 				entry.visibility = wgpu::ShaderStage::Fragment;
 				break;
 

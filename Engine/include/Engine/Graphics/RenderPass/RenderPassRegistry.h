@@ -6,6 +6,7 @@
 #include "Engine/Graphics/RenderPass/NormalPass.h"
 #include "Engine/Graphics/RenderPass/LightPass.h"
 #include "Engine/Graphics/RenderPass/ShadowPass.h"
+#include "Engine/Graphics/RenderPass/UIPass.h"
 #include <memory>
 #include <unordered_map>
 
@@ -30,7 +31,6 @@ namespace Engine
     {
       static std::unordered_map<RenderPassType, std::unique_ptr<RenderPass>> s_Passes;
 
-      // If the map is empty, fill it up!
       if (s_Passes.empty())
       {
         s_Passes[RenderPassType::Background] = std::make_unique<BackgroundPass>();
@@ -39,6 +39,8 @@ namespace Engine
         //s_Passes[RenderPassType::Light] = std::make_unique<LightPass>();
         s_Passes[RenderPassType::Wireframe] = std::make_unique<WireframePass>();
         s_Passes[RenderPassType::Normal] = std::make_unique<NormalPass>();
+        s_Passes[RenderPassType::UI] = std::make_unique<UIPass>();
+
       }
       return s_Passes;
     }

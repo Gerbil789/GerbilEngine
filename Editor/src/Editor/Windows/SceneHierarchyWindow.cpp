@@ -110,7 +110,7 @@ namespace Editor
 						if (droppedHC.parent != entt::null)
 						{
 							auto& oldParentHC = registry.get<Engine::HierarchyComponent>(droppedHC.parent);
-							std::erase(oldParentHC.children, dropped); // Requires C++20 <vector>
+							std::erase(oldParentHC.children, dropped);
 						}
 						else
 						{
@@ -200,12 +200,6 @@ namespace Editor
 		for (entt::entity entity : rootEntities)
 		{
 			DrawEntityNode(scene, registry, entity);
-		}
-
-		// deselect on empty space click
-		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
-		{
-			//Engine::EventBus::Get().Publish(FocusEntityEvent{ 0 });
 		}
 
 		// context menu

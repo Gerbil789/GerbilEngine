@@ -22,6 +22,7 @@ namespace Engine
     Normal = 1 << 3,
     Light = 1 << 4,
     Shadow = 1 << 5,
+		UI = 1 << 6,
   };
 
   // Bitwise NOT

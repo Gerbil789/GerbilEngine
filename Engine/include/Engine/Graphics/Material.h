@@ -25,6 +25,7 @@ namespace Engine
 	class ENGINE_API Material : public Asset
 	{
 	public:
+		Material() = default;
 		Material(const MaterialSpecification& spec);
 
 		const Uuid GetShader() const { return m_ShaderId; }
@@ -54,6 +55,7 @@ namespace Engine
 
 	private:
 		void CreateUniformBuffer();
+		void CreateStorageBuffer();
 		void CreateBindGroup();
 
 	private:
@@ -61,7 +63,9 @@ namespace Engine
 		std::vector<std::byte> m_UniformData; // parameters data packed according to shader layout (material uniform layout)
 		std::unordered_map<std::string, Uuid> m_Textures;
 		wgpu::BindGroup m_BindGroup;
+
 		wgpu::Buffer m_UniformBuffer; 
+		wgpu::Buffer m_StorageBuffer;
 
 		TextureFilter m_TextureFilter = TextureFilter::Bilinear;
 		TextureWrap m_TextureWrap = TextureWrap::Repeat;

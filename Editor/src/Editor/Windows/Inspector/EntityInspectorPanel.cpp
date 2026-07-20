@@ -398,6 +398,49 @@ namespace Editor
 		}
 	}
 
+	void DrawUIRect(Engine::Entity entity)
+	{
+		if (!entity.HasComponent<Engine::UI::Rect>()) return;
+
+		const std::initializer_list<ComponentMenuAction> menuActions
+		{
+			{ "Reset", [&] {
+				auto before = entity.GetComponent<Engine::UI::Rect>();
+				auto after = Engine::UI::Rect{};
+				EditorCommandManager::ModifyComponent<Engine::UI::Rect>(entity, before, after);
+			} },
+		};
+
+		ComponentHeader header("UI Rect", menuActions);
+		if (!header.open) return;
+
+		auto& rc = entity.GetComponent<Engine::UI::Rect>();
+
+		EditResult result;
+		static Engine::UI::Rect s_RectBefore;
+
+		PropertyTable table;
+
+		result |= PropertyField("Position", rc.position);
+		result |= PropertyField("Size", rc.size);
+		result |= PropertyField("Color", rc.color);
+		result |= PropertyField("Texture", rc.textureId);
+
+		if (result.started)
+		{
+			s_RectBefore = { rc.position, rc.size, rc.color, rc.textureId };
+		}
+		else if (result.finished)
+		{
+			EditorCommandManager::ModifyComponent<Engine::UI::Rect>(entity, s_RectBefore, rc);
+		}
+		else if (result.changed)
+		{
+			entity.SetDirty();
+		}
+	}
+
+
 	void DrawAddComponentButton(Engine::Entity entity)
 	{
 		struct AddComponentEntry
@@ -406,13 +449,15 @@ namespace Editor
 			void (*add)(Engine::Entity);
 		};
 
-		static constexpr std::array<AddComponentEntry, 5> entries
+		static constexpr std::array<AddComponentEntry, 6> entries
 		{
-			AddComponentEntry{ "Camera",        [](Engine::Entity e) { auto& component = e.AddComponent<Engine::CameraComponent>(); component.camera = std::make_unique<Engine::Camera>().release(); }},
-			AddComponentEntry{ "Mesh",          [](Engine::Entity e) { e.AddComponent<Engine::MeshComponent>(); } },
-			AddComponentEntry{ "Collider",      [](Engine::Entity e) { e.AddComponent<Engine::ColliderComponent>(); } },
-			AddComponentEntry{ "Light",         [](Engine::Entity e) { e.AddComponent<Engine::LightComponent>(); } },
-			AddComponentEntry{ "Script",				[](Engine::Entity e) { e.AddComponent<Engine::ScriptComponent>(); } }
+			AddComponentEntry{ "Camera",        [](Engine::Entity e) { auto& component = e.GetOrAddComponent<Engine::CameraComponent>(); component.camera = std::make_unique<Engine::Camera>().release(); }},
+			AddComponentEntry{ "Mesh",          [](Engine::Entity e) { e.GetOrAddComponent<Engine::MeshComponent>(); } },
+			AddComponentEntry{ "Collider",      [](Engine::Entity e) { e.GetOrAddComponent<Engine::ColliderComponent>(); } },
+			AddComponentEntry{ "Light",         [](Engine::Entity e) { e.GetOrAddComponent<Engine::LightComponent>(); } },
+			AddComponentEntry{ "Script",				[](Engine::Entity e) { e.GetOrAddComponent<Engine::ScriptComponent>(); } },
+			AddComponentEntry{ "UI Rect",				[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Rect>(); } }
+			//AddComponentEntry{ "UI Style",			[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Style>(); } }
 		};
 
 		ImGui::Separator();
@@ -472,6 +517,7 @@ namespace Editor
 		DrawCollider(entity);
 		DrawLight(entity);
 		DrawScript(entity);
+		DrawUIRect(entity);
 
 		DrawAddComponentButton(entity);
 	}

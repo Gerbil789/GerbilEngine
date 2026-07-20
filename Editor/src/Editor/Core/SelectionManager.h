@@ -27,6 +27,8 @@ namespace Editor
   class SelectionManager
   {
   public:
+		static void Initialize();
+
     inline static SelectionGroup Entities{ SelectionContext::Entity };
     inline static SelectionGroup Assets{ SelectionContext::Asset };
   };

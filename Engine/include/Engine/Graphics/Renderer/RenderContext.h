@@ -13,6 +13,9 @@ namespace Engine
 
   struct RenderContext
   {
+		float width = 0.0f;
+		float height = 0.0f;
+
     wgpu::TextureView colorTarget;
     wgpu::TextureView depthTarget;
 
@@ -37,5 +40,6 @@ namespace Engine
     // Shadow texture views
     std::array<wgpu::TextureView, s_ShadowCascadeCount> depthTextureViews;
     wgpu::TextureView depthTextureArrayView;
+
   };
 }

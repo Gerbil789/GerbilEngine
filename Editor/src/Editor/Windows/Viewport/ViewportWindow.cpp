@@ -38,6 +38,7 @@ namespace Editor
 
 		m_ViewportSize = { newSize.x, newSize.y };
 		Editor::editorContext.editorCamera.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
+		Editor::editorContext.renderer.SetWindowSize(m_ViewportSize.x, m_ViewportSize.y);
 
 		ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		ImVec2 viewportMaxRegion = ImGui::GetWindowContentRegionMax();

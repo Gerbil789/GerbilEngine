@@ -43,9 +43,21 @@ namespace Engine
 	}
 
 	template<typename T>
+	T& Entity::GetOrAddComponent()
+	{
+		return m_Scene->GetRegistry().get_or_emplace<T>(m_Handle);
+	}
+
+	template<typename T>
 	T& Entity::GetComponent()
 	{
 		return m_Scene->GetRegistry().get<T>(m_Handle);
+	}
+
+	template<typename T>
+	T* Entity::TryGetComponent()
+	{
+		return m_Scene->GetRegistry().try_get<T>(m_Handle);
 	}
 
 	template<typename T>
@@ -65,7 +77,9 @@ namespace Engine
         template ENGINE_API ComponentType& Entity::AddComponent<ComponentType>(); \
         template ENGINE_API ComponentType& Entity::GetComponent<ComponentType>(); \
         template ENGINE_API bool Entity::HasComponent<ComponentType>(); \
-        template ENGINE_API void Entity::RemoveComponent<ComponentType>();
+        template ENGINE_API void Entity::RemoveComponent<ComponentType>(); \
+				template ENGINE_API ComponentType& Entity::GetOrAddComponent<ComponentType>(); \
+				template ENGINE_API ComponentType* Entity::TryGetComponent<ComponentType>();
 
 	//INSTANTIATE_COMPONENT(DisabledTag)
 
@@ -89,4 +103,7 @@ namespace Engine
 
 	INSTANTIATE_COMPONENT(ScriptComponent)
 
+	// --- UI COMPONENTS HERE ---
+
+	INSTANTIATE_COMPONENT(UI::Rect)
 }

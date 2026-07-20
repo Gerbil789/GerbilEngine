@@ -135,6 +135,7 @@ namespace Engine
     LoadBuiltInAsset(RESOURCES::TEXTURE::EDITOR_ICONS, "Resources/Engine/icons/icons.png", m_Textures, TextureImporter::LoadTexture2D, "Editor Icons");
     LoadBuiltInAsset(RESOURCES::SHADER::DEFAULT, "Resources/Engine/shaders/pink.wgsl", m_Shaders, ShaderImporter::LoadShader, "Pink Shader");
     LoadBuiltInAsset(RESOURCES::SHADER::FLAT, "Resources/Engine/shaders/flat.wgsl", m_Shaders, ShaderImporter::LoadShader, "Flat Shader");
+    LoadBuiltInAsset(RESOURCES::SHADER::UI, "Resources/Engine/shaders/ui.wgsl", m_Shaders, ShaderImporter::LoadShader, "UI Shader");
     LoadBuiltInAsset(RESOURCES::SCENE::DEFAULT, "Resources/Engine/scenes/default.scene", m_Scenes, SceneImporter::LoadScene, "Default Scene");
 
     {
