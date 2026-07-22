@@ -1,6 +1,6 @@
 #include "Engine/Utility/Path.h"
 #include "Engine/Core/Log.h"
-#include "Template/Core/TemplateApp.h"
+#include "Core/TemplateApp.h"
 
 int main()
 {

@@ -346,7 +346,7 @@ namespace Engine
 		ShaderSpecification spec;
 		//ParseVertexInputs(source, spec);
 		std::vector<ShaderStruct> structs = ParseWGSLStructs(source);
-		ParseBindings(source, structs, spec);
+		//ParseBindings(source, structs, spec);
 
 		return spec;
 	}

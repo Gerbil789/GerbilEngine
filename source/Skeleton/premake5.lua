@@ -5,19 +5,19 @@ newoption
    description = "The name of the output executable"
 }
 
-project (_OPTIONS["project_name"] or "Template")
+project (_OPTIONS["project_name"] or "Skeleton")
 kind "ConsoleApp"
 
 files
 {
-	"src/**.h",
-	"src/**.cpp"
+	"**.h",
+	"**.cpp",
 }
 
 includedirs
 {
 	"src",
-	"%{wks.location}/Engine/include"
+	"%{wks.location}/source/Engine/include"
 }
 
 externalincludedirs
