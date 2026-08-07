@@ -5,7 +5,7 @@ namespace Engine
 {
 	void SamplerPool::Initialize()
 	{
-		auto device = GraphicsContext::GetDevice();
+		wgpu::Device device = GraphicsContext::GetDevice();
 		s_Samplers[{ TextureFilter::Point, TextureWrap::Repeat }] = CreateSampler(device, wgpu::FilterMode::Nearest, wgpu::MipmapFilterMode::Nearest, wgpu::AddressMode::Repeat);
 		s_Samplers[{ TextureFilter::Point, TextureWrap::Clamp }] = CreateSampler(device, wgpu::FilterMode::Nearest, wgpu::MipmapFilterMode::Nearest, wgpu::AddressMode::ClampToEdge);
 		s_Samplers[{ TextureFilter::Point, TextureWrap::Mirror }] = CreateSampler(device, wgpu::FilterMode::Nearest, wgpu::MipmapFilterMode::Nearest, wgpu::AddressMode::MirrorRepeat);
@@ -17,7 +17,6 @@ namespace Engine
 		s_Samplers[{ TextureFilter::Trilinear, TextureWrap::Mirror }] = CreateSampler(device, wgpu::FilterMode::Linear, wgpu::MipmapFilterMode::Linear, wgpu::AddressMode::MirrorRepeat);
 	}
 
-	
 	void SamplerPool::Shutdown()
 	{
 		s_Samplers.clear();

@@ -14,12 +14,6 @@ namespace Engine
 	struct MaterialSpecification 
 	{
 		Uuid shaderId;
-
-		std::unordered_map<std::string, MaterialValue> parameters;
-		std::unordered_map<std::string, Uuid> textures;
-
-		TextureFilter filter = TextureFilter::Bilinear;
-		TextureWrap wrap = TextureWrap::Repeat;
 	};
 
 	class ENGINE_API Material : public Asset
@@ -37,7 +31,7 @@ namespace Engine
 		TextureFilter GetTextureFilter() const { return m_TextureFilter; }
 		TextureWrap GetTextureWrap() const { return m_TextureWrap; }
 
-		void SetTexture(const std::string& name, Uuid texture);
+		void SetTexture(const std::string& name, Uuid texture); //TODO: make generic SetParameter that can handle textures too
 		Uuid GetTexture(const std::string& name) const;
 
 		wgpu::BindGroup GetBindGroup() const { return m_BindGroup; }
@@ -46,7 +40,7 @@ namespace Engine
 		const std::unordered_map<std::string, Uuid>& GetTextures() const { return m_Textures; }
 		const std::unordered_map<std::string, MaterialValue>& GetParameters() const { return m_Parameters; }
 
-		const PipelineSpecification& GetPipelineSpec() const { return m_PipelineSpec; }
+		wgpu::RenderPipeline GetPipeline() const { return m_Pipeline; }
 
 		template<typename T>
 		void SetParameter(const std::string& paramName, const T& value);
@@ -55,22 +49,20 @@ namespace Engine
 
 	private:
 		void CreateUniformBuffer();
-		void CreateStorageBuffer();
 		void CreateBindGroup();
 
 	private:
 		Uuid m_ShaderId;
 		std::vector<std::byte> m_UniformData; // parameters data packed according to shader layout (material uniform layout)
 		std::unordered_map<std::string, Uuid> m_Textures;
-		wgpu::BindGroup m_BindGroup;
 
+		wgpu::BindGroup m_BindGroup;
 		wgpu::Buffer m_UniformBuffer; 
-		wgpu::Buffer m_StorageBuffer;
 
 		TextureFilter m_TextureFilter = TextureFilter::Bilinear;
 		TextureWrap m_TextureWrap = TextureWrap::Repeat;
 
-		PipelineSpecification m_PipelineSpec;
+		wgpu::RenderPipeline m_Pipeline;
 
 		std::unordered_map<std::string, MaterialValue> m_Parameters;
 	};

@@ -56,7 +56,7 @@ namespace Engine
 
 		pipelineDesc.vertex.bufferCount = 1;
 		pipelineDesc.vertex.buffers = &vertexBufferLayout;
-		pipelineDesc.vertex.module = LoadWGSLShader("Resources/Engine/shaders/shadow.wgsl");
+		pipelineDesc.vertex.module = LoadWGSLShader("resources/shaders/shadow.wgsl");
 		pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN};
 		pipelineDesc.vertex.constantCount = 0;
 		pipelineDesc.vertex.constants = nullptr;

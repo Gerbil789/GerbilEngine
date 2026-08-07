@@ -126,7 +126,7 @@ namespace Editor
 				tc.position = trans;
 				tc.rotation = rot;
 				tc.scale = scale;
-				entity.SetDirty();
+				entity.SetDirty<Engine::DirtyTag>();
 			}
 		}
 

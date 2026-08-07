@@ -19,7 +19,7 @@ namespace Engine
 		shaderDesc.nextInChain = &shaderCodeDesc.chain;
 		m_ShaderModule = GraphicsContext::GetDevice().createShaderModule(shaderDesc);
 
-		m_Specification = ShaderParser::GetSpecification(source);
+		m_Specification = ShaderParser::Parse(source);
 
 		auto materialBindings = GetMaterialBindings();
 
@@ -32,28 +32,39 @@ namespace Engine
 			entry.binding = binding.binding;
 			entry.visibility = binding.visibility;
 
-			switch (binding.type)
+			if (std::holds_alternative<BufferBinding>(binding.data))
 			{
-			case BindingType::Uniform:
-				entry.buffer.type = wgpu::BufferBindingType::Uniform;
+				const BufferBinding& buffer = std::get<BufferBinding>(binding.data);
+
+				entry.buffer.type = buffer.type;
 				entry.buffer.hasDynamicOffset = false;
 				entry.buffer.minBindingSize = 0;
-				m_MaterialUniformBufferSize = binding.size;
-				break;
+				m_MaterialUniformBufferSize = buffer.size;
 
-			case BindingType::Texture2D:
-				entry.texture.sampleType = binding.textureSample;
-				entry.texture.viewDimension = wgpu::TextureViewDimension::_2D;
-				entry.texture.multisampled = false;
+				if (buffer.arraySize)
+				{
+					// *buffer.arraySize or buffer.arraySize.value()
+				}
+			}
+			else if (std::holds_alternative<TextureBinding>(binding.data))
+			{
+				const TextureBinding& texture = std::get<TextureBinding>(binding.data);
+
+
+				entry.texture.sampleType = texture.sampleType;
+				entry.texture.viewDimension = texture.viewDimension;
+				entry.texture.multisampled = texture.isMultisampled;
 				entry.visibility = wgpu::ShaderStage::Fragment;
-				break;
+			}
+			else if (std::holds_alternative<SamplerBinding>(binding.data))
+			{
+				const SamplerBinding& sampler = std::get<SamplerBinding>(binding.data);
 
-			case BindingType::Sampler:
-				entry.sampler.type = wgpu::SamplerBindingType::Filtering;
+				entry.sampler.type = sampler.type;
 				entry.visibility = wgpu::ShaderStage::Fragment;
-				break;
-
-			default:
+			}
+			else
+			{
 				LOG_WARNING("Unsupported binding type in material bind group layout creation");
 				continue;
 			}

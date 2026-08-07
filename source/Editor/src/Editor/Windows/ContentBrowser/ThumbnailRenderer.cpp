@@ -88,7 +88,7 @@ namespace Editor
 
 		auto& tc = entity.GetComponent<Engine::TransformComponent>();
 		tc.rotation = { 15.0f, 45.0f, 0.0f };
-		entity.SetDirty();
+		entity.SetDirty<Engine::DirtyTag>();
 
 		//TODO: transform is not getting updated...
 

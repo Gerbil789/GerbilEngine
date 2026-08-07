@@ -59,8 +59,7 @@ namespace Engine
 				GraphicsContext::GetQueue().writeBuffer(material.GetUniformBuffer(), 0, material.GetUniformData().data(), material.GetUniformData().size());
 				pass.setBindGroup(2, material.GetBindGroup(), 0, nullptr);
 
-				wgpu::RenderPipeline pipeline = PipelineCache::GetOrCreatePipeline(material.GetPipelineSpec());
-				pass.setPipeline(pipeline);
+				pass.setPipeline(material.GetPipeline());
 			}
 
 			pass.drawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));

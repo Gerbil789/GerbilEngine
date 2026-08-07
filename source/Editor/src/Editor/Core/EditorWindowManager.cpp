@@ -118,7 +118,7 @@ namespace Editor
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 
-		constexpr const char* imgui_ini = "Resources/Editor/layouts/imgui.ini";
+		constexpr const char* imgui_ini = "resources/Editor/layouts/imgui.ini";
 		if (!std::filesystem::exists(imgui_ini))
 		{
 			ResetLayout();
@@ -129,7 +129,7 @@ namespace Editor
 		io.IniFilename = imgui_ini;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Engine/fonts/roboto/Roboto-Regular.ttf", 18.0f);
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("resources/fonts/roboto/Roboto-Regular.ttf", 18.0f);
 		SetupImGuiStyle();
 
 		EditorRenderer::Initialize(window);
@@ -161,7 +161,7 @@ namespace Editor
 
 	void EditorWindowManager::ResetLayout()
 	{
-		const std::filesystem::path default_iniPath = "Resources/Editor/layouts/default.ini";
+		const std::filesystem::path default_iniPath = "resources/Editor/layouts/default.ini";
 		std::string defaultLayoutContent;
 
 		if (!Engine::ReadFile(default_iniPath, defaultLayoutContent))
@@ -176,7 +176,7 @@ namespace Editor
 
 	void EditorWindowManager::SaveLayout()
 	{
-		const std::filesystem::path iniPath = "Resources/Editor/layouts/imgui.ini";
+		const std::filesystem::path iniPath = "resources/Editor/layouts/imgui.ini";
 		ImGui::SaveIniSettingsToDisk(iniPath.string().c_str());
 		LOG_INFO("ImGui layout saved to {}", iniPath);
 	}

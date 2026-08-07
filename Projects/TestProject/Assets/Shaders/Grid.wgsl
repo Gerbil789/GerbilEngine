@@ -1,3 +1,5 @@
+// Grid.wgsl
+
 struct VertexInput
 {
 	@location(0) position: vec3f,

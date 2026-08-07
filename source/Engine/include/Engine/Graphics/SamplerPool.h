@@ -13,20 +13,18 @@ namespace Engine
 		TextureFilter filter;
 		TextureWrap wrap;
 
-		bool operator==(const SamplerKey& other) const
-		{
-			return filter == other.filter && wrap == other.wrap;
-		}
+		bool operator==(const SamplerKey&) const = default;
 	};
-
 }
 
-namespace std {
+namespace std 
+{
 	template<>
-	struct hash<Engine::SamplerKey> {
-		inline std::size_t operator()(const Engine::SamplerKey& key) const noexcept {
-			return (static_cast<size_t>(key.filter) << 4) ^
-				static_cast<size_t>(key.wrap);
+	struct hash<Engine::SamplerKey> 
+	{
+		inline std::size_t operator()(const Engine::SamplerKey& key) const noexcept 
+		{
+			return (static_cast<size_t>(key.filter) << 4) ^ static_cast<size_t>(key.wrap);
 		}
 	};
 }
@@ -39,10 +37,9 @@ namespace Engine
 		static void Initialize();
 		static void Shutdown();
 
-		static wgpu::Sampler GetSampler(TextureFilter filter, TextureWrap wrap)
+		static wgpu::Sampler GetSampler(SamplerKey key)
 		{
-			SamplerKey key{ filter, wrap };
-			return s_Samplers[key];
+			return s_Samplers.at(key);
 		}
 
 	private:

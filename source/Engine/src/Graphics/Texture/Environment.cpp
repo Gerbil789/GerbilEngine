@@ -73,7 +73,7 @@ namespace Engine
 		pipelineLayoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayout;
 		wgpu::PipelineLayout pipelineLayout = GraphicsContext::GetDevice().createPipelineLayout(pipelineLayoutDesc);
 
-		wgpu::ShaderModule computeShaderModule = LoadWGSLShader("Resources/Engine/shaders/compute/irradiance.wgsl");
+		wgpu::ShaderModule computeShaderModule = LoadWGSLShader("resources/shaders/compute/irradiance.wgsl");
 
 		wgpu::ComputePipelineDescriptor computePipelineDesc;
 		computePipelineDesc.compute.entryPoint = { "computeIrradiance", WGPU_STRLEN };
@@ -202,7 +202,7 @@ namespace Engine
 		pipelineLayoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayout;
 		wgpu::PipelineLayout pipelineLayout = GraphicsContext::GetDevice().createPipelineLayout(pipelineLayoutDesc);
 
-		wgpu::ShaderModule computeShaderModule = LoadWGSLShader("Resources/Engine/shaders/compute/importanceSampling.wgsl");
+		wgpu::ShaderModule computeShaderModule = LoadWGSLShader("resources/shaders/compute/importanceSampling.wgsl");
 
 		wgpu::ConstantEntry overrideConstants[1];
 		overrideConstants[0].key = { "PREFILTER_SIZE", WGPU_STRLEN };

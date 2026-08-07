@@ -35,12 +35,12 @@ namespace Editor
 
 			if (ImGui::Button("Reset default editor layout"))
 			{
-				ImGui::LoadIniSettingsFromDisk("Resources/Editor/layouts/default.ini");
+				ImGui::LoadIniSettingsFromDisk("resources/Editor/layouts/default.ini");
 			}
 
 			if (ImGui::Button("Save current layout"))
 			{
-				ImGui::SaveIniSettingsToDisk("Resources/Editor/layouts/default.ini");
+				ImGui::SaveIniSettingsToDisk("resources/Editor/layouts/default.ini");
 			}
 		}
 

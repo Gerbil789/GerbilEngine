@@ -1,12 +1,13 @@
 #pragma once
 
 #include "Engine/Graphics/ShaderSpecification.h"
+#include <string_view>
 
-namespace Engine 
+namespace Engine
 {
 	class ShaderParser
 	{
 	public:
-		static ShaderSpecification GetSpecification(const std::string& source);
+		static ShaderSpecification Parse(std::string_view source);
 	};
 }

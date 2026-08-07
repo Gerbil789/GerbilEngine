@@ -66,9 +66,6 @@ group ""
 group "Projects"
 	include "projects/TestProject"
 
-group "Tools"
-	include "tools/wgsl_reflect"
-
 group "Dependencies"
 	include "vendor/glfw"
 	include "vendor/miniaudio"

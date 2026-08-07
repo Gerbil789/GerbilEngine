@@ -13,7 +13,7 @@ namespace Engine
 
 	NormalPass::NormalPass()
 	{
-		wgpu::ShaderModule shaderModule = LoadWGSLShader("Resources/Engine/shaders/normal.wgsl");
+		wgpu::ShaderModule shaderModule = LoadWGSLShader("resources/shaders/normal.wgsl");
 		std::array<wgpu::VertexAttribute, 3> vertexAttribs;
 
 		// Position

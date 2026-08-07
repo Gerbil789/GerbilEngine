@@ -108,9 +108,10 @@ namespace Engine
 		MaterialSpecification spec;
 		spec.shaderId = Uuid{ data.Shader };
 
-		//TODO: wtf is this cast?
-		spec.filter = static_cast<decltype(spec.filter)>(data.Filter);
-		spec.wrap = static_cast<decltype(spec.wrap)>(data.Wrap);
+		Material material = Material(spec);
+
+		material.SetTextureFilter(static_cast<TextureFilter>(data.Filter));
+		material.SetTextureWrap(static_cast<TextureWrap>(data.Wrap));
 
 		// Deserialize Attributes dynamically using glz::json_t
 		for (auto& [name, node] : data.Attributes)
@@ -118,7 +119,7 @@ namespace Engine
 			if (node.is_number())
 			{
 				// glz::json_t stores all numbers internally as doubles
-				spec.parameters[name] = static_cast<float>(node.get<double>());
+				material.SetParameter(name, static_cast<float>(node.get<double>()));
 			}
 			else if (node.is_array())
 			{
@@ -127,15 +128,15 @@ namespace Engine
 
 				if (size == 2)
 				{
-					spec.parameters[name] = glm::vec2(arr[0].get<double>(), arr[1].get<double>());
+					material.SetParameter(name, glm::vec2(arr[0].get<double>(), arr[1].get<double>()));
 				}
 				else if (size == 3)
 				{
-					spec.parameters[name] = glm::vec3(arr[0].get<double>(), arr[1].get<double>(), arr[2].get<double>());
+					material.SetParameter(name, glm::vec3(arr[0].get<double>(), arr[1].get<double>(), arr[2].get<double>()));
 				}
 				else if (size == 4)
 				{
-					spec.parameters[name] = glm::vec4(arr[0].get<double>(), arr[1].get<double>(), arr[2].get<double>(), arr[3].get<double>());
+					material.SetParameter(name, glm::vec4(arr[0].get<double>(), arr[1].get<double>(), arr[2].get<double>(), arr[3].get<double>()));
 				}
 				else
 				{
@@ -151,9 +152,9 @@ namespace Engine
 		// Deserialize Textures
 		for (const auto& [name, id] : data.Textures)
 		{
-			spec.textures[name] = Uuid{ id };
+			material.SetTexture(name, Uuid{ id });
 		}
 
-		return Material(spec);
+		return material;
 	}
 }

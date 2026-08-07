@@ -157,7 +157,7 @@ namespace Engine
 
 		// 4 - BRDFIntMap
 		{
-			auto brdfTexture = TextureImporter::LoadTexture2D("Resources/Engine/hdr/brdf_integration_map_ct_ggx.hdr").value(); //TODO: is this memory leak?
+			auto brdfTexture = TextureImporter::LoadTexture2D("resources/hdr/brdf_integration_map_ct_ggx.hdr").value(); //TODO: is this memory leak?
 			entries[4].binding = 4;
 			entries[4].textureView = brdfTexture.GetTextureView();
 		}

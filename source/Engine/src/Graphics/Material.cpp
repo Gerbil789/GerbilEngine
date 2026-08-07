@@ -10,35 +10,58 @@
 
 namespace Engine
 {
-	template<typename T>
-	void Material::SetParameter(const std::string& paramName, const T& value)
+	Material::Material(const MaterialSpecification& spec)
 	{
-		Shader& shader = Engine::AssetManager::GetAsset<Shader>(m_ShaderId);
-		auto binding = shader.GetBinding("uMaterial");
-
-		if (binding.type != BindingType::Uniform)
-		{
-			LOG_WARNING("Parameter 'uMaterial' is not a uniform buffer!");
-			return;
-		}
-
-		auto it = std::find_if(binding.parameters.begin(), binding.parameters.end(), [&](const ShaderParameter& p) { return p.name == paramName; });
-
-		if (it == binding.parameters.end())
-		{
-			LOG_WARNING("Parameter '{}' not found in shader!", paramName);
-			return;
-		}
-
-		if (sizeof(T) != it->size)
-		{
-			LOG_WARNING("Size mismatch for '{}'. Expected {}, got {}", paramName, it->size, sizeof(T));
-			return;
-		}
-
-		std::memcpy(m_UniformData.data() + it->offset, &value, sizeof(T));
-		m_Parameters[paramName] = value;
+		SetShader(spec.shaderId);
 	}
+
+	void Material::SetShader(Uuid shaderId)
+	{
+		m_ShaderId = shaderId;
+
+		m_Parameters.clear();
+		m_Textures.clear();
+
+		const Shader& shader = Engine::AssetManager::GetAsset<Shader>(shaderId);
+
+		m_UniformData.assign(shader.GetMaterialUniformBufferSize(), std::byte{});
+		CreateUniformBuffer();
+
+		for (const auto& binding : shader.GetMaterialBindings())
+		{
+			if (std::holds_alternative<BufferBinding>(binding.data))
+			{
+				const BufferBinding& buffer = std::get<BufferBinding>(binding.data);
+
+				if (buffer.type == wgpu::BufferBindingType::Uniform)
+				{
+					for (const ShaderParameter& param : buffer.parameters)
+					{
+						if (param.name[0] == '_') continue; // skip private parameters
+
+						std::visit([&](auto&& value) { SetParameter(param.name, value); }, param.defaultValue);
+					}
+				}
+				else if (buffer.type == wgpu::BufferBindingType::Storage)
+				{
+
+				}
+
+			}
+			else if (std::holds_alternative<TextureBinding>(binding.data))
+			{
+				SetTexture(binding.name, Uuid{});
+			}
+			//else if (std::holds_alternative<SamplerBinding>(binding.data))
+			//{
+			//	// nothing to do for samplers
+			//}
+		}
+
+		CreateBindGroup();
+	}
+
+
 
 	const MaterialValue& Material::GetParameterVariant(const std::string& name) const
 	{
@@ -51,85 +74,9 @@ namespace Engine
 		throw std::runtime_error("Parameter not found: " + name);
 	}
 
-	Material::Material(const MaterialSpecification& spec)
-	{
-		m_ShaderId = spec.shaderId;
-		m_TextureFilter = spec.filter;
-		m_TextureWrap = spec.wrap;
-
-		m_PipelineSpec.shaderId = spec.shaderId;
-
-		const Shader& shader = Engine::AssetManager::GetAsset<Shader>(spec.shaderId);
-		m_UniformData.assign(shader.GetMaterialUniformBufferSize(), std::byte{});
-		CreateUniformBuffer();
 
 
-		for (const auto& [name, variantValue] : spec.parameters)
-		{
-			std::visit([&](auto&& arg) 
-				{
-				SetParameter(name, arg);
-				}, variantValue);
-		}
-
-		for (auto& [name, uuid] : spec.textures)
-		{
-			SetTexture(name, uuid);
-		}
-
-		// material bindings
-		for (const auto& binding : shader.GetMaterialBindings())
-		{
-			if (binding.type == BindingType::Texture2D)
-			{
-				auto it = spec.textures.find(binding.name);
-				if (it == spec.textures.end())
-				{
-					SetTexture(binding.name, Uuid{});
-				}
-			}
-		}
-
-		CreateBindGroup();
-	}
-
-	void Material::SetShader(Uuid shaderId)
-	{
-		m_ShaderId = shaderId;
-		m_PipelineSpec.shaderId = shaderId;
-
-		m_Parameters.clear();
-		m_Textures.clear();
-
-		const Shader& shader = Engine::AssetManager::GetAsset<Shader>(shaderId);
-		m_UniformData.assign(shader.GetMaterialUniformBufferSize(), std::byte{});
-		CreateUniformBuffer();
-
-		for (const auto& binding : shader.GetMaterialBindings())
-		{
-			if (binding.type == BindingType::Uniform)
-			{
-				for (const auto& param : binding.parameters)
-				{
-					if (param.name[0] == '_') continue; // skip private parameters
-
-					std::visit([&](auto&& value)
-						{
-							SetParameter(param.name, value);
-						}, param.defaultValue);
-				}
-			}
-			else if(binding.type == BindingType::Storage)
-			{
-			}
-			else if (binding.type == BindingType::Texture2D)
-			{
-				SetTexture(binding.name, Uuid{});
-			}
-		}
-
-		CreateBindGroup();
-	}
+	
 
 	void Material::SetTexture(const std::string& name, Uuid texture)
 	{
@@ -147,9 +94,9 @@ namespace Engine
 
 
 		Shader& shader = Engine::AssetManager::GetAsset<Shader>(m_ShaderId);
-		auto binding = shader.GetBinding(name);
+		const Binding& binding = shader.GetBinding(name);
 
-		if (binding.type != BindingType::Texture2D)
+		if (!std::holds_alternative<TextureBinding>(binding.data))
 		{
 			LOG_WARNING("Parameter '{}' is not a texture!", name);
 			return;
@@ -178,19 +125,9 @@ namespace Engine
 		m_UniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
 	}
 
-	void Material::CreateStorageBuffer()
-	{
-		wgpu::BufferDescriptor bufferDesc;
-		bufferDesc.label = { "MaterialStorageBuffer", WGPU_STRLEN }; //TODO: add material name
-		//bufferDesc.size = Engine::AssetManager::GetAsset<Shader>(m_ShaderId).GetMaterialStorageBufferSize();
-		bufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
-		m_StorageBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
-
-	}
-
 	void Material::CreateBindGroup()
 	{
-		Shader& shader = Engine::AssetManager::GetAsset<Shader>(m_ShaderId);
+		const Shader& shader = Engine::AssetManager::GetAsset<Shader>(m_ShaderId);
 
 		auto materialBindings = shader.GetMaterialBindings();
 		size_t bindingCount = std::ranges::distance(materialBindings);
@@ -203,13 +140,14 @@ namespace Engine
 			wgpu::BindGroupEntry& entry = entries[index++];
 			entry.binding = binding.binding;
 
-			if (binding.type == BindingType::Uniform)
+			if (std::holds_alternative<BufferBinding>(binding.data))
 			{
+
 				entry.buffer = m_UniformBuffer;
 				entry.offset = 0;
 				entry.size = m_UniformData.size();
 			}
-			else if (binding.type == BindingType::Texture2D)
+			else if (std::holds_alternative<TextureBinding>(binding.data))
 			{
 				if (m_Textures.find(binding.name) == m_Textures.end()) //TODO: is this redundant check?
 				{
@@ -219,9 +157,9 @@ namespace Engine
 				const Texture2D& tex = Engine::AssetManager::GetAsset<Texture2D>(m_Textures[binding.name]);
 				entry.textureView = tex.GetTextureView();
 			}
-			else if (binding.type == BindingType::Sampler)
+			else if (std::holds_alternative<SamplerBinding>(binding.data))
 			{
-				entry.sampler = SamplerPool::GetSampler(m_TextureFilter, m_TextureWrap);
+				entry.sampler = SamplerPool::GetSampler({ m_TextureFilter, m_TextureWrap });
 			}
 		}
 
@@ -231,6 +169,44 @@ namespace Engine
 		bindGroupDesc.entryCount = entries.size();
 		bindGroupDesc.entries = entries.data();
 		m_BindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+
+		PipelineSpecification spec;
+		spec.shaderId = m_ShaderId;
+
+		m_Pipeline = PipelineCache::GetPipeline(spec);
+	}
+
+
+	template<typename T>
+	void Material::SetParameter(const std::string& paramName, const T& value)
+	{
+		Shader& shader = Engine::AssetManager::GetAsset<Shader>(m_ShaderId);
+		const Binding& binding = shader.GetBinding("uMaterial");
+
+		if (!std::holds_alternative<BufferBinding>(binding.data))
+		{
+			LOG_WARNING("Parameter 'uMaterial' is not a buffer binding!");
+			return;
+		}
+
+		const BufferBinding& buffer = std::get<BufferBinding>(binding.data);
+
+		auto it = std::find_if(buffer.parameters.begin(), buffer.parameters.end(), [&](const ShaderParameter& p) { return p.name == paramName; });
+
+		if (it == buffer.parameters.end())
+		{
+			LOG_WARNING("Parameter '{}' not found in shader!", paramName);
+			return;
+		}
+
+		if (sizeof(T) != it->size)
+		{
+			LOG_WARNING("Size mismatch for '{}'. Expected {}, got {}", paramName, it->size, sizeof(T));
+			return;
+		}
+
+		std::memcpy(m_UniformData.data() + it->offset, &value, sizeof(T));
+		m_Parameters[paramName] = value;
 	}
 
 	template ENGINE_API void Material::SetParameter<float>(const std::string&, const float&);

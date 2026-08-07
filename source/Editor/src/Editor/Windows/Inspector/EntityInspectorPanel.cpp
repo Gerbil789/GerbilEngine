@@ -116,7 +116,7 @@ namespace Editor
 		}
 		else if (result.changed)
 		{
-			entity.SetDirty();
+			entity.SetDirty<Engine::DirtyTag>();
 		}
 	}
 
@@ -398,45 +398,122 @@ namespace Editor
 		}
 	}
 
-	void DrawUIRect(Engine::Entity entity)
+	void DrawUICanvas(Engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::UI::Rect>()) return;
+		if (!entity.HasComponent<Engine::UI::Canvas>()) return;
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
 			{ "Reset", [&] {
-				auto before = entity.GetComponent<Engine::UI::Rect>();
-				auto after = Engine::UI::Rect{};
-				EditorCommandManager::ModifyComponent<Engine::UI::Rect>(entity, before, after);
+				auto before = entity.GetComponent<Engine::UI::Canvas>();
+				auto after = Engine::UI::Canvas{};
+				EditorCommandManager::ModifyComponent<Engine::UI::Canvas>(entity, before, after);
 			} },
 		};
 
-		ComponentHeader header("UI Rect", menuActions);
+		ComponentHeader header("Canvas", menuActions);
 		if (!header.open) return;
-
-		auto& rc = entity.GetComponent<Engine::UI::Rect>();
-
+		auto& canvas = entity.GetComponent<Engine::UI::Canvas>();
 		EditResult result;
-		static Engine::UI::Rect s_RectBefore;
+		static Engine::UI::Canvas s_CanvasBefore;
 
 		PropertyTable table;
+		result |= PropertyField("Screen Space", canvas.isScreenSpace);
+		result |= PropertyField("Reference Resolution", canvas.referenceResolution);
+		result |= PropertyField("Match Width/Height", canvas.matchWidthOrHeight, { .min = 0.0f, .max = 1.0f });
 
-		result |= PropertyField("Position", rc.position);
-		result |= PropertyField("Size", rc.size);
-		result |= PropertyField("Color", rc.color);
-		result |= PropertyField("Texture", rc.textureId);
-
-		if (result.started)
+		if (result.finished)
 		{
-			s_RectBefore = { rc.position, rc.size, rc.color, rc.textureId };
-		}
-		else if (result.finished)
-		{
-			EditorCommandManager::ModifyComponent<Engine::UI::Rect>(entity, s_RectBefore, rc);
+			EditorCommandManager::ModifyComponent<Engine::UI::Canvas>(entity, s_CanvasBefore, canvas);
 		}
 		else if (result.changed)
 		{
-			entity.SetDirty();
+			entity.SetDirty<Engine::DirtyTag>();
+		}
+	}
+
+	void DrawUIRect(Engine::Entity entity)
+	{
+		if (!entity.HasComponent<Engine::UI::RectTransform>()) return;
+
+		const std::initializer_list<ComponentMenuAction> menuActions
+		{
+			{ "Reset", [&] {
+				auto before = entity.GetComponent<Engine::UI::RectTransform>();
+				auto after = Engine::UI::RectTransform{};
+				EditorCommandManager::ModifyComponent<Engine::UI::RectTransform>(entity, before, after);
+			} },
+		};
+
+		ComponentHeader header("Rect", menuActions);
+		if (!header.open) return;
+
+		EditResult result;
+		static Engine::UI::RectTransform s_RectBefore;
+
+		PropertyTable table;
+
+		auto& rc = entity.GetComponent<Engine::UI::RectTransform>();
+
+		result |= PropertyField("Position", rc.anchoredPosition);
+		result |= PropertyField("Size", rc.size);
+		//result |= PropertyField("Color", rc.color);
+		//result |= PropertyField("Texture", rc.textureId);
+
+		result |= PropertyField("Anchor Min", rc.anchorMin);
+		result |= PropertyField("Anchor Max", rc.anchorMax);
+
+		if (result.started)
+		{
+			s_RectBefore = { rc.anchoredPosition, rc.size, rc.anchorMin, rc.anchorMax };
+		}
+		else if (result.finished)
+		{
+			EditorCommandManager::ModifyComponent<Engine::UI::RectTransform>(entity, s_RectBefore, rc);
+		}
+		else if (result.changed)
+		{
+			entity.SetDirty<Engine::UI::LayoutDirtyTag>();
+
+
+		}
+	}
+
+	void DrawUIImage(Engine::Entity entity)
+	{
+		if (!entity.HasComponent<Engine::UI::Image>()) return;
+
+		const std::initializer_list<ComponentMenuAction> menuActions
+		{
+			{ "Reset", [&] {
+				auto before = entity.GetComponent<Engine::UI::Image>();
+				auto after = Engine::UI::Image{};
+				EditorCommandManager::ModifyComponent<Engine::UI::Image>(entity, before, after);
+			} },
+		};
+
+		ComponentHeader header("Image", menuActions);
+		if (!header.open) return;
+		auto& ic = entity.GetComponent<Engine::UI::Image>();
+
+		EditResult result;
+		static Engine::UI::Image s_ImageBefore;
+		PropertyTable table;
+
+		result |= PropertyField("Tint", ic.tint, { .mode = DisplayMode::Color });
+		result |= PropertyField("Texture", ic.iconName);
+
+		if (result.started)
+		{
+			s_ImageBefore = { ic.iconName, ic.tint};
+		}
+		else if (result.finished)
+		{
+			EditorCommandManager::ModifyComponent<Engine::UI::Image>(entity, s_ImageBefore, ic);
+		}
+		else if (result.changed)
+		{
+			entity.SetDirty<Engine::DirtyTag>();
 		}
 	}
 
@@ -449,15 +526,16 @@ namespace Editor
 			void (*add)(Engine::Entity);
 		};
 
-		static constexpr std::array<AddComponentEntry, 6> entries
+		static constexpr std::array<AddComponentEntry, 8> entries
 		{
 			AddComponentEntry{ "Camera",        [](Engine::Entity e) { auto& component = e.GetOrAddComponent<Engine::CameraComponent>(); component.camera = std::make_unique<Engine::Camera>().release(); }},
 			AddComponentEntry{ "Mesh",          [](Engine::Entity e) { e.GetOrAddComponent<Engine::MeshComponent>(); } },
 			AddComponentEntry{ "Collider",      [](Engine::Entity e) { e.GetOrAddComponent<Engine::ColliderComponent>(); } },
 			AddComponentEntry{ "Light",         [](Engine::Entity e) { e.GetOrAddComponent<Engine::LightComponent>(); } },
 			AddComponentEntry{ "Script",				[](Engine::Entity e) { e.GetOrAddComponent<Engine::ScriptComponent>(); } },
-			AddComponentEntry{ "UI Rect",				[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Rect>(); } }
-			//AddComponentEntry{ "UI Style",			[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Style>(); } }
+			AddComponentEntry{ "UI Rect",				[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::RectTransform>(); } },
+			AddComponentEntry{ "UI Canvas",			[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Canvas>(); e.GetOrAddComponent<Engine::UI::RectTransform>(); } },
+			AddComponentEntry{ "UI Image",			[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Image>(); e.GetOrAddComponent<Engine::UI::RectTransform>(); } }
 		};
 
 		ImGui::Separator();
@@ -518,6 +596,8 @@ namespace Editor
 		DrawLight(entity);
 		DrawScript(entity);
 		DrawUIRect(entity);
+		DrawUICanvas(entity);
+		DrawUIImage(entity);
 
 		DrawAddComponentButton(entity);
 	}

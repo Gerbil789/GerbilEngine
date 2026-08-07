@@ -61,7 +61,7 @@ namespace Engine
 		bindGroupDesc.entries = &bindGroupEntry;
 		m_ShadowBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
 
-		wgpu::ShaderModule shaderModule = LoadWGSLShader("Resources/Engine/shaders/wireframe.wgsl");
+		wgpu::ShaderModule shaderModule = LoadWGSLShader("resources/shaders/wireframe.wgsl");
 		std::array<wgpu::VertexAttribute, 3> vertexAttribs;
 
 		// Position

@@ -38,7 +38,7 @@ namespace Engine
 	struct ENGINE_API HierarchyComponent
 	{
 		entt::entity parent{ entt::null };
-		std::vector<entt::entity> children;
+		std::vector<entt::entity> children; //TODO: vector uses heap allocation, not good in hot path...
 	};
 
 	struct ENGINE_API MeshComponent
@@ -111,21 +111,58 @@ namespace Engine
 
 	namespace UI
 	{
-		struct ENGINE_API UITag {};
+		struct LayoutDirtyTag {};
 
-		struct ENGINE_API Rect
+		struct ENGINE_API RectTransform
 		{
-			glm::vec2 position{ 0.0f, 0.0f };
+			glm::vec2 anchorMin{ 0.5f, 0.5f };
+			glm::vec2 anchorMax{ 0.5f, 0.5f };
+			glm::vec2 pivot{ 0.5f, 0.5f };
+
+			glm::vec2 anchoredPosition{ 0.0f, 0.0f };
 			glm::vec2 size{ 100.0f, 100.0f };
 
-			glm::vec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
-			Uuid textureId;
-
-			std::string icon;
+			glm::vec2 absolutePosition{ 0.0f, 0.0f };
+			glm::vec2 absoluteSize{ 0.0f, 0.0f };
 		};
+
+		struct ENGINE_API Canvas
+		{
+			bool isScreenSpace = true;
+			glm::vec2 referenceResolution{ 1920.0f, 1080.0f };
+			float matchWidthOrHeight = 0.5f; // 0 = match width, 1 = match height, 0.5 = balance
+		};
+
+		struct ENGINE_API Image
+		{
+			std::string iconName;
+			glm::vec4 tint{ 1.0f, 1.0f, 1.0f, 1.0f };
+		};
+
+		//struct ENGINE_API Text
+		//{
+		//	std::string text;
+		//	std::string fontName;
+		//	glm::vec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
+		//	float fontSize = 16.0f;
+		//};
+
+		//struct ENGINE_API Interactable
+		//{
+		//	bool isHovered{ false };
+		//	bool isPressed{ false };
+		//	bool isDisabled{ false };
+		//};
+
+		//struct ENGINE_API Button
+		//{
+		//	glm::vec4 normalColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+		//	glm::vec4 hoverColor{ 0.8f, 0.8f, 0.8f, 1.0f };
+		//	glm::vec4 pressedColor{ 0.5f, 0.5f, 0.5f, 1.0f };
+		//	glm::vec4 disabledColor{ 0.3f, 0.3f, 0.3f, 1.0f };
+
+		//	uint32_t hoverIconHash{ 0 };
+		//	uint32_t pressedIconHash{ 0 };
+		//};
 	}
-
-
-
-
 }

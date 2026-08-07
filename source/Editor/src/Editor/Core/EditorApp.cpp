@@ -46,7 +46,7 @@ namespace Editor
 		Engine::GraphicsContext::Initialize();
 		GLFW::Initialize();
 
-		m_Window.Initialize({ std::format("Gerbil Editor - {}", Engine::Configuration) , 1600, 900, "Resources/Engine/icons/logo.png" });
+		m_Window.Initialize({ std::format("Gerbil Editor - {}", Engine::Configuration) , 1600, 900, "resources/icons/logo.png" });
 		
 		m_Window.SetEventCallback([](auto& e) {Engine::EventBus::Publish(e); });
 

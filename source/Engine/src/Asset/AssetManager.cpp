@@ -129,14 +129,14 @@ namespace Engine
       m_Textures.insert_or_assign(RESOURCES::TEXTURE::NORMAL, std::move(normalTexture));
     }
 
-    LoadBuiltInAsset(RESOURCES::MESH::CUBE, "Resources/Engine/models/cube.glb", m_Meshes, MeshImporter::LoadMesh, "Cube");
-    LoadBuiltInAsset(RESOURCES::MESH::SPHERE, "Resources/Engine/models/sphere.glb", m_Meshes, MeshImporter::LoadMesh, "Sphere");
-    LoadBuiltInAsset(RESOURCES::TEXTURE::HDR, "Resources/Engine/hdr/lebombo_4k.hdr", m_Textures, TextureImporter::LoadTexture2D, "HDR Environment");
-    LoadBuiltInAsset(RESOURCES::TEXTURE::EDITOR_ICONS, "Resources/Engine/icons/icons.png", m_Textures, TextureImporter::LoadTexture2D, "Editor Icons");
-    LoadBuiltInAsset(RESOURCES::SHADER::DEFAULT, "Resources/Engine/shaders/pink.wgsl", m_Shaders, ShaderImporter::LoadShader, "Pink Shader");
-    LoadBuiltInAsset(RESOURCES::SHADER::FLAT, "Resources/Engine/shaders/flat.wgsl", m_Shaders, ShaderImporter::LoadShader, "Flat Shader");
-    LoadBuiltInAsset(RESOURCES::SHADER::UI, "Resources/Engine/shaders/ui.wgsl", m_Shaders, ShaderImporter::LoadShader, "UI Shader");
-    LoadBuiltInAsset(RESOURCES::SCENE::DEFAULT, "Resources/Engine/scenes/default.scene", m_Scenes, SceneImporter::LoadScene, "Default Scene");
+    LoadBuiltInAsset(RESOURCES::MESH::CUBE, "resources/models/cube.glb", m_Meshes, MeshImporter::LoadMesh, "Cube");
+    LoadBuiltInAsset(RESOURCES::MESH::SPHERE, "resources/models/sphere.glb", m_Meshes, MeshImporter::LoadMesh, "Sphere");
+    LoadBuiltInAsset(RESOURCES::TEXTURE::HDR, "resources/hdr/lebombo_4k.hdr", m_Textures, TextureImporter::LoadTexture2D, "HDR Environment");
+    LoadBuiltInAsset(RESOURCES::TEXTURE::EDITOR_ICONS, "resources/icons/icons.png", m_Textures, TextureImporter::LoadTexture2D, "Editor Icons");
+    LoadBuiltInAsset(RESOURCES::SHADER::DEFAULT, "resources/shaders/pink.wgsl", m_Shaders, ShaderImporter::LoadShader, "Pink Shader");
+    LoadBuiltInAsset(RESOURCES::SHADER::FLAT, "resources/shaders/flat.wgsl", m_Shaders, ShaderImporter::LoadShader, "Flat Shader");
+    LoadBuiltInAsset(RESOURCES::SHADER::UI, "resources/shaders/ui.wgsl", m_Shaders, ShaderImporter::LoadShader, "UI Shader");
+    LoadBuiltInAsset(RESOURCES::SCENE::DEFAULT, "resources/scenes/default.scene", m_Scenes, SceneImporter::LoadScene, "Default Scene");
 
     {
       MaterialSpecification spec{ .shaderId = RESOURCES::SHADER::FLAT };

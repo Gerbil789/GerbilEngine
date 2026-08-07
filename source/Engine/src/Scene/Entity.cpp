@@ -31,9 +31,10 @@ namespace Engine
 		m_Scene = nullptr;
 	}
 
+	template<typename T>
 	void Entity::SetDirty()
 	{
-		m_Scene->GetRegistry().emplace<DirtyTag>(m_Handle);
+		m_Scene->GetRegistry().emplace<T>(m_Handle);
 	}
 
 	template<typename T>
@@ -81,8 +82,6 @@ namespace Engine
 				template ENGINE_API ComponentType& Entity::GetOrAddComponent<ComponentType>(); \
 				template ENGINE_API ComponentType* Entity::TryGetComponent<ComponentType>();
 
-	//INSTANTIATE_COMPONENT(DisabledTag)
-
 	INSTANTIATE_COMPONENT(IdentityComponent)
 
 	INSTANTIATE_COMPONENT(NameComponent)
@@ -105,5 +104,14 @@ namespace Engine
 
 	// --- UI COMPONENTS HERE ---
 
-	INSTANTIATE_COMPONENT(UI::Rect)
+	template ENGINE_API void Entity::SetDirty<Engine::DirtyTag>();
+
+	template ENGINE_API void Entity::SetDirty<Engine::UI::LayoutDirtyTag>();
+
+	INSTANTIATE_COMPONENT(UI::RectTransform)
+
+	INSTANTIATE_COMPONENT(UI::Canvas)
+
+	INSTANTIATE_COMPONENT(UI::Image)
+
 }

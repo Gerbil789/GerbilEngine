@@ -35,7 +35,7 @@ namespace Engine::GraphicsContext
 		//togglesDesc.disabledToggleCount = 0;
 
 		//desc.nextInChain = &togglesDesc.chain;
-		
+
 		desc.setDefault();
 
 		std::array<wgpu::InstanceFeatureName, 1> features = { wgpu::InstanceFeatureName::TimedWaitAny };
@@ -43,14 +43,14 @@ namespace Engine::GraphicsContext
 		desc.requiredFeatures = reinterpret_cast<WGPUInstanceFeatureName*>(features.data());
 
 		s_Instance = wgpu::createInstance(desc);
-		if(!s_Instance)
+		if (!s_Instance)
 		{
 			throw std::runtime_error("Failed to create WGPU instance");
 		}
 
 		wgpu::RequestAdapterOptions adapterOpts;
 		s_Adapter = s_Instance.requestAdapter(adapterOpts);
-		if(!s_Adapter)
+		if (!s_Adapter)
 		{
 			throw std::runtime_error("Failed to request WGPU adapter");
 		}
@@ -94,13 +94,13 @@ namespace Engine::GraphicsContext
 			};
 
 		s_Device = s_Adapter.requestDevice(deviceDesc);
-		if(!s_Device)
+		if (!s_Device)
 		{
 			throw std::runtime_error("Failed to request WGPU device");
 		}
 
 		s_Queue = s_Device.getQueue();
-		if(!s_Queue)
+		if (!s_Queue)
 		{
 			throw std::runtime_error("Failed to get WGPU queue");
 		}

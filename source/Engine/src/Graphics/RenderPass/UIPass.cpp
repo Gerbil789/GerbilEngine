@@ -1,15 +1,13 @@
 #include "enginepch.h"
 #include "Engine/Graphics/RenderPass/UIPass.h"
-#include "Engine/Graphics/Pipeline.h"
+#include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Graphics/Shader.h"
+#include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Scene/Components.h"
-#include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Core/Resources.h"
-#include "Engine/Graphics/Material.h"
-#include "Engine/Core/Log.h"
 #include "Engine/Core/Project.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <entt/entt.hpp>
@@ -18,25 +16,23 @@
 
 namespace Engine
 {
+	static constexpr uint64_t maxUIElements = 128;
+
+	struct alignas(16) UIUniforms
+	{
+		glm::mat4 ortho;
+	};
+	static_assert(sizeof(UIUniforms) % 16 == 0);
+
+
 	struct UIDrawItem
 	{
 		glm::vec4 rect;
 		glm::vec4 color;
 		glm::vec4 uvRect;
 	};
+	static_assert(sizeof(UIDrawItem) % 16 == 0);
 
-	struct UIUniforms 
-	{
-		glm::mat4 ortho;
-	};
-
-	//static wgpu::RenderPipeline m_UIPipeline = nullptr;
-	//static wgpu::BindGroupLayout s_UIBindGroupLayout = nullptr;
-
-	//static wgpu::BindGroupLayout s_TextureBindGroupLayout = nullptr;
-	//static wgpu::BindGroup uiBindGroup = nullptr;
-	//static wgpu::Buffer uiUniformBuffer = nullptr;
-	//static wgpu::Buffer uiStorageBuffer = nullptr;
 
 	struct AtlasRegion 
 	{
@@ -51,8 +47,11 @@ namespace Engine
 
 	static UIConfig s_UIConfig;
 
-	static Material s_UIMaterial;
-
+	static wgpu::BindGroupLayout s_UIBindGroupLayout = nullptr;
+	static wgpu::BindGroup uiBindGroup = nullptr;
+	static wgpu::Buffer uiUniformBuffer = nullptr;
+	static wgpu::Buffer uiStorageBuffer = nullptr;
+	static wgpu::RenderPipeline uiPipeline = nullptr;
 
 	static void LoadUITextureAtlas()
 	{
@@ -66,202 +65,298 @@ namespace Engine
 		}
 	}
 
-
-	static std::vector<UIDrawItem> GenerateUIDrawList(Scene* scene)
+	static void CalculateUILayout(entt::registry& registry, entt::entity entity, const UI::RectTransform& parentRect, float scaleFactor, bool forceDirty)
 	{
-		Uuid textureId = Uuid{ s_UIConfig.texture };
-		const Texture2D& texture = AssetManager::GetAsset<Texture2D>(textureId);
+		bool isDirty = forceDirty || registry.any_of<UI::LayoutDirtyTag>(entity);
 
+		if (isDirty)
+		{
+			auto& rect = registry.get<UI::RectTransform>(entity);
+
+			glm::vec2 scaledSize = rect.size * scaleFactor;
+			glm::vec2 scaledAnchoredPos = rect.anchoredPosition * scaleFactor;
+
+			float baseX = parentRect.absolutePosition.x + (parentRect.absoluteSize.x * rect.anchorMin.x);
+			float baseY = parentRect.absolutePosition.y + (parentRect.absoluteSize.y * rect.anchorMin.y);
+
+			float width = parentRect.absoluteSize.x * (rect.anchorMax.x - rect.anchorMin.x) + scaledSize.x;
+			float height = parentRect.absoluteSize.y * (rect.anchorMax.y - rect.anchorMin.y) + scaledSize.y;
+
+			float finalX = baseX + scaledAnchoredPos.x - (width * rect.pivot.x);
+			float finalY = baseY + scaledAnchoredPos.y - (height * rect.pivot.y);
+
+			rect.absolutePosition = { finalX, finalY };
+			rect.absoluteSize = { width, height };
+			registry.remove<UI::LayoutDirtyTag>(entity);
+		}
+
+		const auto& hc = registry.get<HierarchyComponent>(entity);
+		const auto& rect = registry.get<UI::RectTransform>(entity);
+
+		for (entt::entity child : hc.children)
+		{
+			if (registry.any_of<UI::RectTransform>(child))
+			{
+				CalculateUILayout(registry, child, rect, scaleFactor, isDirty);
+			}
+		}
+	}
+
+	static void CollectUIDrawItems(entt::registry& registry, entt::entity entity, std::vector<UIDrawItem>& drawList, float texWidth, float texHeight)
+	{
+		if (registry.any_of<DisabledTag>(entity)) return;
+
+		if (registry.any_of<UI::RectTransform, UI::Image>(entity))
+		{
+			const auto& rect = registry.get<UI::RectTransform>(entity);
+			const auto& image = registry.get<UI::Image>(entity);
+
+			UIDrawItem item;
+			item.rect = glm::vec4(rect.absolutePosition.x, rect.absolutePosition.y, rect.absoluteSize.x, rect.absoluteSize.y);
+			item.color = image.tint;
+
+			if (!image.iconName.empty() && s_UIConfig.icons.find(image.iconName) != s_UIConfig.icons.end())
+			{
+				const AtlasRegion& region = s_UIConfig.icons[image.iconName];
+				item.uvRect = glm::vec4(
+					static_cast<float>(region.x) / texWidth,
+					static_cast<float>(region.y) / texHeight,
+					static_cast<float>(region.w) / texWidth,
+					static_cast<float>(region.h) / texHeight
+				);
+			}
+			else
+			{
+				constexpr glm::vec4 defaultUV(0.0f, 0.0f, 48.0f / 2048.0f, 48.0f / 2048.0f);
+				item.uvRect = defaultUV;
+			}
+
+			drawList.push_back(item);
+		}
+
+		if (registry.any_of<HierarchyComponent>(entity))
+		{
+			const auto& hc = registry.get<HierarchyComponent>(entity);
+			for (entt::entity child : hc.children)
+			{
+				CollectUIDrawItems(registry, child, drawList, texWidth, texHeight);
+			}
+		}
+	}
+
+	static std::vector<UIDrawItem> GenerateUIDrawList(Scene* scene, float screenWidth, float screenHeight)
+	{
+		entt::registry& registry = scene->GetRegistry();
 		std::vector<UIDrawItem> drawList;
 
-		entt::registry& registry = scene->GetRegistry();
-		auto view = registry.view<UI::Rect>();
+		//TODO: use on window resize event...
 
-		for (auto entity : view)
+		static float lastScreenWidth = 0.0f;
+		static float lastScreenHeight = 0.0f;
+		bool screenResized = (screenWidth != lastScreenWidth || screenHeight != lastScreenHeight);
+
+		lastScreenWidth = screenWidth;
+		lastScreenHeight = screenHeight;
+
+		bool anyLayoutDirty = screenResized || !registry.view<UI::LayoutDirtyTag>().empty();
+
+		if (anyLayoutDirty)
 		{
-			const auto& rect = view.get<UI::Rect>(entity);
-			UIDrawItem item;
-			item.rect = glm::vec4{ rect.position, rect.size };
-			item.color = rect.color;
-
-			if(!rect.icon.empty())
+			auto view = registry.view<UI::Canvas, UI::RectTransform, HierarchyComponent>(entt::exclude<DisabledTag>);
+			for (auto [entity, canvas, rect, hc] : view.each())
 			{
-				if(s_UIConfig.icons.find(rect.icon) != s_UIConfig.icons.end())
+				if (canvas.isScreenSpace)
 				{
-					const AtlasRegion& region = s_UIConfig.icons[rect.icon];
-					item.uvRect = glm::vec4{ (float)region.x / texture.GetWidth(), (float)region.y / texture.GetHeight(), (float)region.w / texture.GetWidth(), (float)region.h / texture.GetHeight() };
+					bool canvasDirty = screenResized || registry.any_of<UI::LayoutDirtyTag>(entity);
+
+					if (canvasDirty)
+					{
+						rect.anchoredPosition = { 0.0f, 0.0f };
+						rect.size = { screenWidth, screenHeight };
+						rect.absolutePosition = { 0.0f, 0.0f };
+						rect.absoluteSize = { screenWidth, screenHeight };
+						registry.remove<UI::LayoutDirtyTag>(entity);
+					}
+
+					float scaleX = screenWidth / canvas.referenceResolution.x;
+					float scaleY = screenHeight / canvas.referenceResolution.y;
+					float scaleFactor = std::lerp(scaleX, scaleY, canvas.matchWidthOrHeight);
+
+					for (entt::entity child : hc.children)
+					{
+						if (registry.any_of<UI::RectTransform>(child))
+						{
+							CalculateUILayout(registry, child, rect, scaleFactor, canvasDirty);
+						}
+					}
 				}
 				else
 				{
-					item.uvRect = glm::vec4{ 0.0f, 0.0f, 1.0f, 1.0f };
+					//TODO
 				}
 			}
-			drawList.push_back(item);
+		}
+
+
+		const Texture2D& texture = AssetManager::GetAsset<Texture2D>(Uuid{ s_UIConfig.texture });
+		float texWidth = static_cast<float>(texture.GetWidth());
+		float texHeight = static_cast<float>(texture.GetHeight());
+
+		auto canvasView = registry.view<UI::Canvas, HierarchyComponent>(entt::exclude<DisabledTag>);
+		for (auto [entity, canvas, hc] : canvasView.each())
+		{
+			if (canvas.isScreenSpace)
+			{
+				for (entt::entity child : hc.children)
+				{
+					CollectUIDrawItems(registry, child, drawList, texWidth, texHeight);
+				}
+			}
 		}
 
 		return drawList;
 	}
 
-	//static void CreateUIBindGroupLayout()
-	//{
-	//	// UI
-	//	{
-	//		std::array<wgpu::BindGroupLayoutEntry, 2> entries;
+	static void CreateUIUniformBuffer()
+	{
+		wgpu::BufferDescriptor bufferDesc;
+		bufferDesc.label = { "UIUniformBuffer", WGPU_STRLEN };
+		bufferDesc.size = sizeof(UIUniforms);
+		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
+		uiUniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
+	}
 
-	//		entries[0].binding = 0;
-	//		entries[0].visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
-	//		entries[0].buffer.type = wgpu::BufferBindingType::Uniform;
-	//		entries[0].buffer.minBindingSize = sizeof(UIUniforms);
+	static void CreateUIStorageBuffer()
+	{
+		wgpu::BufferDescriptor bufferDesc;
+		bufferDesc.label = { "UIStorageBuffer", WGPU_STRLEN };
+		bufferDesc.size = sizeof(UIDrawItem) * maxUIElements;
+		bufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
+		uiStorageBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
+	}
 
-	//		entries[1].binding = 1;
-	//		entries[1].visibility = wgpu::ShaderStage::Vertex;
-	//		entries[1].buffer.type = wgpu::BufferBindingType::ReadOnlyStorage;
-	//		entries[1].buffer.minBindingSize = 0;
+	void CreateUIBindGroupLayout()
+	{
+		std::array<wgpu::BindGroupLayoutEntry, 4> entries;
 
-	//		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
-	//		bindGroupLayoutDesc.label = { "UIBindGroupLayout", WGPU_STRLEN };
-	//		bindGroupLayoutDesc.entryCount = entries.size();
-	//		bindGroupLayoutDesc.entries = entries.data();
+		entries[0].binding = 0;
+		entries[0].visibility = wgpu::ShaderStage::Vertex;
+		entries[0].buffer.type = wgpu::BufferBindingType::Uniform;
+		entries[0].buffer.minBindingSize = sizeof(UIUniforms);
 
-	//		s_UIBindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
+		entries[1].binding = 1;
+		entries[1].visibility = wgpu::ShaderStage::Vertex;
+		entries[1].buffer.type = wgpu::BufferBindingType::ReadOnlyStorage;
+		entries[1].buffer.minBindingSize = sizeof(UIDrawItem);
 
+		entries[2].binding = 2;
+		entries[2].visibility = wgpu::ShaderStage::Fragment;
+		entries[2].sampler.type = wgpu::SamplerBindingType::Filtering;
 
-	//	}
+		entries[3].binding = 3;
+		entries[3].visibility = wgpu::ShaderStage::Fragment;
+		entries[3].texture.sampleType = wgpu::TextureSampleType::Float;
+		entries[3].texture.multisampled = false;
+		entries[3].texture.viewDimension = wgpu::TextureViewDimension::_2D;
 
-	//	// Texture
-	//	{
-	//		std::array<wgpu::BindGroupLayoutEntry, 2> entries;
+		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
+		bindGroupLayoutDesc.label = { "UIBindGroupLayout", WGPU_STRLEN };
+		bindGroupLayoutDesc.entryCount = entries.size();
+		bindGroupLayoutDesc.entries = entries.data();
 
-	//		entries[0].binding = 0;
-	//		entries[0].visibility = wgpu::ShaderStage::Fragment;
-	//		entries[0].sampler.type = wgpu::SamplerBindingType::Filtering;
-	//		entries[1].binding = 1;
+		s_UIBindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
+	}
 
-	//		entries[1].visibility = wgpu::ShaderStage::Fragment;
-	//		entries[1].texture.sampleType = wgpu::TextureSampleType::Float;
-	//		entries[1].texture.viewDimension = wgpu::TextureViewDimension::_2D;
-	//		entries[1].texture.multisampled = false;
+	static void CreateUIBindGroup()
+	{
+		std::array<wgpu::BindGroupEntry, 4> entries;
 
-	//		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
-	//		bindGroupLayoutDesc.label = { "TextureBindGroupLayout", WGPU_STRLEN };
-	//		bindGroupLayoutDesc.entryCount = entries.size();
-	//		bindGroupLayoutDesc.entries = entries.data();
-	//		s_TextureBindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
-	//	}
-	//}
+		entries[0].binding = 0;
+		entries[0].buffer = uiUniformBuffer;
+		entries[0].offset = 0;
+		entries[0].size = sizeof(UIUniforms);
 
-	//static void CreateUIUniformBuffer()
-	//{
-	//	wgpu::BufferDescriptor bufferDesc;
-	//	bufferDesc.label = { "UIUniformBuffer", WGPU_STRLEN };
-	//	bufferDesc.size = sizeof(UIUniforms);
-	//	bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-	//	uiUniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
-	//}
+		entries[1].binding = 1;
+		entries[1].buffer = uiStorageBuffer;
+		entries[1].offset = 0;
+		entries[1].size = sizeof(UIDrawItem) * maxUIElements;
 
-	//static void CreateUIStorageBuffer()
-	//{
-	//	wgpu::BufferDescriptor bufferDesc;
-	//	bufferDesc.label = { "UIStorageBuffer", WGPU_STRLEN };
-	//	bufferDesc.size = sizeof(UIDrawItem) * 128;
-	//	bufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
-	//	uiStorageBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
-	//}
+		entries[2].binding = 2;
+		entries[2].sampler = SamplerPool::GetSampler({ TextureFilter::Point, TextureWrap::Repeat });
 
-	//static void CreateUIBindGroup()
-	//{
-	//	std::array<wgpu::BindGroupEntry, 2> entries;
+		entries[3].binding = 3;
+		entries[3].textureView = AssetManager::GetAsset<Texture2D>(Uuid{ s_UIConfig.texture }).GetTextureView();
 
-	//	entries[0].binding = 0;
-	//	entries[0].buffer = uiUniformBuffer;
-	//	entries[0].offset = 0;
-	//	entries[0].size = sizeof(UIUniforms);
+		wgpu::BindGroupDescriptor bindGroupDesc;
+		bindGroupDesc.label = { "UIBindGroup", WGPU_STRLEN };
+		bindGroupDesc.layout = s_UIBindGroupLayout;
+		bindGroupDesc.entryCount = entries.size();
+		bindGroupDesc.entries = entries.data();
+		uiBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+	}
 
-	//	entries[1].binding = 1;
-	//	entries[1].buffer = uiStorageBuffer;
-	//	entries[1].offset = 0;
-	//	entries[1].size = sizeof(UIDrawItem) * 128;
+	void CreateUIPipeline()
+	{
+		const Shader& shader = AssetManager::GetAsset<Shader>(RESOURCES::SHADER::UI);
 
-	//	wgpu::BindGroupDescriptor bindGroupDesc;
-	//	bindGroupDesc.label = { "UIBindGroup", WGPU_STRLEN };
-	//	bindGroupDesc.layout = s_UIBindGroupLayout;
-	//	bindGroupDesc.entryCount = entries.size();
-	//	bindGroupDesc.entries = entries.data();
-	//	uiBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
-	//}
+		wgpu::RenderPipelineDescriptor pipelineDesc;
+		pipelineDesc.label = { "UI Shader Pipeline", WGPU_STRLEN };
 
-	//static void CreateUIPipeline()
-	//{
-	//	wgpu::ShaderModule shaderModule = LoadWGSLShader("Resources/Engine/shaders/UI.wgsl");
+		pipelineDesc.vertex.bufferCount = 0;
+		pipelineDesc.vertex.buffers = nullptr;
+		pipelineDesc.vertex.module = shader.GetShaderModule();
+		pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN };
 
-	//	wgpu::RenderPipelineDescriptor pipelineDesc;
-	//	pipelineDesc.label = { "UIShaderPipeline", WGPU_STRLEN };
+		pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+		pipelineDesc.primitive.frontFace = wgpu::FrontFace::CW;
+		pipelineDesc.primitive.cullMode = wgpu::CullMode::Back;
 
-	//	pipelineDesc.vertex.bufferCount = 0;
-	//	pipelineDesc.vertex.buffers = nullptr;
-	//	pipelineDesc.vertex.module = shaderModule;
-	//	pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN };
-	//	pipelineDesc.vertex.constantCount = 0;
-	//	pipelineDesc.vertex.constants = nullptr;
+		wgpu::BlendState blendState;
+		blendState.color.srcFactor = wgpu::BlendFactor::SrcAlpha;
+		blendState.color.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha;
+		blendState.color.operation = wgpu::BlendOperation::Add;
+		blendState.alpha.srcFactor = wgpu::BlendFactor::Zero;
+		blendState.alpha.dstFactor = wgpu::BlendFactor::One;
+		blendState.alpha.operation = wgpu::BlendOperation::Add;
 
-	//	pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
-	//	pipelineDesc.primitive.stripIndexFormat = wgpu::IndexFormat::Undefined;
-	//	pipelineDesc.primitive.frontFace = wgpu::FrontFace::CCW;
-	//	pipelineDesc.primitive.cullMode = wgpu::CullMode::None;
+		wgpu::ColorTargetState colorTarget;
+		colorTarget.format = GraphicsContext::GetSurfaceFormat();
+		colorTarget.blend = &blendState;
+		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 
-	//	wgpu::ColorTargetState colorTarget;
-	//	colorTarget.format = GraphicsContext::GetSurfaceFormat();
-	//	colorTarget.writeMask = wgpu::ColorWriteMask::All;
+		wgpu::FragmentState fragmentState;
+		fragmentState.module = shader.GetShaderModule();
+		fragmentState.entryPoint = { "fs_main", WGPU_STRLEN };
+		fragmentState.constantCount = 0;
+		fragmentState.constants = nullptr;
+		fragmentState.targetCount = 1;
+		fragmentState.targets = &colorTarget;
+		pipelineDesc.fragment = &fragmentState;
 
-	//	wgpu::FragmentState fragmentState;
-	//	fragmentState.module = shaderModule;
-	//	fragmentState.entryPoint = { "fs_main", WGPU_STRLEN };
-	//	fragmentState.constantCount = 0;
-	//	fragmentState.constants = nullptr;
-	//	fragmentState.targetCount = 1;
-	//	fragmentState.targets = &colorTarget;
-	//	pipelineDesc.depthStencil = nullptr;
-	//	pipelineDesc.fragment = &fragmentState;
+		pipelineDesc.depthStencil = nullptr; // Disable depth testing entirely
+		pipelineDesc.multisample.count = 1;
+		pipelineDesc.multisample.mask = ~0u;
 
-	//	pipelineDesc.multisample.count = 1;
-	//	pipelineDesc.multisample.mask = ~0u;
-	//	pipelineDesc.multisample.alphaToCoverageEnabled = false;
+		std::array<wgpu::BindGroupLayout, 1> bindGroupLayouts;
+		bindGroupLayouts[0] = s_UIBindGroupLayout;
 
-	//	std::array<wgpu::BindGroupLayout, 1> bindGroupLayouts
-	//	{
-	//		s_UIBindGroupLayout
-	//	};
+		wgpu::PipelineLayoutDescriptor layoutDesc;
+		layoutDesc.label = { "UI Shader Pipeline Layout", WGPU_STRLEN };
+		layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
+		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)bindGroupLayouts.data();
+		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
 
-	//	wgpu::PipelineLayoutDescriptor layoutDesc{};
-	//	layoutDesc.label = { "UIShaderPipelineLayout", WGPU_STRLEN };
-	//	layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
-	//	layoutDesc.bindGroupLayouts = reinterpret_cast<WGPUBindGroupLayout*>(bindGroupLayouts.data());
-	//	pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
-
-	//	m_UIPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
-	//}
+		uiPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
+	}
 
 	UIPass::UIPass()
 	{
 		LoadUITextureAtlas();
-
-		const MaterialSpecification materialSpec
-		{
-			.shaderId = RESOURCES::SHADER::UI,
-			.textures =
-			{
-				{ "uTexture", Uuid{ s_UIConfig.texture } }
-			}
-		};
-
-		s_UIMaterial = Material(materialSpec);
-
-
-		//CreateUIBindGroupLayout();
-		//CreateUIUniformBuffer();
-		//CreateUIStorageBuffer();
-		//CreateUIBindGroup();
-		//CreateUIPipeline();
+		CreateUIBindGroupLayout();
+		CreateUIPipeline();
+		CreateUIUniformBuffer();
+		CreateUIStorageBuffer();
+		CreateUIBindGroup();
 	}
 
 	void UIPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
@@ -281,44 +376,16 @@ namespace Engine
 
 		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
 
+		pass.setPipeline(uiPipeline);
+		pass.setBindGroup(0, uiBindGroup, 0, nullptr);
 
-		wgpu::RenderPipeline pipeline = PipelineCache::GetOrCreatePipeline(s_UIMaterial.GetPipelineSpec());
-		pass.setPipeline(pipeline);
+		const UIUniforms orthoUniform = { glm::ortho(0.0f, context.width, context.height, 0.0f,	-1.0f, 1.0f) };
+		GraphicsContext::GetQueue().writeBuffer(uiUniformBuffer, 0, &orthoUniform, sizeof(UIUniforms));
 
-		pass.setBindGroup(0, s_UIMaterial.GetBindGroup(), 0, nullptr);
-
-		UIUniforms orthoUniform = { glm::ortho(0.0f, context.width, context.height, 0.0f,	-1.0f, 1.0f) };
-		GraphicsContext::GetQueue().writeBuffer(s_UIMaterial.GetUniformBuffer(), 0, &orthoUniform, sizeof(UIUniforms));
-
-		const std::vector<UIDrawItem> drawList = GenerateUIDrawList(context.scene);
-
-		//std::map<Engine::Uuid, std::vector<UIDrawItem>> textureGroups;
-		//for (auto& item : drawList) textureGroups[item.textureId].push_back(item);
-
-		//// 2. Multi-draw
-		//for (auto& [texId, items] : textureGroups) {
-		//	// Upload items for this texture only
-		//	GraphicsContext::GetQueue().writeBuffer(uiStorageBuffer, 0, items.data(), items.size() * sizeof(UIDrawItem));
-
-		//	// Bind the specific texture for this draw call
-		//	wgpu::BindGroup texBindGroup = GetBindGroupForTexture(texId);
-		//	pass.setBindGroup(1, texBindGroup, 0, nullptr);
-
-		//	pass.draw(6, (uint32_t)items.size(), 0, 0);
-		//}
-
-
-
-
-
-
-
-
-
-		//GraphicsContext::GetQueue().writeBuffer(s_UIMaterial.get, 0, drawList.data(), drawList.size() * sizeof(UIDrawItem));
+		const std::vector<UIDrawItem> drawList = GenerateUIDrawList(context.scene, context.width, context.height);
+		GraphicsContext::GetQueue().writeBuffer(uiStorageBuffer, 0, drawList.data(), drawList.size() * sizeof(UIDrawItem));
 
 		pass.draw(6, static_cast<uint32_t>(drawList.size()), 0, 0);
-
 		pass.end();
 	}
 }

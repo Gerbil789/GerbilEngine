@@ -220,7 +220,7 @@ namespace Editor
 
   void EditorPicker::CreatePipeline()
   {
-    wgpu::ShaderModule shaderModule = Engine::LoadWGSLShader("Resources/Engine/shaders/picker.wgsl");
+    wgpu::ShaderModule shaderModule = Engine::LoadWGSLShader("resources/shaders/picker.wgsl");
 
     std::array<wgpu::VertexAttribute, 3> vertexAttribs;
     vertexAttribs[0].shaderLocation = 0;

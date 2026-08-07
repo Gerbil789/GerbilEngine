@@ -62,9 +62,11 @@ namespace Editor
 
 			for (auto& binding : bindings)
 			{
-				if (binding.type == Engine::BindingType::Uniform)
+				if (std::holds_alternative<Engine::BufferBinding>(binding.data))
 				{
-					for (auto& param : binding.parameters)
+					const auto& bufferBinding = std::get<Engine::BufferBinding>(binding.data);
+
+					for (auto& param : bufferBinding.parameters)
 					{
 						if (param.name[0] == '_') continue;
 
@@ -88,7 +90,7 @@ namespace Editor
 					}
 				}
 
-				if (binding.type == Engine::BindingType::Texture2D)
+				if (std::holds_alternative<Engine::TextureBinding>(binding.data))
 				{
 					Engine::Uuid texture = m_Material->GetTexture(binding.name);
 					if (AssetField(binding.name.c_str(), texture, Engine::AssetType::Texture).changed)

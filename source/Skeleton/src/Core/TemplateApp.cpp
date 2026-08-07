@@ -111,7 +111,7 @@ namespace Template
 		Engine::GraphicsContext::Initialize();
 		GLFW::Initialize();
 
-		m_Window.Initialize({ std::format("Game - {}", Engine::Configuration) , m_Width, m_Height, "Resources/Engine/icons/logo.png" });
+		m_Window.Initialize({ std::format("Game - {}", Engine::Configuration) , m_Width, m_Height, "resources/icons/logo.png" });
 		m_Window.SetEventCallback([](auto& e) {Engine::EventBus::Publish(e); });
 
 		Engine::AssetManager::Initialize(project.GetProjectDirectory());

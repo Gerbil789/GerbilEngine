@@ -12,7 +12,7 @@ namespace Engine
 
 	BackgroundPass::BackgroundPass()
 	{
-		m_SkyboxShader.Initialize("Resources/Engine/shaders/skybox.wgsl");
+		m_SkyboxShader.Initialize("resources/shaders/skybox.wgsl");
 	}
 
 	void BackgroundPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)

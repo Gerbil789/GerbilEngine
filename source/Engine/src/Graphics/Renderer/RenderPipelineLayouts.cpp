@@ -125,6 +125,9 @@ namespace Engine
 		s_EnvironmentBindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
 	}
 
+
+
+
 	void RenderPipelineLayouts::Initialize()
 	{
 		CreateViewBindGroupLayout();

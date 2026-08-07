@@ -44,7 +44,7 @@ namespace Engine
 
 	static wgpu::ComputePipeline CreateComputePipeline(wgpu::BindGroupLayout layout)
 	{
-		wgpu::ShaderModule computeShaderModule = LoadWGSLShader("Resources/Engine/shaders/compute/cubemap.wgsl");
+		wgpu::ShaderModule computeShaderModule = LoadWGSLShader("resources/shaders/compute/cubemap.wgsl");
 
 		wgpu::PipelineLayoutDescriptor pipelineLayoutDesc;
 		pipelineLayoutDesc.bindGroupLayoutCount = 1;
@@ -182,7 +182,7 @@ namespace Engine
 		}
 
 
-		wgpu::ShaderModule computeShaderModule = LoadWGSLShader("Resources/Engine/shaders/compute/mipmap.wgsl");
+		wgpu::ShaderModule computeShaderModule = LoadWGSLShader("resources/shaders/compute/mipmap.wgsl");
 
 		// Create bind group layout
 		std::array<wgpu::BindGroupLayoutEntry, 2> bindings = { wgpu::Default, wgpu::Default };

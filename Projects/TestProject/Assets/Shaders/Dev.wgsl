@@ -1,4 +1,5 @@
-const NUM_SHADOW_CASCADES: i32 = 4;
+const CASCADE_COUNT: u32 = 4u;
+//override CASCADE_COUNT: u32 = 4u;
 const PI: f32 = 3.14159265;
 
 struct VertexInput
@@ -27,8 +28,8 @@ struct ViewUniforms
 
 struct ShadowUniforms
 {
-	lightViewProj : array<mat4x4f, NUM_SHADOW_CASCADES>,
-	cascadeSplits : array<f32, NUM_SHADOW_CASCADES>,
+	lightViewProj : array<mat4x4f, CASCADE_COUNT>,
+	cascadeSplits : array<f32, CASCADE_COUNT>,
 };
 
 struct MaterialUniforms 
@@ -98,10 +99,10 @@ fn vs_main(in: VertexInput, @builtin(instance_index) instanceIdx: u32) -> Vertex
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4f
 {
-	var cascadeIndex: i32 = 0;
+	var cascadeIndex: u32 = 0;
 	let depth = in.viewDepth;
 
-	for (var i: i32 = 0; i < NUM_SHADOW_CASCADES; i = i + 1)
+	for (var i: u32 = 0; i < CASCADE_COUNT; i = i + 1)
 	{
 		if (depth < uShadow.cascadeSplits[i])
 		{

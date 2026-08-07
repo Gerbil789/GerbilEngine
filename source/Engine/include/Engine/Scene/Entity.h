@@ -39,6 +39,7 @@ namespace Engine
     entt::entity GetHandle() const { return m_Handle; }
 		Scene* GetScene() const { return m_Scene; }
 
+		template<typename T>
     void SetDirty();
 
 		explicit operator bool() const { return m_Handle != entt::null && m_Scene != nullptr; }

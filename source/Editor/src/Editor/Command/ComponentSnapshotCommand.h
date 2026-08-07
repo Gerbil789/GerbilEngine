@@ -2,6 +2,7 @@
 
 #include "ICommand.h"
 #include "Engine/Scene/Entity.h"
+#include "Engine/Scene/Components.h"
 
 namespace Editor
 {
@@ -14,13 +15,13 @@ namespace Editor
     void Execute() override
     {
 			m_Entity.GetComponent<T>() = m_After;
-      m_Entity.SetDirty();
+      m_Entity.SetDirty<Engine::DirtyTag>();
     }
 
     void Undo() override
     {
 			m_Entity.GetComponent<T>() = m_Before;
-      m_Entity.SetDirty();
+      m_Entity.SetDirty<Engine::DirtyTag>();
     }
 
   private:

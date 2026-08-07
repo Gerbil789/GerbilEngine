@@ -25,7 +25,7 @@
       },
       "camera": {
          "Projection": 0,
-         "AspectRatio": 1.3086003,
+         "AspectRatio": 1.6715817,
          "Perspective": {
             "FOV": 0.7853982,
             "Near": 0.1,
@@ -278,6 +278,31 @@
       "enabled": true,
       "hierarchy": {
          "parent": 0
+      }
+   },
+   {
+      "id": 4111919670942520316,
+      "name": "Empty",
+      "transform": {
+         "position": [
+            0,
+            0,
+            0
+         ],
+         "rotation": [
+            0,
+            0,
+            0
+         ],
+         "scale": [
+            1,
+            1,
+            1
+         ]
+      },
+      "enabled": true,
+      "hierarchy": {
+         "parent": 77277271
       }
    }
 ]

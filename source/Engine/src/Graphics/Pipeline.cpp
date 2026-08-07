@@ -8,10 +8,9 @@
 
 namespace Engine
 {
-	wgpu::RenderPipeline PipelineCache::GetOrCreatePipeline(const PipelineSpecification& specification)
+	wgpu::RenderPipeline PipelineCache::GetPipeline(const PipelineSpecification& specification)
 	{
-		size_t configHash = specification.Hash();
-		auto it = s_PipelineCache.find(configHash);
+		auto it = s_PipelineCache.find(specification);
 		if (it != s_PipelineCache.end())
 		{
 			return it->second;
@@ -19,35 +18,36 @@ namespace Engine
 
 		const Shader& shader = Engine::AssetManager::GetAsset<Shader>(specification.shaderId);
 
-		auto vertexAttributes = shader.GetSpecification().vertexAttributes;
+		wgpu::RenderPipelineDescriptor pipelineDesc;
+		pipelineDesc.label = { "Shader Pipeline", WGPU_STRLEN };
 
-		uint64_t currentStride = 0;
 
-		for (auto& attr : vertexAttributes)
-		{
-			uint64_t formatSize = GetVertexFormatSize(attr.format);
-			attr.offset = currentStride;
-			currentStride += formatSize;
-		}
+		const std::vector<wgpu::VertexAttribute>& vertexAttributes = shader.GetSpecification().vertexAttributes;
 
 		wgpu::VertexBufferLayout vertexBufferLayout;
-		vertexBufferLayout.attributeCount = vertexAttributes.size();
-		vertexBufferLayout.attributes = vertexAttributes.data();
-		vertexBufferLayout.arrayStride = currentStride;
-		vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
+		if(!vertexAttributes.empty())
+		{
+			uint64_t stride = std::accumulate(vertexAttributes.begin(), vertexAttributes.end(), 0ull, [](uint64_t sum, const wgpu::VertexAttribute& attr) { return sum + GetVertexFormatSize(attr.format); });
 
-		wgpu::RenderPipelineDescriptor pipelineDesc;
-		pipelineDesc.label = { "Shader Pipeline", WGPU_STRLEN};
+			vertexBufferLayout.attributeCount = vertexAttributes.size();
+			vertexBufferLayout.attributes = vertexAttributes.data();
+			vertexBufferLayout.arrayStride = stride;
+			vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
 
-		pipelineDesc.vertex.bufferCount = 1;
-		pipelineDesc.vertex.buffers = &vertexBufferLayout;
+			pipelineDesc.vertex.bufferCount = 1;
+			pipelineDesc.vertex.buffers = &vertexBufferLayout;
+		}
+		else
+		{
+			pipelineDesc.vertex.bufferCount = 0;
+			pipelineDesc.vertex.buffers = nullptr;
+		}
+
 		pipelineDesc.vertex.module = shader.GetShaderModule();
 		pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN};
-		pipelineDesc.vertex.constantCount = 0;
-		pipelineDesc.vertex.constants = nullptr;
 
 		pipelineDesc.primitive.topology = specification.topology;
-		pipelineDesc.primitive.frontFace = wgpu::FrontFace::CW;
+		pipelineDesc.primitive.frontFace = specification.frontFace;
 		pipelineDesc.primitive.cullMode = specification.cullMode;
 
 		wgpu::BlendState blendState;
@@ -73,44 +73,58 @@ namespace Engine
 		pipelineDesc.fragment = &fragmentState;
 
 		wgpu::DepthStencilState depthStencilState;
-		depthStencilState.depthCompare = wgpu::CompareFunction::Less;
-		depthStencilState.depthWriteEnabled = wgpu::OptionalBool::True;
-		depthStencilState.format = wgpu::TextureFormat::Depth24Plus;
-		depthStencilState.stencilReadMask = 0xFFFFFFFF;
-		depthStencilState.stencilWriteMask = 0xFFFFFFFF;
-
-		depthStencilState.depthBias = 0;
-		depthStencilState.depthBiasSlopeScale = 0.0f;
-		depthStencilState.depthBiasClamp = 0.0f;
-
-		pipelineDesc.depthStencil = &depthStencilState;
-
-		pipelineDesc.multisample.count = 1;		// no multisampling
-		pipelineDesc.multisample.mask = ~0u;	// all samples enabled
-		pipelineDesc.multisample.alphaToCoverageEnabled = false;
-
-
-		std::array<wgpu::BindGroupLayout, 4> bindGroupLayouts
+		if(specification.depthWrite)
 		{
-			RenderPipelineLayouts::GetViewLayout(),
-			RenderPipelineLayouts::GetEnvironmentLayout(),
-			shader.GetMaterialBindGroupLayout(),
-			RenderPipelineLayouts::GetModelLayout()
-		};
+			depthStencilState.depthCompare = specification.depthCompare;
+			depthStencilState.depthWriteEnabled = specification.depthWrite ? wgpu::OptionalBool::True : wgpu::OptionalBool::False;
+			depthStencilState.format = specification.depthFormat;
+			depthStencilState.stencilReadMask = 0xFFFFFFFF;
+			depthStencilState.stencilWriteMask = 0xFFFFFFFF;
+			depthStencilState.depthBias = 0;
+			depthStencilState.depthBiasSlopeScale = 0.0f;
+			depthStencilState.depthBiasClamp = 0.0f;
+
+			pipelineDesc.depthStencil = &depthStencilState;
+		}
+
+		else
+		{
+			pipelineDesc.depthStencil = nullptr; // Disable depth testing entirely
+		}
+
+		pipelineDesc.multisample.count = 1;
+		pipelineDesc.multisample.mask = ~0u;
+
+
+
+		std::vector<wgpu::BindGroupLayout> bindGroupLayouts;
+
+		if (!specification.layoutOverrides.empty())
+		{
+			bindGroupLayouts = specification.layoutOverrides;
+		}
+		else
+		{
+			bindGroupLayouts =
+			{
+					RenderPipelineLayouts::GetViewLayout(),
+					RenderPipelineLayouts::GetEnvironmentLayout(),
+					shader.GetMaterialBindGroupLayout(),
+					RenderPipelineLayouts::GetModelLayout()
+			};
+		}
+
 
 		wgpu::PipelineLayoutDescriptor layoutDesc;
-		//std::string label = std::format("{} Shader Pipeline Layout", name);
-		std::string label = "Shader Pipeline Layout";
-		layoutDesc.label = { label.c_str(), WGPU_STRLEN};
+		layoutDesc.label = { "Shader Pipeline Layout", WGPU_STRLEN};
 		layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
 		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)bindGroupLayouts.data();
 		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
 
 		wgpu::RenderPipeline pipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
 
-		s_PipelineCache[configHash] = pipeline;
+		s_PipelineCache[specification] = pipeline;
 		return pipeline;
-		
 	}
 
 }
