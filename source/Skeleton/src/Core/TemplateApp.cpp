@@ -41,9 +41,9 @@ namespace Template
 		m_Width = width;
 		m_Height = height;
 
-		Engine::Scene& activeScene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
-		Engine::Camera* camera = activeScene.GetActiveCamera();
-		camera->SetAspectRatio(static_cast<float>(m_Width) / static_cast<float>(m_Height));
+		//Engine::Scene& activeScene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		//Engine::Camera* camera = activeScene.GetActiveCamera();
+		m_Camera->SetAspectRatio(static_cast<float>(m_Width) / static_cast<float>(m_Height));
 
 		wgpu::Extent3D size = { m_Width, m_Height, 1 };
 

@@ -157,9 +157,14 @@ namespace Editor
 		// context menu
 		if (ImGui::BeginPopupContextItem())
 		{
-			if (ImGui::MenuItem("Create Entity"))
+			if (ImGui::MenuItem("Create Empty"))
 			{
-				EditorCommandManager::CreateEntity("Empty", entity);
+				EditorCommandManager::CreateEntity<Engine::TransformComponent, Engine::WorldTransformComponent>("Empty", entity);
+			}
+
+			if (ImGui::MenuItem("Create Image"))
+			{
+				EditorCommandManager::CreateEntity<Engine::UI::RectTransform, Engine::UI::Image, Engine::UI::LayoutDirtyTag>("Image", entity);
 			}
 
 			if (ImGui::MenuItem("Delete"))

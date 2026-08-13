@@ -100,6 +100,8 @@ namespace Editor
 		Engine::Entity entity = scene.GetEntity(entityId);
 		if (!entity) return;
 
+		if (!entity.HasComponent<Engine::TransformComponent>()) return;
+
 		glm::vec3 focusPoint = entity.GetComponent<Engine::TransformComponent>().position;
 		glm::vec3 position = focusPoint - Editor::editorContext.editorCamera.GetForward() * distance;
 		Editor::editorContext.editorCamera.SetPosition(position);

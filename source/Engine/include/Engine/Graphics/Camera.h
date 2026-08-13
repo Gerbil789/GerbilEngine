@@ -46,7 +46,7 @@ namespace Engine
 		Background GetBackground() const;
 		void SetBackground(Background background);
 
-		glm::vec4& GetClearColor();
+		const glm::vec4& GetClearColor() const;
 		void SetClearColor(const glm::vec4& color);
 
 		float GetPerspectiveFOV() const;

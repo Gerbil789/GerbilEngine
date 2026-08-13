@@ -10,21 +10,6 @@ namespace Engine
 		m_Registry.clear();
 	}
 
-	Entity Scene::CreateEntity(const std::string& name)
-	{
-		entt::entity entity = m_Registry.create();
-		Uuid uuid = Uuid::Generate();
-
-		m_Registry.emplace<IdentityComponent>(entity, uuid);
-		m_Registry.emplace<NameComponent>(entity, name);
-		m_Registry.emplace<TransformComponent>(entity);
-		m_Registry.emplace<WorldTransformComponent>(entity);
-		m_Registry.emplace<HierarchyComponent>(entity);
-
-		m_EntityMap[uuid] = entity;
-		return Entity(entity, this);
-	}
-
 	void Scene::DestroyEntity(Entity entity)
 	{
 		if (!entity) return;
@@ -66,16 +51,15 @@ namespace Engine
 		}
 	}
 
-	Camera* Scene::GetActiveCamera() const
+	Camera* Scene::GetActiveCamera()
 	{
-		auto view = m_Registry.view<CameraComponent>();
-		for (auto entity : view)
+		auto view = m_Registry.view<CameraComponent, PrimaryCameraTag>(entt::exclude<DisabledTag>);
+
+		for (auto [entity, cam] : view.each())
 		{
-			if (m_Registry.get<CameraComponent>(entity).primary)
-			{
-				return m_Registry.get<CameraComponent>(entity).camera;
-			}
+			return &cam.camera;
 		}
+
 		return nullptr;
 	}
 }

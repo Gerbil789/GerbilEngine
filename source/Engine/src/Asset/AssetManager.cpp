@@ -10,6 +10,7 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Audio/AudioClip.h"
 #include "Engine/Graphics/Camera.h"
+#include "Engine/Graphics/Font.h"
 
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Asset/Importer/MeshImporter.h"
@@ -137,6 +138,7 @@ namespace Engine
     LoadBuiltInAsset(RESOURCES::SHADER::FLAT, "resources/shaders/flat.wgsl", m_Shaders, ShaderImporter::LoadShader, "Flat Shader");
     LoadBuiltInAsset(RESOURCES::SHADER::UI, "resources/shaders/ui.wgsl", m_Shaders, ShaderImporter::LoadShader, "UI Shader");
     LoadBuiltInAsset(RESOURCES::SCENE::DEFAULT, "resources/scenes/default.scene", m_Scenes, SceneImporter::LoadScene, "Default Scene");
+    LoadBuiltInAsset(RESOURCES::TEXTURE::DEFAULT_FONT_ATLAS, "resources/fonts/atlas.png", m_Textures, TextureImporter::LoadTexture2D, "Default Font Atlas");
 
     {
       MaterialSpecification spec{ .shaderId = RESOURCES::SHADER::FLAT };

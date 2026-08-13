@@ -1,7 +1,7 @@
 #include "EditorCommandManager.h"
-#include "Editor/Command/CreateEntity.h"
 #include "Editor/Command/DeleteEntity.h"
 #include "Editor/Command/OpenSceneCommand.h"
+#include "Engine/Scene/Components.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Core/Input.h"
@@ -18,11 +18,6 @@ namespace Editor
         }
         return false;
       });
-  }
-
-	void EditorCommandManager::CreateEntity(const std::string& name, entt::entity parent)
-  {
-    Enqueue(std::make_unique<CreateEntityCommand>(name, parent));
   }
 
 	void EditorCommandManager::DeleteEntity(Engine::Uuid entityId)

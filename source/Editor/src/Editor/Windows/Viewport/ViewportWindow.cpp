@@ -217,7 +217,7 @@ namespace Editor
 			}
 			else
 			{
-				Editor::editorContext.renderer.RenderScene(scene, Editor::editorContext.editorCamera);
+				Editor::editorContext.renderer.Clear();
 			}
 		}
 

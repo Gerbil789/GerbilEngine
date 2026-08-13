@@ -45,7 +45,7 @@ namespace Engine
 
 	void Renderer::SetEnvironmentTexture(Uuid textureId)
 	{
-		if(!textureId)
+		if (!textureId)
 		{
 			textureId = RESOURCES::TEXTURE::HDR;
 		}
@@ -136,7 +136,7 @@ namespace Engine
 			entries[0].binding = 0;
 			entries[0].sampler = envSampler;
 		}
-		
+
 		// 1 - EnvironmentMap
 		{
 			entries[1].binding = 1;
@@ -255,9 +255,9 @@ namespace Engine
 		m_RenderContext.drawList = DrawList::CreateFromScene(scene);
 
 		const std::vector<glm::mat4>& modelMatrices = m_RenderContext.drawList.GetTransforms();
-		
+
 		GraphicsContext::GetQueue().writeBuffer(m_RenderContext.modelStorageBuffer, 0, modelMatrices.data(), modelMatrices.size() * sizeof(glm::mat4));
-		
+
 		static const RenderPassType order[] = {
 				RenderPassType::Shadow,
 				RenderPassType::Background,
@@ -283,6 +283,32 @@ namespace Engine
 				}
 			}
 		}
+
+		wgpu::CommandBuffer commandBuffer = encoder.finish();
+		GraphicsContext::GetQueue().submit(1, &commandBuffer);
+	}
+
+	void Renderer::Clear(const glm::vec4& color)
+	{
+		wgpu::CommandEncoderDescriptor encoderDesc;
+		encoderDesc.label = { "ClearEncoder", WGPU_STRLEN };
+		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder(encoderDesc);
+
+		wgpu::RenderPassColorAttachment colorAttachment;
+		colorAttachment.view = m_RenderContext.colorTarget;
+		colorAttachment.resolveTarget = nullptr;
+		colorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
+		colorAttachment.loadOp = wgpu::LoadOp::Clear;
+		colorAttachment.storeOp = wgpu::StoreOp::Store;
+		colorAttachment.clearValue = wgpu::Color{ color.r, color.g, color.b, color.a };
+
+		wgpu::RenderPassDescriptor renderPassDesc;
+		renderPassDesc.colorAttachmentCount = 1;
+		renderPassDesc.colorAttachments = &colorAttachment;
+		renderPassDesc.depthStencilAttachment = nullptr;
+
+		wgpu::RenderPassEncoder renderPass = encoder.beginRenderPass(renderPassDesc);
+		renderPass.end();
 
 		wgpu::CommandBuffer commandBuffer = encoder.finish();
 		GraphicsContext::GetQueue().submit(1, &commandBuffer);

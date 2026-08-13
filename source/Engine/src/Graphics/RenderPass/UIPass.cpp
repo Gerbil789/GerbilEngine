@@ -4,6 +4,7 @@
 #include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
+#include "Engine/Graphics/Font.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Scene/Components.h"
@@ -16,23 +17,23 @@
 
 namespace Engine
 {
-	static constexpr uint64_t maxUIElements = 128;
-
 	struct alignas(16) UIUniforms
 	{
 		glm::mat4 ortho;
 	};
 	static_assert(sizeof(UIUniforms) % 16 == 0);
 
+	enum class UIDrawMode : uint32_t { Image = 0, Text = 1 };
 
 	struct UIDrawItem
 	{
 		glm::vec4 rect;
 		glm::vec4 color;
 		glm::vec4 uvRect;
+		UIDrawMode mode;
+		glm::vec3 padding;
 	};
 	static_assert(sizeof(UIDrawItem) % 16 == 0);
-
 
 	struct AtlasRegion 
 	{
@@ -106,32 +107,128 @@ namespace Engine
 	{
 		if (registry.any_of<DisabledTag>(entity)) return;
 
-		if (registry.any_of<UI::RectTransform, UI::Image>(entity))
+		if (registry.any_of<UI::RectTransform>(entity))
 		{
 			const auto& rect = registry.get<UI::RectTransform>(entity);
-			const auto& image = registry.get<UI::Image>(entity);
 
-			UIDrawItem item;
-			item.rect = glm::vec4(rect.absolutePosition.x, rect.absolutePosition.y, rect.absoluteSize.x, rect.absoluteSize.y);
-			item.color = image.tint;
-
-			if (!image.iconName.empty() && s_UIConfig.icons.find(image.iconName) != s_UIConfig.icons.end())
+			if (registry.any_of<UI::Image>(entity))
 			{
-				const AtlasRegion& region = s_UIConfig.icons[image.iconName];
-				item.uvRect = glm::vec4(
-					static_cast<float>(region.x) / texWidth,
-					static_cast<float>(region.y) / texHeight,
-					static_cast<float>(region.w) / texWidth,
-					static_cast<float>(region.h) / texHeight
-				);
-			}
-			else
-			{
-				constexpr glm::vec4 defaultUV(0.0f, 0.0f, 48.0f / 2048.0f, 48.0f / 2048.0f);
-				item.uvRect = defaultUV;
+				const auto& image = registry.get<UI::Image>(entity);
+				UIDrawItem item;
+				item.rect = glm::vec4(rect.absolutePosition.x, rect.absolutePosition.y, rect.absoluteSize.x, rect.absoluteSize.y);
+				item.color = image.tint;
+				item.mode = UIDrawMode::Image;
+
+				if (!image.iconName.empty() && s_UIConfig.icons.find(image.iconName) != s_UIConfig.icons.end())
+				{
+					const AtlasRegion& region = s_UIConfig.icons[image.iconName];
+					item.uvRect = glm::vec4(
+						static_cast<float>(region.x) / texWidth,
+						static_cast<float>(region.y) / texHeight,
+						static_cast<float>(region.w) / texWidth,
+						static_cast<float>(region.h) / texHeight
+					);
+				}
+				else
+				{
+					constexpr glm::vec4 defaultUV(0.0f, 0.0f, 48.0f / 2048.0f, 48.0f / 2048.0f);
+					item.uvRect = defaultUV;
+				}
+
+				drawList.push_back(item);
 			}
 
-			drawList.push_back(item);
+			if (registry.any_of<UI::Text>(entity))
+			{
+				const auto& text = registry.get<UI::Text>(entity);
+				const Font* font = FontManager::GetFont(text.fontName);
+
+				if (font)
+				{
+					float cursorX = rect.absolutePosition.x;
+					float cursorY = rect.absolutePosition.y + text.fontSize;
+
+					float maxX = rect.absolutePosition.x + rect.absoluteSize.x;
+
+					for (size_t i = 0; i < text.text.length(); ++i)
+					{
+						char c = text.text[i];
+
+						if (c == '\n')
+						{
+							cursorX = rect.absolutePosition.x;
+							cursorY += text.fontSize * text.lineSpacing;
+							continue;
+						}
+
+						if (text.wrapText && c != ' ')
+						{
+							bool isStartOfWord = (i == 0 || text.text[i - 1] == ' ' || text.text[i - 1] == '\n');
+
+							if (isStartOfWord)
+							{
+								float wordWidth = 0.0f;
+								size_t j = i;
+
+								while (j < text.text.length() && text.text[j] != ' ' && text.text[j] != '\n')
+								{
+									Glyph* lookaheadGlyph = font->GetGlyph(static_cast<uint32_t>(text.text[j]));
+									if (lookaheadGlyph)
+									{
+										wordWidth += lookaheadGlyph->advance * text.fontSize;
+									}
+									j++;
+								}
+
+								if (cursorX + wordWidth > maxX && cursorX > rect.absolutePosition.x)
+								{
+									cursorX = rect.absolutePosition.x;
+									cursorY += text.fontSize * text.lineSpacing;
+								}
+							}
+						}
+
+						if (c == ' ' && cursorX == rect.absolutePosition.x)
+						{
+							continue;
+						}
+
+						uint32_t unicode = static_cast<uint32_t>(c);
+						Glyph* glyph = font->GetGlyph(unicode);
+
+						if (!glyph)
+						{
+							LOG_WARNING("Glyph for character '{}' (unicode {}) not found in font '{}'", c, unicode, text.fontName);
+							continue;
+						}
+
+						float x = cursorX + (glyph->planeBounds.left * text.fontSize);
+						float y = cursorY - (glyph->planeBounds.top * text.fontSize);
+						float w = (glyph->planeBounds.right - glyph->planeBounds.left) * text.fontSize;
+						float h = (glyph->planeBounds.top - glyph->planeBounds.bottom) * text.fontSize;
+
+						if (w > 0.0f && h > 0.0f && c != ' ')
+						{
+							UIDrawItem item;
+							item.rect = glm::vec4(x, y, w, h);
+							item.color = text.color;
+							item.mode = UIDrawMode::Text;
+
+							constexpr float atlasSize = 1024.0f;
+							float uLeft = glyph->atlasBounds.left / atlasSize;
+							float uRight = glyph->atlasBounds.right / atlasSize;
+							float uTop = 1.0f - (glyph->atlasBounds.top / atlasSize);
+							float uBottom = 1.0f - (glyph->atlasBounds.bottom / atlasSize);
+
+							item.uvRect = glm::vec4(uLeft, uTop, (uRight - uLeft), (uBottom - uTop));
+							drawList.push_back(item);
+						}
+
+						cursorX += glyph->advance * text.fontSize;
+					}
+				}
+			}
+
 		}
 
 		if (registry.any_of<HierarchyComponent>(entity))
@@ -228,6 +325,8 @@ namespace Engine
 
 	static void CreateUIStorageBuffer()
 	{
+		constexpr uint64_t maxUIElements = 16384;
+
 		wgpu::BufferDescriptor bufferDesc;
 		bufferDesc.label = { "UIStorageBuffer", WGPU_STRLEN };
 		bufferDesc.size = sizeof(UIDrawItem) * maxUIElements;
@@ -237,7 +336,7 @@ namespace Engine
 
 	void CreateUIBindGroupLayout()
 	{
-		std::array<wgpu::BindGroupLayoutEntry, 4> entries;
+		std::array<wgpu::BindGroupLayoutEntry, 6> entries;
 
 		entries[0].binding = 0;
 		entries[0].visibility = wgpu::ShaderStage::Vertex;
@@ -251,13 +350,23 @@ namespace Engine
 
 		entries[2].binding = 2;
 		entries[2].visibility = wgpu::ShaderStage::Fragment;
-		entries[2].sampler.type = wgpu::SamplerBindingType::Filtering;
+		entries[2].texture.sampleType = wgpu::TextureSampleType::Float;
+		entries[2].texture.multisampled = false;
+		entries[2].texture.viewDimension = wgpu::TextureViewDimension::_2D;
 
 		entries[3].binding = 3;
 		entries[3].visibility = wgpu::ShaderStage::Fragment;
-		entries[3].texture.sampleType = wgpu::TextureSampleType::Float;
-		entries[3].texture.multisampled = false;
-		entries[3].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+		entries[3].sampler.type = wgpu::SamplerBindingType::Filtering;
+
+		entries[4].binding = 4;
+		entries[4].visibility = wgpu::ShaderStage::Fragment;
+		entries[4].texture.sampleType = wgpu::TextureSampleType::Float;
+		entries[4].texture.multisampled = false;
+		entries[4].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+
+		entries[5].binding = 5;
+		entries[5].visibility = wgpu::ShaderStage::Fragment;
+		entries[5].sampler.type = wgpu::SamplerBindingType::Filtering;
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
 		bindGroupLayoutDesc.label = { "UIBindGroupLayout", WGPU_STRLEN };
@@ -269,23 +378,29 @@ namespace Engine
 
 	static void CreateUIBindGroup()
 	{
-		std::array<wgpu::BindGroupEntry, 4> entries;
+		std::array<wgpu::BindGroupEntry, 6> entries;
 
 		entries[0].binding = 0;
 		entries[0].buffer = uiUniformBuffer;
 		entries[0].offset = 0;
-		entries[0].size = sizeof(UIUniforms);
-
+		entries[0].size = uiUniformBuffer.getSize();
+		
 		entries[1].binding = 1;
 		entries[1].buffer = uiStorageBuffer;
 		entries[1].offset = 0;
-		entries[1].size = sizeof(UIDrawItem) * maxUIElements;
+		entries[1].size = uiStorageBuffer.getSize();
 
 		entries[2].binding = 2;
-		entries[2].sampler = SamplerPool::GetSampler({ TextureFilter::Point, TextureWrap::Repeat });
+		entries[2].textureView = AssetManager::GetAsset<Texture2D>(Uuid{ s_UIConfig.texture }).GetTextureView();
 
 		entries[3].binding = 3;
-		entries[3].textureView = AssetManager::GetAsset<Texture2D>(Uuid{ s_UIConfig.texture }).GetTextureView();
+		entries[3].sampler = SamplerPool::GetSampler({ TextureFilter::Point, TextureWrap::Repeat });
+
+		entries[4].binding = 4;
+		entries[4].textureView = AssetManager::GetAsset<Texture2D>(RESOURCES::TEXTURE::DEFAULT_FONT_ATLAS).GetTextureView();
+
+		entries[5].binding = 5;
+		entries[5].sampler = SamplerPool::GetSampler({ TextureFilter::Bilinear, TextureWrap::Clamp });
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
 		bindGroupDesc.label = { "UIBindGroup", WGPU_STRLEN };
@@ -333,7 +448,7 @@ namespace Engine
 		fragmentState.targets = &colorTarget;
 		pipelineDesc.fragment = &fragmentState;
 
-		pipelineDesc.depthStencil = nullptr; // Disable depth testing entirely
+		pipelineDesc.depthStencil = nullptr;
 		pipelineDesc.multisample.count = 1;
 		pipelineDesc.multisample.mask = ~0u;
 

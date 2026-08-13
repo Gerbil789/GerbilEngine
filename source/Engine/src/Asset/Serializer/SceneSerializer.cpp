@@ -35,22 +35,22 @@ namespace Engine
 
 	struct CameraPerspectiveJSON
 	{
-		float FOV = 0.0f, Near = 0.0f, Far = 0.0f;
+		float fov = 0.0f, near = 0.0f, far = 0.0f;
 	};
 
 	struct CameraOrthographicJSON
 	{
-		float Size = 0.0f, Near = 0.0f, Far = 0.0f;
+		float size = 0.0f, near = 0.0f, far = 0.0f;
 	};
 
 	struct CameraComponentJSON
 	{
-		uint32_t Projection = 0;
-		float AspectRatio = 1.0f;
-		CameraPerspectiveJSON Perspective;
-		CameraOrthographicJSON Orthographic;
-		uint32_t Background = 0;
-		glm::vec4 ClearColor{ 0.0f, 0.0f, 0.0f, 1.0f };
+		uint32_t projection = 0;
+		float aspectRatio = 1.0f;
+		CameraPerspectiveJSON perspective;
+		CameraOrthographicJSON orthographic;
+		uint32_t background = 0;
+		glm::vec4 clearColor{ 0.0f, 0.0f, 0.0f, 1.0f };
 		bool primary = false;
 	};
 
@@ -65,18 +65,18 @@ namespace Engine
 
 	struct ScriptComponentJSON
 	{
-		uint32_t Script;
-		std::map<std::string, glz::generic> Fields;
+		uint32_t script;
+		std::map<std::string, glz::generic> fields;
 	};
 
 	struct EntityJSON
 	{
 		Uuid id;
-		std::string name;
-		TransformComponent transform;
+		std::string_view name;
 		bool enabled = true;
 		HierarchyJSON hierarchy;
 
+		std::optional<TransformComponent> transform;
 		std::optional<MeshComponent> mesh;
 		std::optional<ColliderComponentJSON> collider;
 		std::optional<CameraComponentJSON> camera;
@@ -99,7 +99,12 @@ namespace Engine
 		eJson.enabled = !registry.any_of<DisabledTag>(entity);
 		eJson.id = registry.get<IdentityComponent>(entity).id;
 		eJson.name = registry.get<NameComponent>(entity).name;
-		eJson.transform = registry.get<TransformComponent>(entity);
+
+		// Transform
+		if (registry.any_of<TransformComponent>(entity))
+		{
+			eJson.transform = registry.get<TransformComponent>(entity);
+		}
 
 		// Hierarchy
 		{
@@ -128,18 +133,18 @@ namespace Engine
 		// Camera
 		if (registry.any_of<CameraComponent>(entity))
 		{
-			const auto& c = registry.get<CameraComponent>(entity);
-			Camera* cam = c.camera;
+			const Camera& cam = registry.get<CameraComponent>(entity).camera;
 			CameraComponentJSON cJson;
-			cJson.Projection = static_cast<uint32_t>(cam->GetProjection());
-			cJson.AspectRatio = cam->GetAspectRatio();
+			cJson.projection = static_cast<uint32_t>(cam.GetProjection());
+			cJson.aspectRatio = cam.GetAspectRatio();
 
-			cJson.Perspective = { cam->GetPerspectiveFOV(), cam->GetPerspectiveNear(), cam->GetPerspectiveFar() };
-			cJson.Orthographic = { cam->GetOrthoSize(), cam->GetOrthoNear(), cam->GetOrthoFar() };
+			cJson.perspective = { cam.GetPerspectiveFOV(), cam.GetPerspectiveNear(), cam.GetPerspectiveFar() };
+			cJson.orthographic = { cam.GetOrthoSize(), cam.GetOrthoNear(), cam.GetOrthoFar() };
 
-			cJson.Background = static_cast<uint32_t>(cam->GetBackground());
-			cJson.ClearColor = cam->GetClearColor();
-			cJson.primary = c.primary;
+			cJson.background = static_cast<uint32_t>(cam.GetBackground());
+			cJson.clearColor = cam.GetClearColor();
+
+			cJson.primary = registry.any_of<PrimaryCameraTag>(entity);
 			eJson.camera = cJson;
 		}
 
@@ -156,11 +161,11 @@ namespace Engine
 		if (auto* component = registry.try_get<ScriptComponent>(entity))
 		{
 			ScriptComponentJSON sJson;
-			sJson.Script = component->id;
+			sJson.script = component->id;
 
 			const auto& desc = Engine::ScriptRegistry::GetDescriptor(component->id);
 			auto* instance = component->instance;
-			auto& fields = sJson.Fields;
+			auto& fields = sJson.fields;
 
 			for (const auto& field : desc.fields)
 			{
@@ -232,10 +237,6 @@ namespace Engine
 			SerializeEntityRecursive(registry, root, sceneData);
 		}
 
-		//if (auto ec = glz::write_file_json < glz::opts{ .prettify = true } > (sceneData, path.string(), buffer))
-		//{
-		//	LOG_ERROR("Failed to save scene file '{}': {}", path.string(), glz::format_error(ec));
-		//}
 
 		if (auto ec = glz::write_file_json < glz::opts{ .prettify = true } > (sceneData, path.string(), buffer))
 		{
@@ -291,20 +292,20 @@ namespace Engine
 			}
 
 			// name
-			auto& nc = registry.emplace<NameComponent>(handle);
-			nc.name = eJson.name;
+			registry.emplace<NameComponent>(handle).name = eJson.name;
 
 			// transform
+			if(eJson.transform.has_value())
+			{
+				auto& tc = registry.emplace<TransformComponent>(handle);
+				tc = eJson.transform.value();
 
-			auto& tc = registry.emplace<TransformComponent>(handle);
-			tc = eJson.transform;
-
-			registry.emplace<DirtyTag>(handle);
-			registry.emplace<WorldTransformComponent>(handle);
-			registry.emplace<HierarchyComponent>(handle);
-
+				registry.emplace<WorldTransformComponent>(handle);
+				registry.emplace<DirtyTag>(handle);
+			}
 
 			// hierarchy
+			registry.emplace<HierarchyComponent>(handle);
 			if (eJson.hierarchy.parent)
 			{
 				parentMap[id] = eJson.hierarchy.parent;
@@ -337,24 +338,21 @@ namespace Engine
 				auto& cComp = registry.emplace<CameraComponent>(handle);
 				const auto& cJson = eJson.camera.value();
 
-				std::unique_ptr<Camera> camera = std::make_unique<Camera>();
-				camera->SetProjection(static_cast<Camera::Projection>(cJson.Projection));
-				camera->SetAspectRatio(cJson.AspectRatio);
+				cComp.camera.SetProjection(static_cast<Camera::Projection>(cJson.projection));
+				cComp.camera.SetAspectRatio(cJson.aspectRatio);
+				cComp.camera.SetPerspectiveFOV(cJson.perspective.fov);
+				cComp.camera.SetPerspectiveNear(cJson.perspective.near);
+				cComp.camera.SetPerspectiveFar(cJson.perspective.far);
+				cComp.camera.SetOrthoSize(cJson.orthographic.size);
+				cComp.camera.SetOrthoNear(cJson.orthographic.near);
+				cComp.camera.SetOrthoFar(cJson.orthographic.far);
+				cComp.camera.SetBackground(static_cast<Camera::Background>(cJson.background));
+				cComp.camera.SetClearColor(cJson.clearColor);
 
-				camera->SetPerspectiveFOV(cJson.Perspective.FOV);
-				camera->SetPerspectiveNear(cJson.Perspective.Near);
-				camera->SetPerspectiveFar(cJson.Perspective.Far);
-
-				camera->SetOrthoSize(cJson.Orthographic.Size);
-				camera->SetOrthoNear(cJson.Orthographic.Near);
-				camera->SetOrthoFar(cJson.Orthographic.Far);
-
-				camera->SetBackground(static_cast<Camera::Background>(cJson.Background));
-				camera->SetClearColor(cJson.ClearColor);
-
-				cComp.primary = cJson.primary;
-
-				cComp.camera = camera.release(); // TODO: manage memory lifecycle
+				if(cJson.primary)
+				{
+					registry.emplace_or_replace<PrimaryCameraTag>(handle);
+				}
 			}
 
 			// light
@@ -375,18 +373,18 @@ namespace Engine
 				auto& sComp = registry.emplace<ScriptComponent>(handle);
 				const auto& sJson = eJson.script.value();
 
-				const Engine::ScriptDescriptor& desc = Engine::ScriptRegistry::GetDescriptor(sJson.Script);
+				const Engine::ScriptDescriptor& desc = Engine::ScriptRegistry::GetDescriptor(sJson.script);
 
-				sComp.id = sJson.Script;
+				sComp.id = sJson.script;
 				sComp.instance = desc.factory();
 				sComp.instance->m_Entity = Entity{ handle, &scene }; //TODO: is scene valid after this functin?
 				sComp.instance->OnCreate();
 
 				for (const auto& field : desc.fields)
 				{
-					if (sJson.Fields.find(field.name) == sJson.Fields.end()) continue;
+					if (sJson.fields.find(field.name) == sJson.fields.end()) continue;
 
-					const auto& node = sJson.Fields.at(field.name);
+					const auto& node = sJson.fields.at(field.name);
 
 					switch (field.type)
 					{

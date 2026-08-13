@@ -12,6 +12,8 @@ namespace Engine
 {
   void UpdateEntityTransformRecursive(entt::registry& registry, entt::entity entity, const glm::mat4& parentWorldMatrix, bool forceUpdate = false)
   {
+    if (!registry.any_of<TransformComponent>(entity)) return;
+
     auto& tc = registry.get<TransformComponent>(entity);
     auto& hc = registry.get<HierarchyComponent>(entity);
 		auto& wtc = registry.get<WorldTransformComponent>(entity);

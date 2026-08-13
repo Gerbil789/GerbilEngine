@@ -24,6 +24,8 @@ namespace Engine
 		const RenderContext& GetRenderContext() const { return m_RenderContext; }
 
 		void RenderScene(Scene& scene, Camera& camera);
+		void Clear(const glm::vec4& color = {0.0f, 0.0f, 0.0f, 1.0f});
+
 		wgpu::TextureView GetTextureView() const;
 
 	private:

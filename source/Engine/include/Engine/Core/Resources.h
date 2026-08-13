@@ -20,6 +20,7 @@ namespace RESOURCES
 		static constexpr Engine::Uuid NORMAL = Engine::Uuid{ 6 };
 		static constexpr Engine::Uuid HDR = Engine::Uuid{ 7 };
 		static constexpr Engine::Uuid EDITOR_ICONS = Engine::Uuid{ 13 };
+		static constexpr Engine::Uuid DEFAULT_FONT_ATLAS = Engine::Uuid{ 15 };
 	}
 
 	namespace SHADER
@@ -38,5 +39,10 @@ namespace RESOURCES
 	namespace SCENE
 	{
 		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 13 };
+	}
+
+	namespace FONT
+	{
+		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 14 };
 	}
 }

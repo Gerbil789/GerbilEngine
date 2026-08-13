@@ -23,5 +23,5 @@ void RandomMovement::OnUpdate()
   float scale = m_MinScale + t * (m_MaxScale - m_MinScale);
 
   transform.scale = { scale, scale, scale };
-	m_Entity.SetDirty<Engine::DirtyTag>();
+	m_Entity.AddTag<Engine::DirtyTag>();
 }

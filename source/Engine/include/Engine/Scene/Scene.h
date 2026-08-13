@@ -2,6 +2,7 @@
 
 #include "Engine/Asset/Asset.h"
 #include "Engine/Scene/Entity.h"
+#include "Engine/Scene/Components.h"
 #include <entt/entity/registry.hpp>
 
 namespace Engine
@@ -20,7 +21,23 @@ namespace Engine
 		Scene(const Scene&) = delete;
 		Scene& operator=(const Scene&) = delete;
 
-		Entity CreateEntity(const std::string& name = "entity");
+		template<typename... Components>
+		Entity CreateEntity(std::string_view name = "Entity")
+		{
+			entt::entity entity = m_Registry.create();
+			Uuid uuid = Uuid::Generate();
+
+			m_Registry.emplace<IdentityComponent>(entity, uuid);
+			m_Registry.emplace<NameComponent>(entity).name = name;
+			m_Registry.emplace<HierarchyComponent>(entity);
+
+			(m_Registry.emplace<Components>(entity), ...);
+
+			m_EntityMap[uuid] = entity;
+			return Entity(entity, this);
+		}
+
+
 		void DestroyEntity(Entity entity);
 		Entity GetEntity(Uuid entityId);
 
@@ -30,7 +47,7 @@ namespace Engine
 		void InsertRootEntity(entt::entity entity, size_t index);
 		void RemoveRootEntity(entt::entity entity);
 
-		Camera* GetActiveCamera() const; //TODO: improve camera management
+		Camera* GetActiveCamera();
 
 		Uuid GetEnvironmentTexture() const { return m_EnvironmentTextureId; }
 		void SetEnvironmentTexture(Uuid textureId) { m_EnvironmentTextureId = textureId; }

@@ -33,7 +33,7 @@ namespace Editor
     void Undo() override
     {
       Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
-      Engine::Entity entity = scene.CreateEntity(m_Name);
+      Engine::Entity entity = scene.CreateEntity<Engine::TransformComponent, Engine::WorldTransformComponent>(m_Name);
 
       auto& idc = entity.GetComponent<Engine::IdentityComponent>();
 			idc.id = m_EntityId;

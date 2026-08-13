@@ -15,7 +15,8 @@ namespace Editor
 	{
 		Default, // Standard drag inputs
 		Slider,  // For floats/ints
-		Color    // For vec3/vec4
+		Color,    // For vec3/vec4
+		Multiline
 	};
 
 	struct FieldOptions
@@ -230,11 +231,11 @@ namespace Editor
 				int v_min = options.min <= static_cast<float>(std::numeric_limits<int>::lowest()) ? std::numeric_limits<int>::lowest() : static_cast<int>(options.min);
 				int v_max = options.max >= static_cast<float>(std::numeric_limits<int>::max()) ? std::numeric_limits<int>::max() : static_cast<int>(options.max);
 
-				if (options.mode == DisplayMode::Slider) 
+				if (options.mode == DisplayMode::Slider)
 				{
 					return ImGui::SliderInt("##input", &value, v_min, v_max);
 				}
-				else 
+				else
 				{
 					return ImGui::DragInt("##input", &value, options.step, v_min, v_max);
 				}
@@ -242,11 +243,11 @@ namespace Editor
 			else if constexpr (std::is_same_v<T, float>)
 			{
 				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-				if (options.mode == DisplayMode::Slider) 
+				if (options.mode == DisplayMode::Slider)
 				{
 					return ImGui::SliderFloat("##input", &value, options.min, options.max);
 				}
-				else 
+				else
 				{
 					return ImGui::DragFloat("##input", &value, options.step, options.min, options.max);
 				}
@@ -279,7 +280,7 @@ namespace Editor
 
 					return changed;
 				}
-				else 
+				else
 				{
 					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 					return ImGui::DragFloat3("##input", glm::value_ptr(value), options.step);
@@ -304,7 +305,7 @@ namespace Editor
 
 					return changed;
 				}
-				else 
+				else
 				{
 					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 					return ImGui::DragFloat4("##input", glm::value_ptr(value), options.step);
@@ -317,14 +318,30 @@ namespace Editor
 			}
 			else if constexpr (std::is_same_v<T, std::string>)
 			{
-				std::array<char, 256> buffer{};
+				std::array<char, 2048> buffer{};
 				std::snprintf(buffer.data(), buffer.size(), "%s", value.c_str());
 
 				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-				if (ImGui::InputText("##input", buffer.data(), buffer.size()))
+
+				if (options.mode == DisplayMode::Multiline)
 				{
-					value = buffer.data();
-					return true;
+					// ImVec2(0, ...) uses the full available width. 
+					// We set the height to exactly 4 lines of text.
+					ImVec2 size(0.0f, ImGui::GetTextLineHeightWithSpacing() * 4.0f);
+
+					if (ImGui::InputTextMultiline("##input_multiline", buffer.data(), buffer.size(), size))
+					{
+						value = buffer.data();
+						return true;
+					}
+				}
+				else
+				{
+					if (ImGui::InputText("##input", buffer.data(), buffer.size()))
+					{
+						value = buffer.data();
+						return true;
+					}
 				}
 				return false;
 			}

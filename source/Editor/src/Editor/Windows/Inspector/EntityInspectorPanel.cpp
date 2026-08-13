@@ -83,13 +83,16 @@ namespace Editor
 
 	void DrawTransform(Engine::Entity entity)
 	{
+		if (!entity.HasComponent<Engine::TransformComponent>()) return;
+
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
 			{ "Reset", [&] {
 				auto before = entity.GetComponent<Engine::TransformComponent>();
 				auto after = Engine::TransformComponent{};
 				EditorCommandManager::ModifyComponent<Engine::TransformComponent>(entity, before, after);
-			} },
+			}},
+			{ "Remove", [&] {EditorCommandManager::RemoveComponent<Engine::TransformComponent>(entity); } }
 		};
 
 		ComponentHeader header("Transform", menuActions);
@@ -116,7 +119,7 @@ namespace Editor
 		}
 		else if (result.changed)
 		{
-			entity.SetDirty<Engine::DirtyTag>();
+			entity.AddTag<Engine::DirtyTag>();
 		}
 	}
 
@@ -128,11 +131,27 @@ namespace Editor
 		if (!header.open) return;
 
 		auto& component = entity.GetComponent<Engine::CameraComponent>();
-		Engine::Camera& camera = *component.camera;
+		Engine::Camera& camera = component.camera;
 
 		PropertyTable table;
 
-		PropertyField("Primary", component.primary);
+		bool primary = entity.HasTag<Engine::PrimaryCameraTag>();
+
+		if(PropertyField("Primary", primary).changed)
+		{
+			if(primary)
+			{
+				entt::registry& registry = entity.GetScene()->GetRegistry();
+				auto view = registry.view<Engine::PrimaryCameraTag>();
+				registry.remove<Engine::PrimaryCameraTag>(view.begin(), view.end());
+
+				entity.AddTag<Engine::PrimaryCameraTag>();
+			}
+			else
+			{
+				entity.RemoveTag<Engine::PrimaryCameraTag>();
+			}
+		}
 
 		Engine::Camera::Projection projType = camera.GetProjection();
 		int currentProjection = static_cast<int>(projType);
@@ -428,7 +447,7 @@ namespace Editor
 		}
 		else if (result.changed)
 		{
-			entity.SetDirty<Engine::DirtyTag>();
+			entity.AddTag<Engine::DirtyTag>();
 		}
 	}
 
@@ -473,9 +492,7 @@ namespace Editor
 		}
 		else if (result.changed)
 		{
-			entity.SetDirty<Engine::UI::LayoutDirtyTag>();
-
-
+			entity.AddTag<Engine::UI::LayoutDirtyTag>();
 		}
 	}
 
@@ -505,7 +522,7 @@ namespace Editor
 
 		if (result.started)
 		{
-			s_ImageBefore = { ic.iconName, ic.tint};
+			s_ImageBefore = { ic.iconName, ic.tint };
 		}
 		else if (result.finished)
 		{
@@ -513,7 +530,45 @@ namespace Editor
 		}
 		else if (result.changed)
 		{
-			entity.SetDirty<Engine::DirtyTag>();
+			entity.AddTag<Engine::DirtyTag>();
+		}
+	}
+
+	void DrawUIText(Engine::Entity entity)
+	{
+		if (!entity.HasComponent<Engine::UI::Text>()) return;
+		const std::initializer_list<ComponentMenuAction> menuActions
+		{
+			{ "Reset", [&] {
+				auto before = entity.GetComponent<Engine::UI::Text>();
+				auto after = Engine::UI::Text{};
+				EditorCommandManager::ModifyComponent<Engine::UI::Text>(entity, before, after);
+			} },
+		};
+		ComponentHeader header("Text", menuActions);
+		if (!header.open) return;
+		auto& tc = entity.GetComponent<Engine::UI::Text>();
+		EditResult result;
+		static Engine::UI::Text s_TextBefore;
+		PropertyTable table;
+		result |= PropertyField("Text", tc.text, { .mode = DisplayMode::Multiline });
+		result |= PropertyField("Color", tc.color, { .mode = DisplayMode::Color });
+		result |= PropertyField("Font", tc.fontName);
+		result |= PropertyField("Font Size", tc.fontSize);
+		result |= PropertyField("Line Spacing", tc.lineSpacing);
+		result |= PropertyField("Wrap Text", tc.wrapText);
+
+		if (result.started)
+		{
+			s_TextBefore = { tc.text, tc.fontName, tc.color };
+		}
+		else if (result.finished)
+		{
+			EditorCommandManager::ModifyComponent<Engine::UI::Text>(entity, s_TextBefore, tc);
+		}
+		else if (result.changed)
+		{
+			entity.AddTag<Engine::DirtyTag>();
 		}
 	}
 
@@ -526,16 +581,18 @@ namespace Editor
 			void (*add)(Engine::Entity);
 		};
 
-		static constexpr std::array<AddComponentEntry, 8> entries
+		static constexpr std::array<AddComponentEntry, 10> entries
 		{
-			AddComponentEntry{ "Camera",        [](Engine::Entity e) { auto& component = e.GetOrAddComponent<Engine::CameraComponent>(); component.camera = std::make_unique<Engine::Camera>().release(); }},
+			AddComponentEntry{ "Transform",     [](Engine::Entity e) { e.GetOrAddComponent<Engine::TransformComponent>(); e.GetOrAddComponent<Engine::WorldTransformComponent>(); } },
+			AddComponentEntry{ "Camera",        [](Engine::Entity e) { e.GetOrAddComponent<Engine::CameraComponent>(); } },
 			AddComponentEntry{ "Mesh",          [](Engine::Entity e) { e.GetOrAddComponent<Engine::MeshComponent>(); } },
 			AddComponentEntry{ "Collider",      [](Engine::Entity e) { e.GetOrAddComponent<Engine::ColliderComponent>(); } },
 			AddComponentEntry{ "Light",         [](Engine::Entity e) { e.GetOrAddComponent<Engine::LightComponent>(); } },
 			AddComponentEntry{ "Script",				[](Engine::Entity e) { e.GetOrAddComponent<Engine::ScriptComponent>(); } },
 			AddComponentEntry{ "UI Rect",				[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::RectTransform>(); } },
-			AddComponentEntry{ "UI Canvas",			[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Canvas>(); e.GetOrAddComponent<Engine::UI::RectTransform>(); } },
-			AddComponentEntry{ "UI Image",			[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Image>(); e.GetOrAddComponent<Engine::UI::RectTransform>(); } }
+			AddComponentEntry{ "UI Canvas",			[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Canvas>(); e.GetOrAddComponent<Engine::UI::RectTransform>(); e.AddTag<Engine::UI::LayoutDirtyTag>(); } },
+			AddComponentEntry{ "UI Image",			[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Image>(); e.GetOrAddComponent<Engine::UI::RectTransform>(); e.AddTag<Engine::UI::LayoutDirtyTag>(); } },
+			AddComponentEntry{ "UI Text",				[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Text>(); e.GetOrAddComponent<Engine::UI::RectTransform>(); e.AddTag<Engine::UI::LayoutDirtyTag>(); } }
 		};
 
 		ImGui::Separator();
@@ -598,6 +655,7 @@ namespace Editor
 		DrawUIRect(entity);
 		DrawUICanvas(entity);
 		DrawUIImage(entity);
+		DrawUIText(entity);
 
 		DrawAddComponentButton(entity);
 	}

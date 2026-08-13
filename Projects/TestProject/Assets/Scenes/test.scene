@@ -2,6 +2,10 @@
    {
       "id": 6717787272,
       "name": "Camera",
+      "enabled": true,
+      "hierarchy": {
+         "parent": 0
+      },
       "transform": {
          "position": [
             0,
@@ -19,25 +23,21 @@
             1
          ]
       },
-      "enabled": true,
-      "hierarchy": {
-         "parent": 0
-      },
       "camera": {
-         "Projection": 0,
-         "AspectRatio": 1.6715817,
-         "Perspective": {
-            "FOV": 0.7853982,
-            "Near": 0.1,
-            "Far": 512
+         "projection": 0,
+         "aspectRatio": 1.6715817,
+         "perspective": {
+            "fov": 0.7853982,
+            "near": 0.1,
+            "far": 512
          },
-         "Orthographic": {
-            "Size": 10,
-            "Near": -1,
-            "Far": 512
+         "orthographic": {
+            "size": 10,
+            "near": -1,
+            "far": 512
          },
-         "Background": 1,
-         "ClearColor": [
+         "background": 1,
+         "clearColor": [
             1,
             0.05,
             1,
@@ -49,6 +49,10 @@
    {
       "id": 15188374409814919639,
       "name": "Empty",
+      "enabled": true,
+      "hierarchy": {
+         "parent": 0
+      },
       "transform": {
          "position": [
             0,
@@ -65,15 +69,15 @@
             1,
             1
          ]
-      },
-      "enabled": true,
-      "hierarchy": {
-         "parent": 0
       }
    },
    {
       "id": 1177250237532371712,
       "name": "Empty",
+      "enabled": true,
+      "hierarchy": {
+         "parent": 15188374409814919639
+      },
       "transform": {
          "position": [
             0,
@@ -90,15 +94,15 @@
             1,
             1
          ]
-      },
-      "enabled": true,
-      "hierarchy": {
-         "parent": 15188374409814919639
       }
    },
    {
       "id": 16282982766914275946,
       "name": "Empty",
+      "enabled": true,
+      "hierarchy": {
+         "parent": 1177250237532371712
+      },
       "transform": {
          "position": [
             0,
@@ -115,15 +119,15 @@
             1,
             1
          ]
-      },
-      "enabled": true,
-      "hierarchy": {
-         "parent": 1177250237532371712
       }
    },
    {
       "id": 8095040555241357881,
       "name": "Empty",
+      "enabled": true,
+      "hierarchy": {
+         "parent": 15188374409814919639
+      },
       "transform": {
          "position": [
             0,
@@ -140,15 +144,15 @@
             1,
             1
          ]
-      },
-      "enabled": true,
-      "hierarchy": {
-         "parent": 15188374409814919639
       }
    },
    {
       "id": 677827993,
       "name": "Grid",
+      "enabled": true,
+      "hierarchy": {
+         "parent": 0
+      },
       "transform": {
          "position": [
             0,
@@ -166,10 +170,6 @@
             20
          ]
       },
-      "enabled": true,
-      "hierarchy": {
-         "parent": 0
-      },
       "mesh": {
          "meshId": 13129306156431109372,
          "materials": [
@@ -177,8 +177,8 @@
          ]
       },
       "script": {
-         "Script": 3533687996,
-         "Fields": {
+         "script": 3533687996,
+         "fields": {
             "grid height": 10,
             "grid width": 10,
             "tile material": "2768523626656369607",
@@ -189,6 +189,10 @@
    {
       "id": 639834454554,
       "name": "Cube",
+      "enabled": true,
+      "hierarchy": {
+         "parent": 0
+      },
       "transform": {
          "position": [
             0,
@@ -206,10 +210,6 @@
             1
          ]
       },
-      "enabled": true,
-      "hierarchy": {
-         "parent": 0
-      },
       "mesh": {
          "meshId": 5939929548458604568,
          "materials": [
@@ -217,8 +217,8 @@
          ]
       },
       "script": {
-         "Script": 2364710404,
-         "Fields": {
+         "script": 2364710404,
+         "fields": {
             "Audio Clip": "5864055833164282400",
             "Play On Awake": true
          }
@@ -227,6 +227,10 @@
    {
       "id": 4513515,
       "name": "Ground",
+      "enabled": true,
+      "hierarchy": {
+         "parent": 0
+      },
       "transform": {
          "position": [
             0,
@@ -244,10 +248,6 @@
             50
          ]
       },
-      "enabled": true,
-      "hierarchy": {
-         "parent": 0
-      },
       "mesh": {
          "meshId": 13129306156431109372,
          "materials": [
@@ -258,23 +258,6 @@
    {
       "id": 77277271,
       "name": "UI",
-      "transform": {
-         "position": [
-            0,
-            0,
-            0
-         ],
-         "rotation": [
-            0,
-            0,
-            0
-         ],
-         "scale": [
-            1,
-            1,
-            1
-         ]
-      },
       "enabled": true,
       "hierarchy": {
          "parent": 0
@@ -283,23 +266,6 @@
    {
       "id": 4111919670942520316,
       "name": "Empty",
-      "transform": {
-         "position": [
-            0,
-            0,
-            0
-         ],
-         "rotation": [
-            0,
-            0,
-            0
-         ],
-         "scale": [
-            1,
-            1,
-            1
-         ]
-      },
       "enabled": true,
       "hierarchy": {
          "parent": 77277271

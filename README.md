@@ -25,18 +25,18 @@ WebGPU based game engine
 
 | Library                                                                          | Purpose                          |
 | -------------------------------------------------------------------------------- | -------------------------------- |
-| **[Premake](https://premake.github.io)**                                   			 | Build system           					|
+| **[Premake](https://premake.github.io)**                                         | Build system                     |
 | **[Dawn](https://dawn.googlesource.com/dawn)**                                   | WebGPU implementation            |
 | **[GLFW](https://www.glfw.org)**                                                 | Windowing and input handling     |
-| **[GLM](https://github.com/g-truc/glm)**                                         | Mathematics 											|
+| **[GLM](https://github.com/g-truc/glm)**                                         | Mathematics                      |
 | **[ImGui](https://github.com/ocornut/imgui)**                                    | Immediate-mode UI                |
 | **[ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo)**                      | 3D transform gizmo for ImGui     |
 | **[EnTT](https://github.com/skypjack/entt)**                                     | Entity Component System          |
 | **[tinygltf](https://github.com/syoyo/tinygltf)**                                | glTF mesh processing             |
-| **[glaze](https://github.com/stephenberry/glaze)**                               | Serialization							      |
-| **[miniaudio](https://github.com/mackron/miniaudio)**                            | Audio playback    							  |
-| **[RenderDoc](https://github.com/baldurk/renderdoc)** 													 | Graphics debbuger	              |
-
+| **[glaze](https://github.com/stephenberry/glaze)**                               | Serialization                    |
+| **[miniaudio](https://github.com/mackron/miniaudio)**                            | Audio playback                   |
+| **[RenderDoc](https://github.com/baldurk/renderdoc)**                            | Graphics debbuger                |
+| **[msdf-atlas-gen](https://github.com/Chlumsky/msdf-atlas-gen)**                 | MSDF font atlas generator        |
 ---
 
 <img width="1920" height="1080" alt="screen1" src="https://github.com/user-attachments/assets/a8091422-2f4e-4f4f-926a-262a0accf6bb" />

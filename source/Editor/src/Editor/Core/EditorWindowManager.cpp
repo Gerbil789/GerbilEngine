@@ -129,7 +129,7 @@ namespace Editor
 		io.IniFilename = imgui_ini;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("resources/fonts/roboto/Roboto-Regular.ttf", 18.0f);
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("resources/fonts/Roboto-Regular.ttf", 18.0f);
 		SetupImGuiStyle();
 
 		EditorRenderer::Initialize(window);

@@ -18,8 +18,17 @@ namespace Engine
 
     void Destroy();
 
+    template<typename T, typename... Args>
+    T& AddComponent(Args&&... args);
+
     template<typename T>
-    T& AddComponent();
+    void AddTag();
+
+    template<typename T>
+    bool HasTag();
+
+    template<typename T>
+    void RemoveTag();
 
     template<typename T>
     T& GetOrAddComponent();
@@ -38,9 +47,6 @@ namespace Engine
 
     entt::entity GetHandle() const { return m_Handle; }
 		Scene* GetScene() const { return m_Scene; }
-
-		template<typename T>
-    void SetDirty();
 
 		explicit operator bool() const { return m_Handle != entt::null && m_Scene != nullptr; }
 		bool operator==(const Entity& other) const { return m_Handle == other.m_Handle && m_Scene == other.m_Scene; }

@@ -142,15 +142,15 @@ namespace Engine
 
 			for (auto&& [entity, cc] : view.each())
 			{
-				Engine::Camera* cam = cc.camera;
+				Engine::Camera& cam = cc.camera;
 				const auto& pos = scene.GetRegistry().get<Engine::TransformComponent>(entity).position;
-				const auto& forward = cam->GetForward();
-				const auto& up = cam->GetUp();
+				const auto& forward = cam.GetForward();
+				const auto& up = cam.GetUp();
 				Engine::Audio::SetListener(pos.x, pos.y, pos.z, forward.x, forward.y, forward.z, up.x, up.y, up.z);
-				cam->SetPosition(pos);
+				cam.SetPosition(pos);
 
 				const auto& rot = scene.GetRegistry().get<Engine::TransformComponent>(entity).rotation;
-				cam->SetRotation(rot);
+				cam.SetRotation(rot);
 			}
 		}
 		

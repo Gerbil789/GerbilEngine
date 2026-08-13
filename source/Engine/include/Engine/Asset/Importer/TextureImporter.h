@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Core/API.h"
+#include <filesystem>
 #include <optional>
 
 namespace Engine

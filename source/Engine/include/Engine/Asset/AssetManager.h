@@ -15,6 +15,7 @@ namespace Engine::AssetManager
 
 	template<typename T>
 	ENGINE_API T& GetAsset(Uuid id);
+
 	ENGINE_API AssetType GetAssetType(Uuid id);
 	ENGINE_API const std::filesystem::path& GetAssetPath(Uuid id);
 	ENGINE_API std::vector<Uuid> GetAssetsOfType(AssetType type);

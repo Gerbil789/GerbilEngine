@@ -54,6 +54,8 @@ namespace Editor
 
 		Engine::Entity selectedEntity = scene.GetEntity(selectedId);
 
+		if (!selectedEntity.HasComponent<Engine::WorldTransformComponent>()) return;
+
 		ImGuizmo::SetDrawlist();
 		ImGuizmo::SetRect(x, y, width, height);
 
@@ -126,7 +128,7 @@ namespace Editor
 				tc.position = trans;
 				tc.rotation = rot;
 				tc.scale = scale;
-				entity.SetDirty<Engine::DirtyTag>();
+				entity.AddTag<Engine::DirtyTag>();
 			}
 		}
 

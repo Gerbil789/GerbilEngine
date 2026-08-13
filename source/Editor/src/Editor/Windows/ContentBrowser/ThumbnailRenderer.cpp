@@ -1,13 +1,13 @@
 #include "ThumbnailRenderer.h"
+#include "Engine/Core/Resources.h"
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetType.h"
+#include "Engine/Scene/Scene.h"
+#include "Engine/Scene/Components.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/Camera.h"
 #include "Engine/Graphics/Sprite.h"
-#include "Engine/Scene/Scene.h"
-#include "Engine/Core/Resources.h"
-#include "Engine/Asset/AssetManager.h"
-#include "Engine/Scene/Components.h"
-#include "Engine/Asset/AssetType.h"
 #include "Engine/Graphics/Mesh.h"
 
 namespace Editor
@@ -81,14 +81,14 @@ namespace Editor
 		camera.SetPosition({ 0.0f, 0.0f, 3.0f });
 		camera.SetRotation({ 0.0f, 180.0f, 0.0f });
 
-		entity = scene.CreateEntity("PreviewEntity");
+		entity = scene.CreateEntity<Engine::TransformComponent, Engine::WorldTransformComponent>("PreviewEntity");
 		auto& mc = entity.AddComponent<Engine::MeshComponent>();
 		mc.meshId = RESOURCES::MESH::SPHERE;
 		mc.materials.push_back(RESOURCES::MATERIAL::PINK);
 
 		auto& tc = entity.GetComponent<Engine::TransformComponent>();
 		tc.rotation = { 15.0f, 45.0f, 0.0f };
-		entity.SetDirty<Engine::DirtyTag>();
+		entity.AddTag<Engine::DirtyTag>();
 
 		//TODO: transform is not getting updated...
 

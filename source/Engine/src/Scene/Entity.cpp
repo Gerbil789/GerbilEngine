@@ -15,7 +15,7 @@ namespace Engine
 		}
 		else
 		{
-			m_Scene->GetRegistry().emplace<DisabledTag>(m_Handle);
+			m_Scene->GetRegistry().emplace_or_replace<DisabledTag>(m_Handle);
 		}
 	}
 
@@ -31,16 +31,28 @@ namespace Engine
 		m_Scene = nullptr;
 	}
 
-	template<typename T>
-	void Entity::SetDirty()
+	template<typename T, typename... Args>
+	T& Entity::AddComponent(Args&&... args)
 	{
-		m_Scene->GetRegistry().emplace<T>(m_Handle);
+		return m_Scene->GetRegistry().emplace<T>(m_Handle, std::forward<Args>(args)...);
 	}
 
 	template<typename T>
-	T& Entity::AddComponent()
+	void Entity::AddTag()
 	{
-		return m_Scene->GetRegistry().emplace<T>(m_Handle);
+		m_Scene->GetRegistry().emplace_or_replace<T>(m_Handle);
+	}
+
+	template<typename T>
+	bool Entity::HasTag()
+	{
+		return m_Scene->GetRegistry().all_of<T>(m_Handle);
+	}
+
+	template<typename T>
+	void Entity::RemoveTag()
+	{
+		m_Scene->GetRegistry().remove<T>(m_Handle);
 	}
 
 	template<typename T>
@@ -82,6 +94,16 @@ namespace Engine
 				template ENGINE_API ComponentType& Entity::GetOrAddComponent<ComponentType>(); \
 				template ENGINE_API ComponentType* Entity::TryGetComponent<ComponentType>();
 
+
+	template ENGINE_API void Entity::AddTag<DisabledTag>();
+	template ENGINE_API void Entity::AddTag<DirtyTag>();
+	template ENGINE_API void Entity::AddTag<PrimaryCameraTag>();
+
+	template ENGINE_API bool Entity::HasTag<PrimaryCameraTag>();
+
+
+	template ENGINE_API void Entity::RemoveTag<PrimaryCameraTag>();
+
 	INSTANTIATE_COMPONENT(IdentityComponent)
 
 	INSTANTIATE_COMPONENT(NameComponent)
@@ -104,9 +126,7 @@ namespace Engine
 
 	// --- UI COMPONENTS HERE ---
 
-	template ENGINE_API void Entity::SetDirty<Engine::DirtyTag>();
-
-	template ENGINE_API void Entity::SetDirty<Engine::UI::LayoutDirtyTag>();
+	template ENGINE_API void Entity::AddTag<UI::LayoutDirtyTag>();
 
 	INSTANTIATE_COMPONENT(UI::RectTransform)
 
@@ -114,4 +134,5 @@ namespace Engine
 
 	INSTANTIATE_COMPONENT(UI::Image)
 
+	INSTANTIATE_COMPONENT(UI::Text)
 }

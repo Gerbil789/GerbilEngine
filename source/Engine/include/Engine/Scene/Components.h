@@ -2,12 +2,12 @@
 
 #include "Engine/Core/UUID.h"
 #include "Engine/Math/AABB.h"
+#include "Engine/Graphics/Camera.h"
 #include <string>
 #include <entt/fwd.hpp>
 
 namespace Engine
 {
-	class Camera;
 	class Script;
 
 	struct ENGINE_API DisabledTag {};
@@ -20,7 +20,7 @@ namespace Engine
 
 	struct ENGINE_API NameComponent
 	{
-		std::string name = "Entity";
+		std::string name;
 	};
 
 	struct ENGINE_API TransformComponent
@@ -59,10 +59,11 @@ namespace Engine
 		bool isTrigger = false;
 	};
 
+	struct ENGINE_API PrimaryCameraTag {};
+
 	struct ENGINE_API CameraComponent
 	{
-		Camera* camera = nullptr;
-		bool primary = false;
+		Camera camera;
 	};
 
 	enum class LightType { Directional = 0, Spot, Point };
@@ -135,17 +136,22 @@ namespace Engine
 
 		struct ENGINE_API Image
 		{
-			std::string iconName;
+			std::string iconName; //TODO: dont use strings as key!!!
 			glm::vec4 tint{ 1.0f, 1.0f, 1.0f, 1.0f };
 		};
 
-		//struct ENGINE_API Text
-		//{
-		//	std::string text;
-		//	std::string fontName;
-		//	glm::vec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
-		//	float fontSize = 16.0f;
-		//};
+		struct ENGINE_API Text
+		{
+			std::string text = "Gerbil";
+			std::string fontName = "Arvo-Regular";
+			glm::vec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
+			float fontSize = 32.0f;
+			float lineSpacing = 1.2f;
+			bool wrapText = false;
+		};
+
+
+
 
 		//struct ENGINE_API Interactable
 		//{

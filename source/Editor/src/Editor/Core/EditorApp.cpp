@@ -27,6 +27,7 @@
 #include "Engine/Debug/RenderDoc.h"
 #include "Editor/Core/EditorState.h"
 #include "Engine/Scene/TransformSystem.h"
+#include "Engine/Graphics/Font.h"
 
 namespace Editor
 {
@@ -60,6 +61,7 @@ namespace Editor
 		Engine::Audio::Initialize();
 		EditorWindowManager::Initialize(m_Window);
 		SelectionManager::Initialize();
+		Engine::FontManager::Initialize();
 
 		Engine::EventBus::Subscribe<Engine::SceneChangedEvent>([this](auto& e)
 			{
