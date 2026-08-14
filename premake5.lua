@@ -53,21 +53,20 @@ filter "configurations:Dist"
 
 filter {}
 
-
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 targetdir ("bin/" .. outputdir)
 objdir    ("bin-int/" .. outputdir .. "/%{prj.name}")
 
+group ""
+	include "source/Engine"
+	include "source/Editor"
+	include "source/Skeleton"
+
+group "Projects"
+	include "projects/TestProject"
+
 group "Dependencies"
 	include "vendor/glfw"
 	include "vendor/miniaudio"
 	include "vendor/imgui"
-
-group ""
-	include "Engine"
-	include "Editor"
-	include "Template"
-
-group "Games"
-	include "Projects/TestProject"

@@ -3,7 +3,7 @@
 #include "../Math/RayIntersectsPlane.h" //TODO: fix paths, dont ever use "../"
 #include "GameContext.h"
 #include "Engine/Scene/Components.h"
-#include "Engine/Graphics/Camera.h"
+#include "Engine/Scene/CameraSystem.h"
 #include "Engine/Core/State.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Core/Input.h"
@@ -37,7 +37,7 @@ public:
     }
   }
 
-  void Update(const Engine::Camera& camera)
+  void Update()
   {
     glm::vec2 mousePos = Engine::Input::GetMousePosition();
 
@@ -55,7 +55,16 @@ public:
 		}
 
     glm::vec3 rayOrigin, rayDir;
-    camera.ScreenToWorldRay(mousePos.x, mousePos.y, rayOrigin, rayDir);
+
+
+
+    //camera.ScreenToWorldRay(mousePos.x, mousePos.y, rayOrigin, rayDir);
+
+    //entt::entity cameraEntity = scene
+
+
+    //Engine::CameraSystem::ScreenToWorldRay(mousePos.x, mousePos.y, rayOrigin, rayDir);
+
 
     glm::vec3 hitPoint;
     glm::vec3 floorNormal = { 0.0f, 1.0f, 0.0f };

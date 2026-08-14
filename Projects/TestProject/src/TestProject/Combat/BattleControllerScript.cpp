@@ -32,7 +32,7 @@ void BattleControllerScript::OnStart()
 
 	Engine::TransformComponent& transform = m_Entity.GetComponent<Engine::TransformComponent>();
 	transform.scale = { static_cast<float>(m_GridWidth) * 2, 1.0f, static_cast<float>(m_GridHeight) * 2 };
-  m_Entity.SetDirty();
+  m_Entity.AddTag<Engine::TransformDirty>();
 
   gridInteractionSystem.Initialize();
 
@@ -42,7 +42,7 @@ void BattleControllerScript::OnStart()
 
 void BattleControllerScript::OnUpdate()
 {
-	gridInteractionSystem.Update(*m_Entity.GetScene()->GetActiveCamera());
+	gridInteractionSystem.Update();
   m_TileMaterial.Get().SetParameter("hoveredTile", GameContext::mousePosition);
 
 

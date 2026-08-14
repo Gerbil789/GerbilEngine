@@ -11,7 +11,7 @@ void SpawnEntitiesScript::OnStart()
   {
     for(int y = 0; y < m_GridHeight; ++y)
     {
-      Engine::Entity entity = scene->CreateEntity("SpawnedEntity");
+      Engine::Entity entity = scene->CreateEntity<Engine::TransformComponent, Engine::WorldTransformComponent>("SpawnedEntity");
       Engine::TransformComponent& transform = entity.GetComponent<Engine::TransformComponent>();
       transform.position = { x * m_Offset, 0.0f, y * m_Offset };
       Engine::MeshComponent& meshComp = entity.AddComponent<Engine::MeshComponent>();
@@ -21,7 +21,7 @@ void SpawnEntitiesScript::OnStart()
 			hierarchy.parent = m_Entity.GetHandle();
 			parentHiearchy.children.push_back(entity.GetHandle());
 
-      entity.SetDirty();
+      entity.AddTag<Engine::TransformDirty>();
     }
 	}
 }

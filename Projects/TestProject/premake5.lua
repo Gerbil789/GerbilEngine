@@ -12,7 +12,7 @@ files
 includedirs
 {
 	"src",
-	"%{wks.location}/Engine/include",
+	"%{wks.location}/source/Engine/include",
 }
 
 externalincludedirs
