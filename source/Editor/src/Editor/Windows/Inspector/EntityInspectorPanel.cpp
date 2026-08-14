@@ -10,7 +10,6 @@
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Graphics/Camera.h"
 #include "Editor/Core/SelectionManager.h"
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Script/Script.h"
@@ -106,7 +105,7 @@ namespace Editor
 		PropertyTable table;
 
 		result |= PropertyField("Position", tc.position);
-		result |= PropertyField("Rotation", tc.rotation);
+		result |= PropertyField("Rotation", tc.rotation, { .useDegrees = true });
 		result |= PropertyField("Scale", tc.scale);
 
 		if (result.started)
@@ -119,7 +118,7 @@ namespace Editor
 		}
 		else if (result.changed)
 		{
-			entity.AddTag<Engine::DirtyTag>();
+			entity.AddTag<Engine::TransformDirty>();
 		}
 	}
 
@@ -130,8 +129,7 @@ namespace Editor
 		ComponentHeader header("Camera");
 		if (!header.open) return;
 
-		auto& component = entity.GetComponent<Engine::CameraComponent>();
-		Engine::Camera& camera = component.camera;
+		auto& cc = entity.GetComponent<Engine::CameraComponent>();
 
 		PropertyTable table;
 
@@ -153,25 +151,22 @@ namespace Editor
 			}
 		}
 
-		Engine::Camera::Projection projType = camera.GetProjection();
-		int currentProjection = static_cast<int>(projType);
-
+		int currentProjection = static_cast<int>(cc.projectionType);
 		if (EnumField("Projection", currentProjection, { "Perspective", "Orthographic" }).changed)
 		{
-			camera.SetProjection(static_cast<Engine::Camera::Projection>(currentProjection));
+			cc.projectionType = static_cast<Engine::CameraComponent::Projection>(currentProjection);
 		}
 
-		Engine::Camera::Background bg = camera.GetBackground();
-		int currentBg = static_cast<int>(bg);
+		int currentBg = static_cast<int>(cc.background);
 
 		if (EnumField("Background", currentBg, { "Color", "Skybox" }).changed)
 		{
-			camera.SetBackground(static_cast<Engine::Camera::Background>(currentBg));
+			cc.background = static_cast<Engine::CameraComponent::Background>(currentBg);
 		}
 
-		if (camera.GetBackground() == Engine::Camera::Background::Color)
+		if (cc.background == Engine::CameraComponent::Background::Color)
 		{
-			PropertyField("Clear Color", camera.GetClearColor(), { .mode = DisplayMode::Color });
+			PropertyField("Clear Color", cc.clearColor, { .mode = DisplayMode::Color });
 		}
 	}
 
@@ -447,7 +442,7 @@ namespace Editor
 		}
 		else if (result.changed)
 		{
-			entity.AddTag<Engine::DirtyTag>();
+			entity.AddTag<Engine::TransformDirty>();
 		}
 	}
 
@@ -530,7 +525,7 @@ namespace Editor
 		}
 		else if (result.changed)
 		{
-			entity.AddTag<Engine::DirtyTag>();
+			entity.AddTag<Engine::TransformDirty>();
 		}
 	}
 
@@ -568,7 +563,7 @@ namespace Editor
 		}
 		else if (result.changed)
 		{
-			entity.AddTag<Engine::DirtyTag>();
+			entity.AddTag<Engine::TransformDirty>();
 		}
 	}
 

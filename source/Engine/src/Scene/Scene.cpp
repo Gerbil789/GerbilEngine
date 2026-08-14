@@ -51,15 +51,15 @@ namespace Engine
 		}
 	}
 
-	Camera* Scene::GetActiveCamera()
+	entt::entity Scene::GetActiveCamera()
 	{
 		auto view = m_Registry.view<CameraComponent, PrimaryCameraTag>(entt::exclude<DisabledTag>);
 
 		for (auto [entity, cam] : view.each())
 		{
-			return &cam.camera;
+			return entity;
 		}
 
-		return nullptr;
+		return entt::null;
 	}
 }

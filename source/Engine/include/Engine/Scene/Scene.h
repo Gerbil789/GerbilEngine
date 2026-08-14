@@ -7,8 +7,6 @@
 
 namespace Engine
 {
-	class Camera;
-
 	class ENGINE_API Scene : public Asset
 	{
 	public:
@@ -21,6 +19,8 @@ namespace Engine
 		Scene(const Scene&) = delete;
 		Scene& operator=(const Scene&) = delete;
 
+
+		//TODO: auto insert into root if not parent specified
 		template<typename... Components>
 		Entity CreateEntity(std::string_view name = "Entity")
 		{
@@ -47,7 +47,7 @@ namespace Engine
 		void InsertRootEntity(entt::entity entity, size_t index);
 		void RemoveRootEntity(entt::entity entity);
 
-		Camera* GetActiveCamera();
+		entt::entity GetActiveCamera();
 
 		Uuid GetEnvironmentTexture() const { return m_EnvironmentTextureId; }
 		void SetEnvironmentTexture(Uuid textureId) { m_EnvironmentTextureId = textureId; }

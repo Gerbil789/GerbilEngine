@@ -16,15 +16,13 @@ namespace Engine
 		void DisableFlag(RenderPassType flag) { m_EnabledPasses &= ~flag; }
 		RenderPassType GetEnabledFlags() const { return m_EnabledPasses; }
 
-
-		void SetWindowSize(float width, float height) { m_RenderContext.width = width; m_RenderContext.height = height; }
+		void SetSize(float width, float height) { m_RenderContext.width = width; m_RenderContext.height = height; }
 		void SetColorTarget(wgpu::TextureView colorView);
 		void SetDepthTarget(wgpu::TextureView depthView);
 		void SetEnvironmentTexture(Uuid textureId);
 		const RenderContext& GetRenderContext() const { return m_RenderContext; }
 
-		void RenderScene(Scene& scene, Camera& camera);
-		void Clear(const glm::vec4& color = {0.0f, 0.0f, 0.0f, 1.0f});
+		void RenderScene(Scene& scene);
 
 		wgpu::TextureView GetTextureView() const;
 

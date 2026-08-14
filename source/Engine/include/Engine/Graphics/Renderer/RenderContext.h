@@ -3,18 +3,17 @@
 #include "Engine/Graphics/Renderer/DrawList.h"
 #include "Engine/Graphics/Renderer/RenderUniforms.h"
 #include "Engine/Graphics/Texture/Environment.h"
-#include <webgpu/webgpu.hpp>
+#include "Engine/Scene/Components.h"
 #include <array>
 
 namespace Engine
 {
   class Scene;
-	class Camera;
 
   struct RenderContext
   {
-		float width = 0.0f;
-		float height = 0.0f;
+		float width = 1.0f;
+		float height = 1.0f;
 
     wgpu::TextureView colorTarget;
     wgpu::TextureView depthTarget;
@@ -22,7 +21,7 @@ namespace Engine
 		DrawList drawList;
 
 		Scene* scene = nullptr;
-    Camera* camera = nullptr;
+    CameraComponent cameraComponent;
 
     // View
     wgpu::BindGroup viewBindGroup = nullptr;
@@ -40,6 +39,5 @@ namespace Engine
     // Shadow texture views
     std::array<wgpu::TextureView, s_ShadowCascadeCount> depthTextureViews;
     wgpu::TextureView depthTextureArrayView;
-
   };
 }

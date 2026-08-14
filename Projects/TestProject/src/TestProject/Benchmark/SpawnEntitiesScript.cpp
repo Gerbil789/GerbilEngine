@@ -21,7 +21,7 @@ void SpawnEntitiesScript::OnStart()
 			hierarchy.parent = m_Entity.GetHandle();
 			parentHiearchy.children.push_back(entity.GetHandle());
 
-      entity.AddTag<Engine::DirtyTag>();
+      entity.AddTag<Engine::TransformDirty>();
     }
 	}
 }

@@ -59,8 +59,12 @@ namespace Editor
 		ImGuizmo::SetDrawlist();
 		ImGuizmo::SetRect(x, y, width, height);
 
-		const glm::mat4& cameraProjection = Editor::editorContext.editorCamera.GetProjectionMatrix();
-		glm::mat4 cameraView = Editor::editorContext.editorCamera.GetViewMatrix();
+		entt::entity cameraEntity = scene.GetActiveCamera();
+
+		auto& cc = registry.get<Engine::CameraComponent>(cameraEntity);
+
+		const glm::mat4& cameraProjection = cc.projectionMatrix;
+		glm::mat4 cameraView = cc.viewMatrix;
 
 		auto& wtc = selectedEntity.GetComponent<Engine::WorldTransformComponent>();
 		glm::mat4 worldTransform = wtc.worldMatrix;
@@ -128,7 +132,7 @@ namespace Editor
 				tc.position = trans;
 				tc.rotation = rot;
 				tc.scale = scale;
-				entity.AddTag<Engine::DirtyTag>();
+				entity.AddTag<Engine::TransformDirty>();
 			}
 		}
 

@@ -1,7 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Scene/Scene.h"
-#include "Engine/Graphics/Camera.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/Texture/TextureCube.h"
@@ -14,6 +13,7 @@
 #include "Engine/Graphics/Texture/Environment.h"
 #include "Engine/Core/Resources.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Scene/CameraSystem.h"
 #include <glm/gtx/quaternion.hpp>
 
 namespace Engine
@@ -239,15 +239,26 @@ namespace Engine
 		m_RenderContext.depthTextureArrayView = texture.createView(arrayViewDesc);
 	}
 
-	void Renderer::RenderScene(Scene& scene, Camera& camera)
+	void Renderer::RenderScene(Scene& scene)
 	{
 		m_RenderContext.scene = &scene;
-		m_RenderContext.camera = &camera;
+
+		entt::registry& registry = scene.GetRegistry();
+		entt::entity cameraEntity = scene.GetActiveCamera();
+
+		const auto& tc = registry.get<TransformComponent>(cameraEntity);
+		const auto& cc = registry.get<CameraComponent>(cameraEntity);
+
+		m_RenderContext.cameraComponent = cc; //TODO: do i need camera component in context?
+
+		float aspectRatio = m_RenderContext.width / m_RenderContext.height;
+		CameraSystem::Update(registry, aspectRatio);
 
 		ViewUniforms viewUniforms;
-		viewUniforms.view = m_RenderContext.camera->GetViewMatrix();
-		viewUniforms.projection = m_RenderContext.camera->GetProjectionMatrix();
-		viewUniforms.cameraPosition = m_RenderContext.camera->GetPosition();
+		viewUniforms.view = cc.viewMatrix;
+		viewUniforms.projection = cc.projectionMatrix;
+		viewUniforms.cameraPosition = tc.position;
+
 		GraphicsContext::GetQueue().writeBuffer(m_RenderContext.viewUniformBuffer, 0, &viewUniforms, sizeof(viewUniforms));
 
 		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder();
@@ -283,32 +294,6 @@ namespace Engine
 				}
 			}
 		}
-
-		wgpu::CommandBuffer commandBuffer = encoder.finish();
-		GraphicsContext::GetQueue().submit(1, &commandBuffer);
-	}
-
-	void Renderer::Clear(const glm::vec4& color)
-	{
-		wgpu::CommandEncoderDescriptor encoderDesc;
-		encoderDesc.label = { "ClearEncoder", WGPU_STRLEN };
-		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder(encoderDesc);
-
-		wgpu::RenderPassColorAttachment colorAttachment;
-		colorAttachment.view = m_RenderContext.colorTarget;
-		colorAttachment.resolveTarget = nullptr;
-		colorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
-		colorAttachment.loadOp = wgpu::LoadOp::Clear;
-		colorAttachment.storeOp = wgpu::StoreOp::Store;
-		colorAttachment.clearValue = wgpu::Color{ color.r, color.g, color.b, color.a };
-
-		wgpu::RenderPassDescriptor renderPassDesc;
-		renderPassDesc.colorAttachmentCount = 1;
-		renderPassDesc.colorAttachments = &colorAttachment;
-		renderPassDesc.depthStencilAttachment = nullptr;
-
-		wgpu::RenderPassEncoder renderPass = encoder.beginRenderPass(renderPassDesc);
-		renderPass.end();
 
 		wgpu::CommandBuffer commandBuffer = encoder.finish();
 		GraphicsContext::GetQueue().submit(1, &commandBuffer);

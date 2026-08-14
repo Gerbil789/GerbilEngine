@@ -3,18 +3,17 @@
 #include "Engine/Graphics/Renderer/RenderContext.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Mesh.h"
-#include "Engine/Graphics/Camera.h"
 #include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Utility/File.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Scene/CameraSystem.h"
 #include <glm/gtx/quaternion.hpp>
 
 namespace Engine
 {
-
 	float ShadowPass::s_Lambda = 0.9f;
 
 	namespace 
@@ -146,8 +145,8 @@ namespace Engine
 				std::vector<float> splits;
 				splits.resize(s_ShadowCascadeCount);
 
-				float near = context.camera->GetPerspectiveNear();
-				float far = context.camera->GetPerspectiveFar();
+				float near = context.cameraComponent.perspective.nearClip;
+				float far = context.cameraComponent.perspective.farClip;
 
 				glm::quat q = glm::quat(glm::radians(transform.rotation));
 				glm::vec3 forward = q * glm::vec3(0, 0, 1);
@@ -168,7 +167,11 @@ namespace Engine
 					float prevSplit = (i == 0) ? near : splits[i - 1];
 					float currSplit = splits[i];
 
-					std::array<glm::vec3, 8> corners = context.camera->GetFrustumCornersWorld(prevSplit, currSplit);
+
+
+					//std::array<glm::vec3, 8> corners = context.camera->GetFrustumCornersWorld(prevSplit, currSplit);
+
+					std::array<glm::vec3, 8> corners = CameraSystem::GetFrustumCornersWorld(prevSplit, currSplit);
 
 					glm::vec3 center(0.0f);
 					for (const auto& c : corners)

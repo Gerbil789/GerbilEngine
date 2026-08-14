@@ -18,7 +18,7 @@ namespace Editor
 	{
 		EditorPicker m_EntityPicker;
 		ViewportCameraController m_CameraController;
-		TransformController m_TransformController;
+		TransformController m_TransformController; //gizmo
 
 		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
@@ -37,8 +37,11 @@ namespace Editor
 		if (newSize.x == m_ViewportSize.x && newSize.y == m_ViewportSize.y) return;
 
 		m_ViewportSize = { newSize.x, newSize.y };
-		Editor::editorContext.editorCamera.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
-		Editor::editorContext.renderer.SetWindowSize(m_ViewportSize.x, m_ViewportSize.y);
+
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		scene.GetRegistry().emplace_or_replace<Engine::CameraProjectionDirty>(scene.GetActiveCamera());
+		
+		Editor::editorContext.renderer.SetSize(m_ViewportSize.x, m_ViewportSize.y);
 
 		ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		ImVec2 viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -201,26 +204,6 @@ namespace Editor
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
-
-		if (Editor::editorContext.editorMode == EditorMode::Edit)
-		{
-			Editor::editorContext.renderer.RenderScene(scene, Editor::editorContext.editorCamera);
-		}
-		else
-		{
-			Engine::Camera* camera = scene.GetActiveCamera();
-			if (camera)
-			{
-				camera->SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
-				Editor::editorContext.renderer.RenderScene(scene, *camera);
-			}
-			else
-			{
-				Editor::editorContext.renderer.Clear();
-			}
-		}
-
 		ImGui::Image(static_cast<WGPUTextureView>(Editor::editorContext.renderer.GetTextureView()), viewportSize);
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -239,6 +222,8 @@ namespace Editor
 		}
 
 		DrawOverlay(imagePos, viewportSize);
+
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 		m_TransformController.DrawGizmo(scene, m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 		ImGui::End();
 	}

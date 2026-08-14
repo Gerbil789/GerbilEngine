@@ -76,8 +76,6 @@ namespace Editor
 		Engine::Uuid id = project.GetDefaultSceneId();
 		Engine::SceneManager::SetActiveScene(id);
 
-		Editor::editorContext.editorCamera.SetBackground(Engine::Camera::Background::Skybox);
-		Editor::editorContext.editorCamera.SetPosition(glm::vec3(0.0f, 0.0f, -20.0f));
 
 		Engine::EventBus::Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); return false; });
 		LOG_INFO("--- Editor initialization complete ---");
@@ -108,10 +106,13 @@ namespace Editor
 			Engine::Input::Update();
 			Engine::Audio::Update();
 
+			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+
+			Engine::TransformSystem::Update(scene);
+			Editor::editorContext.renderer.RenderScene(scene);
+
 			EditorWindowManager::Update();
 			EditorCommandManager::ExecuteDeferredCommands();
-			
-			Engine::TransformSystem::Update();
 
 			if (Editor::editorContext.editorMode == EditorMode::Play)
 			{

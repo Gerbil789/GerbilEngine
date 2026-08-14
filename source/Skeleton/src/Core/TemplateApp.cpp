@@ -20,7 +20,6 @@
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Core/Runtime.h"
 #include "Engine/Scene/Components.h"
-#include "Engine/Graphics/Camera.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Physics/Physics.h"
 #include "Engine/Asset/AssetRegistry.h"
@@ -31,7 +30,6 @@ namespace Template
 	uint32_t m_Width = 1600;
 	uint32_t m_Height = 900;
 
-	Engine::Camera* m_Camera = nullptr;
 	Engine::Renderer m_Renderer;
 
 	static void UpdateSize(uint32_t width, uint32_t height)
@@ -43,7 +41,7 @@ namespace Template
 
 		//Engine::Scene& activeScene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 		//Engine::Camera* camera = activeScene.GetActiveCamera();
-		m_Camera->SetAspectRatio(static_cast<float>(m_Width) / static_cast<float>(m_Height));
+		//m_Camera->SetAspectRatio(static_cast<float>(m_Width) / static_cast<float>(m_Height));
 
 		wgpu::Extent3D size = { m_Width, m_Height, 1 };
 
@@ -129,11 +127,10 @@ namespace Template
 		Engine::Uuid id = project.GetDefaultSceneId();
 		Engine::SceneManager::SetActiveScene(id);
 
-		Engine::Scene& activeScene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
-		m_Camera = activeScene.GetActiveCamera();
-
-		m_Camera->SetBackground(Engine::Camera::Background::Skybox);
-
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		entt::entity cameraEntity = scene.GetActiveCamera();
+		auto& cc = scene.GetRegistry().get<Engine::CameraComponent>(cameraEntity);
+		cc.background = Engine::CameraComponent::Background::Skybox;
 
 		UpdateSize(m_Width, m_Height);
 
@@ -195,7 +192,7 @@ namespace Template
 			}
 
 			m_Renderer.SetColorTarget(targetView);
-			m_Renderer.RenderScene(Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene()), *m_Camera);
+			m_Renderer.RenderScene(Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene()));
 
 			surface.present();
 		}

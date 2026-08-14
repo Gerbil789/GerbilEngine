@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Graphics/Camera.h"
 #include "Editor/Core/EditorSettings.h"
 
 namespace Editor
@@ -15,7 +14,6 @@ namespace Editor
 		PlayMode playMode = PlayMode::PIE;
 
 		Engine::Renderer renderer;
-		Engine::Camera editorCamera;
 
 		EditorSettings settings;
 	};

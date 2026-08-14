@@ -96,8 +96,10 @@ namespace Engine
 
 
 	template ENGINE_API void Entity::AddTag<DisabledTag>();
-	template ENGINE_API void Entity::AddTag<DirtyTag>();
+	template ENGINE_API void Entity::AddTag<TransformDirty>();
 	template ENGINE_API void Entity::AddTag<PrimaryCameraTag>();
+	template ENGINE_API void Entity::AddTag<CameraProjectionDirty>();
+
 
 	template ENGINE_API bool Entity::HasTag<PrimaryCameraTag>();
 

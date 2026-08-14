@@ -1,13 +1,12 @@
 #include "enginepch.h"
 #include "Engine/Graphics/RenderPass/BackgroundPass.h"
-#include "Engine/Graphics/Camera.h"
 #include "Engine/Graphics/SkyboxShader.h"
 
 namespace Engine
 {
 	namespace
 	{
-		SkyboxShader m_SkyboxShader;
+		SkyboxShader m_SkyboxShader; //TODO: use generic shared class..., delete skybox shader
 	}
 
 	BackgroundPass::BackgroundPass()
@@ -17,7 +16,7 @@ namespace Engine
 
 	void BackgroundPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
 	{
-		const glm::vec4& col = context.camera->GetClearColor();
+		const glm::vec4& col = context.cameraComponent.clearColor;
 
 		wgpu::RenderPassColorAttachment color;
 		color.view = context.colorTarget;
@@ -35,9 +34,9 @@ namespace Engine
 
 		pass.setBindGroup(0, context.viewBindGroup, 0, nullptr);
 
-		if (context.camera->GetProjection() == Camera::Projection::Perspective)
+		if (context.cameraComponent.projectionType == CameraComponent::Projection::Perspective)
 		{
-			if (context.camera->GetBackground() == Camera::Background::Skybox)
+			if (context.cameraComponent.background == CameraComponent::Background::Skybox)
 			{
 				pass.setPipeline(m_SkyboxShader.GetRenderPipeline());
 				pass.setBindGroup(1, context.environmentBindGroup, 0, nullptr);

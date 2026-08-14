@@ -2,16 +2,16 @@
 
 #include "Engine/Core/UUID.h"
 #include "Engine/Math/AABB.h"
-#include "Engine/Graphics/Camera.h"
 #include <string>
-#include <entt/fwd.hpp>
+#include <entt/entity/entity.hpp>
 
 namespace Engine
 {
 	class Script;
 
+	struct ENGINE_API EditorTag {};
 	struct ENGINE_API DisabledTag {};
-	struct ENGINE_API DirtyTag {};
+	struct ENGINE_API TransformDirty {};
 
 	struct ENGINE_API IdentityComponent
 	{
@@ -26,7 +26,7 @@ namespace Engine
 	struct ENGINE_API TransformComponent
 	{
 		glm::vec3 position = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 rotation = { 0.0f, 0.0f, 0.0f }; // radians
 		glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
 	};
 
@@ -58,12 +58,37 @@ namespace Engine
 		AABB worldAABB;
 		bool isTrigger = false;
 	};
-
+	
 	struct ENGINE_API PrimaryCameraTag {};
+	struct ENGINE_API CameraViewDirty {};
+	struct ENGINE_API CameraProjectionDirty {};
 
 	struct ENGINE_API CameraComponent
 	{
-		Camera camera;
+		enum class Projection { Perspective, Orthographic };
+		enum class Background { Color, Skybox };
+
+		Projection projectionType = Projection::Perspective;
+		Background background = Background::Color;
+		glm::vec4 clearColor = { 1.0f, 0.05f, 1.0f, 1.0f };
+
+		glm::mat4 projectionMatrix{ 1.0f };
+		glm::mat4 viewMatrix{ 1.0f };
+		glm::mat4 viewProjectionMatrix{ 1.0f };
+
+		struct Perspective
+		{
+			float fov = glm::radians(45.0f);
+			float nearClip = 0.1f;
+			float farClip = 512.0f;
+		} perspective;
+
+		struct Orthographic
+		{
+			float size = 10.0f;
+			float nearClip = -1.0f;
+			float farClip = 512.0f;
+		} orthographic;
 	};
 
 	enum class LightType { Directional = 0, Spot, Point };

@@ -8,6 +8,7 @@
 #include "Engine/Scene/Scene.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Scene/CameraSystem.h"
 
 namespace Editor
 {
@@ -17,7 +18,8 @@ namespace Editor
 		bool m_RotateDragging = false;
 		bool m_PanDragging = false;
 
-		float m_MouseSensitivity = 0.12f;
+		float m_MouseDragSensitivity = 0.12f;
+		float m_MouseRotateSensitivity = 0.002f;
 		float m_ScrollSensitivity = 1.0f;
 		float m_PanSpeed = 0.1f;
 	}
@@ -35,9 +37,19 @@ namespace Editor
 	{
 		if (!m_ViewportHovered) return;
 
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		entt::entity cameraEntity = scene.GetActiveCamera();
+		if (cameraEntity == entt::null) return;
+
+		auto& tc = scene.GetRegistry().get<Engine::TransformComponent>(cameraEntity);
+
 		float delta = static_cast<float>(e.yOffset) * m_ScrollSensitivity;
-		glm::vec3 position = Editor::editorContext.editorCamera.GetPosition();
-		Editor::editorContext.editorCamera.SetPosition(position + Editor::editorContext.editorCamera.GetForward() * delta * m_ScrollSensitivity);
+		glm::vec3 forward = Engine::CameraSystem::GetForward(tc);
+
+		tc.position += forward * delta;
+
+		scene.GetRegistry().emplace_or_replace<Engine::TransformDirty>(cameraEntity);
+		scene.GetRegistry().emplace_or_replace<Engine::CameraViewDirty>(cameraEntity);
 	}
 
 	void ViewportCameraController::OnMouseButtonPressed(const Engine::MouseButtonPressedEvent& e)
@@ -72,26 +84,36 @@ namespace Editor
 	{
 		if (!m_RotateDragging && !m_PanDragging) return;
 
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		entt::entity cameraEntity = scene.GetActiveCamera();
+		if (cameraEntity == entt::null) return;
+
+		auto& tc = scene.GetRegistry().get<Engine::TransformComponent>(cameraEntity);
+
 		glm::vec2 mouse = { e.x, e.y };
-		glm::vec2 delta = (mouse - m_StartMousePosition) * m_MouseSensitivity;
-		m_StartMousePosition = mouse;
 
 		if (m_RotateDragging)
 		{
-			float yaw = Editor::editorContext.editorCamera.GetYaw() + delta.x;
-			float pitch = Editor::editorContext.editorCamera.GetPitch() + delta.y;
-			Editor::editorContext.editorCamera.SetRotation(pitch, yaw);
+			glm::vec2 delta = (mouse - m_StartMousePosition) * m_MouseRotateSensitivity;
 
+			float yaw = tc.rotation.y+ delta.x;
+			float pitch = tc.rotation.x + delta.y;
+			tc.rotation = { pitch, yaw, 0.0f };
 		}
 		else if (m_PanDragging)
 		{
-			glm::vec3 position = Editor::editorContext.editorCamera.GetPosition();
-			glm::vec3 right = Editor::editorContext.editorCamera.GetRight();
-			glm::vec3 up = Editor::editorContext.editorCamera.GetUp();
-			position -= right * delta.x * m_PanSpeed;
-			position += up * delta.y * m_PanSpeed;
-			Editor::editorContext.editorCamera.SetPosition(position);
+			glm::vec2 delta = (mouse - m_StartMousePosition) * m_MouseDragSensitivity;
+
+			glm::vec3 right = Engine::CameraSystem::GetRight(tc);
+			glm::vec3 up = Engine::CameraSystem::GetUp(tc);
+			tc.position -= right * delta.x * m_PanSpeed;
+			tc.position += up * delta.y * m_PanSpeed;
 		}
+
+		m_StartMousePosition = mouse;
+
+		scene.GetRegistry().emplace_or_replace<Engine::CameraViewDirty>(cameraEntity);
+		scene.GetRegistry().emplace_or_replace<Engine::TransformDirty>(cameraEntity);
 	}
 
 	void ViewportCameraController::OnEntityFocus(Engine::Uuid entityId, float distance)
@@ -99,11 +121,18 @@ namespace Editor
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 		Engine::Entity entity = scene.GetEntity(entityId);
 		if (!entity) return;
-
 		if (!entity.HasComponent<Engine::TransformComponent>()) return;
 
+		entt::entity cameraEntity = scene.GetActiveCamera();
+		if (cameraEntity == entt::null) return;
+
+		auto& tc = scene.GetRegistry().get<Engine::TransformComponent>(cameraEntity);
+		glm::vec3 forward = Engine::CameraSystem::GetForward(tc);
+
 		glm::vec3 focusPoint = entity.GetComponent<Engine::TransformComponent>().position;
-		glm::vec3 position = focusPoint - Editor::editorContext.editorCamera.GetForward() * distance;
-		Editor::editorContext.editorCamera.SetPosition(position);
+		tc.position = focusPoint - forward * distance;
+
+		scene.GetRegistry().emplace_or_replace<Engine::CameraViewDirty>(cameraEntity);
+		scene.GetRegistry().emplace_or_replace<Engine::TransformDirty>(cameraEntity);
 	}
 }

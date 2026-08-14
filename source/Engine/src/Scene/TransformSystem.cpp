@@ -17,13 +17,15 @@ namespace Engine
     auto& tc = registry.get<TransformComponent>(entity);
     auto& hc = registry.get<HierarchyComponent>(entity);
 		auto& wtc = registry.get<WorldTransformComponent>(entity);
-    bool needsUpdate = registry.any_of<DirtyTag>(entity) || forceUpdate;
+    bool needsUpdate = registry.any_of<TransformDirty>(entity) || forceUpdate;
 
     if (needsUpdate)
     {
-      const glm::mat4 localMatrix = glm::translate(glm::mat4(1.0f), tc.position) * glm::toMat4(glm::quat(glm::radians(tc.rotation))) * glm::scale(glm::mat4(1.0f), tc.scale);
+      //const glm::mat4 localMatrix = glm::translate(glm::mat4(1.0f), tc.position) * glm::toMat4(glm::quat(glm::radians(tc.rotation))) * glm::scale(glm::mat4(1.0f), tc.scale);
+      const glm::mat4 localMatrix = glm::translate(glm::mat4(1.0f), tc.position) * glm::toMat4(glm::quat(tc.rotation)) * glm::scale(glm::mat4(1.0f), tc.scale);
+
 			wtc.worldMatrix = parentWorldMatrix * localMatrix;
-      registry.remove<DirtyTag>(entity);
+      registry.remove<TransformDirty>(entity);
     }
 
     for (auto child : hc.children)
@@ -32,9 +34,8 @@ namespace Engine
     }
   }
 
-	void TransformSystem::Update()
+	void TransformSystem::Update(Scene& scene)
 	{
-		auto& scene = AssetManager::GetAsset<Scene>(SceneManager::GetActiveScene()); //TODO: pass scene as parameter
 		auto& registry = scene.GetRegistry();
 
     for (entt::entity entity : scene.GetRootEntities())

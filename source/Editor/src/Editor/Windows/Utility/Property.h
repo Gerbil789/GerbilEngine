@@ -26,6 +26,7 @@ namespace Editor
 		float max = std::numeric_limits<float>::max();
 		float step = 0.1f;
 		bool showLabel = true;
+		bool useDegrees = false;
 	};
 
 	struct EditResult
@@ -283,7 +284,15 @@ namespace Editor
 				else
 				{
 					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-					return ImGui::DragFloat3("##input", glm::value_ptr(value), options.step);
+
+					glm::vec3 displayValue = options.useDegrees ? glm::degrees(value) : value;
+					bool changed = ImGui::DragFloat3("##input", glm::value_ptr(displayValue), options.step);
+
+					if (changed)
+					{
+						value = options.useDegrees ? glm::radians(displayValue) : displayValue;
+					}
+					return changed;
 				}
 			}
 			else if constexpr (std::is_same_v<T, glm::vec4>)

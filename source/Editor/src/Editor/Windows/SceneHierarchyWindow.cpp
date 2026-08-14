@@ -147,7 +147,7 @@ namespace Editor
 								scene.InsertRootEntity(dropped, index);
 							}
 						}
-						registry.emplace_or_replace<Engine::DirtyTag>(dropped);
+						registry.emplace_or_replace<Engine::TransformDirty>(dropped);
 					}
 				}
 			}
@@ -234,7 +234,7 @@ namespace Editor
 
 
 					scene.InsertRootEntity(dropped, scene.GetRootEntities().size());
-					registry.emplace_or_replace<Engine::DirtyTag>(dropped);
+					registry.emplace_or_replace<Engine::TransformDirty>(dropped);
 				}
 			}
 			ImGui::EndDragDropTarget();

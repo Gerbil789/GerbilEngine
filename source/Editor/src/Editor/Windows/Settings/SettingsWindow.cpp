@@ -3,7 +3,6 @@
 #include "Editor/Windows/Utility/Property.h"
 #include "Editor/Windows/Viewport/ViewportWindow.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Graphics/Camera.h"
 #include "Engine/Graphics/RenderPass/RenderPassRegistry.h"
 #include "Engine/Graphics/Texture/TextureCube.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
@@ -18,6 +17,8 @@ namespace Editor
 {
 	void SettingsWindow::Draw()
 	{
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+
 		ImGui::Begin("Settings");
 
 		if (ImGui::CollapsingHeader("Editor"))
@@ -48,7 +49,6 @@ namespace Editor
 		{
 			PropertyTable table;
 
-			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 			Engine::Uuid id = scene.GetEnvironmentTexture();
 
 			if (AssetField("Environment", id, Engine::AssetType::Texture).changed)
@@ -66,19 +66,17 @@ namespace Editor
 
 			PropertyField("Lambda", Engine::ShadowPass::s_Lambda, { .min = 0.0f, .max = 1.0f, .step = 0.01f });
 
-			Engine::Camera& camera = Editor::editorContext.editorCamera;
 
-			float near = camera.GetPerspectiveNear();
-			if (PropertyField("Near", near, { .min = 0.01f, .max = camera.GetPerspectiveFar(), .step = 0.01f }).changed)
-			{
-				camera.SetPerspectiveNear(near);
-			}
+			entt::registry& registry = scene.GetRegistry();
 
-			float far = camera.GetPerspectiveFar();
-			if (PropertyField("Far", far, { .min = camera.GetPerspectiveNear(), .max = 1000.0f, .step = 0.01f }).changed)
-			{
-				camera.SetPerspectiveFar(far);
-			}
+			auto view = registry.view<Engine::CameraComponent, Engine::EditorTag>();
+
+
+			entt::entity editorCameraEntity = view.front();
+			auto& cc = registry.get<Engine::CameraComponent>(editorCameraEntity);
+
+			PropertyField("Near", cc.perspective.nearClip, { .min = 0.01f, .max = cc.perspective.farClip, .step = 0.01f });
+			PropertyField("Far", cc.perspective.farClip, { .min = cc.perspective.nearClip, .max = 1000.0f, .step = 0.01f });
 		}
 		ImGui::End();
 	}

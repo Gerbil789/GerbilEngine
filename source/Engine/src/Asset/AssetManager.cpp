@@ -9,7 +9,6 @@
 #include "Engine/Graphics/Material.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Audio/AudioClip.h"
-#include "Engine/Graphics/Camera.h"
 #include "Engine/Graphics/Font.h"
 
 #include "Engine/Asset/Importer/TextureImporter.h"

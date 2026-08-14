@@ -6,7 +6,7 @@
 #include "Engine/Scene/Components.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Graphics/Camera.h"
+#include "Engine/Scene/TransformSystem.h"
 #include "Engine/Graphics/Sprite.h"
 #include "Engine/Graphics/Mesh.h"
 
@@ -40,8 +40,8 @@ namespace Editor
 		std::unordered_map<Engine::Uuid, Thumbnail> m_ThumbnailCache;
 
 		Engine::Scene scene;
-		Engine::Entity entity;
-		Engine::Camera camera;
+		Engine::Entity cameraEntity;
+		Engine::Entity previewEntity;
 		Engine::Renderer renderer;
 
 		struct PreviewRequest 
@@ -74,25 +74,32 @@ namespace Editor
 
 	void ThumbnailRenderer::Initialize()
 	{
-		camera.SetBackground(Engine::Camera::Background::Color);
-		camera.SetProjection(Engine::Camera::Projection::Perspective);
-		camera.SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
-		camera.SetAspectRatio(1.0f);
-		camera.SetPosition({ 0.0f, 0.0f, 3.0f });
-		camera.SetRotation({ 0.0f, 180.0f, 0.0f });
+		{
+			cameraEntity = scene.CreateEntity<Engine::TransformComponent, Engine::WorldTransformComponent, Engine::CameraComponent, Engine::PrimaryCameraTag, Engine::CameraProjectionDirty, Engine::CameraViewDirty, Engine::TransformDirty>("CameraEntity");
+			scene.InsertRootEntity(cameraEntity.GetHandle(), scene.GetRootEntities().size());
 
-		entity = scene.CreateEntity<Engine::TransformComponent, Engine::WorldTransformComponent>("PreviewEntity");
-		auto& mc = entity.AddComponent<Engine::MeshComponent>();
-		mc.meshId = RESOURCES::MESH::SPHERE;
-		mc.materials.push_back(RESOURCES::MATERIAL::PINK);
+			auto& cc = cameraEntity.GetComponent<Engine::CameraComponent>();
+			cc.background = Engine::CameraComponent::Background::Color;
+			cc.projectionType = Engine::CameraComponent::Projection::Perspective;
+			cc.clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 
-		auto& tc = entity.GetComponent<Engine::TransformComponent>();
-		tc.rotation = { 15.0f, 45.0f, 0.0f };
-		entity.AddTag<Engine::DirtyTag>();
+			auto& tc = cameraEntity.GetComponent<Engine::TransformComponent>();
+			tc.position = { 0.0f, 0.0f, 3.0f };
+			tc.rotation = { 0.0f, 0.0f, 0.0f };
+		}
+		
+		{
+			previewEntity = scene.CreateEntity<Engine::TransformComponent, Engine::WorldTransformComponent, Engine::MeshComponent, Engine::TransformDirty>("PreviewEntity");
+			auto& mc = previewEntity.GetComponent<Engine::MeshComponent>();
+			mc.meshId = RESOURCES::MESH::SPHERE;
+			mc.materials = { RESOURCES::MATERIAL::PINK };
 
-		//TODO: transform is not getting updated...
+			auto& tc = previewEntity.GetComponent<Engine::TransformComponent>();
+			tc.rotation = glm::radians(glm::vec3{ 15.0f, 45.0f, 0.0f });
+		}
 
 		renderer.Initialize();
+		renderer.SetSize(64.0f, 64.0f);
 		renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Opaque);
 
 		for (const auto& [type, coords] : AssetIconMap)
@@ -145,7 +152,7 @@ namespace Editor
 		int x = (slot % CellsPerSide) * 64;
 		int y = (slot / CellsPerSide) * 64;
 
-		auto& mc = entity.GetComponent<Engine::MeshComponent>();
+		auto& mc = previewEntity.GetComponent<Engine::MeshComponent>();
 
 		mc.meshId = request.meshId;
 		mc.materials[0] = request.materialId;
@@ -153,11 +160,15 @@ namespace Editor
 		const Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(mc.meshId);
 		float distance = glm::length(mesh.aabb.max - mesh.aabb.min);
 
-		camera.SetPosition({ 0.0f, 0.0f, distance });
+		cameraEntity.GetComponent<Engine::TransformComponent>().position = { 0.0f, 0.0f, -distance };
+		cameraEntity.AddTag<Engine::TransformDirty>();
+		cameraEntity.AddTag<Engine::CameraProjectionDirty>();
+
+		Engine::TransformSystem::Update(scene);
 
 		renderer.SetColorTarget(m_ScratchpadView);
 		renderer.SetDepthTarget(m_DepthView);
-		renderer.RenderScene(scene, camera);
+		renderer.RenderScene(scene);
 
 		// Copy to Atlas
 		wgpu::TexelCopyTextureInfo src;

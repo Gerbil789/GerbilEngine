@@ -1,6 +1,5 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
-#include "Engine/Graphics/Camera.h"
 #include "Engine/Script/Script.h"
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Core/Resources.h"
@@ -133,16 +132,16 @@ namespace Engine
 		// Camera
 		if (registry.any_of<CameraComponent>(entity))
 		{
-			const Camera& cam = registry.get<CameraComponent>(entity).camera;
+			const CameraComponent& cam = registry.get<CameraComponent>(entity);
 			CameraComponentJSON cJson;
-			cJson.projection = static_cast<uint32_t>(cam.GetProjection());
-			cJson.aspectRatio = cam.GetAspectRatio();
+			cJson.projection = static_cast<uint32_t>(cam.projectionType);
+			//cJson.aspectRatio = cam.GetAspectRatio();
 
-			cJson.perspective = { cam.GetPerspectiveFOV(), cam.GetPerspectiveNear(), cam.GetPerspectiveFar() };
-			cJson.orthographic = { cam.GetOrthoSize(), cam.GetOrthoNear(), cam.GetOrthoFar() };
+			cJson.perspective = { cam.perspective.fov, cam.perspective.nearClip, cam.perspective.farClip };
+			cJson.orthographic = { cam.orthographic.size, cam.orthographic.nearClip, cam.orthographic.farClip };
 
-			cJson.background = static_cast<uint32_t>(cam.GetBackground());
-			cJson.clearColor = cam.GetClearColor();
+			cJson.background = static_cast<uint32_t>(cam.background);
+			cJson.clearColor = cam.clearColor;
 
 			cJson.primary = registry.any_of<PrimaryCameraTag>(entity);
 			eJson.camera = cJson;
@@ -301,7 +300,7 @@ namespace Engine
 				tc = eJson.transform.value();
 
 				registry.emplace<WorldTransformComponent>(handle);
-				registry.emplace<DirtyTag>(handle);
+				registry.emplace<TransformDirty>(handle);
 			}
 
 			// hierarchy
@@ -333,21 +332,22 @@ namespace Engine
 			}
 
 			// Camera
+			//TODO: use camera component directly, instead of this json struct
 			if (eJson.camera.has_value())
 			{
 				auto& cComp = registry.emplace<CameraComponent>(handle);
 				const auto& cJson = eJson.camera.value();
 
-				cComp.camera.SetProjection(static_cast<Camera::Projection>(cJson.projection));
-				cComp.camera.SetAspectRatio(cJson.aspectRatio);
-				cComp.camera.SetPerspectiveFOV(cJson.perspective.fov);
-				cComp.camera.SetPerspectiveNear(cJson.perspective.near);
-				cComp.camera.SetPerspectiveFar(cJson.perspective.far);
-				cComp.camera.SetOrthoSize(cJson.orthographic.size);
-				cComp.camera.SetOrthoNear(cJson.orthographic.near);
-				cComp.camera.SetOrthoFar(cJson.orthographic.far);
-				cComp.camera.SetBackground(static_cast<Camera::Background>(cJson.background));
-				cComp.camera.SetClearColor(cJson.clearColor);
+				cComp.projectionType = static_cast<CameraComponent::Projection>(cJson.projection);
+					//cComp.camera.SetAspectRatio(cJson.aspectRatio);
+				cComp.perspective.fov = cJson.perspective.fov;
+				cComp.perspective.nearClip = cJson.perspective.near;
+				cComp.perspective.farClip = cJson.perspective.far;
+				cComp.orthographic.size = cJson.orthographic.size;
+				cComp.orthographic.nearClip = cJson.orthographic.near;
+				cComp.orthographic.farClip = cJson.orthographic.far;
+				cComp.background = static_cast<CameraComponent::Background>(cJson.background);
+				cComp.clearColor = cJson.clearColor;
 
 				if(cJson.primary)
 				{

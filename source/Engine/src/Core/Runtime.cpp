@@ -6,12 +6,13 @@
 #include "Engine/Scene/Components.h"
 #include "Engine/Script/Script.h"
 #include "Engine/Audio/Audio.h"
-#include "Engine/Graphics/Camera.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Event/Event.h"
+
+#include "Engine/Scene/CameraSystem.h"
 
 #ifdef ENGINE_PLATFORM_WINDOWS
 #include <Windows.h>
@@ -138,19 +139,15 @@ namespace Engine
 
 		// update camera & audio listener
 		{
-			auto view = registry.view<CameraComponent>(entt::exclude<DisabledTag>);
+			entt::entity cameraEntity = scene.GetActiveCamera();
 
-			for (auto&& [entity, cc] : view.each())
+			if(cameraEntity != entt::null)
 			{
-				Engine::Camera& cam = cc.camera;
-				const auto& pos = scene.GetRegistry().get<Engine::TransformComponent>(entity).position;
-				const auto& forward = cam.GetForward();
-				const auto& up = cam.GetUp();
-				Engine::Audio::SetListener(pos.x, pos.y, pos.z, forward.x, forward.y, forward.z, up.x, up.y, up.z);
-				cam.SetPosition(pos);
+				auto& tc = registry.get<TransformComponent>(cameraEntity);
 
-				const auto& rot = scene.GetRegistry().get<Engine::TransformComponent>(entity).rotation;
-				cam.SetRotation(rot);
+				const auto& forward = CameraSystem::GetForward(tc);
+				const auto& up = CameraSystem::GetUp(tc);
+				Engine::Audio::SetListener(tc.position.x, tc.position.y, tc.position.z, forward.x, forward.y, forward.z, up.x, up.y, up.z);
 			}
 		}
 		

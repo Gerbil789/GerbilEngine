@@ -15,13 +15,13 @@ namespace Editor
     void Execute() override
     {
 			m_Entity.GetComponent<T>() = m_After;
-      m_Entity.AddTag<Engine::DirtyTag>();
+      m_Entity.AddTag<Engine::TransformDirty>();
     }
 
     void Undo() override
     {
 			m_Entity.GetComponent<T>() = m_Before;
-      m_Entity.AddTag<Engine::DirtyTag>();
+      m_Entity.AddTag<Engine::TransformDirty>();
     }
 
   private:
