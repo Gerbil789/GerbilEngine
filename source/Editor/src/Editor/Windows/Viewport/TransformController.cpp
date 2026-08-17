@@ -28,6 +28,7 @@ namespace Editor
 	{
 		ImGuizmo::AllowAxisFlip(true);
 		ImGuizmo::SetGizmoSizeClipSpace(0.15f);
+		ImGuizmo::SetOrthographic(false);
 
 		Engine::EventBus::Subscribe<Engine::KeyPressedEvent>([](const Engine::KeyPressedEvent& e)
 			{
@@ -47,6 +48,9 @@ namespace Editor
 		if (Editor::editorContext.editorMode == EditorMode::Play) return;
 		if (gizmoType == 0) return;
 
+		entt::entity cameraEntity = scene.GetActiveCamera();
+		if (cameraEntity == entt::null) return;
+
 		Engine::Uuid selectedId = SelectionManager::Entities.GetPrimary();
 		if (!selectedId) return;
 
@@ -59,25 +63,24 @@ namespace Editor
 		ImGuizmo::SetDrawlist();
 		ImGuizmo::SetRect(x, y, width, height);
 
-		entt::entity cameraEntity = scene.GetActiveCamera();
-
 		auto& cc = registry.get<Engine::CameraComponent>(cameraEntity);
 
-		const glm::mat4& cameraProjection = cc.projectionMatrix;
+		glm::mat4 cameraProjection = cc.projectionMatrix;
 		glm::mat4 cameraView = cc.viewMatrix;
 
 		auto& wtc = selectedEntity.GetComponent<Engine::WorldTransformComponent>();
-		glm::mat4 worldTransform = wtc.worldMatrix;
+		glm::mat4& worldTransform = wtc.worldMatrix;
 
-		float* snapValue = nullptr;
+		glm::vec3 snap;
+		float* snapPtr = nullptr;
+
 		if (Engine::Input::IsKeyDown(Engine::Key::LeftControl))
 		{
-			static float snapTranslateScale[3] = { 0.5f, 0.5f, 0.5f };
-			static float snapRotate[3] = { 45.0f, 45.0f, 45.0f };
-			snapValue = (gizmoType == ImGuizmo::OPERATION::ROTATE) ? snapRotate : snapTranslateScale;
+			snap = (gizmoType == ImGuizmo::OPERATION::ROTATE) ? glm::vec3{ 45.0f, 45.0f, 45.0f } : glm::vec3{ 0.5f, 0.5f, 0.5f };
+			snapPtr = glm::value_ptr(snap);
 		}
 
-		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), gizmoType, ImGuizmo::MODE::LOCAL, glm::value_ptr(worldTransform), nullptr, snapValue);
+		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), gizmoType, ImGuizmo::MODE::LOCAL, glm::value_ptr(worldTransform), nullptr, snapPtr);
 
 		bool isUsing = ImGuizmo::IsUsing();
 

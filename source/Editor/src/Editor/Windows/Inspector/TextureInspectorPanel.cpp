@@ -32,6 +32,6 @@ namespace Editor
 			imageSize.x = imageSize.y * aspect;
 		}
 
-		ImGui::Image(static_cast<WGPUTextureView>(texture.GetTextureView()), imageSize);
+		ImGui::Image(texture.GetTextureView().Get(), imageSize);
 	}
 }

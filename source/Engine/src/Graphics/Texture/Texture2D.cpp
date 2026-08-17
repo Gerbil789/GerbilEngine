@@ -24,7 +24,7 @@ namespace Engine
 		}
 
 		wgpu::TextureDescriptor textureDesc;
-		textureDesc.dimension = wgpu::TextureDimension::_2D;
+		textureDesc.dimension = wgpu::TextureDimension::e2D;
 		textureDesc.format = m_TextureFormat;
 		textureDesc.mipLevelCount = mipCount;
 		textureDesc.sampleCount = 1;
@@ -40,7 +40,7 @@ namespace Engine
 		textureDesc.usage = usage;
 		textureDesc.viewFormatCount = 0;
 		textureDesc.viewFormats = nullptr;
-		m_Texture = GraphicsContext::GetDevice().createTexture(textureDesc);
+		m_Texture = GraphicsContext::GetDevice().CreateTexture(&textureDesc);
 
 		wgpu::TexelCopyTextureInfo dst;
 		dst.texture = m_Texture;
@@ -55,7 +55,7 @@ namespace Engine
 
 		wgpu::Extent3D size = { m_Width, m_Height, 1 };
 
-		GraphicsContext::GetQueue().writeTexture(dst, data, m_Width * m_Height * bytesPerPixel, layout, size);
+		GraphicsContext::GetQueue().WriteTexture(&dst, data, m_Width * m_Height * bytesPerPixel, &layout, &size);
 
 		if (specification.generateMips)
 		{
@@ -63,14 +63,14 @@ namespace Engine
 		}
 
 		wgpu::TextureViewDescriptor viewDesc;
-		viewDesc.label = { "Texture2DView", WGPU_STRLEN };
+		viewDesc.label = "Texture2DView";
 		viewDesc.format = m_TextureFormat;
-		viewDesc.dimension = wgpu::TextureViewDimension::_2D;
+		viewDesc.dimension = wgpu::TextureViewDimension::e2D;
 		viewDesc.baseMipLevel = 0;
 		viewDesc.mipLevelCount = 1;
 		viewDesc.baseArrayLayer = 0;
 		viewDesc.arrayLayerCount = 1;
 		viewDesc.aspect = wgpu::TextureAspect::All;
-		m_TextureView = m_Texture.createView(viewDesc);
+		m_TextureView = m_Texture.CreateView(&viewDesc);
 	}
 }

@@ -24,7 +24,7 @@ namespace Engine
 
 	wgpu::Sampler SamplerPool::CreateSampler(wgpu::Device device, wgpu::FilterMode minMag, wgpu::MipmapFilterMode mip, wgpu::AddressMode mode)
 	{
-		wgpu::SamplerDescriptor desc{};
+		wgpu::SamplerDescriptor desc;
 		desc.minFilter = minMag;
 		desc.magFilter = minMag;
 		desc.mipmapFilter = mip;
@@ -32,6 +32,6 @@ namespace Engine
 		desc.addressModeV = mode;
 		desc.addressModeW = mode;
 		desc.maxAnisotropy = 1;
-		return device.createSampler(desc);
+		return device.CreateSampler(&desc);
 	}
 }

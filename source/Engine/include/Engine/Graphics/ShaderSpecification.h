@@ -5,7 +5,7 @@
 #include <optional>
 #include <string>
 #include <glm/glm.hpp>
-#include <webgpu/webgpu.hpp>
+#include <webgpu/webgpu_cpp.h>
 
 namespace Engine
 {

@@ -1,7 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Asset/AssetManager.h"
@@ -61,8 +60,6 @@ namespace Engine
 		CreateBindGroup();
 	}
 
-
-
 	const MaterialValue& Material::GetParameterVariant(const std::string& name) const
 	{
 		auto it = m_Parameters.find(name);
@@ -73,10 +70,6 @@ namespace Engine
 
 		throw std::runtime_error("Parameter not found: " + name);
 	}
-
-
-
-	
 
 	void Material::SetTexture(const std::string& name, Uuid texture)
 	{
@@ -119,10 +112,10 @@ namespace Engine
 	void Material::CreateUniformBuffer()
 	{
 		wgpu::BufferDescriptor bufferDesc;
-		bufferDesc.label = { "MaterialUniformBuffer", WGPU_STRLEN }; //TODO: add material name
+		bufferDesc.label = "MaterialUniformBuffer"; //TODO: add material name
 		bufferDesc.size = Engine::AssetManager::GetAsset<Shader>(m_ShaderId).GetMaterialUniformBufferSize(); //TODO: pass size as parameter
 		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-		m_UniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
+		m_UniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
 	}
 
 	void Material::CreateBindGroup()
@@ -164,11 +157,11 @@ namespace Engine
 		}
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
-		bindGroupDesc.label = { "MaterialBindGroup", WGPU_STRLEN };
+		bindGroupDesc.label = "MaterialBindGroup";
 		bindGroupDesc.layout = shader.GetMaterialBindGroupLayout();
 		bindGroupDesc.entryCount = entries.size();
 		bindGroupDesc.entries = entries.data();
-		m_BindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+		m_BindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
 
 		PipelineSpecification spec;
 		spec.shaderId = m_ShaderId;

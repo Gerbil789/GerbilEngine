@@ -24,8 +24,7 @@ namespace Editor
 			if (id)
 			{
 				const auto& texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(id);
-				auto textureView = (WGPUTextureView)texture.GetTextureView();
-				result.changed = ImGui::ImageButton("##TexturePreview", (ImTextureID)(intptr_t)textureView, size);
+				result.changed = ImGui::ImageButton("##TexturePreview", (ImTextureID)(intptr_t)texture.GetTextureView().Get(), size);
 			}
 			else
 			{

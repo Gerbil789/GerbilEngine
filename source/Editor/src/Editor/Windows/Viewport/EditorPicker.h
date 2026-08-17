@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Core/UUID.h"
-#include <webgpu/webgpu.hpp>
+#include <webgpu/webgpu_cpp.h>
 
 namespace Editor
 {

@@ -98,7 +98,7 @@ namespace Editor
 					}
 					else
 					{
-						drawList->AddRect(itemMin, itemMax, highlightColor);
+						drawList->AddRect(itemMin, itemMax, highlightColor, 0.0f, 0, 1.0f);
 					}
 
 					// actual Drop Processing

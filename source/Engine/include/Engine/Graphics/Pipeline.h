@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/Graphics/Shader.h"
-#include <webgpu/webgpu.hpp>
+#include <webgpu/webgpu_cpp.h>
 #include <unordered_map>
 
 namespace Engine
@@ -27,18 +27,54 @@ namespace Engine
 		std::vector<wgpu::BindGroupLayout> layoutOverrides; // if empty, use the shader's default layout
 
 
-    bool operator==(const PipelineSpecification& other) const = default;
+		bool operator==(const PipelineSpecification& other) const
+		{
+			if (shaderId != other.shaderId ||
+				topology != other.topology ||
+				frontFace != other.frontFace ||
+				cullMode != other.cullMode ||
+				depthWrite != other.depthWrite ||
+				depthCompare != other.depthCompare ||
+				depthFormat != other.depthFormat)
+			{
+				return false;
+			}
 
-    size_t Hash() const
-    {
-      size_t seed = 0;
+			if (layoutOverrides.size() != other.layoutOverrides.size()) return false;
 
-      HashCombine(seed, static_cast<uint64_t>(shaderId));
-      HashCombine(seed, static_cast<uint32_t>(topology));
-      HashCombine(seed, static_cast<uint32_t>(cullMode));
+			for (size_t i = 0; i < layoutOverrides.size(); ++i)
+			{
+				// Compare the raw WebGPU C-handles
+				if (layoutOverrides[i].Get() != other.layoutOverrides[i].Get())
+				{
+					return false;
+				}
+			}
 
-      return seed;
-    }
+			return true;
+		}
+
+		// 2. Hash all properties to prevent cache collisions
+		size_t Hash() const
+		{
+			size_t seed = 0;
+
+			HashCombine(seed, static_cast<uint64_t>(shaderId));
+			HashCombine(seed, static_cast<uint32_t>(topology));
+			HashCombine(seed, static_cast<uint32_t>(frontFace));
+			HashCombine(seed, static_cast<uint32_t>(cullMode));
+			HashCombine(seed, static_cast<uint32_t>(depthWrite));
+			HashCombine(seed, static_cast<uint32_t>(depthCompare));
+			HashCombine(seed, static_cast<uint32_t>(depthFormat));
+
+			for (const auto& layout : layoutOverrides)
+			{
+				// Hash the memory address of the Dawn C-handle
+				HashCombine(seed, reinterpret_cast<uint64_t>(layout.Get()));
+			}
+
+			return seed;
+		}
   };
 
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <filesystem>
-#include <webgpu/webgpu.hpp>
+#include <webgpu/webgpu_cpp.h>
 
 namespace Engine
 {

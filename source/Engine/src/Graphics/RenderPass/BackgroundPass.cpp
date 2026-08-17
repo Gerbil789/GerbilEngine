@@ -26,24 +26,24 @@ namespace Engine
 		color.clearValue = wgpu::Color{ col.r, col.g, col.b, col.a };
 
 		wgpu::RenderPassDescriptor passDescriptor;
-		passDescriptor.label = { "BackgroundRenderPass", WGPU_STRLEN };
+		passDescriptor.label = "BackgroundRenderPass";
 		passDescriptor.colorAttachmentCount = 1;
 		passDescriptor.colorAttachments = &color;
 
-		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
+		wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&passDescriptor);
 
-		pass.setBindGroup(0, context.viewBindGroup, 0, nullptr);
+		pass.SetBindGroup(0, context.viewBindGroup, 0, nullptr);
 
 		if (context.cameraComponent.projectionType == CameraComponent::Projection::Perspective)
 		{
 			if (context.cameraComponent.background == CameraComponent::Background::Skybox)
 			{
-				pass.setPipeline(m_SkyboxShader.GetRenderPipeline());
-				pass.setBindGroup(1, context.environmentBindGroup, 0, nullptr);
-				pass.draw(36, 1, 0, 0);
+				pass.SetPipeline(m_SkyboxShader.GetRenderPipeline());
+				pass.SetBindGroup(1, context.environmentBindGroup, 0, nullptr);
+				pass.Draw(36, 1, 0, 0);
 			}
 		}
 
-		pass.end();
+		pass.End();
 	}
 }

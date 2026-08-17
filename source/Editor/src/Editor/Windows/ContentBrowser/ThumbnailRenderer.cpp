@@ -113,37 +113,37 @@ namespace Editor
 		}
 
 		wgpu::TextureDescriptor atlasDesc;
-		atlasDesc.label = { "ThumbnailAtlas", WGPU_STRLEN };
-		atlasDesc.dimension = wgpu::TextureDimension::_2D;
+		atlasDesc.label = "ThumbnailAtlas";
+		atlasDesc.dimension = wgpu::TextureDimension::e2D;
 		atlasDesc.sampleCount = 1;
 		atlasDesc.mipLevelCount = 1;
 		atlasDesc.size = { AtlasSizePx, AtlasSizePx, 1 };
 		atlasDesc.format = Engine::GraphicsContext::GetSurfaceFormat();
 		atlasDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
-		m_AtlasTexture = Engine::GraphicsContext::GetDevice().createTexture(atlasDesc);
-		m_AtlasView = m_AtlasTexture.createView();
+		m_AtlasTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&atlasDesc);
+		m_AtlasView = m_AtlasTexture.CreateView();
 
 		wgpu::TextureDescriptor scratchDesc;
-		scratchDesc.label = { "ThumbnailScratchpad", WGPU_STRLEN };
-		scratchDesc.dimension = wgpu::TextureDimension::_2D;
+		scratchDesc.label = "ThumbnailScratchpad";
+		scratchDesc.dimension = wgpu::TextureDimension::e2D;
 		scratchDesc.sampleCount = 1;
 		scratchDesc.mipLevelCount = 1;
 		scratchDesc.size = { 64, 64, 1 };
 		scratchDesc.format = Engine::GraphicsContext::GetSurfaceFormat();
 		scratchDesc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
-		m_ScratchpadTexture = Engine::GraphicsContext::GetDevice().createTexture(scratchDesc);
-		m_ScratchpadView = m_ScratchpadTexture.createView();
+		m_ScratchpadTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&scratchDesc);
+		m_ScratchpadView = m_ScratchpadTexture.CreateView();
 
 		wgpu::TextureDescriptor depthDesc;
-		depthDesc.label = { "ThumbnailDepth", WGPU_STRLEN };
-		depthDesc.dimension = wgpu::TextureDimension::_2D;
+		depthDesc.label = "ThumbnailDepth";
+		depthDesc.dimension = wgpu::TextureDimension::e2D;
 		depthDesc.size = { 64, 64, 1 };
 		depthDesc.format = wgpu::TextureFormat::Depth24Plus;
 		depthDesc.mipLevelCount = 1;
 		depthDesc.sampleCount = 1;
 		depthDesc.usage = wgpu::TextureUsage::RenderAttachment;
-		m_DepthTexture = Engine::GraphicsContext::GetDevice().createTexture(depthDesc);
-		m_DepthView = m_DepthTexture.createView();
+		m_DepthTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&depthDesc);
+		m_DepthView = m_DepthTexture.CreateView();
 	}
 
 	static Thumbnail RenderToAtlas(const PreviewRequest& request)
@@ -184,10 +184,10 @@ namespace Editor
 		wgpu::Extent3D copySize = { 64, 64, 1 };
 
 		// TODO: batch commands and send to gpu once, dont create encoder per thumbnail
-		auto encoder = Engine::GraphicsContext::GetDevice().createCommandEncoder({});
-		encoder.copyTextureToTexture(src, dst, copySize);
-		auto cmd = encoder.finish();
-		Engine::GraphicsContext::GetQueue().submit(1, &cmd);
+		auto encoder = Engine::GraphicsContext::GetDevice().CreateCommandEncoder({});
+		encoder.CopyTextureToTexture(&src, &dst, &copySize);
+		auto cmd = encoder.Finish();
+		Engine::GraphicsContext::GetQueue().Submit(1, &cmd);
 
 		Thumbnail thumb;
 		thumb.view = m_AtlasView;

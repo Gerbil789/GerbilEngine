@@ -35,6 +35,13 @@ filter "system:linux"
     "ENGINE_PLATFORM_LINUX",
   }
 
+
+filter "system:emscripten"
+	defines
+	{
+		"ENGINE_PLATFORM_WEB",
+	}
+
 filter "configurations:Debug"
 	defines { "DEBUG", "GERBIL_EDITOR" }
 	symbols "on"
@@ -60,8 +67,8 @@ objdir    ("bin-int/" .. outputdir .. "/%{prj.name}")
 
 group ""
 	include "source/Engine"
-	include "source/Editor"
 	include "source/Skeleton"
+  include "source/Editor"
 
 group "Projects"
 	include "projects/TestProject"

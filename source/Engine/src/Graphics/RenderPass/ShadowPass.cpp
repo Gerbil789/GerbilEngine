@@ -3,7 +3,7 @@
 #include "Engine/Graphics/Renderer/RenderContext.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Mesh.h"
-#include "Engine/Graphics/WebGPUUtils.h"
+#include "Engine/Graphics/Utility.h"
 #include "Engine/Scene/Components.h"
 #include "Engine/Scene/Scene.h"
 #include "Engine/Utility/File.h"
@@ -51,12 +51,12 @@ namespace Engine
 		vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
 
 		wgpu::RenderPipelineDescriptor pipelineDesc;
-		pipelineDesc.label = { "ShadowShaderPipeline", WGPU_STRLEN };
+		pipelineDesc.label = "ShadowShaderPipeline";
 
 		pipelineDesc.vertex.bufferCount = 1;
 		pipelineDesc.vertex.buffers = &vertexBufferLayout;
 		pipelineDesc.vertex.module = LoadWGSLShader("resources/shaders/shadow.wgsl");
-		pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN};
+		pipelineDesc.vertex.entryPoint = "vs_main";
 		pipelineDesc.vertex.constantCount = 0;
 		pipelineDesc.vertex.constants = nullptr;
 
@@ -80,7 +80,7 @@ namespace Engine
 		pipelineDesc.multisample.mask = ~0u;	// all samples enabled
 		pipelineDesc.multisample.alphaToCoverageEnabled = false;
 
-		wgpu::BindGroupLayoutEntry bindGroupLayoutEntry = wgpu::Default;
+		wgpu::BindGroupLayoutEntry bindGroupLayoutEntry;
 		bindGroupLayoutEntry.binding = 0;
 		bindGroupLayoutEntry.visibility = wgpu::ShaderStage::Vertex;
 		bindGroupLayoutEntry.buffer.hasDynamicOffset = true;
@@ -88,10 +88,10 @@ namespace Engine
 		bindGroupLayoutEntry.buffer.minBindingSize = sizeof(glm::mat4);
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
-		bindGroupLayoutDesc.label = { "shadowBindGroupLayout", WGPU_STRLEN };
+		bindGroupLayoutDesc.label = "shadowBindGroupLayout";
 		bindGroupLayoutDesc.entryCount = 1;
 		bindGroupLayoutDesc.entries = &bindGroupLayoutEntry;
-		wgpu::BindGroupLayout layout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
+		wgpu::BindGroupLayout layout = GraphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
 
 
 		std::array<wgpu::BindGroupLayout, 2> bindGroupLayouts
@@ -102,10 +102,10 @@ namespace Engine
 
 		{
 			wgpu::BufferDescriptor shadowBufferDesc;
-			shadowBufferDesc.label = { "ShadowPassUniformBuffer", WGPU_STRLEN };
+			shadowBufferDesc.label = "ShadowPassUniformBuffer";
 			shadowBufferDesc.size = GraphicsContext::GetUniformBufferOffsetAlignment() * s_ShadowCascadeCount;
 			shadowBufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-			m_ShadowUniformBuffer = GraphicsContext::GetDevice().createBuffer(shadowBufferDesc);
+			m_ShadowUniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&shadowBufferDesc);
 
 			wgpu::BindGroupEntry bindGroupEntry;
 			bindGroupEntry.binding = 0;
@@ -114,20 +114,20 @@ namespace Engine
 			bindGroupEntry.size = sizeof(glm::mat4);
 
 			wgpu::BindGroupDescriptor bindGroupDesc;
-			bindGroupDesc.label = { "ShadowBindGroup", WGPU_STRLEN };
+			bindGroupDesc.label = "ShadowBindGroup";
 			bindGroupDesc.layout = layout;
 			bindGroupDesc.entryCount = 1;
 			bindGroupDesc.entries = &bindGroupEntry;
-			m_ShadowBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+			m_ShadowBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
 		}
 	
 		wgpu::PipelineLayoutDescriptor layoutDesc;
-		layoutDesc.label = { "ShadowShaderPipelineLayout", WGPU_STRLEN };
+		layoutDesc.label = "ShadowShaderPipelineLayout";
 		layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
-		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)&bindGroupLayouts;
-		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
+		layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
+		pipelineDesc.layout = GraphicsContext::GetDevice().CreatePipelineLayout(&layoutDesc);
 
-		m_ShadowPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
+		m_ShadowPipeline = GraphicsContext::GetDevice().CreateRenderPipeline(&pipelineDesc);
 	}
 
 	void ShadowPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
@@ -224,23 +224,23 @@ namespace Engine
 
 		for (int index = 0; index < s_ShadowCascadeCount; index++)
 		{
-			GraphicsContext::GetQueue().writeBuffer(m_ShadowUniformBuffer, index * GraphicsContext::GetUniformBufferOffsetAlignment(), &m_LightViewProjMatrices[index], sizeof(glm::mat4));
+			GraphicsContext::GetQueue().WriteBuffer(m_ShadowUniformBuffer, index * GraphicsContext::GetUniformBufferOffsetAlignment(), &m_LightViewProjMatrices[index], sizeof(glm::mat4));
 		}
 
-		GraphicsContext::GetQueue().writeBuffer(context.environmentUniformBuffer, 0, &envUniforms, sizeof(EnvironmentUniforms));
+		GraphicsContext::GetQueue().WriteBuffer(context.environmentUniformBuffer, 0, &envUniforms, sizeof(EnvironmentUniforms));
 
 		wgpu::RenderPassDepthStencilAttachment depth;
 		depth.depthClearValue = 1.0f;
 		depth.depthLoadOp = wgpu::LoadOp::Clear;
 		depth.depthStoreOp = wgpu::StoreOp::Store;
-		depth.depthReadOnly = wgpu::OptionalBool::False;
+		depth.depthReadOnly = false;
 		depth.stencilClearValue = 0;
 		depth.stencilLoadOp = wgpu::LoadOp::Undefined;
 		depth.stencilStoreOp = wgpu::StoreOp::Undefined;
-		depth.stencilReadOnly = wgpu::OptionalBool::True;
+		depth.stencilReadOnly = true;
 
 		wgpu::RenderPassDescriptor desc;
-		desc.label = { "ShadowRenderPass", WGPU_STRLEN };
+		desc.label = "ShadowRenderPass";
 		desc.colorAttachmentCount = 0;
 		desc.colorAttachments = nullptr;
 		desc.depthStencilAttachment = &depth;
@@ -249,13 +249,13 @@ namespace Engine
 		{
 			depth.view = context.depthTextureViews[index];
 
-			wgpu::RenderPassEncoder pass = encoder.beginRenderPass(desc);
+			wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&desc);
 
-			pass.setPipeline(m_ShadowPipeline);
+			pass.SetPipeline(m_ShadowPipeline);
 
 			uint32_t offset = index * GraphicsContext::GetUniformBufferOffsetAlignment();
-			pass.setBindGroup(0, m_ShadowBindGroup, 1, &offset);
-			pass.setBindGroup(1, context.modelBindGroup, 0, nullptr);
+			pass.SetBindGroup(0, m_ShadowBindGroup, 1, &offset);
+			pass.SetBindGroup(1, context.modelBindGroup, 0, nullptr);
 
 			Uuid lastMeshId{};
 
@@ -265,14 +265,14 @@ namespace Engine
 				{
 					lastMeshId = item.meshId;
 					const Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(item.meshId);
-					pass.setVertexBuffer(0, mesh.GetVertexBuffer(), 0, mesh.GetVertexBuffer().getSize());
-					pass.setIndexBuffer(mesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh.GetIndexBuffer().getSize());
+					pass.SetVertexBuffer(0, mesh.GetVertexBuffer(), 0, mesh.GetVertexBuffer().GetSize());
+					pass.SetIndexBuffer(mesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh.GetIndexBuffer().GetSize());
 				}
 
-				pass.drawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));
+				pass.DrawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));
 			}
 
-			pass.end();
+			pass.End();
 		}
 	}
 }

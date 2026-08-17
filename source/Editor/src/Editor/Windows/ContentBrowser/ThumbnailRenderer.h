@@ -2,7 +2,7 @@
 
 #include "Engine/Core/UUID.h"
 #include "Engine/Asset/AssetType.h"
-#include <webgpu/webgpu.hpp>
+#include <webgpu/webgpu_cpp.h>
 #include <glm/glm.hpp>
 
 namespace Editor

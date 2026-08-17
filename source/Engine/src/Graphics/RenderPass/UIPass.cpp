@@ -317,10 +317,10 @@ namespace Engine
 	static void CreateUIUniformBuffer()
 	{
 		wgpu::BufferDescriptor bufferDesc;
-		bufferDesc.label = { "UIUniformBuffer", WGPU_STRLEN };
+		bufferDesc.label = "UIUniformBuffer";
 		bufferDesc.size = sizeof(UIUniforms);
 		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-		uiUniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
+		uiUniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
 	}
 
 	static void CreateUIStorageBuffer()
@@ -328,10 +328,10 @@ namespace Engine
 		constexpr uint64_t maxUIElements = 16384;
 
 		wgpu::BufferDescriptor bufferDesc;
-		bufferDesc.label = { "UIStorageBuffer", WGPU_STRLEN };
+		bufferDesc.label = "UIStorageBuffer";
 		bufferDesc.size = sizeof(UIDrawItem) * maxUIElements;
 		bufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
-		uiStorageBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
+		uiStorageBuffer = GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
 	}
 
 	void CreateUIBindGroupLayout()
@@ -352,7 +352,7 @@ namespace Engine
 		entries[2].visibility = wgpu::ShaderStage::Fragment;
 		entries[2].texture.sampleType = wgpu::TextureSampleType::Float;
 		entries[2].texture.multisampled = false;
-		entries[2].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+		entries[2].texture.viewDimension = wgpu::TextureViewDimension::e2D;
 
 		entries[3].binding = 3;
 		entries[3].visibility = wgpu::ShaderStage::Fragment;
@@ -362,18 +362,18 @@ namespace Engine
 		entries[4].visibility = wgpu::ShaderStage::Fragment;
 		entries[4].texture.sampleType = wgpu::TextureSampleType::Float;
 		entries[4].texture.multisampled = false;
-		entries[4].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+		entries[4].texture.viewDimension = wgpu::TextureViewDimension::e2D;
 
 		entries[5].binding = 5;
 		entries[5].visibility = wgpu::ShaderStage::Fragment;
 		entries[5].sampler.type = wgpu::SamplerBindingType::Filtering;
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
-		bindGroupLayoutDesc.label = { "UIBindGroupLayout", WGPU_STRLEN };
+		bindGroupLayoutDesc.label = "UIBindGroupLayout";
 		bindGroupLayoutDesc.entryCount = entries.size();
 		bindGroupLayoutDesc.entries = entries.data();
 
-		s_UIBindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
+		s_UIBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
 	}
 
 	static void CreateUIBindGroup()
@@ -383,12 +383,12 @@ namespace Engine
 		entries[0].binding = 0;
 		entries[0].buffer = uiUniformBuffer;
 		entries[0].offset = 0;
-		entries[0].size = uiUniformBuffer.getSize();
+		entries[0].size = uiUniformBuffer.GetSize();
 		
 		entries[1].binding = 1;
 		entries[1].buffer = uiStorageBuffer;
 		entries[1].offset = 0;
-		entries[1].size = uiStorageBuffer.getSize();
+		entries[1].size = uiStorageBuffer.GetSize();
 
 		entries[2].binding = 2;
 		entries[2].textureView = AssetManager::GetAsset<Texture2D>(Uuid{ s_UIConfig.texture }).GetTextureView();
@@ -403,11 +403,11 @@ namespace Engine
 		entries[5].sampler = SamplerPool::GetSampler({ TextureFilter::Bilinear, TextureWrap::Clamp });
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
-		bindGroupDesc.label = { "UIBindGroup", WGPU_STRLEN };
+		bindGroupDesc.label = "UIBindGroup";
 		bindGroupDesc.layout = s_UIBindGroupLayout;
 		bindGroupDesc.entryCount = entries.size();
 		bindGroupDesc.entries = entries.data();
-		uiBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+		uiBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
 	}
 
 	void CreateUIPipeline()
@@ -415,12 +415,12 @@ namespace Engine
 		const Shader& shader = AssetManager::GetAsset<Shader>(RESOURCES::SHADER::UI);
 
 		wgpu::RenderPipelineDescriptor pipelineDesc;
-		pipelineDesc.label = { "UI Shader Pipeline", WGPU_STRLEN };
+		pipelineDesc.label = "UI Shader Pipeline";
 
 		pipelineDesc.vertex.bufferCount = 0;
 		pipelineDesc.vertex.buffers = nullptr;
 		pipelineDesc.vertex.module = shader.GetShaderModule();
-		pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN };
+		pipelineDesc.vertex.entryPoint = "vs_main";
 
 		pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
 		pipelineDesc.primitive.frontFace = wgpu::FrontFace::CW;
@@ -441,7 +441,7 @@ namespace Engine
 
 		wgpu::FragmentState fragmentState;
 		fragmentState.module = shader.GetShaderModule();
-		fragmentState.entryPoint = { "fs_main", WGPU_STRLEN };
+		fragmentState.entryPoint = "fs_main";
 		fragmentState.constantCount = 0;
 		fragmentState.constants = nullptr;
 		fragmentState.targetCount = 1;
@@ -456,12 +456,12 @@ namespace Engine
 		bindGroupLayouts[0] = s_UIBindGroupLayout;
 
 		wgpu::PipelineLayoutDescriptor layoutDesc;
-		layoutDesc.label = { "UI Shader Pipeline Layout", WGPU_STRLEN };
+		layoutDesc.label = "UI Shader Pipeline Layout";
 		layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
-		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)bindGroupLayouts.data();
-		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
+		layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
+		pipelineDesc.layout = GraphicsContext::GetDevice().CreatePipelineLayout(&layoutDesc);
 
-		uiPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
+		uiPipeline = GraphicsContext::GetDevice().CreateRenderPipeline(&pipelineDesc);
 	}
 
 	UIPass::UIPass()
@@ -478,29 +478,28 @@ namespace Engine
 	{
 		wgpu::RenderPassColorAttachment color;
 		color.view = context.colorTarget;
-		color.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 		color.loadOp = wgpu::LoadOp::Load;
 		color.storeOp = wgpu::StoreOp::Store;
 		color.clearValue = wgpu::Color{ 0.0f, 0.0f, 0.0f, 0.0f };
 
 		wgpu::RenderPassDescriptor passDescriptor;
-		passDescriptor.label = { "UIRenderPass", WGPU_STRLEN };
+		passDescriptor.label = "UIRenderPass";
 		passDescriptor.colorAttachmentCount = 1;
 		passDescriptor.colorAttachments = &color;
 		passDescriptor.depthStencilAttachment = nullptr;
 
-		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
+		wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&passDescriptor);
 
-		pass.setPipeline(uiPipeline);
-		pass.setBindGroup(0, uiBindGroup, 0, nullptr);
+		pass.SetPipeline(uiPipeline);
+		pass.SetBindGroup(0, uiBindGroup, 0, nullptr);
 
 		const UIUniforms orthoUniform = { glm::ortho(0.0f, context.width, context.height, 0.0f,	-1.0f, 1.0f) };
-		GraphicsContext::GetQueue().writeBuffer(uiUniformBuffer, 0, &orthoUniform, sizeof(UIUniforms));
+		GraphicsContext::GetQueue().WriteBuffer(uiUniformBuffer, 0, &orthoUniform, sizeof(UIUniforms));
 
 		const std::vector<UIDrawItem> drawList = GenerateUIDrawList(context.scene, context.width, context.height);
-		GraphicsContext::GetQueue().writeBuffer(uiStorageBuffer, 0, drawList.data(), drawList.size() * sizeof(UIDrawItem));
+		GraphicsContext::GetQueue().WriteBuffer(uiStorageBuffer, 0, drawList.data(), drawList.size() * sizeof(UIDrawItem));
 
-		pass.draw(6, static_cast<uint32_t>(drawList.size()), 0, 0);
-		pass.end();
+		pass.Draw(6, static_cast<uint32_t>(drawList.size()), 0, 0);
+		pass.End();
 	}
 }

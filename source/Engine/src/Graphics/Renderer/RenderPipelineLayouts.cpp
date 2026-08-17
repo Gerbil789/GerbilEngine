@@ -22,11 +22,11 @@ namespace Engine
 		entries[0].buffer.minBindingSize = sizeof(ViewUniforms);
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
-		bindGroupLayoutDesc.label = { "ViewBindGroupLayout", WGPU_STRLEN };
+		bindGroupLayoutDesc.label = "ViewBindGroupLayout";
 		bindGroupLayoutDesc.entryCount = entries.size();
 		bindGroupLayoutDesc.entries = entries.data();
 
-		s_ViewBindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
+		s_ViewBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
 	}
 
 	void CreateModelBindGroupLayout()
@@ -40,10 +40,10 @@ namespace Engine
 		entries[0].buffer.minBindingSize = sizeof(glm::mat4);
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
-		bindGroupLayoutDesc.label = { "ModelBindGroupLayout", WGPU_STRLEN };
+		bindGroupLayoutDesc.label = "ModelBindGroupLayout";
 		bindGroupLayoutDesc.entryCount = entries.size();
 		bindGroupLayoutDesc.entries = entries.data();
-		s_ModelBindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
+		s_ModelBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
 	}
 
 	void CreateEnvironmentBindGroupLayout()
@@ -89,7 +89,7 @@ namespace Engine
 			entries[4].binding = 4;
 			entries[4].visibility = wgpu::ShaderStage::Fragment;
 			entries[4].texture.sampleType = wgpu::TextureSampleType::Float;
-			entries[4].texture.viewDimension = wgpu::TextureViewDimension::_2D;
+			entries[4].texture.viewDimension = wgpu::TextureViewDimension::e2D;
 			entries[4].texture.multisampled = false;
 		}
 
@@ -113,20 +113,17 @@ namespace Engine
 			entries[7].binding = 7;
 			entries[7].visibility = wgpu::ShaderStage::Fragment;
 			entries[7].texture.sampleType = wgpu::TextureSampleType::Depth;
-			entries[7].texture.viewDimension = wgpu::TextureViewDimension::_2DArray;
+			entries[7].texture.viewDimension = wgpu::TextureViewDimension::e2DArray;
 			entries[7].texture.multisampled = false;
 		}
 
 		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
-		bindGroupLayoutDesc.label = { "EnvironmentBindGroupLayout", WGPU_STRLEN };
+		bindGroupLayoutDesc.label = "EnvironmentBindGroupLayout";
 		bindGroupLayoutDesc.entryCount = entries.size();
 		bindGroupLayoutDesc.entries = entries.data();
 
-		s_EnvironmentBindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
+		s_EnvironmentBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
 	}
-
-
-
 
 	void RenderPipelineLayouts::Initialize()
 	{

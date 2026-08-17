@@ -17,7 +17,6 @@ includedirs
 
 externalincludedirs
 {
-	"%{wks.location}/vendor/dawn/include",
 	"%{wks.location}/vendor/glfw/include",
 	"%{wks.location}/vendor/glm",
 	"%{wks.location}/vendor/entt/include",
@@ -27,6 +26,13 @@ externalincludedirs
 	"%{wks.location}/vendor/miniaudio",
 	"%{wks.location}/vendor/renderdoc"
 }
+
+filter "not platforms:Web"
+    externalincludedirs
+    {
+        "%{wks.location}/vendor/dawn/include"
+    }
+filter {}
 
 links
 {
@@ -39,8 +45,14 @@ defines
 {
 	"GLFW_INCLUDE_NONE",
 	"GLM_ENABLE_EXPERIMENTAL",
-	"IMGUI_IMPL_WEBGPU_BACKEND_DAWN",
 }
+
+filter "not platforms:Web"
+    defines
+    {
+        "IMGUI_IMPL_WEBGPU_BACKEND_DAWN",
+    }
+filter {}
 
 filter "configurations:not Dist"
 	kind "SharedLib"
@@ -114,3 +126,34 @@ filter "system:linux"
 		"GLFW_EXPOSE_NATIVE_X11",
 		"GLFW_EXPOSE_NATIVE_WAYLAND",
 	}
+
+
+filter "platforms:Web"
+  system "linux"
+  toolset "clang"
+  
+  defines
+  {
+    "ENGINE_PLATFORM_WEB",
+    "GLFW_INCLUDE_NONE",
+    -- ImGui might need this depending on version, otherwise it auto-detects __EMSCRIPTEN__
+    -- "IMGUI_IMPL_WEBGPU_BACKEND_WASM" 
+  }
+
+  buildoptions 
+  { 
+    "--use-port=emdawnwebgpu", 
+    "-s USE_GLFW=3",
+    "-pthread" -- If your engine utilizes multi-threading
+  }
+
+  linkoptions 
+  { 
+    "--use-port=emdawnwebgpu",
+    "-s USE_GLFW=3",
+    "-s WASM=1",
+    "-s ALLOW_MEMORY_GROWTH=1", -- Crucial for game engines allocating assets dynamically
+    "-s MIN_WEBGL_VERSION=2",
+    "-s MAX_WEBGL_VERSION=2",
+    "-pthread"
+  }

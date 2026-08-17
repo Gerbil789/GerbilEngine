@@ -42,11 +42,6 @@ defines
 	"GLM_ENABLE_EXPERIMENTAL",
 }
 
--- postbuildcommands 
--- {
--- 	"{ECHO} Copying dependencies...",
--- 	"{COPYDIR} %{wks.location}/Resources %{cfg.targetdir}/Resources",
--- }
 
 filter "configurations:not Dist"
 	removelinks
@@ -97,3 +92,6 @@ filter "system:linux"
 		"glfw",
     ":libwebgpu_dawn.a", -- force static linking
 	}
+
+filter "platforms:Web"
+  targetextension ".html"

@@ -2,7 +2,7 @@
 
 #include "Engine/Asset/Asset.h"
 #include <glm/glm.hpp>
-#include <webgpu/webgpu.hpp>
+#include <webgpu/webgpu_cpp.h>
 
 namespace Engine
 {

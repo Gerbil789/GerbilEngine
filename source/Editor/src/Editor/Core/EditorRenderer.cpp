@@ -5,6 +5,7 @@
 #include <backends/imgui_impl_wgpu.h>
 #include <backends/imgui_impl_glfw.h>
 #include <GLFW/glfw3.h>
+#include <ImGuizmo.h>
 
 namespace Editor
 {
@@ -17,9 +18,8 @@ namespace Editor
 		ImGui_ImplGlfw_InitForOther(static_cast<GLFWwindow*>(window.GetNativeWindow()), true);
 
 		ImGui_ImplWGPU_InitInfo initInfo;
-		initInfo.Device = Engine::GraphicsContext::GetDevice();
-		initInfo.RenderTargetFormat = Engine::GraphicsContext::GetSurfaceFormat();
-		initInfo.DepthStencilFormat = wgpu::TextureFormat::Undefined;
+		initInfo.Device = Engine::GraphicsContext::GetDevice().Get();
+		initInfo.RenderTargetFormat = static_cast<WGPUTextureFormat>(Engine::GraphicsContext::GetSurfaceFormat());
 		ImGui_ImplWGPU_Init(&initInfo);
 	}
 
@@ -34,6 +34,7 @@ namespace Editor
 		ImGui_ImplWGPU_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+		ImGuizmo::BeginFrame();
 	}
 
 	void EditorRenderer::EndFrame()
@@ -41,7 +42,7 @@ namespace Editor
 		ImGui::Render();
 
 		wgpu::SurfaceTexture surfaceTexture;
-		s_Surface.getCurrentTexture(&surfaceTexture);
+		s_Surface.GetCurrentTexture(&surfaceTexture);
 		if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal)
 		{
 			LOG_ERROR("Failed to get current surface texture. status: {}", (int)surfaceTexture.status);
@@ -49,7 +50,7 @@ namespace Editor
 		}
 
 		wgpu::Texture texture = surfaceTexture.texture;
-		wgpu::TextureView targetView = texture.createView();
+		wgpu::TextureView targetView = texture.CreateView();
 
 		if (!targetView)
 		{
@@ -58,8 +59,8 @@ namespace Editor
 		}
 
 		wgpu::CommandEncoderDescriptor encoderDesc;
-		encoderDesc.label = { "ImGuiCommandEncoderDescriptor", WGPU_STRLEN };
-		wgpu::CommandEncoder encoder = Engine::GraphicsContext::GetDevice().createCommandEncoder(encoderDesc);
+		encoderDesc.label = "ImGuiCommandEncoderDescriptor";
+		wgpu::CommandEncoder encoder = Engine::GraphicsContext::GetDevice().CreateCommandEncoder(&encoderDesc);
 
 		wgpu::RenderPassColorAttachment color;
 		color.view = targetView;
@@ -69,20 +70,20 @@ namespace Editor
 		color.clearValue = wgpu::Color{ 0.9, 0.1, 0.2, 1.0 };
 
 		wgpu::RenderPassDescriptor passDesc;
-		passDesc.label = { "ImGuiRenderPassDescriptor", WGPU_STRLEN };
+		passDesc.label = "ImGuiRenderPassDescriptor";
 		passDesc.colorAttachmentCount = 1;
 		passDesc.colorAttachments = &color;
 
-		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDesc);
-		ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), pass);
-		pass.end();
+		wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&passDesc);
+		ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), pass.Get());
+		pass.End();
 
 		wgpu::CommandBufferDescriptor commandBufferDesc;
-		commandBufferDesc.label = { "ImGuiCommandBufferDescriptor", WGPU_STRLEN };
+		commandBufferDesc.label = "ImGuiCommandBufferDescriptor";
 		commandBufferDesc.nextInChain = nullptr;
-		wgpu::CommandBuffer commandBuffer = encoder.finish(commandBufferDesc);
+		wgpu::CommandBuffer commandBuffer = encoder.Finish(&commandBufferDesc);
 
-		Engine::GraphicsContext::GetQueue().submit(1, &commandBuffer);
-		s_Surface.present();
+		Engine::GraphicsContext::GetQueue().Submit(1, &commandBuffer);
+		s_Surface.Present();
 	}
 }

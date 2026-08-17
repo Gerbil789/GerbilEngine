@@ -40,14 +40,14 @@ namespace Engine
 	static wgpu::Surface CreateSurface(GLFWwindow* window)
 	{
 		wgpu::SurfaceDescriptor surfaceDesc;
-		surfaceDesc.label = { "MainSurface", WGPU_STRLEN };
+		surfaceDesc.label = "WindowSurface";
 
 #if defined(ENGINE_PLATFORM_WINDOWS)
 		wgpu::SurfaceSourceWindowsHWND hwndDesc;
 		hwndDesc.hwnd = glfwGetWin32Window(window);
 		hwndDesc.hinstance = GetModuleHandle(nullptr);
-		hwndDesc.chain.sType = wgpu::SType::SurfaceSourceWindowsHWND;
-		surfaceDesc.nextInChain = &hwndDesc.chain;
+		hwndDesc.sType = wgpu::SType::SurfaceSourceWindowsHWND;
+		surfaceDesc.nextInChain = &hwndDesc;
 #else
 		wgpu::SurfaceSourceXlibWindow x11Desc;
 		x11Desc.chain.sType = wgpu::SType::SurfaceSourceXlibWindow;
@@ -55,7 +55,7 @@ namespace Engine
 		x11Desc.window = glfwGetX11Window(window);
 		surfaceDesc.nextInChain = &x11Desc.chain;
 #endif
-		return GraphicsContext::GetInstance().createSurface(surfaceDesc);
+		return GraphicsContext::GetInstance().CreateSurface(&surfaceDesc);
 	}
 
 	void Window::Initialize(const WindowSpecification& specification)
@@ -82,9 +82,8 @@ namespace Engine
 		m_Surface = CreateSurface(static_cast<GLFWwindow*>(m_Window));
 
 		wgpu::SurfaceCapabilities capabilities;
-		m_Surface.getCapabilities(GraphicsContext::GetAdapter(), &capabilities);
+		m_Surface.GetCapabilities(GraphicsContext::GetAdapter(), &capabilities);
 		GraphicsContext::SetSurfaceFormat(capabilities.formats[0]);
-		capabilities.freeMembers();
 
 		ConfigureSurface(m_Data.width, m_Data.height);
 	}
@@ -275,7 +274,7 @@ namespace Engine
 		config.viewFormats = nullptr;
 		config.nextInChain = nullptr;
 
-		m_Surface.configure(config);
+		m_Surface.Configure(&config);
 	}
 
 	void Window::SetWindowIcon(const std::filesystem::path& path)

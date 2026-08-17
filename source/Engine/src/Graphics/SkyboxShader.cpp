@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Graphics/SkyboxShader.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Graphics/WebGPUUtils.h"
+#include "Engine/Graphics/Utility.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Graphics/Renderer/RenderUniforms.h"
 
@@ -12,12 +12,12 @@ namespace Engine
 		wgpu::ShaderModule shaderModule = LoadWGSLShader(path);
 
 		wgpu::RenderPipelineDescriptor pipelineDesc;
-		pipelineDesc.label = { "SkyboxShaderPipeline", WGPU_STRLEN };
+		pipelineDesc.label = "SkyboxShaderPipeline";
 
 		pipelineDesc.vertex.bufferCount = 0;
 		//pipelineDesc.vertex.buffers = &vertexBufferLayout;
 		pipelineDesc.vertex.module = shaderModule;
-		pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN };
+		pipelineDesc.vertex.entryPoint = "vs_main";
 		pipelineDesc.vertex.constantCount = 0;
 		pipelineDesc.vertex.constants = nullptr;
 
@@ -41,7 +41,7 @@ namespace Engine
 
 		wgpu::FragmentState fragmentState;
 		fragmentState.module = shaderModule;
-		fragmentState.entryPoint = { "fs_main", WGPU_STRLEN };
+		fragmentState.entryPoint = "fs_main";
 		fragmentState.constantCount = 0;
 		fragmentState.constants = nullptr;
 		fragmentState.targetCount = 1;
@@ -67,11 +67,11 @@ namespace Engine
 		};
 
 		wgpu::PipelineLayoutDescriptor layoutDesc;
-		layoutDesc.label = { "SkyboxPipelineLayout", WGPU_STRLEN };
+		layoutDesc.label = "SkyboxPipelineLayout";
 		layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
-		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)bindGroupLayouts.data();
-		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
+		layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
+		pipelineDesc.layout = GraphicsContext::GetDevice().CreatePipelineLayout(&layoutDesc);
 
-		m_RenderPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
+		m_RenderPipeline = GraphicsContext::GetDevice().CreateRenderPipeline(&pipelineDesc);
 	}
 }

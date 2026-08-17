@@ -109,7 +109,6 @@ namespace Editor
 			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
 
 			Engine::TransformSystem::Update(scene);
-			Editor::editorContext.renderer.RenderScene(scene);
 
 			EditorWindowManager::Update();
 			EditorCommandManager::ExecuteDeferredCommands();

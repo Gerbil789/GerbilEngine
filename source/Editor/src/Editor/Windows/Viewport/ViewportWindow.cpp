@@ -59,39 +59,41 @@ namespace Editor
 		// Color
 		{
 			wgpu::TextureDescriptor desc;
-			desc.label = { "RendererColorTexture", WGPU_STRLEN };
-			desc.dimension = wgpu::TextureDimension::_2D;
+			desc.label = "RendererColorTexture";
+			desc.dimension = wgpu::TextureDimension::e2D;
 			desc.format = Engine::GraphicsContext::GetSurfaceFormat();
 			desc.size = size;
 			desc.mipLevelCount = 1;
 			desc.sampleCount = 1;
 			desc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
-			wgpu::Texture colorTexture = Engine::GraphicsContext::GetDevice().createTexture(desc);
+			wgpu::Texture colorTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&desc);
 
 			wgpu::TextureViewDescriptor view;
-			view.label = { "RendererColorTextureView", WGPU_STRLEN };
-			view.dimension = wgpu::TextureViewDimension::_2D;
+			view.label = "RendererColorTextureView";
+			view.dimension = wgpu::TextureViewDimension::e2D;
 			view.format = desc.format;
 			view.baseMipLevel = 0;
 			view.mipLevelCount = 1;
 			view.baseArrayLayer = 0;
 			view.arrayLayerCount = 1;
-			Editor::editorContext.renderer.SetColorTarget(colorTexture.createView(view));
+			Editor::editorContext.renderer.SetColorTarget(colorTexture.CreateView(&view));
 		}
 
 		// Depth
 		{
+			wgpu::TextureFormat format = wgpu::TextureFormat::Depth24Plus;
+
 			wgpu::TextureDescriptor desc;
-			desc.label = { "RendererDepthTextureView", WGPU_STRLEN };
-			desc.dimension = wgpu::TextureDimension::_2D;
-			desc.format = wgpu::TextureFormat::Depth24Plus;
+			desc.label = "RendererDepthTextureView";
+			desc.dimension = wgpu::TextureDimension::e2D;
+			desc.format = format;
 			desc.mipLevelCount = 1;
 			desc.sampleCount = 1;
 			desc.size = size;
 			desc.usage = wgpu::TextureUsage::RenderAttachment;
 			desc.viewFormatCount = 1;
-			desc.viewFormats = &wgpu::TextureFormat::Depth24Plus;
-			wgpu::Texture depthTexture = Engine::GraphicsContext::GetDevice().createTexture(desc);
+			desc.viewFormats = &format;
+			wgpu::Texture depthTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&desc);
 
 			wgpu::TextureViewDescriptor view;
 			view.aspect = wgpu::TextureAspect::DepthOnly;
@@ -99,10 +101,10 @@ namespace Editor
 			view.arrayLayerCount = 1;
 			view.baseMipLevel = 0;
 			view.mipLevelCount = 1;
-			view.dimension = wgpu::TextureViewDimension::_2D;
+			view.dimension = wgpu::TextureViewDimension::e2D;
 			view.format = wgpu::TextureFormat::Depth24Plus;
 
-			Editor::editorContext.renderer.SetDepthTarget(depthTexture.createView(view));
+			Editor::editorContext.renderer.SetDepthTarget(depthTexture.CreateView(&view));
 		}
 
 		Engine::viewportState.width = m_ViewportSize.x;
@@ -204,7 +206,10 @@ namespace Editor
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		ImGui::Image(static_cast<WGPUTextureView>(Editor::editorContext.renderer.GetTextureView()), viewportSize);
+		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		Editor::editorContext.renderer.RenderScene(scene);
+
+		ImGui::Image(Editor::editorContext.renderer.GetTextureView().Get(), viewportSize);
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 		{
@@ -223,7 +228,7 @@ namespace Editor
 
 		DrawOverlay(imagePos, viewportSize);
 
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+
 		m_TransformController.DrawGizmo(scene, m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 		ImGui::End();
 	}

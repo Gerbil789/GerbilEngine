@@ -2,9 +2,9 @@
 
 #include "Engine/Asset/Asset.h"
 #include "Engine/Graphics/ShaderSpecification.h"
-#include <webgpu/webgpu.hpp>
+#include <webgpu/webgpu_cpp.h>
 #include <ranges>
-
+#include <stdexcept>
 namespace Engine
 {
 	class Shader : public Asset

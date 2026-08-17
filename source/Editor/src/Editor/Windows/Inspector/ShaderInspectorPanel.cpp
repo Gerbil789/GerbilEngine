@@ -1,13 +1,13 @@
 #include "ShaderInspectorPanel.h"
 #include "Engine/Graphics/Shader.h"
-#include "Engine/Graphics/WebGPUUtils.h"
 #include <imgui.h>
+#include <format>
 
 namespace Editor
 {
 	void ShaderInspectorPanel::Draw(Engine::Uuid id)
 	{
-		ImGui::TextUnformatted(std::format("Shader: {}", id).c_str());
+		ImGui::TextUnformatted(std::format("Shader: {}", static_cast<uint64_t>(id)).c_str());
 
 		//ImGui::Separator();
 

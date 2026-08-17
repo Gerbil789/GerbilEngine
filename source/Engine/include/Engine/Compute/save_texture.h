@@ -1,6 +1,0 @@
-#pragma once
-
-#include <webgpu/webgpu.hpp>
-#include <filesystem>
-
-bool ENGINE_API saveTexture(const std::filesystem::path path, wgpu::Texture texture, int mipLevel);

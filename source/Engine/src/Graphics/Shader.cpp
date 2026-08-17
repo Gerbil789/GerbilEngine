@@ -2,7 +2,6 @@
 #include "Engine/Graphics/Shader.h"
 #include "Engine/Asset/Serializer/ShaderParser.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 
 namespace Engine
@@ -10,14 +9,14 @@ namespace Engine
 	Shader::Shader(const std::string& source)
 	{
 		wgpu::ShaderSourceWGSL shaderCodeDesc;
-		shaderCodeDesc.chain.next = nullptr;
-		shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
-		shaderCodeDesc.code = { source.c_str(), WGPU_STRLEN};
+		shaderCodeDesc.nextInChain = nullptr;
+		shaderCodeDesc.sType = wgpu::SType::ShaderSourceWGSL;
+		shaderCodeDesc.code = source.c_str();
 
 		wgpu::ShaderModuleDescriptor shaderDesc;
-		shaderDesc.label = { "Shader Module", WGPU_STRLEN };
-		shaderDesc.nextInChain = &shaderCodeDesc.chain;
-		m_ShaderModule = GraphicsContext::GetDevice().createShaderModule(shaderDesc);
+		shaderDesc.label = "Shader Module";
+		shaderDesc.nextInChain = &shaderCodeDesc;
+		m_ShaderModule = GraphicsContext::GetDevice().CreateShaderModule(&shaderDesc);
 
 		m_Specification = ShaderParser::Parse(source);
 
@@ -28,7 +27,7 @@ namespace Engine
 
 		for (const auto& binding : materialBindings)
 		{
-			wgpu::BindGroupLayoutEntry entry = wgpu::Default;
+			wgpu::BindGroupLayoutEntry entry;
 			entry.binding = binding.binding;
 			entry.visibility = binding.visibility;
 
@@ -73,10 +72,10 @@ namespace Engine
 		}
 
 		wgpu::BindGroupLayoutDescriptor desc;
-		desc.label = { "MaterialBindGroupLayout", WGPU_STRLEN};
+		desc.label = "MaterialBindGroupLayout";
 		desc.entryCount = layoutEntries.size();
 		desc.entries = layoutEntries.data();
 
-		m_MaterialBindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(desc);
+		m_MaterialBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&desc);
 	}
 }

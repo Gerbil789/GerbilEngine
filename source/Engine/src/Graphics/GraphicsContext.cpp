@@ -1,73 +1,76 @@
 #include "enginepch.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Graphics/WebGPUUtils.h"
 #include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
+#include <webgpu/webgpu_cpp_print.h>
 
 namespace Engine::GraphicsContext
 {
 	namespace
 	{
-		wgpu::Adapter s_Adapter;
-		wgpu::Instance s_Instance;
-		wgpu::Device s_Device;
-		wgpu::Queue s_Queue;
+		static wgpu::Adapter s_Adapter;
+		static wgpu::Instance s_Instance;
+		static wgpu::Device s_Device;
+		static wgpu::Queue s_Queue;
 
-		uint32_t s_UniformBufferOffsetAlignment;
-		uint32_t s_StorageBufferOffsetAlignment;
+		static uint32_t s_UniformBufferOffsetAlignment;
+		static uint32_t s_StorageBufferOffsetAlignment;
 
-		wgpu::TextureFormat s_SurfaceFormat;
+		static wgpu::TextureFormat s_SurfaceFormat;
 	}
 
 	void Initialize()
 	{
 		wgpu::InstanceDescriptor desc;
 
-		//TODO: use macro to dissable toggles in release builds
-		//wgpu::DawnTogglesDescriptor togglesDesc;
-		//togglesDesc.chain.next = nullptr;
-		//togglesDesc.chain.sType = wgpu::SType::DawnTogglesDescriptor;
-
-		//std::vector<const char*> enabledToggles = { "allow_unsafe_apis" };
-
-		//togglesDesc.enabledToggles = enabledToggles.data();
-		//togglesDesc.enabledToggleCount = enabledToggles.size();
-		//togglesDesc.disabledToggleCount = 0;
-
-		//desc.nextInChain = &togglesDesc.chain;
-
-		desc.setDefault();
-
 		std::array<wgpu::InstanceFeatureName, 1> features = { wgpu::InstanceFeatureName::TimedWaitAny };
 		desc.requiredFeatureCount = features.size();
-		desc.requiredFeatures = reinterpret_cast<WGPUInstanceFeatureName*>(features.data());
+		desc.requiredFeatures = features.data();
 
-		s_Instance = wgpu::createInstance(desc);
+		s_Instance = wgpu::CreateInstance(&desc);
 		if (!s_Instance)
 		{
 			throw std::runtime_error("Failed to create WGPU instance");
 		}
 
 		wgpu::RequestAdapterOptions adapterOpts;
-		s_Adapter = s_Instance.requestAdapter(adapterOpts);
-		if (!s_Adapter)
+
+		s_Instance.RequestAdapter(&adapterOpts, wgpu::CallbackMode::AllowProcessEvents,
+			[](wgpu::RequestAdapterStatus status, wgpu::Adapter adapter, wgpu::StringView message)
+			{
+				if (status == wgpu::RequestAdapterStatus::Success)
+				{
+					s_Adapter = adapter;
+				}
+				else
+				{
+					LOG_ERROR("{}", std::string_view(message));
+				}
+			}
+		);
+
+		while (!s_Adapter)
 		{
-			throw std::runtime_error("Failed to request WGPU adapter");
+			s_Instance.ProcessEvents();
+			//TODO: add timeout
 		}
 
 		{
 			wgpu::AdapterInfo info;
-			s_Adapter.getInfo(&info);
+			s_Adapter.GetInfo(&info);
 
-			LOG_TRACE("Dawn backend: {}", BackendTypeToString(info.backendType));
-			LOG_TRACE("GPU: {} ({})", ToStringView(info.device), ToStringView(info.architecture));
-			LOG_TRACE("Description: {}", ToStringView(info.description));
+			std::stringstream ss;
+			ss << info.backendType;
+
+			LOG_TRACE("Dawn backend: {}", ss.str());
+			LOG_TRACE("GPU: {} ({})", std::string_view(info.device), std::string_view(info.architecture));
+			LOG_TRACE("Description: {}", std::string_view(info.description));
 			LOG_TRACE("VendorID 0x{:X}", info.vendorID);
 			LOG_TRACE("DeviceID 0x{:X}", info.deviceID);
 		}
 
 		wgpu::Limits limits;
-		if (s_Adapter.getLimits(&limits) != wgpu::Status::Success)
+		if (s_Adapter.GetLimits(&limits) != wgpu::Status::Success)
 		{
 			throw std::runtime_error("Failed to query adapter limits");
 		}
@@ -76,30 +79,49 @@ namespace Engine::GraphicsContext
 		s_StorageBufferOffsetAlignment = limits.minStorageBufferOffsetAlignment;
 
 		wgpu::DeviceDescriptor deviceDesc;
-		deviceDesc.label = { "MainDevice", WGPU_STRLEN };
+		deviceDesc.label = "MainDevice";
 		deviceDesc.requiredFeatureCount = 0;
-		deviceDesc.defaultQueue.label = { "DefaultQueue", WGPU_STRLEN };
+		deviceDesc.defaultQueue.label = "DefaultQueue";
 		deviceDesc.requiredLimits = &limits;
 
-		deviceDesc.deviceLostCallbackInfo.mode = wgpu::CallbackMode::AllowSpontaneous;
-		deviceDesc.deviceLostCallbackInfo.callback = [](WGPUDevice const*, WGPUDeviceLostReason reason, WGPUStringView message, void*, void*)
+		deviceDesc.SetDeviceLostCallback(wgpu::CallbackMode::AllowSpontaneous, [](wgpu::Device const&, wgpu::DeviceLostReason reason, wgpu::StringView message)
 			{
 				if (reason == wgpu::DeviceLostReason::Destroyed) return; // ignore shutdown losses (explicit destroy)
-				LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", (int)reason, message.data);
-			};
 
-		deviceDesc.uncapturedErrorCallbackInfo.callback = [](WGPUDevice const*, WGPUErrorType type, WGPUStringView message, void*, void*)
+				std::stringstream ss;
+				ss << reason;
+				LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", ss.str(), std::string_view(message));
+			});
+
+		deviceDesc.SetUncapturedErrorCallback([](wgpu::Device const&, wgpu::ErrorType type, wgpu::StringView message)
 			{
-				LOG_ERROR("WebGPU Uncaptured error [type: {}]: {}", ErrorTypeToString(type), message.data);
-			};
+				std::stringstream ss;
+				ss << type;
+				LOG_ERROR("WebGPU Uncaptured error [type: {}]: {}", ss.str(), std::string_view(message));
+			});
 
-		s_Device = s_Adapter.requestDevice(deviceDesc);
-		if (!s_Device)
+
+		s_Adapter.RequestDevice(&deviceDesc, wgpu::CallbackMode::AllowProcessEvents,
+			[](wgpu::RequestDeviceStatus status, wgpu::Device device, wgpu::StringView message)
+			{
+				if (status == wgpu::RequestDeviceStatus::Success)
+				{
+					s_Device = device;
+				}
+				else
+				{
+					LOG_ERROR("{}", std::string_view(message));
+				}
+			}
+		);
+
+		while (!s_Device)
 		{
-			throw std::runtime_error("Failed to request WGPU device");
+			s_Instance.ProcessEvents();
+			//TODO: add timeout
 		}
 
-		s_Queue = s_Device.getQueue();
+		s_Queue = s_Device.GetQueue();
 		if (!s_Queue)
 		{
 			throw std::runtime_error("Failed to get WGPU queue");
@@ -112,10 +134,16 @@ namespace Engine::GraphicsContext
 	void Shutdown()
 	{
 		Engine::SamplerPool::Shutdown();
-		s_Queue.release();
-		s_Device.release();
-		s_Instance.release();
-		s_Adapter.release();
+
+		if (s_Device)
+		{
+			s_Device.Destroy();
+		}
+
+		s_Queue = nullptr;
+		s_Device = nullptr;
+		s_Adapter = nullptr;
+		s_Instance = nullptr;
 	}
 
 	wgpu::Adapter GetAdapter()

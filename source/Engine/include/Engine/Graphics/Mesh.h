@@ -3,7 +3,7 @@
 #include "Engine/Asset/Asset.h"
 #include "Engine/Math/AABB.h"
 #include <vector>
-#include <webgpu/webgpu.hpp>
+#include <webgpu/webgpu_cpp.h>
 
 namespace Engine
 {

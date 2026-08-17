@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Graphics/RenderPass/NormalPass.h"
 #include "Engine/Graphics/Mesh.h"
-#include "Engine/Graphics/WebGPUUtils.h"
+#include "Engine/Graphics/Utility.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Asset/AssetManager.h"
@@ -39,12 +39,12 @@ namespace Engine
 		vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
 
 		wgpu::RenderPipelineDescriptor pipelineDesc;
-		pipelineDesc.label = { "NormalShaderPipeline", WGPU_STRLEN };
+		pipelineDesc.label = "NormalShaderPipeline";
 
 		pipelineDesc.vertex.bufferCount = 1;
 		pipelineDesc.vertex.buffers = &vertexBufferLayout;
 		pipelineDesc.vertex.module = shaderModule;
-		pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN };
+		pipelineDesc.vertex.entryPoint = "vs_main";
 		pipelineDesc.vertex.constantCount = 0;
 		pipelineDesc.vertex.constants = nullptr;
 
@@ -58,7 +58,7 @@ namespace Engine
 		//colorTarget.blend = &blendState;
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 
-		wgpu::DepthStencilState depthStencil{};
+		wgpu::DepthStencilState depthStencil;
 		depthStencil.format = wgpu::TextureFormat::Depth24Plus;
 		depthStencil.depthWriteEnabled = wgpu::OptionalBool::False;
 		depthStencil.depthCompare = wgpu::CompareFunction::LessEqual;
@@ -69,7 +69,7 @@ namespace Engine
 
 		wgpu::FragmentState fragmentState;
 		fragmentState.module = shaderModule;
-		fragmentState.entryPoint = { "fs_main", WGPU_STRLEN };
+		fragmentState.entryPoint = "fs_main";
 		fragmentState.constantCount = 0;
 		fragmentState.constants = nullptr;
 		fragmentState.targetCount = 1;
@@ -87,20 +87,19 @@ namespace Engine
 			RenderPipelineLayouts::GetModelLayout()
 		};
 
-		wgpu::PipelineLayoutDescriptor layoutDesc{};
-		layoutDesc.label = { "NormalShaderPipelineLayout", WGPU_STRLEN };
+		wgpu::PipelineLayoutDescriptor layoutDesc;
+		layoutDesc.label = "NormalShaderPipelineLayout";
 		layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
-		layoutDesc.bindGroupLayouts = reinterpret_cast<WGPUBindGroupLayout*>(&bindGroupLayouts);
-		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
+		layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
+		pipelineDesc.layout = GraphicsContext::GetDevice().CreatePipelineLayout(&layoutDesc);
 
-		m_NormalPipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
+		m_NormalPipeline = GraphicsContext::GetDevice().CreateRenderPipeline(&pipelineDesc);
 	}
 
 	void NormalPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
 	{
-		wgpu::RenderPassColorAttachment color{};
+		wgpu::RenderPassColorAttachment color;
 		color.view = context.colorTarget;
-		color.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 		color.loadOp = wgpu::LoadOp::Load;
 		color.storeOp = wgpu::StoreOp::Store;
 		color.clearValue = wgpu::Color(0.0f, 0.0f, 0.0f, 0.0f);
@@ -117,16 +116,16 @@ namespace Engine
 		depth.stencilReadOnly = true;
 
 		wgpu::RenderPassDescriptor renderPassDescriptor;
-		renderPassDescriptor.label = { "NormalRenderPass", WGPU_STRLEN };
+		renderPassDescriptor.label = "NormalRenderPass";
 		renderPassDescriptor.colorAttachmentCount = 1;
 		renderPassDescriptor.colorAttachments = &color;
 		renderPassDescriptor.depthStencilAttachment = &depth;
 
-		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(renderPassDescriptor);
-		pass.setPipeline(m_NormalPipeline);
+		wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDescriptor);
+		pass.SetPipeline(m_NormalPipeline);
 
-		pass.setBindGroup(0, context.viewBindGroup, 0, nullptr);
-		pass.setBindGroup(1, context.modelBindGroup, 0, nullptr);
+		pass.SetBindGroup(0, context.viewBindGroup, 0, nullptr);
+		pass.SetBindGroup(1, context.modelBindGroup, 0, nullptr);
 
 		Engine::Uuid lastMeshId{};
 
@@ -136,12 +135,12 @@ namespace Engine
 			{
 				lastMeshId = item.meshId;
 				const Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(lastMeshId);
-				pass.setVertexBuffer(0, mesh.GetVertexBuffer(), 0, mesh.GetVertexBuffer().getSize());
-				pass.setIndexBuffer(mesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh.GetIndexBuffer().getSize());
+				pass.SetVertexBuffer(0, mesh.GetVertexBuffer(), 0, mesh.GetVertexBuffer().GetSize());
+				pass.SetIndexBuffer(mesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh.GetIndexBuffer().GetSize());
 			}
 
-			pass.drawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));
+			pass.DrawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));
 		}
-		pass.end();
+		pass.End();
 	}
 }

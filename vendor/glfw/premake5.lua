@@ -3,6 +3,8 @@ language "C"
 kind "StaticLib"
 warnings "Off"
 
+removeplatforms { "Web" }
+
 files
 {
 	"include/GLFW/**.h",

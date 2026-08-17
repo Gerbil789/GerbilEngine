@@ -34,6 +34,17 @@ defines
 	"IMGUI_IMPL_WEBGPU_BACKEND_DAWN",
 }
 
+
+filter "configurations:not Dist"
+  libdirs { "%{wks.location}/vendor/dawn/shared" }
+
+filter "configurations:Dist"
+  libdirs { "%{wks.location}/vendor/dawn/static" }
+
+filter "system:windows"
+  links { "webgpu_dawn" }
+filter {}
+
 filter { "system:windows", "configurations:not Dist" }
 	kind "SharedLib"
 	postbuildcommands 

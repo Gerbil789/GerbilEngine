@@ -1,8 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/ShaderParser.h"
-#include "Engine/Graphics/WebGPUUtils.h"
+#include "Engine/Graphics/Utility.h"
 #include <regex>
-//#include <utility>
 
 namespace Engine
 {
@@ -10,6 +9,48 @@ namespace Engine
   {
     std::unordered_map<std::string, std::vector<ShaderParameter>> m_Structs;
     std::unordered_map<std::string, uint32_t> m_Constants;
+  }
+
+  static wgpu::VertexFormat StringToVertexFormat(const std::string& str)
+  {
+    static const std::unordered_map<std::string, wgpu::VertexFormat> formatMap = {
+      { "vec1f", wgpu::VertexFormat::Float32 },
+      { "vec2f", wgpu::VertexFormat::Float32x2 },
+      { "vec3f", wgpu::VertexFormat::Float32x3 },
+      { "vec4f", wgpu::VertexFormat::Float32x4 },
+
+      { "vec2h", wgpu::VertexFormat::Float16x2 },
+      { "vec4h", wgpu::VertexFormat::Float16x4 },
+
+      { "vec1i", wgpu::VertexFormat::Sint32 },
+      { "vec2i", wgpu::VertexFormat::Sint32x2 },
+      { "vec3i", wgpu::VertexFormat::Sint32x3 },
+      { "vec4i", wgpu::VertexFormat::Sint32x4 },
+
+      { "vec1u", wgpu::VertexFormat::Uint32 },
+      { "vec2u", wgpu::VertexFormat::Uint32x2 },
+      { "vec3u", wgpu::VertexFormat::Uint32x3 },
+      { "vec4u", wgpu::VertexFormat::Uint32x4 },
+
+      { "vec2s", wgpu::VertexFormat::Sint16x2 },
+      { "vec4s", wgpu::VertexFormat::Sint16x4 },
+
+      { "vec2us", wgpu::VertexFormat::Uint16x2 },
+      { "vec4us", wgpu::VertexFormat::Uint16x4 },
+
+      { "vec2b", wgpu::VertexFormat::Sint8x2 },
+      { "vec4b", wgpu::VertexFormat::Sint8x4 },
+
+      { "vec2ub", wgpu::VertexFormat::Uint8x2 },
+      { "vec4ub", wgpu::VertexFormat::Uint8x4 },
+    };
+
+    auto it = formatMap.find(str);
+    if (it != formatMap.end())
+      return it->second;
+
+    LOG_ERROR("Unknown vertex attribute format: {}", str);
+    return wgpu::VertexFormat::Float32;
   }
 
   void ParseValueType(const std::string& type, ShaderParameter& param)
@@ -383,7 +424,7 @@ namespace Engine
     }
     else if (type.rfind("texture_2d", 0) == 0)
     {
-			binding.data = TextureBinding{ wgpu::TextureViewDimension::_2D, wgpu::TextureSampleType::Float, false };
+			binding.data = TextureBinding{ wgpu::TextureViewDimension::e2D, wgpu::TextureSampleType::Float, false };
     }
     else if (type.rfind("texture_cube", 0) == 0)
     {

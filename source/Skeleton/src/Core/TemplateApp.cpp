@@ -48,39 +48,39 @@ namespace Template
 		// Color
 		{
 			wgpu::TextureDescriptor desc;
-			desc.label = { "RendererColorTexture", WGPU_STRLEN };
-			desc.dimension = wgpu::TextureDimension::_2D;
+			desc.label = "RendererColorTexture";
+			desc.dimension = wgpu::TextureDimension::e2D;
 			desc.format = Engine::GraphicsContext::GetSurfaceFormat();
 			desc.size = size;
 			desc.mipLevelCount = 1;
 			desc.sampleCount = 1;
 			desc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
-			wgpu::Texture colorTexture = Engine::GraphicsContext::GetDevice().createTexture(desc);
+			wgpu::Texture colorTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&desc);
 
 			wgpu::TextureViewDescriptor view;
-			view.label = { "RendererColorTextureView", WGPU_STRLEN };
-			view.dimension = wgpu::TextureViewDimension::_2D;
+			view.label = "RendererColorTextureView";
+			view.dimension = wgpu::TextureViewDimension::e2D;
 			view.format = desc.format;
 			view.baseMipLevel = 0;
 			view.mipLevelCount = 1;
 			view.baseArrayLayer = 0;
 			view.arrayLayerCount = 1;
-			m_Renderer.SetColorTarget(colorTexture.createView(view));
+			m_Renderer.SetColorTarget(colorTexture.CreateView(&view));
 		}
 
 		// Depth
 		{
 			wgpu::TextureDescriptor desc;
-			desc.label = { "RendererDepthTextureView", WGPU_STRLEN };
-			desc.dimension = wgpu::TextureDimension::_2D;
+			desc.label = "RendererDepthTextureView";
+			desc.dimension = wgpu::TextureDimension::e2D;
 			desc.format = wgpu::TextureFormat::Depth24Plus;
 			desc.mipLevelCount = 1;
 			desc.sampleCount = 1;
 			desc.size = size;
 			desc.usage = wgpu::TextureUsage::RenderAttachment;
 			desc.viewFormatCount = 1;
-			desc.viewFormats = &wgpu::TextureFormat::Depth24Plus;
-			wgpu::Texture depthTexture = Engine::GraphicsContext::GetDevice().createTexture(desc);
+			desc.viewFormats = &desc.format;
+			wgpu::Texture depthTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&desc);
 
 			wgpu::TextureViewDescriptor view;
 			view.aspect = wgpu::TextureAspect::DepthOnly;
@@ -88,10 +88,10 @@ namespace Template
 			view.arrayLayerCount = 1;
 			view.baseMipLevel = 0;
 			view.mipLevelCount = 1;
-			view.dimension = wgpu::TextureViewDimension::_2D;
+			view.dimension = wgpu::TextureViewDimension::e2D;
 			view.format = wgpu::TextureFormat::Depth24Plus;
 
-			m_Renderer.SetDepthTarget(depthTexture.createView(view));
+			m_Renderer.SetDepthTarget(depthTexture.CreateView(&view));
 		}
 
 	}
@@ -169,7 +169,7 @@ namespace Template
 			wgpu::Surface surface = m_Window.GetSurface();
 			wgpu::SurfaceTexture surfaceTexture;
 
-			surface.getCurrentTexture(&surfaceTexture);
+			surface.GetCurrentTexture(&surfaceTexture);
 			if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal)
 			{
 				LOG_ERROR("Failed to get current surface texture. status: {}", (int)surfaceTexture.status);
@@ -178,12 +178,12 @@ namespace Template
 
 			wgpu::Texture texture = surfaceTexture.texture;
 
-			if (texture.getWidth() != m_Width || texture.getHeight() != m_Height)
+			if (texture.GetWidth() != m_Width || texture.GetHeight() != m_Height)
 			{
-				UpdateSize(texture.getWidth(), texture.getHeight());
+				UpdateSize(texture.GetWidth(), texture.GetHeight());
 			}
 
-			wgpu::TextureView targetView = texture.createView();
+			wgpu::TextureView targetView = texture.CreateView();
 
 			if (!targetView)
 			{
@@ -194,7 +194,7 @@ namespace Template
 			m_Renderer.SetColorTarget(targetView);
 			m_Renderer.RenderScene(Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene()));
 
-			surface.present();
+			surface.Present();
 		}
 	}
 }

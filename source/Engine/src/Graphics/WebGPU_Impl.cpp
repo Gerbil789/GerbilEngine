@@ -2,4 +2,4 @@
 #ifndef DIST
 	#define WEBGPU_CPP_IMPLEMENTATION
 #endif
-#include <webgpu/webgpu.hpp>
+#include <webgpu/webgpu_cpp.h>

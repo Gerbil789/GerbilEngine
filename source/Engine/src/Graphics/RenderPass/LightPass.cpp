@@ -45,7 +45,7 @@ namespace Engine
 		//wgpu::ShaderSourceWGSL shaderCodeDesc;
 		//shaderCodeDesc.chain.next = nullptr;
 		//shaderCodeDesc.chain.sType = wgpu::SType::ShaderSourceWGSL;
-		//shaderCodeDesc.code = { content.c_str(), WGPU_STRLEN };
+		//shaderCodeDesc.code = content.c_str();
 
 		//wgpu::ShaderModuleDescriptor shaderDesc{};
 		//shaderDesc.nextInChain = &shaderCodeDesc.chain;
@@ -77,12 +77,12 @@ namespace Engine
 
 
 		//wgpu::RenderPipelineDescriptor pipelineDesc;
-		//pipelineDesc.label = { "LightShaderPipeline", WGPU_STRLEN };
+		//pipelineDesc.label = "LightShaderPipeline";
 
 		//pipelineDesc.vertex.bufferCount = 1;
 		//pipelineDesc.vertex.buffers = &vertexBufferLayout;
 		//pipelineDesc.vertex.module = shaderModule;
-		//pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN };
+		//pipelineDesc.vertex.entryPoint = "vs_main";
 		//pipelineDesc.vertex.constantCount = 0;
 		//pipelineDesc.vertex.constants = nullptr;
 
@@ -116,7 +116,7 @@ namespace Engine
 
 		//wgpu::FragmentState fragmentState;
 		//fragmentState.module = shaderModule;
-		//fragmentState.entryPoint = { "fs_main", WGPU_STRLEN };
+		//fragmentState.entryPoint = "fs_main";
 		//fragmentState.constantCount = 0;
 		//fragmentState.constants = nullptr;
 		//fragmentState.targetCount = 1;
@@ -137,13 +137,13 @@ namespace Engine
 		//	bindGroupLayoutEntry.buffer.minBindingSize = sizeof(LightUniforms);
 
 		//	wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc{};
-		//	bindGroupLayoutDesc.label = { "LightBindGroupLayout", WGPU_STRLEN };
+		//	bindGroupLayoutDesc.label = "LightBindGroupLayout";
 		//	bindGroupLayoutDesc.entryCount = 1;
 		//	bindGroupLayoutDesc.entries = &bindGroupLayoutEntry;
 		//	s_LightBindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(bindGroupLayoutDesc);
 
 		//	wgpu::BufferDescriptor bufferDesc{};
-		//	bufferDesc.label = { "LightUniformBuffer", WGPU_STRLEN };
+		//	bufferDesc.label = "LightUniformBuffer";
 		//	bufferDesc.size = sizeof(LightUniforms);
 		//	bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 
@@ -156,7 +156,7 @@ namespace Engine
 		//	bindGroupEntry.size = sizeof(LightUniforms);
 
 		//	wgpu::BindGroupDescriptor bindGroupDesc{};
-		//	bindGroupDesc.label = { "LightBindGroup", WGPU_STRLEN };
+		//	bindGroupDesc.label = "LightBindGroup";
 		//	bindGroupDesc.layout = s_LightBindGroupLayout;
 		//	bindGroupDesc.entryCount = 1;
 		//	bindGroupDesc.entries = &bindGroupEntry;
@@ -170,7 +170,7 @@ namespace Engine
 		//};
 
 		//wgpu::PipelineLayoutDescriptor layoutDesc{};
-		//layoutDesc.label = { "LightShaderPipelineLayout", WGPU_STRLEN };
+		//layoutDesc.label = "LightShaderPipelineLayout";
 		//layoutDesc.bindGroupLayoutCount = std::size(bindGroupLayouts);
 		//layoutDesc.bindGroupLayouts = reinterpret_cast<WGPUBindGroupLayout*>(bindGroupLayouts);
 		//pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
@@ -199,7 +199,7 @@ namespace Engine
 	//	depth.stencilReadOnly = true;
 
 	//	wgpu::RenderPassDescriptor renderPassDescriptor;
-	//	renderPassDescriptor.label = { "LightRenderPass", WGPU_STRLEN };
+	//	renderPassDescriptor.label = "LightRenderPass";
 	//	renderPassDescriptor.colorAttachmentCount = 1;
 	//	renderPassDescriptor.colorAttachments = &color;
 	//	renderPassDescriptor.depthStencilAttachment = &depth;

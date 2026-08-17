@@ -1,8 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Graphics/RenderPass/WireframePass.h"
 #include "Engine/Graphics/Mesh.h"
-//#include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Graphics/WebGPUUtils.h"
+#include "Engine/Graphics/Utility.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Asset/AssetManager.h"
@@ -35,18 +34,18 @@ namespace Engine
 		entry.buffer.hasDynamicOffset = false;
 
 		wgpu::BindGroupLayoutDescriptor desc;
-		desc.label = { "WireframeBindGroupLayout", WGPU_STRLEN };
+		desc.label = "WireframeBindGroupLayout";
 		desc.entryCount = 1;
 		desc.entries = &entry;
 
-		wgpu::BindGroupLayout bindGroupLayout = GraphicsContext::GetDevice().createBindGroupLayout(desc);
+		wgpu::BindGroupLayout bindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&desc);
 
 		wgpu::BufferDescriptor bufferDesc;
-		bufferDesc.label = { "WireframeUniformBuffer", WGPU_STRLEN };
+		bufferDesc.label = "WireframeUniformBuffer";
 		bufferDesc.size = 1024 * 256 * sizeof(WireframeUniform); //1024 max entities, 256 bytes alignment
 		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 
-		m_UniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
+		m_UniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
 
 		wgpu::BindGroupEntry bindGroupEntry;
 		bindGroupEntry.binding = 0;
@@ -55,11 +54,11 @@ namespace Engine
 		bindGroupEntry.size = sizeof(WireframeUniform);
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
-		bindGroupDesc.label = { "WireframeBindGroup", WGPU_STRLEN };
+		bindGroupDesc.label = "WireframeBindGroup";
 		bindGroupDesc.layout = bindGroupLayout;
 		bindGroupDesc.entryCount = 1;
 		bindGroupDesc.entries = &bindGroupEntry;
-		m_ShadowBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+		m_ShadowBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
 
 		wgpu::ShaderModule shaderModule = LoadWGSLShader("resources/shaders/wireframe.wgsl");
 		std::array<wgpu::VertexAttribute, 3> vertexAttribs;
@@ -86,12 +85,12 @@ namespace Engine
 		vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
 
 		wgpu::RenderPipelineDescriptor pipelineDesc;
-		pipelineDesc.label = { "WireframeShaderPipeline", WGPU_STRLEN };
+		pipelineDesc.label = "WireframeShaderPipeline";
 
 		pipelineDesc.vertex.bufferCount = 1;
 		pipelineDesc.vertex.buffers = &vertexBufferLayout;
 		pipelineDesc.vertex.module = shaderModule;
-		pipelineDesc.vertex.entryPoint = { "vs_main", WGPU_STRLEN };
+		pipelineDesc.vertex.entryPoint = "vs_main";
 		pipelineDesc.vertex.constantCount = 0;
 		pipelineDesc.vertex.constants = nullptr;
 
@@ -125,7 +124,7 @@ namespace Engine
 
 		wgpu::FragmentState fragmentState;
 		fragmentState.module = shaderModule;
-		fragmentState.entryPoint = { "fs_main", WGPU_STRLEN };
+		fragmentState.entryPoint = "fs_main";
 		fragmentState.constantCount = 0;
 		fragmentState.constants = nullptr;
 		fragmentState.targetCount = 1;
@@ -146,12 +145,12 @@ namespace Engine
 		};
 
 		wgpu::PipelineLayoutDescriptor layoutDesc{};
-		layoutDesc.label = { "WireframeShaderPipelineLayout", WGPU_STRLEN };
+		layoutDesc.label = "WireframeShaderPipelineLayout";
 		layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
-		layoutDesc.bindGroupLayouts = (WGPUBindGroupLayout*)bindGroupLayouts.data();
-		pipelineDesc.layout = GraphicsContext::GetDevice().createPipelineLayout(layoutDesc);
+		layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
+		pipelineDesc.layout = GraphicsContext::GetDevice().CreatePipelineLayout(&layoutDesc);
 
-		m_WireframePipeline = GraphicsContext::GetDevice().createRenderPipeline(pipelineDesc);
+		m_WireframePipeline = GraphicsContext::GetDevice().CreateRenderPipeline(&pipelineDesc);
 	}
 
 	void WireframePass::SetColor(const glm::vec4& color)
@@ -179,19 +178,19 @@ namespace Engine
 		depth.stencilReadOnly = true;
 
 		wgpu::RenderPassDescriptor passDescriptor;
-		passDescriptor.label = { "WireframeRenderPass", WGPU_STRLEN };
+		passDescriptor.label = "WireframeRenderPass";
 		passDescriptor.colorAttachmentCount = 1;
 		passDescriptor.colorAttachments = &color;
 		passDescriptor.depthStencilAttachment = &depth;
 
-		wgpu::RenderPassEncoder pass = encoder.beginRenderPass(passDescriptor);
+		wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&passDescriptor);
 
-		pass.setPipeline(m_WireframePipeline);
-		pass.setBindGroup(0, context.viewBindGroup, 0, nullptr);
-		pass.setBindGroup(1, context.modelBindGroup, 0, nullptr);
+		pass.SetPipeline(m_WireframePipeline);
+		pass.SetBindGroup(0, context.viewBindGroup, 0, nullptr);
+		pass.SetBindGroup(1, context.modelBindGroup, 0, nullptr);
 
-		GraphicsContext::GetQueue().writeBuffer(m_UniformBuffer, 0, &m_UniformData, sizeof(WireframeUniform));
-		pass.setBindGroup(2, m_ShadowBindGroup, 0, nullptr);
+		GraphicsContext::GetQueue().WriteBuffer(m_UniformBuffer, 0, &m_UniformData, sizeof(WireframeUniform));
+		pass.SetBindGroup(2, m_ShadowBindGroup, 0, nullptr);
 
 		Engine::Uuid lastMeshId{};
 
@@ -202,12 +201,12 @@ namespace Engine
 			{
 				lastMeshId = item.meshId;
 				Mesh& meshAsset = Engine::AssetManager::GetAsset<Mesh>(lastMeshId);
-				pass.setVertexBuffer(0, meshAsset.GetVertexBuffer(), 0, meshAsset.GetVertexBuffer().getSize());
-				pass.setIndexBuffer(meshAsset.GetWireIndexBuffer(), wgpu::IndexFormat::Uint32, 0, meshAsset.GetWireIndexBuffer().getSize());
+				pass.SetVertexBuffer(0, meshAsset.GetVertexBuffer(), 0, meshAsset.GetVertexBuffer().GetSize());
+				pass.SetIndexBuffer(meshAsset.GetWireIndexBuffer(), wgpu::IndexFormat::Uint32, 0, meshAsset.GetWireIndexBuffer().GetSize());
 			}
 
-			pass.drawIndexed(item.indexCount * 2, 1, item.firstIndex * 2, 0, static_cast<uint32_t>(i));
+			pass.DrawIndexed(item.indexCount * 2, 1, item.firstIndex * 2, 0, static_cast<uint32_t>(i));
 		}
-		pass.end();
+		pass.End();
 	}
 }

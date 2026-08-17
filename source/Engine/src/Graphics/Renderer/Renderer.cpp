@@ -57,10 +57,10 @@ namespace Engine
 	void Renderer::CreateViewUniformBuffer()
 	{
 		wgpu::BufferDescriptor bufferDesc;
-		bufferDesc.label = { "ViewUniformBuffer", WGPU_STRLEN };
+		bufferDesc.label = "ViewUniformBuffer";
 		bufferDesc.size = sizeof(ViewUniforms);
 		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-		m_RenderContext.viewUniformBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
+		m_RenderContext.viewUniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
 	}
 
 	void Renderer::CreateViewBindGroup()
@@ -73,11 +73,11 @@ namespace Engine
 		entries[0].size = sizeof(ViewUniforms);
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
-		bindGroupDesc.label = { "ViewBindGroup", WGPU_STRLEN };
+		bindGroupDesc.label = "ViewBindGroup";
 		bindGroupDesc.layout = RenderPipelineLayouts::GetViewLayout();
 		bindGroupDesc.entryCount = entries.size();
 		bindGroupDesc.entries = entries.data();
-		m_RenderContext.viewBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+		m_RenderContext.viewBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
 	}
 
 	void Renderer::CreateModelStorageBuffer()
@@ -86,10 +86,10 @@ namespace Engine
 		const uint64_t bufferSize = 1024 * 256 * sizeof(glm::mat4);
 
 		wgpu::BufferDescriptor bufferDesc;
-		bufferDesc.label = { "ModelStorageBuffer", WGPU_STRLEN };
+		bufferDesc.label = "ModelStorageBuffer";
 		bufferDesc.size = bufferSize;
 		bufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
-		m_RenderContext.modelStorageBuffer = GraphicsContext::GetDevice().createBuffer(bufferDesc);
+		m_RenderContext.modelStorageBuffer = GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
 	}
 
 	void Renderer::CreateModelBindGroup()
@@ -98,23 +98,23 @@ namespace Engine
 		bindGroupEntry.binding = 0;
 		bindGroupEntry.buffer = m_RenderContext.modelStorageBuffer;
 		bindGroupEntry.offset = 0;
-		bindGroupEntry.size = m_RenderContext.modelStorageBuffer.getSize();
+		bindGroupEntry.size = m_RenderContext.modelStorageBuffer.GetSize();
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
-		bindGroupDesc.label = { "ModelBindGroup", WGPU_STRLEN };
+		bindGroupDesc.label = "ModelBindGroup";
 		bindGroupDesc.layout = RenderPipelineLayouts::GetModelLayout();
 		bindGroupDesc.entryCount = 1;
 		bindGroupDesc.entries = &bindGroupEntry;
-		m_RenderContext.modelBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+		m_RenderContext.modelBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
 	}
 
 	void Renderer::CreateEnvironmentUniformBuffer()
 	{
 		wgpu::BufferDescriptor desc;
-		desc.label = { "EnvironmentUniformBuffer", WGPU_STRLEN };
+		desc.label = "EnvironmentUniformBuffer";
 		desc.size = sizeof(EnvironmentUniforms);
 		desc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-		m_RenderContext.environmentUniformBuffer = GraphicsContext::GetDevice().createBuffer(desc);
+		m_RenderContext.environmentUniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&desc);
 	}
 
 	void Renderer::CreateEnvironmentBindGroup()
@@ -124,7 +124,7 @@ namespace Engine
 		// 0 - EnvironmentSampler
 		{
 			wgpu::SamplerDescriptor envSamplerDesc;
-			envSamplerDesc.label = { "EnvironmentSampler", WGPU_STRLEN };
+			envSamplerDesc.label = "EnvironmentSampler";
 			envSamplerDesc.minFilter = wgpu::FilterMode::Linear;
 			envSamplerDesc.magFilter = wgpu::FilterMode::Linear;
 			envSamplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
@@ -132,7 +132,7 @@ namespace Engine
 			envSamplerDesc.lodMinClamp = 0.0f;
 			envSamplerDesc.lodMaxClamp = 32.0f;
 
-			wgpu::Sampler envSampler = GraphicsContext::GetDevice().createSampler(envSamplerDesc);
+			wgpu::Sampler envSampler = GraphicsContext::GetDevice().CreateSampler(&envSamplerDesc);
 			entries[0].binding = 0;
 			entries[0].sampler = envSampler;
 		}
@@ -173,12 +173,12 @@ namespace Engine
 		// 6 -ShadowSampler
 		{
 			wgpu::SamplerDescriptor desc;
-			desc.label = { "ShadowSampler", WGPU_STRLEN };
+			desc.label = "ShadowSampler";
 			desc.compare = wgpu::CompareFunction::LessEqual;
 			desc.minFilter = wgpu::FilterMode::Linear;
 			desc.magFilter = wgpu::FilterMode::Linear;
 			desc.maxAnisotropy = 1;
-			wgpu::Sampler shadowSampler = GraphicsContext::GetDevice().createSampler(desc);
+			wgpu::Sampler shadowSampler = GraphicsContext::GetDevice().CreateSampler(&desc);
 
 			entries[6].binding = 6;
 			entries[6].sampler = shadowSampler;
@@ -191,11 +191,11 @@ namespace Engine
 		}
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
-		bindGroupDesc.label = { "EnvironmentBindGroup", WGPU_STRLEN };
+		bindGroupDesc.label = "EnvironmentBindGroup";
 		bindGroupDesc.layout = RenderPipelineLayouts::GetEnvironmentLayout();
 		bindGroupDesc.entryCount = entries.size();
 		bindGroupDesc.entries = entries.data();
-		m_RenderContext.environmentBindGroup = GraphicsContext::GetDevice().createBindGroup(bindGroupDesc);
+		m_RenderContext.environmentBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
 	}
 
 	void Renderer::CreateShadowTexture()
@@ -203,7 +203,7 @@ namespace Engine
 		wgpu::TextureFormat format = wgpu::TextureFormat::Depth24Plus;
 
 		wgpu::TextureDescriptor textureDesc;
-		textureDesc.dimension = wgpu::TextureDimension::_2D;
+		textureDesc.dimension = wgpu::TextureDimension::e2D;
 		textureDesc.format = format;
 		textureDesc.mipLevelCount = 1;
 		textureDesc.sampleCount = 1;
@@ -211,32 +211,32 @@ namespace Engine
 		textureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
 		textureDesc.viewFormatCount = 0;
 		textureDesc.viewFormats = nullptr;
-		wgpu::Texture texture = GraphicsContext::GetDevice().createTexture(textureDesc);
+		wgpu::Texture texture = GraphicsContext::GetDevice().CreateTexture(&textureDesc);
 
 		for (int i = 0; i < s_ShadowCascadeCount; i++)
 		{
 			wgpu::TextureViewDescriptor viewDesc;
 			viewDesc.format = format;
 			viewDesc.aspect = wgpu::TextureAspect::DepthOnly;
-			viewDesc.dimension = wgpu::TextureViewDimension::_2D;
+			viewDesc.dimension = wgpu::TextureViewDimension::e2D;
 			viewDesc.baseMipLevel = 0;
 			viewDesc.mipLevelCount = 1;
 			viewDesc.baseArrayLayer = i;
 			viewDesc.arrayLayerCount = 1;
 
-			m_RenderContext.depthTextureViews[i] = texture.createView(viewDesc);
+			m_RenderContext.depthTextureViews[i] = texture.CreateView(&viewDesc);
 		}
 
 		wgpu::TextureViewDescriptor arrayViewDesc;
 		arrayViewDesc.format = format;
 		arrayViewDesc.aspect = wgpu::TextureAspect::DepthOnly;
-		arrayViewDesc.dimension = wgpu::TextureViewDimension::_2DArray;
+		arrayViewDesc.dimension = wgpu::TextureViewDimension::e2DArray;
 		arrayViewDesc.baseMipLevel = 0;
 		arrayViewDesc.mipLevelCount = 1;
 		arrayViewDesc.baseArrayLayer = 0;
 		arrayViewDesc.arrayLayerCount = s_ShadowCascadeCount;
 
-		m_RenderContext.depthTextureArrayView = texture.createView(arrayViewDesc);
+		m_RenderContext.depthTextureArrayView = texture.CreateView(&arrayViewDesc);
 	}
 
 	void Renderer::RenderScene(Scene& scene)
@@ -259,15 +259,15 @@ namespace Engine
 		viewUniforms.projection = cc.projectionMatrix;
 		viewUniforms.cameraPosition = tc.position;
 
-		GraphicsContext::GetQueue().writeBuffer(m_RenderContext.viewUniformBuffer, 0, &viewUniforms, sizeof(viewUniforms));
+		GraphicsContext::GetQueue().WriteBuffer(m_RenderContext.viewUniformBuffer, 0, &viewUniforms, sizeof(viewUniforms));
 
-		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().createCommandEncoder();
+		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().CreateCommandEncoder();
 
 		m_RenderContext.drawList = DrawList::CreateFromScene(scene);
 
 		const std::vector<glm::mat4>& modelMatrices = m_RenderContext.drawList.GetTransforms();
 
-		GraphicsContext::GetQueue().writeBuffer(m_RenderContext.modelStorageBuffer, 0, modelMatrices.data(), modelMatrices.size() * sizeof(glm::mat4));
+		GraphicsContext::GetQueue().WriteBuffer(m_RenderContext.modelStorageBuffer, 0, modelMatrices.data(), modelMatrices.size() * sizeof(glm::mat4));
 
 		static const RenderPassType order[] = {
 				RenderPassType::Shadow,
@@ -295,8 +295,8 @@ namespace Engine
 			}
 		}
 
-		wgpu::CommandBuffer commandBuffer = encoder.finish();
-		GraphicsContext::GetQueue().submit(1, &commandBuffer);
+		wgpu::CommandBuffer commandBuffer = encoder.Finish();
+		GraphicsContext::GetQueue().Submit(1, &commandBuffer);
 	}
 
 	wgpu::TextureView Renderer::GetTextureView() const

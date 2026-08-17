@@ -1,9 +1,9 @@
 // https://github.com/CedricGuillemet/ImGuizmo
-// v 1.89 WIP
+// v1.92.5 WIP
 //
 // The MIT License(MIT)
 //
-// Copyright(c) 2021 Cedric Guillemet
+// Copyright(c) 2016-2026 Cedric Guillemet and contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal
@@ -123,13 +123,21 @@ namespace ImCurveEdit
          if (io.MouseDown[0])
             ret = 2;
       }
+#if IMGUI_VERSION_NUM < 19276
       if (edited)
          draw_list->AddPolyline(offsets, 4, 0xFFFFFFFF, true, 3.0f);
       else if (ret)
          draw_list->AddPolyline(offsets, 4, 0xFF80B0FF, true, 2.0f);
       else
          draw_list->AddPolyline(offsets, 4, 0xFF0080FF, true, 2.0f);
-
+#else
+      if (edited)
+         draw_list->AddPolyline(offsets, 4, 0xFFFFFFFF,  3.0f);
+      else if (ret)
+         draw_list->AddPolyline(offsets, 4, 0xFF80B0FF, 2.0f);
+      else
+         draw_list->AddPolyline(offsets, 4, 0xFF0080FF, 2.0f);
+#endif
       return ret;
    }
 
@@ -148,7 +156,7 @@ namespace ImCurveEdit
       ImGuiIO& io = ImGui::GetIO();
       ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
       ImGui::PushStyleColor(ImGuiCol_Border, 0);
-      ImGui::BeginChildFrame(id, size);
+      ImGui::BeginChild(id, size, ImGuiChildFlags_FrameStyle);
       delegate.focused = ImGui::IsWindowFocused();
       ImDrawList* draw_list = ImGui::GetWindowDrawList();
       if (clippingRect)
@@ -441,7 +449,7 @@ namespace ImCurveEdit
       if (clippingRect)
          draw_list->PopClipRect();
 
-      ImGui::EndChildFrame();
+      ImGui::EndChild();
       ImGui::PopStyleVar();
       ImGui::PopStyleColor(1);
 
@@ -452,6 +460,7 @@ namespace ImCurveEdit
          for (auto& point : selection)
             (*selectedPoints)[index++] = point;
       }
+      _freea(curvesIndex);      
       return ret;
    }
 }

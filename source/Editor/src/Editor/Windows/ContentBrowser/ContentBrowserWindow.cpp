@@ -243,7 +243,7 @@ namespace Editor
 
 		ImVec2 icon_min = pos;
 		ImVec2 icon_max = { pos.x + m_ItemSize.x, pos.y + m_ItemSize.x };
-		draw_list->AddImage(static_cast<WGPUTextureView>(thumbnail.view), icon_min, icon_max, ImVec2(thumbnail.uv_min.x, thumbnail.uv_min.y), ImVec2(thumbnail.uv_max.x, thumbnail.uv_max.y));
+		draw_list->AddImage(thumbnail.view.Get(), icon_min, icon_max, ImVec2(thumbnail.uv_min.x, thumbnail.uv_min.y), ImVec2(thumbnail.uv_max.x, thumbnail.uv_max.y));
 
 
 		// label
