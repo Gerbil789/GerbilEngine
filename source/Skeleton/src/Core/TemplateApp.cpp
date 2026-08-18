@@ -4,14 +4,14 @@
 #include "Engine/Core/Time.h"
 #include "Engine/Utility/File.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Scene/SceneManager.h"
+#include "Engine/Core/SceneManager.h"
 #include "Engine/Audio/Audio.h"
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Script/Script.h"
 #include "Engine/Event/WindowEvent.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Utility/Path.h"
-#include "Engine/Scene/Scene.h"
+#include "Engine/Core/Scene.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Graphics/GraphicsContext.h"
@@ -19,9 +19,8 @@
 #include "Engine/Core/Project.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Core/Runtime.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/Components.h"
 #include "Engine/Core/Log.h"
-#include "Engine/Physics/Physics.h"
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Core/Configuration.h"
 
@@ -163,7 +162,6 @@ namespace Template
 			Engine::Time::BeginFrame();	
 			Engine::Input::Update();
 			Engine::Audio::Update();
-			Engine::PhysicsSystem::Update();
 			Engine::Runtime::Update();
 
 			wgpu::Surface surface = m_Window.GetSurface();

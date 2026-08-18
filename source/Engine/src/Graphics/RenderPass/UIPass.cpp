@@ -6,9 +6,9 @@
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/Font.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Scene/Scene.h"
-#include "Engine/Scene/Components.h"
-#include "Engine/Core/Resources.h"
+#include "Engine/Core/Scene.h"
+#include "Engine/Core/Components.h"
+#include "Engine/Asset/Resources.h"
 #include "Engine/Core/Project.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <entt/entt.hpp>

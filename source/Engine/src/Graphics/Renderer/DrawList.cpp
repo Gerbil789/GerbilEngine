@@ -1,10 +1,10 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Renderer/DrawList.h"
-#include "Engine/Scene/Scene.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/Scene.h"
+#include "Engine/Core/Components.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Core/Resources.h"
+#include "Engine/Asset/Resources.h"
 
 namespace Engine
 {

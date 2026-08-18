@@ -1,6 +1,6 @@
 #include "enginepch.h"
-#include "Engine/Scene/SceneManager.h"
-#include "Engine/Scene/Scene.h"
+#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Scene.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/ApplicationEvent.h"
@@ -25,6 +25,11 @@ namespace Engine::SceneManager
 			entity.GetComponent<CameraComponent>().background = CameraComponent::Background::Skybox;
 
 			scene.InsertRootEntity(entity.GetHandle(), scene.GetRootEntities().size());
+			scene.SetActiveCamera(entity.GetHandle());
+		}
+		else
+		{
+			scene.SetActiveCamera(view.front());
 		}
 
 		Engine::EventBus::Publish(SceneChangedEvent{ m_ActiveScene });

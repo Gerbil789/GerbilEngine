@@ -3,9 +3,9 @@
 #include "Editor/Core/SelectionManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Scene/SceneManager.h"
-#include "Engine/Scene/Scene.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Scene.h"
+#include "Engine/Core/Components.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Event/EventBus.h"
 #include <imgui.h>

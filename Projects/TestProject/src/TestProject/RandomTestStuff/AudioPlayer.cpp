@@ -1,6 +1,6 @@
 #include "AudioPlayer.h"
 #include "Engine/Core/Input.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/Components.h"
 #include "Engine/Audio/Audio.h"
 #include "Engine/Audio/AudioClip.h"
 

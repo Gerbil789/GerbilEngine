@@ -1,13 +1,13 @@
 #include "enginepch.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/AssetRegistry.h"
-#include "Engine/Core/Resources.h"
+#include "Engine/Asset/Resources.h"
 
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/Material.h"
-#include "Engine/Scene/Scene.h"
+#include "Engine/Core/Scene.h"
 #include "Engine/Audio/AudioClip.h"
 #include "Engine/Graphics/Font.h"
 

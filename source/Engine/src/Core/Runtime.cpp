@@ -1,9 +1,9 @@
 #include "enginepch.h"
 #include "Engine/Core/Runtime.h"
-#include "Engine/Scene/SceneManager.h"
+#include "Engine/Core/SceneManager.h"
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Core/Log.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/Components.h"
 #include "Engine/Script/Script.h"
 #include "Engine/Audio/Audio.h"
 #include "Engine/Core/Input.h"
@@ -11,8 +11,7 @@
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Event/Event.h"
-
-#include "Engine/Scene/CameraSystem.h"
+#include "Engine/System/CameraSystem.h"
 
 #ifdef ENGINE_PLATFORM_WINDOWS
 #include <Windows.h>
@@ -66,6 +65,12 @@ namespace Engine
 	{
 		Engine::Scene& scene = Engine::AssetManager::GetAsset<Scene>(Engine::SceneManager::GetActiveScene());
 		entt::registry& registry = scene.GetRegistry();
+
+
+		//auto view = registry.view<PrimaryCameraTag, EditorTag>();
+		//registry.remove<PrimaryCameraTag>(view.front());
+
+
 
 	/*	for(entt::entity cameraEntity : registry.view<Engine::CameraComponent>())
 		{

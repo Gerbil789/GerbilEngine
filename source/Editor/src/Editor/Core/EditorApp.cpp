@@ -20,13 +20,12 @@
 #include "Engine/Event/WindowEvent.h"
 #include "Engine/Event/ApplicationEvent.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Scene/SceneManager.h"
+#include "Engine/Core/SceneManager.h"
 #include "Engine/Audio/Audio.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Physics/Physics.h"
 #include "Engine/Debug/RenderDoc.h"
 #include "Editor/Core/EditorState.h"
-#include "Engine/Scene/TransformSystem.h"
+#include "Engine/System/TransformSystem.h"
 #include "Engine/Graphics/Font.h"
 
 namespace Editor
@@ -115,7 +114,6 @@ namespace Editor
 
 			if (Editor::editorContext.editorMode == EditorMode::Play)
 			{
-				Engine::PhysicsSystem::Update();
 				Engine::Runtime::Update();
 			}
 		}

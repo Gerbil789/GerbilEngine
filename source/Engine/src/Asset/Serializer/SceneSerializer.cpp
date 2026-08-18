@@ -2,8 +2,8 @@
 #include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Script/Script.h"
 #include "Engine/Script/ScriptRegistry.h"
-#include "Engine/Core/Resources.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Asset/Resources.h"
+#include "Engine/Core/Components.h"
 #include <glaze/glaze.hpp>
 
 template <>

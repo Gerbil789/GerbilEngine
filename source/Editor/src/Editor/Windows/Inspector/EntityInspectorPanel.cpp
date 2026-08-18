@@ -7,8 +7,8 @@
 #include "Editor/Command/AddComponentCommand.h"
 #include "Editor/Command/RemoveComponentCommand.h"
 
-#include "Engine/Scene/Components.h"
-#include "Engine/Scene/SceneManager.h"
+#include "Engine/Core/Components.h"
+#include "Engine/Core/SceneManager.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Editor/Core/SelectionManager.h"
 #include "Engine/Script/ScriptRegistry.h"
@@ -140,7 +140,7 @@ namespace Editor
 			if(primary)
 			{
 				entt::registry& registry = entity.GetScene()->GetRegistry();
-				auto view = registry.view<Engine::PrimaryCameraTag>();
+				auto view = registry.view<Engine::PrimaryCameraTag>(entt::exclude<Engine::EditorTag>);
 				registry.remove<Engine::PrimaryCameraTag>(view.begin(), view.end());
 
 				entity.AddTag<Engine::PrimaryCameraTag>();

@@ -1,10 +1,10 @@
 #include "enginepch.h"
-#include "Engine/Scene/TransformSystem.h"
+#include "Engine/System/TransformSystem.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/AssetRegistry.h"
-#include "Engine/Scene/SceneManager.h"
-#include "Engine/Scene/Scene.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Scene.h"
+#include "Engine/Core/Components.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
@@ -21,7 +21,6 @@ namespace Engine
 
     if (needsUpdate)
     {
-      //const glm::mat4 localMatrix = glm::translate(glm::mat4(1.0f), tc.position) * glm::toMat4(glm::quat(glm::radians(tc.rotation))) * glm::scale(glm::mat4(1.0f), tc.scale);
       const glm::mat4 localMatrix = glm::translate(glm::mat4(1.0f), tc.position) * glm::toMat4(glm::quat(tc.rotation)) * glm::scale(glm::mat4(1.0f), tc.scale);
 
 			wtc.worldMatrix = parentWorldMatrix * localMatrix;

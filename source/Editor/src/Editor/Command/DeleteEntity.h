@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Editor/Command/ICommand.h"
-#include "Engine/Scene/Scene.h"
+#include "Engine/Core/Scene.h"
 #include "Editor/Core/SelectionManager.h"
 #include "Engine/Event/EventBus.h"
 #include "Editor/Core/EditorEvent.h"

@@ -1,6 +1,6 @@
 #include "enginepch.h"
-#include "Engine/Scene/Scene.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/Scene.h"
+#include "Engine/Core/Components.h"
 #include "Engine/Asset/AssetManager.h"
 
 namespace Engine
@@ -51,15 +51,22 @@ namespace Engine
 		}
 	}
 
+	void Scene::SetActiveCamera(entt::entity entity)
+	{
+		m_CameraEntity = entity;
+	}
+
 	entt::entity Scene::GetActiveCamera()
 	{
-		auto view = m_Registry.view<CameraComponent, PrimaryCameraTag>(entt::exclude<DisabledTag>);
+		return m_CameraEntity;
 
-		for (auto [entity, cam] : view.each())
-		{
-			return entity;
-		}
+		//auto view = m_Registry.view<CameraComponent, PrimaryCameraTag>(entt::exclude<DisabledTag>);
 
-		return entt::null;
+		//for (auto [entity, cam] : view.each())
+		//{
+		//	return entity;
+		//}
+
+		//return entt::null;
 	}
 }

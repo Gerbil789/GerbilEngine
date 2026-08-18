@@ -4,12 +4,12 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Utility.h"
-#include "Engine/Scene/Components.h"
-#include "Engine/Scene/Scene.h"
+#include "Engine/Core/Components.h"
+#include "Engine/Core/Scene.h"
 #include "Engine/Utility/File.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Scene/CameraSystem.h"
+#include "Engine/System/CameraSystem.h"
 #include <glm/gtx/quaternion.hpp>
 
 namespace Engine

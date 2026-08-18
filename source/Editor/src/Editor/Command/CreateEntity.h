@@ -2,9 +2,9 @@
 
 #include "Editor/Command/ICommand.h"
 #include "Editor/Core/SelectionManager.h"
-#include "Engine/Scene/Scene.h"
-#include "Engine/Scene/SceneManager.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/Scene.h"
+#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Components.h"
 #include "Engine/Event/EventBus.h"
 #include "Editor/Core/EditorEvent.h"
 #include "Engine/Asset/AssetManager.h"

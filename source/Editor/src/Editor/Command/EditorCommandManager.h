@@ -7,7 +7,7 @@
 #include "Editor/Command/BatchCommand.h"
 #include "Engine/Core/UUID.h"
 #include "Editor/Command/CreateEntity.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/Components.h"
 #include <stack>
 #include <vector>
 

@@ -2,15 +2,15 @@
 
 #include "../Math/RayIntersectsPlane.h" //TODO: fix paths, dont ever use "../"
 #include "GameContext.h"
-#include "Engine/Scene/Components.h"
-#include "Engine/Scene/CameraSystem.h"
+#include "Engine/Core/Components.h"
+#include "Engine/System/CameraSystem.h"
 #include "Engine/Core/State.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Core/Input.h"
 
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/MouseEvent.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/Components.h"
 
 class GridInteractionSystem
 {

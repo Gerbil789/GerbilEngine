@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Engine/Asset/Asset.h"
-#include "Engine/Scene/Entity.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/Entity.h"
+#include "Engine/Core/Components.h"
 #include <entt/entity/registry.hpp>
 
 namespace Engine
@@ -47,6 +47,7 @@ namespace Engine
 		void InsertRootEntity(entt::entity entity, size_t index);
 		void RemoveRootEntity(entt::entity entity);
 
+		void SetActiveCamera(entt::entity entity);
 		entt::entity GetActiveCamera();
 
 		Uuid GetEnvironmentTexture() const { return m_EnvironmentTextureId; }
@@ -56,6 +57,8 @@ namespace Engine
 		entt::registry m_Registry;
 		std::unordered_map<Engine::Uuid, entt::entity> m_EntityMap;
 		std::vector<entt::entity> m_RootEntities;
+
+		entt::entity m_CameraEntity;
 
 		Uuid m_EnvironmentTextureId;
 

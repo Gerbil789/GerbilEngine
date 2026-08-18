@@ -4,7 +4,7 @@
 #include "Engine/Utility/File.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
-#include "Engine/Scene/Scene.h"
+#include "Engine/Core/Scene.h"
 
 namespace Engine
 {

@@ -3,8 +3,8 @@
 #include "Editor/Core/SelectionManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Engine/Core/Input.h"
-#include "Engine/Scene/Scene.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/Scene.h"
+#include "Engine/Core/Components.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/KeyEvent.h"
 #include <imgui.h>

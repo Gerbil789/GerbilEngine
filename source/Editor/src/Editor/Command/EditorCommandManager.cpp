@@ -1,7 +1,7 @@
 #include "EditorCommandManager.h"
 #include "Editor/Command/DeleteEntity.h"
 #include "Editor/Command/OpenSceneCommand.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/Components.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Core/Input.h"

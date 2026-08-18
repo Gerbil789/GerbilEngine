@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ICommand.h"
-#include "Engine/Scene/Entity.h"
+#include "Engine/Core/Entity.h"
 
 namespace Editor
 {

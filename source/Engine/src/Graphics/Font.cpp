@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Font.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Core/Resources.h"
+#include "Engine/Asset/Resources.h"
 #include <glaze/glaze.hpp>
 
 namespace Engine

@@ -7,9 +7,9 @@
 #include "Engine/Graphics/Texture/TextureCube.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/RenderPass/ShadowPass.h"
-#include "Engine/Scene/SceneManager.h"
-#include "Engine/Scene/Scene.h"
-#include "Engine/Core/Resources.h"
+#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Scene.h"
+#include "Engine/Asset/Resources.h"
 #include "Editor/Core/EditorSettings.h"
 #include <imgui.h>
 

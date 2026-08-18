@@ -1,5 +1,5 @@
 #include "enginepch.h"
-#include "Engine/Scene/CameraSystem.h"
+#include "Engine/System/CameraSystem.h"
 #include <glm/gtx/quaternion.hpp>
 
 namespace Engine

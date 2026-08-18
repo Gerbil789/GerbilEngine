@@ -2,8 +2,6 @@
 
 #include "Engine/Core/UUID.h"
 
-//TODO: move this file to assets directory, it should not be in core
-
 namespace RESOURCES
 {
 	namespace MESH
@@ -32,17 +30,17 @@ namespace RESOURCES
 
 	namespace MATERIAL
 	{
-		static constexpr Engine::Uuid WHITE = Engine::Uuid{ 11 };
-		static constexpr Engine::Uuid PINK = Engine::Uuid{ 12 };
+		static constexpr Engine::Uuid WHITE = Engine::Uuid{ 12 };
+		static constexpr Engine::Uuid PINK = Engine::Uuid{ 13 };
 	}
 
 	namespace SCENE
 	{
-		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 13 };
+		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 14 };
 	}
 
 	namespace FONT
 	{
-		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 14 };
+		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 15 };
 	}
 }

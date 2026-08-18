@@ -1,19 +1,19 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Scene/Scene.h"
+#include "Engine/Core/Scene.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/Texture/TextureCube.h"
 #include "Engine/Graphics/Renderer/DrawList.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/Components.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Graphics/Renderer/RenderUniforms.h"
 #include "Engine/Graphics/RenderPass/RenderPassRegistry.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Graphics/Texture/Environment.h"
-#include "Engine/Core/Resources.h"
+#include "Engine/Asset/Resources.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Scene/CameraSystem.h"
+#include "Engine/System/CameraSystem.h"
 #include <glm/gtx/quaternion.hpp>
 
 namespace Engine

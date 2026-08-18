@@ -5,7 +5,7 @@
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Importer/ShaderImporter.h"
-#include "Engine/Core/Resources.h"
+#include "Engine/Asset/Resources.h"
 
 namespace Engine
 {

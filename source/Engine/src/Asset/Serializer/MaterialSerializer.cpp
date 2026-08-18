@@ -2,7 +2,7 @@
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Core/Resources.h"
+#include "Engine/Asset/Resources.h"
 #include "Engine/Core/Project.h"
 #include <glaze/glaze.hpp>
 #include <fstream>

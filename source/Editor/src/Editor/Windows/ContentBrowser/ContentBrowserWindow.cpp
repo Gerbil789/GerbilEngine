@@ -8,7 +8,7 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Core/Project.h"
-#include "Engine/Scene/SceneManager.h"
+#include "Engine/Core/SceneManager.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/FileEvent.h"
 #include <imgui_internal.h>

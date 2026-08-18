@@ -4,11 +4,11 @@
 #include "Engine/Core/Input.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/MouseEvent.h"
-#include "Engine/Scene/SceneManager.h"
-#include "Engine/Scene/Scene.h"
-#include "Engine/Scene/Components.h"
+#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Scene.h"
+#include "Engine/Core/Components.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Scene/CameraSystem.h"
+#include "Engine/System/CameraSystem.h"
 
 namespace Editor
 {

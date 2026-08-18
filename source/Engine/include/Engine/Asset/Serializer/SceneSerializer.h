@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Scene/Scene.h"
+#include "Engine/Core/Scene.h"
 #include <optional>
 #include <filesystem>
 

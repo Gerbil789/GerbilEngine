@@ -6,7 +6,7 @@
 #include "Engine/Graphics/Material.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Audio/AudioClip.h"
-#include "Engine/Scene/Scene.h"
+#include "Engine/Core/Scene.h"
 #include "Engine/Event/Event.h"
 #include "Engine/Asset/AssetManager.h"
 
