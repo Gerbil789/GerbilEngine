@@ -63,7 +63,7 @@ namespace Engine
 
 	void Runtime::Start()
 	{
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Scene>(Engine::SceneManager::GetActiveScene());
+		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset(Engine::SceneManager::GetActiveScene());
 		entt::registry& registry = scene.GetRegistry();
 
 
@@ -100,7 +100,7 @@ namespace Engine
 
 	void Runtime::Stop()
 	{
-		auto& scene = Engine::AssetManager::GetAsset<Scene>(Engine::SceneManager::GetActiveScene());
+		auto& scene = Engine::AssetManager::GetAsset<SceneAsset>(Engine::SceneManager::GetActiveScene());
 		entt::registry& registry = scene.GetRegistry();
 
 		auto view = registry.view<ScriptComponent>(entt::exclude<DisabledTag>);
@@ -126,7 +126,7 @@ namespace Engine
 			Engine::Input::SetCursorMode(Engine::Input::CursorMode::Normal);
 		}
 
-		auto& scene = Engine::AssetManager::GetAsset<Scene>(Engine::SceneManager::GetActiveScene());
+		auto& scene = Engine::AssetManager::GetAsset<SceneAsset>(Engine::SceneManager::GetActiveScene());
 		entt::registry& registry = scene.GetRegistry();
 
 		// update scripts

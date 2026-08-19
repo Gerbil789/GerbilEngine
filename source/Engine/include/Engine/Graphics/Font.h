@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Engine/Asset/AssetHandle.h"
+
 namespace Engine
 {
   struct Bounds 
@@ -79,10 +81,10 @@ namespace Engine
     static void Shutdown();
 
     static const Font* GetFont(const std::string& name);
-		static Uuid GetFontAtlasUuid() { return s_TextureAtlas; }
+		static Texture2D GetFontAtlas() { return s_TextureAtlas; }
 
 	private:
-    inline static Uuid s_TextureAtlas;
+    inline static Texture2D s_TextureAtlas;
     inline static FontAtlasJSON s_JsonData;
     inline static std::unordered_map<std::string, Font*> s_FontVariantMap;
 	};

@@ -18,11 +18,11 @@ void AudioPlayer::OnStart()
 
 void AudioPlayer::OnUpdate()
 {
-  if (!m_Clip) return;
+  //if (!m_Clip) return;
 
-  auto& transform = m_Entity.GetComponent<Engine::TransformComponent>();
-  glm::vec3 localPosition = transform.position;
-  //glm::vec3 worldPosition = transform.worldMatrix * glm::vec4(localPosition, 1.0f);
+  //auto& transform = m_Entity.GetComponent<Engine::TransformComponent>();
+  //glm::vec3 localPosition = transform.position;
+  ////glm::vec3 worldPosition = transform.worldMatrix * glm::vec4(localPosition, 1.0f);
 
-  Engine::Audio::SetSourcePosition(m_Clip, localPosition);
+  //Engine::Audio::SetSourcePosition(m_Clip, localPosition);
 }

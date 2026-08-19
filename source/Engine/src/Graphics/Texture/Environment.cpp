@@ -12,7 +12,7 @@
 
 namespace Engine
 {
-	Environment EnvironmentBaker::BakeEnvironment(Uuid equirectangularTexture)
+	Environment EnvironmentBaker::BakeEnvironment(Texture2D equirectangularTexture)
 	{
 		RenderDoc::StartFrameCapture();
 

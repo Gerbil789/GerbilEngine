@@ -1,6 +1,7 @@
 #include "MaterialEditorWindow.h"
 #include "Editor/Windows/Utility/Property.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Graphics/Material.h"
 #include "Editor/Core/SelectionManager.h"
 #include "Engine/Event/EventBus.h"
@@ -11,7 +12,8 @@ namespace Editor
 {
 	namespace
 	{
-		Engine::Material* m_Material = nullptr;
+		//TODO: dont use pointer, use id
+		Engine::MaterialAsset* m_Material = nullptr;
 	}
 
 	void MaterialEditorWindow::Draw()
@@ -28,22 +30,23 @@ namespace Editor
 		const std::string& materialName = Engine::AssetManager::GetAssetPath(m_Material->id).stem().string();
 		ImGui::Text("Material: %s", materialName.c_str());
 
-		const std::string& shaderName = Engine::AssetManager::GetAssetPath(m_Material->GetShader()).stem().string();
+		const std::string& shaderName = Engine::AssetManager::GetAssetPath(m_Material->GetShader().id).stem().string();
 
 
 		if (ImGui::BeginCombo("##Shader", shaderName.c_str()))
 		{
-			const std::vector<Engine::Uuid>& shaders = Engine::AssetManager::GetAssetsOfType(Engine::AssetType::Shader);
-
-			for(const Engine::Uuid& shaderId : shaders)
+			for (const auto& [id, record] : Engine::AssetManager::GetAssetRegistry().GetAllRecords())
 			{
-				if (static_cast<uint64_t>(shaderId) <= 1000) continue; // skip built-in shaders
+				if (record.type != Engine::AssetType::Shader) continue;
 
-				const std::string& name = Engine::AssetManager::GetAssetPath(shaderId).stem().string();
+				if (static_cast<uint64_t>(id) <= 1000) continue; // skip built-in shaders
+
+				const std::string& name = record.path.stem().string();
 
 				if (ImGui::Selectable(name.c_str()))
 				{
-					m_Material->SetShader(shaderId);
+					// Create your strongly typed handle directly from the Uuid
+					m_Material->SetShader(Engine::Shader{ id });
 				}
 			}
 
@@ -57,7 +60,7 @@ namespace Editor
 			ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthFixed, 100.0f);
 			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
-			Engine::Shader& shader = Engine::AssetManager::GetAsset<Engine::Shader>(m_Material->GetShader());
+			Engine::ShaderAsset& shader = Engine::AssetManager::GetAsset<Engine::ShaderAsset>(m_Material->GetShader());
 			auto bindings = shader.GetMaterialBindings();
 
 			for (auto& binding : bindings)
@@ -92,8 +95,8 @@ namespace Editor
 
 				if (std::holds_alternative<Engine::TextureBinding>(binding.data))
 				{
-					Engine::Uuid texture = m_Material->GetTexture(binding.name);
-					if (AssetField(binding.name.c_str(), texture, Engine::AssetType::Texture).changed)
+					Engine::Texture2D texture = m_Material->GetTexture(binding.name);
+					if (AssetField(binding.name.c_str(), texture).changed)
 					{
 						m_Material->SetTexture(binding.name, texture);
 					}
@@ -140,7 +143,7 @@ namespace Editor
 				auto type = Engine::AssetManager::GetAssetType(e.id);
 				if (type == Engine::AssetType::Material)
 				{
-					m_Material = &Engine::AssetManager::GetAsset<Engine::Material>(e.id);
+					m_Material = &Engine::AssetManager::GetAsset<Engine::MaterialAsset>(Engine::Material{ e.id });
 				}
 				return false;
 			});

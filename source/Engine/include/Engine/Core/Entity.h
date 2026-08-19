@@ -5,13 +5,13 @@
 
 namespace Engine
 {
-  class Scene;
+  class SceneAsset;
 
   class ENGINE_API Entity
   {
   public:
 		Entity() = default;
-    Entity(entt::entity handle, Scene* scene);
+    Entity(entt::entity handle, SceneAsset* scene);
 
 		void SetActive(bool active);
     bool IsActive() const;
@@ -46,13 +46,13 @@ namespace Engine
     void RemoveComponent();
 
     entt::entity GetHandle() const { return m_Handle; }
-		Scene* GetScene() const { return m_Scene; }
+    SceneAsset* GetScene() const { return m_Scene; }
 
 		explicit operator bool() const { return m_Handle != entt::null && m_Scene != nullptr; }
 		bool operator==(const Entity& other) const { return m_Handle == other.m_Handle && m_Scene == other.m_Scene; }
 
   private:
     entt::entity m_Handle{ entt::null };
-    Scene* m_Scene = nullptr;
+    SceneAsset* m_Scene = nullptr;
   };
 }

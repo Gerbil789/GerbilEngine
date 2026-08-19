@@ -257,16 +257,16 @@ namespace Engine
 			pass.SetBindGroup(0, m_ShadowBindGroup, 1, &offset);
 			pass.SetBindGroup(1, context.modelBindGroup, 0, nullptr);
 
-			Uuid lastMeshId{};
+			Mesh lastMesh;
 
 			for (const auto& [i, item] : std::views::enumerate(context.drawList.GetItems()))
 			{
-				if (item.meshId != lastMeshId)
+				if (item.mesh != lastMesh)
 				{
-					lastMeshId = item.meshId;
-					const Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(item.meshId);
+					const Engine::MeshAsset& mesh = Engine::AssetManager::GetAsset(item.mesh);
 					pass.SetVertexBuffer(0, mesh.GetVertexBuffer(), 0, mesh.GetVertexBuffer().GetSize());
 					pass.SetIndexBuffer(mesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh.GetIndexBuffer().GetSize());
+					lastMesh = item.mesh;
 				}
 
 				pass.DrawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));

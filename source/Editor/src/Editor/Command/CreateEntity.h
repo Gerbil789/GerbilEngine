@@ -20,7 +20,7 @@ namespace Editor
 
     void Execute() override
     {
-      Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+      Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
 
       // Forward the component pack directly into scene.CreateEntity
       m_Entity = scene.CreateEntity<Components...>(m_Name);
@@ -45,9 +45,6 @@ namespace Editor
     void Undo() override
     {
       if (!m_Entity) return;
-
-      FocusEntityEvent e{ 0 };
-      Engine::EventBus::Publish(e);
       m_Entity.Destroy();
     }
 

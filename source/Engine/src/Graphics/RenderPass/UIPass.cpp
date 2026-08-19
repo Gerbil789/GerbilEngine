@@ -42,7 +42,7 @@ namespace Engine
 
 	struct UIConfig
 	{
-		uint64_t texture = 0;
+		uint64_t texture = 0; //TODO: use Texture2D
 		std::map<std::string, AtlasRegion> icons;
 	};
 
@@ -241,7 +241,7 @@ namespace Engine
 		}
 	}
 
-	static std::vector<UIDrawItem> GenerateUIDrawList(Scene* scene, float screenWidth, float screenHeight)
+	static std::vector<UIDrawItem> GenerateUIDrawList(SceneAsset* scene, float screenWidth, float screenHeight)
 	{
 		entt::registry& registry = scene->GetRegistry();
 		std::vector<UIDrawItem> drawList;
@@ -295,7 +295,7 @@ namespace Engine
 		}
 
 
-		const Texture2D& texture = AssetManager::GetAsset<Texture2D>(Uuid{ s_UIConfig.texture });
+		const Texture2DAsset& texture = AssetManager::GetAsset(Texture2D{ s_UIConfig.texture });
 		float texWidth = static_cast<float>(texture.GetWidth());
 		float texHeight = static_cast<float>(texture.GetHeight());
 
@@ -391,13 +391,13 @@ namespace Engine
 		entries[1].size = uiStorageBuffer.GetSize();
 
 		entries[2].binding = 2;
-		entries[2].textureView = AssetManager::GetAsset<Texture2D>(Uuid{ s_UIConfig.texture }).GetTextureView();
+		entries[2].textureView = AssetManager::GetAsset(Texture2D{ s_UIConfig.texture }).GetTextureView();
 
 		entries[3].binding = 3;
 		entries[3].sampler = SamplerPool::GetSampler({ TextureFilter::Point, TextureWrap::Repeat });
 
 		entries[4].binding = 4;
-		entries[4].textureView = AssetManager::GetAsset<Texture2D>(RESOURCES::TEXTURE::DEFAULT_FONT_ATLAS).GetTextureView();
+		entries[4].textureView = AssetManager::GetAsset(RESOURCES::TEXTURE::DEFAULT_FONT_ATLAS).GetTextureView();
 
 		entries[5].binding = 5;
 		entries[5].sampler = SamplerPool::GetSampler({ TextureFilter::Bilinear, TextureWrap::Clamp });
@@ -412,7 +412,7 @@ namespace Engine
 
 	void CreateUIPipeline()
 	{
-		const Shader& shader = AssetManager::GetAsset<Shader>(RESOURCES::SHADER::UI);
+		const ShaderAsset& shader = AssetManager::GetAsset<ShaderAsset>(RESOURCES::SHADER::UI);
 
 		wgpu::RenderPipelineDescriptor pipelineDesc;
 		pipelineDesc.label = "UI Shader Pipeline";

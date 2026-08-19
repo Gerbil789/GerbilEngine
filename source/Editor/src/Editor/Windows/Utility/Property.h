@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
 #include <imgui.h>
 #include <glm/glm.hpp>
 #include <limits>
@@ -111,24 +112,6 @@ namespace Editor
 			if (active) ImGui::EndDragDropTarget();
 		}
 
-		// Generic Accept for any type (Entities, Strings, etc.)
-		template<typename T, typename Fn>
-		bool AcceptPayload(const char* payloadId, Fn&& fn)
-		{
-			static_assert(std::is_invocable_v<Fn, T>, "Callback parameter type mismatch");
-
-			if (!active) return false;
-
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(payloadId))
-			{
-				T data = *static_cast<const T*>(payload->Data);
-				std::forward<Fn>(fn)(data);
-				return true;
-			}
-
-			return false;
-		}
-
 		template<typename Fn>
 		bool AcceptAsset(Engine::AssetType expectedType, Fn&& fn)
 		{
@@ -186,8 +169,64 @@ namespace Editor
 		bool isOpen = false;
 	};
 
+	template <typename Asset>
+	EditResult AssetField(std::string_view label, Engine::AssetHandle<Asset>& handle)
+	{
+		PropertyRow row(label);
+		EditResult result;
 
-	EditResult AssetField(std::string_view label, Engine::Uuid& id, Engine::AssetType type);
+		constexpr Engine::AssetType type = []() {
+			if constexpr (std::is_same_v<Asset, Engine::Texture2DAsset>) return Engine::AssetType::Texture;
+			else if constexpr (std::is_same_v<Asset, Engine::MeshAsset>) return Engine::AssetType::Mesh;
+			else if constexpr (std::is_same_v<Asset, Engine::ShaderAsset>) return Engine::AssetType::Shader;
+			else if constexpr (std::is_same_v<Asset, Engine::MaterialAsset>) return Engine::AssetType::Material;
+			else if constexpr (std::is_same_v<Asset, Engine::AudioClipAsset>) return Engine::AssetType::Audio;
+			else if constexpr (std::is_same_v<Asset, Engine::SceneAsset>) return Engine::AssetType::Scene;
+			else return Engine::AssetType::Unknown;
+			}();
+
+		const std::string& assetName = Engine::AssetManager::GetAssetPath(handle.id).stem().string();
+
+		if constexpr (std::is_same_v<Asset, Engine::Texture2DAsset>)
+		{
+			if (handle)
+			{
+				const Engine::Texture2DAsset& texture = Engine::AssetManager::GetAsset(handle);
+				result.changed = ImGui::ImageButton("##TexturePreview", (ImTextureID)(intptr_t)texture.GetTextureView().Get(), ImVec2(64, 64));
+			}
+			else
+			{
+				result.changed = ImGui::ImageButton("##TexturePreviewBlank", nullptr, ImVec2(64, 64));
+			}
+		}
+		else
+		{
+			result.changed = ImGui::Button(assetName.c_str(), ImVec2(-FLT_MIN, 0));
+		}
+
+		result.active = ImGui::IsItemActive();
+		result.started = ImGui::IsItemActivated();
+		result.finished = ImGui::IsItemDeactivatedAfterEdit();
+
+		DragDropSource<Engine::Uuid>("UUID", handle.id, assetName);
+		result.changed |= DragDropTarget{}.AcceptAsset(type, [&handle](Engine::Uuid newId) { handle.id = newId; });
+
+		if (PopupContextItem contextMenu{ "AssetOptionsPopup" })
+		{
+			if (ImGui::MenuItem("Clear", nullptr, false, static_cast<bool>(handle)))
+			{
+				handle = {};
+				result.changed = true;
+			}
+		}
+
+		if (result.changed)
+		{
+			Engine::AssetManager::MarkAssetDirty(handle.id);
+		}
+
+		return result;
+	}
 
 	template <typename DrawFunc>
 	EditResult DrawFieldWithBoilerplate(std::string_view label, bool showLabel, DrawFunc&& drawFunc)

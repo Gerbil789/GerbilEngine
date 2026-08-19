@@ -1,14 +1,13 @@
 #pragma once
 
 #include "Engine/Event/Event.h"
-#include "Engine/Core/UUID.h"
+#include "Engine/Asset/AssetHandle.h"
 
 namespace Engine
 {
 	struct SceneChangedEvent : public Event
 	{
-		Uuid id;
-
-		SceneChangedEvent(Uuid id) : id(id) {}
+		Scene scene;
+		SceneChangedEvent(Scene scene) : scene(scene) {}
 	};
 }

@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	std::optional<Scene> SceneImporter::LoadScene(const std::filesystem::path& path)
+	std::optional<SceneAsset> SceneImporter::LoadScene(const std::filesystem::path& path)
   {
     return SceneSerializer::Deserialize(path);
   }

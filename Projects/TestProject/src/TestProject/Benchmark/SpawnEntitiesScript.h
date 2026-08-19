@@ -19,10 +19,10 @@ public:
     float m_Offset = 5.0f;
 
   PROPERTY(m_Mesh, "mesh")
-    Engine::MeshHandle m_Mesh;
+    Engine::Mesh m_Mesh;
 
   PROPERTY(m_Material, "material")
-    Engine::MaterialHandle m_Material;
+    Engine::Material m_Material;
 
 public:
   void OnStart() override;

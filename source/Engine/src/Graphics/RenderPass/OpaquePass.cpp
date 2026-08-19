@@ -38,23 +38,23 @@ namespace Engine
 		pass.SetBindGroup(1, context.environmentBindGroup, 0, nullptr);
 		pass.SetBindGroup(3, context.modelBindGroup, 0, nullptr);
 
-		Uuid lastMeshId;
-		Uuid lastMaterialId;
+		Mesh lastMesh;
+		Material lastMaterial;
 
 		for (const auto& [i, item] : std::views::enumerate(context.drawList.GetItems()))
 		{
-			if (item.meshId != lastMeshId)
+			if (item.mesh != lastMesh)
 			{
-				lastMeshId = item.meshId;
-				const Mesh& meshAsset = AssetManager::GetAsset<Mesh>(lastMeshId);
+				lastMesh = item.mesh;
+				const MeshAsset& meshAsset = AssetManager::GetAsset(lastMesh);
 				pass.SetVertexBuffer(0, meshAsset.GetVertexBuffer(), 0, meshAsset.GetVertexBuffer().GetSize());
 				pass.SetIndexBuffer(meshAsset.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, meshAsset.GetIndexBuffer().GetSize());
 			}
 
-			if (item.materialId != lastMaterialId)
+			if (item.material != lastMaterial)
 			{
-				lastMaterialId = item.materialId;
-				const Material& material = AssetManager::GetAsset<Material>(lastMaterialId);
+				lastMaterial = item.material;
+				const MaterialAsset& material = AssetManager::GetAsset(lastMaterial);
 				GraphicsContext::GetQueue().WriteBuffer(material.GetUniformBuffer(), 0, material.GetUniformData().data(), material.GetUniformData().size());
 				pass.SetBindGroup(2, material.GetBindGroup(), 0, nullptr);
 

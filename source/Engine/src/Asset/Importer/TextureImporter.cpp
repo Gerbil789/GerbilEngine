@@ -78,11 +78,11 @@ namespace Engine
 		};
 	}
 
-	std::optional<Texture2D> TextureImporter::LoadTexture2D(const std::filesystem::path& path)
+	std::optional<Texture2DAsset> TextureImporter::LoadTexture2D(const std::filesystem::path& path)
 	{
 		ImageLoadResult image;
 		if (!image.Load(path)) return std::nullopt;
 		TextureSpecification spec{ .width = static_cast<uint32_t>(image.width), .height = static_cast<uint32_t>(image.height), .format = image.format };
-		return Texture2D(spec, image.GetData());
+		return Texture2DAsset(spec, image.GetData());
 	}
 }

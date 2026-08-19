@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Engine/Core/UUID.h"
+#include "Engine/Asset/AssetHandle.h"
 #include <glm/glm.hpp>
 
 class ma_engine;
 
 namespace Engine
 {
-  using AudioInstance = Uuid;
+  using AudioInstance = AudioClip;
 
   class ENGINE_API Audio
   {
@@ -19,8 +19,8 @@ namespace Engine
 
     static void SetListener(float px, float py, float pz, float fx, float fy, float fz, float ux, float uy, float uz);
 
-    static AudioInstance Play2D(Uuid clip);
-    static AudioInstance Play3D(Uuid clip, const glm::vec3& position);
+    static AudioInstance Play2D(AudioClip clip);
+    static AudioInstance Play3D(AudioClip clip, const glm::vec3& position);
 
     static void SetSourcePosition(AudioInstance instance, const glm::vec3& position);
 		static void Stop(AudioInstance instance);

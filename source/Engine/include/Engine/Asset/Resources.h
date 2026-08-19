@@ -1,46 +1,46 @@
 #pragma once
 
-#include "Engine/Core/UUID.h"
+#include "Engine/Asset/AssetHandle.h"
 
 namespace RESOURCES
 {
 	namespace MESH
 	{
-		static constexpr Engine::Uuid EMPTY = Engine::Uuid{ 1 };
-		static constexpr Engine::Uuid CUBE = Engine::Uuid{ 2 };
-		static constexpr Engine::Uuid SPHERE = Engine::Uuid{ 3 };
+		static constexpr Engine::Mesh EMPTY{ 1 };
+		static constexpr Engine::Mesh CUBE{ 2 };
+		static constexpr Engine::Mesh SPHERE{ 3 };
 	}
 
 	namespace TEXTURE
 	{
-		static constexpr Engine::Uuid WHITE = Engine::Uuid{ 4 };
-		static constexpr Engine::Uuid BLACK = Engine::Uuid{ 5 };
-		static constexpr Engine::Uuid NORMAL = Engine::Uuid{ 6 };
-		static constexpr Engine::Uuid HDR = Engine::Uuid{ 7 };
-		static constexpr Engine::Uuid EDITOR_ICONS = Engine::Uuid{ 13 };
-		static constexpr Engine::Uuid DEFAULT_FONT_ATLAS = Engine::Uuid{ 15 };
+		static constexpr Engine::Texture2D WHITE{ 11 };
+		static constexpr Engine::Texture2D BLACK{ 12 };
+		static constexpr Engine::Texture2D NORMAL{ 13 };
+		static constexpr Engine::Texture2D HDR{ 14 };
+		static constexpr Engine::Texture2D EDITOR_ICONS{ 15 };
+		static constexpr Engine::Texture2D DEFAULT_FONT_ATLAS{ 16 };
 	}
 
 	namespace SHADER
 	{
-		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 8 };
-		static constexpr Engine::Uuid FLAT = Engine::Uuid{ 9 };
-		static constexpr Engine::Uuid UI = Engine::Uuid{ 10 };
+		static constexpr Engine::Shader DEFAULT{ 21 };
+		static constexpr Engine::Shader FLAT{ 22 };
+		static constexpr Engine::Shader UI{ 23 };
 	}
 
 	namespace MATERIAL
 	{
-		static constexpr Engine::Uuid WHITE = Engine::Uuid{ 12 };
-		static constexpr Engine::Uuid PINK = Engine::Uuid{ 13 };
+		static constexpr Engine::Material WHITE{ 31 };
+		static constexpr Engine::Material PINK{ 32 };
 	}
 
 	namespace SCENE
 	{
-		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 14 };
+		static constexpr Engine::Scene DEFAULT{ 41 };
 	}
 
 	namespace FONT
 	{
-		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 15 };
+		static constexpr Engine::Uuid DEFAULT = Engine::Uuid{ 51 };
 	}
 }

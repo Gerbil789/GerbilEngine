@@ -25,9 +25,9 @@ namespace Editor
     Enqueue(std::make_unique<DeleteEntityCommand>(entityId));
   }
 
-  void EditorCommandManager::OpenScene(Engine::Uuid sceneId)
+  void EditorCommandManager::OpenScene(Engine::Scene scene)
   {
-		Enqueue(std::make_unique<OpenSceneCommand>(sceneId));
+		Enqueue(std::make_unique<OpenSceneCommand>(scene));
   }
 
   void EditorCommandManager::Enqueue(std::unique_ptr<ICommand> cmd)

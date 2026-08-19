@@ -29,10 +29,10 @@ namespace Engine
 		std::vector<uint32_t> wireIndices;	//TODO: add compile time macro to disable in export game builds
 	};
 
-	class ENGINE_API Mesh : public Asset
+	class ENGINE_API MeshAsset : public Asset
 	{
 	public:
-		Mesh(const MeshSpecification& specification);
+		MeshAsset(const MeshSpecification& specification);
 
 		const std::vector<SubMesh>& GetSubMeshes() const { return m_SubMeshes; }
 		const wgpu::Buffer GetVertexBuffer() const { return vertexBuffer; }

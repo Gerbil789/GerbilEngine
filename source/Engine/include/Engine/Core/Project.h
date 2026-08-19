@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Core/UUID.h"
+#include "Engine/Asset/AssetHandle.h"
 #include <filesystem>
 
 namespace Engine
@@ -17,7 +17,7 @@ namespace Engine
 		const std::filesystem::path& GetAssetsDirectory() const { return m_AssetsDirectory; }
 		std::filesystem::path& GetAssetsDirectory() { return m_AssetsDirectory; }
 		const std::string& GetTitle() const { return m_Title; }
-		Engine::Uuid GetDefaultSceneId() const { return m_DefaultSceneId; }
+		Engine::Scene GetDefaultScene() const { return m_DefaultScene; } //TODO: rename it, default is not good name
 
 	private:
 		static Project s_ActiveProject;
@@ -25,6 +25,6 @@ namespace Engine
 		std::filesystem::path m_ProjectDirectory;
 		std::filesystem::path m_AssetsDirectory;
 		std::string m_Title = "Untitled";
-		Engine::Uuid m_DefaultSceneId;
+		Engine::Scene m_DefaultScene;
 	};
 }

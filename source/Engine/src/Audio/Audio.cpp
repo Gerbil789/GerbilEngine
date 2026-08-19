@@ -80,7 +80,7 @@ namespace Engine
         ma_sound_uninit(&voice.sound);
         ma_audio_buffer_uninit(&voice.buffer);
         voice.active = false;
-        voice.instance = 0;
+        voice.instance = {};
       }
     }
   }
@@ -100,24 +100,24 @@ namespace Engine
     ma_sound_set_position(&voice->sound, position.x, position.y, position.z);
   }
 
-  AudioInstance Audio::Play2D(Uuid clip)
+  AudioInstance Audio::Play2D(AudioClip clip)
   {
     if (!clip)
     {
       LOG_WARNING("AudioClip is invalid/null");
-      return Uuid{};
+      return {};
     }
 
-    AudioInstance newInstance = Uuid::Generate();
+    AudioInstance newInstance = AudioInstance{ Uuid::Generate() };
 
     Voice* voice = AcquireVoice(newInstance);
     if (!voice)
     {
       LOG_WARNING("No available audio voices");
-      return Uuid{};
+      return {};
     }
 
-    AudioClip& audioClip = Engine::AssetManager::GetAsset<AudioClip>(clip);
+    AudioClipAsset& audioClip = Engine::AssetManager::GetAsset(clip);
 
     ma_audio_buffer_config bufferConfig = ma_audio_buffer_config_init(
       ma_format_f32,
@@ -131,7 +131,7 @@ namespace Engine
     if (ma_audio_buffer_init(&bufferConfig, &voice->buffer) != MA_SUCCESS)
     {
       LOG_ERROR("Failed to init audio buffer");
-      return Uuid{};
+      return {};
     }
 
 
@@ -139,31 +139,31 @@ namespace Engine
     {
       LOG_ERROR("Failed to initialize audio voice");
       ma_audio_buffer_uninit(&voice->buffer); // Cleanup
-      return Uuid{};
+      return {};
     }
 
     ma_sound_start(&voice->sound);
     return newInstance;
   }
 
-  AudioInstance Audio::Play3D(Uuid clip, const glm::vec3& position)
+  AudioInstance Audio::Play3D(AudioClip clip, const glm::vec3& position)
   {
     if (!clip)
     {
       LOG_WARNING("AudioClip is invalid/null");
-			return Uuid{};
+			return {};
     }
 
-		AudioInstance newInstance = Uuid::Generate();
+    AudioInstance newInstance = AudioInstance{ Uuid::Generate() };
 
     Voice* voice = AcquireVoice(newInstance);
     if (!voice)
     {
       LOG_WARNING("No available audio voices");
-      return Uuid{};
+      return {};
     }
 
-    Engine::AudioClip& audioClip = Engine::AssetManager::GetAsset<Engine::AudioClip>(clip);
+    Engine::AudioClipAsset& audioClip = Engine::AssetManager::GetAsset<Engine::AudioClipAsset>(clip);
 
     ma_audio_buffer_config bufferConfig = ma_audio_buffer_config_init(
       ma_format_f32,
@@ -177,7 +177,7 @@ namespace Engine
     if (ma_audio_buffer_init(&bufferConfig, &voice->buffer) != MA_SUCCESS)
     {
       LOG_ERROR("Failed to init audio buffer");
-      return Uuid{};
+      return {};
     }
 
     // 2. Initialize the sound using the buffer as its source!
@@ -185,7 +185,7 @@ namespace Engine
     {
       LOG_ERROR("Failed to initialize audio voice");
       ma_audio_buffer_uninit(&voice->buffer); // Cleanup
-      return Uuid{};
+      return {};
     }
 
     // 3. Start playing
@@ -209,7 +209,7 @@ namespace Engine
       ma_sound_uninit(&voice->sound);
       ma_audio_buffer_uninit(&voice->buffer);
       voice->active = false;
-      voice->instance = 0;
+      voice->instance = {};
     }
   }
 
@@ -248,7 +248,7 @@ namespace Engine
       ma_sound_stop(&voice.sound);
       ma_sound_uninit(&voice.sound);
       voice.active = false;
-      voice.instance = 0;
+      voice.instance = {};
     }
   }
 }

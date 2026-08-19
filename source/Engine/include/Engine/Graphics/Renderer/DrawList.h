@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Engine/Core/UUID.h"
+#include "Engine/Asset/AssetHandle.h"
 #include <glm/glm.hpp>
 
 namespace Engine
 {
-	class Scene;
+	class SceneAsset;
 
 	struct DrawItem
 	{
-		Engine::Uuid meshId;
-		Engine::Uuid materialId;
+		Engine::Mesh mesh;
+		Engine::Material material;
 		uint32_t subMeshIndex;
 		uint32_t indexCount;
 		uint32_t firstIndex;
@@ -20,7 +20,7 @@ namespace Engine
 	class DrawList
 	{
 	public:
-		static DrawList CreateFromScene(Scene& scene);
+		static DrawList CreateFromScene(SceneAsset& scene);
 
 		const std::vector<DrawItem>& GetItems() const { return m_Items; }
 		const std::vector<glm::mat4>& GetTransforms() const { return m_Transforms; }

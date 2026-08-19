@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Engine/Asset/AssetHandle.h"
 #include <webgpu/webgpu_cpp.h>
 
 namespace Engine
@@ -7,7 +8,7 @@ namespace Engine
 	class TextureCube;
 
 	uint32_t GetMaxMipLevelCount(const wgpu::Extent3D& textureSize);
-	TextureCube EquirectangularToCubemap(Uuid equirectangularTexture);
+	TextureCube EquirectangularToCubemap(Texture2D equirectangularTexture);
 
 	void GenerateMipmaps(wgpu::Texture texture);
 }

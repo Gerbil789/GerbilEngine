@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	class Scene;
+	class SceneAsset;
 
 	class ENGINE_API Renderer
 	{
@@ -19,10 +19,10 @@ namespace Engine
 		void SetSize(float width, float height) { m_RenderContext.width = width; m_RenderContext.height = height; }
 		void SetColorTarget(wgpu::TextureView colorView);
 		void SetDepthTarget(wgpu::TextureView depthView);
-		void SetEnvironmentTexture(Uuid textureId);
+		void SetEnvironmentTexture(Texture2D texture);
 		const RenderContext& GetRenderContext() const { return m_RenderContext; }
 
-		void RenderScene(Scene& scene);
+		void RenderScene(SceneAsset& scene);
 
 		wgpu::TextureView GetTextureView() const;
 

@@ -43,14 +43,14 @@ namespace Engine
 		m_RenderContext.depthTarget = depthView;
 	}
 
-	void Renderer::SetEnvironmentTexture(Uuid textureId)
+	void Renderer::SetEnvironmentTexture(Texture2D texture)
 	{
-		if (!textureId)
+		if (!texture)
 		{
-			textureId = RESOURCES::TEXTURE::HDR;
+			texture = RESOURCES::TEXTURE::HDR;
 		}
 
-		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(textureId);
+		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(texture);
 		CreateEnvironmentBindGroup();
 	}
 
@@ -239,7 +239,7 @@ namespace Engine
 		m_RenderContext.depthTextureArrayView = texture.CreateView(&arrayViewDesc);
 	}
 
-	void Renderer::RenderScene(Scene& scene)
+	void Renderer::RenderScene(SceneAsset& scene)
 	{
 		m_RenderContext.scene = &scene;
 
@@ -251,8 +251,7 @@ namespace Engine
 
 		m_RenderContext.cameraComponent = cc; //TODO: do i need camera component in context?
 
-		float aspectRatio = m_RenderContext.width / m_RenderContext.height;
-		CameraSystem::Update(registry, aspectRatio);
+		CameraSystem::Update(registry, m_RenderContext.width / m_RenderContext.height);
 
 		ViewUniforms viewUniforms;
 		viewUniforms.view = cc.viewMatrix;

@@ -9,24 +9,24 @@
 
 namespace Engine
 {
-	Material::Material(const MaterialSpecification& spec)
+	MaterialAsset::MaterialAsset(const MaterialSpecification& spec)
 	{
-		SetShader(spec.shaderId);
+		SetShader(spec.shader);
 	}
 
-	void Material::SetShader(Uuid shaderId)
+	void MaterialAsset::SetShader(Shader shader)
 	{
-		m_ShaderId = shaderId;
+		m_Shader = shader;
 
 		m_Parameters.clear();
 		m_Textures.clear();
 
-		const Shader& shader = Engine::AssetManager::GetAsset<Shader>(shaderId);
+		const ShaderAsset& shaderAsset = Engine::AssetManager::GetAsset(shader);
 
-		m_UniformData.assign(shader.GetMaterialUniformBufferSize(), std::byte{});
+		m_UniformData.assign(shaderAsset.GetMaterialUniformBufferSize(), std::byte{});
 		CreateUniformBuffer();
 
-		for (const auto& binding : shader.GetMaterialBindings())
+		for (const auto& binding : shaderAsset.GetMaterialBindings())
 		{
 			if (std::holds_alternative<BufferBinding>(binding.data))
 			{
@@ -49,7 +49,7 @@ namespace Engine
 			}
 			else if (std::holds_alternative<TextureBinding>(binding.data))
 			{
-				SetTexture(binding.name, Uuid{});
+				SetTexture(binding.name, {});
 			}
 			//else if (std::holds_alternative<SamplerBinding>(binding.data))
 			//{
@@ -60,7 +60,7 @@ namespace Engine
 		CreateBindGroup();
 	}
 
-	const MaterialValue& Material::GetParameterVariant(const std::string& name) const
+	const MaterialValue& MaterialAsset::GetParameterVariant(const std::string& name) const
 	{
 		auto it = m_Parameters.find(name);
 		if (it != m_Parameters.end())
@@ -71,7 +71,7 @@ namespace Engine
 		throw std::runtime_error("Parameter not found: " + name);
 	}
 
-	void Material::SetTexture(const std::string& name, Uuid texture)
+	void MaterialAsset::SetTexture(const std::string& name, Texture2D texture)
 	{
 		if (!texture)
 		{
@@ -86,8 +86,8 @@ namespace Engine
 		}
 
 
-		Shader& shader = Engine::AssetManager::GetAsset<Shader>(m_ShaderId);
-		const Binding& binding = shader.GetBinding(name);
+		ShaderAsset& shaderAsset = Engine::AssetManager::GetAsset<ShaderAsset>(m_Shader);
+		const Binding& binding = shaderAsset.GetBinding(name);
 
 		if (!std::holds_alternative<TextureBinding>(binding.data))
 		{
@@ -99,30 +99,30 @@ namespace Engine
 		CreateBindGroup(); // recreate bind group to update texture
 	}
 
-	Uuid Material::GetTexture(const std::string& name) const
+	Texture2D MaterialAsset::GetTexture(const std::string& name) const
 	{
 		auto it = m_Textures.find(name);
 		if (it != m_Textures.end())
 		{
 			return it->second;
 		}
-		return Uuid{};
+		return {};
 	}
 
-	void Material::CreateUniformBuffer()
+	void MaterialAsset::CreateUniformBuffer()
 	{
 		wgpu::BufferDescriptor bufferDesc;
 		bufferDesc.label = "MaterialUniformBuffer"; //TODO: add material name
-		bufferDesc.size = Engine::AssetManager::GetAsset<Shader>(m_ShaderId).GetMaterialUniformBufferSize(); //TODO: pass size as parameter
+		bufferDesc.size = Engine::AssetManager::GetAsset<ShaderAsset>(m_Shader).GetMaterialUniformBufferSize(); //TODO: pass size as parameter
 		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 		m_UniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
 	}
 
-	void Material::CreateBindGroup()
+	void MaterialAsset::CreateBindGroup()
 	{
-		const Shader& shader = Engine::AssetManager::GetAsset<Shader>(m_ShaderId);
+		const ShaderAsset& shaderAsset = Engine::AssetManager::GetAsset<ShaderAsset>(m_Shader);
 
-		auto materialBindings = shader.GetMaterialBindings();
+		auto materialBindings = shaderAsset.GetMaterialBindings();
 		size_t bindingCount = std::ranges::distance(materialBindings);
 
 		std::vector<wgpu::BindGroupEntry> entries(bindingCount);
@@ -147,7 +147,7 @@ namespace Engine
 					m_Textures[binding.name] = RESOURCES::TEXTURE::WHITE; 
 				}
 
-				const Texture2D& tex = Engine::AssetManager::GetAsset<Texture2D>(m_Textures[binding.name]);
+				const Texture2DAsset& tex = Engine::AssetManager::GetAsset<Texture2DAsset>(m_Textures[binding.name]);
 				entry.textureView = tex.GetTextureView();
 			}
 			else if (std::holds_alternative<SamplerBinding>(binding.data))
@@ -158,22 +158,22 @@ namespace Engine
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
 		bindGroupDesc.label = "MaterialBindGroup";
-		bindGroupDesc.layout = shader.GetMaterialBindGroupLayout();
+		bindGroupDesc.layout = shaderAsset.GetMaterialBindGroupLayout();
 		bindGroupDesc.entryCount = entries.size();
 		bindGroupDesc.entries = entries.data();
 		m_BindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
 
 		PipelineSpecification spec;
-		spec.shaderId = m_ShaderId;
+		spec.shader = m_Shader;
 
 		m_Pipeline = PipelineCache::GetPipeline(spec);
 	}
 
 
 	template<typename T>
-	void Material::SetParameter(const std::string& paramName, const T& value)
+	void MaterialAsset::SetParameter(const std::string& paramName, const T& value)
 	{
-		Shader& shader = Engine::AssetManager::GetAsset<Shader>(m_ShaderId);
+		ShaderAsset& shader = Engine::AssetManager::GetAsset<ShaderAsset>(m_Shader);
 		const Binding& binding = shader.GetBinding("uMaterial");
 
 		if (!std::holds_alternative<BufferBinding>(binding.data))
@@ -202,9 +202,9 @@ namespace Engine
 		m_Parameters[paramName] = value;
 	}
 
-	template ENGINE_API void Material::SetParameter<float>(const std::string&, const float&);
-	template ENGINE_API void Material::SetParameter<glm::vec2>(const std::string&, const glm::vec2&);
-	template ENGINE_API void Material::SetParameter<glm::vec3>(const std::string&, const glm::vec3&);
-	template ENGINE_API void Material::SetParameter<glm::vec4>(const std::string&, const glm::vec4&);
-	template ENGINE_API void Material::SetParameter<glm::ivec2>(const std::string&, const glm::ivec2&);
+	template ENGINE_API void MaterialAsset::SetParameter<float>(const std::string&, const float&);
+	template ENGINE_API void MaterialAsset::SetParameter<glm::vec2>(const std::string&, const glm::vec2&);
+	template ENGINE_API void MaterialAsset::SetParameter<glm::vec3>(const std::string&, const glm::vec3&);
+	template ENGINE_API void MaterialAsset::SetParameter<glm::vec4>(const std::string&, const glm::vec4&);
+	template ENGINE_API void MaterialAsset::SetParameter<glm::ivec2>(const std::string&, const glm::ivec2&);
 }

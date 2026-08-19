@@ -9,7 +9,7 @@ class AudioPlayer : public Engine::Script
 public:
 
   PROPERTY(m_Clip, "Audio Clip")
-		Engine::AudioClipHandle m_Clip;
+		Engine::AudioClip m_Clip;
 
   PROPERTY(m_PlayOnAwake, "Play On Awake")
     bool m_PlayOnAwake = false;

@@ -3,86 +3,83 @@
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Asset/Resources.h"
 
+#include "Engine/Asset/Importer/TextureImporter.h"
+#include "Engine/Asset/Importer/MeshImporter.h"
+#include "Engine/Asset/Importer/ShaderImporter.h"
+#include "Engine/Asset/Importer/SceneImporter.h"
+#include "Engine/Asset/Importer/AudioImporter.h"
+#include "Engine/Asset/Serializer/MaterialSerializer.h"
+#include "Engine/Asset/Serializer/SceneSerializer.h"
+
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Core/Scene.h"
 #include "Engine/Audio/AudioClip.h"
-#include "Engine/Graphics/Font.h"
-
-#include "Engine/Asset/Importer/TextureImporter.h"
-#include "Engine/Asset/Importer/MeshImporter.h"
-#include "Engine/Asset/Importer/ShaderImporter.h"
-#include "Engine/Asset/Importer/SceneImporter.h"
-#include "Engine/Asset/Importer/AudioImporter.h"
-
-#include "Engine/Asset/Serializer/MaterialSerializer.h"
-#include "Engine/Asset/Serializer/SceneSerializer.h"
 
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/FileEvent.h"
 
 namespace Engine
 {
-  namespace 
+  namespace
   {
     AssetRegistry m_AssetRegistry;
-		std::filesystem::path m_AssetsDirectory;
+    std::filesystem::path m_AssetsDirectory;
 
-    std::unordered_map<Uuid, Texture2D> m_Textures;
-    std::unordered_map<Uuid, Mesh> m_Meshes;
-    std::unordered_map<Uuid, Shader> m_Shaders;
-    std::unordered_map<Uuid, Material> m_Materials;
-		std::unordered_map<Uuid, AudioClip> m_AudioClips;
-		std::unordered_map<Uuid, Scene> m_Scenes;
+    std::unordered_map<Texture2D, Texture2DAsset> m_Textures;
+    std::unordered_map<Mesh, MeshAsset> m_Meshes;
+    std::unordered_map<Shader, ShaderAsset> m_Shaders;
+    std::unordered_map<Material, MaterialAsset> m_Materials;
+    std::unordered_map<AudioClip, AudioClipAsset> m_AudioClips;
+    std::unordered_map<Scene, SceneAsset> m_Scenes;
 
     std::vector<Uuid> m_DirtySet;
 
-    template<typename T, typename ImporterFunc>
-    T& LoadAssetInternal(Uuid id, std::unordered_map<Uuid, T>& map, Uuid fallbackId, ImporterFunc importFunc)
+    template<typename Handle, typename Asset, typename ImporterFunc>
+    Asset& GetOrImport(Handle handle, Handle fallback, std::unordered_map<Handle, Asset>& map, ImporterFunc importer)
     {
-      if (auto it = map.find(id); it != map.end())
-      {
-        return it->second;
-      }
+      if (auto it = map.find(handle); it != map.end()) return it->second;
 
-      const Engine::AssetRecord& record = m_AssetRegistry.GetRecord(id);
-      if (!record) return map.at(fallbackId);
+      const Engine::AssetRecord& record = m_AssetRegistry.GetRecord(handle.id);
+      if (!record) return map.at(fallback);
 
-      auto path = m_AssetsDirectory / record.path;
-      std::optional<T> importedAsset = importFunc(path);
+      std::optional<Asset> importedAsset = importer(m_AssetsDirectory / record.path);
+      if (!importedAsset) return map.at(fallback);
 
-      if (importedAsset)
-      {
-        importedAsset->id = id;
-
-        auto [it, ok] = map.try_emplace(id, std::move(*importedAsset));
-        LOG_TRACE("Loaded asset '{}'", id);
-        return it->second;
-      }
-
-      LOG_ERROR("Asset import failed! '{}'", id);
-      return map.at(fallbackId);
+      importedAsset->id = handle.id;
+      auto [it, ok] = map.try_emplace(handle, std::move(*importedAsset));
+      return it->second;
     }
 
-    template<typename T, typename ImporterFunc>
-    void LoadBuiltInAsset(Uuid id, const std::string& filepath, std::unordered_map<Uuid, T>& map, ImporterFunc importFunc, const char* = nullptr)
+    template<typename Handle, typename Asset, typename ImporterFunc>
+    void ImportBuiltIn(Handle handle, const std::string& path, std::unordered_map<Handle, Asset>& map, ImporterFunc importer)
     {
-      auto importedAsset = importFunc(filepath);
-      if (importedAsset)
+      std::optional<Asset> asset = importer(path);
+      if (asset)
       {
-        importedAsset->id = id;
-
-        map.insert_or_assign(id, std::move(*importedAsset));
-        LOG_TRACE("Loaded built-in asset '{}' from '{}'", id, filepath);
+        asset->id = handle.id;
+        map.try_emplace(handle, std::move(*asset));
       }
       else
       {
-        LOG_ERROR("Failed to load built-in asset from '{}'", filepath);
+        LOG_ERROR("Failed to load built-in asset: {}", path);
       }
     }
+
+    template<typename Handle>
+    void LoadBuiltInAsset(Handle handle, const std::string& path)
+    {
+      if constexpr (std::is_same_v<Handle, Texture2D>) ImportBuiltIn(handle, path, m_Textures, TextureImporter::LoadTexture2D);
+      else if constexpr (std::is_same_v<Handle, Mesh>) ImportBuiltIn(handle, path, m_Meshes, MeshImporter::LoadMesh);
+      else if constexpr (std::is_same_v<Handle, Shader>) ImportBuiltIn(handle, path, m_Shaders, ShaderImporter::LoadShader);
+      else if constexpr (std::is_same_v<Handle, Material>) ImportBuiltIn(handle, path, m_Materials, MaterialSerializer::Deserialize);
+      else if constexpr (std::is_same_v<Handle, AudioClip>) ImportBuiltIn(handle, path, m_AudioClips, AudioImporter::LoadAudioClip);
+      else if constexpr (std::is_same_v<Handle, Scene>) ImportBuiltIn(handle, path, m_Scenes, SceneImporter::LoadScene);
+    }
   }
+ 
 
   void AssetManager::Initialize(const std::filesystem::path& projectDirectory)
   {
@@ -106,51 +103,48 @@ namespace Engine
       });
 
 
-
-
-
-    auto emptyMesh = Mesh(MeshSpecification{});
-    emptyMesh.id = RESOURCES::MESH::EMPTY;
+    auto emptyMesh = MeshAsset(MeshSpecification{});
+    emptyMesh.id = Uuid{ RESOURCES::MESH::EMPTY };
     m_Meshes.insert_or_assign(RESOURCES::MESH::EMPTY, std::move(emptyMesh));
 
     {
       TextureSpecification spec;
       constexpr uint32_t whitePixel = 0xFFFFFFFF;
-      Texture2D whiteTexture(spec, &whitePixel);
-      whiteTexture.id = RESOURCES::TEXTURE::WHITE;
+      Texture2DAsset whiteTexture(spec, &whitePixel);
+      whiteTexture.id = Uuid{ RESOURCES::TEXTURE::WHITE };
       m_Textures.insert_or_assign(RESOURCES::TEXTURE::WHITE, std::move(whiteTexture));
     }
 
     {
       TextureSpecification spec;
       constexpr uint8_t normalPixel[4] = { 128, 128, 255, 255 }; // Blue-ish
-      Texture2D normalTexture(spec, &normalPixel);
-      normalTexture.id = RESOURCES::TEXTURE::NORMAL;
+      Texture2DAsset normalTexture(spec, &normalPixel);
+      normalTexture.id = Uuid{ RESOURCES::TEXTURE::NORMAL };
       m_Textures.insert_or_assign(RESOURCES::TEXTURE::NORMAL, std::move(normalTexture));
     }
 
-    LoadBuiltInAsset(RESOURCES::MESH::CUBE, "resources/models/cube.glb", m_Meshes, MeshImporter::LoadMesh, "Cube");
-    LoadBuiltInAsset(RESOURCES::MESH::SPHERE, "resources/models/sphere.glb", m_Meshes, MeshImporter::LoadMesh, "Sphere");
-    LoadBuiltInAsset(RESOURCES::TEXTURE::HDR, "resources/hdr/lebombo_4k.hdr", m_Textures, TextureImporter::LoadTexture2D, "HDR Environment");
-    LoadBuiltInAsset(RESOURCES::TEXTURE::EDITOR_ICONS, "resources/icons/icons.png", m_Textures, TextureImporter::LoadTexture2D, "Editor Icons");
-    LoadBuiltInAsset(RESOURCES::SHADER::DEFAULT, "resources/shaders/pink.wgsl", m_Shaders, ShaderImporter::LoadShader, "Pink Shader");
-    LoadBuiltInAsset(RESOURCES::SHADER::FLAT, "resources/shaders/flat.wgsl", m_Shaders, ShaderImporter::LoadShader, "Flat Shader");
-    LoadBuiltInAsset(RESOURCES::SHADER::UI, "resources/shaders/ui.wgsl", m_Shaders, ShaderImporter::LoadShader, "UI Shader");
-    LoadBuiltInAsset(RESOURCES::SCENE::DEFAULT, "resources/scenes/default.scene", m_Scenes, SceneImporter::LoadScene, "Default Scene");
-    LoadBuiltInAsset(RESOURCES::TEXTURE::DEFAULT_FONT_ATLAS, "resources/fonts/atlas.png", m_Textures, TextureImporter::LoadTexture2D, "Default Font Atlas");
+    LoadBuiltInAsset(RESOURCES::MESH::CUBE, "resources/models/cube.glb");
+    LoadBuiltInAsset(RESOURCES::MESH::SPHERE, "resources/models/sphere.glb");
+    LoadBuiltInAsset(RESOURCES::TEXTURE::HDR, "resources/hdr/lebombo_4k.hdr");
+    LoadBuiltInAsset(RESOURCES::TEXTURE::EDITOR_ICONS, "resources/icons/icons.png");
+    LoadBuiltInAsset(RESOURCES::SHADER::DEFAULT, "resources/shaders/pink.wgsl");
+    LoadBuiltInAsset(RESOURCES::SHADER::FLAT, "resources/shaders/flat.wgsl");
+    LoadBuiltInAsset(RESOURCES::SHADER::UI, "resources/shaders/ui.wgsl");
+    LoadBuiltInAsset(RESOURCES::SCENE::DEFAULT, "resources/scenes/default.scene");
+    LoadBuiltInAsset(RESOURCES::TEXTURE::DEFAULT_FONT_ATLAS, "resources/fonts/atlas.png");
 
     {
-      MaterialSpecification spec{ .shaderId = RESOURCES::SHADER::FLAT };
-      Material whiteMaterial = Material(spec);
+      MaterialSpecification spec{ RESOURCES::SHADER::FLAT };
+      MaterialAsset whiteMaterial = MaterialAsset(spec);
       whiteMaterial.SetParameter("albedo", glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f });
-      whiteMaterial.id = RESOURCES::MATERIAL::WHITE;
+      whiteMaterial.id = Uuid{ RESOURCES::MATERIAL::WHITE };
       m_Materials.insert_or_assign(RESOURCES::MATERIAL::WHITE, std::move(whiteMaterial));
     }
 
     {
-      MaterialSpecification spec{ .shaderId = RESOURCES::SHADER::DEFAULT };
-      Material pinkMaterial = Material(spec);
-      pinkMaterial.id = RESOURCES::MATERIAL::PINK;
+      MaterialSpecification spec{ RESOURCES::SHADER::DEFAULT };
+      MaterialAsset pinkMaterial = MaterialAsset(spec);
+      pinkMaterial.id = Uuid{ RESOURCES::MATERIAL::PINK };
       m_Materials.insert_or_assign(RESOURCES::MATERIAL::PINK, std::move(pinkMaterial));
     }
   }
@@ -165,45 +159,24 @@ namespace Engine
     return m_AssetRegistry.Exists(id);
   }
 
-  template<typename T>
-  T& AssetManager::GetAsset(Uuid id)
+  template<typename Asset>
+  Asset& AssetManager::GetAsset(AssetHandle<Asset> handle)
   {
-    if constexpr (std::is_same_v<T, Texture2D>)
-    {
-      return LoadAssetInternal(id, m_Textures, RESOURCES::TEXTURE::WHITE, TextureImporter::LoadTexture2D);
-    }
-    else if constexpr (std::is_same_v<T, Mesh>)
-    {
-      return LoadAssetInternal(id, m_Meshes, RESOURCES::MESH::EMPTY, MeshImporter::LoadMesh);
-    }
-    else if constexpr (std::is_same_v<T, Shader>)
-    {
-      return LoadAssetInternal(id, m_Shaders, RESOURCES::SHADER::FLAT, ShaderImporter::LoadShader);
-    }
-    else if constexpr (std::is_same_v<T, Material>)
-    {
-      return LoadAssetInternal(id, m_Materials, RESOURCES::MATERIAL::WHITE, MaterialSerializer::Deserialize);
-    }
-    else if constexpr (std::is_same_v<T, AudioClip>)
-    {
-      return LoadAssetInternal(id, m_AudioClips, Uuid{}, AudioImporter::LoadAudioClip);
-    }
-    else if constexpr (std::is_same_v<T, Scene>)
-    {
-      return LoadAssetInternal(id, m_Scenes, RESOURCES::SCENE::DEFAULT, SceneImporter::LoadScene);
-    }
-    else
-    {
-      static_assert(false, "ERROR: Unsupported asset type requested in GetAsset!");
-    }
+    if constexpr (std::is_same_v<Asset, Texture2DAsset>) return GetOrImport(handle, RESOURCES::TEXTURE::WHITE, m_Textures, TextureImporter::LoadTexture2D);
+    else if constexpr (std::is_same_v<Asset, MeshAsset>) return GetOrImport(handle, RESOURCES::MESH::EMPTY, m_Meshes, MeshImporter::LoadMesh);
+    else if constexpr (std::is_same_v<Asset, ShaderAsset>) return GetOrImport(handle, RESOURCES::SHADER::FLAT, m_Shaders, ShaderImporter::LoadShader);
+    else if constexpr (std::is_same_v<Asset, MaterialAsset>) return GetOrImport(handle, RESOURCES::MATERIAL::WHITE, m_Materials, MaterialSerializer::Deserialize);
+    else if constexpr (std::is_same_v<Asset, AudioClipAsset>) return GetOrImport(handle, AudioClip{}, m_AudioClips, AudioImporter::LoadAudioClip);
+    else if constexpr (std::is_same_v<Asset, SceneAsset>) return GetOrImport(handle, RESOURCES::SCENE::DEFAULT, m_Scenes, SceneImporter::LoadScene);
+    else static_assert(false, "Unsupported asset type requested in GetAsset!");
   }
 
-  template ENGINE_API Texture2D& AssetManager::GetAsset<Texture2D>(Uuid id);
-  template ENGINE_API Mesh& AssetManager::GetAsset<Mesh>(Uuid id);
-  template ENGINE_API Shader& AssetManager::GetAsset<Shader>(Uuid id);
-  template ENGINE_API Material& AssetManager::GetAsset<Material>(Uuid id);
-  template ENGINE_API AudioClip& AssetManager::GetAsset<AudioClip>(Uuid id);
-  template ENGINE_API Scene& AssetManager::GetAsset<Scene>(Uuid id);
+  template ENGINE_API Texture2DAsset& AssetManager::GetAsset(Texture2D texture);
+  template ENGINE_API MeshAsset& AssetManager::GetAsset(Mesh mesh);
+  template ENGINE_API ShaderAsset& AssetManager::GetAsset(Shader shader);
+  template ENGINE_API MaterialAsset& AssetManager::GetAsset(Material material);
+  template ENGINE_API AudioClipAsset& AssetManager::GetAsset(AudioClip clip);
+  template ENGINE_API SceneAsset& AssetManager::GetAsset(Scene scene);
 
   AssetType AssetManager::GetAssetType(Uuid id)
   {
@@ -215,63 +188,44 @@ namespace Engine
 		return m_AssetRegistry.GetRecord(id).path;
   }
 
-  std::vector<Uuid> AssetManager::GetAssetsOfType(AssetType type)
+  template<typename Handle>
+  Handle AssetManager::CreateAsset<Handle>(const std::filesystem::path& path)
   {
-    switch(type)
+    if constexpr (std::is_same_v<Handle, Material>)
     {
-    case AssetType::Texture: return m_Textures | std::views::keys | std::ranges::to<std::vector<Uuid>>(); break;
-		case AssetType::Mesh: return m_Meshes | std::views::keys | std::ranges::to<std::vector<Uuid>>(); break;
-		case AssetType::Shader: return m_Shaders | std::views::keys | std::ranges::to<std::vector<Uuid>>(); break;
-		case AssetType::Material: return m_Materials | std::views::keys | std::ranges::to<std::vector<Uuid>>(); break;
-		case AssetType::Audio: return m_AudioClips | std::views::keys | std::ranges::to<std::vector<Uuid>>(); break;
-		case AssetType::Scene: return m_Scenes | std::views::keys | std::ranges::to<std::vector<Uuid>>(); break;
-		default: return {}; break;
+      Material handle{ Uuid::Generate() };
+
+      MaterialAsset material({});
+      material.id = handle.id;
+
+      m_Materials.insert_or_assign(handle, std::move(material));
+
+      m_AssetRegistry.AddRecord(handle.id, path);
+      MaterialSerializer::Serialize(handle, path);
+
+      LOG_TRACE("Created material asset '{}'", handle.id);
+
+      return handle;
+    }
+    else if constexpr (std::is_same_v<Handle, Scene>)
+    {
+      Scene handle{ Uuid::Generate() };
+
+      SceneAsset scene;
+      scene.id = handle.id;
+
+      m_Scenes.insert_or_assign(handle, std::move(scene));
+
+      m_AssetRegistry.AddRecord(handle.id, path);
+      SceneSerializer::Serialize(handle, path);
+
+      LOG_TRACE("Created scene asset '{}'", handle.id);
+      return handle;
     }
   }
 
-  template<typename T>
-  T& AssetManager::CreateAsset<T>(const std::filesystem::path& path)
-  {
-    if constexpr (std::is_same_v<T, Material>)
-    {
-      Uuid id = Uuid::Generate();
-
-      MaterialSpecification spec
-      {
-        .shaderId = RESOURCES::SHADER::DEFAULT,
-      };
-
-      Material material(spec);
-      material.id = id;
-
-      auto [insertedIt, success] = m_Materials.insert_or_assign(material.id, std::move(material));
-
-      m_AssetRegistry.AddRecord(id, path); // save record in assetRegistry.json
-      MaterialSerializer::Serialize(id, path); // immediately serialize to create .mat file
-
-      LOG_TRACE("Created material asset '{}'", id);
-
-      return insertedIt->second;
-    }
-    else if constexpr (std::is_same_v<T, Scene>)
-    {
-      Uuid id = Uuid::Generate();
-
-      Scene scene;
-      scene.id = id;
-
-      auto [insertedIt, success] = m_Scenes.insert_or_assign(id, std::move(scene));
-
-      m_AssetRegistry.AddRecord(id, path); // save record in assetRegistry.json
-      SceneSerializer::Serialize(id, path); // immediately serialize to create .scene file
-
-      LOG_TRACE("Created scene asset '{}'", id);
-      return insertedIt->second;
-    }
-  }
-
-	template ENGINE_API Material& AssetManager::CreateAsset<Material>(const std::filesystem::path& path);
-	template ENGINE_API Scene& AssetManager::CreateAsset<Scene>(const std::filesystem::path& path);
+	template ENGINE_API Material AssetManager::CreateAsset(const std::filesystem::path& path);
+	template ENGINE_API Scene AssetManager::CreateAsset(const std::filesystem::path& path);
 
 
 
@@ -285,7 +239,7 @@ namespace Engine
 
   void AssetManager::SaveDirtyAssets()
   {
-    for (const auto& id : m_DirtySet)
+    for (Uuid id : m_DirtySet)
     {
       const auto& record = m_AssetRegistry.GetRecord(id);
 
@@ -293,7 +247,7 @@ namespace Engine
       {
       case Engine::AssetType::Material:
       {
-        Engine::MaterialSerializer::Serialize(record.id, record.path);
+        Engine::MaterialSerializer::Serialize(Material{ record.id }, record.path);
         break;
       }
       }

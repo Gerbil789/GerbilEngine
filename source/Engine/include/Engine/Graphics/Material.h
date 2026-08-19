@@ -1,9 +1,11 @@
 #pragma once
 
+#include "Engine/Asset/AssetHandle.h"
 #include "Engine/Asset/Asset.h"
 #include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/Pipeline.h"
+#include "Engine/Asset/Resources.h"
 #include <variant>
 #include <glm/glm.hpp>
 
@@ -13,17 +15,17 @@ namespace Engine
 
 	struct MaterialSpecification 
 	{
-		Uuid shaderId;
+		Shader shader = RESOURCES::SHADER::DEFAULT;
 	};
 
-	class ENGINE_API Material : public Asset
+	class ENGINE_API MaterialAsset : public Asset
 	{
 	public:
-		Material() = default;
-		Material(const MaterialSpecification& spec);
+		MaterialAsset() = default;
+		MaterialAsset(const MaterialSpecification& spec);
 
-		const Uuid GetShader() const { return m_ShaderId; }
-		void SetShader(Uuid shaderId);
+		const Shader GetShader() const { return m_Shader; }
+		void SetShader(Shader shaderId);
 
 		void SetTextureFilter(TextureFilter filter) { m_TextureFilter = filter; CreateBindGroup(); }
 		void SetTextureWrap(TextureWrap wrap) { m_TextureWrap = wrap; CreateBindGroup(); }
@@ -31,13 +33,13 @@ namespace Engine
 		TextureFilter GetTextureFilter() const { return m_TextureFilter; }
 		TextureWrap GetTextureWrap() const { return m_TextureWrap; }
 
-		void SetTexture(const std::string& name, Uuid texture); //TODO: make generic SetParameter that can handle textures too
-		Uuid GetTexture(const std::string& name) const;
+		void SetTexture(const std::string& name, Texture2D texture); //TODO: make generic SetParameter that can handle textures too
+		Texture2D GetTexture(const std::string& name) const;
 
 		wgpu::BindGroup GetBindGroup() const { return m_BindGroup; }
 		wgpu::Buffer GetUniformBuffer() const { return m_UniformBuffer; }
 		const std::vector<std::byte>& GetUniformData() const { return m_UniformData; }
-		const std::unordered_map<std::string, Uuid>& GetTextures() const { return m_Textures; }
+		const std::unordered_map<std::string, Texture2D>& GetTextures() const { return m_Textures; }
 		const std::unordered_map<std::string, MaterialValue>& GetParameters() const { return m_Parameters; }
 
 		wgpu::RenderPipeline GetPipeline() const { return m_Pipeline; }
@@ -52,9 +54,9 @@ namespace Engine
 		void CreateBindGroup();
 
 	private:
-		Uuid m_ShaderId;
+		Shader m_Shader;
 		std::vector<std::byte> m_UniformData; // parameters data packed according to shader layout (material uniform layout)
-		std::unordered_map<std::string, Uuid> m_Textures;
+		std::unordered_map<std::string, Texture2D> m_Textures;
 
 		wgpu::BindGroup m_BindGroup;
 		wgpu::Buffer m_UniformBuffer; 

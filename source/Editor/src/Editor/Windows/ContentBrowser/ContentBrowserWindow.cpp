@@ -15,7 +15,7 @@
 
 namespace Engine
 {
-	class Material;
+	class MaterialAsset;
 }
 
 namespace Editor
@@ -355,7 +355,7 @@ namespace Editor
 								switch (item.AssetType)
 								{
 								case Engine::AssetType::Scene:
-									EditorCommandManager::OpenScene(item.AssetId);
+									EditorCommandManager::OpenScene(Engine::Scene{ item.AssetId });
 									break;
 								}
 							}

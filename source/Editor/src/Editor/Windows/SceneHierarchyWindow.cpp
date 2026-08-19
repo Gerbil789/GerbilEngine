@@ -25,7 +25,7 @@ namespace Editor
 		return false;
 	}
 
-	void DrawEntityNode(Engine::Scene& scene, entt::registry& registry, entt::entity entity)
+	void DrawEntityNode(Engine::SceneAsset& scene, entt::registry& registry, entt::entity entity)
 	{
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
 
@@ -197,7 +197,7 @@ namespace Editor
 
 		ImGui::Begin("Scene Hierarchy");
 
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
 		entt::registry& registry = scene.GetRegistry();
 
 		const std::vector<entt::entity>& rootEntities = scene.GetRootEntities();

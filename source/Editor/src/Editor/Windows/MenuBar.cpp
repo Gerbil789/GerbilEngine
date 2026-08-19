@@ -27,15 +27,15 @@ namespace Editor
 
 	inline void SaveScene()
 	{
-		Engine::Uuid sceneId = Engine::SceneManager::GetActiveScene();
-		auto& path = Engine::AssetManager::GetAssetPath(sceneId);
+		Engine::Scene scene = Engine::SceneManager::GetActiveScene();
+		auto& path = Engine::AssetManager::GetAssetPath(scene.id);
 
 		//if (path.empty())
 		//{
 		//	path = Editor::FileDialog::SelectPath({ {"Scene Files", "*.scene"} }, "scene"); //prompt user to select path
 		//}
 
-		Engine::SceneSerializer::Serialize(sceneId, Engine::Project::GetActive().GetAssetsDirectory() / path);
+		Engine::SceneSerializer::Serialize(scene, Engine::Project::GetActive().GetAssetsDirectory() / path);
 	}
 
 	static const std::vector<MenuCategory> MainMenuBar

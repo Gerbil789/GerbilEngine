@@ -34,7 +34,7 @@ namespace Engine
 		project.m_ProjectDirectory = path.parent_path();
 		project.m_AssetsDirectory = project.m_ProjectDirectory / "Assets";
 		project.m_Title = json.title;
-		project.m_DefaultSceneId = Engine::Uuid{json.startScene};
+		project.m_DefaultScene = Engine::Scene{json.startScene};
 
 		LOG_INFO("Loaded project '{}' from {}", project.m_Title, path);
 		s_ActiveProject = project;
@@ -49,7 +49,7 @@ namespace Engine
 	{
 		ProjectConfigJSON json;
 		json.title = m_Title;
-		json.startScene = static_cast<uint64_t>(m_DefaultSceneId);
+		json.startScene = static_cast<uint64_t>(m_DefaultScene);
 
 		const std::filesystem::path path = m_ProjectDirectory / "project.json";
 		std::string buffer;

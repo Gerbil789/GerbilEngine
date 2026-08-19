@@ -18,6 +18,12 @@ struct glz::meta<glm::vec4> { static constexpr auto value = array(&glm::vec4::x,
 template <>
 struct glz::meta<Engine::Uuid> { static constexpr auto value = [](auto& uuid) -> uint64_t& { return reinterpret_cast<uint64_t&>(uuid); }; };
 
+template <>
+struct glz::meta<Engine::Mesh> { static constexpr auto value = [](auto& mesh) -> uint64_t& { return reinterpret_cast<uint64_t&>(mesh); }; };
+
+template <>
+struct glz::meta<Engine::Material> { static constexpr auto value = [](auto& material) -> uint64_t& { return reinterpret_cast<uint64_t&>(material); }; };
+
 namespace Engine
 {
 	struct HierarchyJSON
@@ -125,8 +131,8 @@ namespace Engine
 		// Collider
 		if (registry.any_of<ColliderComponent>(entity))
 		{
-			const auto& c = registry.get<ColliderComponent>(entity);
-			eJson.collider = ColliderComponentJSON{ c.collisionMeshId, static_cast<uint32_t>(c.type), c.isTrigger };
+			const auto& cc = registry.get<ColliderComponent>(entity);
+			eJson.collider = ColliderComponentJSON{ cc.collisionMesh.id, static_cast<uint32_t>(cc.type), cc.isTrigger };
 		}
 
 		// Camera
@@ -185,16 +191,16 @@ namespace Engine
 					break;
 
 				case ScriptFieldType::Texture:
-					dst = std::to_string(static_cast<uint64_t>(field.GetValue<Texture2DHandle>(instance).id));
+					dst = std::to_string(static_cast<uint64_t>(field.GetValue<Texture2D>(instance).id));
 					break;
 				case ScriptFieldType::AudioClip:
-					dst = std::to_string(static_cast<uint64_t>(field.GetValue<AudioClipHandle>(instance).id));
+					dst = std::to_string(static_cast<uint64_t>(field.GetValue<AudioClip>(instance).id));
 					break;
 				case ScriptFieldType::Mesh:
-					dst = std::to_string(static_cast<uint64_t>(field.GetValue<MeshHandle>(instance).id));
+					dst = std::to_string(static_cast<uint64_t>(field.GetValue<Mesh>(instance).id));
 					break;
 				case ScriptFieldType::Material:
-					dst = std::to_string(static_cast<uint64_t>(field.GetValue<MaterialHandle>(instance).id));
+					dst = std::to_string(static_cast<uint64_t>(field.GetValue<Material>(instance).id));
 					break;
 
 				default:
@@ -216,9 +222,9 @@ namespace Engine
 		}
 	}
 
-	void SceneSerializer::Serialize(Uuid id, const std::filesystem::path& path)
+	void SceneSerializer::Serialize(Scene scene, const std::filesystem::path& path)
 	{
-		auto& scene = AssetManager::GetAsset<Scene>(id);
+		auto& sceneAsset = AssetManager::GetAsset(scene);
 
 		if (path.extension() != ".json" && path.extension() != ".scene")
 		{
@@ -226,11 +232,11 @@ namespace Engine
 			return;
 		}
 
-		entt::registry& registry = scene.GetRegistry();
+		entt::registry& registry = sceneAsset.GetRegistry();
 
 		std::vector<EntityJSON> sceneData;
 
-		const auto& roots = scene.GetRootEntities();
+		const auto& roots = sceneAsset.GetRootEntities();
 		for (entt::entity root : roots)
 		{
 			SerializeEntityRecursive(registry, root, sceneData);
@@ -243,7 +249,7 @@ namespace Engine
 		}
 	}
 
-	std::optional<Scene> SceneSerializer::Deserialize(const std::filesystem::path& path)
+	std::optional<SceneAsset> SceneSerializer::Deserialize(const std::filesystem::path& path)
 	{
 		if (path.extension() != ".json" && path.extension() != ".scene")
 		{
@@ -261,7 +267,7 @@ namespace Engine
 			return std::nullopt;
 		}
 
-		Scene scene;
+		SceneAsset scene;
 		scene.SetEnvironmentTexture(RESOURCES::TEXTURE::HDR); //TODO: store in scene file
 
 		entt::registry& registry = scene.GetRegistry();
@@ -326,7 +332,7 @@ namespace Engine
 			{
 				auto& cComp = registry.emplace<ColliderComponent>(handle);
 				const auto& cJson = eJson.collider.value();
-				cComp.collisionMeshId = cJson.mesh;
+				cComp.collisionMesh = Mesh{ cJson.mesh };
 				cComp.type = static_cast<BodyType>(cJson.type);
 				cComp.isTrigger = cJson.isTrigger;
 			}
@@ -400,22 +406,22 @@ namespace Engine
 
 					case ScriptFieldType::Texture:
 						if (node.is_string())
-							field.SetValue<Texture2DHandle>(sComp.instance, Texture2DHandle{ .id = Uuid{ std::stoull(node.get_string()) } });
+							field.SetValue<Texture2D>(sComp.instance, Texture2D{ Uuid{ std::stoull(node.get_string()) } });
 						break;
 
 					case ScriptFieldType::AudioClip:
 						if (node.is_string())
-							field.SetValue<AudioClipHandle>(sComp.instance, AudioClipHandle{ .id = Uuid{ std::stoull(node.get_string()) } });
+							field.SetValue<AudioClip>(sComp.instance, AudioClip{ Uuid{ std::stoull(node.get_string()) } });
 						break;
 
 					case ScriptFieldType::Mesh:
 						if (node.is_string())
-							field.SetValue<MeshHandle>(sComp.instance, MeshHandle{ .id = Uuid{ std::stoull(node.get_string()) } });
+							field.SetValue<Mesh>(sComp.instance, Mesh{ Uuid{ std::stoull(node.get_string()) } });
 						break;
 
 					case ScriptFieldType::Material:
 						if (node.is_string())
-							field.SetValue<MaterialHandle>(sComp.instance, MaterialHandle{ .id = Uuid{ std::stoull(node.get_string()) } });
+							field.SetValue<Material>(sComp.instance, Material{ Uuid{ std::stoull(node.get_string()) } });
 						break;
 					default:
 						LOG_WARNING("Unsupported script field type for deserialization: {}", static_cast<uint32_t>(field.type));

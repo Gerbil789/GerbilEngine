@@ -7,17 +7,17 @@
 
 namespace Engine
 {
-	class ENGINE_API Scene : public Asset
+	class ENGINE_API SceneAsset : public Asset
 	{
 	public:
-		Scene() = default;
-		~Scene();
+		SceneAsset() = default;
+		~SceneAsset();
 
-		Scene(Scene&&) noexcept = default;
-		Scene& operator=(Scene&&) noexcept = default;
+		SceneAsset(SceneAsset&&) noexcept = default;
+		SceneAsset& operator=(SceneAsset&&) noexcept = default;
 
-		Scene(const Scene&) = delete;
-		Scene& operator=(const Scene&) = delete;
+		SceneAsset(const SceneAsset&) = delete;
+		SceneAsset& operator=(const SceneAsset&) = delete;
 
 
 		//TODO: auto insert into root if not parent specified
@@ -50,17 +50,17 @@ namespace Engine
 		void SetActiveCamera(entt::entity entity);
 		entt::entity GetActiveCamera();
 
-		Uuid GetEnvironmentTexture() const { return m_EnvironmentTextureId; }
-		void SetEnvironmentTexture(Uuid textureId) { m_EnvironmentTextureId = textureId; }
+		Texture2D GetEnvironmentTexture() const { return m_EnvironmentTexture; }
+		void SetEnvironmentTexture(Texture2D texture) { m_EnvironmentTexture = texture; }
 
 	private:
 		entt::registry m_Registry;
 		std::unordered_map<Engine::Uuid, entt::entity> m_EntityMap;
 		std::vector<entt::entity> m_RootEntities;
 
-		entt::entity m_CameraEntity;
+		entt::entity m_CameraEntity = entt::null;
 
-		Uuid m_EnvironmentTextureId;
+		Texture2D m_EnvironmentTexture;
 
 	private:
 		friend class SceneSerializer;

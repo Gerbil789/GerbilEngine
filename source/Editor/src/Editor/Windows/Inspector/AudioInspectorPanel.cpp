@@ -9,18 +9,18 @@ namespace Editor
 {
 	namespace
 	{
-		Engine::Uuid m_AudioClip;
-		Engine::Uuid m_Instance;
+		Engine::AudioClip m_AudioClip;
+		Engine::AudioInstance m_Instance;
 	}
 
-	void AudioInspectorPanel::Draw(Engine::Uuid id)
+	void AudioInspectorPanel::Draw(Engine::AudioClip clip)
 	{
-		if(id != m_AudioClip)
+		if(clip != m_AudioClip)
 		{
 			Engine::Audio::Stop(m_Instance);
 
-			m_AudioClip = id;
-			m_Instance = Engine::Uuid{};
+			m_AudioClip = clip;
+			m_Instance = {};
 		}
 
 

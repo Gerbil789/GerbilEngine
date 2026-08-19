@@ -17,17 +17,17 @@ void BattleControllerScript::OnStart()
   if(m_Entity.HasComponent<Engine::MeshComponent>())
   {
     Engine::MeshComponent& meshComp = m_Entity.GetComponent<Engine::MeshComponent>();
-    meshComp.meshId = m_TileMesh.id;
-    meshComp.materials = { m_TileMaterial.id };
+    meshComp.mesh = m_TileMesh;
+    meshComp.materials = { m_TileMaterial };
   }
   else
   {
     Engine::MeshComponent& meshComp = m_Entity.AddComponent<Engine::MeshComponent>();
-		meshComp.meshId = m_TileMesh.id;
-		meshComp.materials = { m_TileMaterial.id };
+		meshComp.mesh = m_TileMesh;
+		meshComp.materials = { m_TileMaterial };
 	}
 
-	Engine::AssetManager::GetAsset<Engine::Material>(m_TileMaterial.id).SetParameter("tiling", glm::vec2(m_GridWidth, m_GridHeight));
+	Engine::AssetManager::GetAsset(m_TileMaterial).SetParameter("tiling", glm::vec2(m_GridWidth, m_GridHeight));
 
 
 	Engine::TransformComponent& transform = m_Entity.GetComponent<Engine::TransformComponent>();
@@ -43,7 +43,8 @@ void BattleControllerScript::OnStart()
 void BattleControllerScript::OnUpdate()
 {
 	gridInteractionSystem.Update();
-  m_TileMaterial.Get().SetParameter("hoveredTile", GameContext::mousePosition);
+  auto& mat = Engine::AssetManager::GetAsset(m_TileMaterial);
+  mat.SetParameter("hoveredTile", GameContext::mousePosition);
 
 
   //if (m_combatManager)

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Engine/Core/Uuid.h"
+#include "Engine/Asset/AssetHandle.h"
 
 namespace Editor
 {
 	class ShaderInspectorPanel
 	{
 	public:
-		void Draw(Engine::Uuid id);
+		void Draw(Engine::Shader shader);
 	};
 }

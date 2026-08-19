@@ -33,7 +33,7 @@ namespace Engine
     }
   }
 
-	void TransformSystem::Update(Scene& scene)
+	void TransformSystem::Update(SceneAsset& scene)
 	{
 		auto& registry = scene.GetRegistry();
 

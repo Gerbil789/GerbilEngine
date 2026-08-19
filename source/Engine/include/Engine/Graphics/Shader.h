@@ -7,10 +7,10 @@
 #include <stdexcept>
 namespace Engine
 {
-	class Shader : public Asset
+	class ShaderAsset : public Asset
 	{
 	public:
-		Shader(const std::string& source);
+		ShaderAsset(const std::string& source);
 
 		size_t GetMaterialUniformBufferSize() const { return m_MaterialUniformBufferSize; }
 		wgpu::BindGroupLayout GetMaterialBindGroupLayout() const { return m_MaterialBindGroupLayout; }

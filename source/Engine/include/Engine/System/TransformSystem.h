@@ -8,6 +8,6 @@ namespace Engine
 	class ENGINE_API TransformSystem
 	{
 	public:
-		static void Update(Scene& scene);
+		static void Update(SceneAsset& scene);
 	};
 }

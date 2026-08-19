@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	Mesh::Mesh(const MeshSpecification& specification)
+	MeshAsset::MeshAsset(const MeshSpecification& specification)
 	{
 		// Vertex buffer
 		wgpu::BufferDescriptor vertexBufferdesc;

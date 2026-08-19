@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Engine/Asset/AssetHandle.h"
 #include "Engine/Graphics/Texture/TextureCube.h"
 
 namespace Engine
@@ -14,7 +15,7 @@ namespace Engine
   class ENGINE_API EnvironmentBaker
   {
   public:
-    static Environment BakeEnvironment(Uuid equirectangularHDR);
+    static Environment BakeEnvironment(Texture2D equirectangularHDR);
 
   private:
     static TextureCube CreateIrradianceMap(const TextureCube& sourceCubemap);

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Engine/Core/UUID.h"
+#include "Engine/Asset/AssetHandle.h"
 
 namespace Engine::SceneManager
 {
-	ENGINE_API void SetActiveScene(Uuid id);
-	ENGINE_API Uuid GetActiveScene();
+	ENGINE_API void SetActiveScene(Scene scene);
+	ENGINE_API Scene GetActiveScene();
 }

@@ -1,4 +1,5 @@
 #include "Property.h"
+#include "Engine/Asset/AssetHandle.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/Texture/TextureCube.h"	
 #include "Engine/Audio/AudioClip.h"
@@ -9,58 +10,6 @@
 
 namespace Editor
 {
-	EditResult AssetField(std::string_view label, Engine::Uuid& id, Engine::AssetType type)
-	{
-		PropertyRow row(label);
-		EditResult result;
-
-		const std::string& assetName = Engine::AssetManager::GetAssetPath(id).stem().string();
-
-		bool isTexture = (type == Engine::AssetType::Texture);
-		ImVec2 size = isTexture ? ImVec2(64, 64) : ImVec2(-FLT_MIN, 0);
-
-		if (isTexture)
-		{
-			if (id)
-			{
-				const auto& texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(id);
-				result.changed = ImGui::ImageButton("##TexturePreview", (ImTextureID)(intptr_t)texture.GetTextureView().Get(), size);
-			}
-			else
-			{
-				result.changed = ImGui::ImageButton("##TexturePreviewBlank", nullptr, size);
-			}
-		}
-		else
-		{
-			result.changed = ImGui::Button(assetName.c_str(), size);
-		}
-
-
-		result.active = ImGui::IsItemActive();
-		result.started = ImGui::IsItemActivated();
-		result.finished = ImGui::IsItemDeactivatedAfterEdit();
-
-		DragDropSource<Engine::Uuid>("UUID", id, assetName);
-		result.changed |= DragDropTarget{}.AcceptAsset(type, [&id](Engine::Uuid newId) {id = newId; });
-
-		if (PopupContextItem contextMenu{ "AssetOptionsPopup" })
-		{
-			if (ImGui::MenuItem("Clear", nullptr, false, static_cast<bool>(id)))
-			{
-				id = Engine::Uuid{};
-				result.changed = true;
-			}
-		}
-
-		if(result.changed)
-		{
-			Engine::AssetManager::MarkAssetDirty(id);
-		}
-
-		return result;
-	}
-
 	EditResult EnumField(std::string_view label, int& value, const std::vector<std::string>& options)
 	{
 		EditResult result;

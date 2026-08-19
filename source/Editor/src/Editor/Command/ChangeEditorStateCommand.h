@@ -19,15 +19,23 @@ namespace Editor
     {
 			Editor::editorContext.editorMode = m_State;
 
-			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+			Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
 			entt::registry& registry = scene.GetRegistry();
 
-			switch(m_State)
+			switch(Editor::editorContext.editorMode)
 			{
 				case EditorMode::Play:
 				{
 					auto view = registry.view<Engine::CameraComponent, Engine::PrimaryCameraTag>(entt::exclude<Engine::EditorTag>);
-					scene.SetActiveCamera(view.front());
+					entt::entity gameCameraEntity = view.front();
+
+					if (gameCameraEntity == entt::null) return;
+
+					scene.SetActiveCamera(gameCameraEntity);
+
+					//registry.emplace_or_replace<Engine::TransformDirty>(gameCameraEntity);
+					//registry.emplace_or_replace<Engine::CameraProjectionDirty>(gameCameraEntity);
+					//registry.emplace_or_replace<Engine::CameraViewDirty>(gameCameraEntity);
 
 					Engine::Runtime::Start();
 					SelectionManager::Entities.Clear();
@@ -36,7 +44,7 @@ namespace Editor
 	
 				case EditorMode::Edit:
 				{
-					auto view = registry.view<Engine::CameraComponent, Engine::PrimaryCameraTag, Engine::EditorTag>();
+					auto view = registry.view<Engine::CameraComponent, Engine::EditorTag>();
 					scene.SetActiveCamera(view.front());
 
 					Engine::Runtime::Stop();

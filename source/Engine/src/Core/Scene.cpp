@@ -5,12 +5,12 @@
 
 namespace Engine
 {
-	Scene::~Scene()
+	SceneAsset::~SceneAsset()
 	{
 		m_Registry.clear();
 	}
 
-	void Scene::DestroyEntity(Entity entity)
+	void SceneAsset::DestroyEntity(Entity entity)
 	{
 		if (!entity) return;
 
@@ -19,7 +19,7 @@ namespace Engine
 		m_EntityMap.erase(uuid);
 	}
 
-	Entity Scene::GetEntity(Uuid entityId)
+	Entity SceneAsset::GetEntity(Uuid entityId)
 	{
 		if (m_EntityMap.find(entityId) != m_EntityMap.end())
 		{
@@ -28,12 +28,12 @@ namespace Engine
 		return Entity{};
 	}
 
-	const std::vector<entt::entity>& Scene::GetRootEntities() const
+	const std::vector<entt::entity>& SceneAsset::GetRootEntities() const
 	{
 		return m_RootEntities;
 	}
 
-	void Scene::InsertRootEntity(entt::entity entity, size_t index)
+	void SceneAsset::InsertRootEntity(entt::entity entity, size_t index)
 	{
 		if (index > m_RootEntities.size())
 		{
@@ -42,7 +42,7 @@ namespace Engine
 		m_RootEntities.insert(m_RootEntities.begin() + index, entity);
 	}
 
-	void Scene::RemoveRootEntity(entt::entity entity)
+	void SceneAsset::RemoveRootEntity(entt::entity entity)
 	{
 		auto it = std::find(m_RootEntities.begin(), m_RootEntities.end(), entity);
 		if (it != m_RootEntities.end())
@@ -51,22 +51,13 @@ namespace Engine
 		}
 	}
 
-	void Scene::SetActiveCamera(entt::entity entity)
+	void SceneAsset::SetActiveCamera(entt::entity entity)
 	{
 		m_CameraEntity = entity;
 	}
 
-	entt::entity Scene::GetActiveCamera()
+	entt::entity SceneAsset::GetActiveCamera()
 	{
 		return m_CameraEntity;
-
-		//auto view = m_Registry.view<CameraComponent, PrimaryCameraTag>(entt::exclude<DisabledTag>);
-
-		//for (auto [entity, cam] : view.each())
-		//{
-		//	return entity;
-		//}
-
-		//return entt::null;
 	}
 }

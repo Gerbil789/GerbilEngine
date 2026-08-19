@@ -6,10 +6,10 @@
 
 namespace Engine
 {
-	class ENGINE_API AudioClip : public Asset
+	class ENGINE_API AudioClipAsset : public Asset
 	{
 	public:
-		AudioClip(const std::filesystem::path& path);
+		AudioClipAsset(const std::filesystem::path& path);
 
 		float GetDurationSeconds() const;
 		const float* GetPCMData() const { return m_PCMData.data(); }

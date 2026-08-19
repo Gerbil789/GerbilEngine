@@ -208,7 +208,7 @@ namespace Engine
 		}
 	}
 
-	std::optional<Mesh> MeshImporter::LoadMesh(const std::filesystem::path& path)
+	std::optional<MeshAsset> MeshImporter::LoadMesh(const std::filesystem::path& path)
 	{
 		tinygltf::Model model;
 		tinygltf::TinyGLTF loader;
@@ -236,6 +236,6 @@ namespace Engine
 			ProcessNode(model, node, glm::mat4(1.0f), vertices, indices, wireIndices, subMeshes);
 		}
 
-		return Mesh({ vertices, indices, subMeshes, wireIndices });
+		return MeshAsset({ vertices, indices, subMeshes, wireIndices });
 	}
 }

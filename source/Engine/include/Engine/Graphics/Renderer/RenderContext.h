@@ -8,7 +8,7 @@
 
 namespace Engine
 {
-  class Scene;
+  class SceneAsset;
 
   struct RenderContext
   {
@@ -20,7 +20,7 @@ namespace Engine
 
 		DrawList drawList;
 
-		Scene* scene = nullptr;
+    SceneAsset* scene = nullptr;
     CameraComponent cameraComponent;
 
     // View

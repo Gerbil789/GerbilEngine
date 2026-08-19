@@ -10,6 +10,7 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/State.h"
+#include "Engine/Core/Log.h"
 #include <glm/glm.hpp>
 
 namespace Editor
@@ -38,7 +39,7 @@ namespace Editor
 
 		m_ViewportSize = { newSize.x, newSize.y };
 
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
 		scene.GetRegistry().emplace_or_replace<Engine::CameraProjectionDirty>(scene.GetActiveCamera());
 		
 		Editor::editorContext.renderer.SetSize(m_ViewportSize.x, m_ViewportSize.y);
@@ -203,10 +204,15 @@ namespace Editor
 		UpdateViewportSize();
 		m_CameraController.SetHovered(ImGui::IsWindowHovered());
 
+		if(ImGui::IsKeyPressed(ImGuiKey_F, false))
+		{
+			Engine::EventBus::Publish(FocusEntityEvent{ SelectionManager::Entities.GetPrimary() });
+		}
+
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
 		Editor::editorContext.renderer.RenderScene(scene);
 
 		ImGui::Image(Editor::editorContext.renderer.GetTextureView().Get(), viewportSize);

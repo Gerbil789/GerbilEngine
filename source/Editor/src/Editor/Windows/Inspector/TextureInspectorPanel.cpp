@@ -7,17 +7,17 @@
 
 namespace Editor
 {
-	void TextureInspectorPanel::Draw(Engine::Uuid id)
+	void TextureInspectorPanel::Draw(Engine::Texture2D texture)
 	{
-		const std::string& name = Engine::AssetManager::GetAssetPath(id).stem().string();
-		const Engine::Texture2D& texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(id);
+		const std::string& name = Engine::AssetManager::GetAssetPath(texture.id).stem().string();
+		const Engine::Texture2DAsset& textureAsset = Engine::AssetManager::GetAsset(texture);
 
-		ImGui::TextUnformatted(std::format("Texture: {} ({}x{}))", name, texture.GetWidth(), texture.GetHeight()).c_str());
+		ImGui::TextUnformatted(std::format("Texture: {} ({}x{}))", name, textureAsset.GetWidth(), textureAsset.GetHeight()).c_str());
 
 		ImVec2 available = ImGui::GetContentRegionAvail();
 
-		float textureWidth = static_cast<float>(texture.GetWidth());
-		float textureHeight = static_cast<float>(texture.GetHeight());
+		float textureWidth = static_cast<float>(textureAsset.GetWidth());
+		float textureHeight = static_cast<float>(textureAsset.GetHeight());
 
 		float aspect = textureWidth / textureHeight;
 
@@ -32,6 +32,6 @@ namespace Editor
 			imageSize.x = imageSize.y * aspect;
 		}
 
-		ImGui::Image(texture.GetTextureView().Get(), imageSize);
+		ImGui::Image(textureAsset.GetTextureView().Get(), imageSize);
 	}
 }

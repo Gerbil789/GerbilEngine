@@ -6,7 +6,7 @@
 
 namespace Engine
 {
-	Shader::Shader(const std::string& source)
+	ShaderAsset::ShaderAsset(const std::string& source)
 	{
 		wgpu::ShaderSourceWGSL shaderCodeDesc;
 		shaderCodeDesc.nextInChain = nullptr;

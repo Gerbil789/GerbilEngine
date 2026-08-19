@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	Texture2D::Texture2D(const TextureSpecification& specification, const void* data)
+	Texture2DAsset::Texture2DAsset(const TextureSpecification& specification, const void* data)
 	{
 		m_Width = specification.width;
 		m_Height = specification.height;

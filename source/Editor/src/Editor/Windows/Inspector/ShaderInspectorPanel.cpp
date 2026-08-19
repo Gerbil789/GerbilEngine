@@ -5,9 +5,9 @@
 
 namespace Editor
 {
-	void ShaderInspectorPanel::Draw(Engine::Uuid id)
+	void ShaderInspectorPanel::Draw(Engine::Shader shader)
 	{
-		ImGui::TextUnformatted(std::format("Shader: {}", static_cast<uint64_t>(id)).c_str());
+		ImGui::TextUnformatted(std::format("Shader: {}", static_cast<uint64_t>(shader)).c_str());
 
 		//ImGui::Separator();
 

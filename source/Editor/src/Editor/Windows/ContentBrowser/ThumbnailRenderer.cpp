@@ -6,6 +6,7 @@
 #include "Engine/Core/Components.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/System/TransformSystem.h"
 #include "Engine/Graphics/Sprite.h"
 #include "Engine/Graphics/Mesh.h"
@@ -39,15 +40,15 @@ namespace Editor
 
 		std::unordered_map<Engine::Uuid, Thumbnail> m_ThumbnailCache;
 
-		Engine::Scene scene;
+		Engine::SceneAsset scene;
 		Engine::Entity cameraEntity;
 		Engine::Entity previewEntity;
 		Engine::Renderer renderer;
 
 		struct PreviewRequest 
 		{
-			Engine::Uuid meshId;
-			Engine::Uuid materialId;
+			Engine::Mesh mesh;
+			Engine::Material material;
 		};
 
 		constexpr int AtlasSizePx = 2048;
@@ -91,8 +92,8 @@ namespace Editor
 		{
 			previewEntity = scene.CreateEntity<Engine::TransformComponent, Engine::WorldTransformComponent, Engine::MeshComponent, Engine::TransformDirty>("PreviewEntity");
 			auto& mc = previewEntity.GetComponent<Engine::MeshComponent>();
-			mc.meshId = RESOURCES::MESH::SPHERE;
-			mc.materials = { RESOURCES::MATERIAL::PINK };
+			mc.mesh = Engine::Mesh{ RESOURCES::MESH::SPHERE };
+			mc.materials = { Engine::Material{ RESOURCES::MATERIAL::PINK } };
 
 			auto& tc = previewEntity.GetComponent<Engine::TransformComponent>();
 			tc.rotation = glm::radians(glm::vec3{ 15.0f, 45.0f, 0.0f });
@@ -154,10 +155,10 @@ namespace Editor
 
 		auto& mc = previewEntity.GetComponent<Engine::MeshComponent>();
 
-		mc.meshId = request.meshId;
-		mc.materials[0] = request.materialId;
+		mc.mesh = request.mesh;
+		mc.materials[0] = request.material;
 
-		const Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(mc.meshId);
+		const Engine::MeshAsset& mesh = Engine::AssetManager::GetAsset<Engine::MeshAsset>(mc.mesh);
 		float distance = glm::length(mesh.aabb.max - mesh.aabb.min);
 
 		cameraEntity.GetComponent<Engine::TransformComponent>().position = { 0.0f, 0.0f, -distance };
@@ -196,6 +197,7 @@ namespace Editor
 		return thumb;
 	}
 
+	//TODO: use template asset handle... dont pass asset type
 	const Thumbnail& ThumbnailRenderer::GetThumbnail(Engine::Uuid id, Engine::AssetType type)
 	{
 		if (m_ThumbnailCache.contains(id))
@@ -205,20 +207,21 @@ namespace Editor
 
 		Thumbnail thumbnail;
 
+
 		switch (type)
 		{
 		case Engine::AssetType::Texture:
-			thumbnail.view = Engine::AssetManager::GetAsset<Engine::Texture2D>(id).GetTextureView();
+			thumbnail.view = Engine::AssetManager::GetAsset(Engine::Texture2D{ id }).GetTextureView();
 			break;
 		case Engine::AssetType::Material:
-			thumbnail = RenderToAtlas({ RESOURCES::MESH::SPHERE, id });
+			thumbnail = RenderToAtlas({ Engine::Mesh{RESOURCES::MESH::SPHERE}, Engine::Material{id} });
 			break;
 		case Engine::AssetType::Mesh:
-			thumbnail = RenderToAtlas({ id, RESOURCES::MATERIAL::WHITE });
+			thumbnail = RenderToAtlas({ Engine::Mesh{id}, Engine::Material{RESOURCES::MATERIAL::WHITE} });
 			break;
 		default:
 			const Engine::Sprite& sprite = GetIcon(type);
-			const Engine::Texture2D& texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(sprite.GetTexture());
+			const Engine::Texture2DAsset& texture = Engine::AssetManager::GetAsset(sprite.GetTexture());
 			thumbnail = { texture.GetTextureView(), sprite.GetUVMin(), sprite.GetUVMax() };
 			break;
 		}
@@ -231,7 +234,7 @@ namespace Editor
 	{
 		EditorIcon iconType = isEmpty ? EditorIcon::EmptyDirectory : EditorIcon::Directory;
 		const Engine::Sprite& sprite = m_EditorSprites.at(iconType);
-		const Engine::Texture2D& texture = Engine::AssetManager::GetAsset<Engine::Texture2D>(sprite.GetTexture());
+		const Engine::Texture2DAsset& texture = Engine::AssetManager::GetAsset<Engine::Texture2DAsset>(sprite.GetTexture());
 
 		// You could cache this, but constructing the struct is essentially free
 		static Thumbnail thumb;

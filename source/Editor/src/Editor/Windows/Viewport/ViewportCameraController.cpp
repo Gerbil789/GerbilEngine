@@ -37,7 +37,9 @@ namespace Editor
 	{
 		if (!m_ViewportHovered) return;
 
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		if (Editor::editorContext.editorMode != EditorMode::Edit) return;
+
+		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
 		entt::entity cameraEntity = scene.GetActiveCamera();
 		if (cameraEntity == entt::null) return;
 
@@ -55,6 +57,7 @@ namespace Editor
 	void ViewportCameraController::OnMouseButtonPressed(const Engine::MouseButtonPressedEvent& e)
 	{
 		if (!m_ViewportHovered) return;
+		if (Editor::editorContext.editorMode != EditorMode::Edit) return;
 
 		if (e.button == Engine::Mouse::ButtonRight)
 		{
@@ -70,6 +73,8 @@ namespace Editor
 
 	void ViewportCameraController::OnMouseButtonReleased(const Engine::MouseButtonReleasedEvent& e)
 	{
+		if (Editor::editorContext.editorMode != EditorMode::Edit) return;
+
 		if (e.button == Engine::Mouse::ButtonRight)
 		{
 			m_RotateDragging = false;
@@ -82,9 +87,10 @@ namespace Editor
 
 	void ViewportCameraController::OnMouseMoved(const Engine::MouseMovedEvent& e)
 	{
+		if (Editor::editorContext.editorMode != EditorMode::Edit) return;
 		if (!m_RotateDragging && !m_PanDragging) return;
 
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
 		entt::entity cameraEntity = scene.GetActiveCamera();
 		if (cameraEntity == entt::null) return;
 
@@ -118,7 +124,10 @@ namespace Editor
 
 	void ViewportCameraController::OnEntityFocus(Engine::Uuid entityId, float distance)
 	{
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		if (Editor::editorContext.editorMode != EditorMode::Edit) return;
+		if (!entityId) return;
+
+		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
 		Engine::Entity entity = scene.GetEntity(entityId);
 		if (!entity) return;
 		if (!entity.HasComponent<Engine::TransformComponent>()) return;
@@ -133,6 +142,7 @@ namespace Editor
 		tc.position = focusPoint - forward * distance;
 
 		scene.GetRegistry().emplace_or_replace<Engine::CameraViewDirty>(cameraEntity);
+		scene.GetRegistry().emplace_or_replace<Engine::CameraProjectionDirty>(cameraEntity);
 		scene.GetRegistry().emplace_or_replace<Engine::TransformDirty>(cameraEntity);
 	}
 }

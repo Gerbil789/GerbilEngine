@@ -192,15 +192,14 @@ namespace Engine
 		GraphicsContext::GetQueue().WriteBuffer(m_UniformBuffer, 0, &m_UniformData, sizeof(WireframeUniform));
 		pass.SetBindGroup(2, m_ShadowBindGroup, 0, nullptr);
 
-		Engine::Uuid lastMeshId{};
-
+		Engine::Mesh lastMesh;
 
 		for (const auto& [i, item] : std::views::enumerate(context.drawList.GetItems()))
 		{
-			if (item.meshId != lastMeshId)
+			if (item.mesh != lastMesh)
 			{
-				lastMeshId = item.meshId;
-				Mesh& meshAsset = Engine::AssetManager::GetAsset<Mesh>(lastMeshId);
+				lastMesh = item.mesh;
+				MeshAsset& meshAsset = Engine::AssetManager::GetAsset<MeshAsset>(lastMesh);
 				pass.SetVertexBuffer(0, meshAsset.GetVertexBuffer(), 0, meshAsset.GetVertexBuffer().GetSize());
 				pass.SetIndexBuffer(meshAsset.GetWireIndexBuffer(), wgpu::IndexFormat::Uint32, 0, meshAsset.GetWireIndexBuffer().GetSize());
 			}

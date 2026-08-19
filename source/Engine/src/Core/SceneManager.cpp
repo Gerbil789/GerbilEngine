@@ -8,36 +8,36 @@
 
 namespace Engine::SceneManager
 {
-	static Uuid m_ActiveScene;
+	static Scene m_ActiveScene;
 
-	void SetActiveScene(Uuid id)
+	void SetActiveScene(Scene scene)
 	{
-		m_ActiveScene = id;
+		m_ActiveScene = scene;
 
-		Scene& scene = AssetManager::GetAsset<Scene>(m_ActiveScene);
-		entt::registry& registry = scene.GetRegistry();
+		SceneAsset& sceneAsset = AssetManager::GetAsset<SceneAsset>(m_ActiveScene);
+		entt::registry& registry = sceneAsset.GetRegistry();
 		auto view = registry.view<CameraComponent, EditorTag>();
 
 		if (view.front() == entt::null)
 		{
-			Entity entity = scene.CreateEntity<TransformComponent, WorldTransformComponent, CameraComponent, EditorTag, PrimaryCameraTag, CameraProjectionDirty, CameraViewDirty, TransformDirty>("Editor Camera");
+			Entity entity = sceneAsset.CreateEntity<TransformComponent, WorldTransformComponent, CameraComponent, EditorTag, CameraProjectionDirty, CameraViewDirty, TransformDirty>("Editor Camera");
 			entity.GetComponent<TransformComponent>().position = glm::vec3{ 0.0f, 0.0f, -20.0f };
 			entity.GetComponent<CameraComponent>().background = CameraComponent::Background::Skybox;
 
-			scene.InsertRootEntity(entity.GetHandle(), scene.GetRootEntities().size());
-			scene.SetActiveCamera(entity.GetHandle());
+			sceneAsset.InsertRootEntity(entity.GetHandle(), sceneAsset.GetRootEntities().size());
+			sceneAsset.SetActiveCamera(entity.GetHandle());
 		}
 		else
 		{
-			scene.SetActiveCamera(view.front());
+			sceneAsset.SetActiveCamera(view.front());
 		}
 
 		Engine::EventBus::Publish(SceneChangedEvent{ m_ActiveScene });
 
-		LOG_INFO("Active scene set to {}", m_ActiveScene);
+		LOG_INFO("Active scene set to {}", m_ActiveScene.id);
 	}
 
-	Uuid GetActiveScene()
+	Scene GetActiveScene()
 	{
 		return m_ActiveScene;
 	}

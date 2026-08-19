@@ -89,9 +89,9 @@ namespace Engine
 		return bindGroup;
 	}
 
-	TextureCube EquirectangularToCubemap(Uuid equirectangularTexture)
+	TextureCube EquirectangularToCubemap(Texture2D equirectangularTexture)
 	{
-		const Texture2D& sourceTexture = Engine::AssetManager::GetAsset<Texture2D>(equirectangularTexture);
+		const Texture2DAsset& sourceTexture = Engine::AssetManager::GetAsset<Texture2DAsset>(equirectangularTexture);
 
 		ENGINE_ASSERT(sourceTexture.GetWidth() == sourceTexture.GetHeight() * 2, "Equirectangular texture must have a 2:1 aspect ratio.");
 

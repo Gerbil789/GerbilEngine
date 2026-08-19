@@ -92,7 +92,6 @@ namespace Template
 
 			m_Renderer.SetDepthTarget(depthTexture.CreateView(&view));
 		}
-
 	}
 
 
@@ -123,10 +122,10 @@ namespace Template
 		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / Engine::Configuration / (project.GetTitle() + ".dll");
 		Engine::Runtime::LoadScripts(dllPath);
 
-		Engine::Uuid id = project.GetDefaultSceneId();
-		Engine::SceneManager::SetActiveScene(id);
+		Engine::Scene defaultScene = project.GetDefaultScene();
+		Engine::SceneManager::SetActiveScene(defaultScene);
 
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
 		entt::entity cameraEntity = scene.GetActiveCamera();
 		auto& cc = scene.GetRegistry().get<Engine::CameraComponent>(cameraEntity);
 		cc.background = Engine::CameraComponent::Background::Skybox;
@@ -190,7 +189,7 @@ namespace Template
 			}
 
 			m_Renderer.SetColorTarget(targetView);
-			m_Renderer.RenderScene(Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene()));
+			m_Renderer.RenderScene(Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene()));
 
 			surface.Present();
 		}

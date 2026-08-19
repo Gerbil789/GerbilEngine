@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Engine/Asset/AssetHandle.h"
 #include "Engine/Graphics/Shader.h"
 #include <webgpu/webgpu_cpp.h>
 #include <unordered_map>
@@ -15,7 +16,7 @@ namespace Engine
 
   struct PipelineSpecification
   {
-		Uuid shaderId;
+		Shader shader;
     wgpu::PrimitiveTopology topology = wgpu::PrimitiveTopology::TriangleList;
 		wgpu::FrontFace frontFace = wgpu::FrontFace::CW;
     wgpu::CullMode cullMode = wgpu::CullMode::Back;
@@ -29,7 +30,7 @@ namespace Engine
 
 		bool operator==(const PipelineSpecification& other) const
 		{
-			if (shaderId != other.shaderId ||
+			if (shader != other.shader ||
 				topology != other.topology ||
 				frontFace != other.frontFace ||
 				cullMode != other.cullMode ||
@@ -59,7 +60,7 @@ namespace Engine
 		{
 			size_t seed = 0;
 
-			HashCombine(seed, static_cast<uint64_t>(shaderId));
+			HashCombine(seed, static_cast<uint64_t>(shader));
 			HashCombine(seed, static_cast<uint32_t>(topology));
 			HashCombine(seed, static_cast<uint32_t>(frontFace));
 			HashCombine(seed, static_cast<uint32_t>(cullMode));

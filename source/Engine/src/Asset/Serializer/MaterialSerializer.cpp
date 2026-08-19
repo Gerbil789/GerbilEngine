@@ -35,23 +35,23 @@ struct glz::meta<Engine::MaterialJSON> {
 
 namespace Engine
 {
-	void MaterialSerializer::Serialize(Uuid id, const std::filesystem::path& path)
+	void MaterialSerializer::Serialize(Material material, const std::filesystem::path& path)
 	{
-		if(!id) 
+		if(!material) 
 		{
-			LOG_ERROR("Attempted to serialize null material with ID '{}'", id);
+			LOG_ERROR("Attempted to serialize null material with ID '{}'", material.id);
 			return;
 		}
 
-		const Material& material = AssetManager::GetAsset<Material>(id);
+		const MaterialAsset& materialAsset = AssetManager::GetAsset(material);
 
 		MaterialJSON outData;
-		outData.Shader = static_cast<uint64_t>(material.GetShader());
-		outData.Filter = static_cast<uint32_t>(material.GetTextureFilter());
-		outData.Wrap = static_cast<uint32_t>(material.GetTextureWrap());
+		outData.Shader = static_cast<uint64_t>(materialAsset.GetShader());
+		outData.Filter = static_cast<uint32_t>(materialAsset.GetTextureFilter());
+		outData.Wrap = static_cast<uint32_t>(materialAsset.GetTextureWrap());
 
 		// serialize uniform data
-		for (const auto& [name, variantValue] : material.GetParameters())
+		for (const auto& [name, variantValue] : materialAsset.GetParameters())
 		{
 			if (!name.empty() && name[0] == '_') continue;
 
@@ -80,7 +80,7 @@ namespace Engine
 		}
 
 		// serialize textures
-		for (const auto& [name, texture] : material.GetTextures())
+		for (const auto& [name, texture] : materialAsset.GetTextures())
 		{
 			outData.Textures[name] = static_cast<uint64_t>(texture);
 		}
@@ -94,7 +94,7 @@ namespace Engine
 		}
 	}
 
-	std::optional<Material> MaterialSerializer::Deserialize(const std::filesystem::path& path)
+	std::optional<MaterialAsset> MaterialSerializer::Deserialize(const std::filesystem::path& path)
 	{
 		MaterialJSON data;
 		std::string buffer;
@@ -106,9 +106,9 @@ namespace Engine
 		}
 
 		MaterialSpecification spec;
-		spec.shaderId = Uuid{ data.Shader };
+		spec.shader = Shader{ data.Shader };
 
-		Material material = Material(spec);
+		MaterialAsset material = MaterialAsset(spec);
 
 		material.SetTextureFilter(static_cast<TextureFilter>(data.Filter));
 		material.SetTextureWrap(static_cast<TextureWrap>(data.Wrap));
@@ -152,7 +152,7 @@ namespace Engine
 		// Deserialize Textures
 		for (const auto& [name, id] : data.Textures)
 		{
-			material.SetTexture(name, Uuid{ id });
+			material.SetTexture(name, Texture2D{ id });
 		}
 
 		return material;

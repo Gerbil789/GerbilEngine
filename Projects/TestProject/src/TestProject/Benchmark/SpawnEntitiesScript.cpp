@@ -3,7 +3,7 @@
 
 void SpawnEntitiesScript::OnStart()
 {
-	Engine::Scene* scene = m_Entity.GetScene();
+	Engine::SceneAsset* scene = m_Entity.GetScene();
 
 	Engine::HierarchyComponent& parentHiearchy = m_Entity.GetComponent<Engine::HierarchyComponent>();
 
@@ -15,8 +15,8 @@ void SpawnEntitiesScript::OnStart()
       Engine::TransformComponent& transform = entity.GetComponent<Engine::TransformComponent>();
       transform.position = { x * m_Offset, 0.0f, y * m_Offset };
       Engine::MeshComponent& meshComp = entity.AddComponent<Engine::MeshComponent>();
-      meshComp.meshId = m_Mesh.id;
-      meshComp.materials = { m_Material.id };
+      meshComp.mesh = m_Mesh;
+      meshComp.materials = { m_Material };
 			Engine::HierarchyComponent& hierarchy = entity.GetComponent<Engine::HierarchyComponent>();
 			hierarchy.parent = m_Entity.GetHandle();
 			parentHiearchy.children.push_back(entity.GetHandle());

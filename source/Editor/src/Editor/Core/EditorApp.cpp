@@ -64,7 +64,7 @@ namespace Editor
 
 		Engine::EventBus::Subscribe<Engine::SceneChangedEvent>([this](auto& e)
 			{
-				const std::string& name = Engine::AssetManager::GetAssetPath(e.id).stem().string();
+				const std::string& name = Engine::AssetManager::GetAssetPath(e.scene.id).stem().string();
 				m_Window.SetTitle(std::format("Gerbil Editor - {} - Scene: {}", Engine::Configuration, name));
 				return false;
 			});
@@ -72,8 +72,8 @@ namespace Editor
 		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / Engine::Configuration / (project.GetTitle() + ".dll");
 		Engine::Runtime::LoadScripts(dllPath);
 
-		Engine::Uuid id = project.GetDefaultSceneId();
-		Engine::SceneManager::SetActiveScene(id);
+		Engine::Scene defaultScene = project.GetDefaultScene();
+		Engine::SceneManager::SetActiveScene(defaultScene);
 
 
 		Engine::EventBus::Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); return false; });
@@ -105,12 +105,12 @@ namespace Editor
 			Engine::Input::Update();
 			Engine::Audio::Update();
 
-			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
-
-			Engine::TransformSystem::Update(scene);
+			Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
 
 			EditorWindowManager::Update();
 			EditorCommandManager::ExecuteDeferredCommands();
+
+			Engine::TransformSystem::Update(scene);
 
 			if (Editor::editorContext.editorMode == EditorMode::Play)
 			{

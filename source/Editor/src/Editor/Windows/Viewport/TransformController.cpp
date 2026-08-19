@@ -43,7 +43,7 @@ namespace Editor
 			});
 	}
 
-	void TransformController::DrawGizmo(Engine::Scene& scene, float x, float y, float width, float height)
+	void TransformController::DrawGizmo(Engine::SceneAsset& scene, float x, float y, float width, float height)
 	{
 		if (Editor::editorContext.editorMode == EditorMode::Play) return;
 		if (gizmoType == 0) return;

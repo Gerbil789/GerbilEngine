@@ -16,7 +16,6 @@
 #include "Engine/Utility/File.h"
 #include "Engine/Core/Log.h"
 
-//TODO: move to style file or something
 static void SetupImGuiStyle()
 {
 	ImGuiStyle& style = ImGui::GetStyle();

@@ -17,10 +17,10 @@ public:
 		int m_GridHeight = 10;
 
   PROPERTY(m_TileMesh, "tile mesh")
-    Engine::MeshHandle m_TileMesh;
+    Engine::Mesh m_TileMesh;
 
   PROPERTY(m_TileMaterial, "tile material")
-    Engine::MaterialHandle m_TileMaterial;
+    Engine::Material m_TileMaterial;
 
 public:
   void OnStart() override;

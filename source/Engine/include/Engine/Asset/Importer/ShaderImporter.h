@@ -7,6 +7,6 @@ namespace Engine
 	class ShaderImporter
 	{
 	public:
-		static std::optional<Shader> LoadShader(const std::filesystem::path& path);
+		static std::optional<ShaderAsset> LoadShader(const std::filesystem::path& path);
 	};
 }

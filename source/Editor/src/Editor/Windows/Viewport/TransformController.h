@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Engine { class Scene; }
+namespace Engine { class SceneAsset; }
 
 namespace Editor
 {
@@ -8,7 +8,7 @@ namespace Editor
 	{
 	public:
 		void Initialize();
-		void DrawGizmo(Engine::Scene& scene, float x, float y, float width, float height);
+		void DrawGizmo(Engine::SceneAsset& scene, float x, float y, float width, float height);
 		bool IsGizmoOver() const;
 	};
 }

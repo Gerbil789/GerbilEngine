@@ -16,7 +16,7 @@ namespace Engine
 			return it->second;
 		}
 
-		const Shader& shader = Engine::AssetManager::GetAsset<Shader>(specification.shaderId);
+		const ShaderAsset& shader = Engine::AssetManager::GetAsset<ShaderAsset>(specification.shader);
 
 		wgpu::RenderPipelineDescriptor pipelineDesc;
 		pipelineDesc.label = "Shader Pipeline";

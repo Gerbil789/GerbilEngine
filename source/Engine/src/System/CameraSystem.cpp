@@ -52,10 +52,11 @@ namespace Engine
       registry.remove<CameraProjectionDirty>(entity);
     }
 
-
-    auto viewView = registry.view<CameraComponent, WorldTransformComponent, CameraViewDirty>();
+		auto viewView = registry.view<CameraComponent, WorldTransformComponent>();
     for (auto [entity, camera, worldTransform] : viewView.each())
     {
+			if (!registry.any_of<CameraViewDirty, TransformDirty>(entity)) continue;
+
       const glm::mat4& world = worldTransform.worldMatrix;
       glm::vec3 position = world[3];
       glm::vec3 forward = glm::normalize(glm::vec3(world[2]));

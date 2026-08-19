@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Core/UUID.h"
+#include "Engine/Asset/AssetHandle.h"
 #include "Engine/Math/AABB.h"
 #include <string>
 #include <entt/entity/entity.hpp>
@@ -43,8 +43,8 @@ namespace Engine
 
 	struct ENGINE_API MeshComponent
 	{
-		Uuid meshId;
-		std::vector<Uuid> materials;
+		Mesh mesh;
+		std::vector<Material> materials;
 	};
 
 	enum class BodyType { Static = 0, Dynamic, Kinematic };
@@ -54,7 +54,7 @@ namespace Engine
 	{
 		ColliderShape shape = ColliderShape::Box;
 		BodyType type = BodyType::Dynamic;
-		Uuid collisionMeshId;
+		Mesh collisionMesh;
 		AABB worldAABB;
 		bool isTrigger = false;
 	};

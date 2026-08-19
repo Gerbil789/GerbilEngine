@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Engine/Asset/AssetHandle.h"
 #include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Shader.h"
@@ -12,32 +13,17 @@
 
 namespace Engine
 {
-	template <typename T>
-	struct AssetRef
-	{
-		Engine::Uuid id{};
-		explicit operator bool() const { return static_cast<bool>(id); }
-		operator Engine::Uuid& () { return id; }
-		T& Get() { return Engine::AssetManager::GetAsset<T>(id); }
-	};
-
-	using Texture2DHandle = Engine::AssetRef<Engine::Texture2D>;
-	using AudioClipHandle = Engine::AssetRef<Engine::AudioClip>;
-	using MeshHandle = Engine::AssetRef<Engine::Mesh>;
-	using ShaderHandle = Engine::AssetRef<Engine::Shader>;
-	using MaterialHandle = Engine::AssetRef<Engine::Material>;
-
 	template<typename T>
 	struct ScriptFieldTypeMap;
 
 	template<> struct ScriptFieldTypeMap<float> { static constexpr ScriptFieldType value = ScriptFieldType::Float; };
 	template<> struct ScriptFieldTypeMap<int> { static constexpr ScriptFieldType value = ScriptFieldType::Int; };
 	template<> struct ScriptFieldTypeMap<bool> { static constexpr ScriptFieldType value = ScriptFieldType::Bool; };
-	template<> struct ScriptFieldTypeMap<Texture2DHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Texture; };
-	template<> struct ScriptFieldTypeMap<AudioClipHandle> { static constexpr ScriptFieldType value = ScriptFieldType::AudioClip; };
-	template<> struct ScriptFieldTypeMap<MeshHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Mesh; };
-	template<> struct ScriptFieldTypeMap<ShaderHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Shader; };
-	template<> struct ScriptFieldTypeMap<MaterialHandle> { static constexpr ScriptFieldType value = ScriptFieldType::Material; };
+	template<> struct ScriptFieldTypeMap<Texture2D> { static constexpr ScriptFieldType value = ScriptFieldType::Texture; };
+	template<> struct ScriptFieldTypeMap<AudioClip> { static constexpr ScriptFieldType value = ScriptFieldType::AudioClip; };
+	template<> struct ScriptFieldTypeMap<Mesh> { static constexpr ScriptFieldType value = ScriptFieldType::Mesh; };
+	template<> struct ScriptFieldTypeMap<Shader> { static constexpr ScriptFieldType value = ScriptFieldType::Shader; };
+	template<> struct ScriptFieldTypeMap<Material> { static constexpr ScriptFieldType value = ScriptFieldType::Material; };
 }
 
 namespace Engine

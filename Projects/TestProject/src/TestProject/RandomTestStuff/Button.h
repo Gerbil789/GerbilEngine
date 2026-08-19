@@ -11,10 +11,10 @@ public:
     float m_Speed = 10.0f;
 
   PROPERTY(m_PressSound, "Press Sound")
-    Engine::AudioClipHandle m_PressSound;
+    Engine::AudioClip m_PressSound;
 
   PROPERTY(m_ReleaseSound, "Release Sound")
-    Engine::AudioClipHandle m_ReleaseSound;
+    Engine::AudioClip m_ReleaseSound;
 
 	void OnUpdate() override;
   void OnTriggerEnter(Engine::Entity other) override;

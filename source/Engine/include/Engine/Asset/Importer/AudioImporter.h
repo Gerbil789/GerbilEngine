@@ -2,11 +2,11 @@
 
 namespace Engine
 {
-	class AudioClip;
+	class AudioClipAsset;
 
 	class ENGINE_API AudioImporter
 	{
 	public:
-		static std::optional<AudioClip> LoadAudioClip(const std::filesystem::path& path);
+		static std::optional<AudioClipAsset> LoadAudioClip(const std::filesystem::path& path);
 	};
 }

@@ -127,14 +127,14 @@ namespace Engine
 		pass.SetBindGroup(0, context.viewBindGroup, 0, nullptr);
 		pass.SetBindGroup(1, context.modelBindGroup, 0, nullptr);
 
-		Engine::Uuid lastMeshId{};
+		Mesh lastMesh;
 
 		for (const auto& [i, item] : std::views::enumerate(context.drawList.GetItems()))
 		{
-			if (item.meshId != lastMeshId)
+			if (item.mesh != lastMesh)
 			{
-				lastMeshId = item.meshId;
-				const Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(lastMeshId);
+				lastMesh = item.mesh;
+				const MeshAsset& mesh = Engine::AssetManager::GetAsset(lastMesh);
 				pass.SetVertexBuffer(0, mesh.GetVertexBuffer(), 0, mesh.GetVertexBuffer().GetSize());
 				pass.SetIndexBuffer(mesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh.GetIndexBuffer().GetSize());
 			}

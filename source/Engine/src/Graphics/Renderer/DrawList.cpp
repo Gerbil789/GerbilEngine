@@ -15,7 +15,7 @@ namespace Engine
 	};
 
 
-	DrawList DrawList::CreateFromScene(Scene& scene)
+	DrawList DrawList::CreateFromScene(SceneAsset& scene)
 	{
 		DrawList list;
 		entt::registry& registry = scene.GetRegistry();
@@ -28,32 +28,32 @@ namespace Engine
 
 		for (auto&& [entity, mc, wtc, ic] : view.each())
 		{
-			if (!mc.meshId) continue;
+			if (!mc.mesh) continue;
 
-			const Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Mesh>(mc.meshId);
+			const Engine::MeshAsset& mesh = Engine::AssetManager::GetAsset<MeshAsset>(mc.mesh);
 			const auto& subMeshes = mesh.GetSubMeshes();
 
 			for (uint32_t i = 0; i < subMeshes.size(); ++i)
 			{
 				const auto& subMesh = subMeshes[i];
-				Engine::Uuid materialId{ RESOURCES::MATERIAL::PINK };
+				Engine::Material material{ RESOURCES::MATERIAL::PINK };
 
 				if (subMesh.materialIndex < mc.materials.size() && mc.materials[subMesh.materialIndex])
 				{
-					materialId = mc.materials[subMesh.materialIndex];
+					material = mc.materials[subMesh.materialIndex];
 				}
 
-				tempDrawData.push_back({DrawItem{ mc.meshId, materialId, i, subMesh.indexCount, subMesh.firstIndex, ic.id }, wtc.worldMatrix });
+				tempDrawData.push_back({DrawItem{ mc.mesh, material, i, subMesh.indexCount, subMesh.firstIndex, ic.id }, wtc.worldMatrix });
 			}
 		}
 
 		std::sort(tempDrawData.begin(), tempDrawData.end(), [](const SortableDrawData& a, const SortableDrawData& b)
 			{
-				if (a.item.materialId != b.item.materialId)
+				if (a.item.material != b.item.material)
 				{
-					return a.item.materialId < b.item.materialId;
+					return a.item.material < b.item.material;
 				}
-				return a.item.meshId < b.item.meshId;
+				return a.item.mesh < b.item.mesh;
 			});
 
 		auto& items = const_cast<std::vector<DrawItem>&>(list.GetItems());

@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	Entity::Entity(entt::entity handle, Scene* scene) : m_Handle(handle), m_Scene(scene) {}
+	Entity::Entity(entt::entity handle, SceneAsset* scene) : m_Handle(handle), m_Scene(scene) {}
 
 	void Entity::SetActive(bool active)
 	{

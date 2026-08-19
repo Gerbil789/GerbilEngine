@@ -9,7 +9,7 @@ namespace Engine
 	class ENGINE_API MaterialSerializer
 	{
 	public:
-		static void Serialize(Uuid id, const std::filesystem::path& path);
-		static std::optional<Material> Deserialize(const std::filesystem::path& path);
+		static void Serialize(Material material, const std::filesystem::path& path);
+		static std::optional<MaterialAsset> Deserialize(const std::filesystem::path& path);
 	};
 }

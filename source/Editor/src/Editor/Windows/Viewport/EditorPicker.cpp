@@ -41,7 +41,7 @@ namespace Editor
 
     for (const auto& item : context.drawList.GetItems())
     {
-      if (!item.meshId)
+      if (!item.mesh)
       {
         entityIds.push_back(Engine::Uuid{});
         continue;
@@ -84,16 +84,16 @@ namespace Editor
     pass.SetBindGroup(1, context.modelBindGroup, 0, nullptr);
     pass.SetBindGroup(2, m_BindGroup, 0, nullptr);
 
-    Engine::Uuid currentMesh{};
+    Engine::Mesh currentMesh;
 
     for (const auto& [i, item] : std::views::enumerate(context.drawList.GetItems()))
     {
-      if (item.meshId != currentMesh)
+      if (item.mesh != currentMesh)
       {
-        currentMesh = item.meshId;
-				const Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(currentMesh);
+				const Engine::MeshAsset& mesh = Engine::AssetManager::GetAsset<Engine::MeshAsset>(currentMesh);
         pass.SetVertexBuffer(0, mesh.GetVertexBuffer(), 0, mesh.GetVertexBuffer().GetSize());
         pass.SetIndexBuffer(mesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh.GetIndexBuffer().GetSize());
+        currentMesh = item.mesh;
       }
 
       pass.DrawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));

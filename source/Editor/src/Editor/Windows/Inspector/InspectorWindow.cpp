@@ -63,18 +63,18 @@ namespace Editor
 			{
 			case Engine::AssetType::Texture:
 			{
-				m_TextureInspector.Draw(m_Id);
+				m_TextureInspector.Draw(Engine::Texture2D{ m_Id });
 				break;
 			}
 
 			case Engine::AssetType::Shader:
 			{
-				m_ShaderInspector.Draw(m_Id);
+				m_ShaderInspector.Draw(Engine::Shader{ m_Id });
 				break;
 			}
 			case Engine::AssetType::Audio:
 			{
-				m_AudioInspector.Draw(m_Id);
+				m_AudioInspector.Draw(Engine::AudioClip{ m_Id });
 				break;
 			}
 			default:

@@ -13,7 +13,7 @@ namespace Editor
   public:
     DeleteEntityCommand(Engine::Uuid entityId) : m_EntityId(entityId)
     {
-			Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+			Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
 
 			Engine::Entity entity = scene.GetEntity(m_EntityId);
 
@@ -25,14 +25,14 @@ namespace Editor
 
     void Execute() override
     {
-      Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+      Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
 			Engine::Entity entity = scene.GetEntity(m_EntityId);
       entity.Destroy();
     }
 
     void Undo() override
     {
-      Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+      Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
       Engine::Entity entity = scene.CreateEntity<Engine::TransformComponent, Engine::WorldTransformComponent>(m_Name);
 
       auto& idc = entity.GetComponent<Engine::IdentityComponent>();

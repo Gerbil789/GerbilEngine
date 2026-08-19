@@ -17,7 +17,7 @@ namespace Editor
 {
 	void SettingsWindow::Draw()
 	{
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
 
 		ImGui::Begin("Settings");
 
@@ -49,14 +49,13 @@ namespace Editor
 		{
 			PropertyTable table;
 
-			Engine::Uuid id = scene.GetEnvironmentTexture();
+			Engine::Texture2D texture = scene.GetEnvironmentTexture();
 
-			if (AssetField("Environment", id, Engine::AssetType::Texture).changed)
+			if (AssetField("Environment", texture).changed)
 			{
-				if(!id) { id = RESOURCES::TEXTURE::HDR; }
-
-				scene.SetEnvironmentTexture(id);
-				Editor::editorContext.renderer.SetEnvironmentTexture(id);
+				if(!texture) { texture = RESOURCES::TEXTURE::HDR; }
+				scene.SetEnvironmentTexture(texture);
+				Editor::editorContext.renderer.SetEnvironmentTexture(texture);
 			}
 		}
 

@@ -15,10 +15,10 @@ namespace Engine
 		bool generateMips = false;
 	};
 
-	class ENGINE_API Texture2D : public Asset
+	class ENGINE_API Texture2DAsset : public Asset
 	{
 	public:
-		Texture2D(const TextureSpecification& specification, const void* data);
+		Texture2DAsset(const TextureSpecification& specification, const void* data);
 
 		uint32_t GetWidth() const { return m_Width; }
 		uint32_t GetHeight() const { return m_Height; }

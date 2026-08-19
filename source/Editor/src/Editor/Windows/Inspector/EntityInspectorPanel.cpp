@@ -90,6 +90,7 @@ namespace Editor
 				auto before = entity.GetComponent<Engine::TransformComponent>();
 				auto after = Engine::TransformComponent{};
 				EditorCommandManager::ModifyComponent<Engine::TransformComponent>(entity, before, after);
+				entity.AddTag<Engine::TransformDirty>();
 			}},
 			{ "Remove", [&] {EditorCommandManager::RemoveComponent<Engine::TransformComponent>(entity); } }
 		};
@@ -155,14 +156,10 @@ namespace Editor
 		if (EnumField("Projection", currentProjection, { "Perspective", "Orthographic" }).changed)
 		{
 			cc.projectionType = static_cast<Engine::CameraComponent::Projection>(currentProjection);
+			entity.AddTag<Engine::CameraProjectionDirty>();
 		}
 
-		int currentBg = static_cast<int>(cc.background);
-
-		if (EnumField("Background", currentBg, { "Color", "Skybox" }).changed)
-		{
-			cc.background = static_cast<Engine::CameraComponent::Background>(currentBg);
-		}
+		EnumField("Background", (int&)cc.background, { "Color", "Skybox" });
 
 		if (cc.background == Engine::CameraComponent::Background::Color)
 		{
@@ -178,7 +175,7 @@ namespace Editor
 		{
 			{ "Reset", [&] {auto before = entity.GetComponent<Engine::MeshComponent>();
 				auto after = before;
-				after.meshId = {};
+				after.mesh = {};
 				after.materials.clear();
 				EditorCommandManager::ModifyComponent<Engine::MeshComponent>(entity, before, after); }
 			},
@@ -193,11 +190,11 @@ namespace Editor
 
 		PropertyTable table;
 
-		if (AssetField("Mesh", component.meshId, Engine::AssetType::Mesh).changed)
+		if (AssetField("Mesh", component.mesh).changed)
 		{
-			if (component.meshId)
+			if (component.mesh)
 			{
-				Engine::Mesh& mesh = Engine::AssetManager::GetAsset<Engine::Mesh>(component.meshId);
+				Engine::MeshAsset& mesh = Engine::AssetManager::GetAsset<Engine::MeshAsset>(component.mesh);
 
 				//TODO: store material count in mesh?
 				uint32_t materialCount = 0;
@@ -218,11 +215,11 @@ namespace Editor
 
 		ImGui::Separator();
 
-		for (auto&& [i, id] : std::views::enumerate(component.materials))
+		for (auto&& [i, material] : std::views::enumerate(component.materials))
 		{
-			if (AssetField(std::format("Material {}", i), id, Engine::AssetType::Material).changed)
+			if (AssetField(std::format("Material {}", i), material).changed)
 			{
-				SelectionManager::Assets.Select(id);
+				SelectionManager::Assets.Select(material.id);
 			}
 		}
 	}
@@ -235,7 +232,7 @@ namespace Editor
 		{
 			{ "Reset", [&] {auto before = entity.GetComponent<Engine::ColliderComponent>();
 				auto after = before;
-				after.collisionMeshId = {};
+				after.collisionMesh = {};
 				EditorCommandManager::ModifyComponent<Engine::ColliderComponent>(entity, before, after); }
 			},
 
@@ -249,7 +246,7 @@ namespace Editor
 
 		PropertyTable table;
 
-		AssetField("Mesh", component.collisionMeshId, Engine::AssetType::Mesh);
+		AssetField("Mesh", component.collisionMesh);
 		PropertyField("Is trigger", component.isTrigger);
 	}
 
@@ -381,31 +378,31 @@ namespace Editor
 
 			case Engine::ScriptFieldType::Texture:
 			{
-				AssetField(field.name.c_str(), field.GetValue<Engine::Uuid>(component.instance), Engine::AssetType::Texture);
+				AssetField(field.name.c_str(), field.GetValue<Engine::Texture2D>(component.instance));
 				break;
 			}
 
 			case Engine::ScriptFieldType::AudioClip:
 			{
-				AssetField(field.name.c_str(), field.GetValue<Engine::Uuid>(component.instance), Engine::AssetType::Audio);
+				AssetField(field.name.c_str(), field.GetValue<Engine::AudioClip>(component.instance));
 				break;
 			}
 
 			case Engine::ScriptFieldType::Mesh:
 			{
-				AssetField(field.name.c_str(), field.GetValue<Engine::Uuid>(component.instance), Engine::AssetType::Mesh);
+				AssetField(field.name.c_str(), field.GetValue<Engine::Mesh>(component.instance));
 				break;
 			}
 
 			case Engine::ScriptFieldType::Shader:
 			{
-				AssetField(field.name.c_str(), field.GetValue<Engine::Uuid>(component.instance), Engine::AssetType::Shader);
+				AssetField(field.name.c_str(), field.GetValue<Engine::Shader>(component.instance));
 				break;
 			}
 
 			case Engine::ScriptFieldType::Material:
 			{
-				AssetField(field.name.c_str(), field.GetValue<Engine::Uuid>(component.instance), Engine::AssetType::Material);
+				AssetField(field.name.c_str(), field.GetValue<Engine::Material>(component.instance));
 				break;
 			}
 			}
@@ -635,7 +632,7 @@ namespace Editor
 
 	void EntityInspectorPanel::Draw(Engine::Uuid entityId)
 	{
-		Engine::Scene& scene = Engine::AssetManager::GetAsset<Engine::Scene>(Engine::SceneManager::GetActiveScene());
+		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
 		Engine::Entity entity = scene.GetEntity(entityId);
 		if (!entity) return;
 

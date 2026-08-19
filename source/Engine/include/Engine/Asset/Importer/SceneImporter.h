@@ -2,11 +2,11 @@
 
 namespace Engine
 {
-	class Scene;
+	class SceneAsset;
 
 	class SceneImporter
 	{
 	public:
-		static std::optional<Scene> LoadScene(const std::filesystem::path& path);
+		static std::optional<SceneAsset> LoadScene(const std::filesystem::path& path);
 	};
 }
