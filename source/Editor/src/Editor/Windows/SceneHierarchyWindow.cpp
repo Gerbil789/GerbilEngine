@@ -8,6 +8,7 @@
 #include "Engine/Core/Components.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Event/EventBus.h"
+#include "Engine/Core/Log.h"
 #include <imgui.h>
 
 namespace Editor
@@ -28,6 +29,16 @@ namespace Editor
 	void DrawEntityNode(Engine::SceneAsset& scene, entt::registry& registry, entt::entity entity)
 	{
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+		//TODO: delete this check
+		if(!registry.any_of<Engine::IdentityComponent>(entity))
+		{
+			LOG_WARNING("Entity has no id!!!!");
+
+
+			auto name = registry.get<Engine::NameComponent>(entity);
+			return;
+		}
 
 		Engine::Uuid id = registry.get<Engine::IdentityComponent>(entity).id;
 		const std::string& name = registry.get<Engine::NameComponent>(entity).name;
@@ -197,7 +208,7 @@ namespace Editor
 
 		ImGui::Begin("Scene Hierarchy");
 
-		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
+		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset(Engine::SceneManager::GetActiveScene());
 		entt::registry& registry = scene.GetRegistry();
 
 		const std::vector<entt::entity>& rootEntities = scene.GetRootEntities();

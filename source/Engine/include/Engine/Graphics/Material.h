@@ -18,7 +18,7 @@ namespace Engine
 		Shader shader = RESOURCES::SHADER::DEFAULT;
 	};
 
-	class ENGINE_API MaterialAsset : public Asset
+	class MaterialAsset : public Asset
 	{
 	public:
 		MaterialAsset() = default;

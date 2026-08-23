@@ -86,7 +86,7 @@ namespace Engine
 
 	void BackgroundPass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
 	{
-		const glm::vec4& col = context.cameraComponent.clearColor;
+		const glm::vec4& col = context.camera->clearColor;
 
 		wgpu::RenderPassColorAttachment color;
 		color.view = context.colorTarget;
@@ -104,9 +104,9 @@ namespace Engine
 
 		pass.SetBindGroup(0, context.viewBindGroup, 0, nullptr);
 
-		if (context.cameraComponent.projectionType == CameraComponent::Projection::Perspective)
+		if (context.camera->projectionType == CameraComponent::Projection::Perspective)
 		{
-			if (context.cameraComponent.background == CameraComponent::Background::Skybox)
+			if (context.camera->background == CameraComponent::Background::Skybox)
 			{
 				pass.SetPipeline(m_Pipeline);
 				pass.SetBindGroup(1, context.environmentBindGroup, 0, nullptr);

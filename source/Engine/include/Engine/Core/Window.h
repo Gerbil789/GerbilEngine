@@ -1,20 +1,16 @@
 #pragma once
 
-#include "Engine/Core/API.h"
 #include <filesystem>
 #include <functional>
 #include <webgpu/webgpu_cpp.h>
 
 struct GLFWwindow;
 
-//struct WGPUSurfaceImpl;
-//using WGPUSurface = WGPUSurfaceImpl*;
-
 namespace GLFW
 {
-	ENGINE_API void Initialize();
-	ENGINE_API void Shutdown();
-	ENGINE_API void WaitEvents();
+	void Initialize();
+	void Shutdown();
+	void WaitEvents();
 }
 
 namespace Engine
@@ -32,7 +28,7 @@ namespace Engine
 		WindowMode mode = WindowMode::Windowed;
 	};
 
-	class ENGINE_API Window
+	class Window
 	{
 	public:
 		void Initialize(const WindowSpecification& specification);

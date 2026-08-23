@@ -11,7 +11,7 @@ namespace Engine
 		wgpu::TextureFormat format = wgpu::TextureFormat::RGBA16Float;
 	};
 
-	class ENGINE_API TextureCube
+	class TextureCube
 	{
 	public:
 		TextureCube() = default;

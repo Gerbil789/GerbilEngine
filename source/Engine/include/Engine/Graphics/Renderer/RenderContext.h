@@ -21,7 +21,8 @@ namespace Engine
 		DrawList drawList;
 
     SceneAsset* scene = nullptr;
-    CameraComponent cameraComponent;
+    CameraComponent* camera;
+    TransformComponent* cameraTransform;
 
     // View
     wgpu::BindGroup viewBindGroup = nullptr;

@@ -17,7 +17,6 @@ includedirs
 
 externalincludedirs
 {
-	"%{wks.location}/vendor/glfw/include",
 	"%{wks.location}/vendor/glm",
 	"%{wks.location}/vendor/entt/include",
 	"%{wks.location}/vendor/imgui",
@@ -30,6 +29,7 @@ externalincludedirs
 filter "not platforms:Web"
     externalincludedirs
     {
+				"%{wks.location}/vendor/glfw/include",
         "%{wks.location}/vendor/dawn/include"
     }
 filter {}
@@ -55,28 +55,18 @@ filter "not platforms:Web"
 filter {}
 
 filter "configurations:not Dist"
-	kind "SharedLib"
-	defines
-	{
-		"ENGINE_SHARED_EXPORT",
-		"WGPU_SHARED_LIBRARY",
-	}
+	-- defines
+	-- {
+	-- 	"WGPU_SHARED_LIBRARY",
+	-- }
 
 	libdirs
 	{
 		"%{wks.location}/vendor/dawn/shared"
 	}
 
-
-filter "configurations:Dist"
-	libdirs
-	{
-		"%{wks.location}/vendor/dawn/static"
-	}
-
-
 filter {"system:windows", "configurations:Dist"}
-	disablewarnings { "4006" }
+	-- disablewarnings { "4006" }
 
 	links 
 	{
@@ -99,7 +89,7 @@ filter "system:windows"
 		"GLFW_EXPOSE_NATIVE_WIN32",
 	}
 
-filter "system:linux"
+filter "platforms:Linux"
 	buildoptions 
 	{ 
 		"-Wno-invalid-offsetof",
@@ -129,22 +119,15 @@ filter "system:linux"
 
 
 filter "platforms:Web"
-  system "linux"
-  toolset "clang"
-  
   defines
   {
-    "ENGINE_PLATFORM_WEB",
     "GLFW_INCLUDE_NONE",
-    -- ImGui might need this depending on version, otherwise it auto-detects __EMSCRIPTEN__
-    -- "IMGUI_IMPL_WEBGPU_BACKEND_WASM" 
   }
 
   buildoptions 
   { 
     "--use-port=emdawnwebgpu", 
-    "-s USE_GLFW=3",
-    "-pthread" -- If your engine utilizes multi-threading
+    "-pthread"
   }
 
   linkoptions 

@@ -1,13 +1,12 @@
 #pragma once
 
-#include "Engine/Core/API.h"
 #include <cstdint>
 #include <functional>
 #include <compare>
 
 namespace Engine
 {
-	class ENGINE_API Uuid
+	class Uuid
 	{
 	public:
 		constexpr Uuid() = default;
@@ -25,7 +24,6 @@ namespace Engine
 	};
 }
 
-// Hash specialization so UUID can be used in unordered_map
 namespace std
 {
 	template<>

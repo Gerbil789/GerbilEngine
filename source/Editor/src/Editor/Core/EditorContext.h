@@ -2,6 +2,7 @@
 
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Editor/Core/EditorSettings.h"
+#include "Engine/Core/Components.h"
 
 namespace Editor
 {
@@ -14,6 +15,8 @@ namespace Editor
 		PlayMode playMode = PlayMode::PIE;
 
 		Engine::Renderer renderer;
+		Engine::CameraComponent camera;
+		Engine::TransformComponent cameraTransform;
 
 		EditorSettings settings;
 	};

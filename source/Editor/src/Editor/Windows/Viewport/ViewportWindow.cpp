@@ -11,6 +11,8 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/State.h"
 #include "Engine/Core/Log.h"
+#include "Engine/System/CameraSystem.h"
+#include "Engine/System/TransformSystem.h"
 #include <glm/glm.hpp>
 
 namespace Editor
@@ -30,6 +32,12 @@ namespace Editor
 		m_CameraController.Initialize();
 		m_TransformController.Initialize();
 		m_EntityPicker.Initialize();
+
+
+		const auto& tc = Editor::editorContext.cameraTransform;
+		const glm::mat4 localMatrix = Engine::TransformSystem::CalculateLocalPositionMatrix(tc);
+		Engine::CameraSystem::UpdateCameraViewMatrix(Editor::editorContext.camera, localMatrix);
+
 	}
 
 	static void UpdateViewportSize()
@@ -39,9 +47,6 @@ namespace Editor
 
 		m_ViewportSize = { newSize.x, newSize.y };
 
-		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
-		scene.GetRegistry().emplace_or_replace<Engine::CameraProjectionDirty>(scene.GetActiveCamera());
-		
 		Editor::editorContext.renderer.SetSize(m_ViewportSize.x, m_ViewportSize.y);
 
 		ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
@@ -113,6 +118,10 @@ namespace Editor
 
 		Engine::viewportState.positionX = m_ViewportBounds[0].x;
 		Engine::viewportState.positionY = m_ViewportBounds[0].y;
+
+
+		float aspectRatio = m_ViewportSize.x / m_ViewportSize.y;
+		Engine::CameraSystem::UpdateCameraProjectionMatrix(Editor::editorContext.camera, aspectRatio);
 	}
 
 	static void DrawOverlay(const ImVec2& imagePos, const ImVec2& size)
@@ -142,6 +151,15 @@ namespace Editor
 				if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
 				{
 					EditorCommandManager::Enqueue(std::make_unique<ChangeEditorStateCommand>(EditorMode::Play));
+
+					auto& scene = Engine::AssetManager::GetAsset(Engine::SceneManager::GetActiveScene());
+					auto& registry = scene.GetRegistry();
+					auto view = registry.view<Engine::TransformComponent, Engine::CameraComponent, Engine::PrimaryCameraTag>();
+					for(auto[entity, transform, camera] : view.each())
+					{
+						Editor::editorContext.renderer.SetCamera(camera, transform);
+						break;
+					}
 				}
 			}
 			else
@@ -149,6 +167,7 @@ namespace Editor
 				if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
 				{
 					EditorCommandManager::Enqueue(std::make_unique<ChangeEditorStateCommand>(EditorMode::Edit));
+					Editor::editorContext.renderer.SetCamera(Editor::editorContext.camera, Editor::editorContext.cameraTransform);
 				}
 			}
 		}

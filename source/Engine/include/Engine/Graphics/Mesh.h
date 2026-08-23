@@ -29,7 +29,7 @@ namespace Engine
 		std::vector<uint32_t> wireIndices;	//TODO: add compile time macro to disable in export game builds
 	};
 
-	class ENGINE_API MeshAsset : public Asset
+	class MeshAsset : public Asset
 	{
 	public:
 		MeshAsset(const MeshSpecification& specification);

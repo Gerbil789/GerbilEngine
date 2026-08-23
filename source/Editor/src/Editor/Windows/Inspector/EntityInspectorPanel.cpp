@@ -120,6 +120,12 @@ namespace Editor
 		else if (result.changed)
 		{
 			entity.AddTag<Engine::TransformDirty>();
+
+			if(entity.HasComponent<Engine::CameraComponent>())
+			{
+				entity.AddTag<Engine::CameraProjectionDirty>();
+				entity.AddTag<Engine::CameraViewDirty>();
+			}
 		}
 	}
 

@@ -109,6 +109,7 @@ namespace Engine
 		if (registry.any_of<TransformComponent>(entity))
 		{
 			eJson.transform = registry.get<TransformComponent>(entity);
+			eJson.transform->rotation = glm::degrees(eJson.transform->rotation);
 		}
 
 		// Hierarchy
@@ -304,6 +305,7 @@ namespace Engine
 			{
 				auto& tc = registry.emplace<TransformComponent>(handle);
 				tc = eJson.transform.value();
+				tc.rotation = glm::radians(tc.rotation);
 
 				registry.emplace<WorldTransformComponent>(handle);
 				registry.emplace<TransformDirty>(handle);

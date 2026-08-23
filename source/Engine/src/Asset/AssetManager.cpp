@@ -171,12 +171,12 @@ namespace Engine
     else static_assert(false, "Unsupported asset type requested in GetAsset!");
   }
 
-  template ENGINE_API Texture2DAsset& AssetManager::GetAsset(Texture2D texture);
-  template ENGINE_API MeshAsset& AssetManager::GetAsset(Mesh mesh);
-  template ENGINE_API ShaderAsset& AssetManager::GetAsset(Shader shader);
-  template ENGINE_API MaterialAsset& AssetManager::GetAsset(Material material);
-  template ENGINE_API AudioClipAsset& AssetManager::GetAsset(AudioClip clip);
-  template ENGINE_API SceneAsset& AssetManager::GetAsset(Scene scene);
+  template Texture2DAsset& AssetManager::GetAsset(Texture2D texture);
+  template MeshAsset& AssetManager::GetAsset(Mesh mesh);
+  template ShaderAsset& AssetManager::GetAsset(Shader shader);
+  template MaterialAsset& AssetManager::GetAsset(Material material);
+  template AudioClipAsset& AssetManager::GetAsset(AudioClip clip);
+  template SceneAsset& AssetManager::GetAsset(Scene scene);
 
   AssetType AssetManager::GetAssetType(Uuid id)
   {
@@ -189,13 +189,13 @@ namespace Engine
   }
 
   template<typename Handle>
-  Handle AssetManager::CreateAsset<Handle>(const std::filesystem::path& path)
+  Handle AssetManager::CreateAsset(const std::filesystem::path& path)
   {
     if constexpr (std::is_same_v<Handle, Material>)
     {
       Material handle{ Uuid::Generate() };
 
-      MaterialAsset material({});
+      MaterialAsset material(MaterialSpecification{});
       material.id = handle.id;
 
       m_Materials.insert_or_assign(handle, std::move(material));
@@ -224,8 +224,8 @@ namespace Engine
     }
   }
 
-	template ENGINE_API Material AssetManager::CreateAsset(const std::filesystem::path& path);
-	template ENGINE_API Scene AssetManager::CreateAsset(const std::filesystem::path& path);
+	template Material AssetManager::CreateAsset(const std::filesystem::path& path);
+	template Scene AssetManager::CreateAsset(const std::filesystem::path& path);
 
 
 
@@ -249,6 +249,10 @@ namespace Engine
       {
         Engine::MaterialSerializer::Serialize(Material{ record.id }, record.path);
         break;
+      }
+      default:
+      {
+
       }
       }
     }

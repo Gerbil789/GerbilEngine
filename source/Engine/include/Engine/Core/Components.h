@@ -9,39 +9,39 @@ namespace Engine
 {
 	class Script;
 
-	struct ENGINE_API EditorTag {};
-	struct ENGINE_API DisabledTag {};
-	struct ENGINE_API TransformDirty {};
+	struct EditorTag {};
+	struct DisabledTag {};
+	struct TransformDirty {};
 
-	struct ENGINE_API IdentityComponent
+	struct IdentityComponent
 	{
 		Uuid id;
 	};
 
-	struct ENGINE_API NameComponent
+	struct NameComponent
 	{
 		std::string name;
 	};
 
-	struct ENGINE_API TransformComponent
+	struct TransformComponent
 	{
 		glm::vec3 position = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 rotation = { 0.0f, 0.0f, 0.0f }; // radians
 		glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
 	};
 
-	struct ENGINE_API WorldTransformComponent
+	struct WorldTransformComponent
 	{
 		glm::mat4 worldMatrix{ 1.0f };
 	};
 
-	struct ENGINE_API HierarchyComponent
+	struct HierarchyComponent
 	{
 		entt::entity parent{ entt::null };
 		std::vector<entt::entity> children; //TODO: vector uses heap allocation, not good in hot path...
 	};
 
-	struct ENGINE_API MeshComponent
+	struct MeshComponent
 	{
 		Mesh mesh;
 		std::vector<Material> materials;
@@ -50,7 +50,7 @@ namespace Engine
 	enum class BodyType { Static = 0, Dynamic, Kinematic };
 	enum class ColliderShape { Box, Sphere, Mesh };
 
-	struct ENGINE_API ColliderComponent
+	struct ColliderComponent
 	{
 		ColliderShape shape = ColliderShape::Box;
 		BodyType type = BodyType::Dynamic;
@@ -59,11 +59,11 @@ namespace Engine
 		bool isTrigger = false;
 	};
 	
-	struct ENGINE_API PrimaryCameraTag {};
-	struct ENGINE_API CameraViewDirty {};
-	struct ENGINE_API CameraProjectionDirty {};
+	struct PrimaryCameraTag {};
+	struct CameraViewDirty {};
+	struct CameraProjectionDirty {};
 
-	struct ENGINE_API CameraComponent
+	struct CameraComponent
 	{
 		enum class Projection { Perspective, Orthographic };
 		enum class Background { Color, Skybox };
@@ -93,7 +93,7 @@ namespace Engine
 
 	enum class LightType { Directional = 0, Spot, Point };
 
-	struct ENGINE_API LightComponent
+	struct LightComponent
 	{
 		LightType type = LightType::Directional;
 
@@ -128,7 +128,7 @@ namespace Engine
 		};
 	};
 
-	struct ENGINE_API ScriptComponent
+	struct ScriptComponent
 	{
 		uint32_t id{ 0 };
 		Script* instance = nullptr;
@@ -139,7 +139,7 @@ namespace Engine
 	{
 		struct LayoutDirtyTag {};
 
-		struct ENGINE_API RectTransform
+		struct RectTransform
 		{
 			glm::vec2 anchorMin{ 0.5f, 0.5f };
 			glm::vec2 anchorMax{ 0.5f, 0.5f };
@@ -152,20 +152,20 @@ namespace Engine
 			glm::vec2 absoluteSize{ 0.0f, 0.0f };
 		};
 
-		struct ENGINE_API Canvas
+		struct Canvas
 		{
 			bool isScreenSpace = true;
 			glm::vec2 referenceResolution{ 1920.0f, 1080.0f };
 			float matchWidthOrHeight = 0.5f; // 0 = match width, 1 = match height, 0.5 = balance
 		};
 
-		struct ENGINE_API Image
+		struct Image
 		{
 			std::string iconName; //TODO: dont use strings as key!!!
 			glm::vec4 tint{ 1.0f, 1.0f, 1.0f, 1.0f };
 		};
 
-		struct ENGINE_API Text
+		struct Text
 		{
 			std::string text = "Gerbil";
 			std::string fontName = "Arvo-Regular";
@@ -178,14 +178,14 @@ namespace Engine
 
 
 
-		//struct ENGINE_API Interactable
+		//struct Interactable
 		//{
 		//	bool isHovered{ false };
 		//	bool isPressed{ false };
 		//	bool isDisabled{ false };
 		//};
 
-		//struct ENGINE_API Button
+		//struct Button
 		//{
 		//	glm::vec4 normalColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 		//	glm::vec4 hoverColor{ 0.8f, 0.8f, 0.8f, 1.0f };

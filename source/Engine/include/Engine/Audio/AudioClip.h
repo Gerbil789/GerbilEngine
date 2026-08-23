@@ -6,7 +6,7 @@
 
 namespace Engine
 {
-	class ENGINE_API AudioClipAsset : public Asset
+	class AudioClipAsset : public Asset
 	{
 	public:
 		AudioClipAsset(const std::filesystem::path& path);

@@ -9,7 +9,7 @@ namespace Engine
 {
   using AudioInstance = AudioClip;
 
-  class ENGINE_API Audio
+  class Audio
   {
   public:
     static void Initialize();

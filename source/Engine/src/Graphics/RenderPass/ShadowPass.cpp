@@ -145,8 +145,8 @@ namespace Engine
 				std::vector<float> splits;
 				splits.resize(s_ShadowCascadeCount);
 
-				float near = context.cameraComponent.perspective.nearClip;
-				float far = context.cameraComponent.perspective.farClip;
+				float near = context.camera->perspective.nearClip;
+				float far = context.camera->perspective.farClip;
 
 				glm::quat q = glm::quat(glm::radians(transform.rotation));
 				glm::vec3 forward = q * glm::vec3(0, 0, 1);
@@ -259,7 +259,8 @@ namespace Engine
 
 			Mesh lastMesh;
 
-			for (const auto& [i, item] : std::views::enumerate(context.drawList.GetItems()))
+			size_t i = 0;
+			for (const auto& item : context.drawList.GetItems())
 			{
 				if (item.mesh != lastMesh)
 				{
@@ -267,9 +268,10 @@ namespace Engine
 					pass.SetVertexBuffer(0, mesh.GetVertexBuffer(), 0, mesh.GetVertexBuffer().GetSize());
 					pass.SetIndexBuffer(mesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh.GetIndexBuffer().GetSize());
 					lastMesh = item.mesh;
-				}
 
+				}
 				pass.DrawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));
+				i++;
 			}
 
 			pass.End();

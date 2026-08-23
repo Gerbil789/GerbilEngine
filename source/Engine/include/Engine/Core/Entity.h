@@ -1,13 +1,12 @@
 #pragma once
 
-#include "Engine/Core/API.h"
 #include <entt/entity/entity.hpp>
 
 namespace Engine
 {
   class SceneAsset;
 
-  class ENGINE_API Entity
+  class Entity
   {
   public:
 		Entity() = default;

@@ -4,6 +4,6 @@
 
 namespace Engine::SceneManager
 {
-	ENGINE_API void SetActiveScene(Scene scene);
-	ENGINE_API Scene GetActiveScene();
+	void SetActiveScene(Scene scene);
+	Scene GetActiveScene();
 }

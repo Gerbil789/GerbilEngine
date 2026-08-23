@@ -50,14 +50,4 @@ namespace Engine
 			m_RootEntities.erase(it);
 		}
 	}
-
-	void SceneAsset::SetActiveCamera(entt::entity entity)
-	{
-		m_CameraEntity = entity;
-	}
-
-	entt::entity SceneAsset::GetActiveCamera()
-	{
-		return m_CameraEntity;
-	}
 }

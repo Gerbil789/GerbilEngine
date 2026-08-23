@@ -19,24 +19,10 @@ namespace Editor
     {
 			Editor::editorContext.editorMode = m_State;
 
-			Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
-			entt::registry& registry = scene.GetRegistry();
-
 			switch(Editor::editorContext.editorMode)
 			{
 				case EditorMode::Play:
 				{
-					auto view = registry.view<Engine::CameraComponent, Engine::PrimaryCameraTag>(entt::exclude<Engine::EditorTag>);
-					entt::entity gameCameraEntity = view.front();
-
-					if (gameCameraEntity == entt::null) return;
-
-					scene.SetActiveCamera(gameCameraEntity);
-
-					//registry.emplace_or_replace<Engine::TransformDirty>(gameCameraEntity);
-					//registry.emplace_or_replace<Engine::CameraProjectionDirty>(gameCameraEntity);
-					//registry.emplace_or_replace<Engine::CameraViewDirty>(gameCameraEntity);
-
 					Engine::Runtime::Start();
 					SelectionManager::Entities.Clear();
 					break;
@@ -44,9 +30,6 @@ namespace Editor
 	
 				case EditorMode::Edit:
 				{
-					auto view = registry.view<Engine::CameraComponent, Engine::EditorTag>();
-					scene.SetActiveCamera(view.front());
-
 					Engine::Runtime::Stop();
 					break;
 				}

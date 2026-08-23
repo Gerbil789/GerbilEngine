@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Engine/Core/API.h"
-
 namespace Engine
 {
 	struct ViewportState
@@ -13,5 +11,5 @@ namespace Engine
 		float height = 0.0f;
 	};
 
-	extern ENGINE_API ViewportState viewportState;
+	extern ViewportState viewportState;
 }

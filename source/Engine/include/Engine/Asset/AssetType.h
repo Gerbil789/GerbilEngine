@@ -1,10 +1,6 @@
 #pragma once
 
-#include "Engine/Core/API.h"
 #include <string_view>
-
-
-//TODO: delete this?
 
 namespace Engine
 {
@@ -12,5 +8,5 @@ namespace Engine
 
 	AssetType GetAssetTypeFromExtension(std::string_view extension);
 
-	ENGINE_API std::string_view AssetTypeToString(AssetType type);
+	std::string_view AssetTypeToString(AssetType type);
 }

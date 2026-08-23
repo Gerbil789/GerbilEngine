@@ -87,24 +87,24 @@ namespace Engine
 
 
 #define INSTANTIATE_COMPONENT(ComponentType) \
-        template ENGINE_API ComponentType& Entity::AddComponent<ComponentType>(); \
-        template ENGINE_API ComponentType& Entity::GetComponent<ComponentType>(); \
-        template ENGINE_API bool Entity::HasComponent<ComponentType>(); \
-        template ENGINE_API void Entity::RemoveComponent<ComponentType>(); \
-				template ENGINE_API ComponentType& Entity::GetOrAddComponent<ComponentType>(); \
-				template ENGINE_API ComponentType* Entity::TryGetComponent<ComponentType>();
+        template ComponentType& Entity::AddComponent<ComponentType>(); \
+        template ComponentType& Entity::GetComponent<ComponentType>(); \
+        template bool Entity::HasComponent<ComponentType>(); \
+        template void Entity::RemoveComponent<ComponentType>(); \
+				template ComponentType& Entity::GetOrAddComponent<ComponentType>(); \
+				template ComponentType* Entity::TryGetComponent<ComponentType>();
 
 
-	template ENGINE_API void Entity::AddTag<DisabledTag>();
-	template ENGINE_API void Entity::AddTag<TransformDirty>();
-	template ENGINE_API void Entity::AddTag<PrimaryCameraTag>();
-	template ENGINE_API void Entity::AddTag<CameraProjectionDirty>();
+	template void Entity::AddTag<DisabledTag>();
+	template void Entity::AddTag<TransformDirty>();
+	template void Entity::AddTag<PrimaryCameraTag>();
+	template void Entity::AddTag<CameraProjectionDirty>();
+	template void Entity::AddTag<CameraViewDirty>();
+
+	template bool Entity::HasTag<PrimaryCameraTag>();
 
 
-	template ENGINE_API bool Entity::HasTag<PrimaryCameraTag>();
-
-
-	template ENGINE_API void Entity::RemoveTag<PrimaryCameraTag>();
+	template void Entity::RemoveTag<PrimaryCameraTag>();
 
 	INSTANTIATE_COMPONENT(IdentityComponent)
 
@@ -128,7 +128,7 @@ namespace Engine
 
 	// --- UI COMPONENTS HERE ---
 
-	template ENGINE_API void Entity::AddTag<UI::LayoutDirtyTag>();
+	template void Entity::AddTag<UI::LayoutDirtyTag>();
 
 	INSTANTIATE_COMPONENT(UI::RectTransform)
 

@@ -12,7 +12,7 @@ namespace Engine
     TextureCube PrefilteredSpecularMap;
   };
 
-  class ENGINE_API EnvironmentBaker
+  class EnvironmentBaker
   {
   public:
     static Environment BakeEnvironment(Texture2D equirectangularHDR);

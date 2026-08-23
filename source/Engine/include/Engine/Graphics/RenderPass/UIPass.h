@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	class ENGINE_API UIPass : public RenderPass
+	class UIPass : public RenderPass
 	{
 	public:
 		UIPass();

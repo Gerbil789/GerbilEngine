@@ -10,6 +10,12 @@
 
 namespace Engine
 {
+  const glm::mat4 TransformSystem::CalculateLocalPositionMatrix(const TransformComponent& transform)
+  {
+    return glm::translate(glm::mat4(1.0f), transform.position) * glm::toMat4(glm::quat(transform.rotation)) * glm::scale(glm::mat4(1.0f), transform.scale);
+  }
+
+
   void UpdateEntityTransformRecursive(entt::registry& registry, entt::entity entity, const glm::mat4& parentWorldMatrix, bool forceUpdate = false)
   {
     if (!registry.any_of<TransformComponent>(entity)) return;
@@ -21,7 +27,7 @@ namespace Engine
 
     if (needsUpdate)
     {
-      const glm::mat4 localMatrix = glm::translate(glm::mat4(1.0f), tc.position) * glm::toMat4(glm::quat(tc.rotation)) * glm::scale(glm::mat4(1.0f), tc.scale);
+      const glm::mat4 localMatrix = TransformSystem::CalculateLocalPositionMatrix(tc);
 
 			wtc.worldMatrix = parentWorldMatrix * localMatrix;
       registry.remove<TransformDirty>(entity);

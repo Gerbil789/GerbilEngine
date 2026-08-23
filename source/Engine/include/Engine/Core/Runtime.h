@@ -2,10 +2,10 @@
 
 namespace Engine
 {
-	class ENGINE_API Runtime
+	class Runtime
 	{
 	public:
-		static void LoadScripts(const std::filesystem::path& dllPath);
+		static void LoadScripts();
 
 		static void Start();
 		static void Stop();

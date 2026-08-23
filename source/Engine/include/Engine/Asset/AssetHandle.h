@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Engine/Core/UUID.h"
-#include <functional>
 
 namespace Engine
 {
@@ -12,7 +11,7 @@ namespace Engine
   class AudioClipAsset;
   class SceneAsset;
 
-  template <typename T_Asset>
+  template <typename Asset>
   struct AssetHandle
   {
     Engine::Uuid id = 0;
@@ -21,8 +20,8 @@ namespace Engine
     constexpr explicit AssetHandle(Engine::Uuid uuid) : id(uuid) {}
 
     operator bool() const { return static_cast<bool>(id); }
-    bool operator==(const AssetHandle<T_Asset>& other) const { return id == other.id; }
-    bool operator!=(const AssetHandle<T_Asset>& other) const { return id != other.id; }
+    bool operator==(const AssetHandle<Asset>& other) const { return id == other.id; }
+    bool operator!=(const AssetHandle<Asset>& other) const { return id != other.id; }
   };
 
   using Texture2D = AssetHandle<Texture2DAsset>;
@@ -40,7 +39,7 @@ namespace std
   {
     std::size_t operator()(const Engine::AssetHandle<T>& handle) const
     {
-      return std::hash<Engine::Uuid>()(handle.id);
+      return handle.id;
     }
   };
 }

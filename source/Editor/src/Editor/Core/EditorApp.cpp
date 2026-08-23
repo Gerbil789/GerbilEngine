@@ -1,13 +1,11 @@
-#ifndef DIST
 #define WEBGPU_CPP_IMPLEMENTATION //TODO: handle macros in premake
-#endif
 
-#include "EditorApp.h"
+#include "Editor/Core/EditorApp.h"
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Core/EditorWindowManager.h"
 #include "Editor/Command/EditorCommandManager.h"
-#include "Editor/Utility/FileWatcher.h"
 #include "Editor/Core/SelectionManager.h"
+#include "Editor/Core/EditorState.h"
 
 #include "Engine/Core/Log.h"
 #include "Engine/Core/Time.h"
@@ -21,101 +19,44 @@
 #include "Engine/Event/ApplicationEvent.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/SceneManager.h"
-#include "Engine/Audio/Audio.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Debug/RenderDoc.h"
-#include "Editor/Core/EditorState.h"
 #include "Engine/System/TransformSystem.h"
-#include "Engine/Graphics/Font.h"
 
 namespace Editor
 {
-	namespace
-	{
-		Engine::Window m_Window;
-		bool m_Running = true;
-	}
-
-	EditorApp::EditorApp()
+	void EditorApp::Initialize(const Engine::Window& window)
 	{
 		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
 
-		Engine::Project::Load(Editor::GetProjectPath());
-		const Engine::Project& project = Engine::Project::GetActive();
+		Editor::editorContext.camera.background = Engine::CameraComponent::Background::Skybox;
+		Editor::editorContext.camera.projectionType = Engine::CameraComponent::Projection::Perspective;
+		Editor::editorContext.cameraTransform.position = glm::vec3{ 0.0f, 0.0f, -20.0f };
 
-		Engine::GraphicsContext::Initialize();
-		GLFW::Initialize();
-
-		m_Window.Initialize({ std::format("Gerbil Editor - {}", Engine::Configuration) , 1600, 900, "resources/icons/logo.png" });
-		
-		m_Window.SetEventCallback([](auto& e) {Engine::EventBus::Publish(e); });
-
-		Engine::AssetManager::Initialize(project.GetProjectDirectory());
-
-		Engine::Input::SetActiveWindow(*m_Window.GetNativeWindow());
 		Editor::editorContext.renderer.Initialize();
 		Editor::editorContext.renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque | Engine::RenderPassType::UI/* | Engine::RenderPassType::Normal | Engine::RenderPassType::Wireframe*/);
+		Editor::editorContext.renderer.SetCamera(Editor::editorContext.camera, Editor::editorContext.cameraTransform);
+
 		EditorCommandManager::Initialize();
-		FileWatcher::WatchDirectory(project.GetAssetsDirectory());
-		Engine::Audio::Initialize();
-		EditorWindowManager::Initialize(m_Window);
+		EditorWindowManager::Initialize(window);
 		SelectionManager::Initialize();
-		Engine::FontManager::Initialize();
 
-		Engine::EventBus::Subscribe<Engine::SceneChangedEvent>([this](auto& e)
-			{
-				const std::string& name = Engine::AssetManager::GetAssetPath(e.scene.id).stem().string();
-				m_Window.SetTitle(std::format("Gerbil Editor - {} - Scene: {}", Engine::Configuration, name));
-				return false;
-			});
-
-		std::filesystem::path dllPath = project.GetProjectDirectory() / "bin/windows/" / Engine::Configuration / (project.GetTitle() + ".dll");
-		Engine::Runtime::LoadScripts(dllPath);
-
-		Engine::Scene defaultScene = project.GetDefaultScene();
-		Engine::SceneManager::SetActiveScene(defaultScene);
-
-
-		Engine::EventBus::Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); return false; });
 		LOG_INFO("--- Editor initialization complete ---");
 	}
 
-	EditorApp::~EditorApp()
+	void EditorApp::Shutdown()
 	{
-		FileWatcher::Shutdown();
-		Engine::Audio::Shutdown();
 		EditorWindowManager::Shutdown();
-		m_Window.Shutdown();
-		GLFW::Shutdown();
-		Engine::GraphicsContext::Shutdown();
 	}
 
-	void EditorApp::Run()
+	void EditorApp::Update()
 	{
-		while (m_Running)
+		EditorWindowManager::Update();
+		EditorCommandManager::ExecuteDeferredCommands();
+
+		if (Editor::editorContext.editorMode == EditorMode::Play)
 		{
-			if (m_Window.IsMinimized())
-			{
-				GLFW::WaitEvents();
-				Engine::Time::BeginFrame();
-				continue;
-			}
-
-			Engine::Time::BeginFrame();
-			Engine::Input::Update();
-			Engine::Audio::Update();
-
-			Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
-
-			EditorWindowManager::Update();
-			EditorCommandManager::ExecuteDeferredCommands();
-
-			Engine::TransformSystem::Update(scene);
-
-			if (Editor::editorContext.editorMode == EditorMode::Play)
-			{
-				Engine::Runtime::Update();
-			}
+			Engine::Runtime::Update();
 		}
 	}
 }

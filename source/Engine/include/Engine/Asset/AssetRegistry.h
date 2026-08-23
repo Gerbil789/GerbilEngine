@@ -11,7 +11,7 @@ namespace Engine
 		std::vector<Uuid> assets;
 	};
 
-	class ENGINE_API AssetRegistry
+	class AssetRegistry
 	{
 	public:
 		void Load();

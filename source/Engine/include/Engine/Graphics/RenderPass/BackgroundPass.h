@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	class ENGINE_API BackgroundPass : public RenderPass
+	class BackgroundPass : public RenderPass
 	{
 	public:
 		BackgroundPass();

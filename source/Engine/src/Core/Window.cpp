@@ -6,7 +6,10 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include <stb_image.h>
 #include <GLFW/glfw3.h>
+
+#if defined(ENGINE_PLATFORM_WINDOWS)
 #include <GLFW/glfw3native.h>
+#endif
 
 //TODO: move event callbacks into input system?
 
@@ -37,7 +40,7 @@ namespace Engine
 {
 	wgpu::Surface m_Surface;
 
-	static wgpu::Surface CreateSurface(GLFWwindow* window)
+	static wgpu::Surface CreateSurface([[maybe_unused]]GLFWwindow* window)
 	{
 		wgpu::SurfaceDescriptor surfaceDesc;
 		surfaceDesc.label = "WindowSurface";
@@ -48,12 +51,16 @@ namespace Engine
 		hwndDesc.hinstance = GetModuleHandle(nullptr);
 		hwndDesc.sType = wgpu::SType::SurfaceSourceWindowsHWND;
 		surfaceDesc.nextInChain = &hwndDesc;
-#else
+#elif defined(ENGINE_PLATFORM_LINUX)
 		wgpu::SurfaceSourceXlibWindow x11Desc;
 		x11Desc.chain.sType = wgpu::SType::SurfaceSourceXlibWindow;
 		x11Desc.display = glfwGetX11Display();
 		x11Desc.window = glfwGetX11Window(window);
 		surfaceDesc.nextInChain = &x11Desc.chain;
+#elif defined(ENGINE_PLATFORM_WEB)
+		wgpu::SurfaceDescriptorFromCanvasHTMLSelector canvasDesc{};
+		canvasDesc.selector = "#canvas";
+		surfaceDesc.nextInChain = &canvasDesc;
 #endif
 		return GraphicsContext::GetInstance().CreateSurface(&surfaceDesc);
 	}

@@ -41,7 +41,8 @@ namespace Engine
 		Mesh lastMesh;
 		Material lastMaterial;
 
-		for (const auto& [i, item] : std::views::enumerate(context.drawList.GetItems()))
+		size_t i = 0;
+		for (const auto& item : context.drawList.GetItems())
 		{
 			if (item.mesh != lastMesh)
 			{
@@ -62,6 +63,7 @@ namespace Engine
 			}
 
 			pass.DrawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));
+			i++;
 		}
 
 		pass.End();

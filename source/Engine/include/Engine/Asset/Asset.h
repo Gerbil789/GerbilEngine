@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	class ENGINE_API Asset
+	class Asset
 	{
 	public:
 		Uuid id;

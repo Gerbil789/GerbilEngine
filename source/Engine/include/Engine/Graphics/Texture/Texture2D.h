@@ -15,7 +15,7 @@ namespace Engine
 		bool generateMips = false;
 	};
 
-	class ENGINE_API Texture2DAsset : public Asset
+	class Texture2DAsset : public Asset
 	{
 	public:
 		Texture2DAsset(const TextureSpecification& specification, const void* data);

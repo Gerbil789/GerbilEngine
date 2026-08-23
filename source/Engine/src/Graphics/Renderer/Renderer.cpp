@@ -243,20 +243,12 @@ namespace Engine
 	{
 		m_RenderContext.scene = &scene;
 
-		entt::registry& registry = scene.GetRegistry();
-		entt::entity cameraEntity = scene.GetActiveCamera();
-
-		const auto& tc = registry.get<TransformComponent>(cameraEntity);
-		const auto& cc = registry.get<CameraComponent>(cameraEntity);
-
-		m_RenderContext.cameraComponent = cc; //TODO: do i need camera component in context?
-
-		CameraSystem::Update(registry, m_RenderContext.width / m_RenderContext.height);
+		CameraSystem::Update(scene.GetRegistry(), m_RenderContext.width / m_RenderContext.height);
 
 		ViewUniforms viewUniforms;
-		viewUniforms.view = cc.viewMatrix;
-		viewUniforms.projection = cc.projectionMatrix;
-		viewUniforms.cameraPosition = tc.position;
+		viewUniforms.view = m_RenderContext.camera->viewMatrix;
+		viewUniforms.projection = m_RenderContext.camera->projectionMatrix;
+		viewUniforms.cameraPosition = m_RenderContext.cameraTransform->position;
 
 		GraphicsContext::GetQueue().WriteBuffer(m_RenderContext.viewUniformBuffer, 0, &viewUniforms, sizeof(viewUniforms));
 

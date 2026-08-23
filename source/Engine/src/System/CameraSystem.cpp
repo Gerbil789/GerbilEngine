@@ -32,38 +32,46 @@ namespace Engine
 		return std::array<glm::vec3, 8>();
 	}
 
+
+
+	void CameraSystem::UpdateCameraProjectionMatrix(CameraComponent& camera, float aspectRatio)
+	{
+		if(camera.projectionType == CameraComponent::Projection::Perspective)
+		{
+			camera.projectionMatrix = glm::perspectiveLH_ZO(camera.perspective.fov, aspectRatio, camera.perspective.nearClip, camera.perspective.farClip);
+		}
+		else
+		{
+			float halfHeight = camera.orthographic.size * 0.5f;
+			float halfWidth = halfHeight * aspectRatio;
+			camera.projectionMatrix = glm::orthoLH_ZO(-halfWidth, halfWidth, -halfHeight, halfHeight, camera.orthographic.nearClip, camera.orthographic.farClip);
+		}
+		camera.viewProjectionMatrix = camera.projectionMatrix * camera.viewMatrix;
+	}
+
+	void CameraSystem::UpdateCameraViewMatrix(CameraComponent& camera, const glm::mat4& worldMatrix)
+	{
+		glm::vec3 position = worldMatrix[3];
+		glm::vec3 forward = glm::normalize(glm::vec3(worldMatrix[2]));
+		glm::vec3 up = glm::normalize(glm::vec3(worldMatrix[1]));
+
+		camera.viewMatrix = glm::lookAtLH(position, position + forward, up);
+		camera.viewProjectionMatrix = camera.projectionMatrix * camera.viewMatrix;
+	}
+
 	void CameraSystem::Update(entt::registry& registry, float aspectRatio)
 	{
     auto projView = registry.view<CameraComponent, CameraProjectionDirty>(entt::exclude<DisabledTag>);
     for (auto [entity, camera] : projView.each())
     {
-      if (camera.projectionType == CameraComponent::Projection::Perspective)
-      {
-        camera.projectionMatrix = glm::perspectiveLH_ZO(camera.perspective.fov, aspectRatio, camera.perspective.nearClip, camera.perspective.farClip);
-      }
-      else
-      {
-				float halfHeight = camera.orthographic.size * 0.5f;
-				float halfWidth = halfHeight * aspectRatio;
-        camera.projectionMatrix = glm::orthoLH_ZO(-halfWidth, halfWidth, -halfHeight, halfHeight, camera.orthographic.nearClip, camera.orthographic.farClip);
-      }
-
-      camera.viewProjectionMatrix = camera.projectionMatrix * camera.viewMatrix;
+			UpdateCameraProjectionMatrix(camera, aspectRatio);
       registry.remove<CameraProjectionDirty>(entity);
     }
 
-		auto viewView = registry.view<CameraComponent, WorldTransformComponent>();
+		auto viewView = registry.view<CameraComponent, WorldTransformComponent, CameraViewDirty>();
     for (auto [entity, camera, worldTransform] : viewView.each())
     {
-			if (!registry.any_of<CameraViewDirty, TransformDirty>(entity)) continue;
-
-      const glm::mat4& world = worldTransform.worldMatrix;
-      glm::vec3 position = world[3];
-      glm::vec3 forward = glm::normalize(glm::vec3(world[2]));
-      glm::vec3 up = glm::normalize(glm::vec3(world[1]));
-
-      camera.viewMatrix = glm::lookAtLH(position, position + forward, up);
-      camera.viewProjectionMatrix = camera.projectionMatrix * camera.viewMatrix;
+			UpdateCameraViewMatrix(camera, worldTransform.worldMatrix);
       registry.remove<CameraViewDirty>(entity);
     }
 	}

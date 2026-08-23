@@ -25,12 +25,12 @@ files
   "src/osmesa_context.c"
 }
 
-filter { "system:windows", "configurations:not Dist" }
-	kind "SharedLib"
-  defines 
-  { 
-    "_GLFW_BUILD_DLL",
-  }
+-- filter { "system:windows", "configurations:not Dist" }
+-- 	kind "SharedLib"
+--   defines 
+--   { 
+--     "_GLFW_BUILD_DLL",
+--   }
 
 filter "system:windows"
   defines 

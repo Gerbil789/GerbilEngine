@@ -7,7 +7,7 @@
 
 namespace Engine
 {
-	class ENGINE_API SceneAsset : public Asset
+	class SceneAsset : public Asset
 	{
 	public:
 		SceneAsset() = default;
@@ -37,7 +37,6 @@ namespace Engine
 			return Entity(entity, this);
 		}
 
-
 		void DestroyEntity(Entity entity);
 		Entity GetEntity(Uuid entityId);
 
@@ -47,9 +46,6 @@ namespace Engine
 		void InsertRootEntity(entt::entity entity, size_t index);
 		void RemoveRootEntity(entt::entity entity);
 
-		void SetActiveCamera(entt::entity entity);
-		entt::entity GetActiveCamera();
-
 		Texture2D GetEnvironmentTexture() const { return m_EnvironmentTexture; }
 		void SetEnvironmentTexture(Texture2D texture) { m_EnvironmentTexture = texture; }
 
@@ -57,9 +53,6 @@ namespace Engine
 		entt::registry m_Registry;
 		std::unordered_map<Engine::Uuid, entt::entity> m_EntityMap;
 		std::vector<entt::entity> m_RootEntities;
-
-		entt::entity m_CameraEntity = entt::null;
-
 		Texture2D m_EnvironmentTexture;
 
 	private:

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Core/API.h"
 #include "Engine/Event/Event.h"
 #include <unordered_map>
 #include <functional>
@@ -11,7 +10,7 @@ namespace Engine
   template<typename T>
   concept IsEvent = std::is_base_of_v<Event, std::remove_cvref_t<T>>;
 
-  class ENGINE_API EventBus
+  class EventBus
   {
   public:
     EventBus() = delete;

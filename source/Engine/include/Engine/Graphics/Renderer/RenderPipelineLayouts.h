@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Core/API.h"
 #ifdef __EMSCRIPTEN__
 #include <webgpu/webgpu_cpp.h> // The official Emscripten Dawn C++ header
 #else
@@ -9,7 +8,7 @@
 
 namespace Engine
 {
-	class ENGINE_API RenderPipelineLayouts
+	class RenderPipelineLayouts
 	{
 	public:
 		static void Initialize();

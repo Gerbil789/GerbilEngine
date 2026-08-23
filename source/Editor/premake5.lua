@@ -1,15 +1,16 @@
 project "Editor"
-kind "ConsoleApp"
+kind "StaticLib"
 removeplatforms { "Linux", "Web" }
 
 files
 {
 	"src/Editor/**.h",
-	"src/Editor/**.cpp",
+	"src/**.cpp",
 }
 
 includedirs
 {
+	"include",
 	"src",
 	"%{wks.location}/source/Engine/include",
 }
@@ -47,25 +48,13 @@ postbuildcommands
 	"{COPYFILE} %{wks.location}/vendor/renderdoc/renderdoc.dll %{cfg.targetdir}",
 }
 
-filter "configurations:not Dist"
-	postbuildcommands 
-  {
-		"{ECHO} Copying webgpu_dawn.dll",
-    "{COPYFILE} %{wks.location}/vendor/dawn/shared/webgpu_dawn.dll %{cfg.targetdir}",
-  }
+postbuildcommands 
+{
+	"{ECHO} Copying webgpu_dawn.dll",
+  "{COPYFILE} %{wks.location}/vendor/dawn/shared/webgpu_dawn.dll %{cfg.targetdir}",
+}
 
-	defines
-	{
-		"ENGINE_SHARED_IMPORT",
-	}
-
-	libdirs 
-	{
-		"%{wks.location}/vendor/dawn/shared",
-	}
-
-filter "configurations:Dist"
-	libdirs
-	{
-		"%{wks.location}/vendor/dawn/static",
-	}
+libdirs 
+{
+	"%{wks.location}/vendor/dawn/shared",
+}

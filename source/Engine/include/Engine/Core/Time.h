@@ -1,10 +1,8 @@
 #pragma once
 
-#include "Engine/Core/API.h"
-
 namespace Engine
 {
-  class ENGINE_API Time
+  class Time
   {
   public:
     static void BeginFrame();

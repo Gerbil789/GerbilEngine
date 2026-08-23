@@ -199,9 +199,11 @@ namespace Engine
 
         case ShaderValueType::Vec4:
 					param.defaultValue.emplace<glm::vec4>(nums[0], nums[1], nums[2], nums[3]);
-
           break;
+
+        default: {}
         }
+
       }
     }
    

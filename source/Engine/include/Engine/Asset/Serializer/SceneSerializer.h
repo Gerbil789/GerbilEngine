@@ -6,7 +6,7 @@
 
 namespace Engine
 {
-	class ENGINE_API SceneSerializer
+	class SceneSerializer
 	{
 	public:
 		static void Serialize(Scene scene, const std::filesystem::path& path);

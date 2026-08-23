@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	class ENGINE_API ShadowPass : public RenderPass
+	class ShadowPass : public RenderPass
 	{
 	public:
 		ShadowPass();

@@ -48,9 +48,6 @@ namespace Editor
 		if (Editor::editorContext.editorMode == EditorMode::Play) return;
 		if (gizmoType == 0) return;
 
-		entt::entity cameraEntity = scene.GetActiveCamera();
-		if (cameraEntity == entt::null) return;
-
 		Engine::Uuid selectedId = SelectionManager::Entities.GetPrimary();
 		if (!selectedId) return;
 
@@ -63,7 +60,7 @@ namespace Editor
 		ImGuizmo::SetDrawlist();
 		ImGuizmo::SetRect(x, y, width, height);
 
-		auto& cc = registry.get<Engine::CameraComponent>(cameraEntity);
+		auto& cc = Editor::editorContext.camera;
 
 		glm::mat4 cameraProjection = cc.projectionMatrix;
 		glm::mat4 cameraView = cc.viewMatrix;
@@ -127,13 +124,12 @@ namespace Editor
 				}
 
 				glm::mat4 newLocal = glm::inverse(parentWorld) * newWorld;
-				glm::vec3 rot;
-				glm::vec3 trans, scale;
+				glm::vec3 trans, rot, scale;
 				ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(newLocal), glm::value_ptr(trans), glm::value_ptr(rot), glm::value_ptr(scale));
 
 				auto& tc = entity.GetComponent<Engine::TransformComponent>();
 				tc.position = trans;
-				tc.rotation = rot;
+				tc.rotation = glm::radians(rot);
 				tc.scale = scale;
 				entity.AddTag<Engine::TransformDirty>();
 			}
@@ -157,10 +153,9 @@ namespace Editor
 						parentWorld = parentWTC.worldMatrix;
 					}
 					glm::mat4 initialLocal = glm::inverse(parentWorld) * initialWorld;
-					glm::vec3 rot;
-					glm::vec3 trans, scale;
+					glm::vec3 trans, rot, scale;
 					ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(initialLocal), glm::value_ptr(trans), glm::value_ptr(rot), glm::value_ptr(scale));
-					before.push_back({ trans, rot, scale });
+					before.push_back({ trans, glm::radians(rot), scale });
 				}
 			}
 

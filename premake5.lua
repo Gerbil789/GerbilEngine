@@ -30,10 +30,10 @@ filter "system:linux"
   linkoptions  { "-stdlib=libc++" }
 	pic "on"
 
-	defines
-  {
-    "ENGINE_PLATFORM_LINUX",
-  }
+	-- defines
+  -- {
+  --   "ENGINE_PLATFORM_LINUX",
+  -- }
 
 
 filter "system:emscripten"
@@ -67,7 +67,7 @@ objdir    ("bin-int/" .. outputdir .. "/%{prj.name}")
 
 group ""
 	include "source/Engine"
-	include "source/Skeleton"
+	-- include "source/Skeleton"
   include "source/Editor"
 
 group "Projects"

@@ -14,20 +14,20 @@ namespace Engine::Input
 {
 	enum class CursorMode { Normal, Hidden, Disabled };
 
-	ENGINE_API void SetActiveWindow(GLFWwindow& window);
-	ENGINE_API void Update();
+	void SetActiveWindow(GLFWwindow& window);
+	void Update();
 	//ENGINE_API void OnEvent(Event& e);
 
-	ENGINE_API bool IsKeyDown(Key key);
-	ENGINE_API bool IsKeyPressedOnce(Key key);
-	ENGINE_API bool IsKeyReleased(Key key);
+	bool IsKeyDown(Key key);
+	bool IsKeyPressedOnce(Key key);
+	bool IsKeyReleased(Key key);
 
-	ENGINE_API bool IsMouseButtonPressed(Mouse button);
-	ENGINE_API glm::vec2 GetMousePosition();
+	bool IsMouseButtonPressed(Mouse button);
+	glm::vec2 GetMousePosition();
 
-	ENGINE_API void SetCursorMode(CursorMode mode);
-	ENGINE_API CursorMode GetCursorMode();
-	ENGINE_API void SetCursorPosition(const glm::vec2& position);
+	void SetCursorMode(CursorMode mode);
+	CursorMode GetCursorMode();
+	void SetCursorPosition(const glm::vec2& position);
 
 	//TODO: mouse scroll, ...
 }

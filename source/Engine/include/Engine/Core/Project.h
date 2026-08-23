@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-	class ENGINE_API Project
+	class Project
 	{
 	public:
 		static void Load(const std::filesystem::path& path);

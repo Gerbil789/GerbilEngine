@@ -9,6 +9,7 @@
 #include "Engine/Core/Components.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/System/CameraSystem.h"
+#include "Engine/System/TransformSystem.h"
 
 namespace Editor
 {
@@ -31,6 +32,8 @@ namespace Editor
 		Engine::EventBus::Subscribe<Engine::MouseButtonReleasedEvent>([this](const auto& e) {OnMouseButtonReleased(e); return false; });
 		Engine::EventBus::Subscribe<Engine::MouseMovedEvent>([this](const auto& e) {OnMouseMoved(e); return false; });
 		Engine::EventBus::Subscribe<FocusEntityEvent>([this](const auto& e) {OnEntityFocus(e.id); return false; });
+
+
 	}
 
 	void ViewportCameraController::OnMouseScroll(const Engine::MouseScrolledEvent& e)
@@ -39,19 +42,16 @@ namespace Editor
 
 		if (Editor::editorContext.editorMode != EditorMode::Edit) return;
 
-		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
-		entt::entity cameraEntity = scene.GetActiveCamera();
-		if (cameraEntity == entt::null) return;
 
-		auto& tc = scene.GetRegistry().get<Engine::TransformComponent>(cameraEntity);
+		auto& tc = Editor::editorContext.cameraTransform;
 
 		float delta = static_cast<float>(e.yOffset) * m_ScrollSensitivity;
 		glm::vec3 forward = Engine::CameraSystem::GetForward(tc);
 
 		tc.position += forward * delta;
 
-		scene.GetRegistry().emplace_or_replace<Engine::TransformDirty>(cameraEntity);
-		scene.GetRegistry().emplace_or_replace<Engine::CameraViewDirty>(cameraEntity);
+		const glm::mat4 localMatrix = Engine::TransformSystem::CalculateLocalPositionMatrix(tc);
+		Engine::CameraSystem::UpdateCameraViewMatrix(Editor::editorContext.camera, localMatrix);
 	}
 
 	void ViewportCameraController::OnMouseButtonPressed(const Engine::MouseButtonPressedEvent& e)
@@ -90,11 +90,7 @@ namespace Editor
 		if (Editor::editorContext.editorMode != EditorMode::Edit) return;
 		if (!m_RotateDragging && !m_PanDragging) return;
 
-		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
-		entt::entity cameraEntity = scene.GetActiveCamera();
-		if (cameraEntity == entt::null) return;
-
-		auto& tc = scene.GetRegistry().get<Engine::TransformComponent>(cameraEntity);
+		auto& tc = Editor::editorContext.cameraTransform;
 
 		glm::vec2 mouse = { e.x, e.y };
 
@@ -118,8 +114,8 @@ namespace Editor
 
 		m_StartMousePosition = mouse;
 
-		scene.GetRegistry().emplace_or_replace<Engine::CameraViewDirty>(cameraEntity);
-		scene.GetRegistry().emplace_or_replace<Engine::TransformDirty>(cameraEntity);
+		const glm::mat4 localMatrix = Engine::TransformSystem::CalculateLocalPositionMatrix(tc);
+		Engine::CameraSystem::UpdateCameraViewMatrix(Editor::editorContext.camera, localMatrix);
 	}
 
 	void ViewportCameraController::OnEntityFocus(Engine::Uuid entityId, float distance)
@@ -127,22 +123,18 @@ namespace Editor
 		if (Editor::editorContext.editorMode != EditorMode::Edit) return;
 		if (!entityId) return;
 
-		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
+		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset(Engine::SceneManager::GetActiveScene());
 		Engine::Entity entity = scene.GetEntity(entityId);
 		if (!entity) return;
 		if (!entity.HasComponent<Engine::TransformComponent>()) return;
 
-		entt::entity cameraEntity = scene.GetActiveCamera();
-		if (cameraEntity == entt::null) return;
-
-		auto& tc = scene.GetRegistry().get<Engine::TransformComponent>(cameraEntity);
+		auto& tc = Editor::editorContext.cameraTransform;
 		glm::vec3 forward = Engine::CameraSystem::GetForward(tc);
 
 		glm::vec3 focusPoint = entity.GetComponent<Engine::TransformComponent>().position;
 		tc.position = focusPoint - forward * distance;
 
-		scene.GetRegistry().emplace_or_replace<Engine::CameraViewDirty>(cameraEntity);
-		scene.GetRegistry().emplace_or_replace<Engine::CameraProjectionDirty>(cameraEntity);
-		scene.GetRegistry().emplace_or_replace<Engine::TransformDirty>(cameraEntity);
+		const glm::mat4 localMatrix = Engine::TransformSystem::CalculateLocalPositionMatrix(tc);
+		Engine::CameraSystem::UpdateCameraViewMatrix(Editor::editorContext.camera, localMatrix);
 	}
 }

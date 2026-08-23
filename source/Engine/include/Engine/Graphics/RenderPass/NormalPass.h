@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	class ENGINE_API NormalPass : public RenderPass
+	class NormalPass : public RenderPass
 	{
 	public:
 		NormalPass();

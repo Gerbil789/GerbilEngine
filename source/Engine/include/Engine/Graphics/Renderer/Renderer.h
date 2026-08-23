@@ -6,7 +6,7 @@ namespace Engine
 {
 	class SceneAsset;
 
-	class ENGINE_API Renderer
+	class Renderer
 	{
 	public:
 		void Initialize();
@@ -21,6 +21,12 @@ namespace Engine
 		void SetDepthTarget(wgpu::TextureView depthView);
 		void SetEnvironmentTexture(Texture2D texture);
 		const RenderContext& GetRenderContext() const { return m_RenderContext; }
+
+		void SetCamera(CameraComponent& camera, TransformComponent& transform)
+		{
+			m_RenderContext.camera = &camera;
+			m_RenderContext.cameraTransform = &transform;
+		}
 
 		void RenderScene(SceneAsset& scene);
 

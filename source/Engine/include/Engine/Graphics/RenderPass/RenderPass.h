@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Engine/Core/API.h"
 #include "Engine/Graphics/Renderer/RenderContext.h"
 #include "Engine/Graphics/Renderer/DrawList.h"
 
 namespace Engine
 {
-  class ENGINE_API RenderPass
+  class RenderPass
   {
   public:
     virtual ~RenderPass() = default;

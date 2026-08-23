@@ -202,9 +202,9 @@ namespace Engine
 		m_Parameters[paramName] = value;
 	}
 
-	template ENGINE_API void MaterialAsset::SetParameter<float>(const std::string&, const float&);
-	template ENGINE_API void MaterialAsset::SetParameter<glm::vec2>(const std::string&, const glm::vec2&);
-	template ENGINE_API void MaterialAsset::SetParameter<glm::vec3>(const std::string&, const glm::vec3&);
-	template ENGINE_API void MaterialAsset::SetParameter<glm::vec4>(const std::string&, const glm::vec4&);
-	template ENGINE_API void MaterialAsset::SetParameter<glm::ivec2>(const std::string&, const glm::ivec2&);
+	template void MaterialAsset::SetParameter<float>(const std::string&, const float&);
+	template void MaterialAsset::SetParameter<glm::vec2>(const std::string&, const glm::vec2&);
+	template void MaterialAsset::SetParameter<glm::vec3>(const std::string&, const glm::vec3&);
+	template void MaterialAsset::SetParameter<glm::vec4>(const std::string&, const glm::vec4&);
+	template void MaterialAsset::SetParameter<glm::ivec2>(const std::string&, const glm::ivec2&);
 }

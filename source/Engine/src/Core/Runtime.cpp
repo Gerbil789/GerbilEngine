@@ -13,79 +13,19 @@
 #include "Engine/Event/Event.h"
 #include "Engine/System/CameraSystem.h"
 
-#ifdef ENGINE_PLATFORM_WINDOWS
-#include <Windows.h>
-#elif defined(ENGINE_PLATFORM_LINUX)
-#include <dlfcn.h> // POSIX dynamic loading (dlopen, dlsym)
-#endif
-
-#ifndef ENGINE_SHARED_EXPORT
 extern "C" void RegisterScripts();
-#endif
 
 namespace Engine
 {
-	void Runtime::LoadScripts([[maybe_unused]] const std::filesystem::path& dllPath)
+	void Runtime::LoadScripts()
 	{
-#ifdef ENGINE_SHARED_EXPORT
-		if (!std::filesystem::exists(dllPath))
-		{
-			throw std::runtime_error("Script library path does not exist: " + dllPath.string());
-		}
-
-		using GameRegisterScriptsFn = void(*)();
-		GameRegisterScriptsFn Game_Register_Fn = nullptr;
-
-		HMODULE gameModule = LoadLibraryA(dllPath.string().c_str());
-		if (!gameModule) throw std::runtime_error("Failed to load Windows DLL scripts");
-
-		Game_Register_Fn = reinterpret_cast<GameRegisterScriptsFn>(reinterpret_cast<void*>(GetProcAddress(gameModule, "RegisterScripts")));
-
-		if (!Game_Register_Fn)
-		{
-			throw std::runtime_error("Failed to load RegisterScripts function from scripts library");
-		}
-
-		Game_Register_Fn();
-#else
-		LOG_INFO("Static build detected. Ignoring dynamic path and calling linked RegisterScripts directly.");
 		RegisterScripts();
-#endif
-
-		//const auto& scripts = Engine::ScriptRegistry::GetScripts();
-
-		//LOG_INFO("Total Registered Scripts: {}", scripts.size());
-		//for (const auto& [id, script] : scripts)
-		//{
-		//	LOG_INFO("  {}", script.name);
-		//}
 	}
 
 	void Runtime::Start()
 	{
 		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset(Engine::SceneManager::GetActiveScene());
 		entt::registry& registry = scene.GetRegistry();
-
-
-		//auto view = registry.view<PrimaryCameraTag, EditorTag>();
-		//registry.remove<PrimaryCameraTag>(view.front());
-
-
-
-	/*	for(entt::entity cameraEntity : registry.view<Engine::CameraComponent>())
-		{
-			auto& cameraComp = registry.get<Engine::CameraComponent>(cameraEntity);
-			if (cameraComp.primary && cameraComp.camera)
-			{
-				const auto& pos = registry.get<Engine::TransformComponent>(cameraEntity).position;
-				const auto& forward = cameraComp.camera->GetForward();
-				const auto& up = cameraComp.camera->GetUp();
-				Engine::Audio::SetListener(pos.x, pos.y, pos.z, forward.x, forward.y, forward.z, up.x, up.y, up.z);
-				scene.SetActiveCamera(cameraComp.camera);
-				break;
-			}
-		}*/
-
 
 		for (entt::entity entity : registry.view<Engine::ScriptComponent>())
 		{
@@ -143,7 +83,7 @@ namespace Engine
 		}
 
 		// update camera & audio listener
-		{
+		/*{
 			entt::entity cameraEntity = scene.GetActiveCamera();
 
 			if(cameraEntity != entt::null)
@@ -154,7 +94,7 @@ namespace Engine
 				const auto& up = CameraSystem::GetUp(tc);
 				Engine::Audio::SetListener(tc.position.x, tc.position.y, tc.position.z, forward.x, forward.y, forward.z, up.x, up.y, up.z);
 			}
-		}
+		}*/
 		
 	}
 }

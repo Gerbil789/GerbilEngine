@@ -74,7 +74,7 @@ namespace Engine
 		std::vector<Font> variants;
   };
 
-	class ENGINE_API FontManager
+	class FontManager
 	{
 	public:
     static void Initialize();

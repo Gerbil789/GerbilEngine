@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	class ENGINE_API LightPass : public RenderPass
+	class LightPass : public RenderPass
 	{
 	public:
 		LightPass();

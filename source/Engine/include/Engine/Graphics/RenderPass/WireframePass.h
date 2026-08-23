@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	class ENGINE_API WireframePass : public RenderPass
+	class WireframePass : public RenderPass
 	{
 	public:
 		WireframePass();

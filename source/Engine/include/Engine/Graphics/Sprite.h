@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	class ENGINE_API Sprite
+	class Sprite
 	{
 	public:
 		Sprite(Texture2D texture, const glm::vec2& min, const glm::vec2& max);

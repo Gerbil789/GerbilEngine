@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-	class ENGINE_API OpaquePass : public RenderPass
+	class OpaquePass : public RenderPass
 	{
 	public:
 		virtual void Execute(wgpu::CommandEncoder& encoder, const RenderContext& context) override;
