@@ -1,0 +1,30 @@
+{
+   "Shader": 13992555324839847950,
+   "Attributes": {
+      "albedo": [
+         1,
+         0.185022,
+         0,
+         1
+      ],
+      "metallic": 1,
+      "offset": [
+         0,
+         0
+      ],
+      "roughness": 1,
+      "tiling": [
+         1,
+         1
+      ]
+   },
+   "Textures": {
+      "AlbedoTexture": 2935638537606092275,
+      "AmbientTexture": 4,
+      "MetallicTexture": 9761865625677469843,
+      "NormalTexture": 6,
+      "RoughnessTexture": 9761865625677469843
+   },
+   "Filter": 0,
+   "Wrap": 2
+}

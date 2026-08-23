@@ -1,0 +1,430 @@
+[
+   {
+      "ID": 2686125271564967961,
+      "Path": "Textures\\tile.png"
+   },
+   {
+      "ID": 912832698176027673,
+      "Path": "Textures\\de_dust2\\material_9_baseColor.png"
+   },
+   {
+      "ID": 842024722788675935,
+      "Path": "Meshes\\cone.glb"
+   },
+   {
+      "ID": 12697309663408965215,
+      "Path": "Textures\\Prototype\\texture_06.png"
+   },
+   {
+      "ID": 14236044955123666988,
+      "Path": "Textures\\de_dust2\\material_13_baseColor.png"
+   },
+   {
+      "ID": 9560191743391187148,
+      "Path": "Textures\\Prototype\\texture_01.png"
+   },
+   {
+      "ID": 10725229935663780556,
+      "Path": "Meshes\\Rocks\\rock_5.glb"
+   },
+   {
+      "ID": 8600478967628576394,
+      "Path": "Textures\\bricks_wall\\roughness.png"
+   },
+   {
+      "ID": 17632620712761490254,
+      "Path": "Textures\\Prototype\\texture_11.png"
+   },
+   {
+      "ID": 14902832112019759958,
+      "Path": "Textures\\de_dust2\\material_32_baseColor.png"
+   },
+   {
+      "ID": 10333518499668192809,
+      "Path": "Textures\\spritesheet.png"
+   },
+   {
+      "ID": 10241398276266728258,
+      "Path": "Textures\\vsb.png"
+   },
+   {
+      "ID": 2158032350511528335,
+      "Path": "Textures\\Prototype\\texture_05.png"
+   },
+   {
+      "ID": 13334829951380218199,
+      "Path": "Textures\\de_dust2\\material_33_baseColor.png"
+   },
+   {
+      "ID": 7255736418454404439,
+      "Path": "Textures\\de_dust2\\material_20_baseColor.png"
+   },
+   {
+      "ID": 7684737190600792023,
+      "Path": "Textures\\de_dust2\\material_26_baseColor.png"
+   },
+   {
+      "ID": 2379030450267002888,
+      "Path": "Textures\\rocks\\Color.png"
+   },
+   {
+      "ID": 6177207337033191560,
+      "Path": "Textures\\de_dust2\\material_2_baseColor.png"
+   },
+   {
+      "ID": 2856129812985920781,
+      "Path": "Textures\\Prototype\\texture_12.png"
+   },
+   {
+      "ID": 11303043818669639181,
+      "Path": "Textures\\Prototype\\texture_03.png"
+   },
+   {
+      "ID": 8107802964853733857,
+      "Path": "Textures\\de_dust2\\material_5_baseColor.png"
+   },
+   {
+      "ID": 16577429607707681434,
+      "Path": "Meshes\\Rocks\\rock_3.glb"
+   },
+   {
+      "ID": 8642236844970570149,
+      "Path": "Textures\\de_dust2\\material_0_baseColor.png"
+   },
+   {
+      "ID": 16585758892910387045,
+      "Path": "Textures\\de_dust2\\material_22_baseColor.png"
+   },
+   {
+      "ID": 10473374145676960805,
+      "Path": "Textures\\bricks_wall\\ambient.png"
+   },
+   {
+      "ID": 2249927285758630893,
+      "Path": "Textures\\de_dust2\\material_14_baseColor.png"
+   },
+   {
+      "ID": 11928235217182506407,
+      "Path": "Textures\\de_dust2\\material_11_baseColor.png"
+   },
+   {
+      "ID": 13203951651341266215,
+      "Path": "Meshes\\Rocks\\rock_2.glb"
+   },
+   {
+      "ID": 16117695223421893234,
+      "Path": "Textures\\de_dust2\\material_27_baseColor.png"
+   },
+   {
+      "ID": 13713172606200068402,
+      "Path": "Textures\\de_dust2\\material_21_baseColor.png"
+   },
+   {
+      "ID": 17437120939506816063,
+      "Path": "Textures\\Prototype\\texture_07.png"
+   },
+   {
+      "ID": 15423224361782878655,
+      "Path": "Textures\\input.jpg"
+   },
+   {
+      "ID": 13938391509034091137,
+      "Path": "Textures\\de_dust2\\material_15_baseColor.png"
+   },
+   {
+      "ID": 16583914584805199093,
+      "Path": "Textures\\HDR\\wooden_studio_14_4k.hdr"
+   },
+   {
+      "ID": 13927243131535932851,
+      "Path": "Textures\\HDR\\autumn_field_puresky_4k.hdr"
+   },
+   {
+      "ID": 16403057114934544312,
+      "Path": "Textures\\gerbil.jpg"
+   },
+   {
+      "ID": 2712071131301731304,
+      "Path": "Textures\\de_dust2\\material_6_baseColor.png"
+   },
+   {
+      "ID": 10917300318090142440,
+      "Path": "Textures\\background.png"
+   },
+   {
+      "ID": 3327307752442671976,
+      "Path": "Audio\\Sounds\\shoot1.mp3"
+   },
+   {
+      "ID": 12332409518204096040,
+      "Path": "Textures\\de_dust2\\material_8_baseColor.png"
+   },
+   {
+      "ID": 9286933082172268343,
+      "Path": "Audio\\Sounds\\reload.mp3"
+   },
+   {
+      "ID": 12333061085598126903,
+      "Path": "Textures\\Prototype\\texture_02.png"
+   },
+   {
+      "ID": 1729482065613021908,
+      "Path": "Textures\\4150p04.jpg"
+   },
+   {
+      "ID": 446075432060591075,
+      "Path": "Textures\\Prototype\\texture_09.png"
+   },
+   {
+      "ID": 7329568500168888163,
+      "Path": "Textures\\concrete_pillar\\height.png"
+   },
+   {
+      "ID": 5864055833164282400,
+      "Path": "Audio\\Music\\100_Bills.wav"
+   },
+   {
+      "ID": 3802092208580273152,
+      "Path": "Textures\\rocks\\Normal.png"
+   },
+   {
+      "ID": 3470493615347260288,
+      "Path": "Textures\\de_dust2\\material_4_baseColor.png"
+   },
+   {
+      "ID": 11286198349872112320,
+      "Path": "Meshes\\avenger.glb"
+   },
+   {
+      "ID": 4519514184426044096,
+      "Path": "Textures\\de_dust2\\material_23_baseColor.png"
+   },
+   {
+      "ID": 8320008293757467302,
+      "Path": "Audio\\Music\\The Power.wav"
+   },
+   {
+      "ID": 9402733628552615866,
+      "Path": "Textures\\de_dust2\\material_31_baseColor.png"
+   },
+   {
+      "ID": 8394265014859195962,
+      "Path": "Textures\\de_dust2\\material_25_baseColor.png"
+   },
+   {
+      "ID": 2685224408508964921,
+      "Path": "Textures\\de_dust2\\material_29_baseColor.png"
+   },
+   {
+      "ID": 15611227791511988793,
+      "Path": "Textures\\Prototype\\texture_10.png"
+   },
+   {
+      "ID": 17474864767311220547,
+      "Path": "Audio\\Music\\SO TIRED ROCK.wav"
+   },
+   {
+      "ID": 11479965136226061316,
+      "Path": "Textures\\coin.png"
+   },
+   {
+      "ID": 14217045092750549744,
+      "Path": "Textures\\de_dust2\\material_17_baseColor.png"
+   },
+   {
+      "ID": 10000032499962099248,
+      "Path": "Meshes\\Rocks\\rock_6.glb"
+   },
+   {
+      "ID": 12910395424489687452,
+      "Path": "Meshes\\Rocks\\rock_4.glb"
+   },
+   {
+      "ID": 15800430891155699938,
+      "Path": "Textures\\bricks_wall\\albedo.png"
+   },
+   {
+      "ID": 11187204506682988194,
+      "Path": "Textures\\de_dust2\\material_12_baseColor.png"
+   },
+   {
+      "ID": 2534382576875852318,
+      "Path": "Meshes\\dedust2.glb"
+   },
+   {
+      "ID": 5884344316671504849,
+      "Path": "Textures\\Prototype\\texture_04.png"
+   },
+   {
+      "ID": 9237527917705101913,
+      "Path": "Textures\\concrete_pillar\\normal.png"
+   },
+   {
+      "ID": 918200047403079593,
+      "Path": "Textures\\bricks_wall\\normal.png"
+   },
+   {
+      "ID": 4522320735840744469,
+      "Path": "Textures\\3069bp13.jpg"
+   },
+   {
+      "ID": 2286500515546692760,
+      "Path": "Shaders\\Flat.wgsl"
+   },
+   {
+      "ID": 18401470983773657240,
+      "Path": "Textures\\concrete_pillar\\ambient.png"
+   },
+   {
+      "ID": 4804918210632720945,
+      "Path": "Audio\\Music\\music.mp3"
+   },
+   {
+      "ID": 17819646674278604939,
+      "Path": "Textures\\concrete_pillar\\roughness.png"
+   },
+   {
+      "ID": 5970967842257255443,
+      "Path": "Textures\\favorite.png"
+   },
+   {
+      "ID": 14676270006362613419,
+      "Path": "UI\\UI.png"
+   },
+   {
+      "ID": 14589728825097026731,
+      "Path": "Meshes\\Rocks\\rock_1.glb"
+   },
+   {
+      "ID": 5008563610339593131,
+      "Path": "Textures\\HDR\\lebombo_4k.hdr"
+   },
+   {
+      "ID": 9021122716047451827,
+      "Path": "Audio\\Sounds\\bubbles.mp3"
+   },
+   {
+      "ID": 13992555324839847950,
+      "Path": "Shaders\\Dev.wgsl"
+   },
+   {
+      "ID": 10235905057770317418,
+      "Path": "Meshes\\bad cube.glb"
+   },
+   {
+      "ID": 2768523626656369607,
+      "Path": "Materials\\Grid.mat"
+   },
+   {
+      "ID": 17435157425500235256,
+      "Path": "Audio\\Music\\Glorious_Morning.wav"
+   },
+   {
+      "ID": 16143963975249756508,
+      "Path": "Audio\\Sounds\\shoot3.mp3"
+   },
+   {
+      "ID": 11537179516305820052,
+      "Path": "Textures\\Prototype\\texture_13.png"
+   },
+   {
+      "ID": 16260145261027287444,
+      "Path": "Textures\\skull.png"
+   },
+   {
+      "ID": 104975438091168126,
+      "Path": "Scenes\\test.scene"
+   },
+   {
+      "ID": 11686186502807961849,
+      "Path": "Textures\\mood.png"
+   },
+   {
+      "ID": 13814557789575157782,
+      "Path": "Textures\\concrete_pillar\\color.png"
+   },
+   {
+      "ID": 14070928852485531262,
+      "Path": "Textures\\de_dust2\\material_28_baseColor.png"
+   },
+   {
+      "ID": 3935427906893501255,
+      "Path": "Audio\\Sounds\\shoot2.mp3"
+   },
+   {
+      "ID": 5106571390037956208,
+      "Path": "Textures\\de_dust2\\material_16_baseColor.png"
+   },
+   {
+      "ID": 752515443717695889,
+      "Path": "Textures\\de_dust2\\material_1_baseColor.png"
+   },
+   {
+      "ID": 5939929548458604568,
+      "Path": "Meshes\\cube.glb"
+   },
+   {
+      "ID": 11188487221712526061,
+      "Path": "Materials\\Test.mat"
+   },
+   {
+      "ID": 13129306156431109372,
+      "Path": "Meshes\\plane.glb"
+   },
+   {
+      "ID": 2112520313211951735,
+      "Path": "Audio\\Music\\Welcome_to_3D_Software.wav"
+   },
+   {
+      "ID": 11219047688891969609,
+      "Path": "Textures\\de_dust2\\material_7_baseColor.png"
+   },
+   {
+      "ID": 10610492546284712256,
+      "Path": "Meshes\\bad cube 2.glb"
+   },
+   {
+      "ID": 7160188024908499434,
+      "Path": "Meshes\\sphere.glb"
+   },
+   {
+      "ID": 13376736663275875968,
+      "Path": "Textures\\de_dust2\\material_30_baseColor.png"
+   },
+   {
+      "ID": 7559404032310712540,
+      "Path": "Textures\\bricks_wall\\height.png"
+   },
+   {
+      "ID": 17641366076394983663,
+      "Path": "Textures\\de_dust2\\material_10_baseColor.png"
+   },
+   {
+      "ID": 1694383648834481430,
+      "Path": "Audio\\Music\\Ievan Polkka.mp3"
+   },
+   {
+      "ID": 15355325639324815638,
+      "Path": "Textures\\gerbilstudio2.png"
+   },
+   {
+      "ID": 5516677422672382005,
+      "Path": "Shaders\\Grid.wgsl"
+   },
+   {
+      "ID": 6143687928775972355,
+      "Path": "Materials\\material.mat"
+   },
+   {
+      "ID": 2900223807507486729,
+      "Path": "Textures\\SwordddV2.png"
+   },
+   {
+      "ID": 16855056317985496248,
+      "Path": "Textures\\gerbilstudio.png"
+   },
+   {
+      "ID": 14912393741399477953,
+      "Path": "Textures\\gerbilstudio3.png"
+   }
+]

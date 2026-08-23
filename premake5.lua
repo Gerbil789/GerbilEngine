@@ -67,7 +67,6 @@ objdir    ("bin-int/" .. outputdir .. "/%{prj.name}")
 
 group ""
 	include "source/Engine"
-	-- include "source/Skeleton"
   include "source/Editor"
 
 group "Projects"
