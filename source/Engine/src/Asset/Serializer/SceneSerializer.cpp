@@ -1,9 +1,9 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/SceneSerializer.h"
-#include "Engine/Script/Script.h"
-#include "Engine/Script/ScriptRegistry.h"
 #include "Engine/Asset/Resources.h"
 #include "Engine/Core/Components.h"
+#include "Engine/Core/Scene.h"
+#include "Engine/Asset/AssetManager.h"
 #include <glaze/glaze.hpp>
 
 template <>
@@ -162,57 +162,6 @@ namespace Engine
 		//		static_cast<uint32_t>(l.type), l.color, l.intensity, l.range, l.angle
 		//	};
 		//}
-
-		// Script
-		if (auto* component = registry.try_get<ScriptComponent>(entity))
-		{
-			ScriptComponentJSON sJson;
-			sJson.script = component->id;
-
-			const auto& desc = Engine::ScriptRegistry::GetDescriptor(component->id);
-			auto* instance = component->instance;
-			auto& fields = sJson.fields;
-
-			for (const auto& field : desc.fields)
-			{
-				auto& dst = fields.try_emplace(field.name).first->second;
-
-				switch (field.type)
-				{
-				case ScriptFieldType::Bool:
-					dst = field.GetValue<bool>(instance);
-					break;
-
-				case ScriptFieldType::Int:
-					dst = field.GetValue<int>(instance);
-					break;
-
-				case ScriptFieldType::Float:
-					dst = field.GetValue<float>(instance);
-					break;
-
-				case ScriptFieldType::Texture:
-					dst = std::to_string(static_cast<uint64_t>(field.GetValue<Texture2D>(instance).id));
-					break;
-				case ScriptFieldType::AudioClip:
-					dst = std::to_string(static_cast<uint64_t>(field.GetValue<AudioClip>(instance).id));
-					break;
-				case ScriptFieldType::Mesh:
-					dst = std::to_string(static_cast<uint64_t>(field.GetValue<Mesh>(instance).id));
-					break;
-				case ScriptFieldType::Material:
-					dst = std::to_string(static_cast<uint64_t>(field.GetValue<Material>(instance).id));
-					break;
-
-				default:
-					LOG_WARNING("Unsupported script field type for serialization: {}",
-						static_cast<uint32_t>(field.type));
-					break;
-				}
-			}
-
-			eJson.script = std::move(sJson);
-		}
 
 		outList.push_back(std::move(eJson));
 
@@ -373,63 +322,6 @@ namespace Engine
 				lComp.intensity = lJson.intensity;
 				lComp.range = lJson.range;
 				lComp.angle = lJson.angle;
-			}
-
-			// script
-			if (eJson.script.has_value())
-			{
-				auto& sComp = registry.emplace<ScriptComponent>(handle);
-				const auto& sJson = eJson.script.value();
-
-				const Engine::ScriptDescriptor& desc = Engine::ScriptRegistry::GetDescriptor(sJson.script);
-
-				sComp.id = sJson.script;
-				sComp.instance = desc.factory();
-				sComp.instance->m_Entity = Entity{ handle, &scene }; //TODO: is scene valid after this functin?
-				sComp.instance->OnCreate();
-
-				for (const auto& field : desc.fields)
-				{
-					if (sJson.fields.find(field.name) == sJson.fields.end()) continue;
-
-					const auto& node = sJson.fields.at(field.name);
-
-					switch (field.type)
-					{
-					case ScriptFieldType::Bool:
-						if (node.is_boolean()) field.SetValue<bool>(sComp.instance, node.get_boolean());
-						break;
-					case ScriptFieldType::Int:
-						if (node.is_number()) field.SetValue<int>(sComp.instance, static_cast<int>(static_cast<uint64_t>(node.get_number())));
-						break;
-					case ScriptFieldType::Float:
-						if (node.is_number()) field.SetValue<float>(sComp.instance, static_cast<float>(node.get_number()));
-						break;
-
-					case ScriptFieldType::Texture:
-						if (node.is_string())
-							field.SetValue<Texture2D>(sComp.instance, Texture2D{ Uuid{ std::stoull(node.get_string()) } });
-						break;
-
-					case ScriptFieldType::AudioClip:
-						if (node.is_string())
-							field.SetValue<AudioClip>(sComp.instance, AudioClip{ Uuid{ std::stoull(node.get_string()) } });
-						break;
-
-					case ScriptFieldType::Mesh:
-						if (node.is_string())
-							field.SetValue<Mesh>(sComp.instance, Mesh{ Uuid{ std::stoull(node.get_string()) } });
-						break;
-
-					case ScriptFieldType::Material:
-						if (node.is_string())
-							field.SetValue<Material>(sComp.instance, Material{ Uuid{ std::stoull(node.get_string()) } });
-						break;
-					default:
-						LOG_WARNING("Unsupported script field type for deserialization: {}", static_cast<uint32_t>(field.type));
-						break;
-					}
-				}
 			}
 		}
 

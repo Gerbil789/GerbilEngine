@@ -1,4 +1,6 @@
 #include "File.h"
+
+#ifdef ENGINE_PLATFORM_WINDOWS
 #include <windows.h>
 #include <commdlg.h>
 #include <shlobj.h>
@@ -8,9 +10,11 @@
 #include <thread>
 #include <algorithm>
 #include <shlobj.h> // Required for Shell API
-
+#endif
 namespace Editor::FileDialog
 {
+
+#ifdef ENGINE_PLATFORM_WINDOWS
 	// Internal helper to translate clean C++ structs into the Win32 double-null string
 	static std::string BuildWin32FilterString(std::initializer_list<DialogFilter> filters)
 	{
@@ -31,9 +35,13 @@ namespace Editor::FileDialog
 
 		return result;
 	}
+#endif
+
 
 	std::string SelectFile(std::initializer_list<DialogFilter> filters)
 	{
+
+#ifdef ENGINE_PLATFORM_WINDOWS
 		OPENFILENAMEA ofn;
 		CHAR szFile[260] = { 0 };
 		std::string win32Filter = BuildWin32FilterString(filters);
@@ -54,12 +62,15 @@ namespace Editor::FileDialog
 		{
 			return std::string(szFile);
 		}
+#endif
 
 		return "";
 	}
 
 	std::string SelectPath(std::initializer_list<DialogFilter> filters, const char* defaultExt)
 	{
+
+#ifdef ENGINE_PLATFORM_WINDOWS
 		OPENFILENAMEA ofn;
 		CHAR szFile[260] = { 0 };
 		std::string win32Filter = BuildWin32FilterString(filters);
@@ -81,6 +92,7 @@ namespace Editor::FileDialog
 		{
 			return std::string(szFile);
 		}
+#endif
 
 		return "";
 	}
@@ -88,6 +100,8 @@ namespace Editor::FileDialog
 	std::filesystem::path SelectDirectory()
 	{
 		std::filesystem::path resultPath;
+
+#ifdef ENGINE_PLATFORM_WINDOWS
 
 		// Initialize COM for the thread
 		HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
@@ -124,11 +138,14 @@ namespace Editor::FileDialog
 			CoUninitialize();
 		}
 
+#endif
 		return resultPath;
 	}
 
 	void OpenFileExplorer(const std::filesystem::path& path)
 	{
+
+#ifdef ENGINE_PLATFORM_WINDOWS
 		// 1. Ensure the path is absolute and uses native Windows backslashes
 		std::filesystem::path absPath = std::filesystem::absolute(path);
 		absPath.make_preferred();
@@ -170,5 +187,7 @@ namespace Editor::FileDialog
 				CoUninitialize();
 			}
 			}).detach();
+
+#endif
 	}
 }

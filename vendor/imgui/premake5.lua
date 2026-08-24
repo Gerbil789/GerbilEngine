@@ -18,27 +18,16 @@ includedirs
 	"%{wks.location}/vendor/ImGuizmo",
 }
 
-filter "not platforms:Web"
-  includedirs
-  {
-    "%{wks.location}/vendor/dawn/include"
-  }
-filter {}	
-
 defines
 {
 	"GLFW_INCLUDE_NONE",
 }
 
-filter "not platforms:Web"
-  defines
-  {
-    "IMGUI_IMPL_WEBGPU_BACKEND_DAWN",
-  }
-filter {}
+filter "not platforms:web"
+  includedirs { "%{wks.location}/vendor/dawn/include" }
+  defines { "IMGUI_IMPL_WEBGPU_BACKEND_DAWN" }
 
-
-filter "platforms:Web"
+filter "platforms:web"
   buildoptions
   {
     "--use-port=emdawnwebgpu",
@@ -54,4 +43,3 @@ filter "platforms:Web"
     "-s ALLOW_MEMORY_GROWTH=1", 
     "-pthread",
   }
-filter {}

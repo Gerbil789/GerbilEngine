@@ -124,8 +124,6 @@ namespace Engine
 
 	INSTANTIATE_COMPONENT(LightComponent)
 
-	INSTANTIATE_COMPONENT(ScriptComponent)
-
 	// --- UI COMPONENTS HERE ---
 
 	template void Entity::AddTag<UI::LayoutDirtyTag>();

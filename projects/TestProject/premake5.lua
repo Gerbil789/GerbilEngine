@@ -25,35 +25,28 @@ externalincludedirs
 
 libdirs { "%{wks.location}/vendor/dawn/shared" }
 
-filter "not platforms:Web"
-    externalincludedirs
-    {
-        "%{wks.location}/vendor/dawn/include",
-    }
-filter {}
+links { "Engine", "Editor", "ImGui" }
 
-links
-{
-	"Engine",
-	"Editor",
-	"ImGui",
-}
+defines { "IMGUI_IMPL_WEBGPU_BACKEND_DAWN" }
 
-defines 
-{ 
-	"IMGUI_IMPL_WEBGPU_BACKEND_DAWN",
-}
+filter "not platforms:web"
+  externalincludedirs { "%{wks.location}/vendor/dawn/include" }
+	defines { "WEBGPU_CPP_IMPLEMENTATION" }
 
-filter "system:windows"
+filter "platforms:windows"
   links { "webgpu_dawn" }
+	postbuildcommands 
+  {
+		"{ECHO} Copying webgpu_dawn.dll",
+    "{COPYFILE} %{wks.location}/vendor/dawn/shared/webgpu_dawn.dll %{cfg.targetdir}"
+  }
 
-
-filter "platforms:Web"
+filter "platforms:web"
   buildoptions 
   { 
     "--use-port=emdawnwebgpu", 
     "-pthread",
-		"-Wno-invalid-offsetof",
+		-- "-Wno-invalid-offsetof"
   }
 
   linkoptions 
@@ -66,11 +59,3 @@ filter "platforms:Web"
     "-s MAX_WEBGL_VERSION=2",
     "-pthread"
   }
-
-filter "configurations:not Dist"
-	postbuildcommands 
-  {
-		"{ECHO} Copying webgpu_dawn.dll",
-    "{COPYFILE} %{wks.location}/vendor/dawn/shared/webgpu_dawn.dll %{cfg.targetdir}",
-  }
-

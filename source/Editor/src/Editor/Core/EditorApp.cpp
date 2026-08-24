@@ -1,5 +1,3 @@
-#define WEBGPU_CPP_IMPLEMENTATION //TODO: handle macros in premake
-
 #include "Editor/Core/EditorApp.h"
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Core/EditorWindowManager.h"
@@ -14,9 +12,6 @@
 #include "Engine/Core/Runtime.h"
 #include "Engine/Core/Window.h"
 #include "Engine/Core/Configuration.h"
-#include "Engine/Event/EventBus.h"
-#include "Engine/Event/WindowEvent.h"
-#include "Engine/Event/ApplicationEvent.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Graphics/GraphicsContext.h"

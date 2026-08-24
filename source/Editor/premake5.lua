@@ -1,6 +1,6 @@
 project "Editor"
 kind "StaticLib"
-removeplatforms { "Linux", "Web" }
+removeplatforms { "web" }
 
 files
 {

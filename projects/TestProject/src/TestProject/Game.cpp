@@ -1,13 +1,8 @@
-#define WEBGPU_CPP_IMPLEMENTATION
-
 #include "Game.h"
 #include "Engine/Core/Time.h"
-#include "Engine/Utility/File.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Audio/Audio.h"
-#include "Engine/Script/ScriptRegistry.h"
-#include "Engine/Script/Script.h"
 #include "Engine/Event/WindowEvent.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Utility/Path.h"
@@ -26,10 +21,9 @@
 #include "Engine/System/TransformSystem.h"
 #include "Engine/Graphics/Font.h"
 #include "Engine/System/CameraSystem.h"
-
 #include "Editor/Core/EditorApp.h"
 
-#define EDITOR
+#include "SpinComponent.h"
 
 #ifdef EDITOR
 Editor::EditorApp editor;
@@ -62,9 +56,8 @@ static void UpdateSize(Engine::Window& window)
 
 		if (m_Width > 0 && m_Height > 0)
 		{
-			m_Renderer.SetSize(m_Width, m_Height);
+			m_Renderer.SetSize(static_cast<float>(m_Width), static_cast<float>(m_Height));
 
-			// Recreate the Depth Texture to match the new surface size
 			wgpu::TextureDescriptor depthDesc;
 			depthDesc.label = "RendererDepthTexture";
 			depthDesc.dimension = wgpu::TextureDimension::e2D;
@@ -74,7 +67,6 @@ static void UpdateSize(Engine::Window& window)
 			depthDesc.size = { m_Width, m_Height, 1 };
 			depthDesc.usage = wgpu::TextureUsage::RenderAttachment;
 
-			// Note: GetDevice() needs to return the valid initialized device
 			m_DepthTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&depthDesc);
 		}
 	}
@@ -145,10 +137,8 @@ GameApp::GameApp()
 	Engine::Input::SetActiveWindow(*m_Window.GetNativeWindow());
 	Engine::Audio::Initialize();
 	Engine::FontManager::Initialize();
-	Engine::Runtime::LoadScripts();
 
 	Engine::SceneManager::SetActiveScene(project.GetDefaultScene());
-	auto& scene = Engine::AssetManager::GetAsset(Engine::SceneManager::GetActiveScene());
 
 #ifndef EDITOR
 	m_Renderer.Initialize();
@@ -156,6 +146,7 @@ GameApp::GameApp()
 
 	UpdateSize(m_Window);
 
+	auto& scene = Engine::AssetManager::GetAsset(Engine::SceneManager::GetActiveScene());
 	auto& registry = scene.GetRegistry();
 	entt::entity cameraEntity = registry.view<Engine::CameraComponent, Engine::PrimaryCameraTag>(entt::exclude<Engine::EditorTag>).front();
 	auto& cc = registry.get<Engine::CameraComponent>(cameraEntity);
@@ -193,6 +184,20 @@ void GameApp::Run()
 	Engine::Runtime::Start();
 #endif
 
+	SpinSystem spinSystem;
+
+	auto& reg = Engine::AssetManager::GetAsset(Engine::SceneManager::GetActiveScene()).GetRegistry();
+
+	auto view = reg.view<Engine::TransformComponent>();
+
+
+	float speed = 1.0f;
+	for(auto entity : view)
+	{
+		auto& spin = reg.emplace<SpinComponent>(entity);
+		spin.speed = speed++;
+	}
+
 	while (m_Running)
 	{
 		if (m_Window.IsMinimized())
@@ -211,6 +216,8 @@ void GameApp::Run()
 		Engine::TransformSystem::Update(scene);
 
 		UpdateSize(m_Window);
+
+		spinSystem.update(scene.GetRegistry(), Engine::Time::DeltaTime());
 
 #ifdef EDITOR
 		editor.Update();
@@ -231,32 +238,4 @@ void GameApp::Run()
 		surface.Present();
 #endif
 	}
-}
-
-
-#include "TestProject/RandomTestStuff/FPSPlayerController.h"
-#include "TestProject/RandomTestStuff/RandomMovement.h"
-#include "TestProject/RandomTestStuff/AudioPlayer.h"
-#include "TestProject/RandomTestStuff/GameManager.h"
-#include "TestProject/RandomTestStuff/Button.h"
-#include "TestProject/Combat/BattleControllerScript.h"
-#include "TestProject/Benchmark/SpawnEntitiesScript.h"
-
-extern "C"
-{
-  void RegisterScripts()
-  {
-    // random test scripts
-    Engine::ScriptRegistry::Register<FPSPlayerController>("FPSPlayerController");
-    Engine::ScriptRegistry::Register<RandomMovement>("RandomMovement");
-		Engine::ScriptRegistry::Register<AudioPlayer>("AudioPlayer");
-		Engine::ScriptRegistry::Register<GameManager>("GameManager");
-    Engine::ScriptRegistry::Register<Button>("Button");
-
-		// combat game scripts
-    Engine::ScriptRegistry::Register<BattleControllerScript>("BattleControllerScript");
-
-		// benchmark scripts
-		Engine::ScriptRegistry::Register<SpawnEntitiesScript>("SpawnEntitiesScript");
-  }
 }

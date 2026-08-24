@@ -11,14 +11,14 @@
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Editor/Core/SelectionManager.h"
-#include "Engine/Script/ScriptRegistry.h"
-#include "Engine/Script/Script.h"
+#include "Engine/Graphics/Mesh.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
 #include <functional>
 #include <memory>
+#include <ranges>
 
 namespace Editor
 {
@@ -293,128 +293,7 @@ namespace Editor
 			PropertyField("Angle", component.angle, { .min = 0.0f, .max = 180.0f });
 		}
 	}
-
-	void DrawScript(Engine::Entity entity)
-	{
-		if (!entity.HasComponent<Engine::ScriptComponent>()) return;
-
-		static uint32_t id = 0;
-
-		const std::initializer_list<ComponentMenuAction> menuActions
-		{
-			{ "Reset", [&] {id = 0; auto before = entity.GetComponent<Engine::ScriptComponent>();
-				auto after = before;
-				after.id = 0;
-				after.instance = nullptr;
-				EditorCommandManager::ModifyComponent<Engine::ScriptComponent>(entity, before, after); }
-			},
-
-			{ "Remove", [&] {EditorCommandManager::RemoveComponent<Engine::ScriptComponent>(entity); } }
-		};
-
-		ComponentHeader header("Script", menuActions);
-		if (!header.open) return;
-
-		PropertyTable table;
-
-		Engine::ScriptComponent& component = entity.GetComponent<Engine::ScriptComponent>();
-
-		const auto& scripts = Engine::ScriptRegistry::GetScripts();
-
-		{
-			PropertyRow row("Script");
-
-			if (ImGui::BeginCombo("##Combo", id > 0 ? scripts.at(id).name.c_str() : nullptr, ImGuiComboFlags_NoArrowButton))
-			{
-				static ImGuiTextFilter filter;
-				if (ImGui::IsWindowAppearing())
-				{
-					ImGui::SetKeyboardFocusHere();
-					filter.Clear();
-				}
-
-				filter.Draw("##Filter", -FLT_MIN);
-				for (const auto& [scriptId, scriptDesc] : scripts)
-				{
-					const bool is_selected = (id == scriptId);
-					if (filter.PassFilter(scriptDesc.name.c_str()))
-					{
-						if (ImGui::Selectable(scriptDesc.name.c_str(), is_selected))
-						{
-							id = scriptId;
-							const Engine::ScriptDescriptor& desc = Engine::ScriptRegistry::GetDescriptor(scriptId);
-							component.id = desc.id;
-							component.instance = desc.factory();
-							component.instance->m_Entity = entity;
-							component.instance->OnCreate();
-						}
-					}
-				}
-				ImGui::EndCombo();
-			}
-		}
-
-		if (!component.instance) return;
-
-		ImGui::Separator();
-
-		const Engine::ScriptDescriptor& desc = Engine::ScriptRegistry::GetDescriptor(component.id);
-
-		for (const Engine::ScriptField& field : desc.fields)
-		{
-			switch (field.type)
-			{
-			case Engine::ScriptFieldType::Float:
-			{
-				PropertyField(field.name.c_str(), field.GetValue<float>(component.instance));
-				break;
-			}
-
-			case Engine::ScriptFieldType::Bool:
-			{
-				PropertyField(field.name.c_str(), field.GetValue<bool>(component.instance));
-				break;
-			}
-
-			case Engine::ScriptFieldType::Int:
-			{
-				PropertyField(field.name.c_str(), field.GetValue<int>(component.instance));
-				break;
-			}
-
-			case Engine::ScriptFieldType::Texture:
-			{
-				AssetField(field.name.c_str(), field.GetValue<Engine::Texture2D>(component.instance));
-				break;
-			}
-
-			case Engine::ScriptFieldType::AudioClip:
-			{
-				AssetField(field.name.c_str(), field.GetValue<Engine::AudioClip>(component.instance));
-				break;
-			}
-
-			case Engine::ScriptFieldType::Mesh:
-			{
-				AssetField(field.name.c_str(), field.GetValue<Engine::Mesh>(component.instance));
-				break;
-			}
-
-			case Engine::ScriptFieldType::Shader:
-			{
-				AssetField(field.name.c_str(), field.GetValue<Engine::Shader>(component.instance));
-				break;
-			}
-
-			case Engine::ScriptFieldType::Material:
-			{
-				AssetField(field.name.c_str(), field.GetValue<Engine::Material>(component.instance));
-				break;
-			}
-			}
-		}
-	}
-
+	
 	void DrawUICanvas(Engine::Entity entity)
 	{
 		if (!entity.HasComponent<Engine::UI::Canvas>()) return;
@@ -579,14 +458,13 @@ namespace Editor
 			void (*add)(Engine::Entity);
 		};
 
-		static constexpr std::array<AddComponentEntry, 10> entries
+		static constexpr std::array<AddComponentEntry, 9> entries
 		{
 			AddComponentEntry{ "Transform",     [](Engine::Entity e) { e.GetOrAddComponent<Engine::TransformComponent>(); e.GetOrAddComponent<Engine::WorldTransformComponent>(); } },
 			AddComponentEntry{ "Camera",        [](Engine::Entity e) { e.GetOrAddComponent<Engine::CameraComponent>(); } },
 			AddComponentEntry{ "Mesh",          [](Engine::Entity e) { e.GetOrAddComponent<Engine::MeshComponent>(); } },
 			AddComponentEntry{ "Collider",      [](Engine::Entity e) { e.GetOrAddComponent<Engine::ColliderComponent>(); } },
 			AddComponentEntry{ "Light",         [](Engine::Entity e) { e.GetOrAddComponent<Engine::LightComponent>(); } },
-			AddComponentEntry{ "Script",				[](Engine::Entity e) { e.GetOrAddComponent<Engine::ScriptComponent>(); } },
 			AddComponentEntry{ "UI Rect",				[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::RectTransform>(); } },
 			AddComponentEntry{ "UI Canvas",			[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Canvas>(); e.GetOrAddComponent<Engine::UI::RectTransform>(); e.AddTag<Engine::UI::LayoutDirtyTag>(); } },
 			AddComponentEntry{ "UI Image",			[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Image>(); e.GetOrAddComponent<Engine::UI::RectTransform>(); e.AddTag<Engine::UI::LayoutDirtyTag>(); } },
@@ -649,7 +527,6 @@ namespace Editor
 		DrawMesh(entity);
 		DrawCollider(entity);
 		DrawLight(entity);
-		DrawScript(entity);
 		DrawUIRect(entity);
 		DrawUICanvas(entity);
 		DrawUIImage(entity);

@@ -2,8 +2,7 @@ project "glfw"
 language "C"
 kind "StaticLib"
 warnings "Off"
-
-removeplatforms { "Web" }
+removeplatforms { "web" }
 
 files
 {
@@ -25,14 +24,7 @@ files
   "src/osmesa_context.c"
 }
 
--- filter { "system:windows", "configurations:not Dist" }
--- 	kind "SharedLib"
---   defines 
---   { 
---     "_GLFW_BUILD_DLL",
---   }
-
-filter "system:windows"
+filter "platforms:windows"
   defines 
   { 
     "_GLFW_WIN32",
@@ -50,7 +42,7 @@ filter "system:windows"
     "src/wgl_context.c"
   }
 
-filter "system:linux"
+filter "platforms:linux"
   defines 
   { 
     "_GLFW_X11"

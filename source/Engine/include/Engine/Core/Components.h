@@ -128,13 +128,6 @@ namespace Engine
 		};
 	};
 
-	struct ScriptComponent
-	{
-		uint32_t id{ 0 };
-		Script* instance = nullptr;
-	};
-
-
 	namespace UI
 	{
 		struct LayoutDirtyTag {};

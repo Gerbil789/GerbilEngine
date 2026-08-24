@@ -26,13 +26,15 @@ externalincludedirs
 	"%{wks.location}/vendor/renderdoc"
 }
 
-filter "not platforms:Web"
-    externalincludedirs
-    {
-				"%{wks.location}/vendor/glfw/include",
-        "%{wks.location}/vendor/dawn/include"
-    }
+filter "not platforms:web"
+  externalincludedirs
+  {
+		"%{wks.location}/vendor/glfw/include",
+    "%{wks.location}/vendor/dawn/include"
+  }
 filter {}
+
+libdirs { "%{wks.location}/vendor/dawn/shared" }
 
 links
 {
@@ -47,53 +49,18 @@ defines
 	"GLM_ENABLE_EXPERIMENTAL",
 }
 
-filter "not platforms:Web"
-    defines
-    {
-        "IMGUI_IMPL_WEBGPU_BACKEND_DAWN",
-    }
-filter {}
+filter "not platforms:web"
+    defines { "IMGUI_IMPL_WEBGPU_BACKEND_DAWN" }
 
-filter "configurations:not Dist"
-	-- defines
-	-- {
-	-- 	"WGPU_SHARED_LIBRARY",
+filter "platforms:windows"
+	links { "webgpu_dawn" }
+	defines { "GLFW_EXPOSE_NATIVE_WIN32" }
+
+filter "platforms:linux"
+	-- buildoptions 
+	-- { 
+	-- 	"-Wno-invalid-offsetof",
 	-- }
-
-	libdirs
-	{
-		"%{wks.location}/vendor/dawn/shared"
-	}
-
-filter {"system:windows", "configurations:Dist"}
-	-- disablewarnings { "4006" }
-
-	links 
-	{
-    "dxguid.lib",
-    "dxgi.lib",
-    "d3d11.lib",
-    "d3d12.lib",
-    "d3dcompiler.lib",
-		"mincore.lib",
-	}
-
-filter "system:windows"
-	links
-	{
-		"webgpu_dawn",
-	}
-
-	defines
-	{
-		"GLFW_EXPOSE_NATIVE_WIN32",
-	}
-
-filter "platforms:Linux"
-	buildoptions 
-	{ 
-		"-Wno-invalid-offsetof",
-	}
 
   linkoptions 
 	{ 
@@ -117,13 +84,7 @@ filter "platforms:Linux"
 		"GLFW_EXPOSE_NATIVE_WAYLAND",
 	}
 
-
-filter "platforms:Web"
-  defines
-  {
-    "GLFW_INCLUDE_NONE",
-  }
-
+filter "platforms:web"
   buildoptions 
   { 
     "--use-port=emdawnwebgpu", 
@@ -135,7 +96,7 @@ filter "platforms:Web"
     "--use-port=emdawnwebgpu",
     "-s USE_GLFW=3",
     "-s WASM=1",
-    "-s ALLOW_MEMORY_GROWTH=1", -- Crucial for game engines allocating assets dynamically
+    "-s ALLOW_MEMORY_GROWTH=1",
     "-s MIN_WEBGL_VERSION=2",
     "-s MAX_WEBGL_VERSION=2",
     "-pthread"

@@ -75,15 +75,6 @@
          "materials": [
             2768523626656369607
          ]
-      },
-      "script": {
-         "script": 3533687996,
-         "fields": {
-            "grid height": 10,
-            "grid width": 10,
-            "tile material": "2768523626656369607",
-            "tile mesh": "13129306156431109372"
-         }
       }
    },
    {
@@ -115,13 +106,6 @@
          "materials": [
             6143687928775972355
          ]
-      },
-      "script": {
-         "script": 2364710404,
-         "fields": {
-            "Audio Clip": "5864055833164282400",
-            "Play On Awake": true
-         }
       }
    }
 ]

@@ -1,9 +1,8 @@
 workspace "GerbilEngine"
 architecture "x64"
-startproject "Editor"
-toolset "clang"
-configurations { "Debug", "Release", "Dist" }
-platforms { "Windows", "Linux", "Web" }
+startproject "TestProject"
+configurations { "Debug", "Release", "EditorDebug", "EditorRelease" }
+platforms { "windows", "linux", "web" }
 language "C++"
 cppdialect "C++23"
 systemversion "latest"
@@ -11,59 +10,50 @@ staticruntime "off"
 conformancemode "On"
 externalwarnings "Off"
 warnings "Extra"
+multiprocessorcompile "On"
+
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+targetdir ("bin/" .. outputdir)
+objdir    ("bin-int/" .. outputdir .. "/%{prj.name}")
 
 filter "action:vs*"
-  removeplatforms { "Web", "Linux" }
-	toolset "msc"
-	disablewarnings { "4251" }
-	multiprocessorcompile ("On")
-	
-filter "system:windows"
-	defines 
-	{ 
-		"ENGINE_PLATFORM_WINDOWS",
-		"NOMINMAX", --TODO: remove after removing all windows dependency
-	}
+  removeplatforms { "web", "linux" }
 
-filter "system:linux"
+filter "platforms:windows"
+	toolset "msc"
+	defines { "ENGINE_PLATFORM_WINDOWS" }
+
+filter "platforms:linux"
+  toolset "clang"
   buildoptions { "-stdlib=libc++" }
   linkoptions  { "-stdlib=libc++" }
-	pic "on"
+	defines { "ENGINE_PLATFORM_LINUX" }
 
-	-- defines
-  -- {
-  --   "ENGINE_PLATFORM_LINUX",
-  -- }
-
-
-filter "system:emscripten"
-	defines
-	{
-		"ENGINE_PLATFORM_WEB",
-	}
+filter "platforms:web"
+	toolset "clang"
+	defines { "ENGINE_PLATFORM_WEB" }
 
 filter "configurations:Debug"
-	defines { "DEBUG", "GERBIL_EDITOR" }
+	defines { "DEBUG" }
 	symbols "on"
 	runtime "Debug"
 
 filter "configurations:Release"
-	defines { "RELEASE", "GERBIL_EDITOR" }
+	defines { "RELEASE" }
 	optimize "on"
+	symbols "off"
 	runtime "Release"
 
-filter "configurations:Dist"
-    defines { "DIST" }
-    optimize "on"
-    symbols "off"
-    runtime "Release"
+filter "configurations:EditorDebug"
+	defines { "DEBUG", "EDITOR" }
+	symbols "on"
+	runtime "Debug"
 
-filter {}
-
-outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
-
-targetdir ("bin/" .. outputdir)
-objdir    ("bin-int/" .. outputdir .. "/%{prj.name}")
+filter "configurations:EditorRelease"
+	defines { "RELEASE", "EDITOR" }
+	optimize "on"
+	symbols "off"
+	runtime "Release"
 
 group ""
 	include "source/Engine"
