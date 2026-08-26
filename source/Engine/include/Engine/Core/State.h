@@ -11,5 +11,5 @@ namespace Engine
 		float height = 0.0f;
 	};
 
-	extern ViewportState viewportState;
+	ViewportState viewportState;
 }

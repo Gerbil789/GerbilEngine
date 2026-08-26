@@ -45,7 +45,8 @@ filter "platforms:windows"
 filter "platforms:linux"
   defines 
   { 
-    "_GLFW_X11"
+    "_GLFW_X11",
+    "GLFW_EXPOSE_NATIVE_X11"
   }
   files
   {

@@ -3,5 +3,5 @@
 
 namespace Engine
 {
-	ViewportState viewportState;
+	//ViewportState viewportState;
 }

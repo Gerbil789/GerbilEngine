@@ -69,7 +69,7 @@ namespace Editor
 				ImGui::PushID(static_cast<int>(static_cast<uint64_t>(recordPtr->id)));
 
 				ImGui::Text("Name: %s", recordPtr->path.filename().string().c_str());
-				ImGui::Text("ID: %llu", static_cast<uint64_t>(recordPtr->id));
+				ImGui::Text("ID: %lu", static_cast<uint64_t>(recordPtr->id));
 				ImGui::Text("Type: %s", Engine::AssetTypeToString(recordPtr->type).data());
 
 				if (ImGui::Button("Open"))

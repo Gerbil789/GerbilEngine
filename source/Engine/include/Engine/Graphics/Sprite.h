@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Asset/AssetHandle.h"
+#include <glm/glm.hpp>
 
 namespace Engine
 {

@@ -1,7 +1,7 @@
 project "TestProject"
 kind "ConsoleApp"
-targetdir ("%{prj.location}/bin/%{cfg.system}/%{cfg.buildcfg}")
-objdir ("%{prj.location}/bin-int/%{cfg.system}/%{cfg.buildcfg}")
+-- targetdir ("%{prj.location}/bin/%{cfg.system}/%{cfg.buildcfg}")
+-- objdir ("%{prj.location}/bin-int/%{cfg.system}/%{cfg.buildcfg}")
 
 files
 {
@@ -23,9 +23,27 @@ externalincludedirs
 	"%{wks.location}/vendor/imgui",
 }
 
-libdirs { "%{wks.location}/vendor/dawn/shared" }
+filter "not platforms:web"
+  externalincludedirs
+  {
+	  "%{wks.location}/vendor/glfw/include",
+    "%{wks.location}/vendor/dawn/include"
+  }
+filter {}
 
-links { "Engine", "Editor", "ImGui" }
+filter "platforms:windows"
+	libdirs { "%{wks.location}/vendor/dawn/shared" }
+filter "platforms:linux"
+  libdirs { "%{wks.location}/vendor/dawn/static" }
+  links { ":libwebgpu_dawn.a" }
+  defines
+	{
+		"GLFW_EXPOSE_NATIVE_X11",
+		"GLFW_EXPOSE_NATIVE_WAYLAND",
+	}
+filter {}
+
+links { "Editor", "Engine", "ImGui", "glfw" }
 
 defines { "IMGUI_IMPL_WEBGPU_BACKEND_DAWN" }
 

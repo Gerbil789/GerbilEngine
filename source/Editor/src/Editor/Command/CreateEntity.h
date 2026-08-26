@@ -49,8 +49,8 @@ namespace Editor
     }
 
   private:
+    std::string m_Name;
     entt::entity m_Parent;
-    std::string m_Name; // Stores the name safely for the command lifetime
     Engine::Entity m_Entity;
   };
 }

@@ -29,8 +29,8 @@
 Editor::EditorApp editor;
 #endif
 
-uint32_t m_Width = 1600;
-uint32_t m_Height = 900;
+uint32_t m_Width = 1280;
+uint32_t m_Height = 720;
 
 Engine::Renderer m_Renderer;
 wgpu::Texture m_DepthTexture;
@@ -121,7 +121,7 @@ static void UpdateSize(Engine::Window& window)
 GameApp::GameApp()
 {
 	std::filesystem::path cwd = std::filesystem::current_path();
-	std::filesystem::path projectDir = cwd / "Projects/TestProject/project.json";
+	std::filesystem::path projectDir = cwd / "projects/TestProject/project.json";
 
 	Engine::Project::Load(projectDir);
 	const Engine::Project& project = Engine::Project::GetActive();

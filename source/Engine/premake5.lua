@@ -29,12 +29,14 @@ externalincludedirs
 filter "not platforms:web"
   externalincludedirs
   {
-		"%{wks.location}/vendor/glfw/include",
+	"%{wks.location}/vendor/glfw/include",
     "%{wks.location}/vendor/dawn/include"
   }
 filter {}
 
-libdirs { "%{wks.location}/vendor/dawn/shared" }
+filter "platforms:windows"
+	libdirs { "%{wks.location}/vendor/dawn/shared" }
+filter {}
 
 links
 {
@@ -57,14 +59,9 @@ filter "platforms:windows"
 	defines { "GLFW_EXPOSE_NATIVE_WIN32" }
 
 filter "platforms:linux"
-	-- buildoptions 
-	-- { 
-	-- 	"-Wno-invalid-offsetof",
-	-- }
-
-  linkoptions 
+	linkoptions 
 	{ 
-		"-fuse-ld=lld",
+	"-fuse-ld=lld",
 	}
   
 	links 

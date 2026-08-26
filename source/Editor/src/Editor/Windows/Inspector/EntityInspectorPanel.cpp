@@ -221,12 +221,14 @@ namespace Editor
 
 		ImGui::Separator();
 
-		for (auto&& [i, material] : std::views::enumerate(component.materials))
+		size_t i = 0;
+		for (auto& material : component.materials)
 		{
 			if (AssetField(std::format("Material {}", i), material).changed)
 			{
 				SelectionManager::Assets.Select(material.id);
 			}
+			i++;
 		}
 	}
 

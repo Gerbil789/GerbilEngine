@@ -1,7 +1,6 @@
 #include "MenuBar.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Core/EditorWindowManager.h"
-#include "Editor/Core/PopupWindowManager.h"
 #include "Editor/Utility/File.h"
 #include "Engine/Core/Project.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
@@ -53,12 +52,12 @@ namespace Editor
 			{"Redo", "Ctrl+Shift+Z", EditorCommandManager::Redo},
 		}},
 
-		{ "Project", {
-			{"New", "", [] { PopupManager::Open("New Project"); }},
-			{"Open", "", [] { Engine::Project::Load(Editor::FileDialog::SelectDirectory()); }}, //TODO: select project.json file instead of directory?
-			{"Settings", "", [] { /*TODO*/ }},
-			{"Save layout", "", [] { Editor::EditorWindowManager::SaveLayout(); }},
-		}},
+		// { "Project", {
+		// 	{"New", "", [] { PopupManager::Open("New Project"); }},
+		// 	{"Open", "", [] { Engine::Project::Load(Editor::FileDialog::SelectDirectory()); }}, //TODO: select project.json file instead of directory?
+		// 	{"Settings", "", [] { /*TODO*/ }},
+		// 	{"Save layout", "", [] { Editor::EditorWindowManager::SaveLayout(); }},
+		// }},
 
 		{ "Debug", {
 			{"RenderDoc", "", [] { /*TODO*/ }}

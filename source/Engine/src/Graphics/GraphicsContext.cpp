@@ -2,7 +2,7 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
-//#include <webgpu/webgpu_cpp_print.h>
+#include <webgpu/webgpu_cpp_print.h>
 
 namespace Engine::GraphicsContext
 {
@@ -59,10 +59,10 @@ namespace Engine::GraphicsContext
 			wgpu::AdapterInfo info;
 			s_Adapter.GetInfo(&info);
 
-			//std::stringstream ss;
-			//ss << info.backendType;
+			std::stringstream ss;
+			ss << info.backendType;
 
-			//LOG_TRACE("Dawn backend: {}", ss.str());
+			LOG_TRACE("Dawn backend: {}", ss.str());
 			LOG_TRACE("GPU: {} ({})", std::string_view(info.device), std::string_view(info.architecture));
 			LOG_TRACE("Description: {}", std::string_view(info.description));
 			LOG_TRACE("VendorID 0x{:X}", info.vendorID);
@@ -88,16 +88,16 @@ namespace Engine::GraphicsContext
 			{
 				if (reason == wgpu::DeviceLostReason::Destroyed) return; // ignore shutdown losses (explicit destroy)
 
-				//std::stringstream ss;
-				//ss << reason;
-				//LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", ss.str(), std::string_view(message));
+				std::stringstream ss;
+				ss << reason;
+				LOG_ERROR("WebGPU device lost. Reason: {}, Message: {}", ss.str(), std::string_view(message));
 			});
 
 		deviceDesc.SetUncapturedErrorCallback([](wgpu::Device const&, wgpu::ErrorType type, wgpu::StringView message)
 			{
-				//std::stringstream ss;
-				//ss << type;
-				//LOG_ERROR("WebGPU Uncaptured error [type: {}]: {}", ss.str(), std::string_view(message));
+				std::stringstream ss;
+				ss << type;
+				LOG_ERROR("WebGPU Uncaptured error [type: {}]: {}", ss.str(), std::string_view(message));
 			});
 
 

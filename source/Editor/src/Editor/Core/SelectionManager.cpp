@@ -59,7 +59,7 @@ namespace Editor
 
 	void SelectionManager::Initialize()
 	{
-		Engine::EventBus::Subscribe<Engine::SceneChangedEvent>([](const Engine::SceneChangedEvent& e)
+		Engine::EventBus::Subscribe<Engine::SceneChangedEvent>([](const Engine::SceneChangedEvent&)
 			{
 				Entities.Clear();
 				return false;

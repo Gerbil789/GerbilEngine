@@ -4,6 +4,7 @@
 #include "Engine/Asset/AssetType.h"
 #include "Engine/Core/Scene.h"
 #include "Engine/Core/Components.h"
+#include "Engine/Core/Entity.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/Texture/Texture2D.h"

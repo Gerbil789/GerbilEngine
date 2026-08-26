@@ -4,10 +4,11 @@
 #include "Engine/Event/MouseEvent.h"
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Core/Log.h"
 #include <stb_image.h>
 #include <GLFW/glfw3.h>
 
-#if defined(ENGINE_PLATFORM_WINDOWS)
+#if !defined(ENGINE_PLATFORM_WEB)
 #include <GLFW/glfw3native.h>
 #endif
 
@@ -53,10 +54,10 @@ namespace Engine
 		surfaceDesc.nextInChain = &hwndDesc;
 #elif defined(ENGINE_PLATFORM_LINUX)
 		wgpu::SurfaceSourceXlibWindow x11Desc;
-		x11Desc.chain.sType = wgpu::SType::SurfaceSourceXlibWindow;
+		x11Desc.sType = wgpu::SType::SurfaceSourceXlibWindow;
 		x11Desc.display = glfwGetX11Display();
 		x11Desc.window = glfwGetX11Window(window);
-		surfaceDesc.nextInChain = &x11Desc.chain;
+		surfaceDesc.nextInChain = &x11Desc;
 #elif defined(ENGINE_PLATFORM_WEB)
 		wgpu::SurfaceDescriptorFromCanvasHTMLSelector canvasDesc{};
 		canvasDesc.selector = "#canvas";

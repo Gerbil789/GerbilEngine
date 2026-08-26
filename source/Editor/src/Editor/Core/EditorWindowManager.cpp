@@ -2,7 +2,6 @@
 #include "EditorWindowManager.h"
 #include "Editor/Core/EditorRenderer.h"
 #include "Editor/Windows/MenuBar.h"
-#include "Editor/Core/PopupWindowManager.h"
 #include "Editor/Windows/ContentBrowser/ContentBrowserWindow.h"
 #include "Editor/Windows/Inspector/InspectorWindow.h"
 #include "Editor/Windows/SceneHierarchyWindow.h"
@@ -12,7 +11,6 @@
 #include "Editor/Windows/Viewport/ViewportWindow.h"
 #include "Editor/Windows/AssetRegistryWindow.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
-#include "Editor/Windows/PopUp/NewProjectPopupWindow.h"
 #include "Engine/Utility/File.h"
 #include "Engine/Core/Log.h"
 
@@ -96,7 +94,6 @@ namespace Editor
 	namespace
 	{
 		MenuBar m_MenuBar;
-		NewProjectPopupWindow m_NewProjectPopup;
 
 		std::tuple<
 			SceneHierarchyWindow,
@@ -112,7 +109,6 @@ namespace Editor
 
 	void EditorWindowManager::Initialize(const Engine::Window& window)
 	{
-		PopupManager::Register(&m_NewProjectPopup); //TODO: i dont like this design...
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -148,7 +144,6 @@ namespace Editor
 		BeginDockSpace();
 
 		m_MenuBar.Draw();
-		PopupManager::Draw();
 		std::apply([](auto&&... win) {(win.Draw(), ...); }, m_Windows);
 
 		//bool showDemoWindow = true;

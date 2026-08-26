@@ -20,8 +20,10 @@ namespace Engine
 		m_Channels = decoder.outputChannels;
 		m_SampleRate = decoder.outputSampleRate;
 
-		ma_decoder_get_length_in_pcm_frames(&decoder, &m_TotalFrames);
-
+		ma_uint64 totalFrames;
+		ma_decoder_get_length_in_pcm_frames(&decoder, &totalFrames);
+		m_TotalFrames =  static_cast<uint64_t>(totalFrames);
+		
 		m_PCMData.resize(m_TotalFrames * m_Channels);
 		ma_decoder_read_pcm_frames(&decoder, m_PCMData.data(), m_TotalFrames, nullptr);
 

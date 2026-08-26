@@ -357,6 +357,7 @@ namespace Editor
 								case Engine::AssetType::Scene:
 									EditorCommandManager::OpenScene(Engine::Scene{ item.AssetId });
 									break;
+								default: {}
 								}
 							}
 						}
