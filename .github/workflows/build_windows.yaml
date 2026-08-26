@@ -1,0 +1,27 @@
+name: Build Windows
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release, EditorDebug, EditorRelease]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Generate Visual Studio project files
+        run: scripts/premake/premake5.exe vs2022
+
+      - name: Build project
+        run: |
+          msbuild /p:Configuration=${{ matrix.configuration }} /p:Platform=Windows GerbilEngine.sln

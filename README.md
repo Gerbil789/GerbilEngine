@@ -1,23 +1,48 @@
 [![Windows](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_windows.yaml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_windows.yaml)
-<!-- [![Linux](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_linux.yaml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_linux.yaml) -->
+[![Linux](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_linux.yaml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_linux.yaml)
 
 # GerbilEngine
-WebGPU based game engine
+Corss platform **game engine** and **editor**. Engine uses WebGPU graphics API.
 
-#### Prerequisites
- - Windows machine
- - Visual Studio 2022 (C++ 23)
+***
 
-#### Setup
-1. **Clone the Project**
-	 - ```git clone https://github.com/Gerbil789/GerbilEngine.git```
-2. **Generate project files**
-	 - *Navigate into the **Scripts** directory*
-	 - Run `generate_project.bat` 
-3. **Build project in Visual Studio**
-	 - Open solution in VS (`GerbilEngine.sln`)
-	 - Right click Solution -> Build Solution
-4. **Run**
+### Prerequisites
+#### Windows
+ - Visual Studio (C++ 23)
+
+#### Linux
+Before building on Linux (Ubuntu/Debian), make sure you install the required development libraries:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y build-essential clang libc++-dev libc++abi-dev libx11-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libwayland-dev libxkbcommon-dev
+```
+### Clone the Project
+```bash 
+git clone https://github.com/Gerbil789/GerbilEngine.git
+```
+
+## Setup
+
+
+### Windows
+**Generate project files**
+```bash 
+scripts\premake\premake5.exe vs2022
+```
+Open solution in VS (<code>GerbilEngine.sln</code>), right click Solution -> Build Solution
+
+### Linux
+**Generate project files**
+```bash 
+./scripts/premake/premake5 gmake
+```
+
+```bash 
+make config=editorrelease_linux
+```
+
+*config options: `debug`, `release`, `editordebug`, `editorrelease`*
 
 #### Dependencies
 
@@ -37,7 +62,8 @@ WebGPU based game engine
 | **[miniaudio](https://github.com/mackron/miniaudio)**                            | Audio playback                   |
 | **[RenderDoc](https://github.com/baldurk/renderdoc)**                            | Graphics debbuger                |
 | **[msdf-atlas-gen](https://github.com/Chlumsky/msdf-atlas-gen)**                 | MSDF font atlas generator        |
----
+
+***
 
 <img width="1920" height="1080" alt="screen1" src="https://github.com/user-attachments/assets/a8091422-2f4e-4f4f-926a-262a0accf6bb" />
 <img width="1920" height="1080" alt="screen2" src="https://github.com/user-attachments/assets/657f1aae-249f-4058-8a5b-ba5dc1f6714d" />
