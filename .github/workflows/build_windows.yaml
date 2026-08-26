@@ -1,4 +1,4 @@
-name: Build Windows
+name: Build
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        configuration: [Debug, Release]
+        configuration: [Debug, Release, EditorDebug, EditorRelease]
     steps:
       - uses: actions/checkout@v4
 
@@ -25,3 +25,26 @@ jobs:
       - name: Build project
         run: |
           msbuild /p:Configuration=${{ matrix.configuration }} /p:Platform=Windows GerbilEngine.sln
+
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [debug, release, editordebug, editorrelease]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libx11-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libwayland-dev libxkbcommon-dev
+      
+      - name: Make Premake executable
+        run: chmod +x scripts/premake/premake5
+
+      - name: Generate Makefiles
+        run: ./scripts/premake/premake5 gmake
+
+      - name: Build project
+        run: make config=${{ matrix.configuration }}_linux -j$(nproc)

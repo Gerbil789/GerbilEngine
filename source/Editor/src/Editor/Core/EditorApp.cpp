@@ -15,15 +15,12 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Debug/RenderDoc.h"
 #include "Engine/System/TransformSystem.h"
 
 namespace Editor
 {
 	void EditorApp::Initialize(const Engine::Window& window)
 	{
-		//RenderDoc::Initialize(); //TODO: enable/disable at runtime in menu bar
-
 		Editor::editorContext.camera.background = Engine::CameraComponent::Background::Skybox;
 		Editor::editorContext.camera.projectionType = Engine::CameraComponent::Projection::Perspective;
 		Editor::editorContext.cameraTransform.position = glm::vec3{ 0.0f, 0.0f, -20.0f };

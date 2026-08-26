@@ -8,19 +8,15 @@
 #include "Engine/Asset/AssetManager.h"
 #include <webgpu/webgpu_cpp.h>
 
-#include "Engine/Debug/RenderDoc.h"
 
 namespace Engine
 {
 	Environment EnvironmentBaker::BakeEnvironment(Texture2D equirectangularTexture)
 	{
-		RenderDoc::StartFrameCapture();
-
     Environment env;
     env.EnvironmentMap = EquirectangularToCubemap(equirectangularTexture);
     env.IrradianceMap = CreateIrradianceMap(env.EnvironmentMap);
     env.PrefilteredSpecularMap = CreatePrefilteredSpecularMap(env.EnvironmentMap);
-		RenderDoc::EndFrameCapture();
 		return env;
 	}
 
