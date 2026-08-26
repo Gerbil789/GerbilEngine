@@ -1,4 +1,4 @@
-name: Build
+name: Build Engine
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        configuration: [Debug, Release, EditorDebug, EditorRelease]
+        configuration: [Debug, Release]
     steps:
       - uses: actions/checkout@v4
 
@@ -31,14 +31,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        configuration: [debug, release, editordebug, editorrelease]
+        configuration: [debug, release]
     steps:
       - uses: actions/checkout@v4
 
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libx11-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libwayland-dev libxkbcommon-dev
+          sudo apt-get install -y build-essential clang libc++-dev libc++abi-dev libx11-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libwayland-dev libxkbcommon-dev
       
       - name: Make Premake executable
         run: chmod +x scripts/premake/premake5
