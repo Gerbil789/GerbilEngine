@@ -1,5 +1,5 @@
 {
-   "Shader": 13992555324839847950,
+   "Shader": 8838992683921654786,
    "Attributes": {
       "albedo": [
          1,
@@ -19,7 +19,7 @@
       ]
    },
    "Textures": {
-      "AlbedoTexture": 14912393741399477953,
+      "AlbedoTexture": 6854353316358564022,
       "AmbientTexture": 4,
       "MetallicTexture": 4,
       "NormalTexture": 6,

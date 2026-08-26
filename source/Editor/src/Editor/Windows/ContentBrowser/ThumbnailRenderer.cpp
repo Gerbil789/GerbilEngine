@@ -88,6 +88,8 @@ namespace Editor
 			auto& tc = cameraEntity.GetComponent<Engine::TransformComponent>();
 			tc.position = { 0.0f, 0.0f, 3.0f };
 			tc.rotation = { 0.0f, 0.0f, 0.0f };
+
+			renderer.SetCamera(cc, tc);
 		}
 		
 		{
@@ -103,6 +105,8 @@ namespace Editor
 		renderer.Initialize();
 		renderer.SetSize(64.0f, 64.0f);
 		renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Opaque);
+
+
 
 		for (const auto& [type, coords] : AssetIconMap)
 		{

@@ -77,7 +77,7 @@ namespace Engine
 		for (const auto& [id, record] : m_Records)
 		{
 			AssetRecord diskCopy = record;
-			diskCopy.path = std::filesystem::relative(record.path, assetsDir);
+			diskCopy.path = std::filesystem::relative(record.path, assetsDir).generic_string();
 			assets.push_back(std::move(diskCopy));
 		}
 

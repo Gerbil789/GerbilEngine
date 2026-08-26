@@ -1,5 +1,5 @@
 {
-   "Shader": 5516677422672382005,
+   "Shader": 17820293680539683375,
    "Attributes": {
       "albedo": [
          1,
@@ -21,7 +21,7 @@
       ]
    },
    "Textures": {
-      "AlbedoTexture": 2686125271564967961
+      "AlbedoTexture": 10479986532528325026
    },
    "Filter": 0,
    "Wrap": 0
