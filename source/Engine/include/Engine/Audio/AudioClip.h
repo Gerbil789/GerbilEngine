@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <vector>
 
-namespace Engine
+namespace engine
 {
 	class AudioClipAsset : public Asset
 	{

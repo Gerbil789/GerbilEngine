@@ -6,7 +6,7 @@
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Core/Scene.h"
 
-namespace Engine
+namespace engine
 {
 	//struct alignas(16) Light 
 	//{

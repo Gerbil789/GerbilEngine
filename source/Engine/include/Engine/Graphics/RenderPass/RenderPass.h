@@ -3,7 +3,7 @@
 #include "Engine/Graphics/Renderer/RenderContext.h"
 #include "Engine/Graphics/Renderer/DrawList.h"
 
-namespace Engine
+namespace engine
 {
   class RenderPass
   {

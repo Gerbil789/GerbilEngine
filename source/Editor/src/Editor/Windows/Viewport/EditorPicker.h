@@ -3,7 +3,7 @@
 #include "Engine/Core/UUID.h"
 #include <webgpu/webgpu_cpp.h>
 
-namespace Editor
+namespace editor
 {
   class EditorPicker
   {
@@ -13,7 +13,7 @@ namespace Editor
 		void Initialize();
 
     void Resize(uint32_t width, uint32_t height);
-    Engine::Uuid Pick(uint32_t mouseX, uint32_t mouseY);
+    engine::Uuid Pick(uint32_t mouseX, uint32_t mouseY);
 
   private:
     void CreateBindGroupLayout();

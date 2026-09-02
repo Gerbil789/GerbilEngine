@@ -4,7 +4,7 @@
 #include <vector>
 #include <memory>
 
-namespace Editor
+namespace editor
 {
   class BatchCommand : public ICommand 
   {

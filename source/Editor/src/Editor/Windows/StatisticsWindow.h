@@ -2,7 +2,7 @@
 
 #include "IEditorWindow.h"
 
-namespace Editor
+namespace editor
 {
 	class StatisticsWindow : public IEditorWindow
 	{

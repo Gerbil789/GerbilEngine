@@ -13,12 +13,12 @@
 #include "Engine/Event/FileEvent.h"
 #include <imgui_internal.h>
 
-namespace Engine
+namespace engine
 {
 	class MaterialAsset;
 }
 
-namespace Editor
+namespace editor
 {
 	namespace
 	{
@@ -28,10 +28,10 @@ namespace Editor
 		struct ContentBrowserItem
 		{
 			ContentBrowserItemType Type;
-			Engine::AssetType AssetType;
+			engine::AssetType AssetType;
 			std::string Name;
 			std::filesystem::path Path;
-			Engine::Uuid AssetId;
+			engine::Uuid AssetId;
 			bool IsEmptyDirectory = false;
 
 			ImGuiID GetID() const
@@ -61,9 +61,9 @@ namespace Editor
 		m_Items.clear();
 		m_Selection.Clear();
 
-		std::filesystem::path relativeDir = std::filesystem::relative(m_CurrentDirectory, Engine::Project::GetActive().GetAssetsDirectory());
+		std::filesystem::path relativeDir = std::filesystem::relative(m_CurrentDirectory, engine::Project::AssetsDirectory());
 
-		const Engine::DirectoryNode* node = Engine::AssetManager::GetAssetRegistry().GetDirectoryNode(relativeDir);
+		const engine::DirectoryNode* node = engine::AssetManager::GetAssetRegistry().GetDirectoryNode(relativeDir);
 		if (!node) return;
 
 		m_Items.reserve(node->subdirectories.size() + node->assets.size());
@@ -79,14 +79,14 @@ namespace Editor
 			m_Items.push_back(item);
 		}
 
-		for (Engine::Uuid id : node->assets)
+		for (engine::Uuid id : node->assets)
 		{
 			ContentBrowserItem item;
 			item.Type = ContentBrowserItemType::Asset;
-			item.Path = Engine::AssetManager::GetAssetPath(id);
+			item.Path = engine::AssetManager::GetAssetPath(id);
 			item.Name = item.Path.stem().string();
 			item.AssetId = id;
-			item.AssetType = Engine::AssetManager::GetAssetType(id);
+			item.AssetType = engine::AssetManager::GetAssetType(id);
 
 			m_Items.push_back(item);
 		}
@@ -107,15 +107,15 @@ namespace Editor
 
 		ImGui::BeginChild("NavBar", ImVec2(0, 24), ImGuiChildFlags_None, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-		const std::filesystem::path& relativePath = std::filesystem::relative(m_CurrentDirectory, Engine::Project::GetActive().GetAssetsDirectory());
-		std::filesystem::path pathSoFar = Engine::Project::GetActive().GetAssetsDirectory();
+		const std::filesystem::path& relativePath = std::filesystem::relative(m_CurrentDirectory, engine::Project::AssetsDirectory());
+		std::filesystem::path pathSoFar = engine::Project::AssetsDirectory();
 
 		if (ImGui::Button("Assets"))
 		{
-			OpenDirectory(Engine::Project::GetActive().GetAssetsDirectory());
+			OpenDirectory(engine::Project::AssetsDirectory());
 		}
 
-		if (m_CurrentDirectory != Engine::Project::GetActive().GetAssetsDirectory())
+		if (m_CurrentDirectory != engine::Project::AssetsDirectory())
 		{
 			for (const auto& component : relativePath)
 			{
@@ -184,13 +184,13 @@ namespace Editor
 
 				if (ImGui::MenuItem("Scene"))
 				{
-					Engine::AssetManager::CreateAsset<Engine::Scene>(m_CurrentDirectory / "newScene.scene");
+					engine::AssetManager::CreateAsset<engine::Scene>(m_CurrentDirectory / "newScene.scene");
 					RefreshDirectory();
 				}
 
 				if (ImGui::MenuItem("Material"))
 				{
-					Engine::AssetManager::CreateAsset<Engine::Material>(m_CurrentDirectory / "material.mat");
+					engine::AssetManager::CreateAsset<engine::Material>(m_CurrentDirectory / "material.mat");
 					RefreshDirectory();
 				}
 
@@ -201,7 +201,7 @@ namespace Editor
 
 			if (ImGui::MenuItem("Open in file explorer"))
 			{
-				Editor::FileDialog::OpenFileExplorer(m_CurrentDirectory);
+				editor::FileDialog::OpenFileExplorer(m_CurrentDirectory);
 			}
 
 			ImGui::EndPopup();
@@ -226,7 +226,7 @@ namespace Editor
 
 			if (ImGui::MenuItem("Open in file explorer"))
 			{
-				Editor::FileDialog::OpenFileExplorer(item.Path);
+				editor::FileDialog::OpenFileExplorer(item.Path);
 			}
 
 			ImGui::EndPopup();
@@ -354,8 +354,8 @@ namespace Editor
 							{
 								switch (item.AssetType)
 								{
-								case Engine::AssetType::Scene:
-									EditorCommandManager::OpenScene(Engine::Scene{ item.AssetId });
+								case engine::AssetType::Scene:
+									EditorCommandManager::OpenScene(engine::Scene{ item.AssetId });
 									break;
 								default: {}
 								}
@@ -365,7 +365,7 @@ namespace Editor
 
 					if (item.Type == ContentBrowserItemType::Asset)
 					{
-						DragDropSource<Engine::Uuid>("UUID", item.AssetId, item.Name);
+						DragDropSource<engine::Uuid>("UUID", item.AssetId, item.Name);
 					}
 
 
@@ -395,9 +395,9 @@ namespace Editor
 	void ContentBrowserWindow::Initialize()
 	{
 		m_ThumbnailRenderer.Initialize();
-		m_CurrentDirectory = Engine::Project::GetActive().GetAssetsDirectory();
+		m_CurrentDirectory = engine::Project::AssetsDirectory();
 
-		Engine::EventBus::Subscribe<Engine::FileAddedEvent>([](const Engine::FileAddedEvent& event)
+		engine::EventBus::Subscribe<engine::FileAddedEvent>([](const engine::FileAddedEvent& event)
 			{
 				if (event.path == m_CurrentDirectory)
 				{
@@ -406,7 +406,7 @@ namespace Editor
 				return false;
 			});
 
-		Engine::EventBus::Subscribe<Engine::FileRemovedEvent>([](const Engine::FileRemovedEvent& event)
+		engine::EventBus::Subscribe<engine::FileRemovedEvent>([](const engine::FileRemovedEvent& event)
 			{
 				if (event.path == m_CurrentDirectory)
 				{
@@ -415,7 +415,7 @@ namespace Editor
 				return false;
 			});
 
-		Engine::EventBus::Subscribe<Engine::FileModifiedEvent>([](const Engine::FileModifiedEvent& event)
+		engine::EventBus::Subscribe<engine::FileModifiedEvent>([](const engine::FileModifiedEvent& event)
 			{
 				if (event.path == m_CurrentDirectory)
 				{

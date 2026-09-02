@@ -7,19 +7,19 @@
 #include <GLFW/glfw3.h>
 #include <ImGuizmo.h>
 
-namespace Editor
+namespace editor
 {
 	static wgpu::Surface s_Surface;
 
-	void EditorRenderer::Initialize(const Engine::Window& window)
+	void EditorRenderer::Initialize(const engine::Window& window)
 	{
 		s_Surface = wgpu::Surface(window.GetSurface());
 
-		ImGui_ImplGlfw_InitForOther(static_cast<GLFWwindow*>(window.GetNativeWindow()), true);
+		ImGui_ImplGlfw_InitForOther(static_cast<GLFWwindow*>(window.Get()), true);
 
 		ImGui_ImplWGPU_InitInfo initInfo;
-		initInfo.Device = Engine::GraphicsContext::GetDevice().Get();
-		initInfo.RenderTargetFormat = static_cast<WGPUTextureFormat>(Engine::GraphicsContext::GetSurfaceFormat());
+		initInfo.Device = engine::GraphicsContext::GetDevice().Get();
+		initInfo.RenderTargetFormat = static_cast<WGPUTextureFormat>(engine::GraphicsContext::GetSurfaceFormat());
 		ImGui_ImplWGPU_Init(&initInfo);
 	}
 
@@ -60,7 +60,7 @@ namespace Editor
 
 		wgpu::CommandEncoderDescriptor encoderDesc;
 		encoderDesc.label = "ImGuiCommandEncoderDescriptor";
-		wgpu::CommandEncoder encoder = Engine::GraphicsContext::GetDevice().CreateCommandEncoder(&encoderDesc);
+		wgpu::CommandEncoder encoder = engine::GraphicsContext::GetDevice().CreateCommandEncoder(&encoderDesc);
 
 		wgpu::RenderPassColorAttachment color;
 		color.view = targetView;
@@ -83,7 +83,7 @@ namespace Editor
 		commandBufferDesc.nextInChain = nullptr;
 		wgpu::CommandBuffer commandBuffer = encoder.Finish(&commandBufferDesc);
 
-		Engine::GraphicsContext::GetQueue().Submit(1, &commandBuffer);
+		engine::GraphicsContext::GetQueue().Submit(1, &commandBuffer);
 		s_Surface.Present();
 	}
 }

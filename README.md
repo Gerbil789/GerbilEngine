@@ -2,38 +2,27 @@
 [![Linux](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_linux.yaml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_linux.yaml)
 
 # GerbilEngine
-Corss platform **game engine** and **editor**. Engine uses WebGPU graphics API.
+Cross platform **game engine** and **editor**. Engine uses WebGPU graphics API.
 
-***
-
-### Prerequisites
-#### Windows
- - Visual Studio (C++ 23)
-
-#### Linux
-Before building on Linux (Ubuntu/Debian), make sure you install the required development libraries:
-
-```bash
-sudo apt-get update
-sudo apt-get install -y build-essential clang libc++-dev libc++abi-dev libx11-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libwayland-dev libxkbcommon-dev
-```
-### Clone the Project
 ```bash 
 git clone https://github.com/Gerbil789/GerbilEngine.git
 ```
 
-## Setup
-
+***
 
 ### Windows
-**Generate project files**
+ - Download and install Visual Studio, with C++23
+
 ```bash 
 scripts\premake\premake5.exe vs2022
 ```
-Open solution in VS (<code>GerbilEngine.sln</code>), right click Solution -> Build Solution
 
 ### Linux
-**Generate project files**
+```bash
+sudo apt-get update
+sudo apt-get install -y build-essential clang libc++-dev libc++abi-dev libx11-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libwayland-dev libxkbcommon-dev
+```
+
 ```bash 
 ./scripts/premake/premake5 gmake
 ```
@@ -42,7 +31,7 @@ Open solution in VS (<code>GerbilEngine.sln</code>), right click Solution -> Bui
 make config=editorrelease_linux
 ```
 
-*config options: `debug`, `release`, `editordebug`, `editorrelease`*
+*config options*: `debug`, `release`, `editordebug`, `editorrelease`
 
 #### Dependencies
 
@@ -60,7 +49,6 @@ make config=editorrelease_linux
 | **[tinygltf](https://github.com/syoyo/tinygltf)**                                | glTF mesh processing             |
 | **[glaze](https://github.com/stephenberry/glaze)**                               | Serialization                    |
 | **[miniaudio](https://github.com/mackron/miniaudio)**                            | Audio playback                   |
-| **[RenderDoc](https://github.com/baldurk/renderdoc)**                            | Graphics debbuger                |
 | **[msdf-atlas-gen](https://github.com/Chlumsky/msdf-atlas-gen)**                 | MSDF font atlas generator        |
 
 ***

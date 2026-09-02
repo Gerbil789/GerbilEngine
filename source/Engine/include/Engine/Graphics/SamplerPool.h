@@ -3,7 +3,7 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include <functional>
 
-namespace Engine
+namespace engine
 {
 	enum class TextureFilter { Point, Bilinear, Trilinear };
 	enum class TextureWrap { Repeat, Clamp, Mirror };
@@ -20,16 +20,16 @@ namespace Engine
 namespace std 
 {
 	template<>
-	struct hash<Engine::SamplerKey> 
+	struct hash<engine::SamplerKey> 
 	{
-		inline std::size_t operator()(const Engine::SamplerKey& key) const noexcept 
+		inline std::size_t operator()(const engine::SamplerKey& key) const noexcept 
 		{
 			return (static_cast<size_t>(key.filter) << 4) ^ static_cast<size_t>(key.wrap);
 		}
 	};
 }
 
-namespace Engine
+namespace engine
 {
 	class SamplerPool
 	{

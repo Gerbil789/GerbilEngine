@@ -5,7 +5,7 @@
 #include "Engine/Graphics/Pipeline.h"
 #include "Engine/Asset/AssetManager.h"
 
-namespace Engine
+namespace engine
 {
 	void OpaquePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
 	{

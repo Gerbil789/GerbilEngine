@@ -15,7 +15,7 @@
 #include "Engine/System/TransformSystem.h"
 #include <glm/glm.hpp>
 
-namespace Editor
+namespace editor
 {
 	namespace
 	{
@@ -34,9 +34,9 @@ namespace Editor
 		m_EntityPicker.Initialize();
 
 
-		const auto& tc = Editor::editorContext.cameraTransform;
-		const glm::mat4 localMatrix = Engine::TransformSystem::CalculateLocalPositionMatrix(tc);
-		Engine::CameraSystem::UpdateCameraViewMatrix(Editor::editorContext.camera, localMatrix);
+		const auto& tc = editor::editorContext.cameraTransform;
+		const glm::mat4 localMatrix = engine::TransformSystem::CalculateLocalPositionMatrix(tc);
+		engine::CameraSystem::UpdateCameraViewMatrix(editor::editorContext.camera, localMatrix);
 
 	}
 
@@ -47,7 +47,7 @@ namespace Editor
 
 		m_ViewportSize = { newSize.x, newSize.y };
 
-		Editor::editorContext.renderer.SetSize(m_ViewportSize.x, m_ViewportSize.y);
+		editor::editorContext.renderer.SetSize(m_ViewportSize.x, m_ViewportSize.y);
 
 		ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		ImVec2 viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -67,12 +67,12 @@ namespace Editor
 			wgpu::TextureDescriptor desc;
 			desc.label = "RendererColorTexture";
 			desc.dimension = wgpu::TextureDimension::e2D;
-			desc.format = Engine::GraphicsContext::GetSurfaceFormat();
+			desc.format = engine::GraphicsContext::GetSurfaceFormat();
 			desc.size = size;
 			desc.mipLevelCount = 1;
 			desc.sampleCount = 1;
 			desc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
-			wgpu::Texture colorTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&desc);
+			wgpu::Texture colorTexture = engine::GraphicsContext::GetDevice().CreateTexture(&desc);
 
 			wgpu::TextureViewDescriptor view;
 			view.label = "RendererColorTextureView";
@@ -82,46 +82,46 @@ namespace Editor
 			view.mipLevelCount = 1;
 			view.baseArrayLayer = 0;
 			view.arrayLayerCount = 1;
-			Editor::editorContext.renderer.SetColorTarget(colorTexture.CreateView(&view));
+			editor::editorContext.renderer.SetColorTarget(colorTexture.CreateView(&view));
 		}
 
 		// Depth
 		{
-			wgpu::TextureFormat format = wgpu::TextureFormat::Depth24Plus;
+			// wgpu::TextureFormat format = wgpu::TextureFormat::Depth24Plus;
 
-			wgpu::TextureDescriptor desc;
-			desc.label = "RendererDepthTextureView";
-			desc.dimension = wgpu::TextureDimension::e2D;
-			desc.format = format;
-			desc.mipLevelCount = 1;
-			desc.sampleCount = 1;
-			desc.size = size;
-			desc.usage = wgpu::TextureUsage::RenderAttachment;
-			desc.viewFormatCount = 1;
-			desc.viewFormats = &format;
-			wgpu::Texture depthTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&desc);
+			// wgpu::TextureDescriptor desc;
+			// desc.label = "RendererDepthTextureView";
+			// desc.dimension = wgpu::TextureDimension::e2D;
+			// desc.format = format;
+			// desc.mipLevelCount = 1;
+			// desc.sampleCount = 1;
+			// desc.size = size;
+			// desc.usage = wgpu::TextureUsage::RenderAttachment;
+			// desc.viewFormatCount = 1;
+			// desc.viewFormats = &format;
+			// wgpu::Texture depthTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&desc);
 
-			wgpu::TextureViewDescriptor view;
-			view.aspect = wgpu::TextureAspect::DepthOnly;
-			view.baseArrayLayer = 0;
-			view.arrayLayerCount = 1;
-			view.baseMipLevel = 0;
-			view.mipLevelCount = 1;
-			view.dimension = wgpu::TextureViewDimension::e2D;
-			view.format = wgpu::TextureFormat::Depth24Plus;
+			// wgpu::TextureViewDescriptor view;
+			// view.aspect = wgpu::TextureAspect::DepthOnly;
+			// view.baseArrayLayer = 0;
+			// view.arrayLayerCount = 1;
+			// view.baseMipLevel = 0;
+			// view.mipLevelCount = 1;
+			// view.dimension = wgpu::TextureViewDimension::e2D;
+			// view.format = wgpu::TextureFormat::Depth24Plus;
 
-			Editor::editorContext.renderer.SetDepthTarget(depthTexture.CreateView(&view));
+			// Editor::editorContext.renderer.SetDepthTarget(depthTexture.CreateView(&view));
 		}
 
-		Engine::viewportState.width = m_ViewportSize.x;
-		Engine::viewportState.height = m_ViewportSize.y;
+		engine::viewportState.width = m_ViewportSize.x;
+		engine::viewportState.height = m_ViewportSize.y;
 
-		Engine::viewportState.positionX = m_ViewportBounds[0].x;
-		Engine::viewportState.positionY = m_ViewportBounds[0].y;
+		engine::viewportState.positionX = m_ViewportBounds[0].x;
+		engine::viewportState.positionY = m_ViewportBounds[0].y;
 
 
 		float aspectRatio = m_ViewportSize.x / m_ViewportSize.y;
-		Engine::CameraSystem::UpdateCameraProjectionMatrix(Editor::editorContext.camera, aspectRatio);
+		engine::CameraSystem::UpdateCameraProjectionMatrix(editor::editorContext.camera, aspectRatio);
 	}
 
 	static void DrawOverlay(const ImVec2& imagePos, const ImVec2& size)
@@ -146,18 +146,18 @@ namespace Editor
 			constexpr float buttonWidth = 60.0f;
 			ImGui::SetCursorPos(ImVec2(size.x * 0.5f - buttonWidth * 0.5f, 4.0f));
 
-			if (Editor::editorContext.editorMode == EditorMode::Edit)
+			if (editor::editorContext.editorMode == EditorMode::Edit)
 			{
 				if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
 				{
 					EditorCommandManager::Enqueue(std::make_unique<ChangeEditorStateCommand>(EditorMode::Play));
 
-					auto& scene = Engine::AssetManager::GetAsset(Engine::SceneManager::GetActiveScene());
+					auto& scene = engine::AssetManager::GetAsset(engine::SceneManager::GetActiveScene());
 					auto& registry = scene.GetRegistry();
-					auto view = registry.view<Engine::TransformComponent, Engine::CameraComponent, Engine::PrimaryCameraTag>();
+					auto view = registry.view<engine::TransformComponent, engine::CameraComponent, engine::PrimaryCameraTag>();
 					for(auto[entity, transform, camera] : view.each())
 					{
-						Editor::editorContext.renderer.SetCamera(camera, transform);
+						editor::editorContext.renderer.SetCamera(camera, transform);
 						break;
 					}
 				}
@@ -167,7 +167,7 @@ namespace Editor
 				if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
 				{
 					EditorCommandManager::Enqueue(std::make_unique<ChangeEditorStateCommand>(EditorMode::Edit));
-					Editor::editorContext.renderer.SetCamera(Editor::editorContext.camera, Editor::editorContext.cameraTransform);
+					editor::editorContext.renderer.SetCamera(editor::editorContext.camera, editor::editorContext.cameraTransform);
 				}
 			}
 		}
@@ -181,26 +181,26 @@ namespace Editor
 
 			if (ImGui::BeginCombo("##ViewportOptions", "Passes"))
 			{
-				auto flags = Editor::editorContext.renderer.GetEnabledFlags();
+				auto flags = editor::editorContext.renderer.GetEnabledFlags();
 
-				auto RenderPassToggle = [&](const char* label, Engine::RenderPassType flag) {
-					bool isEnabled = (flags & flag) != Engine::RenderPassType::None;
+				auto RenderPassToggle = [&](const char* label, engine::RenderPassType flag) {
+					bool isEnabled = (flags & flag) != engine::RenderPassType::None;
 
 					if (ImGui::Checkbox(label, &isEnabled))
 					{
 						if (isEnabled)
-							Editor::editorContext.renderer.EnableFlag(flag);
+							editor::editorContext.renderer.EnableFlag(flag);
 						else
-							Editor::editorContext.renderer.DisableFlag(flag);
+							editor::editorContext.renderer.DisableFlag(flag);
 					}
 					};
 
-				RenderPassToggle("Background", Engine::RenderPassType::Background);
-				RenderPassToggle("Opaque", Engine::RenderPassType::Opaque);
-				RenderPassToggle("Light", Engine::RenderPassType::Light);
-				RenderPassToggle("Shadow", Engine::RenderPassType::Shadow);
-				RenderPassToggle("Normal", Engine::RenderPassType::Normal);
-				RenderPassToggle("Wireframe", Engine::RenderPassType::Wireframe);
+				RenderPassToggle("Background", engine::RenderPassType::Background);
+				RenderPassToggle("Opaque", engine::RenderPassType::Opaque);
+				RenderPassToggle("Light", engine::RenderPassType::Light);
+				RenderPassToggle("Shadow", engine::RenderPassType::Shadow);
+				RenderPassToggle("Normal", engine::RenderPassType::Normal);
+				RenderPassToggle("Wireframe", engine::RenderPassType::Wireframe);
 
 				ImGui::EndCombo();
 			}
@@ -225,27 +225,27 @@ namespace Editor
 
 		if(ImGui::IsKeyPressed(ImGuiKey_F, false))
 		{
-			Engine::EventBus::Publish(FocusEntityEvent{ SelectionManager::Entities.GetPrimary() });
+			engine::EventBus::Publish(FocusEntityEvent{ SelectionManager::Entities.GetPrimary() });
 		}
 
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
-		Editor::editorContext.renderer.RenderScene(scene);
+		engine::SceneAsset& scene = engine::AssetManager::GetAsset<engine::SceneAsset>(engine::SceneManager::GetActiveScene());
+		editor::editorContext.renderer.RenderScene(scene);
 
-		ImGui::Image(Editor::editorContext.renderer.GetTextureView().Get(), viewportSize);
+		ImGui::Image(editor::editorContext.renderer.GetTextureView().Get(), viewportSize);
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 		{
-			if (Editor::editorContext.editorMode == EditorMode::Edit && !m_TransformController.IsGizmoOver())
+			if (editor::editorContext.editorMode == EditorMode::Edit && !m_TransformController.IsGizmoOver())
 			{
 				ImVec2 mousePos = ImGui::GetMousePos();
 
 				const uint32_t mx = static_cast<uint32_t>(mousePos.x - m_ViewportBounds[0].x);
 				const uint32_t my = static_cast<uint32_t>(mousePos.y - m_ViewportBounds[0].y);
 
-				Engine::Uuid id = m_EntityPicker.Pick(mx, my);
+				engine::Uuid id = m_EntityPicker.Pick(mx, my);
 				bool additive = ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_LeftShift);
 				SelectionManager::Entities.Select(id, additive);
 			}

@@ -4,7 +4,7 @@
 #include <functional>
 #include <compare>
 
-namespace Engine
+namespace engine
 {
 	class Uuid
 	{
@@ -27,9 +27,9 @@ namespace Engine
 namespace std
 {
 	template<>
-	struct hash<Engine::Uuid>
+	struct hash<engine::Uuid>
 	{
-		size_t operator()(const Engine::Uuid& uuid) const noexcept
+		size_t operator()(const engine::Uuid& uuid) const noexcept
 		{
 			return static_cast<size_t>(uuid);
 		}

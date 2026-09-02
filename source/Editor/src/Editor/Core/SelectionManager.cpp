@@ -3,9 +3,9 @@
 #include "Engine/Event/ApplicationEvent.h"
 #include "Editor/Core/EditorEvent.h"
 
-namespace Editor
+namespace editor
 {
-	void SelectionGroup::Select(Engine::Uuid id, bool additive)
+	void SelectionGroup::Select(engine::Uuid id, bool additive)
 	{
 		if (!id) return;
 
@@ -16,10 +16,10 @@ namespace Editor
 
 		m_Selection.push_back(id);
 
-		Engine::EventBus::Publish(SelectionChangedEvent{ m_Context, id });
+		engine::EventBus::Publish(SelectionChangedEvent{ m_Context, id });
 	}
 
-	void SelectionGroup::Toggle(Engine::Uuid id)
+	void SelectionGroup::Toggle(engine::Uuid id)
 	{
 		auto it = std::find(m_Selection.begin(), m_Selection.end(), id);
 		if (it != m_Selection.end())
@@ -31,27 +31,27 @@ namespace Editor
 			m_Selection.push_back(id);
 		}
 
-		Engine::EventBus::Publish(SelectionChangedEvent{ m_Context, id });
+		engine::EventBus::Publish(SelectionChangedEvent{ m_Context, id });
 	}
 
 	void SelectionGroup::Clear()
 	{
 		if (m_Selection.empty()) return;
 		m_Selection.clear();
-		Engine::EventBus::Publish(SelectionChangedEvent{ m_Context, 0 });
+		engine::EventBus::Publish(SelectionChangedEvent{ m_Context, 0 });
 	}
 
-	bool SelectionGroup::IsSelected(Engine::Uuid id) const
+	bool SelectionGroup::IsSelected(engine::Uuid id) const
 	{
 		return std::find(m_Selection.begin(), m_Selection.end(), id) != m_Selection.end();
 	}
 
-	Engine::Uuid SelectionGroup::GetPrimary() const
+	engine::Uuid SelectionGroup::GetPrimary() const
 	{
-		return m_Selection.empty() ? Engine::Uuid{} : m_Selection.back();
+		return m_Selection.empty() ? engine::Uuid{} : m_Selection.back();
 	}
 
-	const std::vector<Engine::Uuid>& SelectionGroup::GetAll() const
+	const std::vector<engine::Uuid>& SelectionGroup::GetAll() const
 	{
 		return m_Selection;
 	}
@@ -59,7 +59,7 @@ namespace Editor
 
 	void SelectionManager::Initialize()
 	{
-		Engine::EventBus::Subscribe<Engine::SceneChangedEvent>([](const Engine::SceneChangedEvent&)
+		engine::EventBus::Subscribe<engine::SceneChangedEvent>([](const engine::SceneChangedEvent&)
 			{
 				Entities.Clear();
 				return false;

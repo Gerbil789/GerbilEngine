@@ -12,18 +12,18 @@
 #include "Engine/Graphics/Sprite.h"
 #include "Engine/Graphics/Mesh.h"
 
-namespace Editor
+namespace editor
 {
 	namespace
 	{
-		const std::unordered_map<Engine::AssetType, glm::ivec2> AssetIconMap
+		const std::unordered_map<engine::AssetType, glm::ivec2> AssetIconMap
 		{
-			{Engine::AssetType::Material,       {2, 0}},
-			{Engine::AssetType::Shader,         {2, 0}},
-			{Engine::AssetType::Audio,          {4, 0}},
-			{Engine::AssetType::Scene,          {5, 0}},
-			{Engine::AssetType::Mesh,           {7, 0}},
-			{Engine::AssetType::Unknown,        {6, 0}},
+			{engine::AssetType::Material,       {2, 0}},
+			{engine::AssetType::Shader,         {2, 0}},
+			{engine::AssetType::Audio,          {4, 0}},
+			{engine::AssetType::Scene,          {5, 0}},
+			{engine::AssetType::Mesh,           {7, 0}},
+			{engine::AssetType::Unknown,        {6, 0}},
 		};
 
 		const std::unordered_map<EditorIcon, glm::ivec2> EditorIconMap
@@ -36,20 +36,20 @@ namespace Editor
 		constexpr glm::ivec2 m_SpritesheetSize{ 1024, 1024 };
 		constexpr glm::ivec2 m_CellSize{ 64, 64 };
 
-		std::unordered_map<Engine::AssetType, Engine::Sprite> m_IconSprites;
-		std::unordered_map<EditorIcon, Engine::Sprite> m_EditorSprites;
+		std::unordered_map<engine::AssetType, engine::Sprite> m_IconSprites;
+		std::unordered_map<EditorIcon, engine::Sprite> m_EditorSprites;
 
-		std::unordered_map<Engine::Uuid, Thumbnail> m_ThumbnailCache;
+		std::unordered_map<engine::Uuid, Thumbnail> m_ThumbnailCache;
 
-		Engine::SceneAsset scene;
-		Engine::Entity cameraEntity;
-		Engine::Entity previewEntity;
-		Engine::Renderer renderer;
+		engine::SceneAsset scene;
+		engine::Entity cameraEntity;
+		engine::Entity previewEntity;
+		engine::Renderer renderer;
 
 		struct PreviewRequest 
 		{
-			Engine::Mesh mesh;
-			Engine::Material material;
+			engine::Mesh mesh;
+			engine::Material material;
 		};
 
 		constexpr int AtlasSizePx = 2048;
@@ -65,27 +65,27 @@ namespace Editor
 		wgpu::TextureView m_DepthView;
 	}
 
-	static const Engine::Sprite& GetIcon(Engine::AssetType assetType) 
+	static const engine::Sprite& GetIcon(engine::AssetType assetType) 
 	{
 		if (m_IconSprites.contains(assetType))
 		{
 			return m_IconSprites.at(assetType);
 		}
-		return m_IconSprites.at(Engine::AssetType::Unknown);
+		return m_IconSprites.at(engine::AssetType::Unknown);
 	}
 
 	void ThumbnailRenderer::Initialize()
 	{
 		{
-			cameraEntity = scene.CreateEntity<Engine::TransformComponent, Engine::WorldTransformComponent, Engine::CameraComponent, Engine::PrimaryCameraTag, Engine::CameraProjectionDirty, Engine::CameraViewDirty, Engine::TransformDirty>("CameraEntity");
+			cameraEntity = scene.CreateEntity<engine::TransformComponent, engine::WorldTransformComponent, engine::CameraComponent, engine::PrimaryCameraTag, engine::CameraProjectionDirty, engine::CameraViewDirty, engine::TransformDirty>("CameraEntity");
 			scene.InsertRootEntity(cameraEntity.GetHandle(), scene.GetRootEntities().size());
 
-			auto& cc = cameraEntity.GetComponent<Engine::CameraComponent>();
-			cc.background = Engine::CameraComponent::Background::Color;
-			cc.projectionType = Engine::CameraComponent::Projection::Perspective;
+			auto& cc = cameraEntity.GetComponent<engine::CameraComponent>();
+			cc.background = engine::CameraComponent::Background::Color;
+			cc.projectionType = engine::CameraComponent::Projection::Perspective;
 			cc.clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 
-			auto& tc = cameraEntity.GetComponent<Engine::TransformComponent>();
+			auto& tc = cameraEntity.GetComponent<engine::TransformComponent>();
 			tc.position = { 0.0f, 0.0f, 3.0f };
 			tc.rotation = { 0.0f, 0.0f, 0.0f };
 
@@ -93,29 +93,29 @@ namespace Editor
 		}
 		
 		{
-			previewEntity = scene.CreateEntity<Engine::TransformComponent, Engine::WorldTransformComponent, Engine::MeshComponent, Engine::TransformDirty>("PreviewEntity");
-			auto& mc = previewEntity.GetComponent<Engine::MeshComponent>();
-			mc.mesh = Engine::Mesh{ RESOURCES::MESH::SPHERE };
-			mc.materials = { Engine::Material{ RESOURCES::MATERIAL::PINK } };
+			previewEntity = scene.CreateEntity<engine::TransformComponent, engine::WorldTransformComponent, engine::MeshComponent, engine::TransformDirty>("PreviewEntity");
+			auto& mc = previewEntity.GetComponent<engine::MeshComponent>();
+			mc.mesh = engine::Mesh{ RESOURCES::MESH::SPHERE };
+			mc.materials = { engine::Material{ RESOURCES::MATERIAL::PINK } };
 
-			auto& tc = previewEntity.GetComponent<Engine::TransformComponent>();
+			auto& tc = previewEntity.GetComponent<engine::TransformComponent>();
 			tc.rotation = glm::radians(glm::vec3{ 15.0f, 45.0f, 0.0f });
 		}
 
 		renderer.Initialize();
 		renderer.SetSize(64.0f, 64.0f);
-		renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Opaque);
+		renderer.SetFlags(engine::RenderPassType::Background | engine::RenderPassType::Opaque);
 
 
 
 		for (const auto& [type, coords] : AssetIconMap)
 		{
-			m_IconSprites.emplace(type, Engine::Sprite::CreateFromGrid(RESOURCES::TEXTURE::EDITOR_ICONS, m_SpritesheetSize, coords, m_CellSize));
+			m_IconSprites.emplace(type, engine::Sprite::CreateFromGrid(RESOURCES::TEXTURE::EDITOR_ICONS, m_SpritesheetSize, coords, m_CellSize));
 		}
 
 		for (const auto& [iconType, coords] : EditorIconMap)
 		{
-			m_EditorSprites.emplace(iconType, Engine::Sprite::CreateFromGrid(RESOURCES::TEXTURE::EDITOR_ICONS, m_SpritesheetSize, coords, m_CellSize));
+			m_EditorSprites.emplace(iconType, engine::Sprite::CreateFromGrid(RESOURCES::TEXTURE::EDITOR_ICONS, m_SpritesheetSize, coords, m_CellSize));
 		}
 
 		wgpu::TextureDescriptor atlasDesc;
@@ -124,9 +124,9 @@ namespace Editor
 		atlasDesc.sampleCount = 1;
 		atlasDesc.mipLevelCount = 1;
 		atlasDesc.size = { AtlasSizePx, AtlasSizePx, 1 };
-		atlasDesc.format = Engine::GraphicsContext::GetSurfaceFormat();
+		atlasDesc.format = engine::GraphicsContext::GetSurfaceFormat();
 		atlasDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
-		m_AtlasTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&atlasDesc);
+		m_AtlasTexture = engine::GraphicsContext::GetDevice().CreateTexture(&atlasDesc);
 		m_AtlasView = m_AtlasTexture.CreateView();
 
 		wgpu::TextureDescriptor scratchDesc;
@@ -135,9 +135,9 @@ namespace Editor
 		scratchDesc.sampleCount = 1;
 		scratchDesc.mipLevelCount = 1;
 		scratchDesc.size = { 64, 64, 1 };
-		scratchDesc.format = Engine::GraphicsContext::GetSurfaceFormat();
+		scratchDesc.format = engine::GraphicsContext::GetSurfaceFormat();
 		scratchDesc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
-		m_ScratchpadTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&scratchDesc);
+		m_ScratchpadTexture = engine::GraphicsContext::GetDevice().CreateTexture(&scratchDesc);
 		m_ScratchpadView = m_ScratchpadTexture.CreateView();
 
 		wgpu::TextureDescriptor depthDesc;
@@ -148,7 +148,7 @@ namespace Editor
 		depthDesc.mipLevelCount = 1;
 		depthDesc.sampleCount = 1;
 		depthDesc.usage = wgpu::TextureUsage::RenderAttachment;
-		m_DepthTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&depthDesc);
+		m_DepthTexture = engine::GraphicsContext::GetDevice().CreateTexture(&depthDesc);
 		m_DepthView = m_DepthTexture.CreateView();
 	}
 
@@ -158,22 +158,22 @@ namespace Editor
 		int x = (slot % CellsPerSide) * 64;
 		int y = (slot / CellsPerSide) * 64;
 
-		auto& mc = previewEntity.GetComponent<Engine::MeshComponent>();
+		auto& mc = previewEntity.GetComponent<engine::MeshComponent>();
 
 		mc.mesh = request.mesh;
 		mc.materials[0] = request.material;
 
-		const Engine::MeshAsset& mesh = Engine::AssetManager::GetAsset<Engine::MeshAsset>(mc.mesh);
+		const engine::MeshAsset& mesh = engine::AssetManager::GetAsset<engine::MeshAsset>(mc.mesh);
 		float distance = glm::length(mesh.aabb.max - mesh.aabb.min);
 
-		cameraEntity.GetComponent<Engine::TransformComponent>().position = { 0.0f, 0.0f, -distance };
-		cameraEntity.AddTag<Engine::TransformDirty>();
-		cameraEntity.AddTag<Engine::CameraProjectionDirty>();
+		cameraEntity.GetComponent<engine::TransformComponent>().position = { 0.0f, 0.0f, -distance };
+		cameraEntity.AddTag<engine::TransformDirty>();
+		cameraEntity.AddTag<engine::CameraProjectionDirty>();
 
-		Engine::TransformSystem::Update(scene);
+		engine::TransformSystem::Update(scene);
 
 		renderer.SetColorTarget(m_ScratchpadView);
-		renderer.SetDepthTarget(m_DepthView);
+		//renderer.SetDepthTarget(m_DepthView);
 		renderer.RenderScene(scene);
 
 		// Copy to Atlas
@@ -190,10 +190,10 @@ namespace Editor
 		wgpu::Extent3D copySize = { 64, 64, 1 };
 
 		// TODO: batch commands and send to gpu once, dont create encoder per thumbnail
-		auto encoder = Engine::GraphicsContext::GetDevice().CreateCommandEncoder({});
+		auto encoder = engine::GraphicsContext::GetDevice().CreateCommandEncoder({});
 		encoder.CopyTextureToTexture(&src, &dst, &copySize);
 		auto cmd = encoder.Finish();
-		Engine::GraphicsContext::GetQueue().Submit(1, &cmd);
+		engine::GraphicsContext::GetQueue().Submit(1, &cmd);
 
 		Thumbnail thumb;
 		thumb.view = m_AtlasView;
@@ -203,7 +203,7 @@ namespace Editor
 	}
 
 	//TODO: use template asset handle... dont pass asset type
-	const Thumbnail& ThumbnailRenderer::GetThumbnail(Engine::Uuid id, Engine::AssetType type)
+	const Thumbnail& ThumbnailRenderer::GetThumbnail(engine::Uuid id, engine::AssetType type)
 	{
 		if (m_ThumbnailCache.contains(id))
 		{
@@ -215,18 +215,18 @@ namespace Editor
 
 		switch (type)
 		{
-		case Engine::AssetType::Texture:
-			thumbnail.view = Engine::AssetManager::GetAsset(Engine::Texture2D{ id }).GetTextureView();
+		case engine::AssetType::Texture:
+			thumbnail.view = engine::AssetManager::GetAsset(engine::Texture2D{ id }).GetTextureView();
 			break;
-		case Engine::AssetType::Material:
-			thumbnail = RenderToAtlas({ Engine::Mesh{RESOURCES::MESH::SPHERE}, Engine::Material{id} });
+		case engine::AssetType::Material:
+			thumbnail = RenderToAtlas({ engine::Mesh{RESOURCES::MESH::SPHERE}, engine::Material{id} });
 			break;
-		case Engine::AssetType::Mesh:
-			thumbnail = RenderToAtlas({ Engine::Mesh{id}, Engine::Material{RESOURCES::MATERIAL::WHITE} });
+		case engine::AssetType::Mesh:
+			thumbnail = RenderToAtlas({ engine::Mesh{id}, engine::Material{RESOURCES::MATERIAL::WHITE} });
 			break;
 		default:
-			const Engine::Sprite& sprite = GetIcon(type);
-			const Engine::Texture2DAsset& texture = Engine::AssetManager::GetAsset(sprite.GetTexture());
+			const engine::Sprite& sprite = GetIcon(type);
+			const engine::Texture2DAsset& texture = engine::AssetManager::GetAsset(sprite.GetTexture());
 			thumbnail = { texture.GetTextureView(), sprite.GetUVMin(), sprite.GetUVMax() };
 			break;
 		}
@@ -238,8 +238,8 @@ namespace Editor
 	const Thumbnail& ThumbnailRenderer::GetDirectoryThumbnail(bool isEmpty)
 	{
 		EditorIcon iconType = isEmpty ? EditorIcon::EmptyDirectory : EditorIcon::Directory;
-		const Engine::Sprite& sprite = m_EditorSprites.at(iconType);
-		const Engine::Texture2DAsset& texture = Engine::AssetManager::GetAsset<Engine::Texture2DAsset>(sprite.GetTexture());
+		const engine::Sprite& sprite = m_EditorSprites.at(iconType);
+		const engine::Texture2DAsset& texture = engine::AssetManager::GetAsset<engine::Texture2DAsset>(sprite.GetTexture());
 
 		// You could cache this, but constructing the struct is essentially free
 		static Thumbnail thumb;

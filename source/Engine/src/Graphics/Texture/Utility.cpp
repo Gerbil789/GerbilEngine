@@ -8,7 +8,7 @@
 #include "Engine/Core/Assert.h"
 #include <bit>
 
-namespace Engine
+namespace engine
 {
 	uint32_t GetMaxMipLevelCount(const wgpu::Extent3D& textureSize)
 	{
@@ -91,7 +91,7 @@ namespace Engine
 
 	TextureCube EquirectangularToCubemap(Texture2D equirectangularTexture)
 	{
-		const Texture2DAsset& sourceTexture = Engine::AssetManager::GetAsset<Texture2DAsset>(equirectangularTexture);
+		const Texture2DAsset& sourceTexture = engine::AssetManager::GetAsset<Texture2DAsset>(equirectangularTexture);
 
 		ENGINE_ASSERT(sourceTexture.GetWidth() == sourceTexture.GetHeight() * 2, "Equirectangular texture must have a 2:1 aspect ratio.");
 
@@ -118,7 +118,7 @@ namespace Engine
 		wgpu::Sampler linearSampler = CreateSampler();
 		wgpu::BindGroup bindGroup = CreateBindGroup(linearSampler, sourceTexture.GetTextureView(), targetWriteView, bindGroupLayout);
 
-		wgpu::CommandEncoder encoder = Engine::GraphicsContext::GetDevice().CreateCommandEncoder();
+		wgpu::CommandEncoder encoder = engine::GraphicsContext::GetDevice().CreateCommandEncoder();
 
 		wgpu::ComputePassDescriptor computePassDesc;
 		computePassDesc.timestampWrites = nullptr;
@@ -135,7 +135,7 @@ namespace Engine
 		computePass.End();
 
 		wgpu::CommandBuffer commandBuffer = encoder.Finish();
-		Engine::GraphicsContext::GetQueue().Submit(1, &commandBuffer);
+		engine::GraphicsContext::GetQueue().Submit(1, &commandBuffer);
 
 		return textureCube;
 	}
@@ -235,7 +235,7 @@ namespace Engine
 				return bindGroup;
 			};
 
-		auto encoder = Engine::GraphicsContext::GetDevice().CreateCommandEncoder();
+		auto encoder = engine::GraphicsContext::GetDevice().CreateCommandEncoder();
 
 		wgpu::ComputePassDescriptor computePassDesc;
 		computePassDesc.timestampWrites = nullptr;
@@ -258,6 +258,6 @@ namespace Engine
 		computePass.End();
 
 		wgpu::CommandBuffer commandBuffer = encoder.Finish();
-		Engine::GraphicsContext::GetQueue().Submit(1, &commandBuffer);
+		engine::GraphicsContext::GetQueue().Submit(1, &commandBuffer);
 	}
 }

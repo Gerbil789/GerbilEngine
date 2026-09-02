@@ -3,7 +3,7 @@
 #include "Engine/Core/Time.h"
 #include <imgui.h>
 
-namespace Editor
+namespace editor
 {
 	static constexpr int HISTORY_LENGTH = 600; // 10 seconds @ 60 fps
 	static float fpsHistory[HISTORY_LENGTH] = { 0.0f };
@@ -12,7 +12,7 @@ namespace Editor
 
 	void StatisticsWindow::Draw()
 	{
-		float fps = Engine::Time::FPS();
+		float fps = engine::Time::FPS();
 		float ms = 1000.0f / fps;
 
 		fpsHistory[offset] = fps;

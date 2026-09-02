@@ -2,11 +2,11 @@
 
 #include "Engine/Core/UUID.h"
 
-namespace Editor
+namespace editor
 {
 	class EntityInspectorPanel
 	{
 	public:
-		void Draw(Engine::Uuid entityId);
+		void Draw(engine::Uuid entityId);
 	};
 }

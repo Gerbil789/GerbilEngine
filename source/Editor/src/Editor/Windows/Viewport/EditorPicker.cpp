@@ -9,7 +9,7 @@
 #include "Engine/Graphics/Utility.h"
 #include <ranges>
 
-namespace Editor
+namespace editor
 {
   EditorPicker::~EditorPicker()
   {
@@ -24,36 +24,36 @@ namespace Editor
 
     wgpu::BufferDescriptor bufferDesc;
     bufferDesc.label = "EditorPickerReadbackBuffer";
-    bufferDesc.size = sizeof(Engine::Uuid);
+    bufferDesc.size = sizeof(engine::Uuid);
     bufferDesc.usage = wgpu::BufferUsage::MapRead | wgpu::BufferUsage::CopyDst;
-    m_ReadbackBuffer = Engine::GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
+    m_ReadbackBuffer = engine::GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
   }
 
-  Engine::Uuid EditorPicker::Pick(uint32_t x, uint32_t y)
+  engine::Uuid EditorPicker::Pick(uint32_t x, uint32_t y)
   {
-    if (x >= m_Width || y >= m_Height) return Engine::Uuid{};
+    if (x >= m_Width || y >= m_Height) return engine::Uuid{};
 
-    const Engine::RenderContext& context = Editor::editorContext.renderer.GetRenderContext();
-    if (context.drawList.size() == 0) return Engine::Uuid{};
+    const engine::RenderContext& context = editor::editorContext.renderer.GetRenderContext();
+    if (context.drawList.size() == 0) return engine::Uuid{};
 
-    std::vector<Engine::Uuid> entityIds;
+    std::vector<engine::Uuid> entityIds;
     entityIds.reserve(context.drawList.size());
 
     for (const auto& item : context.drawList.GetItems())
     {
       if (!item.mesh)
       {
-        entityIds.push_back(Engine::Uuid{});
+        entityIds.push_back(engine::Uuid{});
         continue;
       }
       entityIds.push_back(item.entityId);
     }
 
-    Engine::GraphicsContext::GetQueue().WriteBuffer(m_IdStorageBuffer, 0, entityIds.data(), entityIds.size() * sizeof(Engine::Uuid));
+    engine::GraphicsContext::GetQueue().WriteBuffer(m_IdStorageBuffer, 0, entityIds.data(), entityIds.size() * sizeof(engine::Uuid));
 
     wgpu::CommandEncoderDescriptor encoderDesc;
     encoderDesc.label = "EditorPickerEncoder";
-    wgpu::CommandEncoder encoder = Engine::GraphicsContext::GetDevice().CreateCommandEncoder(&encoderDesc);
+    wgpu::CommandEncoder encoder = engine::GraphicsContext::GetDevice().CreateCommandEncoder(&encoderDesc);
 
     wgpu::RenderPassColorAttachment colorAttach;
     colorAttach.view = m_ColorTextureView;
@@ -84,14 +84,14 @@ namespace Editor
     pass.SetBindGroup(1, context.modelBindGroup, 0, nullptr);
     pass.SetBindGroup(2, m_BindGroup, 0, nullptr);
 
-    Engine::Mesh currentMesh;
+    engine::Mesh currentMesh;
 
     size_t i = 0;
     for (const auto& item : context.drawList.GetItems())
     {
       if (item.mesh != currentMesh)
       {
-				const Engine::MeshAsset& mesh = Engine::AssetManager::GetAsset<Engine::MeshAsset>(currentMesh);
+				const engine::MeshAsset& mesh = engine::AssetManager::GetAsset<engine::MeshAsset>(currentMesh);
         pass.SetVertexBuffer(0, mesh.GetVertexBuffer(), 0, mesh.GetVertexBuffer().GetSize());
         pass.SetIndexBuffer(mesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh.GetIndexBuffer().GetSize());
         currentMesh = item.mesh;
@@ -116,9 +116,9 @@ namespace Editor
     encoder.CopyTextureToBuffer(&src, &dst, &copySize);
 
     wgpu::CommandBuffer cmdBuffer = encoder.Finish();
-    Engine::GraphicsContext::GetQueue().Submit(1, &cmdBuffer);
+    engine::GraphicsContext::GetQueue().Submit(1, &cmdBuffer);
 
-    wgpu::Future future = m_ReadbackBuffer.MapAsync(wgpu::MapMode::Read, 0, sizeof(Engine::Uuid), wgpu::CallbackMode::WaitAnyOnly, 
+    wgpu::Future future = m_ReadbackBuffer.MapAsync(wgpu::MapMode::Read, 0, sizeof(engine::Uuid), wgpu::CallbackMode::WaitAnyOnly, 
       [](wgpu::MapAsyncStatus status, wgpu::StringView message)
       {
         if (status != wgpu::MapAsyncStatus::Success) 
@@ -130,17 +130,17 @@ namespace Editor
     wgpu::FutureWaitInfo waitInfo{};
     waitInfo.future = future;
 
-    wgpu::WaitStatus waitStatus = Engine::GraphicsContext::GetInstance().WaitAny(1, &waitInfo, 100000000); // 0.1s timeout
+    wgpu::WaitStatus waitStatus = engine::GraphicsContext::GetInstance().WaitAny(1, &waitInfo, 100000000); // 0.1s timeout
 
-    Engine::Uuid pickedId{};
+    engine::Uuid pickedId{};
 
     if (waitStatus == wgpu::WaitStatus::Success && waitInfo.completed)
     {
-      const uint64_t* pixel = static_cast<const uint64_t*>(m_ReadbackBuffer.GetConstMappedRange(0, sizeof(Engine::Uuid)));
+      const uint64_t* pixel = static_cast<const uint64_t*>(m_ReadbackBuffer.GetConstMappedRange(0, sizeof(engine::Uuid)));
 
       if (pixel)
       {
-        pickedId = Engine::Uuid{ *pixel };
+        pickedId = engine::Uuid{ *pixel };
       }
     }
     else
@@ -167,7 +167,7 @@ namespace Editor
     colorDesc.mipLevelCount = 1;
     colorDesc.sampleCount = 1;
     colorDesc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
-    m_ColorTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&colorDesc);
+    m_ColorTexture = engine::GraphicsContext::GetDevice().CreateTexture(&colorDesc);
 
     wgpu::TextureViewDescriptor colorViewDesc;
     colorViewDesc.format = colorDesc.format;
@@ -183,7 +183,7 @@ namespace Editor
     depthDesc.mipLevelCount = 1;
     depthDesc.sampleCount = 1;
     depthDesc.usage = wgpu::TextureUsage::RenderAttachment;
-    m_DepthTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&depthDesc);
+    m_DepthTexture = engine::GraphicsContext::GetDevice().CreateTexture(&depthDesc);
 
     wgpu::TextureViewDescriptor depthViewDesc;
     depthViewDesc.format = depthDesc.format;
@@ -198,7 +198,7 @@ namespace Editor
     entry.binding = 0;
     entry.visibility = wgpu::ShaderStage::Fragment;
     entry.buffer.type = wgpu::BufferBindingType::ReadOnlyStorage;
-    entry.buffer.minBindingSize = sizeof(Engine::Uuid);
+    entry.buffer.minBindingSize = sizeof(engine::Uuid);
     entry.buffer.hasDynamicOffset = false;
 
     wgpu::BindGroupLayoutDescriptor layoutDesc;
@@ -206,13 +206,13 @@ namespace Editor
     layoutDesc.entryCount = 1;
     layoutDesc.entries = &entry;
 
-    m_BindGroupLayout = Engine::GraphicsContext::GetDevice().CreateBindGroupLayout(&layoutDesc);
+    m_BindGroupLayout = engine::GraphicsContext::GetDevice().CreateBindGroupLayout(&layoutDesc);
 
     wgpu::BufferDescriptor bufferDesc;
     bufferDesc.label = "EditorPickerUniformBuffer";
-    bufferDesc.size = 1024 * 256 * sizeof(Engine::Uuid);
+    bufferDesc.size = 1024 * 256 * sizeof(engine::Uuid);
     bufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
-    m_IdStorageBuffer = Engine::GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
+    m_IdStorageBuffer = engine::GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
 
     wgpu::BindGroupEntry bindGroupEntry;
     bindGroupEntry.binding = 0;
@@ -225,12 +225,12 @@ namespace Editor
     bindGroupDesc.layout = m_BindGroupLayout;
     bindGroupDesc.entryCount = 1;
     bindGroupDesc.entries = &bindGroupEntry;
-    m_BindGroup = Engine::GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
+    m_BindGroup = engine::GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
   }
 
   void EditorPicker::CreatePipeline()
   {
-    wgpu::ShaderModule shaderModule = Engine::LoadWGSLShader("resources/shaders/picker.wgsl");
+    wgpu::ShaderModule shaderModule = engine::LoadWGSLShader("resources/shaders/picker.wgsl");
 
     std::array<wgpu::VertexAttribute, 3> vertexAttribs;
     vertexAttribs[0].shaderLocation = 0;
@@ -285,8 +285,8 @@ namespace Editor
 
     std::array<wgpu::BindGroupLayout, 3> bindGroupLayouts 
     {
-        Engine::RenderPipelineLayouts::GetViewLayout(),
-        Engine::RenderPipelineLayouts::GetModelLayout(),
+        engine::RenderPipelineLayouts::GetViewLayout(),
+        engine::RenderPipelineLayouts::GetModelLayout(),
         m_BindGroupLayout
     };
 
@@ -295,8 +295,8 @@ namespace Editor
     layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
     layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
 
-    pipelineDesc.layout = Engine::GraphicsContext::GetDevice().CreatePipelineLayout(&layoutDesc);
+    pipelineDesc.layout = engine::GraphicsContext::GetDevice().CreatePipelineLayout(&layoutDesc);
 
-    m_Pipeline = Engine::GraphicsContext::GetDevice().CreateRenderPipeline(&pipelineDesc);
+    m_Pipeline = engine::GraphicsContext::GetDevice().CreateRenderPipeline(&pipelineDesc);
   }
 }

@@ -10,12 +10,13 @@
 #include "Engine/Core/Components.h"
 #include "Engine/Asset/Resources.h"
 #include "Engine/Core/Project.h"
+#include "Engine/Core/Log.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <entt/entt.hpp>
 #include <map>
 #include <glaze/glaze.hpp>
 
-namespace Engine
+namespace engine
 {
 	struct alignas(16) UIUniforms
 	{
@@ -56,12 +57,12 @@ namespace Engine
 
 	static void LoadUITextureAtlas()
 	{
-		const std::filesystem::path configPath = Project::GetActive().GetProjectDirectory() /  "ui.json";
+		const std::filesystem::path configPath = engine::Project::Directory() /  "ui.json";
 		std::string buffer;
 
 		if (auto ec = glz::read_file_json(s_UIConfig, configPath.string(), buffer))
 		{
-			LOG_ERROR("Failed to load ui config file '{}': {}", configPath.string(), glz::format_error(ec, buffer));
+			LOG_ERROR("Failed to load ui config file '{}': {}", configPath, glz::format_error(ec, buffer));
 			return;
 		}
 	}

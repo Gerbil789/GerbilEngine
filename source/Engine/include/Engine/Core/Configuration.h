@@ -1,7 +1,7 @@
 #pragma once
 #include <string_view>
 
-namespace Engine
+namespace engine
 {
 #if defined(DEBUG)
 	constexpr std::string_view Configuration = "Debug";

@@ -12,11 +12,11 @@
 
 #include <imgui.h>
 
-namespace Editor
+namespace editor
 {
 	namespace
 	{
-		Engine::Uuid m_Id;
+		engine::Uuid m_Id;
 		SelectionContext m_Context;
 
 		EntityInspectorPanel m_EntityInspector;
@@ -27,9 +27,9 @@ namespace Editor
 
 	void InspectorWindow::Initialize()
 	{
-		Engine::EventBus::Subscribe<SelectionChangedEvent>([](const SelectionChangedEvent& e)
+		engine::EventBus::Subscribe<SelectionChangedEvent>([](const SelectionChangedEvent& e)
 			{
-				if(e.context == SelectionContext::Asset && Engine::AssetManager::GetAssetType(e.id) == Engine::AssetType::Material)
+				if(e.context == SelectionContext::Asset && engine::AssetManager::GetAssetType(e.id) == engine::AssetType::Material)
 				{
 					return false;
 				}
@@ -57,24 +57,24 @@ namespace Editor
 		}
 		else if (m_Context == SelectionContext::Asset)
 		{
-			auto type = Engine::AssetManager::GetAssetType(m_Id);
+			auto type = engine::AssetManager::GetAssetType(m_Id);
 
 			switch (type)
 			{
-			case Engine::AssetType::Texture:
+			case engine::AssetType::Texture:
 			{
-				m_TextureInspector.Draw(Engine::Texture2D{ m_Id });
+				m_TextureInspector.Draw(engine::Texture2D{ m_Id });
 				break;
 			}
 
-			case Engine::AssetType::Shader:
+			case engine::AssetType::Shader:
 			{
-				m_ShaderInspector.Draw(Engine::Shader{ m_Id });
+				m_ShaderInspector.Draw(engine::Shader{ m_Id });
 				break;
 			}
-			case Engine::AssetType::Audio:
+			case engine::AssetType::Audio:
 			{
-				m_AudioInspector.Draw(Engine::AudioClip{ m_Id });
+				m_AudioInspector.Draw(engine::AudioClip{ m_Id });
 				break;
 			}
 			default:

@@ -3,7 +3,7 @@
 #include "Engine/Event/Event.h"
 #include "Engine/Asset/AssetHandle.h"
 
-namespace Engine
+namespace engine
 {
 	struct SceneChangedEvent : public Event
 	{

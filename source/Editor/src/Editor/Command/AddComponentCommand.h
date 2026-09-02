@@ -3,13 +3,13 @@
 #include "ICommand.h"
 #include "Engine/Core/Entity.h"
 
-namespace Editor
+namespace editor
 {
   template<typename T>
   class AddComponentCommand : public ICommand
   {
   public:
-    AddComponentCommand(Engine::Entity entity, const T& initial = {}) : m_Entity(entity), m_Initial(initial) {}
+    AddComponentCommand(engine::Entity entity, const T& initial = {}) : m_Entity(entity), m_Initial(initial) {}
 
     void Execute() override
     {
@@ -32,7 +32,7 @@ namespace Editor
     }
 
   private:
-    Engine::Entity m_Entity;
+    engine::Entity m_Entity;
     T m_Initial;
   };
 }

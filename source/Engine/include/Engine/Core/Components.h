@@ -5,7 +5,7 @@
 #include <string>
 #include <entt/entity/entity.hpp>
 
-namespace Engine
+namespace engine
 {
 	class Script;
 

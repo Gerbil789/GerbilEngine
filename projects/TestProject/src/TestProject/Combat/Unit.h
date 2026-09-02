@@ -10,7 +10,7 @@ enum class Team { Attacker, Defender };
 
 struct Unit 
 {
-  Engine::Uuid id;
+  engine::Uuid id;
   std::string name;
 
   MovementType movementType = MovementType::Walk;

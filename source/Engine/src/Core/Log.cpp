@@ -7,7 +7,7 @@
 #include <windows.h>
 #endif
 
-namespace Engine
+namespace engine
 {
   static std::string MakeTimestamp()
   {

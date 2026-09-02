@@ -5,7 +5,7 @@
 #include <webgpu/webgpu_cpp.h>
 #include <glm/glm.hpp>
 
-namespace Editor
+namespace editor
 {
 	enum class EditorIcon { Directory, EmptyDirectory, Unknown };
 
@@ -20,7 +20,7 @@ namespace Editor
 	{
 	public:
 		void Initialize();
-		const Thumbnail& GetThumbnail(Engine::Uuid id, Engine::AssetType type);
+		const Thumbnail& GetThumbnail(engine::Uuid id, engine::AssetType type);
 		const Thumbnail& GetDirectoryThumbnail(bool isEmpty);
 	};
 }

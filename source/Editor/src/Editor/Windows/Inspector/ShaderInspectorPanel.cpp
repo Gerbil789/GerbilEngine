@@ -3,9 +3,9 @@
 #include <imgui.h>
 #include <format>
 
-namespace Editor
+namespace editor
 {
-	void ShaderInspectorPanel::Draw(Engine::Shader shader)
+	void ShaderInspectorPanel::Draw(engine::Shader shader)
 	{
 		ImGui::TextUnformatted(std::format("Shader: {}", static_cast<uint64_t>(shader)).c_str());
 

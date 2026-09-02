@@ -5,7 +5,7 @@
 #include <functional>
 #include <type_traits>
 
-namespace Engine
+namespace engine
 {
   template<typename T>
   concept IsEvent = std::is_base_of_v<Event, std::remove_cvref_t<T>>;

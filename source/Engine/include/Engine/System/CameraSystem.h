@@ -3,7 +3,7 @@
 #include "Engine/Core/Components.h"
 
 
-namespace Engine
+namespace engine
 {
 	class CameraSystem
 	{

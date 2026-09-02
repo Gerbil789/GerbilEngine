@@ -4,7 +4,7 @@
 #include <optional>
 #include <filesystem>
 
-namespace Engine
+namespace engine
 {
 	class SceneSerializer
 	{

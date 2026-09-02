@@ -5,7 +5,7 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include <miniaudio.h>
 
-namespace Engine
+namespace engine
 {
   static ma_engine s_AudioEngine;
 
@@ -117,7 +117,7 @@ namespace Engine
       return {};
     }
 
-    AudioClipAsset& audioClip = Engine::AssetManager::GetAsset(clip);
+    AudioClipAsset& audioClip = engine::AssetManager::GetAsset(clip);
 
     ma_audio_buffer_config bufferConfig = ma_audio_buffer_config_init(
       ma_format_f32,
@@ -163,7 +163,7 @@ namespace Engine
       return {};
     }
 
-    Engine::AudioClipAsset& audioClip = Engine::AssetManager::GetAsset<Engine::AudioClipAsset>(clip);
+    engine::AudioClipAsset& audioClip = engine::AssetManager::GetAsset<engine::AudioClipAsset>(clip);
 
     ma_audio_buffer_config bufferConfig = ma_audio_buffer_config_init(
       ma_format_f32,

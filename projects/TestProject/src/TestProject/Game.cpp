@@ -1,241 +1,178 @@
 #include "Game.h"
-#include "Engine/Core/Time.h"
-#include "Engine/Asset/AssetManager.h"
-#include "Engine/Core/SceneManager.h"
-#include "Engine/Audio/Audio.h"
-#include "Engine/Event/WindowEvent.h"
-#include "Engine/Core/Input.h"
-#include "Engine/Utility/Path.h"
-#include "Engine/Core/Scene.h"
-#include "Engine/Asset/Serializer/SceneSerializer.h"
-#include "Engine/Event/EventBus.h"
-#include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Core/Project.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Core/Runtime.h"
-#include "Engine/Core/Components.h"
-#include "Engine/Core/Log.h"
-#include "Engine/Asset/AssetRegistry.h"
-#include "Engine/Core/Configuration.h"
-#include "Engine/System/TransformSystem.h"
+#include "Engine/Core/Window.h"
+#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Input.h"
+#include "Engine/Audio/Audio.h"
 #include "Engine/Graphics/Font.h"
-#include "Engine/System/CameraSystem.h"
-#include "Editor/Core/EditorApp.h"
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Core/Scene.h"
+#include "Engine/Event/EventBus.h"
+#include "Engine/Graphics/GraphicsContext.h"
+#include "Engine/Event/WindowEvent.h"
+#include "Engine/Core/Time.h"
+#include "Engine/System/TransformSystem.h"
+#include "Engine/Core/Log.h"
+#include "Engine/Utility/Path.h"
 
-#include "SpinComponent.h"
+// #include "Editor/Core/EditorContext.h"
+// #include "Editor/Core/EditorWindowManager.h"
+// #include "Editor/Command/EditorCommandManager.h"
+// #include "Editor/Core/SelectionManager.h"
+// #include "Editor/Core/EditorState.h"
 
-#ifdef EDITOR
-Editor::EditorApp editor;
-#endif
+// #include "Engine/Core/Runtime.h"
 
-uint32_t m_Width = 1280;
-uint32_t m_Height = 720;
+#include "Engine/Core/Configuration.h"
 
-Engine::Renderer m_Renderer;
-wgpu::Texture m_DepthTexture;
-
-static void UpdateSize(Engine::Window& window)
+Game::Game()
 {
-	wgpu::Surface surface = window.GetSurface();
-	wgpu::SurfaceTexture surfaceTexture;
+  SetupWorkingDirectory();
+  engine::Log::Initialize();
 
-	surface.GetCurrentTexture(&surfaceTexture);
-	if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal)
-	{
-		LOG_ERROR("Failed to get current surface texture. status: {}", (int)surfaceTexture.status);
-		return;
-	}
+  engine::Project::Initialize(std::filesystem::current_path() / "projects/TestProject");
 
-	wgpu::Texture texture = surfaceTexture.texture;
+  engine::GraphicsContext::Initialize();
+  GLFW::Initialize();
 
-	if (texture.GetWidth() != m_Width || texture.GetHeight() != m_Height || !m_DepthTexture)
-	{
-		m_Width = texture.GetWidth();
-		m_Height = texture.GetHeight();
+  m_Window.Initialize({"Game", 1280, 720, "resources/icons/logo.png"});
+  m_Window.SetEventCallback([](auto &e)
+                            { engine::EventBus::Publish(e); });
 
-		if (m_Width > 0 && m_Height > 0)
-		{
-			m_Renderer.SetSize(static_cast<float>(m_Width), static_cast<float>(m_Height));
+  engine::AssetManager::Initialize();
 
-			wgpu::TextureDescriptor depthDesc;
-			depthDesc.label = "RendererDepthTexture";
-			depthDesc.dimension = wgpu::TextureDimension::e2D;
-			depthDesc.format = wgpu::TextureFormat::Depth24Plus;
-			depthDesc.mipLevelCount = 1;
-			depthDesc.sampleCount = 1;
-			depthDesc.size = { m_Width, m_Height, 1 };
-			depthDesc.usage = wgpu::TextureUsage::RenderAttachment;
+  engine::Input::Initialize(m_Window.Get());
+  engine::Audio::Initialize();
+  engine::FontManager::Initialize();
 
-			m_DepthTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&depthDesc);
-		}
-	}
+  engine::SceneManager::SetActiveScene(engine::Scene{10911691135274866464u});
 
-	if (m_Width == 0 || m_Height == 0) return;
+  m_Renderer.Initialize();
+  m_Renderer.SetFlags(engine::RenderPassType::Background | engine::RenderPassType::Shadow | engine::RenderPassType::Opaque);
 
-	{
-		wgpu::TextureViewDescriptor colorViewDesc;
-		colorViewDesc.label = "RendererColorTextureView";
-		colorViewDesc.dimension = wgpu::TextureViewDimension::e2D;
-		colorViewDesc.format = Engine::GraphicsContext::GetSurfaceFormat();
-		colorViewDesc.baseMipLevel = 0;
-		colorViewDesc.mipLevelCount = 1;
-		colorViewDesc.baseArrayLayer = 0;
-		colorViewDesc.arrayLayerCount = 1;
+  auto &scene = engine::AssetManager::GetAsset(engine::SceneManager::GetActiveScene());
+  auto &registry = scene.GetRegistry();
+  entt::entity cameraEntity = registry.view<engine::CameraComponent, engine::PrimaryCameraTag>(entt::exclude<engine::EditorTag>).front();
+  auto &cc = registry.get<engine::CameraComponent>(cameraEntity);
+  auto &tc = registry.get<engine::TransformComponent>(cameraEntity);
+  m_Renderer.SetCamera(cc, tc);
 
-		wgpu::TextureView targetColorView = texture.CreateView(&colorViewDesc);
+  registry.emplace_or_replace<engine::TransformDirty>(cameraEntity);
+  registry.emplace_or_replace<engine::CameraProjectionDirty>(cameraEntity);
+  registry.emplace_or_replace<engine::CameraViewDirty>(cameraEntity);
 
-		if (!targetColorView)
-		{
-			LOG_ERROR("Failed to create color texture view for surface texture");
-			return;
-		}
+  engine::EventBus::Subscribe<engine::WindowCloseEvent>([this](auto &)
+                                                        {m_Running = false; LOG_INFO("Application closed"); return false; });
 
-		m_Renderer.SetColorTarget(targetColorView);
-	}
+// #ifdef EDITOR
+//   editor::editorContext.camera.background = Engine::CameraComponent::Background::Skybox;
+//   editor::editorContext.camera.projectionType = Engine::CameraComponent::Projection::Perspective;
+//   editor::editorContext.cameraTransform.position = glm::vec3{0.0f, 0.0f, -20.0f};
 
-	{
-		wgpu::TextureViewDescriptor depthViewDesc;
-		depthViewDesc.label = "RendererDepthTextureView";
-		depthViewDesc.aspect = wgpu::TextureAspect::DepthOnly;
-		depthViewDesc.dimension = wgpu::TextureViewDimension::e2D;
-		depthViewDesc.format = wgpu::TextureFormat::Depth24Plus;
-		depthViewDesc.baseMipLevel = 0;
-		depthViewDesc.mipLevelCount = 1;
-		depthViewDesc.baseArrayLayer = 0;
-		depthViewDesc.arrayLayerCount = 1;
+//   // Editor::editorContext.renderer = std::move(m_Renderer);
+//   //  Editor::editorContext.renderer.Initialize();
+//   editor::editorContext.renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque | Engine::RenderPassType::UI /* | Engine::RenderPassType::Normal | Engine::RenderPassType::Wireframe*/);
+//   editor::editorContext.renderer.SetCamera(Editor::editorContext.camera, Editor::editorContext.cameraTransform);
 
-		wgpu::TextureView targetDepthView = m_DepthTexture.CreateView(&depthViewDesc);
+//   EditorCommandManager::Initialize();
+//   // EditorWindowManager::Initialize(m_Window);
+//   SelectionManager::Initialize();
 
-		if (!targetDepthView)
-		{
-			LOG_ERROR("Failed to create depth texture view");
-			return;
-		}
+//   LOG_INFO("--- Editor initialization complete ---");
+// #endif
 
-		m_Renderer.SetDepthTarget(targetDepthView);
-
-	}
+  while (m_Running)
+  {
+    Update();
+  }
 }
 
-GameApp::GameApp()
+Game::~Game()
 {
-	std::filesystem::path cwd = std::filesystem::current_path();
-	std::filesystem::path projectDir = cwd / "projects/TestProject/project.json";
+// #ifdef EDITOR
+//   EditorWindowManager::Shutdown();
+// #endif
 
-	Engine::Project::Load(projectDir);
-	const Engine::Project& project = Engine::Project::GetActive();
-
-	Engine::GraphicsContext::Initialize();
-	GLFW::Initialize();
-
-	m_Window.Initialize({ std::format("Game - {}", Engine::Configuration) , m_Width, m_Height, "resources/icons/logo.png" });
-	m_Window.SetEventCallback([](auto& e) {Engine::EventBus::Publish(e); });
-
-	Engine::AssetManager::Initialize(project.GetProjectDirectory());
-
-	Engine::Input::SetActiveWindow(*m_Window.GetNativeWindow());
-	Engine::Audio::Initialize();
-	Engine::FontManager::Initialize();
-
-	Engine::SceneManager::SetActiveScene(project.GetDefaultScene());
-
-#ifndef EDITOR
-	m_Renderer.Initialize();
-	m_Renderer.SetFlags(Engine::RenderPassType::Background | Engine::RenderPassType::Shadow | Engine::RenderPassType::Opaque);
-
-	UpdateSize(m_Window);
-
-	auto& scene = Engine::AssetManager::GetAsset(Engine::SceneManager::GetActiveScene());
-	auto& registry = scene.GetRegistry();
-	entt::entity cameraEntity = registry.view<Engine::CameraComponent, Engine::PrimaryCameraTag>(entt::exclude<Engine::EditorTag>).front();
-	auto& cc = registry.get<Engine::CameraComponent>(cameraEntity);
-	auto& tc = registry.get<Engine::TransformComponent>(cameraEntity);
-	m_Renderer.SetCamera(cc, tc);
-
-	registry.emplace_or_replace<Engine::TransformDirty>(cameraEntity);
-	registry.emplace_or_replace<Engine::CameraProjectionDirty>(cameraEntity);
-	registry.emplace_or_replace<Engine::CameraViewDirty>(cameraEntity);
-#else
-	editor.Initialize(m_Window);
-#endif
-
-	Engine::EventBus::Subscribe<Engine::WindowCloseEvent>([this](auto&) {m_Running = false; LOG_INFO("Application closed"); return false; });
-
-	LOG_INFO("--- Game initialization complete ---");
+  engine::Audio::Shutdown();
+  m_Window.Shutdown();
+  GLFW::Shutdown();
+  engine::GraphicsContext::Shutdown();
 }
 
-GameApp::~GameApp()
+void Game::Update()
 {
-#ifdef EDITOR
-	editor.Shutdown();
-#endif
+  if (m_Window.IsMinimized())
+  {
+    GLFW::WaitEvents();
+    engine::Time::BeginFrame();
+    return;
+  }
 
-	Engine::Runtime::Stop();
-	Engine::Audio::Shutdown();
-	m_Window.Shutdown();
-	GLFW::Shutdown();
-	Engine::GraphicsContext::Shutdown();
-}
+  if (m_Window.SizeChanged())
+  {
+    // TODO: is static cast necessary?
+    m_Window.ConfigureSurface();
+    m_Renderer.SetSize(static_cast<float>(m_Window.GetWidth()), static_cast<float>(m_Window.GetHeight()));
+    m_Window.ClearResizedFlag();
+  }
 
-void GameApp::Run()
-{
-#ifndef EDITOR
-	Engine::Runtime::Start();
-#endif
+  wgpu::Surface surface = m_Window.GetSurface();
+  wgpu::SurfaceTexture surfaceTexture;
 
-	SpinSystem spinSystem;
+  surface.GetCurrentTexture(&surfaceTexture);
+  if (!(surfaceTexture.status == wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal || surfaceTexture.status == wgpu::SurfaceGetCurrentTextureStatus::SuccessSuboptimal))
+  {
+    LOG_ERROR("Surface texture status is not optimal. status: {}", (int)surfaceTexture.status);
+  }
 
-	auto& reg = Engine::AssetManager::GetAsset(Engine::SceneManager::GetActiveScene()).GetRegistry();
+  engine::Time::BeginFrame();
+  engine::Input::Update();
+  engine::Audio::Update();
 
-	auto view = reg.view<Engine::TransformComponent>();
+  auto &scene = engine::AssetManager::GetAsset(engine::SceneManager::GetActiveScene());
+  engine::TransformSystem::Update(scene);
 
+  auto &registry = scene.GetRegistry();
 
-	float speed = 1.0f;
-	for(auto entity : view)
-	{
-		auto& spin = reg.emplace<SpinComponent>(entity);
-		spin.speed = speed++;
-	}
+  entt::entity cameraEntity = registry.view<engine::PrimaryCameraTag>().front();
 
-	while (m_Running)
-	{
-		if (m_Window.IsMinimized())
-		{
-			GLFW::WaitEvents();
-			Engine::Time::BeginFrame();
-			continue;
-		}
+  registry.emplace_or_replace<engine::TransformDirty>(cameraEntity);
+  registry.emplace_or_replace<engine::CameraProjectionDirty>(cameraEntity);
+  registry.emplace_or_replace<engine::CameraViewDirty>(cameraEntity);
 
-		Engine::Time::BeginFrame();
-		Engine::Input::Update();
-		Engine::Audio::Update();
+  wgpu::TextureViewDescriptor colorViewDesc;
+  colorViewDesc.label = "RendererColorTextureView";
+  colorViewDesc.dimension = wgpu::TextureViewDimension::e2D;
+  colorViewDesc.format = engine::GraphicsContext::GetSurfaceFormat();
+  colorViewDesc.baseMipLevel = 0;
+  colorViewDesc.mipLevelCount = 1;
+  colorViewDesc.baseArrayLayer = 0;
+  colorViewDesc.arrayLayerCount = 1;
 
+  wgpu::TextureView targetColorView = surfaceTexture.texture.CreateView(&colorViewDesc);
 
-		auto& scene = Engine::AssetManager::GetAsset(Engine::SceneManager::GetActiveScene());
-		Engine::TransformSystem::Update(scene);
+  if (!targetColorView)
+  {
+    LOG_ERROR("Failed to create color texture view for surface texture");
+    return;
+  }
 
-		UpdateSize(m_Window);
+  m_Renderer.SetColorTarget(targetColorView);
 
-		spinSystem.update(scene.GetRegistry(), Engine::Time::DeltaTime());
+  m_Renderer.RenderScene(scene);
 
-#ifdef EDITOR
-		editor.Update();
-#else
-		Engine::Runtime::Update();
+  m_Window.GetSurface().Present();
 
-		auto& registry = scene.GetRegistry();
+// #ifdef EDITOR
 
-		entt::entity cameraEntity = registry.view<Engine::PrimaryCameraTag>().front();
+//   EditorWindowManager::Update();
+//   EditorCommandManager::ExecuteDeferredCommands();
 
-		registry.emplace_or_replace<Engine::TransformDirty>(cameraEntity);
-		registry.emplace_or_replace<Engine::CameraProjectionDirty>(cameraEntity);
-		registry.emplace_or_replace<Engine::CameraViewDirty>(cameraEntity);
+//   if (Editor::editorContext.editorMode == EditorMode::Play)
+//   {
+//     Engine::Runtime::Update();
+//   }
 
-		m_Renderer.RenderScene(scene);
-
-		wgpu::Surface surface = m_Window.GetSurface();
-		surface.Present();
-#endif
-	}
+// #endif
 }

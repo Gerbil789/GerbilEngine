@@ -8,12 +8,12 @@
 #include "Editor/Core/EditorEvent.h"
 #include <imgui.h>
 
-namespace Editor
+namespace editor
 {
 	namespace
 	{
 		//TODO: dont use pointer, use id
-		Engine::MaterialAsset* m_Material = nullptr;
+		engine::MaterialAsset* m_Material = nullptr;
 	}
 
 	void MaterialEditorWindow::Draw()
@@ -27,17 +27,17 @@ namespace Editor
 			return;
 		}
 
-		const std::string& materialName = Engine::AssetManager::GetAssetPath(m_Material->id).stem().string();
+		const std::string& materialName = engine::AssetManager::GetAssetPath(m_Material->id).stem().string();
 		ImGui::Text("Material: %s", materialName.c_str());
 
-		const std::string& shaderName = Engine::AssetManager::GetAssetPath(m_Material->GetShader().id).stem().string();
+		const std::string& shaderName = engine::AssetManager::GetAssetPath(m_Material->GetShader().id).stem().string();
 
 
 		if (ImGui::BeginCombo("##Shader", shaderName.c_str()))
 		{
-			for (const auto& [id, record] : Engine::AssetManager::GetAssetRegistry().GetAllRecords())
+			for (const auto& [id, record] : engine::AssetManager::GetAssetRegistry().GetAllRecords())
 			{
-				if (record.type != Engine::AssetType::Shader) continue;
+				if (record.type != engine::AssetType::Shader) continue;
 
 				if (static_cast<uint64_t>(id) <= 1000) continue; // skip built-in shaders
 
@@ -46,7 +46,7 @@ namespace Editor
 				if (ImGui::Selectable(name.c_str()))
 				{
 					// Create your strongly typed handle directly from the Uuid
-					m_Material->SetShader(Engine::Shader{ id });
+					m_Material->SetShader(engine::Shader{ id });
 				}
 			}
 
@@ -60,20 +60,20 @@ namespace Editor
 			ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthFixed, 100.0f);
 			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
-			Engine::ShaderAsset& shader = Engine::AssetManager::GetAsset<Engine::ShaderAsset>(m_Material->GetShader());
+			engine::ShaderAsset& shader = engine::AssetManager::GetAsset<engine::ShaderAsset>(m_Material->GetShader());
 			auto bindings = shader.GetMaterialBindings();
 
 			for (auto& binding : bindings)
 			{
-				if (std::holds_alternative<Engine::BufferBinding>(binding.data))
+				if (std::holds_alternative<engine::BufferBinding>(binding.data))
 				{
-					const auto& bufferBinding = std::get<Engine::BufferBinding>(binding.data);
+					const auto& bufferBinding = std::get<engine::BufferBinding>(binding.data);
 
 					for (auto& param : bufferBinding.parameters)
 					{
 						if (param.name[0] == '_') continue;
 
-						Engine::MaterialValue variantValue = m_Material->GetParameterVariant(param.name);
+						engine::MaterialValue variantValue = m_Material->GetParameterVariant(param.name);
 
 						std::visit([&](auto& arg)
 							{
@@ -93,9 +93,9 @@ namespace Editor
 					}
 				}
 
-				if (std::holds_alternative<Engine::TextureBinding>(binding.data))
+				if (std::holds_alternative<engine::TextureBinding>(binding.data))
 				{
-					Engine::Texture2D texture = m_Material->GetTexture(binding.name);
+					engine::Texture2D texture = m_Material->GetTexture(binding.name);
 					if (AssetField(binding.name.c_str(), texture).changed)
 					{
 						m_Material->SetTexture(binding.name, texture);
@@ -113,7 +113,7 @@ namespace Editor
 				int currentFilter = static_cast<int>(m_Material->GetTextureFilter());
 				if (ImGui::Combo("##TextureFilter", &currentFilter, filterOptions, IM_ARRAYSIZE(filterOptions)))
 				{
-					m_Material->SetTextureFilter(static_cast<Engine::TextureFilter>(currentFilter));
+					m_Material->SetTextureFilter(static_cast<engine::TextureFilter>(currentFilter));
 				}
 
 				ImGui::TableNextRow();
@@ -124,7 +124,7 @@ namespace Editor
 				int currentWrap = static_cast<int>(m_Material->GetTextureWrap());
 				if (ImGui::Combo("##TextureWrap", &currentWrap, wrapOptions, IM_ARRAYSIZE(wrapOptions)))
 				{
-					m_Material->SetTextureWrap(static_cast<Engine::TextureWrap>(currentWrap));
+					m_Material->SetTextureWrap(static_cast<engine::TextureWrap>(currentWrap));
 				}
 			}
 
@@ -136,14 +136,14 @@ namespace Editor
 
 	void MaterialEditorWindow::Initialize()
 	{
-		Engine::EventBus::Subscribe<SelectionChangedEvent>([](const SelectionChangedEvent& e)
+		engine::EventBus::Subscribe<SelectionChangedEvent>([](const SelectionChangedEvent& e)
 			{
 				if (e.context != SelectionContext::Asset) return false;;
 
-				auto type = Engine::AssetManager::GetAssetType(e.id);
-				if (type == Engine::AssetType::Material)
+				auto type = engine::AssetManager::GetAssetType(e.id);
+				if (type == engine::AssetType::Material)
 				{
-					m_Material = &Engine::AssetManager::GetAsset<Engine::MaterialAsset>(Engine::Material{ e.id });
+					m_Material = &engine::AssetManager::GetAsset<engine::MaterialAsset>(engine::Material{ e.id });
 				}
 				return false;
 			});

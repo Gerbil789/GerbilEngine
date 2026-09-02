@@ -3,21 +3,21 @@
 #include "Editor/Command/ICommand.h"
 #include "Engine/Core/SceneManager.h"
 
-namespace Editor
+namespace editor
 {
   class OpenSceneCommand : public ICommand
   {
   public:
-    OpenSceneCommand(Engine::Scene scene) : m_Scene(scene) {}
+    OpenSceneCommand(engine::Scene scene) : m_Scene(scene) {}
 
     void Execute() override
     {
-      Engine::SceneManager::SetActiveScene(m_Scene);
+      engine::SceneManager::SetActiveScene(m_Scene);
     }
 
     void Undo() override {}
 
   private:
-		Engine::Scene m_Scene;
+		engine::Scene m_Scene;
   };
 }

@@ -10,7 +10,7 @@
 #include "Engine/Asset/AssetManager.h"
 #include <string_view>
 
-namespace Editor
+namespace editor
 {
   template<typename... Components>
   class CreateEntityCommand : public ICommand
@@ -20,26 +20,26 @@ namespace Editor
 
     void Execute() override
     {
-      Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
+      engine::SceneAsset& scene = engine::AssetManager::GetAsset<engine::SceneAsset>(engine::SceneManager::GetActiveScene());
 
       // Forward the component pack directly into scene.CreateEntity
       m_Entity = scene.CreateEntity<Components...>(m_Name);
 
       if (m_Parent != entt::null)
       {
-        auto& hc = m_Entity.GetComponent<Engine::HierarchyComponent>();
+        auto& hc = m_Entity.GetComponent<engine::HierarchyComponent>();
         hc.parent = m_Parent;
-        scene.GetRegistry().get<Engine::HierarchyComponent>(m_Parent).children.push_back(m_Entity.GetHandle());
+        scene.GetRegistry().get<engine::HierarchyComponent>(m_Parent).children.push_back(m_Entity.GetHandle());
       }
       else
       {
         scene.InsertRootEntity(m_Entity.GetHandle(), scene.GetRootEntities().size());
       }
 
-      Engine::Uuid id = m_Entity.GetComponent<Engine::IdentityComponent>().id;
+      engine::Uuid id = m_Entity.GetComponent<engine::IdentityComponent>().id;
       SelectionManager::Assets.Select(id);
       FocusEntityEvent e{ id };
-      Engine::EventBus::Publish(e);
+      engine::EventBus::Publish(e);
     }
 
     void Undo() override
@@ -51,6 +51,6 @@ namespace Editor
   private:
     std::string m_Name;
     entt::entity m_Parent;
-    Engine::Entity m_Entity;
+    engine::Entity m_Entity;
   };
 }

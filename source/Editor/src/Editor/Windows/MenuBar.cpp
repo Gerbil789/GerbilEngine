@@ -9,7 +9,7 @@
 #include "Engine/Asset/AssetManager.h"
 #include <imgui.h>
 
-namespace Editor
+namespace editor
 {
 	struct MenuEntry
 	{
@@ -26,15 +26,15 @@ namespace Editor
 
 	inline void SaveScene()
 	{
-		Engine::Scene scene = Engine::SceneManager::GetActiveScene();
-		auto& path = Engine::AssetManager::GetAssetPath(scene.id);
+		engine::Scene scene = engine::SceneManager::GetActiveScene();
+		auto& path = engine::AssetManager::GetAssetPath(scene.id);
 
 		//if (path.empty())
 		//{
 		//	path = Editor::FileDialog::SelectPath({ {"Scene Files", "*.scene"} }, "scene"); //prompt user to select path
 		//}
 
-		Engine::SceneSerializer::Serialize(scene, Engine::Project::GetActive().GetAssetsDirectory() / path);
+		engine::SceneSerializer::Serialize(scene, engine::Project::AssetsDirectory() / path);
 	}
 
 	static const std::vector<MenuCategory> MainMenuBar
@@ -42,7 +42,7 @@ namespace Editor
 		{ "File", {
 			{"Save scene", "ctrl+s", [] {
 				SaveScene();
-				Engine::AssetManager::SaveDirtyAssets();
+				engine::AssetManager::SaveDirtyAssets();
 			}},
 			//{"Open scene", "", [] { Editor::OpenScene(); },
 		}},

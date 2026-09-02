@@ -2,7 +2,7 @@
 
 #include "Engine/Core/UUID.h"
 
-namespace Engine
+namespace engine
 {
   class Texture2DAsset;
   class MeshAsset;
@@ -14,10 +14,10 @@ namespace Engine
   template <typename Asset>
   struct AssetHandle
   {
-    Engine::Uuid id = 0;
+    engine::Uuid id = 0;
 
     AssetHandle() = default;
-    constexpr explicit AssetHandle(Engine::Uuid uuid) : id(uuid) {}
+    constexpr explicit AssetHandle(engine::Uuid uuid) : id(uuid) {}
 
     operator bool() const { return static_cast<bool>(id); }
     bool operator==(const AssetHandle<Asset>& other) const { return id == other.id; }
@@ -35,9 +35,9 @@ namespace Engine
 namespace std
 {
   template <typename T>
-  struct hash<Engine::AssetHandle<T>>
+  struct hash<engine::AssetHandle<T>>
   {
-    std::size_t operator()(const Engine::AssetHandle<T>& handle) const
+    std::size_t operator()(const engine::AssetHandle<T>& handle) const
     {
       return handle.id;
     }

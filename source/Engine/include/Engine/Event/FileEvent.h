@@ -3,7 +3,7 @@
 #include "Engine/Event/Event.h"
 #include <filesystem>
 
-namespace Engine
+namespace engine
 {
   struct FileAddedEvent : public Event
 	{

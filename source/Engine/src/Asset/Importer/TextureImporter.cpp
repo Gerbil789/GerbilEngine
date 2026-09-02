@@ -6,7 +6,7 @@
 #include <stb_image.h>
 #include <glm/gtc/packing.hpp>
 
-namespace Engine
+namespace engine
 {
 	namespace
 	{

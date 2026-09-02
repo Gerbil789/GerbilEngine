@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Asset/AssetType.h"
 
-namespace Engine
+namespace engine
 {
 	// FNV-1a 32-bit hash algorithm
 	// converts to lowercase 

@@ -20,11 +20,11 @@
 #include <memory>
 #include <ranges>
 
-namespace Editor
+namespace editor
 {
 	struct EntityHeader
 	{
-		EntityHeader(Engine::Entity entity)
+		EntityHeader(engine::Entity entity)
 		{
 			ImGui::PushID(static_cast<int>(entity.GetHandle()));
 
@@ -35,7 +35,7 @@ namespace Editor
 			}
 			ImGui::SameLine();
 
-			std::string& name = entity.GetComponent<Engine::NameComponent>().name;
+			std::string& name = entity.GetComponent<engine::NameComponent>().name;
 			if (PropertyField("Name", name, { .showLabel = false }).finished)
 			{
 				//TODO: somehow store the original name
@@ -80,28 +80,28 @@ namespace Editor
 		}
 	};
 
-	void DrawTransform(Engine::Entity entity)
+	void DrawTransform(engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::TransformComponent>()) return;
+		if (!entity.HasComponent<engine::TransformComponent>()) return;
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
 			{ "Reset", [&] {
-				auto before = entity.GetComponent<Engine::TransformComponent>();
-				auto after = Engine::TransformComponent{};
-				EditorCommandManager::ModifyComponent<Engine::TransformComponent>(entity, before, after);
-				entity.AddTag<Engine::TransformDirty>();
+				auto before = entity.GetComponent<engine::TransformComponent>();
+				auto after = engine::TransformComponent{};
+				EditorCommandManager::ModifyComponent<engine::TransformComponent>(entity, before, after);
+				entity.AddTag<engine::TransformDirty>();
 			}},
-			{ "Remove", [&] {EditorCommandManager::RemoveComponent<Engine::TransformComponent>(entity); } }
+			{ "Remove", [&] {EditorCommandManager::RemoveComponent<engine::TransformComponent>(entity); } }
 		};
 
 		ComponentHeader header("Transform", menuActions);
 		if (!header.open) return;
 
-		auto& tc = entity.GetComponent<Engine::TransformComponent>();
+		auto& tc = entity.GetComponent<engine::TransformComponent>();
 
 		EditResult result;
-		static Engine::TransformComponent s_TransformBefore;
+		static engine::TransformComponent s_TransformBefore;
 
 		PropertyTable table;
 
@@ -115,84 +115,84 @@ namespace Editor
 		}
 		else if (result.finished)
 		{
-			EditorCommandManager::ModifyComponent<Engine::TransformComponent>(entity, s_TransformBefore, tc);
+			EditorCommandManager::ModifyComponent<engine::TransformComponent>(entity, s_TransformBefore, tc);
 		}
 		else if (result.changed)
 		{
-			entity.AddTag<Engine::TransformDirty>();
+			entity.AddTag<engine::TransformDirty>();
 
-			if(entity.HasComponent<Engine::CameraComponent>())
+			if(entity.HasComponent<engine::CameraComponent>())
 			{
-				entity.AddTag<Engine::CameraProjectionDirty>();
-				entity.AddTag<Engine::CameraViewDirty>();
+				entity.AddTag<engine::CameraProjectionDirty>();
+				entity.AddTag<engine::CameraViewDirty>();
 			}
 		}
 	}
 
-	void DrawCamera(Engine::Entity entity)
+	void DrawCamera(engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::CameraComponent>()) return;
+		if (!entity.HasComponent<engine::CameraComponent>()) return;
 
 		ComponentHeader header("Camera");
 		if (!header.open) return;
 
-		auto& cc = entity.GetComponent<Engine::CameraComponent>();
+		auto& cc = entity.GetComponent<engine::CameraComponent>();
 
 		PropertyTable table;
 
-		bool primary = entity.HasTag<Engine::PrimaryCameraTag>();
+		bool primary = entity.HasTag<engine::PrimaryCameraTag>();
 
 		if(PropertyField("Primary", primary).changed)
 		{
 			if(primary)
 			{
 				entt::registry& registry = entity.GetScene()->GetRegistry();
-				auto view = registry.view<Engine::PrimaryCameraTag>(entt::exclude<Engine::EditorTag>);
-				registry.remove<Engine::PrimaryCameraTag>(view.begin(), view.end());
+				auto view = registry.view<engine::PrimaryCameraTag>(entt::exclude<engine::EditorTag>);
+				registry.remove<engine::PrimaryCameraTag>(view.begin(), view.end());
 
-				entity.AddTag<Engine::PrimaryCameraTag>();
+				entity.AddTag<engine::PrimaryCameraTag>();
 			}
 			else
 			{
-				entity.RemoveTag<Engine::PrimaryCameraTag>();
+				entity.RemoveTag<engine::PrimaryCameraTag>();
 			}
 		}
 
 		int currentProjection = static_cast<int>(cc.projectionType);
 		if (EnumField("Projection", currentProjection, { "Perspective", "Orthographic" }).changed)
 		{
-			cc.projectionType = static_cast<Engine::CameraComponent::Projection>(currentProjection);
-			entity.AddTag<Engine::CameraProjectionDirty>();
+			cc.projectionType = static_cast<engine::CameraComponent::Projection>(currentProjection);
+			entity.AddTag<engine::CameraProjectionDirty>();
 		}
 
 		EnumField("Background", (int&)cc.background, { "Color", "Skybox" });
 
-		if (cc.background == Engine::CameraComponent::Background::Color)
+		if (cc.background == engine::CameraComponent::Background::Color)
 		{
 			PropertyField("Clear Color", cc.clearColor, { .mode = DisplayMode::Color });
 		}
 	}
 
-	void DrawMesh(Engine::Entity entity)
+	void DrawMesh(engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::MeshComponent>()) return;
+		if (!entity.HasComponent<engine::MeshComponent>()) return;
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
-			{ "Reset", [&] {auto before = entity.GetComponent<Engine::MeshComponent>();
+			{ "Reset", [&] {auto before = entity.GetComponent<engine::MeshComponent>();
 				auto after = before;
 				after.mesh = {};
 				after.materials.clear();
-				EditorCommandManager::ModifyComponent<Engine::MeshComponent>(entity, before, after); }
+				EditorCommandManager::ModifyComponent<engine::MeshComponent>(entity, before, after); }
 			},
 
-			{ "Remove", [&] {EditorCommandManager::RemoveComponent<Engine::MeshComponent>(entity); } }
+			{ "Remove", [&] {EditorCommandManager::RemoveComponent<engine::MeshComponent>(entity); } }
 		};
 
 		ComponentHeader header("Mesh", menuActions);
 		if (!header.open) return;
 
-		Engine::MeshComponent& component = entity.GetComponent<Engine::MeshComponent>();
+		engine::MeshComponent& component = entity.GetComponent<engine::MeshComponent>();
 
 		PropertyTable table;
 
@@ -200,7 +200,7 @@ namespace Editor
 		{
 			if (component.mesh)
 			{
-				Engine::MeshAsset& mesh = Engine::AssetManager::GetAsset<Engine::MeshAsset>(component.mesh);
+				engine::MeshAsset& mesh = engine::AssetManager::GetAsset<engine::MeshAsset>(component.mesh);
 
 				//TODO: store material count in mesh?
 				uint32_t materialCount = 0;
@@ -232,25 +232,25 @@ namespace Editor
 		}
 	}
 
-	void DrawCollider(Engine::Entity entity)
+	void DrawCollider(engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::ColliderComponent>()) return;
+		if (!entity.HasComponent<engine::ColliderComponent>()) return;
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
-			{ "Reset", [&] {auto before = entity.GetComponent<Engine::ColliderComponent>();
+			{ "Reset", [&] {auto before = entity.GetComponent<engine::ColliderComponent>();
 				auto after = before;
 				after.collisionMesh = {};
-				EditorCommandManager::ModifyComponent<Engine::ColliderComponent>(entity, before, after); }
+				EditorCommandManager::ModifyComponent<engine::ColliderComponent>(entity, before, after); }
 			},
 
-			{ "Remove", [&] {EditorCommandManager::RemoveComponent<Engine::ColliderComponent>(entity); } }
+			{ "Remove", [&] {EditorCommandManager::RemoveComponent<engine::ColliderComponent>(entity); } }
 		};
 
 		ComponentHeader header("Collider", menuActions);
 		if (!header.open) return;
 
-		auto& component = entity.GetComponent<Engine::ColliderComponent>();
+		auto& component = entity.GetComponent<engine::ColliderComponent>();
 
 		PropertyTable table;
 
@@ -258,22 +258,22 @@ namespace Editor
 		PropertyField("Is trigger", component.isTrigger);
 	}
 
-	void DrawLight(Engine::Entity entity)
+	void DrawLight(engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::LightComponent>()) return;
-		auto& component = entity.GetComponent<Engine::LightComponent>();
+		if (!entity.HasComponent<engine::LightComponent>()) return;
+		auto& component = entity.GetComponent<engine::LightComponent>();
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
 			{ "Reset", [&] {auto before = component;
 				auto after = before;
-				after.type = Engine::LightType::Directional;
+				after.type = engine::LightType::Directional;
 				after.color = { 1.0f, 1.0f, 1.0f };
 				after.intensity = 1.0f;
-				EditorCommandManager::ModifyComponent<Engine::LightComponent>(entity, before, after); }
+				EditorCommandManager::ModifyComponent<engine::LightComponent>(entity, before, after); }
 			},
 
-			{ "Remove", [&] {EditorCommandManager::RemoveComponent<Engine::LightComponent>(entity); } }
+			{ "Remove", [&] {EditorCommandManager::RemoveComponent<engine::LightComponent>(entity); } }
 		};
 
 		ComponentHeader header("Light", menuActions);
@@ -284,36 +284,36 @@ namespace Editor
 		int current = static_cast<int>(component.type);
 		if (EnumField("Type", current, { "Directional", "Spot", "Point" }).changed)
 		{
-			component.type = static_cast<Engine::LightType>(current);
+			component.type = static_cast<engine::LightType>(current);
 		}
 
 		PropertyField("Color", component.color, { .mode = DisplayMode::Color });
 		PropertyField("Intensity", component.intensity, { .min = 0.0f });
 
-		if (component.type == Engine::LightType::Spot)
+		if (component.type == engine::LightType::Spot)
 		{
 			PropertyField("Angle", component.angle, { .min = 0.0f, .max = 180.0f });
 		}
 	}
 	
-	void DrawUICanvas(Engine::Entity entity)
+	void DrawUICanvas(engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::UI::Canvas>()) return;
+		if (!entity.HasComponent<engine::UI::Canvas>()) return;
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
 			{ "Reset", [&] {
-				auto before = entity.GetComponent<Engine::UI::Canvas>();
-				auto after = Engine::UI::Canvas{};
-				EditorCommandManager::ModifyComponent<Engine::UI::Canvas>(entity, before, after);
+				auto before = entity.GetComponent<engine::UI::Canvas>();
+				auto after = engine::UI::Canvas{};
+				EditorCommandManager::ModifyComponent<engine::UI::Canvas>(entity, before, after);
 			} },
 		};
 
 		ComponentHeader header("Canvas", menuActions);
 		if (!header.open) return;
-		auto& canvas = entity.GetComponent<Engine::UI::Canvas>();
+		auto& canvas = entity.GetComponent<engine::UI::Canvas>();
 		EditResult result;
-		static Engine::UI::Canvas s_CanvasBefore;
+		static engine::UI::Canvas s_CanvasBefore;
 
 		PropertyTable table;
 		result |= PropertyField("Screen Space", canvas.isScreenSpace);
@@ -322,24 +322,24 @@ namespace Editor
 
 		if (result.finished)
 		{
-			EditorCommandManager::ModifyComponent<Engine::UI::Canvas>(entity, s_CanvasBefore, canvas);
+			EditorCommandManager::ModifyComponent<engine::UI::Canvas>(entity, s_CanvasBefore, canvas);
 		}
 		else if (result.changed)
 		{
-			entity.AddTag<Engine::TransformDirty>();
+			entity.AddTag<engine::TransformDirty>();
 		}
 	}
 
-	void DrawUIRect(Engine::Entity entity)
+	void DrawUIRect(engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::UI::RectTransform>()) return;
+		if (!entity.HasComponent<engine::UI::RectTransform>()) return;
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
 			{ "Reset", [&] {
-				auto before = entity.GetComponent<Engine::UI::RectTransform>();
-				auto after = Engine::UI::RectTransform{};
-				EditorCommandManager::ModifyComponent<Engine::UI::RectTransform>(entity, before, after);
+				auto before = entity.GetComponent<engine::UI::RectTransform>();
+				auto after = engine::UI::RectTransform{};
+				EditorCommandManager::ModifyComponent<engine::UI::RectTransform>(entity, before, after);
 			} },
 		};
 
@@ -347,11 +347,11 @@ namespace Editor
 		if (!header.open) return;
 
 		EditResult result;
-		static Engine::UI::RectTransform s_RectBefore;
+		static engine::UI::RectTransform s_RectBefore;
 
 		PropertyTable table;
 
-		auto& rc = entity.GetComponent<Engine::UI::RectTransform>();
+		auto& rc = entity.GetComponent<engine::UI::RectTransform>();
 
 		result |= PropertyField("Position", rc.anchoredPosition);
 		result |= PropertyField("Size", rc.size);
@@ -367,33 +367,33 @@ namespace Editor
 		}
 		else if (result.finished)
 		{
-			EditorCommandManager::ModifyComponent<Engine::UI::RectTransform>(entity, s_RectBefore, rc);
+			EditorCommandManager::ModifyComponent<engine::UI::RectTransform>(entity, s_RectBefore, rc);
 		}
 		else if (result.changed)
 		{
-			entity.AddTag<Engine::UI::LayoutDirtyTag>();
+			entity.AddTag<engine::UI::LayoutDirtyTag>();
 		}
 	}
 
-	void DrawUIImage(Engine::Entity entity)
+	void DrawUIImage(engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::UI::Image>()) return;
+		if (!entity.HasComponent<engine::UI::Image>()) return;
 
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
 			{ "Reset", [&] {
-				auto before = entity.GetComponent<Engine::UI::Image>();
-				auto after = Engine::UI::Image{};
-				EditorCommandManager::ModifyComponent<Engine::UI::Image>(entity, before, after);
+				auto before = entity.GetComponent<engine::UI::Image>();
+				auto after = engine::UI::Image{};
+				EditorCommandManager::ModifyComponent<engine::UI::Image>(entity, before, after);
 			} },
 		};
 
 		ComponentHeader header("Image", menuActions);
 		if (!header.open) return;
-		auto& ic = entity.GetComponent<Engine::UI::Image>();
+		auto& ic = entity.GetComponent<engine::UI::Image>();
 
 		EditResult result;
-		static Engine::UI::Image s_ImageBefore;
+		static engine::UI::Image s_ImageBefore;
 		PropertyTable table;
 
 		result |= PropertyField("Tint", ic.tint, { .mode = DisplayMode::Color });
@@ -405,30 +405,30 @@ namespace Editor
 		}
 		else if (result.finished)
 		{
-			EditorCommandManager::ModifyComponent<Engine::UI::Image>(entity, s_ImageBefore, ic);
+			EditorCommandManager::ModifyComponent<engine::UI::Image>(entity, s_ImageBefore, ic);
 		}
 		else if (result.changed)
 		{
-			entity.AddTag<Engine::TransformDirty>();
+			entity.AddTag<engine::TransformDirty>();
 		}
 	}
 
-	void DrawUIText(Engine::Entity entity)
+	void DrawUIText(engine::Entity entity)
 	{
-		if (!entity.HasComponent<Engine::UI::Text>()) return;
+		if (!entity.HasComponent<engine::UI::Text>()) return;
 		const std::initializer_list<ComponentMenuAction> menuActions
 		{
 			{ "Reset", [&] {
-				auto before = entity.GetComponent<Engine::UI::Text>();
-				auto after = Engine::UI::Text{};
-				EditorCommandManager::ModifyComponent<Engine::UI::Text>(entity, before, after);
+				auto before = entity.GetComponent<engine::UI::Text>();
+				auto after = engine::UI::Text{};
+				EditorCommandManager::ModifyComponent<engine::UI::Text>(entity, before, after);
 			} },
 		};
 		ComponentHeader header("Text", menuActions);
 		if (!header.open) return;
-		auto& tc = entity.GetComponent<Engine::UI::Text>();
+		auto& tc = entity.GetComponent<engine::UI::Text>();
 		EditResult result;
-		static Engine::UI::Text s_TextBefore;
+		static engine::UI::Text s_TextBefore;
 		PropertyTable table;
 		result |= PropertyField("Text", tc.text, { .mode = DisplayMode::Multiline });
 		result |= PropertyField("Color", tc.color, { .mode = DisplayMode::Color });
@@ -443,34 +443,34 @@ namespace Editor
 		}
 		else if (result.finished)
 		{
-			EditorCommandManager::ModifyComponent<Engine::UI::Text>(entity, s_TextBefore, tc);
+			EditorCommandManager::ModifyComponent<engine::UI::Text>(entity, s_TextBefore, tc);
 		}
 		else if (result.changed)
 		{
-			entity.AddTag<Engine::TransformDirty>();
+			entity.AddTag<engine::TransformDirty>();
 		}
 	}
 
 
-	void DrawAddComponentButton(Engine::Entity entity)
+	void DrawAddComponentButton(engine::Entity entity)
 	{
 		struct AddComponentEntry
 		{
 			const char* name;
-			void (*add)(Engine::Entity);
+			void (*add)(engine::Entity);
 		};
 
 		static constexpr std::array<AddComponentEntry, 9> entries
 		{
-			AddComponentEntry{ "Transform",     [](Engine::Entity e) { e.GetOrAddComponent<Engine::TransformComponent>(); e.GetOrAddComponent<Engine::WorldTransformComponent>(); } },
-			AddComponentEntry{ "Camera",        [](Engine::Entity e) { e.GetOrAddComponent<Engine::CameraComponent>(); } },
-			AddComponentEntry{ "Mesh",          [](Engine::Entity e) { e.GetOrAddComponent<Engine::MeshComponent>(); } },
-			AddComponentEntry{ "Collider",      [](Engine::Entity e) { e.GetOrAddComponent<Engine::ColliderComponent>(); } },
-			AddComponentEntry{ "Light",         [](Engine::Entity e) { e.GetOrAddComponent<Engine::LightComponent>(); } },
-			AddComponentEntry{ "UI Rect",				[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::RectTransform>(); } },
-			AddComponentEntry{ "UI Canvas",			[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Canvas>(); e.GetOrAddComponent<Engine::UI::RectTransform>(); e.AddTag<Engine::UI::LayoutDirtyTag>(); } },
-			AddComponentEntry{ "UI Image",			[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Image>(); e.GetOrAddComponent<Engine::UI::RectTransform>(); e.AddTag<Engine::UI::LayoutDirtyTag>(); } },
-			AddComponentEntry{ "UI Text",				[](Engine::Entity e) { e.GetOrAddComponent<Engine::UI::Text>(); e.GetOrAddComponent<Engine::UI::RectTransform>(); e.AddTag<Engine::UI::LayoutDirtyTag>(); } }
+			AddComponentEntry{ "Transform",     [](engine::Entity e) { e.GetOrAddComponent<engine::TransformComponent>(); e.GetOrAddComponent<engine::WorldTransformComponent>(); } },
+			AddComponentEntry{ "Camera",        [](engine::Entity e) { e.GetOrAddComponent<engine::CameraComponent>(); } },
+			AddComponentEntry{ "Mesh",          [](engine::Entity e) { e.GetOrAddComponent<engine::MeshComponent>(); } },
+			AddComponentEntry{ "Collider",      [](engine::Entity e) { e.GetOrAddComponent<engine::ColliderComponent>(); } },
+			AddComponentEntry{ "Light",         [](engine::Entity e) { e.GetOrAddComponent<engine::LightComponent>(); } },
+			AddComponentEntry{ "UI Rect",				[](engine::Entity e) { e.GetOrAddComponent<engine::UI::RectTransform>(); } },
+			AddComponentEntry{ "UI Canvas",			[](engine::Entity e) { e.GetOrAddComponent<engine::UI::Canvas>(); e.GetOrAddComponent<engine::UI::RectTransform>(); e.AddTag<engine::UI::LayoutDirtyTag>(); } },
+			AddComponentEntry{ "UI Image",			[](engine::Entity e) { e.GetOrAddComponent<engine::UI::Image>(); e.GetOrAddComponent<engine::UI::RectTransform>(); e.AddTag<engine::UI::LayoutDirtyTag>(); } },
+			AddComponentEntry{ "UI Text",				[](engine::Entity e) { e.GetOrAddComponent<engine::UI::Text>(); e.GetOrAddComponent<engine::UI::RectTransform>(); e.AddTag<engine::UI::LayoutDirtyTag>(); } }
 		};
 
 		ImGui::Separator();
@@ -516,10 +516,10 @@ namespace Editor
 		}
 	}
 
-	void EntityInspectorPanel::Draw(Engine::Uuid entityId)
+	void EntityInspectorPanel::Draw(engine::Uuid entityId)
 	{
-		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
-		Engine::Entity entity = scene.GetEntity(entityId);
+		engine::SceneAsset& scene = engine::AssetManager::GetAsset<engine::SceneAsset>(engine::SceneManager::GetActiveScene());
+		engine::Entity entity = scene.GetEntity(entityId);
 		if (!entity) return;
 
 		EntityHeader header(entity);

@@ -7,7 +7,7 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Utility/File.h"
 
-namespace Engine
+namespace engine
 {
 	namespace
 	{
@@ -192,7 +192,7 @@ namespace Engine
 		GraphicsContext::GetQueue().WriteBuffer(m_UniformBuffer, 0, &m_UniformData, sizeof(WireframeUniform));
 		pass.SetBindGroup(2, m_ShadowBindGroup, 0, nullptr);
 
-		Engine::Mesh lastMesh;
+		engine::Mesh lastMesh;
 
 		size_t i = 0;
 		for (const auto& item : context.drawList.GetItems())
@@ -200,7 +200,7 @@ namespace Engine
 			if (item.mesh != lastMesh)
 			{
 				lastMesh = item.mesh;
-				MeshAsset& meshAsset = Engine::AssetManager::GetAsset<MeshAsset>(lastMesh);
+				MeshAsset& meshAsset = engine::AssetManager::GetAsset<MeshAsset>(lastMesh);
 				pass.SetVertexBuffer(0, meshAsset.GetVertexBuffer(), 0, meshAsset.GetVertexBuffer().GetSize());
 				pass.SetIndexBuffer(meshAsset.GetWireIndexBuffer(), wgpu::IndexFormat::Uint32, 0, meshAsset.GetWireIndexBuffer().GetSize());
 			}

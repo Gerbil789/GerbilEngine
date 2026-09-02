@@ -2,7 +2,7 @@
 
 #include <optional>
 
-namespace Engine
+namespace engine
 {
 	class MeshAsset;
 

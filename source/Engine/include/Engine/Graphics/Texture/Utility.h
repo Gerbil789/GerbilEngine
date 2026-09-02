@@ -3,7 +3,7 @@
 #include "Engine/Asset/AssetHandle.h"
 #include <webgpu/webgpu_cpp.h>
 
-namespace Engine
+namespace engine
 {
 	class TextureCube;
 

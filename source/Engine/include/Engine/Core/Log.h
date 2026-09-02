@@ -8,7 +8,7 @@
 #include <format>
 #include <source_location>
 
-namespace Engine
+namespace engine
 {
 	class Log
 	{
@@ -33,16 +33,16 @@ struct std::formatter<std::filesystem::path, char> : std::formatter<std::string_
 };
 
 template <>
-struct std::formatter<Engine::Uuid, char> : std::formatter<uint64_t, char>
+struct std::formatter<engine::Uuid, char> : std::formatter<uint64_t, char>
 {
-	auto format(const Engine::Uuid& uuid, auto& ctx) const
+	auto format(const engine::Uuid& uuid, auto& ctx) const
 	{
 		return std::formatter<uint64_t, char>::format(static_cast<uint64_t>(uuid), ctx);
 	}
 };
 
-#define LOG_TRACE(...)		Engine::Log::Trace(std::format(__VA_ARGS__))
-#define LOG_INFO(...)			Engine::Log::Info(std::format(__VA_ARGS__))
-#define LOG_WARNING(...)  Engine::Log::Warn(std::format(__VA_ARGS__))
-#define LOG_ERROR(...)		Engine::Log::Error(std::format(__VA_ARGS__))
-#define LOG_CRITICAL(...) Engine::Log::Critical(std::format(__VA_ARGS__))
+#define LOG_TRACE(...)		engine::Log::Trace(std::format(__VA_ARGS__))
+#define LOG_INFO(...)			engine::Log::Info(std::format(__VA_ARGS__))
+#define LOG_WARNING(...)  engine::Log::Warn(std::format(__VA_ARGS__))
+#define LOG_ERROR(...)		engine::Log::Error(std::format(__VA_ARGS__))
+#define LOG_CRITICAL(...) engine::Log::Critical(std::format(__VA_ARGS__))

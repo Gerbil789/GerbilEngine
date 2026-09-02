@@ -5,7 +5,7 @@
 #include "Engine/Core/Components.h"
 #include <entt/entity/registry.hpp>
 
-namespace Engine
+namespace engine
 {
 	class SceneAsset : public Asset
 	{
@@ -51,7 +51,7 @@ namespace Engine
 
 	private:
 		entt::registry m_Registry;
-		std::unordered_map<Engine::Uuid, entt::entity> m_EntityMap;
+		std::unordered_map<engine::Uuid, entt::entity> m_EntityMap;
 		std::vector<entt::entity> m_RootEntities;
 		Texture2D m_EnvironmentTexture;
 

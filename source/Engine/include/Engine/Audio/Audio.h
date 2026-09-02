@@ -5,7 +5,7 @@
 
 class ma_engine;
 
-namespace Engine
+namespace engine
 {
   using AudioInstance = AudioClip;
 

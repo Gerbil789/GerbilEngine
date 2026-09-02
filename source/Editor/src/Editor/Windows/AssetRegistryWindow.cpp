@@ -8,11 +8,11 @@
 #include <vector>
 #include <algorithm>
 
-namespace Editor
+namespace editor
 {
 	void AssetRegistryWindow::Draw()
 	{
-		const auto& allRecords = Engine::AssetManager::GetAssetRegistry().GetAllRecords();
+		const auto& allRecords = engine::AssetManager::GetAssetRegistry().GetAllRecords();
 
 		ImGui::Begin("Asset Registry");
 
@@ -26,7 +26,7 @@ namespace Editor
 
 		ImGui::Separator();
 
-		static std::vector<const Engine::AssetRecord*> filteredRecords;
+		static std::vector<const engine::AssetRecord*> filteredRecords;
 		filteredRecords.clear();
 		filteredRecords.reserve(allRecords.size());
 
@@ -37,7 +37,7 @@ namespace Editor
 		{
 			if (selectedTypeIndex != 0) 
 			{
-				Engine::AssetType targetType = static_cast<Engine::AssetType>(selectedTypeIndex);
+				engine::AssetType targetType = static_cast<engine::AssetType>(selectedTypeIndex);
 				if (record.type != targetType) continue;
 			}
 
@@ -70,11 +70,11 @@ namespace Editor
 
 				ImGui::Text("Name: %s", recordPtr->path.filename().string().c_str());
 				ImGui::Text("ID: %lu", static_cast<uint64_t>(recordPtr->id));
-				ImGui::Text("Type: %s", Engine::AssetTypeToString(recordPtr->type).data());
+				ImGui::Text("Type: %s", engine::AssetTypeToString(recordPtr->type).data());
 
 				if (ImGui::Button("Open"))
 				{
-					Editor::FileDialog::OpenFileExplorer(recordPtr->path);
+					editor::FileDialog::OpenFileExplorer(recordPtr->path);
 				}
 
 				ImGui::Spacing();
@@ -88,7 +88,7 @@ namespace Editor
 
 		if (ImGui::Button("Open registry"))
 		{
-			Editor::FileDialog::OpenFileExplorer(Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.json");
+			editor::FileDialog::OpenFileExplorer(engine::Project::Directory() / "assetRegistry.json");
 		}
 
 

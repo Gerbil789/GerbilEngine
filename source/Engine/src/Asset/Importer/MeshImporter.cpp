@@ -11,7 +11,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <tiny_gltf.h>
 
-namespace Engine
+namespace engine
 {
 	static glm::mat4 GetNodeMatrix(const tinygltf::Node& node)
 	{

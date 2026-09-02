@@ -4,19 +4,13 @@
 #include <glm/glm.hpp>
 
 struct GLFWwindow;
-namespace Engine 
-{ 
-	struct Event; 
 
-}
-
-namespace Engine::Input
+namespace engine::Input
 {
 	enum class CursorMode { Normal, Hidden, Disabled };
 
-	void SetActiveWindow(GLFWwindow& window);
+	void Initialize(GLFWwindow* window);
 	void Update();
-	//ENGINE_API void OnEvent(Event& e);
 
 	bool IsKeyDown(Key key);
 	bool IsKeyPressedOnce(Key key);

@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Sprite.h"
 
-namespace Engine
+namespace engine
 {
 	Sprite::Sprite(Texture2D texture, const glm::vec2& min, const glm::vec2& max) : m_Texture(texture), m_UVMin(min), m_UVMax(max) {}
 

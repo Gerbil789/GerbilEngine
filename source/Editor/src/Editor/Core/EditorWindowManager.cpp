@@ -89,7 +89,7 @@ static void SetupImGuiStyle()
 	style.PopupBorderSize = 0.f;
 }
 
-namespace Editor
+namespace editor
 {
 	namespace
 	{
@@ -107,7 +107,7 @@ namespace Editor
 		> m_Windows;
 	}
 
-	void EditorWindowManager::Initialize(const Engine::Window& window)
+	void EditorWindowManager::Initialize(const engine::Window& window)
 	{
 
 		IMGUI_CHECKVERSION();
@@ -158,7 +158,7 @@ namespace Editor
 		const std::filesystem::path default_iniPath = "resources/Editor/layouts/default.ini";
 		std::string defaultLayoutContent;
 
-		if (!Engine::ReadFile(default_iniPath, defaultLayoutContent))
+		if (!engine::ReadFile(default_iniPath, defaultLayoutContent))
 		{
 			LOG_ERROR("Failed to read default ImGui layout from {}", default_iniPath);
 			return;

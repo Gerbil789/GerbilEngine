@@ -3,7 +3,7 @@
 #include "Engine/Graphics/ShaderSpecification.h"
 #include <string_view>
 
-namespace Engine
+namespace engine
 {
 	class ShaderParser
 	{

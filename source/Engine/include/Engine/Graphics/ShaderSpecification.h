@@ -7,7 +7,7 @@
 #include <glm/glm.hpp>
 #include <webgpu/webgpu_cpp.h>
 
-namespace Engine
+namespace engine
 {
 	enum class ShaderValueType { Bool, Int, UInt, Float, Vec2, Vec3, Vec4, Vec2i, Mat3, Mat4 };
 

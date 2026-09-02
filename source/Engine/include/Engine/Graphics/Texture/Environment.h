@@ -3,7 +3,7 @@
 #include "Engine/Asset/AssetHandle.h"
 #include "Engine/Graphics/Texture/TextureCube.h"
 
-namespace Engine
+namespace engine
 {
   struct Environment
   {

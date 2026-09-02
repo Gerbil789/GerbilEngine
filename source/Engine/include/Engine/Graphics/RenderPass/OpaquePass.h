@@ -2,7 +2,7 @@
 
 #include "Engine/Graphics/RenderPass/RenderPass.h"
 
-namespace Engine
+namespace engine
 {
 	class OpaquePass : public RenderPass
 	{

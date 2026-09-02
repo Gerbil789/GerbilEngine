@@ -2,7 +2,7 @@
 
 #include "Engine/Core/UUID.h"
 
-namespace Engine
+namespace engine
 {
 	class Asset
 	{

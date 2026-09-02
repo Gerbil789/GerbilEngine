@@ -3,7 +3,7 @@
 #include "Engine/Graphics/Texture/Utility.h"
 #include "Engine/Graphics/GraphicsContext.h"
 
-namespace Engine
+namespace engine
 {
 	Texture2DAsset::Texture2DAsset(const TextureSpecification& specification, const void* data)
 	{

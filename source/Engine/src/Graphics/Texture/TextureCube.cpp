@@ -2,7 +2,7 @@
 #include "Engine/Graphics/Texture/TextureCube.h"
 #include "Engine/Graphics/GraphicsContext.h"
 
-namespace Engine
+namespace engine
 {
 	TextureCube::TextureCube(const TextureCubeSpecification& specification)
 	{

@@ -3,18 +3,18 @@
 #include "Engine/Asset/AssetHandle.h"
 #include <glm/glm.hpp>
 
-namespace Engine
+namespace engine
 {
 	class SceneAsset;
 
 	struct DrawItem
 	{
-		Engine::Mesh mesh;
-		Engine::Material material;
+		engine::Mesh mesh;
+		engine::Material material;
 		uint32_t subMeshIndex;
 		uint32_t indexCount;
 		uint32_t firstIndex;
-		Engine::Uuid entityId; //TODO: remove this? its used only for editor picker
+		engine::Uuid entityId; //TODO: remove this? its used only for editor picker
 	};
 
 	class DrawList

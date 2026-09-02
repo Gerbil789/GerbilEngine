@@ -5,7 +5,7 @@
 #include <webgpu/webgpu_cpp.h>
 #include <ranges>
 #include <stdexcept>
-namespace Engine
+namespace engine
 {
 	class ShaderAsset : public Asset
 	{

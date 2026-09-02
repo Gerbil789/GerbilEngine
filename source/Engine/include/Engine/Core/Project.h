@@ -1,30 +1,22 @@
 #pragma once
 
-#include "Engine/Asset/AssetHandle.h"
 #include <filesystem>
 
-namespace Engine
+namespace engine
 {
-	class Project
-	{
-	public:
-		static void Load(const std::filesystem::path& path);
-		static Project& GetActive();
+  class Project
+  {
+  public:
+    static void Initialize(const std::filesystem::path& projectDirectory)
+    {
+      s_Directory = projectDirectory;
+      s_AssetsDirectory = projectDirectory / "Assets";
+    }
+    static const std::filesystem::path &Directory() { return s_Directory; }
+    static const std::filesystem::path &AssetsDirectory() { return s_AssetsDirectory; }
 
-		void Save(); //TODO
-
-		const std::filesystem::path& GetProjectDirectory() const { return m_ProjectDirectory; }
-		const std::filesystem::path& GetAssetsDirectory() const { return m_AssetsDirectory; }
-		std::filesystem::path& GetAssetsDirectory() { return m_AssetsDirectory; }
-		const std::string& GetTitle() const { return m_Title; }
-		Engine::Scene GetDefaultScene() const { return m_DefaultScene; } //TODO: rename it, default is not good name
-
-	private:
-		static Project s_ActiveProject;
-
-		std::filesystem::path m_ProjectDirectory;
-		std::filesystem::path m_AssetsDirectory;
-		std::string m_Title = "Untitled";
-		Engine::Scene m_DefaultScene;
-	};
+  private:
+    inline static std::filesystem::path s_Directory;
+    inline static std::filesystem::path s_AssetsDirectory;
+  };
 }

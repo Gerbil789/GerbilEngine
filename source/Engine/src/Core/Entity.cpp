@@ -3,7 +3,7 @@
 #include "Engine/Core/Scene.h"
 #include "Engine/Core/Components.h"
 
-namespace Engine
+namespace engine
 {
 	Entity::Entity(entt::entity handle, SceneAsset* scene) : m_Handle(handle), m_Scene(scene) {}
 

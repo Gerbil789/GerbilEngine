@@ -6,12 +6,10 @@
 #include "Engine/Event/EventBus.h"
 #include <GLFW/glfw3.h>
 
-namespace Engine::Input
+namespace engine::Input
 {
 	namespace
 	{
-		GLFWwindow* s_ActiveWindow = nullptr;
-
 		struct InputState
 		{
 			std::array<bool, GLFW_KEY_LAST + 1> KeyDown{};
@@ -20,43 +18,41 @@ namespace Engine::Input
 			std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> MouseDown{};
 		};
 
-		std::unordered_map<GLFWwindow*, InputState> s_States;
+		GLFWwindow* s_Window;
+		InputState s_State;
 	}
 
-	void SetActiveWindow(GLFWwindow& window)
+	void Initialize(GLFWwindow* window)
 	{
-		s_ActiveWindow = &window;
-		auto& state = s_States[s_ActiveWindow];
+		s_Window = window;
 
-		//TODO: subscribe only once, not every time we set active window
-
-		EventBus::Subscribe<KeyPressedEvent>([&state](auto& e) 
+		EventBus::Subscribe<KeyPressedEvent>([](auto& e) 
 			{
 				int key = static_cast<int>(e.key);
-				if (!state.KeyDown[key]) state.KeyPressed[key] = true;
-				state.KeyDown[key] = true;
+				if (!s_State.KeyDown[key]) s_State.KeyPressed[key] = true;
+				s_State.KeyDown[key] = true;
 				return false;
 			});
 
-		EventBus::Subscribe<KeyReleasedEvent>([&state](auto& e)
+		EventBus::Subscribe<KeyReleasedEvent>([](auto& e)
 			{
 				int key = static_cast<int>(e.key);
-				state.KeyDown[key] = false;
-				state.KeyReleased[key] = true;
+				s_State.KeyDown[key] = false;
+				s_State.KeyReleased[key] = true;
 				return false;
 			});
 
-		EventBus::Subscribe<MouseButtonPressedEvent>([&state](auto& e)
+		EventBus::Subscribe<MouseButtonPressedEvent>([](auto& e)
 			{
 				int button = static_cast<int>(e.button);
-				state.MouseDown[button] = true;
+				s_State.MouseDown[button] = true;
 				return false;
 			});
 
-		EventBus::Subscribe<MouseButtonReleasedEvent>([&state](auto& e)
+		EventBus::Subscribe<MouseButtonReleasedEvent>([](auto& e)
 			{
 				int button = static_cast<int>(e.button);
-				state.MouseDown[button] = false;
+				s_State.MouseDown[button] = false;
 				return false;
 			});
 
@@ -71,39 +67,35 @@ namespace Engine::Input
 
 	void Update()
 	{
-		for (auto& [window, state] : s_States)
-		{
-			state.KeyPressed.fill(false);
-			state.KeyReleased.fill(false);
-		}
-
+		s_State.KeyPressed.fill(false);
+		s_State.KeyReleased.fill(false);
 		glfwPollEvents();
 	}
 
 	bool IsKeyDown(Key key)
 	{
-		return s_States[s_ActiveWindow].KeyDown[(int)key];
+		return s_State.KeyDown[(int)key];
 	}
 
 	bool IsKeyPressedOnce(Key key)
 	{
-		return s_States[s_ActiveWindow].KeyPressed[(int)key];
+		return s_State.KeyPressed[(int)key];
 	}
 
 	bool IsKeyReleased(Key key)
 	{
-		return s_States[s_ActiveWindow].KeyReleased[(int)key];
+		return s_State.KeyReleased[(int)key];
 	}
 
 	bool IsMouseButtonPressed(Mouse button)
 	{
-		return s_States[s_ActiveWindow].MouseDown[(int)button];
+		return s_State.MouseDown[(int)button];
 	}
 
 	glm::vec2 GetMousePosition()
 	{
 		double x, y;
-		glfwGetCursorPos(s_ActiveWindow, &x, &y);
+		glfwGetCursorPos(s_Window, &x, &y);
 		return { static_cast<float>(x), static_cast<float>(y) };
 	}
 
@@ -116,13 +108,13 @@ namespace Engine::Input
 		case CursorMode::Hidden: glfwMode = GLFW_CURSOR_HIDDEN; break;
 		case CursorMode::Disabled: glfwMode = GLFW_CURSOR_DISABLED; break;
 		}
-		glfwSetInputMode(s_ActiveWindow, GLFW_CURSOR, glfwMode);
+		glfwSetInputMode(s_Window, GLFW_CURSOR, glfwMode);
 		
 	}
 
 	CursorMode GetCursorMode()
 	{
-		int glfwMode = glfwGetInputMode(s_ActiveWindow, GLFW_CURSOR);
+		int glfwMode = glfwGetInputMode(s_Window, GLFW_CURSOR);
 		switch (glfwMode)
 		{
 		case GLFW_CURSOR_NORMAL: return CursorMode::Normal;
@@ -134,7 +126,6 @@ namespace Engine::Input
 
 	void SetCursorPosition(const glm::vec2& position)
 	{
-		glfwSetCursorPos(s_ActiveWindow, position.x, position.y);
-		
+		glfwSetCursorPos(s_Window, position.x, position.y);
 	}
 }

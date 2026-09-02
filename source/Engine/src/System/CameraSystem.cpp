@@ -2,7 +2,7 @@
 #include "Engine/System/CameraSystem.h"
 #include <glm/gtx/quaternion.hpp>
 
-namespace Engine
+namespace engine
 {
 	glm::vec3 CameraSystem::GetForward(const TransformComponent& transform)
 	{

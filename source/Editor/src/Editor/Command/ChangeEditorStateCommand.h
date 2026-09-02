@@ -8,7 +8,7 @@
 #include "Engine/Core/Scene.h"
 #include "Engine/Core/Runtime.h"
 
-namespace Editor
+namespace editor
 {
   class ChangeEditorStateCommand : public ICommand
   {
@@ -17,20 +17,20 @@ namespace Editor
 
     void Execute() override
     {
-			Editor::editorContext.editorMode = m_State;
+			editor::editorContext.editorMode = m_State;
 
-			switch(Editor::editorContext.editorMode)
+			switch(editor::editorContext.editorMode)
 			{
 				case EditorMode::Play:
 				{
-					Engine::Runtime::Start();
+					engine::Runtime::Start();
 					SelectionManager::Entities.Clear();
 					break;
 				}
 	
 				case EditorMode::Edit:
 				{
-					Engine::Runtime::Stop();
+					engine::Runtime::Stop();
 					break;
 				}
 			}

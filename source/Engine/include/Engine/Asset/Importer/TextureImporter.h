@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <optional>
 
-namespace Engine
+namespace engine
 {
 	class Texture2DAsset;
 

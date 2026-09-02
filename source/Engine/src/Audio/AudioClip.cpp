@@ -3,7 +3,7 @@
 #include "Engine/Core/Log.h"
 #include <miniaudio.h>   
 
-namespace Engine
+namespace engine
 {
 	AudioClipAsset::AudioClipAsset(const std::filesystem::path& path)
 	{

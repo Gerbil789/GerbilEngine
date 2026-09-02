@@ -2,7 +2,7 @@
 
 #include "Engine/Asset/AssetHandle.h"
 
-namespace Engine::SceneManager
+namespace engine::SceneManager
 {
 	void SetActiveScene(Scene scene);
 	Scene GetActiveScene();

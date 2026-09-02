@@ -19,12 +19,12 @@ public:
 
   void Initialize()
   {
-    Engine::EventBus::Subscribe<Engine::MouseButtonReleasedEvent>([this](auto e) {OnMouseButtonReleased(e); return false; });
+    engine::EventBus::Subscribe<engine::MouseButtonReleasedEvent>([this](auto e) {OnMouseButtonReleased(e); return false; });
 	}
 
-  void OnMouseButtonReleased(Engine::MouseButtonReleasedEvent& e)
+  void OnMouseButtonReleased(engine::MouseButtonReleasedEvent& e)
   {
-    if (e.button == Engine::Mouse::ButtonLeft)
+    if (e.button == engine::Mouse::ButtonLeft)
     {
       if (GameContext::hoveredTile)
       {
@@ -39,13 +39,13 @@ public:
 
   void Update()
   {
-    glm::vec2 mousePos = Engine::Input::GetMousePosition();
+    glm::vec2 mousePos = engine::Input::GetMousePosition();
 
-		mousePos.x = mousePos.x - Engine::viewportState.positionX;
-		mousePos.y = mousePos.y - Engine::viewportState.positionY;
+		mousePos.x = mousePos.x - engine::viewportState.positionX;
+		mousePos.y = mousePos.y - engine::viewportState.positionY;
     //LOG_TRACE("Mouse Position: ({}, {})", mousePos.x, mousePos.y);
 
-    bool inside = mousePos.x >= 0 && mousePos.y >= 0 && mousePos.x < Engine::viewportState.width && mousePos.y < Engine::viewportState.height;
+    bool inside = mousePos.x >= 0 && mousePos.y >= 0 && mousePos.x < engine::viewportState.width && mousePos.y < engine::viewportState.height;
 
     if(!inside)
     {

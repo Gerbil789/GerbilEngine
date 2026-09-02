@@ -9,7 +9,7 @@
 #include <variant>
 #include <glm/glm.hpp>
 
-namespace Engine
+namespace engine
 {
 	using MaterialValue = std::variant<float, glm::vec2, glm::vec3, glm::vec4, glm::ivec2>;
 

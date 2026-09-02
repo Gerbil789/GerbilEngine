@@ -2,11 +2,11 @@
 
 #include "Engine/Asset/AssetHandle.h"
 
-namespace Editor
+namespace editor
 {
 	class ShaderInspectorPanel
 	{
 	public:
-		void Draw(Engine::Shader shader);
+		void Draw(engine::Shader shader);
 	};
 }

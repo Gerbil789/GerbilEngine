@@ -3,13 +3,13 @@
 #include "ICommand.h"
 #include "Engine/Core/Entity.h"
 
-namespace Editor
+namespace editor
 {
   template<typename T>
   class RemoveComponentCommand : public ICommand
   {
   public:
-    RemoveComponentCommand(Engine::Entity entity) : m_Entity(entity)
+    RemoveComponentCommand(engine::Entity entity) : m_Entity(entity)
     {
       if(m_Entity.HasComponent<T>())
       {
@@ -34,7 +34,7 @@ namespace Editor
     }
 
   private:
-    Engine::Entity m_Entity;
+    engine::Entity m_Entity;
     T m_Backup;
   };
 }

@@ -4,7 +4,7 @@
 #include "Editor/Core/EditorSettings.h"
 #include "Engine/Core/Components.h"
 
-namespace Editor
+namespace editor
 {
 	enum class EditorMode { Edit, Play };
 	enum class PlayMode { PIE, Windowed, Fullscreen }; // PIE - Play In Editor
@@ -14,9 +14,9 @@ namespace Editor
 		EditorMode editorMode = EditorMode::Edit;
 		PlayMode playMode = PlayMode::PIE;
 
-		Engine::Renderer renderer;
-		Engine::CameraComponent camera;
-		Engine::TransformComponent cameraTransform;
+		engine::Renderer renderer;
+		engine::CameraComponent camera;
+		engine::TransformComponent cameraTransform;
 
 		EditorSettings settings;
 	};

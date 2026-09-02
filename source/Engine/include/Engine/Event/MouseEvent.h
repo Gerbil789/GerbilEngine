@@ -3,7 +3,7 @@
 #include "Engine/Event/Event.h"
 #include "Engine/Core/KeyCodes.h"
 
-namespace Engine
+namespace engine
 {
 	struct MouseMovedEvent : public Event
 	{

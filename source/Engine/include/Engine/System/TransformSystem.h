@@ -2,7 +2,7 @@
 
 #include "Engine/Core/Scene.h"
 
-namespace Engine
+namespace engine
 {
 	class TransformSystem
 	{

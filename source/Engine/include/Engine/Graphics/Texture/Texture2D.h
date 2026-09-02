@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <webgpu/webgpu_cpp.h>
 
-namespace Engine
+namespace engine
 {
 	struct TextureSpecification
 	{

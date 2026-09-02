@@ -1,14 +1,14 @@
 #pragma once
 
-namespace Engine { class SceneAsset; }
+namespace engine { class SceneAsset; }
 
-namespace Editor
+namespace editor
 {
 	class TransformController
 	{
 	public:
 		void Initialize();
-		void DrawGizmo(Engine::SceneAsset& scene, float x, float y, float width, float height);
+		void DrawGizmo(engine::SceneAsset& scene, float x, float y, float width, float height);
 		bool IsGizmoOver() const;
 	};
 }

@@ -3,7 +3,7 @@
 #include <Engine/Asset/AssetRecord.h>
 #include <unordered_map>
 
-namespace Engine
+namespace engine
 {
 	struct DirectoryNode
 	{

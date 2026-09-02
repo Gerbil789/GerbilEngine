@@ -6,7 +6,7 @@
 #include "Engine/Core/Components.h"
 #include <array>
 
-namespace Engine
+namespace engine
 {
   class SceneAsset;
 

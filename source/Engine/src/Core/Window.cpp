@@ -37,7 +37,7 @@ namespace GLFW
 	}
 }
 
-namespace Engine
+namespace engine
 {
 	wgpu::Surface m_Surface;
 
@@ -93,7 +93,7 @@ namespace Engine
 		m_Surface.GetCapabilities(GraphicsContext::GetAdapter(), &capabilities);
 		GraphicsContext::SetSurfaceFormat(capabilities.formats[0]);
 
-		ConfigureSurface(m_Data.width, m_Data.height);
+		ConfigureSurface();
 	}
 
 	void Window::Shutdown()
@@ -173,7 +173,8 @@ namespace Engine
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 				data.width = static_cast<uint32_t>(width);
 				data.height = static_cast<uint32_t>(height);
-				data.self->ConfigureSurface(data.width, data.height);
+				//data.self->ConfigureSurface(data.width, data.height);
+				data.self->m_SizeChanged = true;
 				WindowResizeEvent event{ data.width, data.height };
 				data.callback(event);
 			});
@@ -268,19 +269,15 @@ namespace Engine
 			});
 	}
 
-	void Window::ConfigureSurface(uint32_t width, uint32_t height)
+	void Window::ConfigureSurface()
 	{
 		wgpu::SurfaceConfiguration config;
-		config.width = width;
-		config.height = height;
+		config.width = m_Data.width;
+		config.height = m_Data.height;
 		config.device = GraphicsContext::GetDevice();
 		config.format = GraphicsContext::GetSurfaceFormat();
-		config.usage = wgpu::TextureUsage::RenderAttachment;
 		config.presentMode = wgpu::PresentMode::Immediate;
 		config.alphaMode = wgpu::CompositeAlphaMode::Opaque;
-		config.viewFormatCount = 0;
-		config.viewFormats = nullptr;
-		config.nextInChain = nullptr;
 
 		m_Surface.Configure(&config);
 	}

@@ -7,7 +7,7 @@
 #include "Engine/Asset/Importer/ShaderImporter.h"
 #include "Engine/Asset/Resources.h"
 
-namespace Engine
+namespace engine
 {
 	MaterialAsset::MaterialAsset(const MaterialSpecification& spec)
 	{
@@ -21,7 +21,7 @@ namespace Engine
 		m_Parameters.clear();
 		m_Textures.clear();
 
-		const ShaderAsset& shaderAsset = Engine::AssetManager::GetAsset(shader);
+		const ShaderAsset& shaderAsset = engine::AssetManager::GetAsset(shader);
 
 		m_UniformData.assign(shaderAsset.GetMaterialUniformBufferSize(), std::byte{});
 		CreateUniformBuffer();
@@ -86,7 +86,7 @@ namespace Engine
 		}
 
 
-		ShaderAsset& shaderAsset = Engine::AssetManager::GetAsset<ShaderAsset>(m_Shader);
+		ShaderAsset& shaderAsset = engine::AssetManager::GetAsset<ShaderAsset>(m_Shader);
 		const Binding& binding = shaderAsset.GetBinding(name);
 
 		if (!std::holds_alternative<TextureBinding>(binding.data))
@@ -113,14 +113,14 @@ namespace Engine
 	{
 		wgpu::BufferDescriptor bufferDesc;
 		bufferDesc.label = "MaterialUniformBuffer"; //TODO: add material name
-		bufferDesc.size = Engine::AssetManager::GetAsset<ShaderAsset>(m_Shader).GetMaterialUniformBufferSize(); //TODO: pass size as parameter
+		bufferDesc.size = engine::AssetManager::GetAsset<ShaderAsset>(m_Shader).GetMaterialUniformBufferSize(); //TODO: pass size as parameter
 		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 		m_UniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
 	}
 
 	void MaterialAsset::CreateBindGroup()
 	{
-		const ShaderAsset& shaderAsset = Engine::AssetManager::GetAsset<ShaderAsset>(m_Shader);
+		const ShaderAsset& shaderAsset = engine::AssetManager::GetAsset<ShaderAsset>(m_Shader);
 
 		auto materialBindings = shaderAsset.GetMaterialBindings();
 		size_t bindingCount = std::ranges::distance(materialBindings);
@@ -147,7 +147,7 @@ namespace Engine
 					m_Textures[binding.name] = RESOURCES::TEXTURE::WHITE; 
 				}
 
-				const Texture2DAsset& tex = Engine::AssetManager::GetAsset<Texture2DAsset>(m_Textures[binding.name]);
+				const Texture2DAsset& tex = engine::AssetManager::GetAsset<Texture2DAsset>(m_Textures[binding.name]);
 				entry.textureView = tex.GetTextureView();
 			}
 			else if (std::holds_alternative<SamplerBinding>(binding.data))
@@ -173,7 +173,7 @@ namespace Engine
 	template<typename T>
 	void MaterialAsset::SetParameter(const std::string& paramName, const T& value)
 	{
-		ShaderAsset& shader = Engine::AssetManager::GetAsset<ShaderAsset>(m_Shader);
+		ShaderAsset& shader = engine::AssetManager::GetAsset<ShaderAsset>(m_Shader);
 		const Binding& binding = shader.GetBinding("uMaterial");
 
 		if (!std::holds_alternative<BufferBinding>(binding.data))

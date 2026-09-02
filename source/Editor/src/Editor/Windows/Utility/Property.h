@@ -8,9 +8,9 @@
 #include <type_traits>
 #include <glm/gtc/type_ptr.hpp>
 
-namespace Engine { enum class AssetType; }
+namespace engine { enum class AssetType; }
 
-namespace Editor
+namespace editor
 {
 	enum class DisplayMode
 	{
@@ -93,7 +93,7 @@ namespace Editor
 		{
 			if (ImGui::BeginDragDropSource())
 			{
-				ImGui::SetDragDropPayload(payloadId, &payloadData, sizeof(Engine::Uuid));
+				ImGui::SetDragDropPayload(payloadId, &payloadData, sizeof(engine::Uuid));
 				ImGui::Text("%s", label.data());
 				ImGui::EndDragDropSource();
 			}
@@ -113,9 +113,9 @@ namespace Editor
 		}
 
 		template<typename Fn>
-		bool AcceptAsset(Engine::AssetType expectedType, Fn&& fn)
+		bool AcceptAsset(engine::AssetType expectedType, Fn&& fn)
 		{
-			static_assert(std::is_invocable_v<Fn, Engine::Uuid>, "Asset callback must take an Engine::Uuid");
+			static_assert(std::is_invocable_v<Fn, engine::Uuid>, "Asset callback must take an Engine::Uuid");
 
 			if (!active) return false;
 
@@ -124,8 +124,8 @@ namespace Editor
 
 			if (payload && payload->IsDataType("UUID"))
 			{
-				Engine::Uuid id = *static_cast<const Engine::Uuid*>(payload->Data);
-				isValidAsset = (Engine::AssetManager::GetAssetType(id) == expectedType);
+				engine::Uuid id = *static_cast<const engine::Uuid*>(payload->Data);
+				isValidAsset = (engine::AssetManager::GetAssetType(id) == expectedType);
 			}
 
 			ImVec4 targetColor = isValidAsset ? ImVec4(0.2f, 0.8f, 0.2f, 1.0f) : ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
@@ -136,7 +136,7 @@ namespace Editor
 
 			if (droppedPayload && isValidAsset)
 			{
-				Engine::Uuid id = *static_cast<const Engine::Uuid*>(droppedPayload->Data);
+				engine::Uuid id = *static_cast<const engine::Uuid*>(droppedPayload->Data);
 				std::forward<Fn>(fn)(id);
 				return true;
 			}
@@ -170,28 +170,28 @@ namespace Editor
 	};
 
 	template <typename Asset>
-	EditResult AssetField(std::string_view label, Engine::AssetHandle<Asset>& handle)
+	EditResult AssetField(std::string_view label, engine::AssetHandle<Asset>& handle)
 	{
 		PropertyRow row(label);
 		EditResult result;
 
-		constexpr Engine::AssetType type = []() {
-			if constexpr (std::is_same_v<Asset, Engine::Texture2DAsset>) return Engine::AssetType::Texture;
-			else if constexpr (std::is_same_v<Asset, Engine::MeshAsset>) return Engine::AssetType::Mesh;
-			else if constexpr (std::is_same_v<Asset, Engine::ShaderAsset>) return Engine::AssetType::Shader;
-			else if constexpr (std::is_same_v<Asset, Engine::MaterialAsset>) return Engine::AssetType::Material;
-			else if constexpr (std::is_same_v<Asset, Engine::AudioClipAsset>) return Engine::AssetType::Audio;
-			else if constexpr (std::is_same_v<Asset, Engine::SceneAsset>) return Engine::AssetType::Scene;
-			else return Engine::AssetType::Unknown;
+		constexpr engine::AssetType type = []() {
+			if constexpr (std::is_same_v<Asset, engine::Texture2DAsset>) return engine::AssetType::Texture;
+			else if constexpr (std::is_same_v<Asset, engine::MeshAsset>) return engine::AssetType::Mesh;
+			else if constexpr (std::is_same_v<Asset, engine::ShaderAsset>) return engine::AssetType::Shader;
+			else if constexpr (std::is_same_v<Asset, engine::MaterialAsset>) return engine::AssetType::Material;
+			else if constexpr (std::is_same_v<Asset, engine::AudioClipAsset>) return engine::AssetType::Audio;
+			else if constexpr (std::is_same_v<Asset, engine::SceneAsset>) return engine::AssetType::Scene;
+			else return engine::AssetType::Unknown;
 			}();
 
-		const std::string& assetName = Engine::AssetManager::GetAssetPath(handle.id).stem().string();
+		const std::string& assetName = engine::AssetManager::GetAssetPath(handle.id).stem().string();
 
-		if constexpr (std::is_same_v<Asset, Engine::Texture2DAsset>)
+		if constexpr (std::is_same_v<Asset, engine::Texture2DAsset>)
 		{
 			if (handle)
 			{
-				const Engine::Texture2DAsset& texture = Engine::AssetManager::GetAsset(handle);
+				const engine::Texture2DAsset& texture = engine::AssetManager::GetAsset(handle);
 				result.changed = ImGui::ImageButton("##TexturePreview", (ImTextureID)(intptr_t)texture.GetTextureView().Get(), ImVec2(64, 64));
 			}
 			else
@@ -208,8 +208,8 @@ namespace Editor
 		result.started = ImGui::IsItemActivated();
 		result.finished = ImGui::IsItemDeactivatedAfterEdit();
 
-		DragDropSource<Engine::Uuid>("UUID", handle.id, assetName);
-		result.changed |= DragDropTarget{}.AcceptAsset(type, [&handle](Engine::Uuid newId) { handle.id = newId; });
+		DragDropSource<engine::Uuid>("UUID", handle.id, assetName);
+		result.changed |= DragDropTarget{}.AcceptAsset(type, [&handle](engine::Uuid newId) { handle.id = newId; });
 
 		if (PopupContextItem contextMenu{ "AssetOptionsPopup" })
 		{
@@ -222,7 +222,7 @@ namespace Editor
 
 		if (result.changed)
 		{
-			Engine::AssetManager::MarkAssetDirty(handle.id);
+			engine::AssetManager::MarkAssetDirty(handle.id);
 		}
 
 		return result;

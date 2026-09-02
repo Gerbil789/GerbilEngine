@@ -3,7 +3,7 @@
 #include "Engine/Audio/Audio.h"
 #include "Engine/Core/Input.h"
 
-namespace Engine
+namespace engine
 {
 	void Runtime::Start()
 	{
@@ -12,15 +12,15 @@ namespace Engine
 
 	void Runtime::Stop()
 	{
-		Engine::Audio::StopAll();
-		Engine::Input::SetCursorMode(Engine::Input::CursorMode::Normal); //TODO: handle cursor in editor
+		engine::Audio::StopAll();
+		engine::Input::SetCursorMode(engine::Input::CursorMode::Normal); //TODO: handle cursor in editor
 	}
 
 	void Runtime::Update()
 	{
-		if (Engine::Input::IsKeyPressedOnce(Engine::Key::Escape))
+		if (engine::Input::IsKeyPressedOnce(engine::Key::Escape))
 		{
-			Engine::Input::SetCursorMode(Engine::Input::CursorMode::Normal);
+			engine::Input::SetCursorMode(engine::Input::CursorMode::Normal);
 		}
 	}
 }

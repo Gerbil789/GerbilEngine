@@ -10,7 +10,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace Engine
+namespace engine
 {
   class RenderPassRegistry
   {

@@ -5,37 +5,37 @@
 #include "Engine/Asset/AssetManager.h"
 #include <imgui.h>
 
-namespace Editor
+namespace editor
 {
 	namespace
 	{
-		Engine::AudioClip m_AudioClip;
-		Engine::AudioInstance m_Instance;
+		engine::AudioClip m_AudioClip;
+		engine::AudioInstance m_Instance;
 	}
 
-	void AudioInspectorPanel::Draw(Engine::AudioClip clip)
+	void AudioInspectorPanel::Draw(engine::AudioClip clip)
 	{
 		if(clip != m_AudioClip)
 		{
-			Engine::Audio::Stop(m_Instance);
+			engine::Audio::Stop(m_Instance);
 
 			m_AudioClip = clip;
 			m_Instance = {};
 		}
 
 
-		if(Engine::Audio::IsPlaying(m_Instance))
+		if(engine::Audio::IsPlaying(m_Instance))
 		{
 			if (ImGui::Button("Stop"))
 			{
-				Engine::Audio::Stop(m_Instance);
+				engine::Audio::Stop(m_Instance);
 			}
 		}
 		else
 		{
 			if (ImGui::Button("Play"))
 			{
-				m_Instance = Engine::Audio::Play2D(m_AudioClip);
+				m_Instance = engine::Audio::Play2D(m_AudioClip);
 			}
 		}
 

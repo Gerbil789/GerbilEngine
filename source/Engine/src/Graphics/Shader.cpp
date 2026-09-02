@@ -4,7 +4,7 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 
-namespace Engine
+namespace engine
 {
 	ShaderAsset::ShaderAsset(const std::string& source)
 	{

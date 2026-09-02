@@ -9,7 +9,7 @@ struct EditorStateJSON
 	std::filesystem::path projectPath;
 };
 
-std::filesystem::path Editor::GetProjectPath()
+std::filesystem::path editor::GetProjectPath()
 {
 	const std::filesystem::path path = "editor_state.json";
 

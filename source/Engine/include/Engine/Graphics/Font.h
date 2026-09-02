@@ -2,7 +2,7 @@
 
 #include "Engine/Asset/AssetHandle.h"
 
-namespace Engine
+namespace engine
 {
   struct Bounds 
   {

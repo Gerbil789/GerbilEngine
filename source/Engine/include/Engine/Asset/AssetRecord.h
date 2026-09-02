@@ -4,7 +4,7 @@
 #include "Engine/Core/UUID.h"
 #include <filesystem>
 
-namespace Engine
+namespace engine
 {
 	struct AssetRecord
 	{

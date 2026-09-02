@@ -6,7 +6,7 @@
 #include "Engine/Event/ApplicationEvent.h"
 #include "Engine/Core/Log.h"
 
-namespace Engine::SceneManager
+namespace engine::SceneManager
 {
 	static Scene m_ActiveScene;
 
@@ -32,7 +32,7 @@ namespace Engine::SceneManager
 		//	sceneAsset.SetActiveCamera(view.front());
 		//}
 
-		Engine::EventBus::Publish(SceneChangedEvent{ m_ActiveScene });
+		engine::EventBus::Publish(SceneChangedEvent{ m_ActiveScene });
 
 		LOG_INFO("Active scene set to {}", m_ActiveScene.id);
 	}

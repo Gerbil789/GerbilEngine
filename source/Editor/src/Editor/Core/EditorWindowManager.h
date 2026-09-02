@@ -1,13 +1,13 @@
 #pragma once
 
-namespace Engine { class Window; }
+namespace engine { class Window; }
 
-namespace Editor
+namespace editor
 {
 	class EditorWindowManager
 	{
 	public:
-		static void Initialize(const Engine::Window& window);
+		static void Initialize(const engine::Window& window);
 		static void Shutdown();
 		static void Update();
 

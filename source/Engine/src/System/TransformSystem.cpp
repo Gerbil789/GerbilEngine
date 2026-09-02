@@ -8,7 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-namespace Engine
+namespace engine
 {
   const glm::mat4 TransformSystem::CalculateLocalPositionMatrix(const TransformComponent& transform)
   {

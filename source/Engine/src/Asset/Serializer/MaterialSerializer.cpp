@@ -4,10 +4,11 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Resources.h"
 #include "Engine/Core/Project.h"
+#include "Engine/Core/Log.h"
 #include <glaze/glaze.hpp>
 #include <fstream>
 
-namespace Engine
+namespace engine
 {
 	struct MaterialJSON
 	{
@@ -22,8 +23,8 @@ namespace Engine
 }
 
 template <>
-struct glz::meta<Engine::MaterialJSON> {
-	using T = Engine::MaterialJSON;
+struct glz::meta<engine::MaterialJSON> {
+	using T = engine::MaterialJSON;
 	static constexpr auto value = object(
 		"Shader", &T::Shader,
 		"Attributes", &T::Attributes,
@@ -33,7 +34,7 @@ struct glz::meta<Engine::MaterialJSON> {
 	);
 };
 
-namespace Engine
+namespace engine
 {
 	void MaterialSerializer::Serialize(Material material, const std::filesystem::path& path)
 	{
@@ -85,8 +86,7 @@ namespace Engine
 			outData.Textures[name] = static_cast<uint64_t>(texture);
 		}
 
-		auto assetsDirectory = Project::GetActive().GetAssetsDirectory();
-		auto writeError = glz::write_file_json < glz::opts{ .prettify = true } > (outData, (assetsDirectory / path).string(), std::string{});
+		auto writeError = glz::write_file_json < glz::opts{ .prettify = true } > (outData, (Project::AssetsDirectory() / path).string(), std::string{});
 
 		if (writeError)
 		{

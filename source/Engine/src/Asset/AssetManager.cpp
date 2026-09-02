@@ -20,13 +20,14 @@
 
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/FileEvent.h"
+#include "Engine/Core/Log.h"
+#include "Engine/Core/Project.h"
 
-namespace Engine
+namespace engine
 {
   namespace
   {
     AssetRegistry m_AssetRegistry;
-    std::filesystem::path m_AssetsDirectory;
 
     std::unordered_map<Texture2D, Texture2DAsset> m_Textures;
     std::unordered_map<Mesh, MeshAsset> m_Meshes;
@@ -42,10 +43,10 @@ namespace Engine
     {
       if (auto it = map.find(handle); it != map.end()) return it->second;
 
-      const Engine::AssetRecord& record = m_AssetRegistry.GetRecord(handle.id);
+      const engine::AssetRecord& record = m_AssetRegistry.GetRecord(handle.id);
       if (!record) return map.at(fallback);
 
-      std::optional<Asset> importedAsset = importer(m_AssetsDirectory / record.path);
+      std::optional<Asset> importedAsset = importer(Project::AssetsDirectory() / record.path);
       if (!importedAsset) return map.at(fallback);
 
       importedAsset->id = handle.id;
@@ -81,23 +82,22 @@ namespace Engine
   }
  
 
-  void AssetManager::Initialize(const std::filesystem::path& projectDirectory)
+  void AssetManager::Initialize()
   {
     m_AssetRegistry.Load();
-		m_AssetsDirectory = projectDirectory / "Assets";
 
-    Engine::EventBus::Subscribe<Engine::FileAddedEvent>([](const Engine::FileAddedEvent& event)
+    engine::EventBus::Subscribe<engine::FileAddedEvent>([](const engine::FileAddedEvent& event)
       {
         LOG_WARNING("File added event received");
         m_AssetRegistry.AddRecord(Uuid::Generate(), event.path);
         return false;
       });
 
-    Engine::EventBus::Subscribe<Engine::FileRemovedEvent>([](const Engine::FileRemovedEvent& event)
+    engine::EventBus::Subscribe<engine::FileRemovedEvent>([](const engine::FileRemovedEvent& event)
       {
         LOG_WARNING("File removed event received");
 
-        Engine::Uuid id = m_AssetRegistry.GetIdFromPath(event.path);
+        engine::Uuid id = m_AssetRegistry.GetIdFromPath(event.path);
 				m_AssetRegistry.RemoveRecord(id);
         return false;
       });
@@ -245,9 +245,9 @@ namespace Engine
 
       switch (record.type)
       {
-      case Engine::AssetType::Material:
+      case engine::AssetType::Material:
       {
-        Engine::MaterialSerializer::Serialize(Material{ record.id }, record.path);
+        engine::MaterialSerializer::Serialize(Material{ record.id }, record.path);
         break;
       }
       default:

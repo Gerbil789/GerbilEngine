@@ -6,7 +6,7 @@
 #include <webgpu/webgpu_cpp.h>   // Your local Windows header
 #endif
 
-namespace Engine
+namespace engine
 {
 	class RenderPipelineLayouts
 	{

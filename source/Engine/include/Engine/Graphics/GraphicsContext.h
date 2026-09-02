@@ -2,7 +2,7 @@
 
 #include <webgpu/webgpu_cpp.h>
 
-namespace Engine::GraphicsContext
+namespace engine::GraphicsContext
 {
 	void Initialize();
 	void Shutdown();

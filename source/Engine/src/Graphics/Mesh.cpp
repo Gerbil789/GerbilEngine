@@ -2,7 +2,7 @@
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/GraphicsContext.h"
 
-namespace Engine
+namespace engine
 {
 	MeshAsset::MeshAsset(const MeshSpecification& specification)
 	{

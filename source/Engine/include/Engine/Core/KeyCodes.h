@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace Engine
+namespace engine
 {
 	enum class Key : uint16_t
 	{

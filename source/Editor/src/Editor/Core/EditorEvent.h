@@ -4,27 +4,27 @@
 #include "Engine/Core/UUID.h"
 #include "Editor/Core/SelectionManager.h"
 
-namespace Editor
+namespace editor
 {
-	struct SelectionChangedEvent : public Engine::Event
+	struct SelectionChangedEvent : public engine::Event
 	{
 		SelectionContext context;
-		Engine::Uuid id;
+		engine::Uuid id;
 
-		SelectionChangedEvent(SelectionContext context, Engine::Uuid id) : context(context), id(id) {}
+		SelectionChangedEvent(SelectionContext context, engine::Uuid id) : context(context), id(id) {}
 	};
 
-	struct FocusAssetEvent : public Engine::Event
+	struct FocusAssetEvent : public engine::Event
 	{
-		Engine::Uuid id;
+		engine::Uuid id;
 
-		FocusAssetEvent(const Engine::Uuid& id) : id(id) {}
+		FocusAssetEvent(const engine::Uuid& id) : id(id) {}
 	};
 
-	struct FocusEntityEvent : public Engine::Event
+	struct FocusEntityEvent : public engine::Event
 	{
-		Engine::Uuid id;
+		engine::Uuid id;
 
-		FocusEntityEvent(const Engine::Uuid& id) : id(id) {}
+		FocusEntityEvent(const engine::Uuid& id) : id(id) {}
 	};
 }

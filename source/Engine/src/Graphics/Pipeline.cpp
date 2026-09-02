@@ -6,7 +6,7 @@
 #include "Engine/Asset/AssetManager.h"
 #include <numeric>
 
-namespace Engine
+namespace engine
 {
 	wgpu::RenderPipeline PipelineCache::GetPipeline(const PipelineSpecification& specification)
 	{
@@ -16,7 +16,7 @@ namespace Engine
 			return it->second;
 		}
 
-		const ShaderAsset& shader = Engine::AssetManager::GetAsset<ShaderAsset>(specification.shader);
+		const ShaderAsset& shader = engine::AssetManager::GetAsset<ShaderAsset>(specification.shader);
 
 		wgpu::RenderPipelineDescriptor pipelineDesc;
 		pipelineDesc.label = "Shader Pipeline";

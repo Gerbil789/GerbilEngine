@@ -16,7 +16,7 @@
 #include "Engine/System/CameraSystem.h"
 #include <glm/gtx/quaternion.hpp>
 
-namespace Engine
+namespace engine
 {
 	void Renderer::Initialize()
 	{
@@ -25,7 +25,6 @@ namespace Engine
 
 		CreateModelStorageBuffer();
 		CreateModelBindGroup();
-
 
 		CreateShadowTexture();
 
@@ -38,9 +37,33 @@ namespace Engine
 		m_RenderContext.colorTarget = colorView;
 	}
 
-	void Renderer::SetDepthTarget(wgpu::TextureView depthView)
+	void Renderer::SetSize(float width, float height)
 	{
-		m_RenderContext.depthTarget = depthView;
+		m_RenderContext.width = width;
+		m_RenderContext.height = height;
+
+		wgpu::TextureDescriptor depthDesc;
+		depthDesc.label = "RendererDepthTexture";
+		depthDesc.dimension = wgpu::TextureDimension::e2D;
+		depthDesc.format = wgpu::TextureFormat::Depth24Plus;
+		depthDesc.mipLevelCount = 1;
+		depthDesc.sampleCount = 1;
+		depthDesc.size = {static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1};
+		depthDesc.usage = wgpu::TextureUsage::RenderAttachment;
+
+		m_DepthTexture = engine::GraphicsContext::GetDevice().CreateTexture(&depthDesc);
+
+		wgpu::TextureViewDescriptor depthViewDesc;
+		depthViewDesc.label = "RendererDepthTextureView";
+		depthViewDesc.aspect = wgpu::TextureAspect::DepthOnly;
+		depthViewDesc.dimension = wgpu::TextureViewDimension::e2D;
+		depthViewDesc.format = wgpu::TextureFormat::Depth24Plus;
+		depthViewDesc.baseMipLevel = 0;
+		depthViewDesc.mipLevelCount = 1;
+		depthViewDesc.baseArrayLayer = 0;
+		depthViewDesc.arrayLayerCount = 1;
+
+		m_RenderContext.depthTarget = m_DepthTexture.CreateView(&depthViewDesc);
 	}
 
 	void Renderer::SetEnvironmentTexture(Texture2D texture)
@@ -157,7 +180,7 @@ namespace Engine
 
 		// 4 - BRDFIntMap
 		{
-			auto brdfTexture = TextureImporter::LoadTexture2D("resources/hdr/brdf_integration_map_ct_ggx.hdr").value(); //TODO: is this memory leak?
+			auto brdfTexture = TextureImporter::LoadTexture2D("resources/hdr/brdf_integration_map_ct_ggx.hdr").value(); // TODO: is this memory leak?
 			entries[4].binding = 4;
 			entries[4].textureView = brdfTexture.GetTextureView();
 		}
@@ -207,7 +230,7 @@ namespace Engine
 		textureDesc.format = format;
 		textureDesc.mipLevelCount = 1;
 		textureDesc.sampleCount = 1;
-		textureDesc.size = { 1024, 1024, s_ShadowCascadeCount };
+		textureDesc.size = {1024, 1024, s_ShadowCascadeCount};
 		textureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
 		textureDesc.viewFormatCount = 0;
 		textureDesc.viewFormats = nullptr;
@@ -239,7 +262,7 @@ namespace Engine
 		m_RenderContext.depthTextureArrayView = texture.CreateView(&arrayViewDesc);
 	}
 
-	void Renderer::RenderScene(SceneAsset& scene)
+	void Renderer::RenderScene(SceneAsset &scene)
 	{
 		m_RenderContext.scene = &scene;
 
@@ -256,7 +279,7 @@ namespace Engine
 
 		m_RenderContext.drawList = DrawList::CreateFromScene(scene);
 
-		const std::vector<glm::mat4>& modelMatrices = m_RenderContext.drawList.GetTransforms();
+		const std::vector<glm::mat4> &modelMatrices = m_RenderContext.drawList.GetTransforms();
 
 		GraphicsContext::GetQueue().WriteBuffer(m_RenderContext.modelStorageBuffer, 0, modelMatrices.data(), modelMatrices.size() * sizeof(glm::mat4));
 
@@ -264,24 +287,23 @@ namespace Engine
 				RenderPassType::Shadow,
 				RenderPassType::Background,
 				RenderPassType::Opaque,
-				//RenderPassType::Light,
+				// RenderPassType::Light,
 				RenderPassType::Normal,
 				RenderPassType::Wireframe,
-				RenderPassType::UI
-		};
+				RenderPassType::UI};
 
 		for (RenderPassType type : order)
 		{
 			if ((m_EnabledPasses & type) != RenderPassType::None)
 			{
-				auto* pass = RenderPassRegistry::GetPass(type);
+				auto *pass = RenderPassRegistry::GetPass(type);
 				if (pass)
 				{
 					pass->Execute(encoder, m_RenderContext);
 				}
 				else
 				{
-					LOG_ERROR("Render pass not found for type: {}", static_cast<uint32_t>(type)); //TODO: C++26 reflection here
+					LOG_ERROR("Render pass not found for type: {}", static_cast<uint32_t>(type)); // TODO: C++26 reflection here
 				}
 			}
 		}

@@ -8,7 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
 
-namespace Editor
+namespace editor
 {
 	EditResult EnumField(std::string_view label, int& value, const std::vector<std::string>& options)
 	{

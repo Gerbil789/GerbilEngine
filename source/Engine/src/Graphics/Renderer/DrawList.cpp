@@ -6,7 +6,7 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Resources.h"
 
-namespace Engine
+namespace engine
 {
 	struct SortableDrawData
 	{
@@ -30,13 +30,13 @@ namespace Engine
 		{
 			if (!mc.mesh) continue;
 
-			const Engine::MeshAsset& mesh = Engine::AssetManager::GetAsset<MeshAsset>(mc.mesh);
+			const engine::MeshAsset& mesh = engine::AssetManager::GetAsset<MeshAsset>(mc.mesh);
 			const auto& subMeshes = mesh.GetSubMeshes();
 
 			for (uint32_t i = 0; i < subMeshes.size(); ++i)
 			{
 				const auto& subMesh = subMeshes[i];
-				Engine::Material material{ RESOURCES::MATERIAL::PINK };
+				engine::Material material{ RESOURCES::MATERIAL::PINK };
 
 				if (subMesh.materialIndex < mc.materials.size() && mc.materials[subMesh.materialIndex])
 				{

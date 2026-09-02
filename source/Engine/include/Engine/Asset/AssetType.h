@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-namespace Engine
+namespace engine
 {
 	enum class AssetType { Unknown = 0, Texture, Mesh, Shader, Material, Audio, Scene, Script };
 

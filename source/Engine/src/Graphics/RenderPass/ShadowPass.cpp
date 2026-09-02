@@ -12,7 +12,7 @@
 #include "Engine/System/CameraSystem.h"
 #include <glm/gtx/quaternion.hpp>
 
-namespace Engine
+namespace engine
 {
 	float ShadowPass::s_Lambda = 0.9f;
 
@@ -24,7 +24,7 @@ namespace Engine
 		std::array<glm::mat4, s_ShadowCascadeCount> m_LightViewProjMatrices;
 	}
 
-	Engine::ShadowPass::ShadowPass()
+	engine::ShadowPass::ShadowPass()
 	{
 		std::array<wgpu::VertexAttribute, 3> vertexAttribs;
 
@@ -264,7 +264,7 @@ namespace Engine
 			{
 				if (item.mesh != lastMesh)
 				{
-					const Engine::MeshAsset& mesh = Engine::AssetManager::GetAsset(item.mesh);
+					const engine::MeshAsset& mesh = engine::AssetManager::GetAsset(item.mesh);
 					pass.SetVertexBuffer(0, mesh.GetVertexBuffer(), 0, mesh.GetVertexBuffer().GetSize());
 					pass.SetIndexBuffer(mesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh.GetIndexBuffer().GetSize());
 					lastMesh = item.mesh;

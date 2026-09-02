@@ -13,7 +13,7 @@ namespace GLFW
 	void WaitEvents();
 }
 
-namespace Engine
+namespace engine
 {
 	struct Event;
 
@@ -36,7 +36,7 @@ namespace Engine
 
 		uint32_t GetWidth() const { return m_Data.width; }
 		uint32_t GetHeight() const { return m_Data.height; }
-		GLFWwindow* GetNativeWindow() const { return m_Window; }
+		GLFWwindow* Get() const { return m_Window; }
 		wgpu::Surface GetSurface() const;
 
 		void SetEventCallback(const std::function<void(Event&)>& callback) { m_Data.callback = callback; }
@@ -46,16 +46,19 @@ namespace Engine
 		WindowMode GetMode() const;
 		void ToggleFullscreen();
 		bool IsMinimized() const { return m_Minimized; }
+		bool SizeChanged() const { return m_SizeChanged; }
+		void ClearResizedFlag() { m_SizeChanged = false; }
+		void ConfigureSurface();
 
 	private:
 		void SetEventCallbacks();
-		void ConfigureSurface(uint32_t width, uint32_t height);
 		void SetWindowIcon(const std::filesystem::path& path);
 
 	private:
 		GLFWwindow* m_Window = nullptr;
 		WindowMode m_Mode = WindowMode::Windowed;
 		bool m_Minimized = false;
+		bool m_SizeChanged = true;
 
 		int m_WindowedX = 100;
 		int m_WindowedY = 100;

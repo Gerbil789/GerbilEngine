@@ -3,7 +3,7 @@
 #include <array>
 #include <glm/glm.hpp>
 
-namespace Engine
+namespace engine
 {
 	constexpr static int s_ShadowCascadeCount = 4;
 

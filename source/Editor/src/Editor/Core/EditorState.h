@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-namespace Editor
+namespace editor
 {
 	std::filesystem::path GetProjectPath();
 };

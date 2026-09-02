@@ -5,7 +5,7 @@
 #include <webgpu/webgpu_cpp.h>
 #include <unordered_map>
 
-namespace Engine
+namespace engine
 {
   template <class T>
   inline void HashCombine(std::size_t& seed, const T& v)

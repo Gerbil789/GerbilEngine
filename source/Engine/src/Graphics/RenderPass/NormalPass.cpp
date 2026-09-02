@@ -7,7 +7,7 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Utility/File.h"
 
-namespace Engine
+namespace engine
 {
 	wgpu::RenderPipeline m_NormalPipeline;
 
@@ -135,7 +135,7 @@ namespace Engine
 			if (item.mesh != lastMesh)
 			{
 				lastMesh = item.mesh;
-				const MeshAsset& mesh = Engine::AssetManager::GetAsset(lastMesh);
+				const MeshAsset& mesh = engine::AssetManager::GetAsset(lastMesh);
 				pass.SetVertexBuffer(0, mesh.GetVertexBuffer(), 0, mesh.GetVertexBuffer().GetSize());
 				pass.SetIndexBuffer(mesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, mesh.GetIndexBuffer().GetSize());
 			}

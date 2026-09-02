@@ -13,11 +13,11 @@
 #include "Editor/Core/EditorSettings.h"
 #include <imgui.h>
 
-namespace Editor
+namespace editor
 {
 	void SettingsWindow::Draw()
 	{
-		Engine::SceneAsset& scene = Engine::AssetManager::GetAsset<Engine::SceneAsset>(Engine::SceneManager::GetActiveScene());
+		engine::SceneAsset& scene = engine::AssetManager::GetAsset<engine::SceneAsset>(engine::SceneManager::GetActiveScene());
 
 		ImGui::Begin("Settings");
 
@@ -25,12 +25,12 @@ namespace Editor
 		{
 			PropertyTable table;
 
-			if (PropertyField("Wireframe color", Editor::editorContext.settings.wireframeColor, { .mode = Editor::DisplayMode::Color }).changed)
+			if (PropertyField("Wireframe color", editor::editorContext.settings.wireframeColor, { .mode = editor::DisplayMode::Color }).changed)
 			{
-				auto wireframePass = Engine::RenderPassRegistry::GetPass(Engine::RenderPassType::Wireframe);
+				auto wireframePass = engine::RenderPassRegistry::GetPass(engine::RenderPassType::Wireframe);
 				if (wireframePass)
 				{
-					static_cast<Engine::WireframePass*>(wireframePass)->SetColor(Editor::editorContext.settings.wireframeColor);
+					static_cast<engine::WireframePass*>(wireframePass)->SetColor(editor::editorContext.settings.wireframeColor);
 				}
 			}
 
@@ -49,13 +49,13 @@ namespace Editor
 		{
 			PropertyTable table;
 
-			Engine::Texture2D texture = scene.GetEnvironmentTexture();
+			engine::Texture2D texture = scene.GetEnvironmentTexture();
 
 			if (AssetField("Environment", texture).changed)
 			{
 				if(!texture) { texture = RESOURCES::TEXTURE::HDR; }
 				scene.SetEnvironmentTexture(texture);
-				Editor::editorContext.renderer.SetEnvironmentTexture(texture);
+				editor::editorContext.renderer.SetEnvironmentTexture(texture);
 			}
 		}
 
@@ -63,16 +63,16 @@ namespace Editor
 		{
 			PropertyTable table;
 
-			PropertyField("Lambda", Engine::ShadowPass::s_Lambda, { .min = 0.0f, .max = 1.0f, .step = 0.01f });
+			PropertyField("Lambda", engine::ShadowPass::s_Lambda, { .min = 0.0f, .max = 1.0f, .step = 0.01f });
 
 
 			entt::registry& registry = scene.GetRegistry();
 
-			auto view = registry.view<Engine::CameraComponent, Engine::EditorTag>();
+			auto view = registry.view<engine::CameraComponent, engine::EditorTag>();
 
 
 			entt::entity editorCameraEntity = view.front();
-			auto& cc = registry.get<Engine::CameraComponent>(editorCameraEntity);
+			auto& cc = registry.get<engine::CameraComponent>(editorCameraEntity);
 
 			PropertyField("Near", cc.perspective.nearClip, { .min = 0.01f, .max = cc.perspective.farClip, .step = 0.01f });
 			PropertyField("Far", cc.perspective.farClip, { .min = cc.perspective.nearClip, .max = 1000.0f, .step = 0.01f });

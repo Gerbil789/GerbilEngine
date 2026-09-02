@@ -2,7 +2,7 @@
 #include "Engine/Asset/Importer/AudioImporter.h"
 #include "Engine/Audio/AudioClip.h"
 
-namespace Engine
+namespace engine
 {
 	std::optional<AudioClipAsset> AudioImporter::LoadAudioClip(const std::filesystem::path& path)
 	{

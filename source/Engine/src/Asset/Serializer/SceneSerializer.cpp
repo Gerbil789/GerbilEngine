@@ -16,15 +16,15 @@ template <>
 struct glz::meta<glm::vec4> { static constexpr auto value = array(&glm::vec4::x, &glm::vec4::y, &glm::vec4::z, &glm::vec4::w); };
 
 template <>
-struct glz::meta<Engine::Uuid> { static constexpr auto value = [](auto& uuid) -> uint64_t& { return reinterpret_cast<uint64_t&>(uuid); }; };
+struct glz::meta<engine::Uuid> { static constexpr auto value = [](auto& uuid) -> uint64_t& { return reinterpret_cast<uint64_t&>(uuid); }; };
 
 template <>
-struct glz::meta<Engine::Mesh> { static constexpr auto value = [](auto& mesh) -> uint64_t& { return reinterpret_cast<uint64_t&>(mesh); }; };
+struct glz::meta<engine::Mesh> { static constexpr auto value = [](auto& mesh) -> uint64_t& { return reinterpret_cast<uint64_t&>(mesh); }; };
 
 template <>
-struct glz::meta<Engine::Material> { static constexpr auto value = [](auto& material) -> uint64_t& { return reinterpret_cast<uint64_t&>(material); }; };
+struct glz::meta<engine::Material> { static constexpr auto value = [](auto& material) -> uint64_t& { return reinterpret_cast<uint64_t&>(material); }; };
 
-namespace Engine
+namespace engine
 {
 	struct HierarchyJSON
 	{
@@ -90,7 +90,7 @@ namespace Engine
 	};
 }
 
-namespace Engine
+namespace engine
 {
 	namespace
 	{

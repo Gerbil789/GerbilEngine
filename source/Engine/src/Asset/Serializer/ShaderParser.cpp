@@ -3,7 +3,7 @@
 #include "Engine/Graphics/Utility.h"
 #include <regex>
 
-namespace Engine
+namespace engine
 {
   namespace
   {

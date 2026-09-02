@@ -5,12 +5,12 @@
 #include <string>
 #include <format>
 
-namespace Editor
+namespace editor
 {
-	void TextureInspectorPanel::Draw(Engine::Texture2D texture)
+	void TextureInspectorPanel::Draw(engine::Texture2D texture)
 	{
-		const std::string& name = Engine::AssetManager::GetAssetPath(texture.id).stem().string();
-		const Engine::Texture2DAsset& textureAsset = Engine::AssetManager::GetAsset(texture);
+		const std::string& name = engine::AssetManager::GetAssetPath(texture.id).stem().string();
+		const engine::Texture2DAsset& textureAsset = engine::AssetManager::GetAsset(texture);
 
 		ImGui::TextUnformatted(std::format("Texture: {} ({}x{}))", name, textureAsset.GetWidth(), textureAsset.GetHeight()).c_str());
 

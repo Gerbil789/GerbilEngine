@@ -1,29 +1,33 @@
 #include "enginepch.h"
 #include "Engine/Asset/AssetRegistry.h"
+// #include "Engine/Utility/File.h"
 #include "Engine/Core/Project.h"
+#include "Engine/Core/Log.h"
 #include <glaze/glaze.hpp>
 #include <fstream>
 
 template <>
-struct glz::meta<Engine::Uuid> {
+struct glz::meta<engine::Uuid> {
 	static constexpr auto value = [](auto& self) -> auto& {
 		return reinterpret_cast<uint64_t&>(self);
 		};
 };
 
 template <>
-struct glz::meta<Engine::AssetRecord> {
+struct glz::meta<engine::AssetRecord> {
 	static constexpr auto value = object(
-		"ID", &Engine::AssetRecord::id,
-		"Path", &Engine::AssetRecord::path
+		"ID", &engine::AssetRecord::id,
+		"Path", &engine::AssetRecord::path
 	);
 };
 
-namespace Engine
+namespace engine
 {
 	void AssetRegistry::Load()
 	{
-		const std::filesystem::path& path = Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.json";
+		std::filesystem::path path = Project::Directory() / "assetRegistry.json";
+
+    LOG_TRACE("Project Directory: {}", Project::Directory());
 
 		if (!std::filesystem::exists(path))
 		{
@@ -38,7 +42,6 @@ namespace Engine
 
 		std::vector<AssetRecord> assets;
 		std::string buffer;
-		const std::filesystem::path& assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
 
 		if (auto ec = glz::read_file_json(assets, path.string(), buffer))
 		{
@@ -48,7 +51,7 @@ namespace Engine
 
 		for (AssetRecord& record : assets)
 		{
-			record.path = assetsDir / record.path;
+			record.path = Project::AssetsDirectory() / record.path;
 
 			if (!std::filesystem::exists(record.path)) 
 			{
@@ -61,15 +64,14 @@ namespace Engine
 			m_Records[record.id] = std::move(record);
 		}
 
-		ScanDirectory(assetsDir); // look for new files
+		ScanDirectory(Project::AssetsDirectory()); // look for new files
 		RebuildVirtualFileSystem();
 		Save();
 	}
 
 	void AssetRegistry::Save()
 	{
-		const std::filesystem::path& path = Engine::Project::GetActive().GetProjectDirectory() / "assetRegistry.json";
-		const std::filesystem::path& assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
+		const std::filesystem::path& path = Project::Directory() / "assetRegistry.json";
 
 		std::vector<AssetRecord> assets;
 		assets.reserve(m_Records.size());
@@ -77,7 +79,7 @@ namespace Engine
 		for (const auto& [id, record] : m_Records)
 		{
 			AssetRecord diskCopy = record;
-			diskCopy.path = std::filesystem::relative(record.path, assetsDir).generic_string();
+			diskCopy.path = std::filesystem::relative(record.path, Project::AssetsDirectory().generic_string());
 			assets.push_back(std::move(diskCopy));
 		}
 
@@ -94,8 +96,6 @@ namespace Engine
 
 	void AssetRegistry::AddRecord(Uuid id, const std::filesystem::path& path)
 	{
-		auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
-
 		for (const auto& [uuid, record] : m_Records)
 		{
 			if (record.path == path)
@@ -106,7 +106,7 @@ namespace Engine
 		}
 
 		auto type = GetAssetTypeFromExtension(path.extension().string());
-		auto [it, inserted] = m_Records.try_emplace(id, AssetRecord{id, assetsDir / path, type });
+		auto [it, inserted] = m_Records.try_emplace(id, AssetRecord{id, Project::AssetsDirectory() / path, type });
 
 		if (inserted)
 		{
@@ -176,10 +176,9 @@ namespace Engine
 		static std::filesystem::path emptyPath;
 		if (auto it = m_Records.find(id); it != m_Records.end())
 		{
-			auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
-			return std::filesystem::relative(it->second.path, assetsDir);
+			return std::filesystem::relative(it->second.path, Project::AssetsDirectory());
 		}
-		return emptyPath;
+		return emptyPath; //TODO: return {}? and test it!!!
 
 	}
 
@@ -223,10 +222,8 @@ namespace Engine
 
 	void AssetRegistry::AddToVFS(const AssetRecord& record)
 	{
-		auto assetsDir = Engine::Project::GetActive().GetAssetsDirectory();
-
 		// Get the path relative to the assets folder (e.g., "Textures/Props/box.png")
-		std::filesystem::path relativePath = std::filesystem::relative(record.path, assetsDir);
+		std::filesystem::path relativePath = std::filesystem::relative(record.path, Project::AssetsDirectory());
 		std::filesystem::path parentDir = relativePath.parent_path();
 
 		DirectoryNode* currentNode = &m_RootNode;

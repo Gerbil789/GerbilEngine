@@ -4,7 +4,7 @@
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include <webgpu/webgpu_cpp_print.h>
 
-namespace Engine::GraphicsContext
+namespace engine::GraphicsContext
 {
 	namespace
 	{
@@ -127,13 +127,13 @@ namespace Engine::GraphicsContext
 			throw std::runtime_error("Failed to get WGPU queue");
 		}
 
-		Engine::SamplerPool::Initialize();
-		Engine::RenderPipelineLayouts::Initialize();
+		engine::SamplerPool::Initialize();
+		engine::RenderPipelineLayouts::Initialize();
 	}
 
 	void Shutdown()
 	{
-		Engine::SamplerPool::Shutdown();
+		engine::SamplerPool::Shutdown();
 
 		if (s_Device)
 		{

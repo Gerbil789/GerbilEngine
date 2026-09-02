@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-namespace Editor
+namespace editor
 {
 	struct EditorSettings
 	{

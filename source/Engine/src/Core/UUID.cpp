@@ -2,7 +2,7 @@
 #include "Engine/Core/UUID.h"
 #include <random>
 
-namespace Engine
+namespace engine
 {
 	Uuid Uuid::Generate()
 	{

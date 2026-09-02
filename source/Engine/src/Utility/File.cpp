@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Utility/File.h"
 
-namespace Engine
+namespace engine
 {
 	bool ReadFile(const std::filesystem::path& path, std::string& outData)
 	{

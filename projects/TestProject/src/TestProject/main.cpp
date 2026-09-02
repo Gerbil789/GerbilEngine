@@ -1,16 +1,11 @@
-#include "Engine/Utility/Path.h"
-#include "Engine/Core/Log.h"
 #include "Game.h"
+#include "Engine/Core/Log.h"
 
 int main()
 {
-  SetupWorkingDirectory();
-  Engine::Log::Initialize();
-
   try
   {
-    GameApp app;
-    app.Run();
+    Game game;
   }
   catch (const std::exception& e)
   {

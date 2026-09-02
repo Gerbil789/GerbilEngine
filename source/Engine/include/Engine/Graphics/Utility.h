@@ -4,12 +4,12 @@
 #include "Engine/Utility/File.h"
 #include "Engine/Graphics/GraphicsContext.h"
 
-namespace Engine
+namespace engine
 {
 	inline static wgpu::ShaderModule LoadWGSLShader(const std::filesystem::path& path)
 	{
 		std::string source;
-		if (!Engine::ReadFile(path, source))
+		if (!engine::ReadFile(path, source))
 		{
 			throw std::runtime_error("Failed to load shader: " + path.string());
 		}

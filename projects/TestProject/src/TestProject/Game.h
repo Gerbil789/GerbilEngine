@@ -1,15 +1,19 @@
 #pragma once
 
 #include "Engine/Core/Window.h"
+#include "Engine/Graphics/Renderer/Renderer.h"
 
-class GameApp
+class Game
 {
 public:
-	GameApp();
-	~GameApp();
-	void Run();
+  Game();
+  ~Game();
 
 private:
-	Engine::Window m_Window;
-	bool m_Running = true;
+  void Update();
+
+private:
+  engine::Window m_Window;
+  engine::Renderer m_Renderer;
+  bool m_Running = true;
 };

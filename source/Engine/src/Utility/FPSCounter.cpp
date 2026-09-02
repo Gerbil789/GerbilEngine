@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Utility/FPSCounter.h"
 
-namespace Engine 
+namespace engine 
 {
   size_t m_FrameHistorySize;
   std::vector<float> m_FPSHistory;

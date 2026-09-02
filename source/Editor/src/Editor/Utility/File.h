@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <initializer_list>
 
-namespace Editor::FileDialog
+namespace editor::FileDialog
 {
 	struct DialogFilter
 	{

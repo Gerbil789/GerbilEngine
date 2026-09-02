@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <limits>
 
-namespace Engine
+namespace engine
 {
 	struct AABB
 	{

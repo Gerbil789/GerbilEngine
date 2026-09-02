@@ -2,11 +2,11 @@
 
 #include "Engine/Asset/AssetHandle.h"
 
-namespace Editor
+namespace editor
 {
 	class AudioInspectorPanel
 	{
 	public:
-		void Draw(Engine::AudioClip clip);
+		void Draw(engine::AudioClip clip);
 	};
 }

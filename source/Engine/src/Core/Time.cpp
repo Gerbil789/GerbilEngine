@@ -2,7 +2,7 @@
 #include "Engine/Core/Time.h"
 #include <chrono>
 
-namespace Engine
+namespace engine
 {
   namespace
   {

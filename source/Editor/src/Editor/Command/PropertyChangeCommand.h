@@ -3,7 +3,7 @@
 #include "ICommand.h"
 #include <functional>
 
-namespace Editor
+namespace editor
 {
   class PropertyChangeCommand : public ICommand
   {

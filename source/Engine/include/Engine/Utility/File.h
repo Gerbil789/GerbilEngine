@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-namespace Engine 
+namespace engine 
 {
 	bool ReadFile(const std::filesystem::path& path, std::string& outData);
 }

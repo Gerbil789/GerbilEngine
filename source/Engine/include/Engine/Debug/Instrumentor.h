@@ -26,7 +26,7 @@
 //#define ENGINE_PROFILE_FUNCTION()
 //#endif
 
-namespace Engine {
+namespace engine {
 
 	using FloatingPointMicroseconds = std::chrono::duration<double, std::micro>;
 

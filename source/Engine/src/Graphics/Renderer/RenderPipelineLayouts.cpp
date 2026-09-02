@@ -3,7 +3,7 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderUniforms.h"
 
-namespace Engine
+namespace engine
 {
 	namespace 
 	{

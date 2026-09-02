@@ -2,7 +2,7 @@
 
 #include "Editor/Windows/IEditorWindow.h"
 
-namespace Editor
+namespace editor
 {
 	class MaterialEditorWindow : public IEditorWindow
 	{

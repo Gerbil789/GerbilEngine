@@ -2,7 +2,7 @@
 
 #include "Engine/Graphics/RenderPass/RenderPass.h"
 
-namespace Engine
+namespace engine
 {
 	class SceneAsset;
 
@@ -16,9 +16,8 @@ namespace Engine
 		void DisableFlag(RenderPassType flag) { m_EnabledPasses &= ~flag; }
 		RenderPassType GetEnabledFlags() const { return m_EnabledPasses; }
 
-		void SetSize(float width, float height) { m_RenderContext.width = width; m_RenderContext.height = height; }
+		void SetSize(float width, float height);
 		void SetColorTarget(wgpu::TextureView colorView);
-		void SetDepthTarget(wgpu::TextureView depthView);
 		void SetEnvironmentTexture(Texture2D texture);
 		const RenderContext& GetRenderContext() const { return m_RenderContext; }
 
@@ -45,6 +44,7 @@ namespace Engine
 		void CreateShadowTexture(); //TODO: move to shadow pass?
 
 	private:
+	  wgpu::Texture m_DepthTexture;
 		RenderContext m_RenderContext;
 		RenderPassType m_EnabledPasses = RenderPassType::None;
 	};

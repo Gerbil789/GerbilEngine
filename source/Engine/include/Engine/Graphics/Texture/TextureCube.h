@@ -2,7 +2,7 @@
 
 #include <webgpu/webgpu_cpp.h>
 
-namespace Engine
+namespace engine
 {
 	struct TextureCubeSpecification
 	{

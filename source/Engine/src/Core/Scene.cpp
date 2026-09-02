@@ -3,7 +3,7 @@
 #include "Engine/Core/Components.h"
 #include "Engine/Asset/AssetManager.h"
 
-namespace Engine
+namespace engine
 {
 	SceneAsset::~SceneAsset()
 	{

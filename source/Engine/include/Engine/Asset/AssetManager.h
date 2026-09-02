@@ -4,11 +4,11 @@
 #include "Engine/Asset/AssetHandle.h"
 #include <filesystem>
 
-namespace Engine { class AssetRegistry; }
+namespace engine { class AssetRegistry; }
 
-namespace Engine::AssetManager
+namespace engine::AssetManager
 {
-	void Initialize(const std::filesystem::path& projectDirectory);
+	void Initialize();
 	AssetRegistry& GetAssetRegistry();
 
 	bool Exists(Uuid id);

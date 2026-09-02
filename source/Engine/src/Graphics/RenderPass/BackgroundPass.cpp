@@ -3,7 +3,7 @@
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Graphics/Utility.h"
 
-namespace Engine
+namespace engine
 {
 	namespace
 	{

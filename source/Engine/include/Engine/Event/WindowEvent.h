@@ -2,7 +2,7 @@
 
 #include "Engine/Event/Event.h"
 
-namespace Engine
+namespace engine
 {
 	struct WindowResizeEvent : public Event
 	{

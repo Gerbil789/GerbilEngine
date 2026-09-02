@@ -4,7 +4,7 @@
 #include "Engine/Asset/Resources.h"
 #include <glaze/glaze.hpp>
 
-namespace Engine
+namespace engine
 {
 	void FontManager::Initialize()
 	{

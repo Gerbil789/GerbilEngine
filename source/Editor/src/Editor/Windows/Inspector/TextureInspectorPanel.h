@@ -2,11 +2,11 @@
 
 #include "Engine/Asset/AssetHandle.h"
 
-namespace Editor
+namespace editor
 {
 	class TextureInspectorPanel
 	{
 	public:
-		void Draw(Engine::Texture2D texture);
+		void Draw(engine::Texture2D texture);
 	};
 }

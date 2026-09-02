@@ -9,7 +9,7 @@
 #include <webgpu/webgpu_cpp.h>
 
 
-namespace Engine
+namespace engine
 {
 	Environment EnvironmentBaker::BakeEnvironment(Texture2D equirectangularTexture)
 	{
@@ -101,7 +101,7 @@ namespace Engine
 		bindGroupDesc.entries = entries.data();
 		wgpu::BindGroup bindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
 
-		wgpu::CommandEncoder encoder = Engine::GraphicsContext::GetDevice().CreateCommandEncoder();
+		wgpu::CommandEncoder encoder = engine::GraphicsContext::GetDevice().CreateCommandEncoder();
 
 		wgpu::ComputePassDescriptor computePassDesc;
 		computePassDesc.timestampWrites = nullptr;
@@ -119,7 +119,7 @@ namespace Engine
 		computePass.End();
 
 		wgpu::CommandBuffer commandBuffer = encoder.Finish();
-		Engine::GraphicsContext::GetQueue().Submit(1, &commandBuffer);
+		engine::GraphicsContext::GetQueue().Submit(1, &commandBuffer);
 
     return irradianceMap;
 	}
@@ -243,7 +243,7 @@ namespace Engine
 				return bindGroup;
 			};
 
-		auto encoder = Engine::GraphicsContext::GetDevice().CreateCommandEncoder();
+		auto encoder = engine::GraphicsContext::GetDevice().CreateCommandEncoder();
 
 		wgpu::ComputePassDescriptor computePassDesc;
 		computePassDesc.timestampWrites = nullptr;
@@ -266,7 +266,7 @@ namespace Engine
 		computePass.End();
 
 		wgpu::CommandBuffer commandBuffer = encoder.Finish();
-		Engine::GraphicsContext::GetQueue().Submit(1, &commandBuffer);
+		engine::GraphicsContext::GetQueue().Submit(1, &commandBuffer);
 
     return prefilteredSpecularMap;
 	}

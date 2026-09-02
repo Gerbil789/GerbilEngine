@@ -2,7 +2,7 @@
 
 #include "Engine/Graphics/Shader.h"
 
-namespace Engine
+namespace engine
 {
 	class ShaderImporter
 	{

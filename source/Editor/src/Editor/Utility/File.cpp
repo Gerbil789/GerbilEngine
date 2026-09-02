@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <shlobj.h> // Required for Shell API
 #endif
-namespace Editor::FileDialog
+namespace editor::FileDialog
 {
 
 #ifdef ENGINE_PLATFORM_WINDOWS

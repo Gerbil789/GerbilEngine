@@ -3,7 +3,7 @@
 #include <initializer_list>
 #include <imgui.h>
 
-namespace Editor
+namespace editor
 {
 	enum class StyleType
 	{

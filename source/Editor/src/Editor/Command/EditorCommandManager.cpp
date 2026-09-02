@@ -6,26 +6,26 @@
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Core/Input.h"
 
-namespace Editor
+namespace editor
 {
   void EditorCommandManager::Initialize()
   {
-    Engine::EventBus::Subscribe<Engine::KeyPressedEvent>([](auto e)
+    engine::EventBus::Subscribe<engine::KeyPressedEvent>([](auto e)
       {
-        if ((e.key == Engine::Key::Z || e.key == Engine::Key::Y) && Engine::Input::IsKeyDown(Engine::Key::LeftControl))
+        if ((e.key == engine::Key::Z || e.key == engine::Key::Y) && engine::Input::IsKeyDown(engine::Key::LeftControl))
         {
-          (!Engine::Input::IsKeyDown(Engine::Key::LeftShift) ? Undo() : Redo());
+          (!engine::Input::IsKeyDown(engine::Key::LeftShift) ? Undo() : Redo());
         }
         return false;
       });
   }
 
-	void EditorCommandManager::DeleteEntity(Engine::Uuid entityId)
+	void EditorCommandManager::DeleteEntity(engine::Uuid entityId)
   {
     Enqueue(std::make_unique<DeleteEntityCommand>(entityId));
   }
 
-  void EditorCommandManager::OpenScene(Engine::Scene scene)
+  void EditorCommandManager::OpenScene(engine::Scene scene)
   {
 		Enqueue(std::make_unique<OpenSceneCommand>(scene));
   }

@@ -3,7 +3,7 @@
 #include "Engine/Asset/AssetHandle.h"
 #include <glm/glm.hpp>
 
-namespace Engine
+namespace engine
 {
 	class Sprite
 	{

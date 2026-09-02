@@ -2,7 +2,7 @@
 
 #include "Engine/Core/UUID.h"
 
-namespace Editor
+namespace editor
 {
   enum class SelectionContext { Entity, Asset };
 
@@ -11,16 +11,16 @@ namespace Editor
   public:
     SelectionGroup(SelectionContext context) : m_Context(context) {}
 
-    void Select(Engine::Uuid id, bool additive = false);
-    void Toggle(Engine::Uuid id);
+    void Select(engine::Uuid id, bool additive = false);
+    void Toggle(engine::Uuid id);
     void Clear();
-    bool IsSelected(Engine::Uuid id) const;
-    Engine::Uuid GetPrimary() const;
-    const std::vector<Engine::Uuid>& GetAll() const;
+    bool IsSelected(engine::Uuid id) const;
+    engine::Uuid GetPrimary() const;
+    const std::vector<engine::Uuid>& GetAll() const;
 
   private:
     SelectionContext m_Context;
-    std::vector<Engine::Uuid> m_Selection;
+    std::vector<engine::Uuid> m_Selection;
   };
 
 

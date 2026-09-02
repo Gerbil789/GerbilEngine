@@ -13,12 +13,12 @@ class SpinSystem
 public:
   void update(entt::registry& registry, float delta)
   {
-    auto view = registry.view<Engine::TransformComponent, SpinComponent>();
+    auto view = registry.view<engine::TransformComponent, SpinComponent>();
 
     for(auto[entity, transform, spin] : view.each())
     {
       transform.rotation += spin.speed * delta;
-      registry.emplace_or_replace<Engine::TransformDirty>(entity);
+      registry.emplace_or_replace<engine::TransformDirty>(entity);
     }
   }
 };
