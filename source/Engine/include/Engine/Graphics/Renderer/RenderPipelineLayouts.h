@@ -1,10 +1,6 @@
 #pragma once
 
-#ifdef __EMSCRIPTEN__
-#include <webgpu/webgpu_cpp.h> // The official Emscripten Dawn C++ header
-#else
-#include <webgpu/webgpu_cpp.h>   // Your local Windows header
-#endif
+#include <webgpu/webgpu_cpp.h>
 
 namespace engine
 {

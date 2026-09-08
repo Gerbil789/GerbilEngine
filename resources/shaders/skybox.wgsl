@@ -1,5 +1,3 @@
-const NUM_SHADOW_CASCADES: i32 = 4;
-
 struct VertexOutput 
 {
 	@builtin(position) position: vec4f,
@@ -14,24 +12,12 @@ struct ViewUniforms
 	_padding: f32,
 };
 
-struct ShadowUniforms
-{
-	lightViewProj : array<mat4x4f, NUM_SHADOW_CASCADES>,
-	cascadeSplits : array<f32, NUM_SHADOW_CASCADES>,
-};
-
 //view
 @group(0) @binding(0) var<uniform> uView: ViewUniforms;
 
-//environment & shadow
+//environment
 @group(1) @binding(0) var EnvironmentSampler: sampler;
 @group(1) @binding(1) var EnvironmentMap: texture_cube<f32>;
-@group(1) @binding(2) var IrradianceMap: texture_cube<f32>;
-@group(1) @binding(3) var PrefilteredEnvMap: texture_cube<f32>;
-@group(1) @binding(4) var BRDFIntMap: texture_2d<f32>;
-@group(1) @binding(5) var<uniform> uShadow : ShadowUniforms;
-@group(1) @binding(6) var ShadowSampler : sampler_comparison;
-@group(1) @binding(7) var ShadowMap : texture_depth_2d_array;
 
 const cubeVertices: array<vec3f, 36> = array<vec3f, 36>(
     vec3f(-1,-1,-1), vec3f( 1,-1,-1), vec3f( 1, 1,-1),
@@ -94,7 +80,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
     var color = textureSample(EnvironmentMap, EnvironmentSampler, dir).rgb;
 
     // Apply ACES Tonemapping
-    // This squashes the infinite HDR range into 0.0 -> 1.0 beautifully
+    // This squashes the infinite HDR range into 0.0 -> 1.0
     color = tonemapACES(color);
 
 		// Gamma correction (sRGB)

@@ -11,6 +11,7 @@
 #include "Engine/System/TransformSystem.h"
 #include "Engine/Graphics/Sprite.h"
 #include "Engine/Graphics/Mesh.h"
+#include "Engine/System/CameraSystem.h"
 
 namespace editor
 {
@@ -42,9 +43,12 @@ namespace editor
 		std::unordered_map<engine::Uuid, Thumbnail> m_ThumbnailCache;
 
 		engine::SceneAsset scene;
-		engine::Entity cameraEntity;
 		engine::Entity previewEntity;
 		engine::Renderer renderer;
+
+
+		engine::CameraComponent camera;
+		engine::TransformComponent cameraTransform;
 
 		struct PreviewRequest 
 		{
@@ -77,19 +81,12 @@ namespace editor
 	void ThumbnailRenderer::Initialize()
 	{
 		{
-			cameraEntity = scene.CreateEntity<engine::TransformComponent, engine::WorldTransformComponent, engine::CameraComponent, engine::PrimaryCameraTag, engine::CameraProjectionDirty, engine::CameraViewDirty, engine::TransformDirty>("CameraEntity");
-			scene.InsertRootEntity(cameraEntity.GetHandle(), scene.GetRootEntities().size());
+			camera.backgroundMode = engine::CameraComponent::Background::Color;
+			camera.projectionType = engine::CameraComponent::Projection::Perspective;
+			camera.clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 
-			auto& cc = cameraEntity.GetComponent<engine::CameraComponent>();
-			cc.background = engine::CameraComponent::Background::Color;
-			cc.projectionType = engine::CameraComponent::Projection::Perspective;
-			cc.clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
-
-			auto& tc = cameraEntity.GetComponent<engine::TransformComponent>();
-			tc.position = { 0.0f, 0.0f, 3.0f };
-			tc.rotation = { 0.0f, 0.0f, 0.0f };
-
-			renderer.SetCamera(cc, tc);
+			cameraTransform.position = { 0.0f, 0.0f, 3.0f };
+			cameraTransform.rotation = { 0.0f, 0.0f, 0.0f };
 		}
 		
 		{
@@ -102,11 +99,11 @@ namespace editor
 			tc.rotation = glm::radians(glm::vec3{ 15.0f, 45.0f, 0.0f });
 		}
 
-		renderer.Initialize();
-		renderer.SetSize(64.0f, 64.0f);
-		renderer.SetFlags(engine::RenderPassType::Background | engine::RenderPassType::Opaque);
+		std::vector<engine::RenderPass> passes;
+		passes.emplace_back(engine::pass::Background());
+		passes.emplace_back(engine::pass::Opaque());
 
-
+		renderer.Initialize(64, 64, passes);
 
 		for (const auto& [type, coords] : AssetIconMap)
 		{
@@ -166,15 +163,12 @@ namespace editor
 		const engine::MeshAsset& mesh = engine::AssetManager::GetAsset<engine::MeshAsset>(mc.mesh);
 		float distance = glm::length(mesh.aabb.max - mesh.aabb.min);
 
-		cameraEntity.GetComponent<engine::TransformComponent>().position = { 0.0f, 0.0f, -distance };
-		cameraEntity.AddTag<engine::TransformDirty>();
-		cameraEntity.AddTag<engine::CameraProjectionDirty>();
+		cameraTransform.position = { 0.0f, 0.0f, -distance };
 
+		engine::CameraSystem::Update(scene.GetRegistry(), 1.0f);
 		engine::TransformSystem::Update(scene);
 
-		renderer.SetColorTarget(m_ScratchpadView);
-		//renderer.SetDepthTarget(m_DepthView);
-		renderer.RenderScene(scene);
+		renderer.RenderScene(scene, camera, m_ScratchpadTexture.CreateView());
 
 		// Copy to Atlas
 		wgpu::TexelCopyTextureInfo src;

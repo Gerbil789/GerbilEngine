@@ -24,7 +24,7 @@ namespace engine
 		std::string title = "untitled window";
 		uint32_t width = 1600;
 		uint32_t height = 900;
-		std::filesystem::path iconPath = "";
+		std::filesystem::path iconPath = "resources/icons/logo.png";
 		WindowMode mode = WindowMode::Windowed;
 	};
 
@@ -36,8 +36,10 @@ namespace engine
 
 		uint32_t GetWidth() const { return m_Data.width; }
 		uint32_t GetHeight() const { return m_Data.height; }
+		float GetAspectRatio() const { return static_cast<float>(m_Data.width) / static_cast<float>(m_Data.height); }
 		GLFWwindow* Get() const { return m_Window; }
 		wgpu::Surface GetSurface() const;
+		wgpu::TextureView GetSurfaceView() const;
 
 		void SetEventCallback(const std::function<void(Event&)>& callback) { m_Data.callback = callback; }
 

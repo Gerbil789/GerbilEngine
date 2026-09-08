@@ -14,7 +14,6 @@ namespace editor
 		EditorMode editorMode = EditorMode::Edit;
 		PlayMode playMode = PlayMode::PIE;
 
-		engine::Renderer renderer;
 		engine::CameraComponent camera;
 		engine::TransformComponent cameraTransform;
 

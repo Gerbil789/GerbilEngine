@@ -45,7 +45,6 @@ namespace engine
 
 			for (size_t i = 0; i < layoutOverrides.size(); ++i)
 			{
-				// Compare the raw WebGPU C-handles
 				if (layoutOverrides[i].Get() != other.layoutOverrides[i].Get())
 				{
 					return false;
@@ -55,7 +54,6 @@ namespace engine
 			return true;
 		}
 
-		// 2. Hash all properties to prevent cache collisions
 		size_t Hash() const
 		{
 			size_t seed = 0;
@@ -70,7 +68,6 @@ namespace engine
 
 			for (const auto& layout : layoutOverrides)
 			{
-				// Hash the memory address of the Dawn C-handle
 				HashCombine(seed, reinterpret_cast<uint64_t>(layout.Get()));
 			}
 

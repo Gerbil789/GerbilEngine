@@ -192,12 +192,6 @@ namespace engine
 
 			AssetType type = GetAssetTypeFromExtension(path.extension().string());
 
-			if (type == AssetType::Unknown)
-			{
-				LOG_WARNING("File '{}' has unknown asset type, skipping.", path);
-				continue;
-			}
-
 			auto it = std::find_if(m_Records.begin(), m_Records.end(), [&path](const auto& pair) { return pair.second.path == path; });
 			if (it == m_Records.end())
 			{

@@ -3,12 +3,11 @@
 #include "Engine/Asset/AssetHandle.h"
 #include "Engine/Math/AABB.h"
 #include <string>
+#include <variant>
 #include <entt/entity/entity.hpp>
 
 namespace engine
 {
-	class Script;
-
 	struct EditorTag {};
 	struct DisabledTag {};
 	struct TransformDirty {};
@@ -66,15 +65,7 @@ namespace engine
 	struct CameraComponent
 	{
 		enum class Projection { Perspective, Orthographic };
-		enum class Background { Color, Skybox };
-
 		Projection projectionType = Projection::Perspective;
-		Background background = Background::Color;
-		glm::vec4 clearColor = { 1.0f, 0.05f, 1.0f, 1.0f };
-
-		glm::mat4 projectionMatrix{ 1.0f };
-		glm::mat4 viewMatrix{ 1.0f };
-		glm::mat4 viewProjectionMatrix{ 1.0f };
 
 		struct Perspective
 		{
@@ -89,7 +80,29 @@ namespace engine
 			float nearClip = -1.0f;
 			float farClip = 512.0f;
 		} orthographic;
+
+		glm::mat4 projectionMatrix{ 1.0f };
+		glm::mat4 viewMatrix{ 1.0f };
+		glm::mat4 viewProjectionMatrix{ 1.0f };
+
+
+		enum class Background { Color, Skybox };
+
+		Background backgroundMode = Background::Color;
+		glm::vec4 ambientLight = { 0.1f, 0.1f, 0.1f, 1.0f };
+		glm::vec4 clearColor = { 1.0f, 0.05f, 1.0f, 1.0f };
 	};
+
+	//struct EnvironmentComponent
+	//{
+	//	enum class Background { Color, Skybox };
+
+	//	Background backgroundMode = Background::Color;
+	//	glm::vec4 ambientLight = { 0.1f, 0.1f, 0.1f, 1.0f };
+	//	glm::vec4 clearColor = { 1.0f, 0.05f, 1.0f, 1.0f };
+
+	//	//TODO: environtmentTexture here
+	//};
 
 	enum class LightType { Directional = 0, Spot, Point };
 

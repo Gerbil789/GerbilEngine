@@ -8,7 +8,6 @@
 #include "Engine/Core/Components.h"
 #include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Graphics/Renderer/RenderUniforms.h"
-#include "Engine/Graphics/RenderPass/RenderPassRegistry.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Graphics/Texture/Environment.h"
 #include "Engine/Asset/Resources.h"
@@ -18,117 +17,140 @@
 
 namespace engine
 {
-	void Renderer::Initialize()
-	{
-		CreateViewUniformBuffer();
-		CreateViewBindGroup();
-
-		CreateModelStorageBuffer();
-		CreateModelBindGroup();
-
-		CreateShadowTexture();
-
-		CreateEnvironmentUniformBuffer();
-		SetEnvironmentTexture(RESOURCES::TEXTURE::HDR);
-	}
-
-	void Renderer::SetColorTarget(wgpu::TextureView colorView)
-	{
-		m_RenderContext.colorTarget = colorView;
-	}
-
-	void Renderer::SetSize(float width, float height)
-	{
-		m_RenderContext.width = width;
-		m_RenderContext.height = height;
-
-		wgpu::TextureDescriptor depthDesc;
-		depthDesc.label = "RendererDepthTexture";
-		depthDesc.dimension = wgpu::TextureDimension::e2D;
-		depthDesc.format = wgpu::TextureFormat::Depth24Plus;
-		depthDesc.mipLevelCount = 1;
-		depthDesc.sampleCount = 1;
-		depthDesc.size = {static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1};
-		depthDesc.usage = wgpu::TextureUsage::RenderAttachment;
-
-		m_DepthTexture = engine::GraphicsContext::GetDevice().CreateTexture(&depthDesc);
-
-		wgpu::TextureViewDescriptor depthViewDesc;
-		depthViewDesc.label = "RendererDepthTextureView";
-		depthViewDesc.aspect = wgpu::TextureAspect::DepthOnly;
-		depthViewDesc.dimension = wgpu::TextureViewDimension::e2D;
-		depthViewDesc.format = wgpu::TextureFormat::Depth24Plus;
-		depthViewDesc.baseMipLevel = 0;
-		depthViewDesc.mipLevelCount = 1;
-		depthViewDesc.baseArrayLayer = 0;
-		depthViewDesc.arrayLayerCount = 1;
-
-		m_RenderContext.depthTarget = m_DepthTexture.CreateView(&depthViewDesc);
-	}
-
-	void Renderer::SetEnvironmentTexture(Texture2D texture)
-	{
-		if (!texture)
-		{
-			texture = RESOURCES::TEXTURE::HDR;
-		}
-
-		m_RenderContext.environment = EnvironmentBaker::BakeEnvironment(texture);
-		CreateEnvironmentBindGroup();
-	}
-
-	void Renderer::CreateViewUniformBuffer()
+	wgpu::Buffer CreateViewUniformBuffer()
 	{
 		wgpu::BufferDescriptor bufferDesc;
 		bufferDesc.label = "ViewUniformBuffer";
 		bufferDesc.size = sizeof(ViewUniforms);
 		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-		m_RenderContext.viewUniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
+		return GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
 	}
 
-	void Renderer::CreateViewBindGroup()
+	wgpu::BindGroup CreateViewBindGroup(wgpu::Buffer buffer)
 	{
-		std::array<wgpu::BindGroupEntry, 1> entries;
+		wgpu::BindGroupEntry entry;
+		entry.binding = 0;
+		entry.buffer = buffer;
+		entry.offset = 0;
+		entry.size = sizeof(ViewUniforms);
 
-		entries[0].binding = 0;
-		entries[0].buffer = m_RenderContext.viewUniformBuffer;
-		entries[0].offset = 0;
-		entries[0].size = sizeof(ViewUniforms);
-
-		wgpu::BindGroupDescriptor bindGroupDesc;
-		bindGroupDesc.label = "ViewBindGroup";
-		bindGroupDesc.layout = RenderPipelineLayouts::GetViewLayout();
-		bindGroupDesc.entryCount = entries.size();
-		bindGroupDesc.entries = entries.data();
-		m_RenderContext.viewBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
+		wgpu::BindGroupDescriptor desc;
+		desc.label = "ViewBindGroup";
+		desc.layout = RenderPipelineLayouts::GetViewLayout();
+		desc.entryCount = 1;
+		desc.entries = &entry;
+		return GraphicsContext::GetDevice().CreateBindGroup(&desc);
 	}
 
-	void Renderer::CreateModelStorageBuffer()
+	wgpu::Buffer CreateModelStorageBuffer()
 	{
 		// max 1024 * 256 unique transforms per frame //TODO: make this configurable or dynamic
 		const uint64_t bufferSize = 1024 * 256 * sizeof(glm::mat4);
 
-		wgpu::BufferDescriptor bufferDesc;
-		bufferDesc.label = "ModelStorageBuffer";
-		bufferDesc.size = bufferSize;
-		bufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
-		m_RenderContext.modelStorageBuffer = GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
+		wgpu::BufferDescriptor desc;
+		desc.label = "ModelStorageBuffer";
+		desc.size = bufferSize;
+		desc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst;
+		return GraphicsContext::GetDevice().CreateBuffer(&desc);
 	}
 
-	void Renderer::CreateModelBindGroup()
+	wgpu::BindGroup CreateModelBindGroup(wgpu::Buffer buffer)
 	{
-		wgpu::BindGroupEntry bindGroupEntry;
-		bindGroupEntry.binding = 0;
-		bindGroupEntry.buffer = m_RenderContext.modelStorageBuffer;
-		bindGroupEntry.offset = 0;
-		bindGroupEntry.size = m_RenderContext.modelStorageBuffer.GetSize();
+		wgpu::BindGroupEntry entry;
+		entry.binding = 0;
+		entry.buffer = buffer;
+		entry.offset = 0;
+		entry.size = buffer.GetSize();
 
-		wgpu::BindGroupDescriptor bindGroupDesc;
-		bindGroupDesc.label = "ModelBindGroup";
-		bindGroupDesc.layout = RenderPipelineLayouts::GetModelLayout();
-		bindGroupDesc.entryCount = 1;
-		bindGroupDesc.entries = &bindGroupEntry;
-		m_RenderContext.modelBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
+		wgpu::BindGroupDescriptor desc;
+		desc.label = "ModelBindGroup";
+		desc.layout = RenderPipelineLayouts::GetModelLayout();
+		desc.entryCount = 1;
+		desc.entries = &entry;
+		return GraphicsContext::GetDevice().CreateBindGroup(&desc);
+	}
+
+
+	void Renderer::Initialize(uint32_t width, uint32_t height, std::vector<RenderPass> passes)
+	{
+		m_ViewUniformBuffer = CreateViewUniformBuffer();
+		m_FrameContext.viewBindGroup = CreateViewBindGroup(m_ViewUniformBuffer);
+
+		m_ModelStorageBuffer = CreateModelStorageBuffer();
+		m_FrameContext.modelBindGroup = CreateModelBindGroup(m_ModelStorageBuffer);
+
+		CreateShadowTexture();
+
+		CreateEnvironmentUniformBuffer();
+		SetEnvironment(RESOURCES::TEXTURE::HDR);
+
+		SetSize(width, height);
+
+		m_Passes = std::move(passes);
+	}
+
+
+	void Renderer::SetSize(uint32_t width, uint32_t height)
+	{
+		// depth
+		{
+			wgpu::TextureDescriptor desc;
+			desc.label = "RendererDepthTexture";
+			desc.dimension = wgpu::TextureDimension::e2D;
+			desc.format = wgpu::TextureFormat::Depth24Plus;
+			desc.mipLevelCount = 1;
+			desc.sampleCount = 1;
+			desc.size = { width, height, 1 };
+			desc.usage = wgpu::TextureUsage::RenderAttachment;
+			m_DepthTexture = engine::GraphicsContext::GetDevice().CreateTexture(&desc);
+		}
+
+		{
+			wgpu::TextureViewDescriptor desc;
+			desc.label = "RendererDepthTextureView";
+			desc.aspect = wgpu::TextureAspect::DepthOnly;
+			desc.dimension = wgpu::TextureViewDimension::e2D;
+			desc.format = m_DepthTexture.GetFormat();
+			desc.baseMipLevel = 0;
+			desc.mipLevelCount = 1;
+			desc.baseArrayLayer = 0;
+			desc.arrayLayerCount = 1;
+			m_FrameContext.depthTarget = m_DepthTexture.CreateView(&desc);
+		}
+
+		//color
+		//{
+		//	wgpu::TextureDescriptor desc;
+		//	desc.label = "RendererColorTexture";
+		//	desc.dimension = wgpu::TextureDimension::e2D;
+		//	desc.format = GraphicsContext::GetSurfaceFormat();
+		//	desc.mipLevelCount = 1;
+		//	desc.sampleCount = 1;
+		//	desc.size = { width, height, 1 };
+		//	desc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
+		//	m_ColorTexture = engine::GraphicsContext::GetDevice().CreateTexture(&desc);
+		//}
+
+		//{
+		//	wgpu::TextureViewDescriptor desc;
+		//	desc.label = "RendererColorTextureView";
+		//	desc.aspect = wgpu::TextureAspect::Undefined;
+		//	desc.dimension = wgpu::TextureViewDimension::e2D;
+		//	desc.format = m_ColorTexture.GetFormat();
+		//	desc.baseMipLevel = 0;
+		//	desc.mipLevelCount = 1;
+		//	desc.baseArrayLayer = 0;
+		//	desc.arrayLayerCount = 1;
+		//	m_FrameContext.colorTarget = m_ColorTexture.CreateView(&desc);
+		//}
+	}
+
+	void Renderer::SetEnvironment(Texture2D texture)
+	{
+		if (!texture) texture = RESOURCES::TEXTURE::HDR;
+
+		m_FrameContext.environment = EnvironmentBaker::BakeEnvironment(texture);
+		CreateEnvironmentBindGroup();
 	}
 
 	void Renderer::CreateEnvironmentUniformBuffer()
@@ -137,7 +159,7 @@ namespace engine
 		desc.label = "EnvironmentUniformBuffer";
 		desc.size = sizeof(EnvironmentUniforms);
 		desc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-		m_RenderContext.environmentUniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&desc);
+		m_EnvironmentUniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&desc);
 	}
 
 	void Renderer::CreateEnvironmentBindGroup()
@@ -146,16 +168,16 @@ namespace engine
 
 		// 0 - EnvironmentSampler
 		{
-			wgpu::SamplerDescriptor envSamplerDesc;
-			envSamplerDesc.label = "EnvironmentSampler";
-			envSamplerDesc.minFilter = wgpu::FilterMode::Linear;
-			envSamplerDesc.magFilter = wgpu::FilterMode::Linear;
-			envSamplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
-			envSamplerDesc.maxAnisotropy = 1;
-			envSamplerDesc.lodMinClamp = 0.0f;
-			envSamplerDesc.lodMaxClamp = 32.0f;
+			wgpu::SamplerDescriptor desc;
+			desc.label = "EnvironmentSampler";
+			desc.minFilter = wgpu::FilterMode::Linear;
+			desc.magFilter = wgpu::FilterMode::Linear;
+			desc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
+			desc.maxAnisotropy = 1;
+			desc.lodMinClamp = 0.0f;
+			desc.lodMaxClamp = 32.0f;
 
-			wgpu::Sampler envSampler = GraphicsContext::GetDevice().CreateSampler(&envSamplerDesc);
+			wgpu::Sampler envSampler = GraphicsContext::GetDevice().CreateSampler(&desc);
 			entries[0].binding = 0;
 			entries[0].sampler = envSampler;
 		}
@@ -163,19 +185,19 @@ namespace engine
 		// 1 - EnvironmentMap
 		{
 			entries[1].binding = 1;
-			entries[1].textureView = m_RenderContext.environment.EnvironmentMap.GetTextureView();
+			entries[1].textureView = m_FrameContext.environment.EnvironmentMap.GetTextureView();
 		}
 
 		// 2 - IrradianceMap
 		{
 			entries[2].binding = 2;
-			entries[2].textureView = m_RenderContext.environment.IrradianceMap.GetTextureView();
+			entries[2].textureView = m_FrameContext.environment.IrradianceMap.GetTextureView();
 		}
 
 		// 3 - PrefilteredSpecularMap
 		{
 			entries[3].binding = 3;
-			entries[3].textureView = m_RenderContext.environment.PrefilteredSpecularMap.GetTextureView();
+			entries[3].textureView = m_FrameContext.environment.PrefilteredSpecularMap.GetTextureView();
 		}
 
 		// 4 - BRDFIntMap
@@ -188,7 +210,7 @@ namespace engine
 		// 5 - ShadowUniforms
 		{
 			entries[5].binding = 5;
-			entries[5].buffer = m_RenderContext.environmentUniformBuffer;
+			entries[5].buffer = m_EnvironmentUniformBuffer;
 			entries[5].offset = 0;
 			entries[5].size = sizeof(EnvironmentUniforms);
 		}
@@ -210,15 +232,15 @@ namespace engine
 		// 7 - ShadowMap
 		{
 			entries[7].binding = 7;
-			entries[7].textureView = m_RenderContext.depthTextureArrayView;
+			entries[7].textureView = m_FrameContext.depthTextureArrayView;
 		}
 
-		wgpu::BindGroupDescriptor bindGroupDesc;
-		bindGroupDesc.label = "EnvironmentBindGroup";
-		bindGroupDesc.layout = RenderPipelineLayouts::GetEnvironmentLayout();
-		bindGroupDesc.entryCount = entries.size();
-		bindGroupDesc.entries = entries.data();
-		m_RenderContext.environmentBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
+		wgpu::BindGroupDescriptor desc;
+		desc.label = "EnvironmentBindGroup";
+		desc.layout = RenderPipelineLayouts::GetEnvironmentLayout();
+		desc.entryCount = entries.size();
+		desc.entries = entries.data();
+		m_FrameContext.environmentBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&desc);
 	}
 
 	void Renderer::CreateShadowTexture()
@@ -247,7 +269,7 @@ namespace engine
 			viewDesc.baseArrayLayer = i;
 			viewDesc.arrayLayerCount = 1;
 
-			m_RenderContext.depthTextureViews[i] = texture.CreateView(&viewDesc);
+			m_FrameContext.depthTextureViews[i] = texture.CreateView(&viewDesc);
 		}
 
 		wgpu::TextureViewDescriptor arrayViewDesc;
@@ -259,61 +281,34 @@ namespace engine
 		arrayViewDesc.baseArrayLayer = 0;
 		arrayViewDesc.arrayLayerCount = s_ShadowCascadeCount;
 
-		m_RenderContext.depthTextureArrayView = texture.CreateView(&arrayViewDesc);
+		m_FrameContext.depthTextureArrayView = texture.CreateView(&arrayViewDesc);
 	}
 
-	void Renderer::RenderScene(SceneAsset &scene)
+	void Renderer::RenderScene(const SceneAsset& scene, const CameraComponent& camera, wgpu::TextureView targetView)
 	{
-		m_RenderContext.scene = &scene;
+		m_FrameContext.camera = &camera;
+		m_FrameContext.colorTarget = targetView;
 
-		CameraSystem::Update(scene.GetRegistry(), m_RenderContext.width / m_RenderContext.height);
+		wgpu::Queue queue = GraphicsContext::GetQueue();
 
 		ViewUniforms viewUniforms;
-		viewUniforms.view = m_RenderContext.camera->viewMatrix;
-		viewUniforms.projection = m_RenderContext.camera->projectionMatrix;
-		viewUniforms.cameraPosition = m_RenderContext.cameraTransform->position;
+		viewUniforms.view = camera.viewMatrix;
+		viewUniforms.projection = camera.projectionMatrix;
+		queue.WriteBuffer(m_ViewUniformBuffer, 0, &viewUniforms, sizeof(viewUniforms));
 
-		GraphicsContext::GetQueue().WriteBuffer(m_RenderContext.viewUniformBuffer, 0, &viewUniforms, sizeof(viewUniforms));
+		m_FrameContext.drawList = DrawList::CreateFromScene(scene);
+
+		const std::vector<glm::mat4>& modelMatrices = m_FrameContext.drawList.GetTransforms();
+		queue.WriteBuffer(m_ModelStorageBuffer, 0, modelMatrices.data(), modelMatrices.size() * sizeof(glm::mat4));
 
 		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().CreateCommandEncoder();
 
-		m_RenderContext.drawList = DrawList::CreateFromScene(scene);
-
-		const std::vector<glm::mat4> &modelMatrices = m_RenderContext.drawList.GetTransforms();
-
-		GraphicsContext::GetQueue().WriteBuffer(m_RenderContext.modelStorageBuffer, 0, modelMatrices.data(), modelMatrices.size() * sizeof(glm::mat4));
-
-		static const RenderPassType order[] = {
-				RenderPassType::Shadow,
-				RenderPassType::Background,
-				RenderPassType::Opaque,
-				// RenderPassType::Light,
-				RenderPassType::Normal,
-				RenderPassType::Wireframe,
-				RenderPassType::UI};
-
-		for (RenderPassType type : order)
+		for(const auto& pass : m_Passes)
 		{
-			if ((m_EnabledPasses & type) != RenderPassType::None)
-			{
-				auto *pass = RenderPassRegistry::GetPass(type);
-				if (pass)
-				{
-					pass->Execute(encoder, m_RenderContext);
-				}
-				else
-				{
-					LOG_ERROR("Render pass not found for type: {}", static_cast<uint32_t>(type)); // TODO: C++26 reflection here
-				}
-			}
+			pass.Execute(encoder, m_FrameContext);
 		}
 
 		wgpu::CommandBuffer commandBuffer = encoder.Finish();
-		GraphicsContext::GetQueue().Submit(1, &commandBuffer);
-	}
-
-	wgpu::TextureView Renderer::GetTextureView() const
-	{
-		return m_RenderContext.colorTarget;
+		queue.Submit(1, &commandBuffer);
 	}
 }

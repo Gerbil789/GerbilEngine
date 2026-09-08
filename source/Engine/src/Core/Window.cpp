@@ -5,6 +5,7 @@
 #include "Engine/Event/KeyEvent.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Core/Log.h"
+#include "Engine/Core/Application.h"
 #include <stb_image.h>
 #include <GLFW/glfw3.h>
 
@@ -110,6 +111,25 @@ namespace engine
 		return m_Surface;
 	}
 
+	wgpu::TextureView Window::GetSurfaceView() const
+	{
+		wgpu::SurfaceTexture surfaceTexture;
+		m_Surface.GetCurrentTexture(&surfaceTexture);
+		if (!(surfaceTexture.status == wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal || surfaceTexture.status == wgpu::SurfaceGetCurrentTextureStatus::SuccessSuboptimal))
+		{
+			LOG_WARNING("Surface texture status is not optimal. status: {}", (uint32_t)surfaceTexture.status);
+		}
+
+		wgpu::TextureView view = surfaceTexture.texture.CreateView();
+
+		if (!view)
+		{
+			LOG_ERROR("Failed to create surface texture view");
+			return {};
+		}
+		return view;
+	}
+
 	void Window::SetTitle(const std::string& title)
 	{
 		if (m_Window)
@@ -173,7 +193,7 @@ namespace engine
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 				data.width = static_cast<uint32_t>(width);
 				data.height = static_cast<uint32_t>(height);
-				//data.self->ConfigureSurface(data.width, data.height);
+				data.self->ConfigureSurface();
 				data.self->m_SizeChanged = true;
 				WindowResizeEvent event{ data.width, data.height };
 				data.callback(event);
@@ -182,6 +202,8 @@ namespace engine
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+				Application::s_Running = false;
+				LOG_INFO("Application closed");
 				WindowCloseEvent event{};
 				data.callback(event);
 			});

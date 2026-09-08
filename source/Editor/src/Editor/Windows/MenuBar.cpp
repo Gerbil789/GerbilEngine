@@ -1,6 +1,5 @@
 #include "MenuBar.h"
 #include "Editor/Command/EditorCommandManager.h"
-#include "Editor/Core/EditorWindowManager.h"
 #include "Editor/Utility/File.h"
 #include "Engine/Core/Project.h"
 #include "Engine/Asset/Serializer/MaterialSerializer.h"
@@ -60,7 +59,7 @@ namespace editor
 		// }},
 
 		{ "Debug", {
-			{"RenderDoc", "", [] { /*TODO*/ }}
+			//{"RenderDoc", "", [] { /*TODO*/ }}
 		}}
 	};
 

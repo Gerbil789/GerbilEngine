@@ -18,7 +18,7 @@ namespace engine
 		static void Update(entt::registry& registry, float aspectRatio);
 
 		static void UpdateCameraProjectionMatrix(CameraComponent& camera, float aspectRatio);
-		static void UpdateCameraViewMatrix(CameraComponent& camera, const glm::mat4& worldMatrix);
+		static void UpdateCameraViewMatrix(CameraComponent& camera, const TransformComponent& transform);
 	};
 
 

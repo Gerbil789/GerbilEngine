@@ -26,6 +26,8 @@ namespace RESOURCES
 		static constexpr engine::Shader DEFAULT{ 21 };
 		static constexpr engine::Shader FLAT{ 22 };
 		static constexpr engine::Shader UI{ 23 };
+		static constexpr engine::Shader SKYBOX{ 24 };
+		static constexpr engine::Shader NORMAL{ 25 };
 	}
 
 	namespace MATERIAL

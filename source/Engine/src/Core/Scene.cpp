@@ -28,6 +28,21 @@ namespace engine
 		return Entity{};
 	}
 
+	entt::entity SceneAsset::GetEntityHandle(Uuid entityId) const
+	{
+		if (m_EntityMap.find(entityId) != m_EntityMap.end())
+		{
+			return m_EntityMap.at(entityId);
+		}
+		return entt::null;
+	}
+
+	const CameraComponent& SceneAsset::GetPrimaryCamera() const
+	{
+		entt::entity entity = m_Registry.view<engine::CameraComponent, engine::PrimaryCameraTag>().front();
+		return m_Registry.get<CameraComponent>(entity);
+	}
+
 	const std::vector<entt::entity>& SceneAsset::GetRootEntities() const
 	{
 		return m_RootEntities;

@@ -15,18 +15,19 @@ namespace engine
 	};
 
 
-	DrawList DrawList::CreateFromScene(SceneAsset& scene)
+	DrawList DrawList::CreateFromScene(const SceneAsset& scene)
 	{
 		DrawList list;
-		entt::registry& registry = scene.GetRegistry();
 
-		auto view = registry.view<MeshComponent, WorldTransformComponent, IdentityComponent>(entt::exclude<DisabledTag>);
+		const entt::registry& registry = scene.GetRegistryConst();
+
+		auto view = registry.view<MeshComponent, WorldTransformComponent>(entt::exclude<DisabledTag>);
 
 		std::vector<SortableDrawData> tempDrawData;
 
 		tempDrawData.reserve(view.size_hint());
 
-		for (auto&& [entity, mc, wtc, ic] : view.each())
+		for (auto&& [entity, mc, wtc] : view.each())
 		{
 			if (!mc.mesh) continue;
 
@@ -43,7 +44,7 @@ namespace engine
 					material = mc.materials[subMesh.materialIndex];
 				}
 
-				tempDrawData.push_back({DrawItem{ mc.mesh, material, i, subMesh.indexCount, subMesh.firstIndex, ic.id }, wtc.worldMatrix });
+				tempDrawData.push_back({DrawItem{ mc.mesh, material, i, subMesh.indexCount, subMesh.firstIndex }, wtc.worldMatrix });
 			}
 		}
 

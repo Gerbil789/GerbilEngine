@@ -16,14 +16,13 @@ struct VertexOutput
 	@location(1) normal: vec3f,
 	@location(2) worldPos: vec3f,
 	@location(3) viewDepth: f32,
+	@location(4) cameraPos: vec3f,
 };
 
 struct ViewUniforms
 {
 	view: mat4x4f,
 	projection: mat4x4f,
-	cameraPosition: vec3f,
-	_padding: f32,
 };
 
 struct ShadowUniforms
@@ -93,6 +92,11 @@ fn vs_main(in: VertexInput, @builtin(instance_index) instanceIdx: u32) -> Vertex
 
 	let viewPos = uView.view * worldPos;
 	out.viewDepth = viewPos.z;
+
+	let R = mat3x3f(uView.view[0].xyz, uView.view[1].xyz, uView.view[2].xyz);
+	let t = uView.view[3].xyz;
+	out.cameraPos = transpose(R) * (-t);
+
 	return out;
 }
 
@@ -173,7 +177,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f
 	let TBN = mat3x3f(T * invmax, B * invmax, normal);
 
 	let N = normalize(TBN * tangentNormal);
-	let V = normalize(uView.cameraPosition - in.worldPos); // direction from surface to camera
+	let V = normalize(in.cameraPos - in.worldPos); // direction from surface to camera
 	let R = reflect(-V, N);
 	let NdotV = max(dot(N, V), 0.0);
 	let F0 = mix(vec3f(0.04), albedo, metallic);

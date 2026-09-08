@@ -21,7 +21,6 @@ namespace engine
 		wgpu::RenderPipelineDescriptor pipelineDesc;
 		pipelineDesc.label = "Shader Pipeline";
 
-
 		const std::vector<wgpu::VertexAttribute>& vertexAttributes = shader.GetSpecification().vertexAttributes;
 
 		wgpu::VertexBufferLayout vertexBufferLayout;
@@ -86,10 +85,9 @@ namespace engine
 
 			pipelineDesc.depthStencil = &depthStencilState;
 		}
-
 		else
 		{
-			pipelineDesc.depthStencil = nullptr; // Disable depth testing entirely
+			pipelineDesc.depthStencil = nullptr;
 		}
 
 		pipelineDesc.multisample.count = 1;

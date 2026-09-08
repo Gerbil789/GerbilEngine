@@ -53,9 +53,7 @@ namespace editor
 
 		entt::registry& registry = scene.GetRegistry();
 
-		engine::Entity selectedEntity = scene.GetEntity(selectedId);
-
-		if (!selectedEntity.HasComponent<engine::WorldTransformComponent>()) return;
+		entt::entity selectedEntity = scene.GetEntityHandle(selectedId);
 
 		ImGuizmo::SetDrawlist();
 		ImGuizmo::SetRect(x, y, width, height);
@@ -65,7 +63,7 @@ namespace editor
 		glm::mat4 cameraProjection = cc.projectionMatrix;
 		glm::mat4 cameraView = cc.viewMatrix;
 
-		auto& wtc = selectedEntity.GetComponent<engine::WorldTransformComponent>();
+		engine::WorldTransformComponent& wtc = registry.get<engine::WorldTransformComponent>(selectedEntity);
 		glm::mat4& worldTransform = wtc.worldMatrix;
 
 		glm::vec3 snap;
@@ -94,7 +92,7 @@ namespace editor
 				m_InitialWorldTransforms[static_cast<entt::entity>(entity.GetHandle())] = wc.worldMatrix;
 			}
 
-			m_InitialPrimaryWorld = m_InitialWorldTransforms[static_cast<entt::entity>(selectedEntity.GetHandle())];
+			m_InitialPrimaryWorld = m_InitialWorldTransforms[static_cast<entt::entity>(selectedEntity)];
 		}
 
 		if (isUsing)

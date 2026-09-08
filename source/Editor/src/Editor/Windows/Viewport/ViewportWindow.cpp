@@ -9,10 +9,10 @@
 #include "Engine/Core/Scene.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Core/State.h"
 #include "Engine/Core/Log.h"
 #include "Engine/System/CameraSystem.h"
 #include "Engine/System/TransformSystem.h"
+#include "Engine/Core/Application.h"
 #include <glm/glm.hpp>
 
 namespace editor
@@ -25,19 +25,15 @@ namespace editor
 
 		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
+
+		wgpu::Texture m_Texture;
+		wgpu::TextureView m_TextureView;
 	}
 
 	void ViewportWindow::Initialize()
 	{
 		m_CameraController.Initialize();
 		m_TransformController.Initialize();
-		m_EntityPicker.Initialize();
-
-
-		const auto& tc = editor::editorContext.cameraTransform;
-		const glm::mat4 localMatrix = engine::TransformSystem::CalculateLocalPositionMatrix(tc);
-		engine::CameraSystem::UpdateCameraViewMatrix(editor::editorContext.camera, localMatrix);
-
 	}
 
 	static void UpdateViewportSize()
@@ -47,7 +43,20 @@ namespace editor
 
 		m_ViewportSize = { newSize.x, newSize.y };
 
-		editor::editorContext.renderer.SetSize(m_ViewportSize.x, m_ViewportSize.y);
+		engine::Application::s_Renderer.SetSize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
+
+
+		wgpu::TextureDescriptor texDesc;
+		texDesc.label = "viewportTexture";
+		texDesc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
+		texDesc.dimension = wgpu::TextureDimension::e2D;
+		texDesc.size = { static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y), 1 };
+		texDesc.format = engine::GraphicsContext::GetSurfaceFormat();
+		texDesc.mipLevelCount = 1;
+		texDesc.sampleCount = 1;
+
+		m_Texture = engine::GraphicsContext::GetDevice().CreateTexture(&texDesc);
+		m_TextureView = m_Texture.CreateView();
 
 		ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		ImVec2 viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -57,68 +66,6 @@ namespace editor
 		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
 		if (m_ViewportSize.x <= 0.0f || m_ViewportSize.y <= 0.0f) return;
-
-		wgpu::Extent3D size = { static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y), 1 };
-
-		m_EntityPicker.Resize(size.width, size.height);
-
-		// Color
-		{
-			wgpu::TextureDescriptor desc;
-			desc.label = "RendererColorTexture";
-			desc.dimension = wgpu::TextureDimension::e2D;
-			desc.format = engine::GraphicsContext::GetSurfaceFormat();
-			desc.size = size;
-			desc.mipLevelCount = 1;
-			desc.sampleCount = 1;
-			desc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
-			wgpu::Texture colorTexture = engine::GraphicsContext::GetDevice().CreateTexture(&desc);
-
-			wgpu::TextureViewDescriptor view;
-			view.label = "RendererColorTextureView";
-			view.dimension = wgpu::TextureViewDimension::e2D;
-			view.format = desc.format;
-			view.baseMipLevel = 0;
-			view.mipLevelCount = 1;
-			view.baseArrayLayer = 0;
-			view.arrayLayerCount = 1;
-			editor::editorContext.renderer.SetColorTarget(colorTexture.CreateView(&view));
-		}
-
-		// Depth
-		{
-			// wgpu::TextureFormat format = wgpu::TextureFormat::Depth24Plus;
-
-			// wgpu::TextureDescriptor desc;
-			// desc.label = "RendererDepthTextureView";
-			// desc.dimension = wgpu::TextureDimension::e2D;
-			// desc.format = format;
-			// desc.mipLevelCount = 1;
-			// desc.sampleCount = 1;
-			// desc.size = size;
-			// desc.usage = wgpu::TextureUsage::RenderAttachment;
-			// desc.viewFormatCount = 1;
-			// desc.viewFormats = &format;
-			// wgpu::Texture depthTexture = Engine::GraphicsContext::GetDevice().CreateTexture(&desc);
-
-			// wgpu::TextureViewDescriptor view;
-			// view.aspect = wgpu::TextureAspect::DepthOnly;
-			// view.baseArrayLayer = 0;
-			// view.arrayLayerCount = 1;
-			// view.baseMipLevel = 0;
-			// view.mipLevelCount = 1;
-			// view.dimension = wgpu::TextureViewDimension::e2D;
-			// view.format = wgpu::TextureFormat::Depth24Plus;
-
-			// Editor::editorContext.renderer.SetDepthTarget(depthTexture.CreateView(&view));
-		}
-
-		engine::viewportState.width = m_ViewportSize.x;
-		engine::viewportState.height = m_ViewportSize.y;
-
-		engine::viewportState.positionX = m_ViewportBounds[0].x;
-		engine::viewportState.positionY = m_ViewportBounds[0].y;
-
 
 		float aspectRatio = m_ViewportSize.x / m_ViewportSize.y;
 		engine::CameraSystem::UpdateCameraProjectionMatrix(editor::editorContext.camera, aspectRatio);
@@ -151,15 +98,6 @@ namespace editor
 				if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
 				{
 					EditorCommandManager::Enqueue(std::make_unique<ChangeEditorStateCommand>(EditorMode::Play));
-
-					auto& scene = engine::AssetManager::GetAsset(engine::SceneManager::GetActiveScene());
-					auto& registry = scene.GetRegistry();
-					auto view = registry.view<engine::TransformComponent, engine::CameraComponent, engine::PrimaryCameraTag>();
-					for(auto[entity, transform, camera] : view.each())
-					{
-						editor::editorContext.renderer.SetCamera(camera, transform);
-						break;
-					}
 				}
 			}
 			else
@@ -167,42 +105,7 @@ namespace editor
 				if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
 				{
 					EditorCommandManager::Enqueue(std::make_unique<ChangeEditorStateCommand>(EditorMode::Edit));
-					editor::editorContext.renderer.SetCamera(editor::editorContext.camera, editor::editorContext.cameraTransform);
 				}
-			}
-		}
-
-		{
-			constexpr float comboWidth = 120.0f;
-			constexpr float margin = 8.0f;
-
-			ImGui::SetCursorPos(ImVec2(size.x - comboWidth - margin, 4.0f));
-			ImGui::SetNextItemWidth(comboWidth);
-
-			if (ImGui::BeginCombo("##ViewportOptions", "Passes"))
-			{
-				auto flags = editor::editorContext.renderer.GetEnabledFlags();
-
-				auto RenderPassToggle = [&](const char* label, engine::RenderPassType flag) {
-					bool isEnabled = (flags & flag) != engine::RenderPassType::None;
-
-					if (ImGui::Checkbox(label, &isEnabled))
-					{
-						if (isEnabled)
-							editor::editorContext.renderer.EnableFlag(flag);
-						else
-							editor::editorContext.renderer.DisableFlag(flag);
-					}
-					};
-
-				RenderPassToggle("Background", engine::RenderPassType::Background);
-				RenderPassToggle("Opaque", engine::RenderPassType::Opaque);
-				RenderPassToggle("Light", engine::RenderPassType::Light);
-				RenderPassToggle("Shadow", engine::RenderPassType::Shadow);
-				RenderPassToggle("Normal", engine::RenderPassType::Normal);
-				RenderPassToggle("Wireframe", engine::RenderPassType::Wireframe);
-
-				ImGui::EndCombo();
 			}
 		}
 
@@ -231,10 +134,19 @@ namespace editor
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		engine::SceneAsset& scene = engine::AssetManager::GetAsset<engine::SceneAsset>(engine::SceneManager::GetActiveScene());
-		editor::editorContext.renderer.RenderScene(scene);
+		auto& scene = engine::AssetManager::GetAsset(engine::SceneManager::GetActiveScene());
 
-		ImGui::Image(editor::editorContext.renderer.GetTextureView().Get(), viewportSize);
+
+		if (editor::editorContext.editorMode == EditorMode::Edit)
+		{
+			engine::Application::s_Renderer.RenderScene(scene, editor::editorContext.camera, m_TextureView);
+		}
+		else
+		{
+			engine::Application::s_Renderer.RenderScene(scene, scene.GetPrimaryCamera(), m_TextureView);
+		}
+
+		ImGui::Image(m_TextureView.Get(), viewportSize);
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 		{
@@ -252,7 +164,6 @@ namespace editor
 		}
 
 		DrawOverlay(imagePos, viewportSize);
-
 
 		m_TransformController.DrawGizmo(scene, m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 		ImGui::End();

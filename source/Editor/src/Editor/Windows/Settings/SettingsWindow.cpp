@@ -3,14 +3,13 @@
 #include "Editor/Windows/Utility/Property.h"
 #include "Editor/Windows/Viewport/ViewportWindow.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Graphics/RenderPass/RenderPassRegistry.h"
 #include "Engine/Graphics/Texture/TextureCube.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
-#include "Engine/Graphics/RenderPass/ShadowPass.h"
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Core/Scene.h"
 #include "Engine/Asset/Resources.h"
 #include "Editor/Core/EditorSettings.h"
+#include "Engine/Core/Application.h"
 #include <imgui.h>
 
 namespace editor
@@ -25,23 +24,23 @@ namespace editor
 		{
 			PropertyTable table;
 
-			if (PropertyField("Wireframe color", editor::editorContext.settings.wireframeColor, { .mode = editor::DisplayMode::Color }).changed)
+			/*if (PropertyField("Wireframe color", editor::editorContext.settings.wireframeColor, { .mode = editor::DisplayMode::Color }).changed)
 			{
 				auto wireframePass = engine::RenderPassRegistry::GetPass(engine::RenderPassType::Wireframe);
 				if (wireframePass)
 				{
 					static_cast<engine::WireframePass*>(wireframePass)->SetColor(editor::editorContext.settings.wireframeColor);
 				}
-			}
+			}*/
 
 			if (ImGui::Button("Reset default editor layout"))
 			{
-				ImGui::LoadIniSettingsFromDisk("resources/Editor/layouts/default.ini");
+				ImGui::LoadIniSettingsFromDisk("resources/layouts/default.ini");
 			}
 
 			if (ImGui::Button("Save current layout"))
 			{
-				ImGui::SaveIniSettingsToDisk("resources/Editor/layouts/default.ini");
+				ImGui::SaveIniSettingsToDisk("resources/layouts/default.ini");
 			}
 		}
 
@@ -55,7 +54,8 @@ namespace editor
 			{
 				if(!texture) { texture = RESOURCES::TEXTURE::HDR; }
 				scene.SetEnvironmentTexture(texture);
-				editor::editorContext.renderer.SetEnvironmentTexture(texture);
+
+				engine::Application::s_Renderer.SetEnvironment(texture);
 			}
 		}
 
@@ -63,7 +63,7 @@ namespace editor
 		{
 			PropertyTable table;
 
-			PropertyField("Lambda", engine::ShadowPass::s_Lambda, { .min = 0.0f, .max = 1.0f, .step = 0.01f });
+			//PropertyField("Lambda", engine::ShadowPass::s_Lambda, { .min = 0.0f, .max = 1.0f, .step = 0.01f });
 
 
 			entt::registry& registry = scene.GetRegistry();

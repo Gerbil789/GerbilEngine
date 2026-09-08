@@ -147,7 +147,7 @@ namespace engine
 			cJson.perspective = { cam.perspective.fov, cam.perspective.nearClip, cam.perspective.farClip };
 			cJson.orthographic = { cam.orthographic.size, cam.orthographic.nearClip, cam.orthographic.farClip };
 
-			cJson.background = static_cast<uint32_t>(cam.background);
+			cJson.background = static_cast<uint32_t>(cam.backgroundMode);
 			cJson.clearColor = cam.clearColor;
 
 			cJson.primary = registry.any_of<PrimaryCameraTag>(entity);
@@ -303,13 +303,16 @@ namespace engine
 				cComp.orthographic.size = cJson.orthographic.size;
 				cComp.orthographic.nearClip = cJson.orthographic.near;
 				cComp.orthographic.farClip = cJson.orthographic.far;
-				cComp.background = static_cast<CameraComponent::Background>(cJson.background);
+				cComp.backgroundMode = static_cast<CameraComponent::Background>(cJson.background);
 				cComp.clearColor = cJson.clearColor;
 
 				if(cJson.primary)
 				{
 					registry.emplace_or_replace<PrimaryCameraTag>(handle);
 				}
+
+				registry.emplace_or_replace<CameraProjectionDirty>(handle);
+				registry.emplace_or_replace<CameraViewDirty>(handle);
 			}
 
 			// light

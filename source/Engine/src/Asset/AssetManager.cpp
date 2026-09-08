@@ -130,6 +130,8 @@ namespace engine
     LoadBuiltInAsset(RESOURCES::SHADER::DEFAULT, "resources/shaders/pink.wgsl");
     LoadBuiltInAsset(RESOURCES::SHADER::FLAT, "resources/shaders/flat.wgsl");
     LoadBuiltInAsset(RESOURCES::SHADER::UI, "resources/shaders/ui.wgsl");
+    LoadBuiltInAsset(RESOURCES::SHADER::SKYBOX, "resources/shaders/skybox.wgsl");
+    LoadBuiltInAsset(RESOURCES::SHADER::NORMAL, "resources/shaders/normal.wgsl");
     LoadBuiltInAsset(RESOURCES::SCENE::DEFAULT, "resources/scenes/default.scene");
     LoadBuiltInAsset(RESOURCES::TEXTURE::DEFAULT_FONT_ATLAS, "resources/fonts/atlas.png");
 

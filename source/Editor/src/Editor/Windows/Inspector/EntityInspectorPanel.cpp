@@ -165,9 +165,9 @@ namespace editor
 			entity.AddTag<engine::CameraProjectionDirty>();
 		}
 
-		EnumField("Background", (int&)cc.background, { "Color", "Skybox" });
+		EnumField("Background", (int&)cc.backgroundMode, { "Color", "Skybox" });
 
-		if (cc.background == engine::CameraComponent::Background::Color)
+		if (cc.backgroundMode == engine::CameraComponent::Background::Color)
 		{
 			PropertyField("Clear Color", cc.clearColor, { .mode = DisplayMode::Color });
 		}

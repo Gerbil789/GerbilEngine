@@ -49,13 +49,15 @@ namespace engine
 		camera.viewProjectionMatrix = camera.projectionMatrix * camera.viewMatrix;
 	}
 
-	void CameraSystem::UpdateCameraViewMatrix(CameraComponent& camera, const glm::mat4& worldMatrix)
+	void CameraSystem::UpdateCameraViewMatrix(CameraComponent& camera, const TransformComponent& transform)
 	{
-		glm::vec3 position = worldMatrix[3];
-		glm::vec3 forward = glm::normalize(glm::vec3(worldMatrix[2]));
-		glm::vec3 up = glm::normalize(glm::vec3(worldMatrix[1]));
+		glm::quat orientation = glm::quat(transform.rotation);
 
-		camera.viewMatrix = glm::lookAtLH(position, position + forward, up);
+		glm::vec3 forward = orientation * glm::vec3(0.0f, 0.0f, -1.0f);
+		glm::vec3 up = orientation * glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::vec3 right = orientation * glm::vec3(1.0f, 0.0f, 0.0f);
+
+		camera.viewMatrix = glm::lookAtLH(transform.position, transform.position + forward, up);
 		camera.viewProjectionMatrix = camera.projectionMatrix * camera.viewMatrix;
 	}
 
@@ -68,11 +70,11 @@ namespace engine
       registry.remove<CameraProjectionDirty>(entity);
     }
 
-		auto viewView = registry.view<CameraComponent, WorldTransformComponent, CameraViewDirty>();
-    for (auto [entity, camera, worldTransform] : viewView.each())
+		auto viewView = registry.view<CameraComponent, TransformComponent, TransformDirty>(entt::exclude<DisabledTag>);
+    for (auto [entity, camera, transform] : viewView.each())
     {
-			UpdateCameraViewMatrix(camera, worldTransform.worldMatrix);
-      registry.remove<CameraViewDirty>(entity);
+			UpdateCameraViewMatrix(camera, transform);
+      //registry.remove<CameraViewDirty>(entity);
     }
 	}
 }

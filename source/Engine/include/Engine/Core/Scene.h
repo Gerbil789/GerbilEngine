@@ -7,6 +7,9 @@
 
 namespace engine
 {
+	template<typename T>
+	concept UpdateSystem = requires(entt::registry& registry) {{ T::Update(registry) };};
+
 	class SceneAsset : public Asset
 	{
 	public:
@@ -39,8 +42,12 @@ namespace engine
 
 		void DestroyEntity(Entity entity);
 		Entity GetEntity(Uuid entityId);
+		entt::entity GetEntityHandle(Uuid entityId) const;
 
+		const entt::registry& GetRegistryConst() const { return m_Registry; }
 		entt::registry& GetRegistry() { return m_Registry; }
+
+		const CameraComponent& GetPrimaryCamera() const;
 
 		const std::vector<entt::entity>& GetRootEntities() const;
 		void InsertRootEntity(entt::entity entity, size_t index);
@@ -49,11 +56,25 @@ namespace engine
 		Texture2D GetEnvironmentTexture() const { return m_EnvironmentTexture; }
 		void SetEnvironmentTexture(Texture2D texture) { m_EnvironmentTexture = texture; }
 
+
+		template<typename System> requires UpdateSystem<System>
+		void RegisterSystem()
+		{
+			m_Systems.push_back([this]() {System::Update(m_Registry);});
+		}
+
+		const std::vector<std::function<void()>>& GetSystems() const
+		{
+			return m_Systems;
+		}
+
 	private:
 		entt::registry m_Registry;
 		std::unordered_map<engine::Uuid, entt::entity> m_EntityMap;
 		std::vector<entt::entity> m_RootEntities;
 		Texture2D m_EnvironmentTexture;
+
+		std::vector<std::function<void()>> m_Systems;
 
 	private:
 		friend class SceneSerializer;
