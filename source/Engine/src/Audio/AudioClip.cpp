@@ -1,5 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Audio/AudioClip.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/Log.h"
 #include <miniaudio.h>   
 
@@ -17,23 +18,50 @@ namespace engine
 			return;
 		}
 
-		m_Channels = decoder.outputChannels;
-		m_SampleRate = decoder.outputSampleRate;
+		channels = decoder.outputChannels;
+		sampleRate = decoder.outputSampleRate;
 
-		ma_uint64 totalFrames;
-		ma_decoder_get_length_in_pcm_frames(&decoder, &totalFrames);
-		m_TotalFrames =  static_cast<uint64_t>(totalFrames);
-		
-		m_PCMData.resize(m_TotalFrames * m_Channels);
-		ma_decoder_read_pcm_frames(&decoder, m_PCMData.data(), m_TotalFrames, nullptr);
+		ma_uint64 total;
+		ma_decoder_get_length_in_pcm_frames(&decoder, &total);
+		totalFrames = static_cast<uint64_t>(total);
+
+		PCMData.resize(totalFrames * channels);
+		ma_decoder_read_pcm_frames(&decoder, PCMData.data(), totalFrames, nullptr);
 
 		ma_decoder_uninit(&decoder);
 	}
 
-	//TODO: use template to specify units?
-	float AudioClipAsset::GetDurationSeconds() const
+
+	AudioClipAsset& AudioClip::Get() const
 	{
-		if (m_SampleRate == 0) return 0.0f;
-		return static_cast<float>(m_TotalFrames) / static_cast<float>(m_SampleRate);
+		return AssetManager::GetAsset(*this);
+	}
+
+	//TODO: use template to specify units?
+	float AudioClip::GetDurationSeconds() const
+	{
+		AudioClipAsset& data = Get();
+		if (data.sampleRate == 0) return 0.0f;
+		return static_cast<float>(data.totalFrames) / static_cast<float>(data.sampleRate);
+	}
+
+	const float* AudioClip::GetPCMData() const
+	{
+		return Get().PCMData.data();
+	}
+
+	uint64_t AudioClip::GetTotalFrames() const
+	{
+		return Get().totalFrames;
+	}
+
+	uint32_t AudioClip::GetChannels() const
+	{
+		return Get().channels;
+	}
+
+	uint32_t AudioClip::GetSampleRate() const
+	{
+		return Get().sampleRate;
 	}
 }

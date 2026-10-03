@@ -1,15 +1,12 @@
 #pragma once
 
-#include <filesystem>
-#include <optional>
+#include "Engine/Graphics/Texture/Texture2D.h"
 
 namespace engine
 {
-	class Texture2DAsset;
-
 	class TextureImporter
 	{
 	public:
-		static std::optional<Texture2DAsset> LoadTexture2D(const std::filesystem::path& path);
+		static Texture2DData LoadTexture2D(const std::filesystem::path& path);
 	};
 }

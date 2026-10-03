@@ -3,7 +3,6 @@
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Editor/Windows/Utility/Property.h"
 #include "Editor/Utility/File.h"
-#include "Editor/Core/SelectionManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/AssetRegistry.h"
@@ -13,34 +12,25 @@
 #include "Engine/Event/FileEvent.h"
 #include <imgui_internal.h>
 
-namespace engine
-{
-	class MaterialAsset;
-}
-
 namespace editor
 {
 	namespace
 	{
-		enum class ItemInteraction { None, Clicked, DoubleClicked };
-		enum class ContentBrowserItemType { Directory, Asset };
+		enum class ItemInteraction { None = 0, Clicked, DoubleClicked };
+		enum class ItemType { Directory, File };
 
-		struct ContentBrowserItem
+		struct Item
 		{
-			ContentBrowserItemType Type;
-			engine::AssetType AssetType;
-			std::string Name;
-			std::filesystem::path Path;
-			engine::Uuid AssetId;
-			bool IsEmptyDirectory = false;
+			std::string name;
+			std::filesystem::path path;
+			ImGuiID id;
+			ItemType itemType;
 
-			ImGuiID GetID() const
-			{
-				if (Type == ContentBrowserItemType::Asset)
-					return static_cast<ImGuiID>(static_cast<uint64_t>(AssetId));
+			// asset data
+			engine::Uuid uuid{};
+			engine::AssetType assetType = engine::AssetType::Unknown;
 
-				return static_cast<ImGuiID>(std::hash<std::string>{}(Path.string()));
-			}
+			engine::Sprite thumbnail{};
 		};
 
 		ThumbnailRenderer m_ThumbnailRenderer;
@@ -53,7 +43,8 @@ namespace editor
 		std::filesystem::path m_CurrentDirectory;
 
 		ImGuiSelectionBasicStorage m_Selection;
-		std::vector<ContentBrowserItem> m_Items;
+
+		std::vector<Item> m_Items;
 	}
 
 	static void RefreshDirectory()
@@ -61,41 +52,51 @@ namespace editor
 		m_Items.clear();
 		m_Selection.Clear();
 
-		std::filesystem::path relativeDir = std::filesystem::relative(m_CurrentDirectory, engine::Project::AssetsDirectory());
-
-		const engine::DirectoryNode* node = engine::AssetManager::GetAssetRegistry().GetDirectoryNode(relativeDir);
-		if (!node) return;
-
-		m_Items.reserve(node->subdirectories.size() + node->assets.size());
-
-		for (const auto& [directoryName, subDirectory] : node->subdirectories)
+		std::error_code ec;
+		for (const auto& entry : std::filesystem::directory_iterator(m_CurrentDirectory, ec))
 		{
-			ContentBrowserItem item;
-			item.Type = ContentBrowserItemType::Directory;
-			item.Name = directoryName;
-			item.Path = m_CurrentDirectory / directoryName;
-			item.IsEmptyDirectory = subDirectory.subdirectories.empty() && subDirectory.assets.empty();
+			const std::filesystem::path& path = entry.path();
 
-			m_Items.push_back(item);
+			if (entry.is_directory()) 
+			{
+				bool isEmpty = std::filesystem::is_empty(entry);
+				Icon icon = isEmpty ? Icon::EmptyFolder : Icon::Folder;
+
+				m_Items.emplace_back(
+					Item
+					{
+						.name = path.stem().string(),
+						.path = path,
+						.id = static_cast<ImGuiID>(std::hash<std::string>{}(path.string())),
+						.itemType = ItemType::Directory,
+						.thumbnail = m_ThumbnailRenderer.GetEditorIcon(icon)
+
+					});
+      } 
+			else if (entry.is_regular_file()) 
+			{
+				engine::Uuid id = engine::AssetRegistry::GetId(entry.path());
+				engine::AssetType type = engine::AssetRegistry::GetAssetType(entry.path());
+
+				m_Items.emplace_back(
+					Item
+					{
+						.name = path.stem().string(),
+						.path = path,
+						.id = static_cast<ImGuiID>(std::hash<std::string>{}(path.string())),
+						.itemType = ItemType::File,
+
+						.uuid = id,
+						.assetType = type,
+						.thumbnail = m_ThumbnailRenderer.GetAssetThumbnail(id, type)
+					}
+				);
+      }
+			else 
+			{
+				LOG_WARNING("Unknown file: {}", path);
+      }
 		}
-
-		for (engine::Uuid id : node->assets)
-		{
-			ContentBrowserItem item;
-			item.Type = ContentBrowserItemType::Asset;
-			item.Path = engine::AssetManager::GetAssetPath(id);
-			item.Name = item.Path.stem().string();
-			item.AssetId = id;
-			item.AssetType = engine::AssetManager::GetAssetType(id);
-
-			m_Items.push_back(item);
-		}
-	}
-
-	static void OpenDirectory(const std::filesystem::path& path)
-	{
-		m_CurrentDirectory = path;
-		RefreshDirectory();
 	}
 
 	static void DrawNavigationBar()
@@ -107,15 +108,16 @@ namespace editor
 
 		ImGui::BeginChild("NavBar", ImVec2(0, 24), ImGuiChildFlags_None, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-		const std::filesystem::path& relativePath = std::filesystem::relative(m_CurrentDirectory, engine::Project::AssetsDirectory());
-		std::filesystem::path pathSoFar = engine::Project::AssetsDirectory();
+		const std::filesystem::path& relativePath = std::filesystem::relative(m_CurrentDirectory, engine::Project::assetsDirectory);
+		std::filesystem::path pathSoFar = engine::Project::assetsDirectory;
 
 		if (ImGui::Button("Assets"))
 		{
-			OpenDirectory(engine::Project::AssetsDirectory());
+			m_CurrentDirectory = engine::Project::assetsDirectory;
+			RefreshDirectory();
 		}
 
-		if (m_CurrentDirectory != engine::Project::AssetsDirectory())
+		if (m_CurrentDirectory != engine::Project::assetsDirectory)
 		{
 			for (const auto& component : relativePath)
 			{
@@ -127,7 +129,8 @@ namespace editor
 
 				if (ImGui::Button(component.string().c_str()))
 				{
-					OpenDirectory(pathSoFar);
+					m_CurrentDirectory = pathSoFar;
+					RefreshDirectory();
 				}
 			}
 		}
@@ -182,17 +185,17 @@ namespace editor
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Scene"))
-				{
-					engine::AssetManager::CreateAsset<engine::Scene>(m_CurrentDirectory / "newScene.scene");
-					RefreshDirectory();
-				}
+				// if (ImGui::MenuItem("Scene"))
+				// {
+				// 	engine::AssetManager::CreateAsset<engine::Scene>(m_CurrentDirectory / "newScene.scene");
+				// 	RefreshDirectory();
+				// }
 
-				if (ImGui::MenuItem("Material"))
-				{
-					engine::AssetManager::CreateAsset<engine::Material>(m_CurrentDirectory / "material.mat");
-					RefreshDirectory();
-				}
+				// if (ImGui::MenuItem("Material"))
+				// {
+				// 	engine::AssetManager::CreateAsset<engine::Material>(m_CurrentDirectory / "material.mat");
+				// 	RefreshDirectory();
+				// }
 
 				ImGui::EndMenu();// End Create Menu
 			}
@@ -208,7 +211,7 @@ namespace editor
 		}
 	}
 
-	static void ItemContextMenu(const ContentBrowserItem& item)
+	static void ItemContextMenu(const Item& item)
 	{
 		if (ImGui::BeginPopupContextItem("ItemContextMenu"))
 		{
@@ -226,29 +229,25 @@ namespace editor
 
 			if (ImGui::MenuItem("Open in file explorer"))
 			{
-				editor::FileDialog::OpenFileExplorer(item.Path);
+				editor::FileDialog::OpenFileExplorer(item.path);
 			}
 
 			ImGui::EndPopup();
 		}
 	}
 
-	static ItemInteraction DrawItem(const ContentBrowserItem& item, ImDrawList* draw_list, ImVec2 pos, ImU32 label_col)
-	{
-		// thumbnail
-		const Thumbnail& thumbnail = (item.Type == ContentBrowserItemType::Directory)
-			? m_ThumbnailRenderer.GetDirectoryThumbnail(item.IsEmptyDirectory)
-			: m_ThumbnailRenderer.GetThumbnail(item.AssetId, item.AssetType);
 
+	static ItemInteraction DrawItem(const Item& item, ImDrawList* draw_list, ImVec2 pos, ImU32 label_col)
+	{
+		const engine::Sprite& thumbnail = item.thumbnail;
 
 		ImVec2 icon_min = pos;
 		ImVec2 icon_max = { pos.x + m_ItemSize.x, pos.y + m_ItemSize.x };
-		draw_list->AddImage(thumbnail.view.Get(), icon_min, icon_max, ImVec2(thumbnail.uv_min.x, thumbnail.uv_min.y), ImVec2(thumbnail.uv_max.x, thumbnail.uv_max.y));
-
+		draw_list->AddImage(thumbnail.texture.View().Get(), icon_min, icon_max, ImVec2(thumbnail.uvMin.x, thumbnail.uvMin.y), ImVec2(thumbnail.uvMax.x, thumbnail.uvMax.y));
 
 		// label
 		ImRect label_rect = ImRect{ pos.x, icon_max.y, pos.x + m_ItemSize.x, pos.y + m_ItemSize.y + 20.0f };
-		std::string displayName = item.Name;
+		std::string displayName = item.name;
 		ImVec2 text_size = ImGui::CalcTextSize(displayName.c_str());
 
 		if (text_size.x > m_ItemSize.x)
@@ -270,7 +269,7 @@ namespace editor
 
 		if (ImGui::IsItemHovered())
 		{
-			ImGui::SetTooltip("%s", item.Name.c_str());
+			ImGui::SetTooltip("%s", item.name.c_str());
 
 			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 			{
@@ -288,8 +287,9 @@ namespace editor
 
 	static void DrawMainContent()
 	{
+		int totalItems = static_cast<int>(m_Items.size());
 		m_ColumnCount = std::max(static_cast<int>(ImGui::GetContentRegionAvail().x / (m_ItemSize.x + m_ItemSpacing)), 1);
-		m_LineCount = (static_cast<int>(m_Items.size()) + m_ColumnCount) / m_ColumnCount;
+		m_LineCount = (totalItems + m_ColumnCount) / m_ColumnCount;
 
 		constexpr float layoutOuterPadding = 5.0f;
 
@@ -304,9 +304,9 @@ namespace editor
 		ImGui::SetCursorScreenPos(startPos);
 
 		ImGuiMultiSelectFlags flags = ImGuiMultiSelectFlags_ClearOnEscape | ImGuiMultiSelectFlags_ClearOnClickVoid | ImGuiMultiSelectFlags_BoxSelect2d | ImGuiMultiSelectFlags_SelectOnClickRelease;
-		ImGuiMultiSelectIO* io = ImGui::BeginMultiSelect(flags, m_Selection.Size, static_cast<int>(m_Items.size()));
+		ImGuiMultiSelectIO* io = ImGui::BeginMultiSelect(flags, m_Selection.Size, totalItems);
 
-		m_Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage*, int id) { return static_cast<ImGuiID>(static_cast<uint64_t>(m_Items[id].GetID())); };
+		m_Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage*, int id) { return static_cast<ImGuiID>(static_cast<uint64_t>(m_Items[id].id)); };
 		m_Selection.ApplyRequests(io);
 
 		ImGuiListClipper clipper;
@@ -317,18 +317,19 @@ namespace editor
 			for (int line_id = clipper.DisplayStart; line_id < clipper.DisplayEnd; ++line_id)
 			{
 				const int min_id = line_id * m_ColumnCount;
-				const int max_id = std::min(min_id + m_ColumnCount, static_cast<int>(m_Items.size()));
+				const int max_id = std::min(min_id + m_ColumnCount, totalItems);
 
 				for (int item_id = min_id; item_id < max_id; ++item_id)
 				{
-					const ContentBrowserItem& item = m_Items[item_id];
-					ImGui::PushID(item.GetID());
+					const Item& item = m_Items[item_id];
+
+					ImGui::PushID(item.id);
 
 					ImVec2 pos = ImVec2(startPos.x + (item_id % m_ColumnCount) * (m_ItemSize.x + m_ItemSpacing), startPos.y + line_id * (m_ItemSize.y + m_ItemSpacing + 20.0f));
 					ImGui::SetCursorScreenPos(pos);
 
 					ImGui::SetNextItemSelectionUserData(item_id);
-					bool item_is_selected = m_Selection.Contains(item.GetID());
+					bool item_is_selected = m_Selection.Contains(item.id);
 					ImGui::Selectable("", item_is_selected, ImGuiSelectableFlags_AllowOverlap, m_ItemSize);
 
 					if (ImGui::IsRectVisible(m_ItemSize))
@@ -339,23 +340,23 @@ namespace editor
 
 						if (interaction == ItemInteraction::Clicked)
 						{
-							if (item.Type == ContentBrowserItemType::Asset)
+							if (item.itemType == ItemType::File)
 							{
-								SelectionManager::Assets.Select(item.AssetId);
+								engine::EventBus::Publish(SelectAssetEvent{item.uuid});
 							}
 						}
 						else if (interaction == ItemInteraction::DoubleClicked)
 						{
-							if (item.Type == ContentBrowserItemType::Directory)
+							if (item.itemType == ItemType::Directory)
 							{
-								directoryToOpen = item.Path;
+								directoryToOpen = item.path;
 							}
-							else if (item.Type == ContentBrowserItemType::Asset)
+							else if (item.itemType == ItemType::File)
 							{
-								switch (item.AssetType)
+								switch (item.assetType)
 								{
 								case engine::AssetType::Scene:
-									EditorCommandManager::OpenScene(engine::Scene{ item.AssetId });
+									EditorCommandManager::OpenScene(engine::Scene{ item.uuid });
 									break;
 								default: {}
 								}
@@ -363,9 +364,18 @@ namespace editor
 						}
 					}
 
-					if (item.Type == ContentBrowserItemType::Asset)
+					if (item.itemType == ItemType::File)
 					{
-						DragDropSource<engine::Uuid>("UUID", item.AssetId, item.Name);
+
+						switch(item.assetType)
+						{
+							case engine::AssetType::Mesh:
+							DragDropSource<engine::Mesh>(engine::Mesh{item.uuid}, item.name);
+							break;
+
+						}
+
+
 					}
 
 
@@ -388,41 +398,15 @@ namespace editor
 
 		if (!directoryToOpen.empty())
 		{
-			OpenDirectory(directoryToOpen);
+			m_CurrentDirectory = directoryToOpen;
+			RefreshDirectory();
 		}
 	}
 
 	void ContentBrowserWindow::Initialize()
 	{
 		m_ThumbnailRenderer.Initialize();
-		m_CurrentDirectory = engine::Project::AssetsDirectory();
-
-		engine::EventBus::Subscribe<engine::FileAddedEvent>([](const engine::FileAddedEvent& event)
-			{
-				if (event.path == m_CurrentDirectory)
-				{
-					RefreshDirectory();
-				}
-				return false;
-			});
-
-		engine::EventBus::Subscribe<engine::FileRemovedEvent>([](const engine::FileRemovedEvent& event)
-			{
-				if (event.path == m_CurrentDirectory)
-				{
-					RefreshDirectory();
-				}
-				return false;
-			});
-
-		engine::EventBus::Subscribe<engine::FileModifiedEvent>([](const engine::FileModifiedEvent& event)
-			{
-				if (event.path == m_CurrentDirectory)
-				{
-					RefreshDirectory();
-				}
-				return false;
-			});
+		m_CurrentDirectory = engine::Project::assetsDirectory;
 
 		RefreshDirectory();
 	}

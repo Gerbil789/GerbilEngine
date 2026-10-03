@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Engine/Asset/AssetHandle.h"
-#include "Engine/Math/AABB.h"
+#include "Engine/Graphics/Mesh.h"
+#include "Engine/Graphics/Material.h"
 #include <string>
-#include <variant>
 #include <entt/entity/entity.hpp>
 
 namespace engine
@@ -43,7 +42,7 @@ namespace engine
 	struct MeshComponent
 	{
 		Mesh mesh;
-		std::vector<Material> materials;
+		std::vector<MaterialInstance> materials{};
 	};
 
 	enum class BodyType { Static = 0, Dynamic, Kinematic };
@@ -84,7 +83,6 @@ namespace engine
 		glm::mat4 projectionMatrix{ 1.0f };
 		glm::mat4 viewMatrix{ 1.0f };
 		glm::mat4 viewProjectionMatrix{ 1.0f };
-
 
 		enum class Background { Color, Skybox };
 

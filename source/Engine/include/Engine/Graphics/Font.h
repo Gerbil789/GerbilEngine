@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Asset/AssetHandle.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
 
 namespace engine
 {

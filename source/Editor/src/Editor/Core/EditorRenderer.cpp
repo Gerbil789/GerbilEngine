@@ -1,7 +1,8 @@
 #include "Editor/Core/EditorRenderer.h"
 #include "Editor/Windows/MenuBar.h"
 #include "Editor/Windows/ContentBrowser/ContentBrowserWindow.h"
-#include "Editor/Windows/Inspector/InspectorWindow.h"
+#include "Editor/Windows/AssetInspector/AssetInspectorWindow.h"
+#include "Editor/Windows/EntityInspector/EntityInspectorWindow.h"
 #include "Editor/Windows/SceneHierarchyWindow.h"
 #include "Editor/Windows/StatisticsWindow.h"
 #include "Editor/Windows/MaterialEditorWindow.h"
@@ -105,7 +106,8 @@ namespace editor
 			ViewportWindow,
 			ContentBrowserWindow,
 			SettingsWindow,
-			InspectorWindow,
+			EntityInspectorWindow,
+			AssetInspectorWindow,
 			MaterialEditorWindow,
 			StatisticsWindow,
 			AssetRegistryWindow
@@ -190,10 +192,7 @@ namespace editor
 		surface.GetCurrentTexture(&surfaceTexture);
 		if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal)
 		{
-			std::stringstream ss;
-			ss << surfaceTexture.status;
-
-			LOG_ERROR("Failed to get current surface texture. status: {}", ss.str());
+			LOG_ERROR("Failed to get current surface texture. status: {}", (int)surfaceTexture.status);
 			return;
 		}
 

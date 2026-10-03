@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Asset/AssetHandle.h"
+#include "Engine/Audio/AudioClip.h"
 
 namespace editor
 {

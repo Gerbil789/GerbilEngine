@@ -12,6 +12,8 @@
 #include "Engine/System/TransformSystem.h"
 #include "Engine/System/CameraSystem.h"
 #include "Engine/Core/Project.h"
+#include "Engine/Core/Scene.h"
+#include "Engine/Asset/AssetRegistry.h"
 
 namespace engine
 {
@@ -32,6 +34,7 @@ namespace engine
 		s_Window.Initialize(config.windowSpec);
 		s_Window.SetEventCallback([](auto& e) { EventBus::Publish(e); });
 
+		AssetRegistry::Load();
 		AssetManager::Initialize();
 
 		Input::Initialize(s_Window.Get());
@@ -79,31 +82,39 @@ namespace engine
 		Input::Update();
 		Audio::Update();
 
-		auto& scene = AssetManager::GetAsset(SceneManager::GetActiveScene());
+		Scene scene = SceneManager::GetActiveScene();
 		for (const auto& system : scene.GetSystems())
 		{
 			system();
 		}
 
-		CameraSystem::Update(scene.GetRegistry(), s_Window.GetAspectRatio());
-		TransformSystem::Update(scene);
+		entt::registry& registry = scene.GetRegistry();
+		CameraSystem::Update(registry, s_Window.GetAspectRatio());
+		TransformSystem::Update(registry, scene.GetRootEntities());
 	}
 
 	void Application::Draw()
 	{
-		auto& scene = AssetManager::GetAsset(SceneManager::GetActiveScene());
-		const auto& camera = scene.GetPrimaryCamera();
+		Scene scene = SceneManager::GetActiveScene();
 
 		if (s_Window.SizeChanged())
 		{
 			s_Renderer.SetSize(s_Window.GetWidth(), s_Window.GetHeight());
 			s_Window.ClearResizedFlag();
 
-			entt::entity cameraEntity = scene.GetRegistry().view<PrimaryCameraTag>().front();
-			scene.GetRegistry().emplace_or_replace<CameraProjectionDirty>(cameraEntity);
+			if(scene.GetPrimaryCamera())
+			{
+				entt::entity cameraEntity = scene.GetRegistry().view<PrimaryCameraTag>().front();
+				scene.GetRegistry().emplace_or_replace<CameraProjectionDirty>(cameraEntity);
+			}
 		}
 
-		s_Renderer.RenderScene(scene, camera, s_Window.GetSurfaceView());
+		engine::CameraComponent* camera = scene.GetPrimaryCamera();
+		if(camera)
+		{
+			s_Renderer.RenderScene(scene.GetRegistry(), camera, s_Window.GetSurfaceView());
+		}
+
 		s_Window.GetSurface().Present();
 	}
 }

@@ -1,6 +1,5 @@
 #include "Editor/Windows/SceneHierarchyWindow.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
-#include "Editor/Core/SelectionManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/SceneManager.h"
@@ -26,7 +25,7 @@ namespace editor
 		return false;
 	}
 
-	void DrawEntityNode(engine::SceneAsset& scene, entt::registry& registry, entt::entity entity)
+	void DrawEntityNode(engine::Scene scene, entt::registry& registry, entt::entity entity)
 	{
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
 
@@ -40,28 +39,28 @@ namespace editor
 			return;
 		}
 
-		engine::Uuid id = registry.get<engine::IdentityComponent>(entity).id;
+		// engine::Uuid id = registry.get<engine::IdentityComponent>(entity).id;
 		const std::string& name = registry.get<engine::NameComponent>(entity).name;
 
 		auto& hc = registry.get<engine::HierarchyComponent>(entity);
 		if (hc.children.empty()) flags |= ImGuiTreeNodeFlags_Leaf;
 
-		bool selected = SelectionManager::Entities.IsSelected(id);
+		// bool selected = SelectionManager::Entities.IsSelected(id);
 
-		if (selected)
-		{
-			flags |= ImGuiTreeNodeFlags_Selected;
-		}
+		// if (selected)
+		// {
+		// 	flags |= ImGuiTreeNodeFlags_Selected;
+		// }
 
 		ImGui::PushID(static_cast<int>(entity));
 
 		bool opened = ImGui::TreeNodeEx(name.c_str(), flags);
 
-		if (ImGui::IsItemClicked())
-		{
-			bool additive = engine::Input::IsKeyDown(engine::Key::LeftControl) || engine::Input::IsKeyDown(engine::Key::LeftShift);
-			SelectionManager::Entities.Select(id, additive);
-		}
+		// if (ImGui::IsItemClicked())
+		// {
+		// 	bool additive = engine::Input::IsKeyDown(engine::Key::LeftControl) || engine::Input::IsKeyDown(engine::Key::LeftShift);
+		// 	SelectionManager::Entities.Select(id, additive);
+		// }
 
 		// drag source
 		if (ImGui::BeginDragDropSource())
@@ -180,7 +179,7 @@ namespace editor
 
 			if (ImGui::MenuItem("Delete"))
 			{
-				EditorCommandManager::DeleteEntity(id);
+				EditorCommandManager::DeleteEntity(entity);
 			}
 
 			ImGui::EndPopup();
@@ -208,12 +207,11 @@ namespace editor
 
 		ImGui::Begin("Scene Hierarchy");
 
-		engine::SceneAsset& scene = engine::AssetManager::GetAsset(engine::SceneManager::GetActiveScene());
-		entt::registry& registry = scene.GetRegistry();
+		engine::Scene scene = engine::SceneManager::GetActiveScene();
+		engine::SceneAsset& sceneData = scene.Get();
+		entt::registry& registry = sceneData.registry;
 
-		const std::vector<entt::entity>& rootEntities = scene.GetRootEntities();
-
-		for (entt::entity entity : rootEntities)
+		for (entt::entity entity : sceneData.rootEntities)
 		{
 			DrawEntityNode(scene, registry, entity);
 		}

@@ -20,9 +20,9 @@ namespace editor
       });
   }
 
-	void EditorCommandManager::DeleteEntity(engine::Uuid entityId)
+	void EditorCommandManager::DeleteEntity(entt::entity entity)
   {
-    Enqueue(std::make_unique<DeleteEntityCommand>(entityId));
+    Enqueue(std::make_unique<DeleteEntityCommand>(entity));
   }
 
   void EditorCommandManager::OpenScene(engine::Scene scene)

@@ -1,12 +1,12 @@
 #pragma once
 
+#include "Engine/Audio/AudioClip.h"
+
 namespace engine
 {
-	class AudioClipAsset;
-
 	class AudioImporter
 	{
 	public:
-		static std::optional<AudioClipAsset> LoadAudioClip(const std::filesystem::path& path);
+		static AudioClipAsset LoadAudioClip(const std::filesystem::path& path);
 	};
 }

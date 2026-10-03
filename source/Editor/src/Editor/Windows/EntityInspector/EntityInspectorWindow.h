@@ -4,10 +4,10 @@
 
 namespace editor
 {
-	class InspectorWindow : public IEditorWindow
+	class EntityInspectorWindow : public IEditorWindow
 	{
 	public:
 		void Initialize() override;
-		void Draw() override;
+		void Draw() override; 
 	};
 }

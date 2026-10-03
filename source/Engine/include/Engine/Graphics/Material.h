@@ -1,71 +1,111 @@
 #pragma once
 
 #include "Engine/Asset/AssetHandle.h"
-#include "Engine/Asset/Asset.h"
-#include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/Pipeline.h"
-#include "Engine/Asset/Resources.h"
-#include <variant>
+#include "Engine/Graphics/SamplerPool.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
+#include "Engine/Core/Log.h"
 #include <glm/glm.hpp>
 
 namespace engine
 {
-	using MaterialValue = std::variant<float, glm::vec2, glm::vec3, glm::vec4, glm::ivec2>;
-
-	struct MaterialSpecification 
+	struct alignas(16) PBRParams
 	{
-		Shader shader = RESOURCES::SHADER::DEFAULT;
+		alignas(16) glm::vec4 albedo;
+		alignas(4) float roughness;
+		alignas(4) float metallic;
+		alignas(8) glm::vec2 tiling;
+		alignas(8) glm::vec2 offset;
 	};
 
-	class MaterialAsset : public Asset
+	struct alignas(16) FlatParams
 	{
-	public:
+		alignas(16) glm::vec4 albedo;
+	};
+
+	struct alignas(16) GridParams
+	{
+		alignas(16) glm::vec4 albedo;
+		alignas(8) glm::vec2 tiling;
+		alignas(8) glm::vec2 offset;
+		alignas(8) glm::vec2 hoveredTile;
+	};
+
+	struct MaterialAsset
+	{
 		MaterialAsset() = default;
-		MaterialAsset(const MaterialSpecification& spec);
+		MaterialAsset(Shader shader);
 
-		const Shader GetShader() const { return m_Shader; }
-		void SetShader(Shader shaderId);
+		Shader shader;
+		wgpu::RenderPipeline pipeline;
+		std::vector<std::byte> defaultUniformData;
+	};
 
-		void SetTextureFilter(TextureFilter filter) { m_TextureFilter = filter; CreateBindGroup(); }
-		void SetTextureWrap(TextureWrap wrap) { m_TextureWrap = wrap; CreateBindGroup(); }
+	struct Material : public AssetHandle
+	{
+		using AssetHandle::AssetHandle;
+		MaterialAsset& Get() const;
 
-		TextureFilter GetTextureFilter() const { return m_TextureFilter; }
-		TextureWrap GetTextureWrap() const { return m_TextureWrap; }
+		Shader GetShader() const;
+		wgpu::RenderPipeline GetPipeline() const;
+		size_t GetExpectedSize() const;
+	};
 
-		void SetTexture(const std::string& name, Texture2D texture); //TODO: make generic SetParameter that can handle textures too
-		Texture2D GetTexture(const std::string& name) const;
+	struct MaterialInstanceData
+	{
+		MaterialInstanceData() = default;
+		MaterialInstanceData(Material material);
 
-		wgpu::BindGroup GetBindGroup() const { return m_BindGroup; }
-		wgpu::Buffer GetUniformBuffer() const { return m_UniformBuffer; }
-		const std::vector<std::byte>& GetUniformData() const { return m_UniformData; }
-		const std::unordered_map<std::string, Texture2D>& GetTextures() const { return m_Textures; }
-		const std::unordered_map<std::string, MaterialValue>& GetParameters() const { return m_Parameters; }
+		Material material;
 
-		wgpu::RenderPipeline GetPipeline() const { return m_Pipeline; }
+		wgpu::BindGroup bindGroup;
+		wgpu::Buffer uniformBuffer;
+
+		std::unordered_map<uint32_t, Texture2D> textures;
+		std::vector<std::byte> uniformData;
+
+		TextureFilter textureFilter = TextureFilter::Bilinear;
+		TextureWrap textureWrap = TextureWrap::Repeat;
+
+		void CreateBindGroup();
+	};
+
+	struct MaterialInstance : public AssetHandle
+	{
+		using AssetHandle::AssetHandle;
+		MaterialInstanceData& Get() const;
+
+		const Shader GetShader() const;
 
 		template<typename T>
-		void SetParameter(const std::string& paramName, const T& value);
+    void SetUniformData(const T& data)
+    {
+      MaterialInstanceData& instanceData = Get();
+      
+      if (sizeof(T) != instanceData.material.GetExpectedSize())
+      {
+        LOG_ERROR("Struct size mismatch!");
+        return;
+      }
 
-		const MaterialValue& GetParameterVariant(const std::string& name) const;
+      std::memcpy(instanceData.uniformData.data(), &data, sizeof(T));
+    }
 
-	private:
-		void CreateUniformBuffer();
-		void CreateBindGroup();
+		void SetTextureFilter(TextureFilter filter);
+		void SetTextureWrap(TextureWrap wrap);
 
-	private:
-		Shader m_Shader;
-		std::vector<std::byte> m_UniformData; // parameters data packed according to shader layout (material uniform layout)
-		std::unordered_map<std::string, Texture2D> m_Textures;
+		TextureFilter GetTextureFilter() const;
+		TextureWrap GetTextureWrap() const;
 
-		wgpu::BindGroup m_BindGroup;
-		wgpu::Buffer m_UniformBuffer; 
+		void SetTexture(uint32_t bindingIndex, Texture2D texture);
+		Texture2D GetTexture(uint32_t bindingIndex) const;
 
-		TextureFilter m_TextureFilter = TextureFilter::Bilinear;
-		TextureWrap m_TextureWrap = TextureWrap::Repeat;
+		wgpu::BindGroup GetBindGroup() const;
+		wgpu::Buffer GetUniformBuffer() const;
+		const std::vector<std::byte>& GetUniformData() const;
+		const std::unordered_map<uint32_t, Texture2D>& GetTextures() const;
 
-		wgpu::RenderPipeline m_Pipeline;
-
-		std::unordered_map<std::string, MaterialValue> m_Parameters;
+		wgpu::RenderPipeline GetPipeline() const;
 	};
 }

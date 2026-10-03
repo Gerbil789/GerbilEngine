@@ -2,9 +2,8 @@
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Utility/File.h"
 #include "Engine/Core/Project.h"
-#include "Engine/Asset/Serializer/MaterialSerializer.h"
+#include "Engine/Asset/Serializer/Serializer.h"
 #include "Engine/Core/SceneManager.h"
-#include "Engine/Asset/Serializer/SceneSerializer.h"
 #include "Engine/Asset/AssetManager.h"
 #include <imgui.h>
 
@@ -26,14 +25,14 @@ namespace editor
 	inline void SaveScene()
 	{
 		engine::Scene scene = engine::SceneManager::GetActiveScene();
-		auto& path = engine::AssetManager::GetAssetPath(scene.id);
+		auto& path = engine::AssetRegistry::GetPath(scene);
 
 		//if (path.empty())
 		//{
 		//	path = Editor::FileDialog::SelectPath({ {"Scene Files", "*.scene"} }, "scene"); //prompt user to select path
 		//}
 
-		engine::SceneSerializer::Serialize(scene, engine::Project::AssetsDirectory() / path);
+		engine::Serializer::SerializeScene(scene, engine::Project::assetsDirectory / path);
 	}
 
 	static const std::vector<MenuCategory> MainMenuBar

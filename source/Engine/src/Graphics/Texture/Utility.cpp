@@ -10,9 +10,9 @@
 
 namespace engine
 {
-	uint32_t GetMaxMipLevelCount(const wgpu::Extent3D& textureSize)
+	uint32_t GetMaxMipLevelCount(uint32_t width, uint32_t height)
 	{
-		return std::bit_width(std::max(textureSize.width, textureSize.height));
+		return std::bit_width(std::max(width, height));
 	}
 
 	//TODO: cache the pipeline and layouts for cubemap creation
@@ -91,13 +91,13 @@ namespace engine
 
 	TextureCube EquirectangularToCubemap(Texture2D equirectangularTexture)
 	{
-		const Texture2DAsset& sourceTexture = engine::AssetManager::GetAsset<Texture2DAsset>(equirectangularTexture);
+		const Texture2DData& source = equirectangularTexture.Get();
 
-		ENGINE_ASSERT(sourceTexture.GetWidth() == sourceTexture.GetHeight() * 2, "Equirectangular texture must have a 2:1 aspect ratio.");
+		ENGINE_ASSERT(source.width == source.height * 2, "Equirectangular texture must have a 2:1 aspect ratio.");
 
 		TextureCubeSpecification spec;
-		spec.size = sourceTexture.GetHeight() / 2;
-		spec.format = sourceTexture.GetFormat();
+		spec.size = source.height / 2;
+		spec.format = source.textureFormat;
 		spec.mipCount = 1;
 		TextureCube textureCube(spec);
 
@@ -116,7 +116,7 @@ namespace engine
 		wgpu::BindGroupLayout bindGroupLayout = CreateBindGroupLayout(spec.format);
 		wgpu::ComputePipeline pipeline = CreateComputePipeline(bindGroupLayout);
 		wgpu::Sampler linearSampler = CreateSampler();
-		wgpu::BindGroup bindGroup = CreateBindGroup(linearSampler, sourceTexture.GetTextureView(), targetWriteView, bindGroupLayout);
+		wgpu::BindGroup bindGroup = CreateBindGroup(linearSampler, source.textureView, targetWriteView, bindGroupLayout);
 
 		wgpu::CommandEncoder encoder = engine::GraphicsContext::GetDevice().CreateCommandEncoder();
 
@@ -148,7 +148,7 @@ namespace engine
 		wgpu::TextureFormat format = texture.GetFormat();
 
 		wgpu::Extent3D baseSize = { texture.GetWidth(), texture.GetHeight(), 1 };
-		auto mipCount = GetMaxMipLevelCount(baseSize);
+		auto mipCount = GetMaxMipLevelCount(baseSize.width, baseSize.height);
 
 		wgpu::TextureViewDescriptor textureViewDesc;
 		textureViewDesc.nextInChain = nullptr;

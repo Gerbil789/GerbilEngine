@@ -1,0 +1,30 @@
+{
+   "material": 7729141584915531511,
+   "attributes": {
+      "albedo": [
+         0.41409695,
+         1,
+         0,
+         1
+      ],
+      "metallic": 1,
+      "offset": [
+         0,
+         0
+      ],
+      "roughness": 1,
+      "tiling": [
+         1,
+         1
+      ]
+   },
+   "textures": {
+      "AlbedoTexture": 11,
+      "AmbientTexture": 11,
+      "MetallicTexture": 11,
+      "NormalTexture": 13,
+      "RoughnessTexture": 11
+   },
+   "filter": "point",
+   "wrap": "mirror"
+}

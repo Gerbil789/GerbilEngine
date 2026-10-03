@@ -1,47 +1,35 @@
 ﻿#pragma once
 
-#include "Engine/Asset/Asset.h"
+#include "Engine/Asset/AssetHandle.h"
 #include "Engine/Graphics/ShaderSpecification.h"
 #include <webgpu/webgpu_cpp.h>
-#include <ranges>
-#include <stdexcept>
+
 namespace engine
 {
-	class ShaderAsset : public Asset
+	struct ShaderAsset
 	{
-	public:
+		ShaderAsset() = default;
 		ShaderAsset(const std::string& source);
 
-		size_t GetMaterialUniformBufferSize() const { return m_MaterialUniformBufferSize; }
-		wgpu::BindGroupLayout GetMaterialBindGroupLayout() const { return m_MaterialBindGroupLayout; }
+		ShaderSpecification specification;
+		wgpu::ShaderModule shaderModule;
+		wgpu::BindGroupLayout materialBindGroupLayout;
+		size_t materialUniformBufferSize = 0;
+	};
 
-		wgpu::ShaderModule GetShaderModule() const { return m_ShaderModule; }
-		const ShaderSpecification& GetSpecification() const { return m_Specification; }
+	struct Shader : public AssetHandle
+	{
+		using AssetHandle::AssetHandle;
+		ShaderAsset& Get() const;
 
-		inline auto GetMaterialBindings() const
-		{ 
-			constexpr uint32_t materialGroupIndex = 2;
+		size_t GetMaterialUniformBufferSize() const;
+		wgpu::BindGroupLayout GetMaterialBindGroupLayout() const;
 
-			return m_Specification.bindings | std::views::filter([](const Binding& binding) 
-				{
-					return binding.group == materialGroupIndex;
-				});
-		}
+		wgpu::ShaderModule GetShaderModule() const;
+		const ShaderSpecification& GetSpecification() const;
 
-		inline const Binding& GetBinding(const std::string& name)
-		{
-			for (const auto& binding : m_Specification.bindings)
-			{
-				if (binding.name == name) return binding;
-			}
-
-			throw std::runtime_error("Binding not found: " + name); //TODO: better error handling
-		}
-
-	private:
-		ShaderSpecification m_Specification;
-		wgpu::ShaderModule m_ShaderModule;
-		wgpu::BindGroupLayout m_MaterialBindGroupLayout;
-		size_t m_MaterialUniformBufferSize = 0;
+		const std::vector<Binding> GetMaterialBindings() const;
+		const Binding& GetBinding(const std::string& name) const;
+		const Binding& GetBinding(uint32_t group, uint32_t binding) const;
 	};
 }

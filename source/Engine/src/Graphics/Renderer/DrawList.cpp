@@ -1,9 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Renderer/DrawList.h"
-#include "Engine/Core/Scene.h"
-#include "Engine/Core/Components.h"
 #include "Engine/Graphics/Mesh.h"
-#include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/Resources.h"
 
 namespace engine
@@ -14,12 +11,9 @@ namespace engine
 		glm::mat4 transform;
 	};
 
-
-	DrawList DrawList::CreateFromScene(const SceneAsset& scene)
+	DrawList DrawList::Create(const entt::registry& registry)
 	{
 		DrawList list;
-
-		const entt::registry& registry = scene.GetRegistryConst();
 
 		auto view = registry.view<MeshComponent, WorldTransformComponent>(entt::exclude<DisabledTag>);
 
@@ -27,24 +21,23 @@ namespace engine
 
 		tempDrawData.reserve(view.size_hint());
 
-		for (auto&& [entity, mc, wtc] : view.each())
+		for (const auto& [entity, mc, wtc] : view.each())
 		{
 			if (!mc.mesh) continue;
 
-			const engine::MeshAsset& mesh = engine::AssetManager::GetAsset<MeshAsset>(mc.mesh);
-			const auto& subMeshes = mesh.GetSubMeshes();
+			const auto& subMeshes = mc.mesh.GetSubMeshes();
 
 			for (uint32_t i = 0; i < subMeshes.size(); ++i)
 			{
 				const auto& subMesh = subMeshes[i];
-				engine::Material material{ RESOURCES::MATERIAL::PINK };
+				engine::MaterialInstance materialInstance{ RESOURCES::MATERIAL_INSTANCE::INVALID };
 
 				if (subMesh.materialIndex < mc.materials.size() && mc.materials[subMesh.materialIndex])
 				{
-					material = mc.materials[subMesh.materialIndex];
+					materialInstance = mc.materials[subMesh.materialIndex];
 				}
 
-				tempDrawData.push_back({DrawItem{ mc.mesh, material, i, subMesh.indexCount, subMesh.firstIndex }, wtc.worldMatrix });
+				tempDrawData.push_back({DrawItem{ mc.mesh, materialInstance, i, subMesh.indexCount, subMesh.firstIndex }, wtc.worldMatrix });
 			}
 		}
 
@@ -52,21 +45,20 @@ namespace engine
 			{
 				if (a.item.material != b.item.material)
 				{
-					return a.item.material < b.item.material;
+					return a.item.material.id < b.item.material.id;
 				}
-				return a.item.mesh < b.item.mesh;
+				return a.item.mesh.id < b.item.mesh.id;
 			});
 
-		auto& items = const_cast<std::vector<DrawItem>&>(list.GetItems());
-		auto& transforms = const_cast<std::vector<glm::mat4>&>(list.GetTransforms());
 
-		items.reserve(tempDrawData.size());
-		transforms.reserve(tempDrawData.size());
+		size_t size = tempDrawData.size();
+		list.items.reserve(size);
+		list.transforms.reserve(size);
 
 		for (const auto& data : tempDrawData)
 		{
-			items.push_back(data.item);
-			transforms.push_back(data.transform);
+			list.items.push_back(data.item);
+			list.transforms.push_back(data.transform);
 		}
 
 		return list;

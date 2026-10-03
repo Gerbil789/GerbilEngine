@@ -2,29 +2,25 @@
 
 #include "Engine/Event/Event.h"
 #include "Engine/Core/UUID.h"
-#include "Editor/Core/SelectionManager.h"
+#include <entt/entity/entity.hpp>
 
 namespace editor
 {
-	struct SelectionChangedEvent : public engine::Event
+	struct SelectAssetEvent : public engine::Event
 	{
-		SelectionContext context;
 		engine::Uuid id;
-
-		SelectionChangedEvent(SelectionContext context, engine::Uuid id) : context(context), id(id) {}
+		SelectAssetEvent(engine::Uuid id) : id(id) {}
 	};
 
-	struct FocusAssetEvent : public engine::Event
+	struct SelectEntityEvent : public engine::Event
 	{
-		engine::Uuid id;
-
-		FocusAssetEvent(const engine::Uuid& id) : id(id) {}
+		entt::entity entity;
+		SelectEntityEvent(entt::entity entity) : entity(entity) {}
 	};
 
 	struct FocusEntityEvent : public engine::Event
 	{
-		engine::Uuid id;
-
-		FocusEntityEvent(const engine::Uuid& id) : id(id) {}
+		entt::entity entity;
+		FocusEntityEvent(entt::entity entity) : entity(entity) {}
 	};
 }

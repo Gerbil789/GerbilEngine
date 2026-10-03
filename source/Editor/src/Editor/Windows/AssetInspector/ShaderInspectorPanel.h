@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Asset/AssetHandle.h"
+#include "Engine/Graphics/Shader.h"
 
 namespace editor
 {

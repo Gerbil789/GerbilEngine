@@ -1,10 +1,8 @@
 #include "ThumbnailRenderer.h"
 #include "Engine/Asset/Resources.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/AssetType.h"
 #include "Engine/Core/Scene.h"
 #include "Engine/Core/Components.h"
-#include "Engine/Core/Entity.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
@@ -17,65 +15,44 @@ namespace editor
 {
 	namespace
 	{
-		const std::unordered_map<engine::AssetType, glm::ivec2> AssetIconMap
+		const std::unordered_map<Icon, glm::ivec2> IconMap
 		{
-			{engine::AssetType::Material,       {2, 0}},
-			{engine::AssetType::Shader,         {2, 0}},
-			{engine::AssetType::Audio,          {4, 0}},
-			{engine::AssetType::Scene,          {5, 0}},
-			{engine::AssetType::Mesh,           {7, 0}},
-			{engine::AssetType::Unknown,        {6, 0}},
-		};
-
-		const std::unordered_map<EditorIcon, glm::ivec2> EditorIconMap
-		{
-				{EditorIcon::EmptyDirectory, {0, 0}},
-				{EditorIcon::Directory,      {1, 0}},
-				{EditorIcon::Unknown,        {6, 0}},
+			{ Icon::Unknown,{ 6, 0 } },
+			{ Icon::Folder,{ 1, 0 } },
+			{ Icon::EmptyFolder,{ 0, 0 } },
+			{ Icon::Texture,{ 2, 0 } },
+			{ Icon::Text,{ 2, 0 } },
+			{ Icon::Material,{ 2, 0 } },
+			{ Icon::Mesh,{ 7, 0 } },
+			{ Icon::Scene,{ 5, 0 } },
+			{ Icon::Audio,{ 4, 0 } },
 		};
 
 		constexpr glm::ivec2 m_SpritesheetSize{ 1024, 1024 };
 		constexpr glm::ivec2 m_CellSize{ 64, 64 };
 
-		std::unordered_map<engine::AssetType, engine::Sprite> m_IconSprites;
-		std::unordered_map<EditorIcon, engine::Sprite> m_EditorSprites;
-
-		std::unordered_map<engine::Uuid, Thumbnail> m_ThumbnailCache;
+		std::unordered_map<Icon, engine::Sprite> m_Icons;
+		std::unordered_map<engine::Uuid, engine::Sprite> m_ThumbnailCache;
 
 		engine::SceneAsset scene;
-		engine::Entity previewEntity;
+		entt::entity previewEntity;
 		engine::Renderer renderer;
-
 
 		engine::CameraComponent camera;
 		engine::TransformComponent cameraTransform;
 
-		struct PreviewRequest 
-		{
-			engine::Mesh mesh;
-			engine::Material material;
-		};
-
 		constexpr int AtlasSizePx = 2048;
 		constexpr int CellsPerSide = AtlasSizePx / 64;
 
-		wgpu::Texture m_AtlasTexture;
-		wgpu::TextureView m_AtlasView;
+		engine::Texture2D m_AtlasTexture = RESOURCES::TEXTURE::EDITOR_THUMBNAIL_ATLAS;
+		// wgpu::Texture m_AtlasTexture;
+		// wgpu::TextureView m_AtlasView;
 		int m_NextFreeSlot = 0;
 
 		wgpu::Texture m_ScratchpadTexture;
 		wgpu::TextureView m_ScratchpadView;
 		wgpu::Texture m_DepthTexture;
 		wgpu::TextureView m_DepthView;
-	}
-
-	static const engine::Sprite& GetIcon(engine::AssetType assetType) 
-	{
-		if (m_IconSprites.contains(assetType))
-		{
-			return m_IconSprites.at(assetType);
-		}
-		return m_IconSprites.at(engine::AssetType::Unknown);
 	}
 
 	void ThumbnailRenderer::Initialize()
@@ -88,14 +65,22 @@ namespace editor
 			cameraTransform.position = { 0.0f, 0.0f, 3.0f };
 			cameraTransform.rotation = { 0.0f, 0.0f, 0.0f };
 		}
-		
-		{
-			previewEntity = scene.CreateEntity<engine::TransformComponent, engine::WorldTransformComponent, engine::MeshComponent, engine::TransformDirty>("PreviewEntity");
-			auto& mc = previewEntity.GetComponent<engine::MeshComponent>();
-			mc.mesh = engine::Mesh{ RESOURCES::MESH::SPHERE };
-			mc.materials = { engine::Material{ RESOURCES::MATERIAL::PINK } };
 
-			auto& tc = previewEntity.GetComponent<engine::TransformComponent>();
+		{
+			entt::registry& registry = scene.registry;
+
+			previewEntity = registry.create();
+			registry.emplace<engine::IdentityComponent>(previewEntity);
+			registry.emplace<engine::HierarchyComponent>(previewEntity);
+			registry.emplace<engine::NameComponent>(previewEntity).name = "PreviewEntity";
+			auto& tc = registry.emplace<engine::TransformComponent>(previewEntity);
+			registry.emplace<engine::WorldTransformComponent>(previewEntity);
+			auto& mc = registry.emplace<engine::MeshComponent>(previewEntity);
+			registry.emplace<engine::TransformDirty>(previewEntity);
+
+			mc.mesh = RESOURCES::MESH::SPHERE;
+			mc.materials = { RESOURCES::MATERIAL_INSTANCE::INVALID };
+
 			tc.rotation = glm::radians(glm::vec3{ 15.0f, 45.0f, 0.0f });
 		}
 
@@ -105,26 +90,21 @@ namespace editor
 
 		renderer.Initialize(64, 64, passes);
 
-		for (const auto& [type, coords] : AssetIconMap)
+		for (const auto& [icon, coords] : IconMap)
 		{
-			m_IconSprites.emplace(type, engine::Sprite::CreateFromGrid(RESOURCES::TEXTURE::EDITOR_ICONS, m_SpritesheetSize, coords, m_CellSize));
+			m_Icons.emplace(icon, engine::Sprite::CreateFromGrid(RESOURCES::TEXTURE::EDITOR_ICONS, m_SpritesheetSize, coords, m_CellSize));
 		}
 
-		for (const auto& [iconType, coords] : EditorIconMap)
-		{
-			m_EditorSprites.emplace(iconType, engine::Sprite::CreateFromGrid(RESOURCES::TEXTURE::EDITOR_ICONS, m_SpritesheetSize, coords, m_CellSize));
-		}
-
-		wgpu::TextureDescriptor atlasDesc;
-		atlasDesc.label = "ThumbnailAtlas";
-		atlasDesc.dimension = wgpu::TextureDimension::e2D;
-		atlasDesc.sampleCount = 1;
-		atlasDesc.mipLevelCount = 1;
-		atlasDesc.size = { AtlasSizePx, AtlasSizePx, 1 };
-		atlasDesc.format = engine::GraphicsContext::GetSurfaceFormat();
-		atlasDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
-		m_AtlasTexture = engine::GraphicsContext::GetDevice().CreateTexture(&atlasDesc);
-		m_AtlasView = m_AtlasTexture.CreateView();
+		// wgpu::TextureDescriptor atlasDesc;
+		// atlasDesc.label = "ThumbnailAtlas";
+		// atlasDesc.dimension = wgpu::TextureDimension::e2D;
+		// atlasDesc.sampleCount = 1;
+		// atlasDesc.mipLevelCount = 1;
+		// atlasDesc.size = { AtlasSizePx, AtlasSizePx, 1 };
+		// atlasDesc.format = engine::GraphicsContext::GetSurfaceFormat();
+		// atlasDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
+		// m_AtlasTexture = engine::GraphicsContext::GetDevice().CreateTexture(&atlasDesc);
+		// m_AtlasView = m_AtlasTexture.CreateView();
 
 		wgpu::TextureDescriptor scratchDesc;
 		scratchDesc.label = "ThumbnailScratchpad";
@@ -149,26 +129,29 @@ namespace editor
 		m_DepthView = m_DepthTexture.CreateView();
 	}
 
-	static Thumbnail RenderToAtlas(const PreviewRequest& request)
+	static engine::Sprite RenderToAtlas(engine::Mesh mesh, engine::MaterialInstance material)
 	{
 		int slot = m_NextFreeSlot++;
 		int x = (slot % CellsPerSide) * 64;
 		int y = (slot / CellsPerSide) * 64;
 
-		auto& mc = previewEntity.GetComponent<engine::MeshComponent>();
+		entt::registry& registry = scene.registry;
 
-		mc.mesh = request.mesh;
-		mc.materials[0] = request.material;
+		auto& mc = registry.get<engine::MeshComponent>(previewEntity);
 
-		const engine::MeshAsset& mesh = engine::AssetManager::GetAsset<engine::MeshAsset>(mc.mesh);
-		float distance = glm::length(mesh.aabb.max - mesh.aabb.min);
+		mc.mesh = mesh;
+		mc.materials = { material };
+
+		const engine::AABB& aabb = mesh.GetAABB();
+		float distance = glm::length(aabb.max - aabb.min);
 
 		cameraTransform.position = { 0.0f, 0.0f, -distance };
 
-		engine::CameraSystem::Update(scene.GetRegistry(), 1.0f);
-		engine::TransformSystem::Update(scene);
+		engine::CameraSystem::Update(registry, 1.0f);
 
-		renderer.RenderScene(scene, camera, m_ScratchpadTexture.CreateView());
+		engine::TransformSystem::Update(registry, scene.rootEntities);
+
+		renderer.RenderScene(registry, &camera, m_ScratchpadTexture.CreateView());
 
 		// Copy to Atlas
 		wgpu::TexelCopyTextureInfo src;
@@ -177,7 +160,7 @@ namespace editor
 		src.origin = { 0, 0, 0 };
 
 		wgpu::TexelCopyTextureInfo dst;
-		dst.texture = m_AtlasTexture;
+		dst.texture = m_AtlasTexture.Get().texture;
 		dst.mipLevel = 0;
 		dst.origin = { (uint32_t)x, (uint32_t)y, 0 };
 
@@ -189,55 +172,58 @@ namespace editor
 		auto cmd = encoder.Finish();
 		engine::GraphicsContext::GetQueue().Submit(1, &cmd);
 
-		Thumbnail thumb;
-		thumb.view = m_AtlasView;
-		thumb.uv_min = { static_cast<float>(x) / AtlasSizePx, static_cast<float>(y) / AtlasSizePx };
-		thumb.uv_max = { static_cast<float>(x + 64) / AtlasSizePx, static_cast<float>(y + 64) / AtlasSizePx };
-		return thumb;
+		engine::Sprite sprite;
+		sprite.texture = m_AtlasTexture;
+		sprite.uvMin = { static_cast<float>(x) / AtlasSizePx, static_cast<float>(y) / AtlasSizePx };
+		sprite.uvMax = { static_cast<float>(x + 64) / AtlasSizePx, static_cast<float>(y + 64) / AtlasSizePx };
+		return sprite;
 	}
 
-	//TODO: use template asset handle... dont pass asset type
-	const Thumbnail& ThumbnailRenderer::GetThumbnail(engine::Uuid id, engine::AssetType type)
+	const engine::Sprite& ThumbnailRenderer::GetAssetThumbnail(engine::Uuid id, engine::AssetType type)
 	{
 		if (m_ThumbnailCache.contains(id))
 		{
 			return m_ThumbnailCache[id];
 		}
 
-		Thumbnail thumbnail;
-
+		engine::Sprite sprite;
 
 		switch (type)
 		{
 		case engine::AssetType::Texture:
-			thumbnail.view = engine::AssetManager::GetAsset(engine::Texture2D{ id }).GetTextureView();
+			sprite.texture = engine::Texture2D{ id };
+			break;
+		case engine::AssetType::Shader:
+			sprite = GetEditorIcon(Icon::Text);
 			break;
 		case engine::AssetType::Material:
-			thumbnail = RenderToAtlas({ engine::Mesh{RESOURCES::MESH::SPHERE}, engine::Material{id} });
+			sprite = RenderToAtlas(RESOURCES::MESH::SPHERE, engine::MaterialInstance{ id } );
 			break;
 		case engine::AssetType::Mesh:
-			thumbnail = RenderToAtlas({ engine::Mesh{id}, engine::Material{RESOURCES::MATERIAL::WHITE} });
+			sprite = RenderToAtlas(engine::Mesh{ id }, RESOURCES::MATERIAL_INSTANCE::WHITE);
+			break;
+		case engine::AssetType::Scene:
+			sprite = GetEditorIcon(Icon::Scene);
+			break;
+		case engine::AssetType::AudioClip:
+			sprite = GetEditorIcon(Icon::Audio);
 			break;
 		default:
-			const engine::Sprite& sprite = GetIcon(type);
-			const engine::Texture2DAsset& texture = engine::AssetManager::GetAsset(sprite.GetTexture());
-			thumbnail = { texture.GetTextureView(), sprite.GetUVMin(), sprite.GetUVMax() };
+			sprite = GetEditorIcon(Icon::Unknown);
 			break;
 		}
 
-		m_ThumbnailCache[id] = thumbnail;
+		m_ThumbnailCache[id] = sprite;
 		return m_ThumbnailCache[id];
 	}
 
-	const Thumbnail& ThumbnailRenderer::GetDirectoryThumbnail(bool isEmpty)
-	{
-		EditorIcon iconType = isEmpty ? EditorIcon::EmptyDirectory : EditorIcon::Directory;
-		const engine::Sprite& sprite = m_EditorSprites.at(iconType);
-		const engine::Texture2DAsset& texture = engine::AssetManager::GetAsset<engine::Texture2DAsset>(sprite.GetTexture());
 
-		// You could cache this, but constructing the struct is essentially free
-		static Thumbnail thumb;
-		thumb = { texture.GetTextureView(), sprite.GetUVMin(), sprite.GetUVMax() };
-		return thumb;
+	const engine::Sprite& ThumbnailRenderer::GetEditorIcon(Icon icon)
+	{
+		if (m_Icons.contains(icon))
+		{
+			return m_Icons.at(icon);
+		}
+		return m_Icons.at(Icon::Unknown);
 	}
 }

@@ -1,14 +1,12 @@
 #pragma once
 
-#include <optional>
+#include "Engine/Graphics/Mesh.h"
 
 namespace engine
 {
-	class MeshAsset;
-
 	class MeshImporter
 	{
 	public:
-		static std::optional<MeshAsset> LoadMesh(const std::filesystem::path& path);
+		static MeshAsset LoadMesh(const std::filesystem::path& path);
 	};
 }

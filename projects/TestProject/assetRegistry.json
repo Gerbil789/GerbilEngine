@@ -1,254 +1,81 @@
-[
-   {
-      "ID": 12056830497429148387,
-      "Path": "Textures\\Prototype\\texture_12.png"
+{
+   "textures": {
+      "7638837410741963550": "Textures/gerbilstudio3.png",
+      "3022715821073517837": "Textures/HDR/lebombo_4k.hdr",
+      "10799096076652929049": "Textures/bricks_wall/ambient.png",
+      "16917353513204954273": "Textures/vsb.png",
+      "3712291984449669961": "Textures/gerbil.jpg",
+      "10054630613968018392": "Textures/Prototype/texture_09.png",
+      "14137635248494242610": "Textures/Prototype/texture_04.png",
+      "2174111432847054550": "Textures/mood.png",
+      "13914922961435632693": "Textures/concrete_pillar/color.png",
+      "15176031972801595415": "Textures/spritesheet.png",
+      "7465925226444955721": "Textures/Prototype/texture_12.png",
+      "14074170742880353962": "Textures/background.png",
+      "7030405011457303402": "Textures/4150p04.jpg",
+      "5720591383266514245": "Textures/favorite.png",
+      "5109008694105908587": "Textures/coin.png",
+      "3736468152927501274": "Textures/concrete_pillar/height.png",
+      "5728814463656557179": "Textures/HDR/wooden_studio_14_4k.hdr",
+      "5691577984115193423": "Textures/concrete_pillar/ambient.png",
+      "8965972569406024945": "Textures/Prototype/texture_13.png",
+      "9905159653296856852": "Textures/concrete_pillar/normal.png",
+      "8955391734820446216": "Textures/bricks_wall/albedo.png",
+      "16328561150233723279": "Textures/input.jpg",
+      "1456705600600308254": "Textures/3069bp13.jpg",
+      "2246202493322333084": "Textures/HDR/autumn_field_puresky_4k.hdr",
+      "6273130798565585375": "Textures/tile.png",
+      "2642860124103318942": "Textures/gerbilstudio.png",
+      "15869912203137874270": "Textures/Prototype/texture_06.png",
+      "8288622593805468333": "Textures/Prototype/texture_01.png",
+      "11387085828611189434": "Textures/Prototype/texture_05.png",
+      "17239550615921175219": "Textures/Prototype/texture_10.png",
+      "6010061468131557970": "Textures/concrete_pillar/roughness.png",
+      "1684776618545541378": "Textures/skull.png",
+      "101961027760716325": "Textures/Prototype/texture_03.png",
+      "11422311619180279229": "UI/UI.png",
+      "13027467056443990881": "Textures/bricks_wall/normal.png",
+      "8976812905503213820": "Textures/gerbilstudio2.png",
+      "16166807668661524190": "Textures/bricks_wall/height.png",
+      "15541295208379027892": "Textures/Prototype/texture_02.png",
+      "12313052429365373033": "Textures/bricks_wall/roughness.png",
+      "11404328394139474386": "Textures/SwordddV2.png",
+      "4361410139751448484": "Textures/Prototype/texture_07.png",
+      "6793742740299560174": "Textures/Prototype/texture_11.png"
    },
-   {
-      "ID": 6981001295479567395,
-      "Path": "Textures\\vsb.png"
+   "meshes": {
+      "10241592065018954232": "Meshes/bad cube 2.glb",
+      "16018744518221520096": "Meshes/avenger.glb",
+      "8816162818181462448": "Meshes/sphere.glb",
+      "533369288630628099": "Meshes/plane.glb",
+      "981903713683107069": "Meshes/cone.glb",
+      "5832219982230885361": "Meshes/cube.glb",
+      "11230940011953760213": "Meshes/bad cube.glb"
    },
-   {
-      "ID": 1341032765844490403,
-      "Path": "Textures\\bricks_wall\\ambient.png"
+   "shaders": {
+      "15209181861015619900": "Shaders/Flat.wgsl",
+      "3553498257151091906": "Shaders/Grid.wgsl",
+      "12112520161474483907": "Shaders/Dev.wgsl"
    },
-   {
-      "ID": 14667818549145039867,
-      "Path": "Textures\\concrete_pillar\\ambient.png"
+   "materials": {
+      "17038668418704684530": "Materials/material.mat",
+      "7729141584915531511": "Materials/Test.mat",
+      "11029757367445621482": "Materials/Grid.mat"
    },
-   {
-      "ID": 4066779748511705339,
-      "Path": "Textures\\input.jpg"
+   "materialInstances": {
+      "2560297619838196381": "Materials/test_instance.mi",
+      "8739813572722669504": "Materials/material_instance.mi",
+      "9673713568881318762": "Materials/Grid_iinstance.mi"
    },
-   {
-      "ID": 10691664015380366211,
-      "Path": "Materials\\Grid.mat"
+   "audioClips": {
+      "17184273641218791741": "Audio/Music/Glorious_Morning.wav",
+      "7885012257571294448": "Audio/Music/Ievan Polkka.mp3",
+      "3915144214562607718": "Audio/Music/SO TIRED ROCK.wav",
+      "4002225439891951604": "Audio/Music/100_Bills.wav",
+      "13068321960882709364": "Audio/Music/music.mp3",
+      "5984593444889787674": "Audio/Sounds/bubbles.mp3"
    },
-   {
-      "ID": 10587986918880460483,
-      "Path": "Textures\\concrete_pillar\\color.png"
-   },
-   {
-      "ID": 5192136872038319209,
-      "Path": "Meshes\\bad cube 2.glb"
-   },
-   {
-      "ID": 13522212880176733481,
-      "Path": "Textures\\Prototype\\texture_01.png"
-   },
-   {
-      "ID": 13444945623421382313,
-      "Path": "Textures\\Prototype\\texture_04.png"
-   },
-   {
-      "ID": 9570156526517143726,
-      "Path": "Textures\\4150p04.jpg"
-   },
-   {
-      "ID": 15022887361508771406,
-      "Path": "Audio\\Sounds\\bubbles.mp3"
-   },
-   {
-      "ID": 10911691135274866464,
-      "Path": "Scenes\\test.scene"
-   },
-   {
-      "ID": 17820293680539683375,
-      "Path": "Shaders\\Grid.wgsl"
-   },
-   {
-      "ID": 6846541500573346735,
-      "Path": "Textures\\Prototype\\texture_03.png"
-   },
-   {
-      "ID": 8361355415861592303,
-      "Path": "Meshes\\plane.glb"
-   },
-   {
-      "ID": 12121804633091751692,
-      "Path": "Audio\\Music\\music.mp3"
-   },
-   {
-      "ID": 2929667008825994956,
-      "Path": "Textures\\HDR\\autumn_field_puresky_4k.hdr"
-   },
-   {
-      "ID": 17990889423066093331,
-      "Path": "Audio\\Music\\SO TIRED ROCK.wav"
-   },
-   {
-      "ID": 9221557484261786935,
-      "Path": "Meshes\\cube.glb"
-   },
-   {
-      "ID": 14189801883734626516,
-      "Path": "Textures\\Prototype\\texture_10.png"
-   },
-   {
-      "ID": 9043996195134804047,
-      "Path": "Textures\\Prototype\\texture_11.png"
-   },
-   {
-      "ID": 5431018272171152911,
-      "Path": "Textures\\spritesheet.png"
-   },
-   {
-      "ID": 6854353316358564022,
-      "Path": "Textures\\gerbilstudio3.png"
-   },
-   {
-      "ID": 7488216199622435638,
-      "Path": "Audio\\Music\\100_Bills.wav"
-   },
-   {
-      "ID": 15788957952198909873,
-      "Path": "Materials\\material.mat"
-   },
-   {
-      "ID": 16899994077942149224,
-      "Path": "Meshes\\avenger.glb"
-   },
-   {
-      "ID": 14189986849419163708,
-      "Path": "Textures\\3069bp13.jpg"
-   },
-   {
-      "ID": 2485182120683213729,
-      "Path": "Audio\\Music\\Ievan Polkka.mp3"
-   },
-   {
-      "ID": 16068182863800409057,
-      "Path": "Meshes\\sphere.glb"
-   },
-   {
-      "ID": 8449863223132889578,
-      "Path": "Meshes\\bad cube.glb"
-   },
-   {
-      "ID": 2161596394666805183,
-      "Path": "Audio\\Music\\Glorious_Morning.wav"
-   },
-   {
-      "ID": 3133854057058914943,
-      "Path": "Textures\\skull.png"
-   },
-   {
-      "ID": 1193762997442931309,
-      "Path": "Shaders\\Flat.wgsl"
-   },
-   {
-      "ID": 13465833615711558431,
-      "Path": "Textures\\bricks_wall\\albedo.png"
-   },
-   {
-      "ID": 6140124627022261057,
-      "Path": "Textures\\concrete_pillar\\roughness.png"
-   },
-   {
-      "ID": 8838992683921654786,
-      "Path": "Shaders\\Dev.wgsl"
-   },
-   {
-      "ID": 10415153089436562825,
-      "Path": "Textures\\favorite.png"
-   },
-   {
-      "ID": 977452470281314749,
-      "Path": "Textures\\concrete_pillar\\height.png"
-   },
-   {
-      "ID": 15064949966790979098,
-      "Path": "Textures\\bricks_wall\\normal.png"
-   },
-   {
-      "ID": 9659506721060134749,
-      "Path": "Textures\\Prototype\\texture_07.png"
-   },
-   {
-      "ID": 13090202854731685574,
-      "Path": "Materials\\Test.mat"
-   },
-   {
-      "ID": 4294502251306902965,
-      "Path": "Textures\\Prototype\\texture_09.png"
-   },
-   {
-      "ID": 373518836657774005,
-      "Path": "Textures\\Prototype\\texture_02.png"
-   },
-   {
-      "ID": 11462467453531586824,
-      "Path": "Textures\\coin.png"
-   },
-   {
-      "ID": 18003681884322818824,
-      "Path": "Textures\\HDR\\lebombo_4k.hdr"
-   },
-   {
-      "ID": 15993382730855967660,
-      "Path": "Textures\\concrete_pillar\\normal.png"
-   },
-   {
-      "ID": 10444814668422255788,
-      "Path": "Textures\\HDR\\wooden_studio_14_4k.hdr"
-   },
-   {
-      "ID": 9722100597333480338,
-      "Path": "Textures\\Prototype\\texture_06.png"
-   },
-   {
-      "ID": 8400836915437081618,
-      "Path": "Textures\\Prototype\\texture_05.png"
-   },
-   {
-      "ID": 8507922517183505536,
-      "Path": "Textures\\gerbil.jpg"
-   },
-   {
-      "ID": 7285079820488006310,
-      "Path": "Meshes\\cone.glb"
-   },
-   {
-      "ID": 796584144924270477,
-      "Path": "Textures\\gerbilstudio.png"
-   },
-   {
-      "ID": 15495703648375391346,
-      "Path": "UI\\UI.png"
-   },
-   {
-      "ID": 15878445186001601458,
-      "Path": "Textures\\gerbilstudio2.png"
-   },
-   {
-      "ID": 2295617467502174066,
-      "Path": "Textures\\Prototype\\texture_13.png"
-   },
-   {
-      "ID": 6160194430871157881,
-      "Path": "Textures\\mood.png"
-   },
-   {
-      "ID": 3831718872342578329,
-      "Path": "Textures\\bricks_wall\\height.png"
-   },
-   {
-      "ID": 10479986532528325026,
-      "Path": "Textures\\tile.png"
-   },
-   {
-      "ID": 16214425895879771605,
-      "Path": "Textures\\background.png"
-   },
-   {
-      "ID": 16273085196738304214,
-      "Path": "Textures\\bricks_wall\\roughness.png"
-   },
-   {
-      "ID": 7832263255562627205,
-      "Path": "Textures\\SwordddV2.png"
-   },
-   {
-      "ID": 711583462300397176,
-      "Path": "UI\\UI.xcf"
+   "scenes": {
+      "9116182370241309221": "Scenes/test.scene"
    }
-]
+}

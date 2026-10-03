@@ -208,7 +208,7 @@ namespace engine
 		}
 	}
 
-	std::optional<MeshAsset> MeshImporter::LoadMesh(const std::filesystem::path& path)
+	MeshAsset MeshImporter::LoadMesh(const std::filesystem::path& path)
 	{
 		tinygltf::Model model;
 		tinygltf::TinyGLTF loader;
@@ -217,7 +217,7 @@ namespace engine
 		if (!loader.LoadBinaryFromFile(&model, &err, &warn, path.string()))
 		{
 			LOG_ERROR("Failed to load glTF: {}", path);
-			return std::nullopt;
+			return {};
 		}
 
 		if (!warn.empty()) LOG_WARNING("{}", warn);

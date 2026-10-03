@@ -2,7 +2,6 @@
 #include "Engine/Graphics/Renderer/RenderPass.h"
 #include "Engine/Graphics/Pipeline.h"
 #include "Engine/Asset/Resources.h"
-#include "Engine/Asset/AssetManager.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
@@ -95,28 +94,27 @@ namespace engine::pass
 				pass.SetBindGroup(1, context.environmentBindGroup, 0, nullptr);
 				pass.SetBindGroup(3, context.modelBindGroup, 0, nullptr);
 
-				Mesh lastMesh;
-				Material lastMaterial;
+				Mesh currentMesh;
+				MaterialInstance currentMaterial;
 
 				size_t i = 0;
-				for (const auto& item : context.drawList.GetItems())
+				for (const auto& item : context.drawList.items)
 				{
-					if (item.mesh != lastMesh)
+					if (item.mesh != currentMesh)
 					{
-						lastMesh = item.mesh;
-						const MeshAsset& meshAsset = AssetManager::GetAsset(lastMesh);
-						pass.SetVertexBuffer(0, meshAsset.GetVertexBuffer(), 0, meshAsset.GetVertexBuffer().GetSize());
-						pass.SetIndexBuffer(meshAsset.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, meshAsset.GetIndexBuffer().GetSize());
+						currentMesh = item.mesh;
+						pass.SetVertexBuffer(0, currentMesh.GetVertexBuffer(), 0, currentMesh.GetVertexBuffer().GetSize());
+						pass.SetIndexBuffer(currentMesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, currentMesh.GetIndexBuffer().GetSize());
 					}
 
-					if (item.material != lastMaterial)
+					if (item.material != currentMaterial)
 					{
-						lastMaterial = item.material;
-						const MaterialAsset& material = AssetManager::GetAsset(lastMaterial);
-						GraphicsContext::GetQueue().WriteBuffer(material.GetUniformBuffer(), 0, material.GetUniformData().data(), material.GetUniformData().size());
-						pass.SetBindGroup(2, material.GetBindGroup(), 0, nullptr);
+						currentMaterial = item.material;
+						MaterialInstanceData data = currentMaterial.Get();
+						GraphicsContext::GetQueue().WriteBuffer(data.uniformBuffer, 0, data.uniformData.data(), data.uniformData.size());
+						pass.SetBindGroup(2, data.bindGroup, 0, nullptr);
 
-						pass.SetPipeline(material.GetPipeline());
+						pass.SetPipeline(data.material.GetPipeline());
 					}
 
 					pass.DrawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));

@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Audio/Audio.h"
 #include "Engine/Audio/AudioClip.h"
-#include "Engine/Asset/AssetManager.h"
+#include "Engine/Core/Log.h"
 #define MINIAUDIO_IMPLEMENTATION
 #include <miniaudio.h>
 
@@ -63,6 +63,19 @@ namespace engine
 
   void Audio::Shutdown()
   {
+    for (uint32_t i = 0; i < MaxVoices; i++)
+    {
+      Voice& voice = s_Voices[i];
+
+      if (!voice.active)
+        continue;
+
+      ma_sound_stop(&voice.sound);
+      ma_sound_uninit(&voice.sound);
+      ma_audio_buffer_uninit(&voice.buffer);
+      voice.active = false;
+      voice.instance = {};
+    }
     ma_engine_uninit(&s_AudioEngine);
   }
 
@@ -75,7 +88,7 @@ namespace engine
       if (!voice.active)
         continue;
 
-      if (!ma_sound_is_playing(&voice.sound))
+      if (!ma_sound_at_end(&voice.sound))
       {
         ma_sound_uninit(&voice.sound);
         ma_audio_buffer_uninit(&voice.buffer);
@@ -117,20 +130,27 @@ namespace engine
       return {};
     }
 
-    AudioClipAsset& audioClip = engine::AssetManager::GetAsset(clip);
+
+    AudioClipAsset& audioData = clip.Get();
+    if (audioData.totalFrames == 0 || audioData.PCMData.empty())
+    {
+      LOG_WARNING("Attempted to play an empty AudioClip");
+      return {};
+    }
 
     ma_audio_buffer_config bufferConfig = ma_audio_buffer_config_init(
       ma_format_f32,
-      audioClip.GetChannels(),
-      audioClip.GetTotalFrames(),
-      audioClip.GetPCMData(),
+      audioData.channels,
+      audioData.totalFrames,
+      audioData.PCMData.data(),
       nullptr
     );
-    bufferConfig.sampleRate = audioClip.GetSampleRate();
+    bufferConfig.sampleRate = audioData.sampleRate;
 
     if (ma_audio_buffer_init(&bufferConfig, &voice->buffer) != MA_SUCCESS)
     {
       LOG_ERROR("Failed to init audio buffer");
+      voice->active = false; // <-- Add this
       return {};
     }
 
@@ -139,6 +159,7 @@ namespace engine
     {
       LOG_ERROR("Failed to initialize audio voice");
       ma_audio_buffer_uninit(&voice->buffer); // Cleanup
+      voice->active = false; // <-- Add this
       return {};
     }
 
@@ -151,7 +172,7 @@ namespace engine
     if (!clip)
     {
       LOG_WARNING("AudioClip is invalid/null");
-			return {};
+      return {};
     }
 
     AudioInstance newInstance = AudioInstance{ Uuid::Generate() };
@@ -163,20 +184,26 @@ namespace engine
       return {};
     }
 
-    engine::AudioClipAsset& audioClip = engine::AssetManager::GetAsset<engine::AudioClipAsset>(clip);
+    engine::AudioClipAsset& audioData = clip.Get();
+    if (audioData.totalFrames == 0 || audioData.PCMData.empty())
+    {
+      LOG_WARNING("Attempted to play an empty AudioClip");
+      return {};
+    }
 
     ma_audio_buffer_config bufferConfig = ma_audio_buffer_config_init(
       ma_format_f32,
-      audioClip.GetChannels(),
-      audioClip.GetTotalFrames(),
-      audioClip.GetPCMData(),
+      audioData.channels,
+      audioData.totalFrames,
+      audioData.PCMData.data(),
       nullptr
     );
-    bufferConfig.sampleRate = audioClip.GetSampleRate();
+    bufferConfig.sampleRate = audioData.sampleRate;
 
     if (ma_audio_buffer_init(&bufferConfig, &voice->buffer) != MA_SUCCESS)
     {
       LOG_ERROR("Failed to init audio buffer");
+      voice->active = false; // <-- Add this
       return {};
     }
 
@@ -185,6 +212,7 @@ namespace engine
     {
       LOG_ERROR("Failed to initialize audio voice");
       ma_audio_buffer_uninit(&voice->buffer); // Cleanup
+      voice->active = false; // <-- Add this
       return {};
     }
 
@@ -247,6 +275,7 @@ namespace engine
 
       ma_sound_stop(&voice.sound);
       ma_sound_uninit(&voice.sound);
+      ma_audio_buffer_uninit(&voice.buffer);
       voice.active = false;
       voice.instance = {};
     }

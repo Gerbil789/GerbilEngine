@@ -1,7 +1,8 @@
 #pragma once
 
 #include "ICommand.h"
-#include "Engine/Core/Entity.h"
+#include "Engine/Core/SceneManager.h"
+#include <entt/entity/registry.hpp>
 
 namespace editor
 {
@@ -9,32 +10,36 @@ namespace editor
   class RemoveComponentCommand : public ICommand
   {
   public:
-    RemoveComponentCommand(engine::Entity entity) : m_Entity(entity)
+    RemoveComponentCommand(entt::entity entity) : m_Entity(entity)
     {
-      if(m_Entity.HasComponent<T>())
+      entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+
+      if(registry.any_of<T>(entity))
       {
-        m_Backup = m_Entity.GetComponent<T>();
+        m_Backup = registry.get<T>(entity);
       }
     }
 
     void Execute() override
     {
-      if (m_Entity.HasComponent<T>())
+      entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+      if(registry.any_of<T>(m_Entity))
       {
-				m_Entity.RemoveComponent<T>();
-			}
+        registry.remove<T>(m_Entity);
+      }
     }
 
     void Undo() override
     {
-      if (!m_Entity.HasComponent<T>())
+      entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+      if(!registry.any_of<T>(m_Entity))
       {
-				m_Entity.AddComponent<T>() = m_Backup;
+        registry.emplace<T>(m_Entity) = m_Backup;
       }
     }
 
   private:
-    engine::Entity m_Entity;
+    entt::entity m_Entity;
     T m_Backup;
   };
 }

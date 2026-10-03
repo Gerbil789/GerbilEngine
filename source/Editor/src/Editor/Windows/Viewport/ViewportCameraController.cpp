@@ -31,7 +31,7 @@ namespace editor
 		engine::EventBus::Subscribe<engine::MouseButtonPressedEvent>([this](const auto& e) {OnMouseButtonPressed(e); return false; });
 		engine::EventBus::Subscribe<engine::MouseButtonReleasedEvent>([this](const auto& e) {OnMouseButtonReleased(e); return false; });
 		engine::EventBus::Subscribe<engine::MouseMovedEvent>([this](const auto& e) {OnMouseMoved(e); return false; });
-		engine::EventBus::Subscribe<FocusEntityEvent>([this](const auto& e) {OnEntityFocus(e.id); return false; });
+		engine::EventBus::Subscribe<FocusEntityEvent>([this](const auto& e) {OnEntityFocus(e.entity); return false; });
 	}
 
 	void ViewportCameraController::OnMouseScroll(const engine::MouseScrolledEvent& e)
@@ -47,7 +47,6 @@ namespace editor
 
 		tc.position -= forward * delta;
 
-		const glm::mat4 localMatrix = engine::TransformSystem::CalculateLocalPositionMatrix(tc);
 		engine::CameraSystem::UpdateCameraViewMatrix(editor::editorContext.camera, tc);
 	}
 
@@ -113,22 +112,23 @@ namespace editor
 		engine::CameraSystem::UpdateCameraViewMatrix(editor::editorContext.camera, tc);
 	}
 
-	void ViewportCameraController::OnEntityFocus(engine::Uuid entityId, float distance)
+	void ViewportCameraController::OnEntityFocus(entt::entity entity, float distance)
 	{
 		if (editor::editorContext.editorMode != EditorMode::Edit) return;
-		if (!entityId) return;
+		if (entity == entt::null) return;
 
-		engine::SceneAsset& scene = engine::AssetManager::GetAsset(engine::SceneManager::GetActiveScene());
-		engine::Entity entity = scene.GetEntity(entityId);
-		if (!entity) return;
-		if (!entity.HasComponent<engine::TransformComponent>()) return;
+		entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
 
-		auto& tc = editor::editorContext.cameraTransform;
-		glm::vec3 forward = engine::CameraSystem::GetForward(tc);
+		auto transform = registry.try_get<engine::TransformComponent>(entity);
+		if(!transform) return;
 
-		glm::vec3 focusPoint = entity.GetComponent<engine::TransformComponent>().position;
-		tc.position = focusPoint - forward * distance;
+		glm::vec3 focusPoint = transform->position;
 
-		engine::CameraSystem::UpdateCameraViewMatrix(editor::editorContext.camera, tc);
+		auto& cameraTransform = editor::editorContext.cameraTransform;
+		glm::vec3 forward = engine::CameraSystem::GetForward(cameraTransform);
+
+		cameraTransform.position = focusPoint - forward * distance;
+
+		engine::CameraSystem::UpdateCameraViewMatrix(editor::editorContext.camera, cameraTransform);
 	}
 }

@@ -130,7 +130,7 @@ namespace engine
 
 		wgpu::TextureFormat format = sourceCubemap.GetFormat();
 		wgpu::Extent3D baseSize = { static_cast<uint32_t>(PREFILTER_SIZE), static_cast<uint32_t>(PREFILTER_SIZE), 6 };
-		uint32_t mipCount = GetMaxMipLevelCount(baseSize);
+		uint32_t mipCount = GetMaxMipLevelCount(baseSize.width, baseSize.height);
 
     TextureCubeSpecification spec;
     spec.size = static_cast<uint32_t>(PREFILTER_SIZE);

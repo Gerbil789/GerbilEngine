@@ -1,27 +1,109 @@
 #pragma once
 
-#include "Engine/Asset/AssetType.h"
 #include "Engine/Asset/AssetHandle.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
+#include "Engine/Graphics/Material.h"
+#include "Engine/Audio/AudioClip.h"
+#include "Engine/Core/Scene.h"
+#include "Engine/Asset/Resources.h"
+#include "Engine/Asset/AssetRegistry.h"
 #include <filesystem>
+#include <unordered_set>
 
-namespace engine { class AssetRegistry; }
-
-namespace engine::AssetManager
+namespace engine
 {
-	void Initialize();
-	AssetRegistry& GetAssetRegistry();
+	template <typename Handle> struct AssetTraits;
 
-	bool Exists(Uuid id);
+	template <> struct AssetTraits<Texture2D> {
+		using DataType = Texture2DData;
+		static Texture2D GetFallback() { return RESOURCES::TEXTURE::WHITE; }
+	};
 
-	template<typename Asset>
-	Asset& GetAsset(AssetHandle<Asset> handle);
+	template <> struct AssetTraits<Mesh> {
+		using DataType = MeshAsset;
+		static Mesh GetFallback() { return {}; }
+	};
 
-	AssetType GetAssetType(Uuid id); //TODO: delete?
-	const std::filesystem::path& GetAssetPath(Uuid id);
+	template <> struct AssetTraits<Shader> {
+		using DataType = ShaderAsset;
+		static Shader GetFallback() { return RESOURCES::SHADER::FLAT; }
+	};
 
-	template<typename Handle>
-	Handle CreateAsset(const std::filesystem::path& path);
+	template <> struct AssetTraits<Material> {
+		using DataType = MaterialAsset;
+		static Material GetFallback() { return RESOURCES::MATERIAL::INVALID; }
+	};
 
-	void MarkAssetDirty(Uuid id);
-	void SaveDirtyAssets();
+	template <> struct AssetTraits<MaterialInstance> {
+		using DataType = MaterialInstanceData;
+		static MaterialInstance GetFallback() { return RESOURCES::MATERIAL_INSTANCE::INVALID; }
+	};
+
+	template <> struct AssetTraits<AudioClip> {
+		using DataType = AudioClipAsset;
+		static AudioClip GetFallback() { return {}; }
+	};
+
+	template <> struct AssetTraits<Scene> {
+		using DataType = SceneAsset;
+		static Scene GetFallback() { return RESOURCES::SCENE::DEFAULT; }
+	};
+
+	template <typename Handle>
+	using AssetDataMap = std::unordered_map<Handle, typename AssetTraits<Handle>::DataType, AssetHasher>;
+
+	template <typename Handle>
+	using AssetSet = std::unordered_set<Handle, AssetHasher>;
+
+	class AssetManager
+	{
+	public:
+		static void Initialize();
+
+		template <typename Handle>
+		static auto& GetAsset(Handle handle)
+		{
+			auto& map = std::get<AssetDataMap<Handle>>(m_LoadedAssets);
+
+			if (auto it = map.find(handle); it != map.end())
+				return it->second;
+
+			return map.at(AssetTraits<Handle>::GetFallback());
+		}
+
+		template<typename Handle>
+		static Handle CreateAsset(const std::filesystem::path& path);
+
+		template<typename Handle>
+		static void MarkAssetDirty(Handle handle)
+		{
+			if (AssetRegistry::Exists(handle))
+      {
+        std::get<AssetSet<Handle>>(m_DirtyAssets).insert(handle);
+      }
+		}
+
+		static void SaveDirtyAssets();
+
+	private:
+		inline static std::tuple<
+			AssetDataMap<Texture2D>,
+			AssetDataMap<Mesh>,
+			AssetDataMap<Shader>,
+			AssetDataMap<Material>,
+			AssetDataMap<MaterialInstance>,
+			AssetDataMap<AudioClip>,
+			AssetDataMap<Scene>
+		> m_LoadedAssets;
+
+		inline static std::tuple<
+			AssetSet<Texture2D>,
+			AssetSet<Mesh>,
+			AssetSet<Shader>,
+			AssetSet<Material>,
+			AssetSet<MaterialInstance>,
+			AssetSet<AudioClip>,
+			AssetSet<Scene>
+		> m_DirtyAssets;
+	};
 }

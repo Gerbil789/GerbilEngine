@@ -1,26 +1,18 @@
 #pragma once
 
-#include "Engine/Core/UUID.h"
 #include "Engine/Asset/AssetType.h"
-#include <webgpu/webgpu_cpp.h>
-#include <glm/glm.hpp>
+#include "Engine/Graphics/Sprite.h"
 
 namespace editor
 {
-	enum class EditorIcon { Directory, EmptyDirectory, Unknown };
-
-	struct Thumbnail
-	{
-		wgpu::TextureView view;
-		glm::vec2 uv_min{ 0.0f, 0.0f };
-		glm::vec2 uv_max{ 1.0f, 1.0f };
-	};
+	enum class Icon { Unknown = 0, Folder, EmptyFolder, Texture, Text, Material, Mesh, Scene, Audio};
 
 	class ThumbnailRenderer
 	{
 	public:
 		void Initialize();
-		const Thumbnail& GetThumbnail(engine::Uuid id, engine::AssetType type);
-		const Thumbnail& GetDirectoryThumbnail(bool isEmpty);
+
+		const engine::Sprite& GetAssetThumbnail(engine::Uuid id, engine::AssetType type);
+		const engine::Sprite& GetEditorIcon(Icon icon);
 	};
 }

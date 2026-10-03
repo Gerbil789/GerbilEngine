@@ -1,12 +1,12 @@
 #include "Editor/Windows/Viewport/TransformController.h"
 #include "Editor/Core/EditorContext.h"
-#include "Editor/Core/SelectionManager.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Core/Scene.h"
 #include "Engine/Core/Components.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/KeyEvent.h"
+#include "Editor/Core/EditorEvent.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <glm/glm.hpp>
@@ -22,6 +22,8 @@ namespace editor
 		glm::mat4 m_InitialPrimaryWorld = glm::mat4(1.0f);
 
 		ImGuizmo::OPERATION gizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+		entt::entity m_Entity;
 	}
 
 	void TransformController::Initialize()
@@ -41,19 +43,22 @@ namespace editor
 
 				return false;
 			});
+
+		engine::EventBus::Subscribe<SelectEntityEvent>([](const SelectEntityEvent& e)
+			{
+				m_Entity = e.entity;
+				return false;
+			});
 	}
 
-	void TransformController::DrawGizmo(engine::SceneAsset& scene, float x, float y, float width, float height)
+	void TransformController::DrawGizmo(engine::Scene scene, float x, float y, float width, float height)
 	{
 		if (editor::editorContext.editorMode == EditorMode::Play) return;
 		if (gizmoType == 0) return;
 
-		engine::Uuid selectedId = SelectionManager::Entities.GetPrimary();
-		if (!selectedId) return;
+		if(m_Entity == entt::null) return;
 
 		entt::registry& registry = scene.GetRegistry();
-
-		entt::entity selectedEntity = scene.GetEntityHandle(selectedId);
 
 		ImGuizmo::SetDrawlist();
 		ImGuizmo::SetRect(x, y, width, height);
@@ -63,7 +68,7 @@ namespace editor
 		glm::mat4 cameraProjection = cc.projectionMatrix;
 		glm::mat4 cameraView = cc.viewMatrix;
 
-		engine::WorldTransformComponent& wtc = registry.get<engine::WorldTransformComponent>(selectedEntity);
+		engine::WorldTransformComponent& wtc = registry.get<engine::WorldTransformComponent>(m_Entity);
 		glm::mat4& worldTransform = wtc.worldMatrix;
 
 		glm::vec3 snap;
@@ -83,59 +88,59 @@ namespace editor
 		{
 			m_InitialWorldTransforms.clear();
 
-			const std::vector<engine::Uuid>& selection = SelectionManager::Entities.GetAll();
+			// const std::vector<engine::Uuid>& selection = SelectionManager::Entities.GetAll();
 
-			for (engine::Uuid id : selection)
-			{
-				engine::Entity entity = scene.GetEntity(id);
-				auto& wc = entity.GetComponent<engine::WorldTransformComponent>();
-				m_InitialWorldTransforms[static_cast<entt::entity>(entity.GetHandle())] = wc.worldMatrix;
-			}
+			// for (engine::Uuid id : selection)
+			// {
+			// 	engine::Entity entity = scene.GetEntity(id);
+			// 	auto& wc = entity.GetComponent<engine::WorldTransformComponent>();
+			// 	m_InitialWorldTransforms[static_cast<entt::entity>(entity.GetHandle())] = wc.worldMatrix;
+			// }
 
-			m_InitialPrimaryWorld = m_InitialWorldTransforms[static_cast<entt::entity>(selectedEntity)];
+			m_InitialPrimaryWorld = m_InitialWorldTransforms[m_Entity];
 		}
 
 		if (isUsing)
 		{
 			glm::mat4 newPrimaryWorld = worldTransform;
-			glm::mat4 delta = newPrimaryWorld * glm::inverse(m_InitialPrimaryWorld);
+			//glm::mat4 delta = newPrimaryWorld * glm::inverse(m_InitialPrimaryWorld);
 
-			for (engine::Uuid id : SelectionManager::Entities.GetAll())
-			{
-				engine::Entity entity = scene.GetEntity(id);
+			// for (engine::Uuid id : SelectionManager::Entities.GetAll())
+			// {
+			// 	engine::Entity entity = scene.GetEntity(id);
 
-				glm::mat4 originalWorld = m_InitialWorldTransforms[static_cast<entt::entity>(entity.GetHandle())];
-				glm::mat4 newWorld = delta * originalWorld;
+			// 	glm::mat4 originalWorld = m_InitialWorldTransforms[static_cast<entt::entity>(entity.GetHandle())];
+			// 	glm::mat4 newWorld = delta * originalWorld;
 
-				glm::mat4 parentWorld = glm::mat4{ 1.0f };
+			// 	glm::mat4 parentWorld = glm::mat4{ 1.0f };
 
-				if (entity.HasComponent<engine::HierarchyComponent>())
-				{
-					auto& hc = entity.GetComponent<engine::HierarchyComponent>();
+			// 	if (entity.HasComponent<engine::HierarchyComponent>())
+			// 	{
+			// 		auto& hc = entity.GetComponent<engine::HierarchyComponent>();
 
-					if (hc.parent != entt::null)
-					{
-						engine::Entity parentEntity = engine::Entity(hc.parent, &scene);
-						const auto& parentWTC = parentEntity.GetComponent<engine::WorldTransformComponent>();
-						parentWorld = parentWTC.worldMatrix;
-					}
-				}
+			// 		if (hc.parent != entt::null)
+			// 		{
+			// 			engine::Entity parentEntity = engine::Entity(hc.parent, &scene);
+			// 			const auto& parentWTC = parentEntity.GetComponent<engine::WorldTransformComponent>();
+			// 			parentWorld = parentWTC.worldMatrix;
+			// 		}
+			// 	}
 
-				glm::mat4 newLocal = glm::inverse(parentWorld) * newWorld;
-				glm::vec3 trans, rot, scale;
-				ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(newLocal), glm::value_ptr(trans), glm::value_ptr(rot), glm::value_ptr(scale));
+			// 	glm::mat4 newLocal = glm::inverse(parentWorld) * newWorld;
+			// 	glm::vec3 trans, rot, scale;
+			// 	ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(newLocal), glm::value_ptr(trans), glm::value_ptr(rot), glm::value_ptr(scale));
 
-				auto& tc = entity.GetComponent<engine::TransformComponent>();
-				tc.position = trans;
-				tc.rotation = glm::radians(rot);
-				tc.scale = scale;
-				entity.AddTag<engine::TransformDirty>();
-			}
+			// 	auto& tc = entity.GetComponent<engine::TransformComponent>();
+			// 	tc.position = trans;
+			// 	tc.rotation = glm::radians(rot);
+			// 	tc.scale = scale;
+			// 	entity.AddTag<engine::TransformDirty>();
+			// }
 		}
 
 		if (!isUsing && m_GizmoPreviouslyUsed)
 		{
-			auto selection = SelectionManager::Entities.GetAll();
+			// auto selection = SelectionManager::Entities.GetAll();
 
 			std::vector<engine::TransformComponent> before, after;
 
@@ -146,8 +151,7 @@ namespace editor
 					glm::mat4 parentWorld = glm::mat4{ 1.0f };
 					if (hc.parent != entt::null)
 					{
-						engine::Entity parentEntity = engine::Entity(hc.parent, &scene);
-						const auto& parentWTC = parentEntity.GetComponent<engine::WorldTransformComponent>();
+						const auto& parentWTC = registry.get<engine::WorldTransformComponent>(hc.parent);
 						parentWorld = parentWTC.worldMatrix;
 					}
 					glm::mat4 initialLocal = glm::inverse(parentWorld) * initialWorld;
@@ -157,16 +161,16 @@ namespace editor
 				}
 			}
 
-			std::vector<engine::Entity> entities;
-			entities.reserve(selection.size());
+			std::vector<entt::entity> entities;
+			// entities.reserve(selection.size());
 
-			for (engine::Uuid id : selection)
-			{
-				engine::Entity entity = scene.GetEntity(id);
-				entities.push_back(entity);
-				engine::TransformComponent afterData = entity.GetComponent<engine::TransformComponent>();
-				after.push_back(afterData);
-			}
+			// for (engine::Uuid id : selection)
+			// {
+			// 	engine::Entity entity = scene.GetEntity(id);
+			// 	entities.push_back(entity);
+			// 	engine::TransformComponent afterData = entity.GetComponent<engine::TransformComponent>();
+			// 	after.push_back(afterData);
+			// }
 
 			EditorCommandManager::ModifyComponents<engine::TransformComponent>(entities, before, after);
 		}

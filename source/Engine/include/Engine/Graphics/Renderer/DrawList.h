@@ -1,31 +1,26 @@
 #pragma once
 
-#include "Engine/Asset/AssetHandle.h"
+#include "Engine/Graphics/Mesh.h"
+#include "Engine/Graphics/Material.h"
 #include <glm/glm.hpp>
+#include <entt/entity/registry.hpp>
 
 namespace engine
 {
-	class SceneAsset;
-
 	struct DrawItem
 	{
 		engine::Mesh mesh;
-		engine::Material material;
+		engine::MaterialInstance material;
 		uint32_t subMeshIndex;
 		uint32_t indexCount;
 		uint32_t firstIndex;
 	};
 
-	class DrawList
+	struct DrawList
 	{
-	public:
-		static DrawList CreateFromScene(const SceneAsset& scene);
+		static DrawList Create(const entt::registry& registry);
 
-		const std::vector<DrawItem>& GetItems() const { return m_Items; }
-		const std::vector<glm::mat4>& GetTransforms() const { return m_Transforms; }
-
-	private:
-		std::vector<DrawItem> m_Items;
-		std::vector<glm::mat4> m_Transforms;
+		std::vector<DrawItem> items;
+		std::vector<glm::mat4> transforms;
 	};
 }

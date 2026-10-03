@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Core/UUID.h"
+#include <entt/entity/entity.hpp>
 
 namespace engine
 {
@@ -23,7 +23,7 @@ namespace editor
 		void OnMouseButtonPressed(const engine::MouseButtonPressedEvent& e);
 		void OnMouseButtonReleased(const engine::MouseButtonReleasedEvent& e);
 		void OnMouseMoved(const engine::MouseMovedEvent& e);
-		void OnEntityFocus(engine::Uuid entityId, float distance = 10.0f); //TODO: this is not getting called anywhere...
+		void OnEntityFocus(entt::entity entity, float distance = 10.0f); //TODO: this is not getting called anywhere...
 
 		bool m_ViewportHovered = false;
 	};

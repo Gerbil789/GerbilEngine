@@ -1,0 +1,28 @@
+{
+   "material": 11029757367445621482,
+   "attributes": {
+      "albedo": [
+         1,
+         1,
+         1,
+         1
+      ],
+      "hoveredTile": [
+         -1,
+         -1
+      ],
+      "offset": [
+         0,
+         0
+      ],
+      "tiling": [
+         10,
+         10
+      ]
+   },
+   "textures": {
+      "AlbedoTexture": 11
+   },
+   "filter": "point",
+   "wrap": "repeat"
+}

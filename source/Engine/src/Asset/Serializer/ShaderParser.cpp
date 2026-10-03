@@ -107,37 +107,56 @@ namespace engine
       return;
     }
 
-    if (type == "f32") { param.type = ShaderValueType::Float; return; }
-    if (type == "i32") { param.type = ShaderValueType::Int; return; }
-    if (type == "u32") { param.type = ShaderValueType::UInt; return; }
-    if (type == "bool") { param.type = ShaderValueType::Bool; return; }
-    if (type == "vec2f") { param.type = ShaderValueType::Vec2; return; }
-    if (type == "vec3f") { param.type = ShaderValueType::Vec3; return; }
-    if (type == "vec4f") { param.type = ShaderValueType::Vec4; return; }
-    if (type == "vec2i") { param.type = ShaderValueType::Vec2i; return; }
-    if (type == "mat3x3f") { param.type = ShaderValueType::Mat3; return; }
-    if (type == "mat4x4f") { param.type = ShaderValueType::Mat4; return; }
+    if (type == "f32") { param.defaultValue = float{}; return; }
+    if (type == "i32") { param.defaultValue = int32_t{}; return; }
+    if (type == "u32") { param.defaultValue = uint32_t{}; return; }
+    if (type == "bool") { param.defaultValue = bool{}; return; }
+    if (type == "vec2f") { param.defaultValue = glm::vec2{}; return; }
+    if (type == "vec3f") { param.defaultValue = glm::vec3{}; return; }
+    if (type == "vec4f") { param.defaultValue = glm::vec4{}; return; }
+    if (type == "vec2i") { param.defaultValue = glm::ivec2{}; return; }
+    if (type == "mat3x3f") { param.defaultValue = glm::mat3{}; return; }
+    if (type == "mat4x4f") { param.defaultValue = glm::mat4{}; return; }
 
     LOG_WARNING("ParseValueType - Unknown type: {}", type);
-    param.type = ShaderValueType::Float;
+    param.defaultValue = float{};
   }
 
-  constexpr size_t GetTypeSize(ShaderValueType type)
+  // constexpr size_t GetTypeSize(ShaderValueType type)
+  // {
+  //   switch (type)
+  //   {
+  //   case ShaderValueType::Bool:
+  //   case ShaderValueType::Int:
+  //   case ShaderValueType::UInt:
+  //   case ShaderValueType::Float: return 4;
+  //   case ShaderValueType::Vec2: return 8;
+  //   case ShaderValueType::Vec3: return 12;
+  //   case ShaderValueType::Vec4: return 16;
+  //   case ShaderValueType::Vec2i: return 8;
+  //   case ShaderValueType::Mat3: return 48;
+  //   case ShaderValueType::Mat4: return 64;
+  //   }
+  //   std::unreachable();
+  // }
+
+  constexpr size_t GetVariantWgslSize(const auto& variantValue)
   {
-    switch (type)
-    {
-    case ShaderValueType::Bool:
-    case ShaderValueType::Int:
-    case ShaderValueType::UInt:
-    case ShaderValueType::Float: return 4;
-    case ShaderValueType::Vec2: return 8;
-    case ShaderValueType::Vec3: return 12;
-    case ShaderValueType::Vec4: return 16;
-    case ShaderValueType::Vec2i: return 8;
-    case ShaderValueType::Mat3: return 48;
-    case ShaderValueType::Mat4: return 64;
-    }
-    std::unreachable();
+    return std::visit([](auto&& arg) -> size_t {
+      using T = std::decay_t<decltype(arg)>;
+      
+      if constexpr (std::is_same_v<T, bool>) return 4;
+      else if constexpr (std::is_same_v<T, int32_t>) return 4;
+      else if constexpr (std::is_same_v<T, uint32_t>) return 4;
+      else if constexpr (std::is_same_v<T, float>) return 4;
+      else if constexpr (std::is_same_v<T, glm::vec2>) return 8;
+      else if constexpr (std::is_same_v<T, glm::vec3>) return 12;
+      else if constexpr (std::is_same_v<T, glm::vec4>) return 16;
+      else if constexpr (std::is_same_v<T, glm::ivec2>) return 8;
+      else if constexpr (std::is_same_v<T, glm::mat3>) return 48; 
+      else if constexpr (std::is_same_v<T, glm::mat4>) return 64;
+      else return 4; // Fallback
+    }, variantValue);
   }
 
   void ParseConstants(std::string_view source)
@@ -183,26 +202,46 @@ namespace engine
           nums.push_back(std::stof(token));
         }
 
-        switch (param.type)
-        {
-        case ShaderValueType::Float:
-					param.defaultValue.emplace<float>(nums[0]);
-          break;
+        // switch (param.type)
+        // {
+        // case ShaderValueType::Float:
+				// 	param.defaultValue.emplace<float>(nums[0]);
+        //   break;
 
-        case ShaderValueType::Vec2:
-					param.defaultValue.emplace<glm::vec2>(nums[0], nums[1]);
-          break;
+        // case ShaderValueType::Vec2:
+				// 	param.defaultValue.emplace<glm::vec2>(nums[0], nums[1]);
+        //   break;
 
-        case ShaderValueType::Vec3:
-					param.defaultValue.emplace<glm::vec3>(nums[0], nums[1], nums[2]);
-          break;
+        // case ShaderValueType::Vec3:
+				// 	param.defaultValue.emplace<glm::vec3>(nums[0], nums[1], nums[2]);
+        //   break;
 
-        case ShaderValueType::Vec4:
-					param.defaultValue.emplace<glm::vec4>(nums[0], nums[1], nums[2], nums[3]);
-          break;
+        // case ShaderValueType::Vec4:
+				// 	param.defaultValue.emplace<glm::vec4>(nums[0], nums[1], nums[2], nums[3]);
+        //   break;
 
-        default: {}
-        }
+        // default: {}
+        // }
+
+        std::visit([&nums](auto& val) {
+          using T = std::decay_t<decltype(val)>;
+          
+          if constexpr (std::is_same_v<T, float>) {
+            if (nums.size() >= 1) val = nums[0];
+          } 
+          else if constexpr (std::is_same_v<T, glm::vec2>) {
+            if (nums.size() >= 2) val = glm::vec2(nums[0], nums[1]);
+          } 
+          else if constexpr (std::is_same_v<T, glm::vec3>) {
+            if (nums.size() >= 3) val = glm::vec3(nums[0], nums[1], nums[2]);
+          } 
+          else if constexpr (std::is_same_v<T, glm::vec4>) {
+            if (nums.size() >= 4) val = glm::vec4(nums[0], nums[1], nums[2], nums[3]);
+          } 
+          else if constexpr (std::is_same_v<T, glm::ivec2>) {
+            if (nums.size() >= 2) val = glm::ivec2(static_cast<int>(nums[0]), static_cast<int>(nums[1]));
+          }
+        }, param.defaultValue);
 
       }
     }
@@ -237,7 +276,7 @@ namespace engine
 
       ParseParameterAttributes(param, memberMatch[3].str());
       param.offset = offset;
-      param.size = GetTypeSize(param.type);
+      param.size = GetVariantWgslSize(param.defaultValue);
 
       params.push_back(param);
 

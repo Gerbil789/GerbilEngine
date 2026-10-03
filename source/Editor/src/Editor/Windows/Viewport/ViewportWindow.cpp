@@ -8,10 +8,10 @@
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Core/Scene.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Asset/AssetManager.h"
+// #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/Log.h"
-#include "Engine/System/CameraSystem.h"
-#include "Engine/System/TransformSystem.h"
+#include "Engine/System/CameraSystem.h" //TODO: remove from this file
+// #include "Engine/System/TransformSystem.h"
 #include "Engine/Core/Application.h"
 #include <glm/glm.hpp>
 
@@ -126,24 +126,24 @@ namespace editor
 		UpdateViewportSize();
 		m_CameraController.SetHovered(ImGui::IsWindowHovered());
 
-		if(ImGui::IsKeyPressed(ImGuiKey_F, false))
-		{
-			engine::EventBus::Publish(FocusEntityEvent{ SelectionManager::Entities.GetPrimary() });
-		}
+		// if(ImGui::IsKeyPressed(ImGuiKey_F, false))
+		// {
+		// 	engine::EventBus::Publish(FocusEntityEvent{ SelectionManager::Entities.GetPrimary() });
+		// }
 
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		auto& scene = engine::AssetManager::GetAsset(engine::SceneManager::GetActiveScene());
+		engine::Scene scene = engine::SceneManager::GetActiveScene();
 
 
 		if (editor::editorContext.editorMode == EditorMode::Edit)
 		{
-			engine::Application::s_Renderer.RenderScene(scene, editor::editorContext.camera, m_TextureView);
+			engine::Application::s_Renderer.RenderScene(scene.GetRegistry(), &editor::editorContext.camera, m_TextureView);
 		}
 		else
 		{
-			engine::Application::s_Renderer.RenderScene(scene, scene.GetPrimaryCamera(), m_TextureView);
+			engine::Application::s_Renderer.RenderScene(scene.GetRegistry(), scene.GetPrimaryCamera(), m_TextureView);
 		}
 
 		ImGui::Image(m_TextureView.Get(), viewportSize);
@@ -152,14 +152,14 @@ namespace editor
 		{
 			if (editor::editorContext.editorMode == EditorMode::Edit && !m_TransformController.IsGizmoOver())
 			{
-				ImVec2 mousePos = ImGui::GetMousePos();
+				//ImVec2 mousePos = ImGui::GetMousePos();
 
-				const uint32_t mx = static_cast<uint32_t>(mousePos.x - m_ViewportBounds[0].x);
-				const uint32_t my = static_cast<uint32_t>(mousePos.y - m_ViewportBounds[0].y);
+				//const uint32_t mx = static_cast<uint32_t>(mousePos.x - m_ViewportBounds[0].x);
+				//const uint32_t my = static_cast<uint32_t>(mousePos.y - m_ViewportBounds[0].y);
 
-				engine::Uuid id = m_EntityPicker.Pick(mx, my);
-				bool additive = ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_LeftShift);
-				SelectionManager::Entities.Select(id, additive);
+				//engine::Uuid id = m_EntityPicker.Pick(mx, my);
+				//bool additive = ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_LeftShift);
+				// SelectionManager::Entities.Select(id, additive);
 			}
 		}
 

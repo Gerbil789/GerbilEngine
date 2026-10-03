@@ -19,7 +19,6 @@
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Core/EditorRenderer.h"
 #include "Editor/Command/EditorCommandManager.h"
-#include "Editor/Core/SelectionManager.h"
 #include "Engine/System/CameraSystem.h"
 // #include "Engine/Core/Runtime.h"
 
@@ -29,7 +28,7 @@ namespace editor
 	{
 		EditorCommandManager::Initialize();
 		EditorRenderer::Initialize(Application::s_Window);
-		SelectionManager::Initialize();
+		//SelectionManager::Initialize();
 
 		editor::editorContext.camera.backgroundMode = engine::CameraComponent::Background::Skybox;
 		editor::editorContext.camera.projectionType = engine::CameraComponent::Projection::Perspective;

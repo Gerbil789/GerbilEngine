@@ -3,7 +3,6 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Graphics/Material.h"
-#include "Editor/Core/SelectionManager.h"
 #include "Engine/Event/EventBus.h"
 #include "Editor/Core/EditorEvent.h"
 #include <imgui.h>
@@ -12,55 +11,33 @@ namespace editor
 {
 	namespace
 	{
-		//TODO: dont use pointer, use id
-		engine::MaterialAsset* m_Material = nullptr;
+		engine::MaterialInstance m_MaterialInstance{};
 	}
 
 	void MaterialEditorWindow::Draw()
 	{
-		ImGui::Begin("Material");
+		ImGui::Begin("Material Instance");
 
-		if (!m_Material)
+		if (!m_MaterialInstance)
 		{
 			ImGui::Text("No material selected");
 			ImGui::End();
 			return;
 		}
 
-		const std::string& materialName = engine::AssetManager::GetAssetPath(m_Material->id).stem().string();
+		const std::string& materialName = engine::AssetRegistry::GetPath(m_MaterialInstance).stem().string();
 		ImGui::Text("Material: %s", materialName.c_str());
-
-		const std::string& shaderName = engine::AssetManager::GetAssetPath(m_Material->GetShader().id).stem().string();
-
-
-		if (ImGui::BeginCombo("##Shader", shaderName.c_str()))
-		{
-			for (const auto& [id, record] : engine::AssetManager::GetAssetRegistry().GetAllRecords())
-			{
-				if (record.type != engine::AssetType::Shader) continue;
-
-				if (static_cast<uint64_t>(id) <= 1000) continue; // skip built-in shaders
-
-				const std::string& name = record.path.stem().string();
-
-				if (ImGui::Selectable(name.c_str()))
-				{
-					// Create your strongly typed handle directly from the Uuid
-					m_Material->SetShader(engine::Shader{ id });
-				}
-			}
-
-			ImGui::EndCombo();
-		}
-
-		ImGui::Separator();
 
 		if (ImGui::BeginTable("MaterialProperties", 2, ImGuiTableFlags_SizingStretchProp))
 		{
 			ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthFixed, 100.0f);
 			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
-			engine::ShaderAsset& shader = engine::AssetManager::GetAsset<engine::ShaderAsset>(m_Material->GetShader());
+
+			engine::MaterialInstanceData& instanceData = m_MaterialInstance.Get();
+			engine::Material material = instanceData.material;
+			engine::Shader shader = material.GetShader();
+
 			auto bindings = shader.GetMaterialBindings();
 
 			for (auto& binding : bindings)
@@ -73,32 +50,32 @@ namespace editor
 					{
 						if (param.name[0] == '_') continue;
 
-						engine::MaterialValue variantValue = m_Material->GetParameterVariant(param.name);
+						std::visit([&](auto& defaultValueVariant)
+              {
+                using T = std::decay_t<decltype(defaultValueVariant)>;
 
-						std::visit([&](auto& arg)
-							{
-								using T = std::decay_t<decltype(arg)>;
+                DisplayMode mode = DisplayMode::Default;
+                if (param.isColor)
+                {
+                  mode = DisplayMode::Color;
+                }
 
-								DisplayMode mode = DisplayMode::Default;
-								if (param.isColor)
-								{
-									mode = DisplayMode::Color;
-								}
+                T value{};
+                std::memcpy(&value, &instanceData.uniformBuffer + param.offset, sizeof(T));
 
-								if (PropertyField<T>(param.name.c_str(), arg, { .mode = mode }).changed)
-								{
-									m_Material->SetParameter(param.name, arg);
-								}
-							}, variantValue);
+                if (PropertyField<T>(param.name.c_str(), value, { .mode = mode }).changed)
+                {
+                  std::memcpy(&instanceData.uniformBuffer + param.offset, &value, sizeof(T));
+                }
+              }, param.defaultValue);
 					}
 				}
-
-				if (std::holds_alternative<engine::TextureBinding>(binding.data))
+				else if (std::holds_alternative<engine::TextureBinding>(binding.data))
 				{
-					engine::Texture2D texture = m_Material->GetTexture(binding.name);
-					if (AssetField(binding.name.c_str(), texture).changed)
+					engine::Texture2D texture = instanceData.textures.at(binding.binding);
+					if (AssetField(binding.name, texture).changed)
 					{
-						m_Material->SetTexture(binding.name, texture);
+						instanceData.textures[binding.binding] = texture;
 					}
 				}
 			}
@@ -110,10 +87,10 @@ namespace editor
 				ImGui::TextUnformatted("Texture Filter");
 				ImGui::TableSetColumnIndex(1);
 				const char* filterOptions[] = { "Nearest", "Bilinear", "Trilinear" };
-				int currentFilter = static_cast<int>(m_Material->GetTextureFilter());
+				int currentFilter = static_cast<int>(instanceData.textureFilter);
 				if (ImGui::Combo("##TextureFilter", &currentFilter, filterOptions, IM_ARRAYSIZE(filterOptions)))
 				{
-					m_Material->SetTextureFilter(static_cast<engine::TextureFilter>(currentFilter));
+					instanceData.textureFilter = static_cast<engine::TextureFilter>(currentFilter);
 				}
 
 				ImGui::TableNextRow();
@@ -121,10 +98,10 @@ namespace editor
 				ImGui::TextUnformatted("Texture Wrap");
 				ImGui::TableSetColumnIndex(1);
 				const char* wrapOptions[] = { "Repeat", "Clamp", "Mirror" };
-				int currentWrap = static_cast<int>(m_Material->GetTextureWrap());
+				int currentWrap = static_cast<int>(instanceData.textureWrap);
 				if (ImGui::Combo("##TextureWrap", &currentWrap, wrapOptions, IM_ARRAYSIZE(wrapOptions)))
 				{
-					m_Material->SetTextureWrap(static_cast<engine::TextureWrap>(currentWrap));
+					instanceData.textureWrap = static_cast<engine::TextureWrap>(currentWrap);
 				}
 			}
 
@@ -136,15 +113,11 @@ namespace editor
 
 	void MaterialEditorWindow::Initialize()
 	{
-		engine::EventBus::Subscribe<SelectionChangedEvent>([](const SelectionChangedEvent& e)
+		engine::EventBus::Subscribe<SelectAssetEvent>([](const SelectAssetEvent& e)
 			{
-				if (e.context != SelectionContext::Asset) return false;;
-
-				auto type = engine::AssetManager::GetAssetType(e.id);
-				if (type == engine::AssetType::Material)
-				{
-					m_Material = &engine::AssetManager::GetAsset<engine::MaterialAsset>(engine::Material{ e.id });
-				}
+				engine::AssetType type = engine::AssetRegistry::GetAssetType(e.id);
+				if(type != engine::AssetType::MaterialInstance) return false;
+				m_MaterialInstance = engine::MaterialInstance{e.id};
 				return false;
 			});
 	}

@@ -24,29 +24,29 @@ namespace editor
       Enqueue(std::make_unique<CreateEntityCommand<Components...>>(name, parent));
     }
 
-    static void DeleteEntity(engine::Uuid entityId);
+    static void DeleteEntity(entt::entity entity);
 		static void OpenScene(engine::Scene scene);
 
     template<typename T>
-    static void AddComponent(engine::Entity entity, const T& initial)
+    static void AddComponent(entt::entity entity, const T& initial)
     {
       Enqueue(std::make_unique<AddComponentCommand<T>>(entity, initial));
     }
 
     template<typename T>
-    static void RemoveComponent(engine::Entity entity)
+    static void RemoveComponent(entt::entity entity)
     {
       Enqueue(std::make_unique<RemoveComponentCommand<T>>(entity));
     }
 
     template<typename T>
-    static void ModifyComponent(engine::Entity entity, const T& before, const T& after)
+    static void ModifyComponent(entt::entity entity, const T& before, const T& after)
     {
       ModifyComponents<T>({ entity }, { before }, { after });
     }
 
     template<typename T>
-    static void ModifyComponents(const std::vector<engine::Entity>& entities, const std::vector<T>& before, const std::vector<T>& after)
+    static void ModifyComponents(const std::vector<entt::entity>& entities, const std::vector<T>& before, const std::vector<T>& after)
     {
       std::vector<std::unique_ptr<ICommand>> commands;
 			commands.reserve(entities.size());

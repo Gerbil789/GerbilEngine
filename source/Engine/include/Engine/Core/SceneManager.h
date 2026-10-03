@@ -1,9 +1,15 @@
 #pragma once
 
-#include "Engine/Asset/AssetHandle.h"
+#include "Engine/Core/Scene.h"
 
-namespace engine::SceneManager
+namespace engine
 {
-	void SetActiveScene(Scene scene);
-	Scene GetActiveScene();
+	struct SceneManager
+	{
+		static void SetActiveScene(Scene scene);
+		static Scene GetActiveScene();
+		
+	private:
+		inline static Scene s_ActiveScene;
+	};
 }

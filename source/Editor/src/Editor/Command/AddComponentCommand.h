@@ -1,7 +1,8 @@
 #pragma once
 
 #include "ICommand.h"
-#include "Engine/Core/Entity.h"
+#include "Engine/Core/SceneManager.h"
+#include <entt/entity/registry.hpp>
 
 namespace editor
 {
@@ -9,30 +10,33 @@ namespace editor
   class AddComponentCommand : public ICommand
   {
   public:
-    AddComponentCommand(engine::Entity entity, const T& initial = {}) : m_Entity(entity), m_Initial(initial) {}
+    AddComponentCommand(entt::entity entity, const T& initial = {}) : m_Entity(entity), m_Initial(initial) {}
 
     void Execute() override
     {
-      if(m_Entity.HasComponent<T>())
+      entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+
+      if(registry.any_of<T>(m_Entity))
       {
-        // Component already exists, do nothing
-        return;
+        return; // component already exists, do nothing
 			}
 
-			auto& component = m_Entity.AddComponent<T>();
+			auto& component = registry.get<T>(m_Entity);
 			component = m_Initial;
     }
 
     void Undo() override
     {
-      if(m_Entity.HasComponent<T>())
+      entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+
+      if(registry.any_of<T>(m_Entity))
       {
-        m_Entity.RemoveComponent<T>();
-			}
+        registry.remove<T>(m_Entity);
+      }
     }
 
   private:
-    engine::Entity m_Entity;
+    entt::entity m_Entity;
     T m_Initial;
   };
 }

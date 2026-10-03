@@ -1,277 +1,256 @@
 #include "enginepch.h"
 #include "Engine/Asset/AssetRegistry.h"
-// #include "Engine/Utility/File.h"
 #include "Engine/Core/Project.h"
 #include "Engine/Core/Log.h"
 #include <glaze/glaze.hpp>
 #include <fstream>
 
-template <>
-struct glz::meta<engine::Uuid> {
-	static constexpr auto value = [](auto& self) -> auto& {
-		return reinterpret_cast<uint64_t&>(self);
-		};
-};
-
-template <>
-struct glz::meta<engine::AssetRecord> {
-	static constexpr auto value = object(
-		"ID", &engine::AssetRecord::id,
-		"Path", &engine::AssetRecord::path
-	);
-};
-
 namespace engine
 {
+	constexpr uint32_t HashExtension(std::string_view str)
+	{
+		uint32_t hash = 0x811c9dc5;
+		for (char c : str)
+		{
+			char lowerC = (c >= 'A' && c <= 'Z') ? (c + ('a' - 'A')) : c;
+			hash ^= static_cast<uint32_t>(lowerC);
+			hash *= 0x01000193;
+		}
+		return hash;
+	}
+
+	struct AssetRegistryArchive
+	{
+		std::unordered_map<uint64_t, std::string> textures;
+		std::unordered_map<uint64_t, std::string> meshes;
+		std::unordered_map<uint64_t, std::string> shaders;
+		std::unordered_map<uint64_t, std::string> materials;
+		std::unordered_map<uint64_t, std::string> materialInstances;
+		std::unordered_map<uint64_t, std::string> audioClips;
+		std::unordered_map<uint64_t, std::string> scenes;
+	};
+
 	void AssetRegistry::Load()
 	{
-		std::filesystem::path path = Project::Directory() / "assetRegistry.json";
-
-    LOG_TRACE("Project Directory: {}", Project::Directory());
+		const std::filesystem::path path = Project::directory / "assetRegistry.json";
 
 		if (!std::filesystem::exists(path))
 		{
 			LOG_WARNING("Asset registry file '{}' does not exist, creating new one...", path);
-			std::ofstream outFile(path);
-			if (!outFile)
-			{
-				throw std::runtime_error("Could not create asset registry file.");
-			}
+			Save();
 		}
-		m_Records.clear();
 
-		std::vector<AssetRecord> assets;
+		AssetRegistryArchive archive;
 		std::string buffer;
 
-		if (auto ec = glz::read_file_json(assets, path.string(), buffer))
+		if (auto ec = glz::read_file_json(archive, path.string(), buffer))
 		{
 			LOG_ERROR("Registry Load Error: {}", glz::format_error(ec, buffer));
 			return;
 		}
 
-		for (AssetRecord& record : assets)
+		auto processMap = [&]<typename Handle>(const std::unordered_map<uint64_t, std::string>&source)
 		{
-			record.path = Project::AssetsDirectory() / record.path;
-
-			if (!std::filesystem::exists(record.path)) 
+			for (const auto& [rawId, relativePath] : source)
 			{
-				LOG_WARNING("Asset file '{}' does not exist, skipping...", record.path);
+				std::filesystem::path fullPath = Project::assetsDirectory / relativePath;
+
+				if (!std::filesystem::exists(fullPath))
+				{
+					LOG_WARNING("Asset file '{}' does not exist, skipping...", fullPath);
+					continue;
+				}
+
+				Handle handle{ rawId };
+				AddRecord(handle, fullPath);
+				s_PathToId[fullPath.string()] = rawId;
+			}
+		};
+
+		processMap.template operator() < Texture2D > (archive.textures);
+		processMap.template operator() < Mesh > (archive.meshes);
+		processMap.template operator() < Shader > (archive.shaders);
+		processMap.template operator() < Material > (archive.materials);
+		processMap.template operator() < MaterialInstance > (archive.materialInstances);
+		processMap.template operator() < AudioClip > (archive.audioClips);
+		processMap.template operator() < Scene > (archive.scenes);
+
+		// look for new files
+		for (const auto& entry : std::filesystem::recursive_directory_iterator(Project::assetsDirectory))
+		{
+			const std::filesystem::path& path = entry.path();
+
+			if (!entry.is_regular_file() || !path.has_extension()) continue;
+
+			std::string pathString = path.string();
+			if (s_PathToId.contains(pathString)) continue;
+
+			Uuid id = Uuid::Generate();
+			AssetType type = GetAssetType(path);
+
+			switch (type)
+			{
+			case AssetType::Texture:
+				AddRecord(Texture2D{ id }, path);
+				break;
+
+			case AssetType::Mesh:
+				AddRecord(Mesh{ id }, path);
+				break;
+
+			case AssetType::Material:
+				AddRecord(Material{ id }, path);
+				break;
+
+			case AssetType::MaterialInstance:
+				AddRecord(MaterialInstance{ id }, path);
+				break;
+
+			case AssetType::AudioClip:
+				AddRecord(AudioClip{ id }, path);
+				break;
+
+			case AssetType::Scene:
+				AddRecord(Scene{ id }, path);
+				break;
+
+			case AssetType::Shader:
+				AddRecord(Shader{ id }, path);
+				break;
+
+			default:
 				continue;
 			}
-				
-			record.type = GetAssetTypeFromExtension(record.path.extension().string());
 
-			m_Records[record.id] = std::move(record);
+			LOG_INFO("Discovered new asset '{}'", pathString);
+			s_PathToId[pathString] = id;
 		}
 
-		ScanDirectory(Project::AssetsDirectory()); // look for new files
-		RebuildVirtualFileSystem();
+
+
 		Save();
+
+
+		// LOG_INFO("--- Asset Registry Records ---");
+    
+    // auto printMap = [&]<typename Handle>()
+    // {
+    //   const auto& engineMap = std::get<AssetMap<Handle>>(s_Records);
+    //   for (const auto& [handle, fullPath] : engineMap)
+    //   {
+    //     LOG_INFO("ID: {}, Path: {}", handle.id, fullPath.string());
+    //   }
+    // };
+
+    // printMap.template operator()<Texture2D>();
+    // printMap.template operator()<Mesh>();
+    // printMap.template operator()<Shader>();
+    // printMap.template operator()<Material>();
+    // printMap.template operator()<MaterialInstance>();
+    // printMap.template operator()<AudioClip>();
+    // printMap.template operator()<Scene>();
 	}
 
 	void AssetRegistry::Save()
 	{
-		const std::filesystem::path& path = Project::Directory() / "assetRegistry.json";
+		AssetRegistryArchive archive;
 
-		std::vector<AssetRecord> assets;
-		assets.reserve(m_Records.size());
-
-		for (const auto& [id, record] : m_Records)
+		auto fillArchive = [&]<typename Handle>(std::unordered_map<uint64_t, std::string>&dest)
 		{
-			AssetRecord diskCopy = record;
-			diskCopy.path = std::filesystem::relative(record.path, Project::AssetsDirectory().generic_string());
-			assets.push_back(std::move(diskCopy));
-		}
+			const auto& engineMap = std::get<AssetMap<Handle>>(s_Records);
+			for (const auto& [handle, fullPath] : engineMap)
+			{
+				dest[static_cast<uint64_t>(handle.id)] = std::filesystem::relative(fullPath, Project::assetsDirectory).generic_string();
+			}
+		};
 
+		fillArchive.template operator() < Texture2D > (archive.textures);
+		fillArchive.template operator() < Mesh > (archive.meshes);
+		fillArchive.template operator() < Shader > (archive.shaders);
+		fillArchive.template operator() < Material > (archive.materials);
+		fillArchive.template operator() < MaterialInstance > (archive.materialInstances);
+		fillArchive.template operator() < AudioClip > (archive.audioClips);
+		fillArchive.template operator() < Scene > (archive.scenes);
+
+		const std::filesystem::path path = Project::directory / "assetRegistry.json";
 		std::string buffer;
-		auto ec = glz::write_file_json<glz::opts{ .prettify = true }>(assets, path.string(), buffer);
 
-
-		if (ec) 
+		if (auto ec = glz::write_file_json < glz::opts{ .prettify = true } > (archive, path.string(), buffer))
 		{
-			LOG_ERROR("Failed to save registry: {}", glz::format_error(ec));
+			LOG_ERROR("Registry Save Error: {}", glz::format_error(ec, buffer));
 		}
 	}
 
+	// std::filesystem::path AssetRegistry::GetRelativePath(const Uuid& id) const
+	// {
+	// 	static std::filesystem::path emptyPath;
+	// 	if (auto it = m_Records.find(id); it != m_Records.end())
+	// 	{
+	// 		return std::filesystem::relative(it->second.path, Project::AssetsDirectory());
+	// 	}
+	// 	return emptyPath; //TODO: return {}? and test it!!!
 
-	void AssetRegistry::AddRecord(Uuid id, const std::filesystem::path& path)
+	// }
+
+
+	AssetType AssetRegistry::GetAssetType(const std::filesystem::path& path)
 	{
-		for (const auto& [uuid, record] : m_Records)
+		switch (HashExtension(path.extension().string()))
 		{
-			if (record.path == path)
-			{
-				LOG_WARNING("Asset '{}' already exists", path);
-				return;
-			}
-		}
+		case HashExtension(".png"):
+		case HashExtension(".jpg"):
+		case HashExtension(".jpeg"):
+		case HashExtension(".hdr"):
+			return AssetType::Texture;
 
-		auto type = GetAssetTypeFromExtension(path.extension().string());
-		auto [it, inserted] = m_Records.try_emplace(id, AssetRecord{id, Project::AssetsDirectory() / path, type });
+		case HashExtension(".gltf"):
+		case HashExtension(".glb"):
+			return AssetType::Mesh;
 
-		if (inserted)
-		{
-			AddToVFS(m_Records[id]);
-		}
+		case HashExtension(".mat"):
+			return AssetType::Material;
 
-		Save();
-		LOG_TRACE("Added asset '{}' to registry.", path);
-		return;
-	}
+		case HashExtension(".mi"):
+			return AssetType::MaterialInstance;
 
-	bool AssetRegistry::Exists(Uuid id) const
-	{
-		return m_Records.find(id) != m_Records.end();
-	}
+		case HashExtension(".wav"):
+		case HashExtension(".mp3"):
+			return AssetType::AudioClip;
 
-	void AssetRegistry::RemoveRecord(Uuid id)
-	{
-		const auto it = m_Records.find(id);
+		case HashExtension(".scene"):
+			return AssetType::Scene;
 
-		if (it != m_Records.end())
-		{
-			RebuildVirtualFileSystem();
-			m_Records.erase(it);
-			LOG_TRACE("Removed asset '{}' from registry.", id);
-			Save();
-		}
-		else
-		{
-			LOG_WARNING("Attempted to remove non-existent asset '{}' from registry.", id);
-		}
-	}
+		case HashExtension(".wgsl"):
+			return AssetType::Shader;
 
-	static AssetRecord s_NullRecord{};
-
-	const AssetRecord& AssetRegistry::GetRecord(Uuid id) const
-	{
-		if (auto it = m_Records.find(id); it != m_Records.end())
-		{
-			return it->second;
-		}
-
-		return s_NullRecord;
-	}
-
-	AssetType AssetRegistry::GetType(Uuid id) const
-	{
-		if (!Exists(id)) return AssetType::Unknown;
-		const AssetRecord& record = GetRecord(id);
-		return record.type;
-	}
-
-	std::filesystem::path AssetRegistry::GetPath(const Uuid& id) const
-	{
-		static std::filesystem::path emptyPath;
-		if (auto it = m_Records.find(id); it != m_Records.end())
-		{
-			return it->second.path;
-		}
-
-		LOG_ERROR("UUID '{}' not found in registry.", id);
-		return emptyPath;
-	}
-
-	std::filesystem::path AssetRegistry::GetRelativePath(const Uuid& id) const
-	{
-		static std::filesystem::path emptyPath;
-		if (auto it = m_Records.find(id); it != m_Records.end())
-		{
-			return std::filesystem::relative(it->second.path, Project::AssetsDirectory());
-		}
-		return emptyPath; //TODO: return {}? and test it!!!
-
-	}
-
-	void AssetRegistry::ScanDirectory(const std::filesystem::path& directory)
-	{
-		for (const auto& entry : std::filesystem::recursive_directory_iterator(directory))
-		{
-			const auto& path = entry.path();
-
-			if (!entry.is_regular_file() || !path.has_extension()) continue;
-
-			AssetType type = GetAssetTypeFromExtension(path.extension().string());
-
-			auto it = std::find_if(m_Records.begin(), m_Records.end(), [&path](const auto& pair) { return pair.second.path == path; });
-			if (it == m_Records.end())
-			{
-				AssetRecord record{ Uuid::Generate(), path, type };
-
-				LOG_INFO("Discovered new asset '{}'", path);
-				m_Records[record.id] = std::move(record);
-			}
+		default:
+			return AssetType::Unknown;
 		}
 	}
 
-	void AssetRegistry::RebuildVirtualFileSystem()
+	AssetType AssetRegistry::GetAssetType(Uuid id)
 	{
-		m_RootNode.subdirectories.clear();
-		m_RootNode.assets.clear();
+		if (std::get<AssetMap<Texture2D>>(s_Records).contains(Texture2D{ id }))
+			return AssetType::Texture;
 
-		for (const auto& [id, record] : m_Records)
-		{
-			AddToVFS(record);
-		}
-	}
+		if (std::get<AssetMap<Mesh>>(s_Records).contains(Mesh{ id }))
+			return AssetType::Mesh;
 
-	void AssetRegistry::AddToVFS(const AssetRecord& record)
-	{
-		// Get the path relative to the assets folder (e.g., "Textures/Props/box.png")
-		std::filesystem::path relativePath = std::filesystem::relative(record.path, Project::AssetsDirectory());
-		std::filesystem::path parentDir = relativePath.parent_path();
+		if (std::get<AssetMap<Shader>>(s_Records).contains(Shader{ id }))
+			return AssetType::Shader;
 
-		DirectoryNode* currentNode = &m_RootNode;
+		if (std::get<AssetMap<Material>>(s_Records).contains(Material{ id }))
+			return AssetType::Material;
 
-		// Traverse down the tree, creating nodes if they don't exist
-		if (!parentDir.empty() && parentDir != ".")
-		{
-			for (const auto& component : parentDir)
-			{
-				currentNode = &currentNode->subdirectories[component.string()];
-			}
-		}
+		if (std::get<AssetMap<MaterialInstance>>(s_Records).contains(MaterialInstance{ id }))
+			return AssetType::MaterialInstance;
 
-		// Add the asset ID to the final directory node
-		currentNode->assets.push_back(record.id);
-	}
+		if (std::get<AssetMap<AudioClip>>(s_Records).contains(AudioClip{ id }))
+			return AssetType::AudioClip;
 
-	const DirectoryNode* AssetRegistry::GetDirectoryNode(const std::filesystem::path& relativePath) const
-	{
-		const DirectoryNode* currentNode = &m_RootNode;
+		if (std::get<AssetMap<Scene>>(s_Records).contains(Scene{ id }))
+			return AssetType::Scene;
 
-		if (!relativePath.empty() && relativePath != ".")
-		{
-			for (const auto& component : relativePath)
-			{
-				auto it = currentNode->subdirectories.find(component.string());
-				if (it == currentNode->subdirectories.end())
-				{
-					return nullptr; // Directory doesn't exist in VFS
-				}
-				currentNode = &it->second;
-			}
-		}
-
-		return currentNode;
-	}
-
-	Uuid AssetRegistry::GetIdFromPath(const std::filesystem::path& path) const
-	{
-		const DirectoryNode* current = &m_RootNode;
-
-		for (const auto& part : path)
-		{
-			// Skip root slash or empty parts
-			if (part == "/" || part.empty()) continue;
-
-			auto it = current->subdirectories.find(part.string());
-			if (it == current->subdirectories.end())
-			{
-				return Uuid{};
-			}
-			current = &it->second;
-		}
-
-		return current->assets.empty() ? Uuid{} : current->assets.front();
+		return AssetType::Unknown;
 	}
 }

@@ -12,6 +12,17 @@ namespace engine { enum class AssetType; }
 
 namespace editor
 {
+	template <typename Handle>
+	constexpr const char* GetAssetPayloadName();
+
+	template <> constexpr const char* GetAssetPayloadName<engine::Mesh>() { return "ASSET_MESH"; }
+	template <> constexpr const char* GetAssetPayloadName<engine::Material>() { return "ASSET_MATERIAL"; }
+	template <> constexpr const char* GetAssetPayloadName<engine::Scene>() { return "ASSET_SCENE"; }
+	template <> constexpr const char* GetAssetPayloadName<engine::Texture2D>() { return "ASSET_TEXTURE"; }
+	template <> constexpr const char* GetAssetPayloadName<engine::AudioClip>() { return "ASSET_AUDIOCLIP"; }
+	template <> constexpr const char* GetAssetPayloadName<engine::MaterialInstance>() { return "ASSET_MATERIAL_INSTANCE"; }
+
+
 	enum class DisplayMode
 	{
 		Default, // Standard drag inputs
@@ -86,14 +97,15 @@ namespace editor
 		}
 	};
 
-	template<typename T>
+	template<typename Handle>
 	struct DragDropSource
 	{
-		DragDropSource(const char* payloadId, const T& payloadData, std::string_view label = "")
+		DragDropSource(Handle handle, std::string_view label = "")
 		{
 			if (ImGui::BeginDragDropSource())
 			{
-				ImGui::SetDragDropPayload(payloadId, &payloadData, sizeof(engine::Uuid));
+				const char* payloadId = GetAssetPayloadName<Handle>();
+				ImGui::SetDragDropPayload(payloadId, &handle, sizeof(engine::Uuid));
 				ImGui::Text("%s", label.data());
 				ImGui::EndDragDropSource();
 			}
@@ -112,32 +124,29 @@ namespace editor
 			if (active) ImGui::EndDragDropTarget();
 		}
 
-		template<typename Fn>
-		bool AcceptAsset(engine::AssetType expectedType, Fn&& fn)
+		template<typename Handle, typename Fn>
+		bool AcceptAsset(Fn&& callback)
 		{
-			static_assert(std::is_invocable_v<Fn, engine::Uuid>, "Asset callback must take an Engine::Uuid");
+			static_assert(std::is_invocable_v<Fn, Handle>, "Asset callback must take the correct type");
 
 			if (!active) return false;
 
+			const char* payloadId = GetAssetPayloadName<Handle>();
+
 			const ImGuiPayload* payload = ImGui::GetDragDropPayload();
-			bool isValidAsset = false;
 
-			if (payload && payload->IsDataType("UUID"))
-			{
-				engine::Uuid id = *static_cast<const engine::Uuid*>(payload->Data);
-				isValidAsset = (engine::AssetManager::GetAssetType(id) == expectedType);
-			}
+			bool isValidAsset = payload && payload->IsDataType(payloadId);
 
-			ImVec4 targetColor = isValidAsset ? ImVec4(0.2f, 0.8f, 0.2f, 1.0f) : ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
+			const ImVec4 targetColor = isValidAsset ? ImVec4(0.2f, 0.8f, 0.2f, 1.0f) : ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
 
 			ImGui::PushStyleColor(ImGuiCol_DragDropTarget, targetColor);
-			const ImGuiPayload* droppedPayload = ImGui::AcceptDragDropPayload("UUID");
+			const ImGuiPayload* droppedPayload = ImGui::AcceptDragDropPayload(payloadId);
 			ImGui::PopStyleColor();
 
-			if (droppedPayload && isValidAsset)
+			if (isValidAsset && droppedPayload)
 			{
 				engine::Uuid id = *static_cast<const engine::Uuid*>(droppedPayload->Data);
-				std::forward<Fn>(fn)(id);
+				std::forward<Fn>(callback)(Handle{id});
 				return true;
 			}
 
@@ -169,30 +178,20 @@ namespace editor
 		bool isOpen = false;
 	};
 
-	template <typename Asset>
-	EditResult AssetField(std::string_view label, engine::AssetHandle<Asset>& handle)
+	template <typename Handle>
+	EditResult AssetField(std::string_view label, Handle& handle)
 	{
 		PropertyRow row(label);
 		EditResult result;
 
-		constexpr engine::AssetType type = []() {
-			if constexpr (std::is_same_v<Asset, engine::Texture2DAsset>) return engine::AssetType::Texture;
-			else if constexpr (std::is_same_v<Asset, engine::MeshAsset>) return engine::AssetType::Mesh;
-			else if constexpr (std::is_same_v<Asset, engine::ShaderAsset>) return engine::AssetType::Shader;
-			else if constexpr (std::is_same_v<Asset, engine::MaterialAsset>) return engine::AssetType::Material;
-			else if constexpr (std::is_same_v<Asset, engine::AudioClipAsset>) return engine::AssetType::Audio;
-			else if constexpr (std::is_same_v<Asset, engine::SceneAsset>) return engine::AssetType::Scene;
-			else return engine::AssetType::Unknown;
-			}();
+		const std::string& assetName = handle ? engine::AssetRegistry::GetPath(handle).stem().string() : "";
 
-		const std::string& assetName = engine::AssetManager::GetAssetPath(handle.id).stem().string();
-
-		if constexpr (std::is_same_v<Asset, engine::Texture2DAsset>)
+		if constexpr (std::is_same_v<Handle, engine::Texture2D>)
 		{
 			if (handle)
 			{
-				const engine::Texture2DAsset& texture = engine::AssetManager::GetAsset(handle);
-				result.changed = ImGui::ImageButton("##TexturePreview", (ImTextureID)(intptr_t)texture.GetTextureView().Get(), ImVec2(64, 64));
+				engine::Texture2D texture = static_cast<engine::Texture2D>(handle);
+				result.changed = ImGui::ImageButton("##TexturePreview", (ImTextureID)(intptr_t)texture.View().Get(), ImVec2(64, 64)); //TODO: too many casts?
 			}
 			else
 			{
@@ -208,8 +207,8 @@ namespace editor
 		result.started = ImGui::IsItemActivated();
 		result.finished = ImGui::IsItemDeactivatedAfterEdit();
 
-		DragDropSource<engine::Uuid>("UUID", handle.id, assetName);
-		result.changed |= DragDropTarget{}.AcceptAsset(type, [&handle](engine::Uuid newId) { handle.id = newId; });
+		DragDropSource(handle, assetName);
+		result.changed |= DragDropTarget{}.AcceptAsset<Handle>([&handle](Handle newHandle) { handle = newHandle; });
 
 		if (PopupContextItem contextMenu{ "AssetOptionsPopup" })
 		{
@@ -222,7 +221,7 @@ namespace editor
 
 		if (result.changed)
 		{
-			engine::AssetManager::MarkAssetDirty(handle.id);
+			engine::AssetManager::MarkAssetDirty(handle);
 		}
 
 		return result;

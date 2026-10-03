@@ -1,18 +1,16 @@
 #pragma once
 
-#include "Engine/Asset/Asset.h"
-#include "Engine/Core/Entity.h"
 #include "Engine/Core/Components.h"
+#include "Engine/Graphics/Texture/Texture2D.h"
 #include <entt/entity/registry.hpp>
 
 namespace engine
 {
 	template<typename T>
-	concept UpdateSystem = requires(entt::registry& registry) {{ T::Update(registry) };};
+	concept UpdateSystem = requires(entt::registry & registry) { { T::Update(registry) }; };
 
-	class SceneAsset : public Asset
+	struct SceneAsset
 	{
-	public:
 		SceneAsset() = default;
 		~SceneAsset();
 
@@ -22,61 +20,59 @@ namespace engine
 		SceneAsset(const SceneAsset&) = delete;
 		SceneAsset& operator=(const SceneAsset&) = delete;
 
+		entt::registry registry;
+		std::unordered_map<engine::Uuid, entt::entity> entityMap;
+		std::vector<entt::entity> rootEntities;
+		Texture2D environmentTexture;
+
+		std::vector<std::function<void()>> systems;
+	};
+
+	struct Scene : public AssetHandle
+	{
+		using AssetHandle::AssetHandle;
+		SceneAsset& Get() const;
 
 		//TODO: auto insert into root if not parent specified
 		template<typename... Components>
-		Entity CreateEntity(std::string_view name = "Entity")
+		entt::entity CreateEntity(std::string_view name = "Entity")
 		{
-			entt::entity entity = m_Registry.create();
+			SceneAsset& data = Get();
+			entt::entity entity = data.registry.create();
 			Uuid uuid = Uuid::Generate();
 
-			m_Registry.emplace<IdentityComponent>(entity, uuid);
-			m_Registry.emplace<NameComponent>(entity).name = name;
-			m_Registry.emplace<HierarchyComponent>(entity);
+			data.registry.emplace<IdentityComponent>(entity, uuid);
+			data.registry.emplace<NameComponent>(entity).name = name;
+			data.registry.emplace<HierarchyComponent>(entity);
 
-			(m_Registry.emplace<Components>(entity), ...);
+			(data.registry.emplace<Components>(entity), ...);
 
-			m_EntityMap[uuid] = entity;
-			return Entity(entity, this);
+			data.entityMap[uuid] = entity;
+			return entity;
 		}
 
-		void DestroyEntity(Entity entity);
-		Entity GetEntity(Uuid entityId);
-		entt::entity GetEntityHandle(Uuid entityId) const;
+		void DestroyEntity(entt::entity entity);
+		entt::entity GetEntity(Uuid entityId) const;
 
-		const entt::registry& GetRegistryConst() const { return m_Registry; }
-		entt::registry& GetRegistry() { return m_Registry; }
 
-		const CameraComponent& GetPrimaryCamera() const;
+		entt::registry& GetRegistry();
+		const entt::registry& GetRegistry() const;
+
+		CameraComponent* GetPrimaryCamera() const;
 
 		const std::vector<entt::entity>& GetRootEntities() const;
 		void InsertRootEntity(entt::entity entity, size_t index);
 		void RemoveRootEntity(entt::entity entity);
 
-		Texture2D GetEnvironmentTexture() const { return m_EnvironmentTexture; }
-		void SetEnvironmentTexture(Texture2D texture) { m_EnvironmentTexture = texture; }
-
+		Texture2D GetEnvironmentTexture() const;
+		void SetEnvironmentTexture(Texture2D texture);
 
 		template<typename System> requires UpdateSystem<System>
 		void RegisterSystem()
 		{
-			m_Systems.push_back([this]() {System::Update(m_Registry);});
+			Get().systems.push_back([this]() {System::Update(Get().registry);});
 		}
 
-		const std::vector<std::function<void()>>& GetSystems() const
-		{
-			return m_Systems;
-		}
-
-	private:
-		entt::registry m_Registry;
-		std::unordered_map<engine::Uuid, entt::entity> m_EntityMap;
-		std::vector<entt::entity> m_RootEntities;
-		Texture2D m_EnvironmentTexture;
-
-		std::vector<std::function<void()>> m_Systems;
-
-	private:
-		friend class SceneSerializer;
+		const std::vector<std::function<void()>>& GetSystems() const;
 	};
 }

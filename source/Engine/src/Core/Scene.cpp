@@ -7,62 +7,97 @@ namespace engine
 {
 	SceneAsset::~SceneAsset()
 	{
-		m_Registry.clear();
+		registry.clear();
 	}
 
-	void SceneAsset::DestroyEntity(Entity entity)
+	SceneAsset& Scene::Get() const
 	{
-		if (!entity) return;
-
-		Uuid uuid = m_Registry.get<IdentityComponent>(entity.GetHandle()).id;
-		m_Registry.destroy(entity.GetHandle());
-		m_EntityMap.erase(uuid);
+		return AssetManager::GetAsset(*this);
 	}
 
-	Entity SceneAsset::GetEntity(Uuid entityId)
+	void Scene::DestroyEntity(entt::entity entity)
 	{
-		if (m_EntityMap.find(entityId) != m_EntityMap.end())
+		if (entity == entt::null) return;
+		SceneAsset& data = Get();
+
+		Uuid id = data.registry.get<IdentityComponent>(entity).id;
+		data.registry.destroy(entity);
+		data.entityMap.erase(id);
+	}
+
+	entt::entity Scene::GetEntity(Uuid entityId) const
+	{
+		const auto& map = Get().entityMap;
+		if (auto it = map.find(entityId); it != map.end())
 		{
-			return Entity(m_EntityMap[entityId], this);
-		}
-		return Entity{};
-	}
-
-	entt::entity SceneAsset::GetEntityHandle(Uuid entityId) const
-	{
-		if (m_EntityMap.find(entityId) != m_EntityMap.end())
-		{
-			return m_EntityMap.at(entityId);
+			return it->second;
 		}
 		return entt::null;
 	}
 
-	const CameraComponent& SceneAsset::GetPrimaryCamera() const
+
+
+	entt::registry& Scene::GetRegistry()
 	{
-		entt::entity entity = m_Registry.view<engine::CameraComponent, engine::PrimaryCameraTag>().front();
-		return m_Registry.get<CameraComponent>(entity);
+		return Get().registry;
 	}
 
-	const std::vector<entt::entity>& SceneAsset::GetRootEntities() const
+	const entt::registry& Scene::GetRegistry() const
 	{
-		return m_RootEntities;
+		return Get().registry;
 	}
 
-	void SceneAsset::InsertRootEntity(entt::entity entity, size_t index)
+CameraComponent* Scene::GetPrimaryCamera() const
+{
+    entt::registry& registry = Get().registry;
+    auto view = registry.view<engine::CameraComponent, engine::PrimaryCameraTag>();
+    
+    if (view.front() == entt::null)
+    {
+			LOG_WARNING("No active camera in the scene");
+      return nullptr;
+    }
+    
+    return &registry.get<CameraComponent>(view.front());
+}
+
+	const std::vector<entt::entity>& Scene::GetRootEntities() const
 	{
-		if (index > m_RootEntities.size())
+		return Get().rootEntities;
+	}
+
+	void Scene::InsertRootEntity(entt::entity entity, size_t index)
+	{
+		auto& rootEntities = Get().rootEntities;
+		if (index > rootEntities.size())
 		{
-			index = m_RootEntities.size();
+			index = rootEntities.size();
 		}
-		m_RootEntities.insert(m_RootEntities.begin() + index, entity);
+		rootEntities.insert(rootEntities.begin() + index, entity);
 	}
 
-	void SceneAsset::RemoveRootEntity(entt::entity entity)
+	void Scene::RemoveRootEntity(entt::entity entity)
 	{
-		auto it = std::find(m_RootEntities.begin(), m_RootEntities.end(), entity);
-		if (it != m_RootEntities.end())
+		auto& rootEntities = Get().rootEntities;
+		auto it = std::find(rootEntities.begin(), rootEntities.end(), entity);
+		if (it != rootEntities.end())
 		{
-			m_RootEntities.erase(it);
+			rootEntities.erase(it);
 		}
+	}
+
+
+	Texture2D Scene::GetEnvironmentTexture() const
+	{
+		return Get().environmentTexture;
+	}
+	void Scene::SetEnvironmentTexture(Texture2D texture)
+	{
+		Get().environmentTexture = texture;
+	}
+
+	const std::vector<std::function<void()>>& Scene::GetSystems() const
+	{
+		return Get().systems;
 	}
 }

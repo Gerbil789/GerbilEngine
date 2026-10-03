@@ -202,9 +202,9 @@ namespace engine
 
 		// 4 - BRDFIntMap
 		{
-			auto brdfTexture = TextureImporter::LoadTexture2D("resources/hdr/brdf_integration_map_ct_ggx.hdr").value(); // TODO: is this memory leak?
+			const Texture2DData brdfTexture = TextureImporter::LoadTexture2D("resources/hdr/brdf_integration_map_ct_ggx.hdr");
 			entries[4].binding = 4;
-			entries[4].textureView = brdfTexture.GetTextureView();
+			entries[4].textureView = brdfTexture.textureView;
 		}
 
 		// 5 - ShadowUniforms
@@ -284,21 +284,21 @@ namespace engine
 		m_FrameContext.depthTextureArrayView = texture.CreateView(&arrayViewDesc);
 	}
 
-	void Renderer::RenderScene(const SceneAsset& scene, const CameraComponent& camera, wgpu::TextureView targetView)
+	void Renderer::RenderScene(const entt::registry& registry, CameraComponent* camera, wgpu::TextureView targetView)
 	{
-		m_FrameContext.camera = &camera;
+		m_FrameContext.camera = camera;
 		m_FrameContext.colorTarget = targetView;
 
 		wgpu::Queue queue = GraphicsContext::GetQueue();
 
 		ViewUniforms viewUniforms;
-		viewUniforms.view = camera.viewMatrix;
-		viewUniforms.projection = camera.projectionMatrix;
+		viewUniforms.view = camera->viewMatrix;
+		viewUniforms.projection = camera->projectionMatrix;
 		queue.WriteBuffer(m_ViewUniformBuffer, 0, &viewUniforms, sizeof(viewUniforms));
 
-		m_FrameContext.drawList = DrawList::CreateFromScene(scene);
+		m_FrameContext.drawList = DrawList::Create(registry);
 
-		const std::vector<glm::mat4>& modelMatrices = m_FrameContext.drawList.GetTransforms();
+		const std::vector<glm::mat4>& modelMatrices = m_FrameContext.drawList.transforms;
 		queue.WriteBuffer(m_ModelStorageBuffer, 0, modelMatrices.data(), modelMatrices.size() * sizeof(glm::mat4));
 
 		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().CreateCommandEncoder();

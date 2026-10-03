@@ -2,7 +2,6 @@
 
 #include "Editor/Command/ICommand.h"
 #include "Editor/Core/EditorContext.h"
-#include "Editor/Core/SelectionManager.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Core/Scene.h"
@@ -24,7 +23,7 @@ namespace editor
 				case EditorMode::Play:
 				{
 					engine::Runtime::Start();
-					SelectionManager::Entities.Clear();
+					// SelectionManager::Entities.Clear();
 					break;
 				}
 	

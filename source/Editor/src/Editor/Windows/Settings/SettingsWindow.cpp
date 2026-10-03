@@ -16,7 +16,7 @@ namespace editor
 {
 	void SettingsWindow::Draw()
 	{
-		engine::SceneAsset& scene = engine::AssetManager::GetAsset<engine::SceneAsset>(engine::SceneManager::GetActiveScene());
+		engine::Scene scene = engine::SceneManager::GetActiveScene();
 
 		ImGui::Begin("Settings");
 

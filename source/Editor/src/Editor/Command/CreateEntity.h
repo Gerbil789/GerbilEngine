@@ -1,13 +1,11 @@
 #pragma once
 
 #include "Editor/Command/ICommand.h"
-#include "Editor/Core/SelectionManager.h"
 #include "Engine/Core/Scene.h"
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Core/Components.h"
 #include "Engine/Event/EventBus.h"
 #include "Editor/Core/EditorEvent.h"
-#include "Engine/Asset/AssetManager.h"
 #include <string_view>
 
 namespace editor
@@ -20,37 +18,40 @@ namespace editor
 
     void Execute() override
     {
-      engine::SceneAsset& scene = engine::AssetManager::GetAsset<engine::SceneAsset>(engine::SceneManager::GetActiveScene());
+      engine::Scene scene = engine::SceneManager::GetActiveScene();
+      entt::registry& registry = scene.GetRegistry();
 
-      // Forward the component pack directly into scene.CreateEntity
       m_Entity = scene.CreateEntity<Components...>(m_Name);
 
       if (m_Parent != entt::null)
       {
-        auto& hc = m_Entity.GetComponent<engine::HierarchyComponent>();
+        auto& hc = registry.get<engine::HierarchyComponent>(m_Entity);
         hc.parent = m_Parent;
-        scene.GetRegistry().get<engine::HierarchyComponent>(m_Parent).children.push_back(m_Entity.GetHandle());
+        registry.get<engine::HierarchyComponent>(m_Parent).children.push_back(m_Entity);
       }
       else
       {
-        scene.InsertRootEntity(m_Entity.GetHandle(), scene.GetRootEntities().size());
+        scene.InsertRootEntity(m_Entity, scene.GetRootEntities().size()); //TODO: this is bad
       }
 
-      engine::Uuid id = m_Entity.GetComponent<engine::IdentityComponent>().id;
-      SelectionManager::Assets.Select(id);
-      FocusEntityEvent e{ id };
+      //engine::Uuid id = registry.get<engine::IdentityComponent>(m_Entity).id;
+      // SelectionManager::Assets.Select(id);
+
+      FocusEntityEvent e{ m_Entity };
       engine::EventBus::Publish(e);
     }
 
     void Undo() override
     {
-      if (!m_Entity) return;
-      m_Entity.Destroy();
+      if (m_Entity == entt::null) return;
+
+      entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+      registry.destroy(m_Entity);
     }
 
   private:
     std::string m_Name;
     entt::entity m_Parent;
-    engine::Entity m_Entity;
+    entt::entity m_Entity;
   };
 }

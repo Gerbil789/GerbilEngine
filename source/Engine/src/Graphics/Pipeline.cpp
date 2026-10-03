@@ -3,7 +3,6 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Graphics/Utility.h"
-#include "Engine/Asset/AssetManager.h"
 #include <numeric>
 
 namespace engine
@@ -16,12 +15,10 @@ namespace engine
 			return it->second;
 		}
 
-		const ShaderAsset& shader = engine::AssetManager::GetAsset<ShaderAsset>(specification.shader);
-
 		wgpu::RenderPipelineDescriptor pipelineDesc;
 		pipelineDesc.label = "Shader Pipeline";
 
-		const std::vector<wgpu::VertexAttribute>& vertexAttributes = shader.GetSpecification().vertexAttributes;
+		const std::vector<wgpu::VertexAttribute>& vertexAttributes = specification.shader.GetSpecification().vertexAttributes;
 
 		wgpu::VertexBufferLayout vertexBufferLayout;
 		if(!vertexAttributes.empty())
@@ -42,7 +39,7 @@ namespace engine
 			pipelineDesc.vertex.buffers = nullptr;
 		}
 
-		pipelineDesc.vertex.module = shader.GetShaderModule();
+		pipelineDesc.vertex.module = specification.shader.GetShaderModule();
 		pipelineDesc.vertex.entryPoint = "vs_main";
 
 		pipelineDesc.primitive.topology = specification.topology;
@@ -63,7 +60,7 @@ namespace engine
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 
 		wgpu::FragmentState fragmentState;
-		fragmentState.module = shader.GetShaderModule();
+		fragmentState.module = specification.shader.GetShaderModule();
 		fragmentState.entryPoint = "fs_main";
 		fragmentState.constantCount = 0;
 		fragmentState.constants = nullptr;
@@ -106,7 +103,7 @@ namespace engine
 			{
 					RenderPipelineLayouts::GetViewLayout(),
 					RenderPipelineLayouts::GetEnvironmentLayout(),
-					shader.GetMaterialBindGroupLayout(),
+					specification.shader.GetMaterialBindGroupLayout(),
 					RenderPipelineLayouts::GetModelLayout()
 			};
 		}

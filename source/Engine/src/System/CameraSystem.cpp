@@ -55,7 +55,6 @@ namespace engine
 
 		glm::vec3 forward = orientation * glm::vec3(0.0f, 0.0f, -1.0f);
 		glm::vec3 up = orientation * glm::vec3(0.0f, 1.0f, 0.0f);
-		glm::vec3 right = orientation * glm::vec3(1.0f, 0.0f, 0.0f);
 
 		camera.viewMatrix = glm::lookAtLH(transform.position, transform.position + forward, up);
 		camera.viewProjectionMatrix = camera.projectionMatrix * camera.viewMatrix;

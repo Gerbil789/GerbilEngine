@@ -39,11 +39,9 @@ namespace engine
     }
   }
 
-	void TransformSystem::Update(SceneAsset& scene)
+	void TransformSystem::Update(entt::registry& registry, const std::vector<entt::entity>& rootEntities)
 	{
-		auto& registry = scene.GetRegistry();
-
-    for (entt::entity entity : scene.GetRootEntities())
+    for (entt::entity entity : rootEntities)
     {
       UpdateEntityTransformRecursive(registry, entity, glm::mat4{ 1.0f });
     }

@@ -10,13 +10,15 @@
 #include "Engine/Core/SceneManager.h"
 #include "SpinComponent.h"
 
+#include "Engine/Core/Log.h"
+
 int main()
 {
 	const engine::Application::Configuration config
 	{
 		.projectPath = "projects/TestProject",
-		.windowSpec = { "Game", 1280, 720 },
-		.startupScene = engine::Scene{ 10911691135274866464u }
+		.windowSpec = { "Dev Project", 1280, 720 },
+		.startupScene = engine::Scene{ 9116182370241309221u }
 	};
 
 	try
@@ -27,14 +29,23 @@ int main()
 		engine::Application app(config);
 #endif
 
-		auto& scene = engine::AssetManager::GetAsset(engine::SceneManager::GetActiveScene());
-		scene.RegisterSystem<SpinSystem>();
+		// engine::Scene scene = engine::SceneManager::GetActiveScene();
+		// entt::registry& registry = scene.GetRegistry();
 
-		auto& registry = scene.GetRegistry();
-		for (auto entity : registry.view<engine::TransformComponent>())
-		{
-			registry.emplace_or_replace<SpinComponent>(entity);
-		}
+		// auto path = engine::AssetRegistry::GetPath(scene);
+		// LOG_WARNING("SCENE PATH: {}", path);
+
+		// scene.RegisterSystem<SpinSystem>();
+
+		// for (auto entity : registry.view<engine::TransformComponent>())
+		// {
+		// 	registry.emplace_or_replace<SpinComponent>(entity);
+		// }
+
+		// for( auto[entity, name] : registry.view<engine::NameComponent>().each())
+		// {
+		// 	LOG_INFO("entity: {}", name.name);
+		// }
 
 		app.Run();
 	}

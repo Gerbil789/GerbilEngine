@@ -2,6 +2,7 @@
 
 #include "Engine/Core/Window.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
+#include "Engine/Core/Scene.h"
 
 namespace engine
 {

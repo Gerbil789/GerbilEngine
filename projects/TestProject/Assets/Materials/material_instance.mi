@@ -1,0 +1,30 @@
+{
+   "material": 17038668418704684530,
+   "attributes": {
+      "albedo": [
+         1,
+         1,
+         1,
+         1
+      ],
+      "metallic": 1,
+      "offset": [
+         0,
+         0
+      ],
+      "roughness": 1,
+      "tiling": [
+         1,
+         1
+      ]
+   },
+   "textures": {
+      "AlbedoTexture": 6854353316358564022,
+      "AmbientTexture": 11,
+      "MetallicTexture": 11,
+      "NormalTexture": 13,
+      "RoughnessTexture": 11
+   },
+   "filter": "bilinear",
+   "wrap": "repeat"
+}

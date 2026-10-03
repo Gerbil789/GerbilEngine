@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Engine/Asset/Asset.h"
-#include <glm/glm.hpp>
+#include "Engine/Asset/AssetHandle.h"
 #include <webgpu/webgpu_cpp.h>
 
 namespace engine
@@ -15,22 +14,26 @@ namespace engine
 		bool generateMips = false;
 	};
 
-	class Texture2DAsset : public Asset
+	struct Texture2DData
 	{
-	public:
-		Texture2DAsset(const TextureSpecification& specification, const void* data);
+		Texture2DData() = default;
+		Texture2DData(const TextureSpecification& specification, const void* data);
 
-		uint32_t GetWidth() const { return m_Width; }
-		uint32_t GetHeight() const { return m_Height; }
-		wgpu::Texture GetTexture() const { return m_Texture; }
-		wgpu::TextureView GetTextureView() const { return m_TextureView; }
-		wgpu::TextureFormat GetFormat() const { return m_TextureFormat; }
-
-	private:
-		uint32_t m_Width = 0;
-		uint32_t m_Height = 0;
-		wgpu::Texture m_Texture;
-		wgpu::TextureView m_TextureView;
-		wgpu::TextureFormat m_TextureFormat;
+		uint32_t width = 0;
+		uint32_t height = 0;
+		wgpu::Texture texture;
+		wgpu::TextureView textureView;
+		wgpu::TextureFormat textureFormat;
 	};
+
+	struct Texture2D : public AssetHandle
+  {
+		using AssetHandle::AssetHandle;
+		Texture2DData& Get() const;
+
+    uint32_t Width() const;
+    uint32_t Height() const;
+    wgpu::TextureView View() const;
+		wgpu::TextureFormat Format() const;
+  };
 }

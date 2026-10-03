@@ -11,8 +11,8 @@ namespace engine
   inline void HashCombine(std::size_t& seed, const T& v)
   {
     std::hash<T> hasher;
-    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2); // The magic number 0x9e3779b9 is derived from the golden ratio
-  } 
+    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2); // the magic number 0x9e3779b9 is derived from the golden ratio
+  }
 
   struct PipelineSpecification
   {
@@ -58,7 +58,7 @@ namespace engine
 		{
 			size_t seed = 0;
 
-			HashCombine(seed, static_cast<uint64_t>(shader));
+			HashCombine(seed, static_cast<uint64_t>(shader.id));
 			HashCombine(seed, static_cast<uint32_t>(topology));
 			HashCombine(seed, static_cast<uint32_t>(frontFace));
 			HashCombine(seed, static_cast<uint32_t>(cullMode));

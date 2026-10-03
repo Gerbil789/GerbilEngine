@@ -1,10 +1,17 @@
 #include "enginepch.h"
-#include "Engine/Asset/Serializer/SceneSerializer.h"
+#include "Engine/Asset/Serializer/Serializer.h"
 #include "Engine/Asset/Resources.h"
 #include "Engine/Core/Components.h"
 #include "Engine/Core/Scene.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Engine/Core/Log.h"
 #include <glaze/glaze.hpp>
+
+
+#include <glm/glm.hpp>
+
+
+template <> struct glz::meta<glm::ivec2> { static constexpr auto value = glz::array(&glm::ivec2::x, &glm::ivec2::y); };
 
 template <>
 struct glz::meta<glm::vec2> { static constexpr auto value = array(&glm::vec2::x, &glm::vec2::y); };
@@ -23,6 +30,12 @@ struct glz::meta<engine::Mesh> { static constexpr auto value = [](auto& mesh) ->
 
 template <>
 struct glz::meta<engine::Material> { static constexpr auto value = [](auto& material) -> uint64_t& { return reinterpret_cast<uint64_t&>(material); }; };
+
+template <>
+struct glz::meta<engine::MaterialInstance> {
+	using T = engine::MaterialInstance;
+	static constexpr auto value = [](auto& m) -> decltype(m.id)& { return m.id; };
+};
 
 namespace engine
 {
@@ -51,7 +64,6 @@ namespace engine
 	struct CameraComponentJSON
 	{
 		uint32_t projection = 0;
-		float aspectRatio = 1.0f;
 		CameraPerspectiveJSON perspective;
 		CameraOrthographicJSON orthographic;
 		uint32_t background = 0;
@@ -97,7 +109,7 @@ namespace engine
 		std::string buffer;
 	}
 
-	void SerializeEntityRecursive(entt::registry& registry, entt::entity entity, std::vector<EntityJSON>& outList)
+	void SerializeEntityRecursive(const entt::registry& registry, entt::entity entity, std::vector<EntityJSON>& json)
 	{
 		EntityJSON eJson;
 
@@ -163,48 +175,45 @@ namespace engine
 		//	};
 		//}
 
-		outList.push_back(std::move(eJson));
+		json.push_back(std::move(eJson));
 
 		auto& hc = registry.get<HierarchyComponent>(entity);
 		for (entt::entity child : hc.children)
 		{
-			SerializeEntityRecursive(registry, child, outList);
+			SerializeEntityRecursive(registry, child, json);
 		}
 	}
 
-	void SceneSerializer::Serialize(Scene scene, const std::filesystem::path& path)
+	void Serializer::SerializeScene(Scene scene, const std::filesystem::path& path)
 	{
-		auto& sceneAsset = AssetManager::GetAsset(scene);
-
-		if (path.extension() != ".json" && path.extension() != ".scene")
+		if (path.extension() != ".scene")
 		{
-			LOG_ERROR("Expected '.scene' or '.json' extension in save path: '{}'", path);
+			LOG_ERROR("Expected '.scene' extension in save path: '{}'", path);
 			return;
 		}
 
-		entt::registry& registry = sceneAsset.GetRegistry();
+		const auto& sceneData = scene.Get();
+		const entt::registry& registry = sceneData.registry;
 
-		std::vector<EntityJSON> sceneData;
+		std::vector<EntityJSON> json;
 
-		const auto& roots = sceneAsset.GetRootEntities();
-		for (entt::entity root : roots)
+		for (const entt::entity root : sceneData.rootEntities)
 		{
-			SerializeEntityRecursive(registry, root, sceneData);
+			SerializeEntityRecursive(registry, root, json);
 		}
 
-
-		if (auto ec = glz::write_file_json < glz::opts{ .prettify = true } > (sceneData, path.string(), buffer))
+		if (auto ec = glz::write_file_json < glz::opts{ .prettify = true } > (json, path.string(), buffer))
 		{
-			LOG_ERROR("Failed to save scene file '{}': {}", path.string(), glz::format_error(ec));
+			LOG_ERROR("Failed to save scene file '{}': {}", path, glz::format_error(ec));
 		}
 	}
 
-	std::optional<SceneAsset> SceneSerializer::Deserialize(const std::filesystem::path& path)
+	SceneAsset Serializer::DeserializeScene(const std::filesystem::path& path)
 	{
-		if (path.extension() != ".json" && path.extension() != ".scene")
+		if (path.extension() != ".scene")
 		{
-			LOG_ERROR("Expected '.scene' or '.json' extension, got '{}'", path.extension().string());
-			return std::nullopt;
+			LOG_ERROR("Expected '.scene' extension, got '{}'", path.extension().string());
+			return SceneAsset{};
 		}
 
 		std::vector<EntityJSON> json;
@@ -214,13 +223,13 @@ namespace engine
 		if (auto ec = glz::read_file_json(json, path.string(), buffer))
 		{
 			LOG_ERROR("Failed to load scene file '{}': {}", path, glz::format_error(ec, buffer));
-			return std::nullopt;
+			return SceneAsset{};
 		}
 
 		SceneAsset scene;
-		scene.SetEnvironmentTexture(RESOURCES::TEXTURE::HDR); //TODO: store in scene file
+		scene.environmentTexture = RESOURCES::TEXTURE::HDR; //TODO: store in scene file
 
-		entt::registry& registry = scene.GetRegistry();
+		entt::registry& registry = scene.registry;
 
 		for (const EntityJSON& eJson : json)
 		{
@@ -237,7 +246,7 @@ namespace engine
 			// identity
 			{
 				registry.emplace<IdentityComponent>(handle, id);
-				scene.m_EntityMap[id] = handle;
+				scene.entityMap[id] = handle;
 			}
 
 			// disabled tag
@@ -268,7 +277,7 @@ namespace engine
 			}
 			else
 			{
-				scene.m_RootEntities.push_back(handle);
+				scene.rootEntities.push_back(handle);
 			}
 
 			// mesh
@@ -296,7 +305,6 @@ namespace engine
 				const auto& cJson = eJson.camera.value();
 
 				cComp.projectionType = static_cast<CameraComponent::Projection>(cJson.projection);
-					//cComp.camera.SetAspectRatio(cJson.aspectRatio);
 				cComp.perspective.fov = cJson.perspective.fov;
 				cComp.perspective.nearClip = cJson.perspective.near;
 				cComp.perspective.farClip = cJson.perspective.far;
@@ -328,18 +336,17 @@ namespace engine
 			}
 		}
 
-
 		// set parent-child relationships
 		for (const auto& [childId, parentId] : parentMap)
 		{
-			Entity childEntity = scene.GetEntity(childId);
-			Entity parentEntity = scene.GetEntity(parentId);
+			entt::entity child = scene.entityMap.at(childId);
+			entt::entity parent = scene.entityMap.at(parentId);
 
-			auto& childHC = childEntity.GetComponent<HierarchyComponent>();
-			childHC.parent = static_cast<entt::entity>(parentEntity.GetHandle());
+			auto& childHC = registry.get<HierarchyComponent>(child);
+			childHC.parent = parent;
 
-			auto& parentHC = parentEntity.GetComponent<HierarchyComponent>();
-			parentHC.children.push_back(static_cast<entt::entity>(childEntity.GetHandle()));
+			auto& parentHC = registry.get<HierarchyComponent>(parent);
+			parentHC.children.push_back(child);
 		}
 
 		return scene;
