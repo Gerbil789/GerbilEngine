@@ -13,15 +13,15 @@ namespace engine { enum class AssetType; }
 namespace editor
 {
 	template <typename Handle>
-	constexpr const char* GetAssetPayloadName();
+	constexpr engine::AssetType GetAssetType();
 
-	template <> constexpr const char* GetAssetPayloadName<engine::Mesh>() { return "ASSET_MESH"; }
-	template <> constexpr const char* GetAssetPayloadName<engine::Material>() { return "ASSET_MATERIAL"; }
-	template <> constexpr const char* GetAssetPayloadName<engine::Scene>() { return "ASSET_SCENE"; }
-	template <> constexpr const char* GetAssetPayloadName<engine::Texture2D>() { return "ASSET_TEXTURE"; }
-	template <> constexpr const char* GetAssetPayloadName<engine::AudioClip>() { return "ASSET_AUDIOCLIP"; }
-	template <> constexpr const char* GetAssetPayloadName<engine::MaterialInstance>() { return "ASSET_MATERIAL_INSTANCE"; }
-
+	template <> constexpr engine::AssetType GetAssetType<engine::Mesh>() { return engine::AssetType::Mesh; }
+	template <> constexpr engine::AssetType GetAssetType<engine::Shader>() { return engine::AssetType::Shader; }
+	template <> constexpr engine::AssetType GetAssetType<engine::Material>() { return engine::AssetType::Material; }
+	template <> constexpr engine::AssetType GetAssetType<engine::MaterialInstance>() { return engine::AssetType::MaterialInstance; }
+	template <> constexpr engine::AssetType GetAssetType<engine::Scene>() { return engine::AssetType::Scene; }
+	template <> constexpr engine::AssetType GetAssetType<engine::Texture2D>() { return engine::AssetType::Texture; }
+	template <> constexpr engine::AssetType GetAssetType<engine::AudioClip>() { return engine::AssetType::AudioClip; }
 
 	enum class DisplayMode
 	{
@@ -97,15 +97,21 @@ namespace editor
 		}
 	};
 
-	template<typename Handle>
+	struct AssetPayload
+	{
+		engine::AssetType type;
+		engine::Uuid id;
+	};
+
 	struct DragDropSource
 	{
-		DragDropSource(Handle handle, std::string_view label = "")
+		DragDropSource(engine::AssetType type, engine::Uuid id, std::string_view label = "")
 		{
 			if (ImGui::BeginDragDropSource())
 			{
-				const char* payloadId = GetAssetPayloadName<Handle>();
-				ImGui::SetDragDropPayload(payloadId, &handle, sizeof(engine::Uuid));
+				AssetPayload payload{ type, id };
+
+				ImGui::SetDragDropPayload("AssetPayload", &payload, sizeof(AssetPayload));
 				ImGui::Text("%s", label.data());
 				ImGui::EndDragDropSource();
 			}
@@ -131,22 +137,27 @@ namespace editor
 
 			if (!active) return false;
 
-			const char* payloadId = GetAssetPayloadName<Handle>();
-
+			engine::AssetType expectedType = GetAssetType<Handle>();
 			const ImGuiPayload* payload = ImGui::GetDragDropPayload();
 
-			bool isValidAsset = payload && payload->IsDataType(payloadId);
+			bool isValidAsset = false;
+
+			if (payload && payload->IsDataType("AssetPayload") && payload->Data)
+			{
+				const AssetPayload* assetPayload = static_cast<const AssetPayload*>(payload->Data);
+				isValidAsset = (assetPayload->type == expectedType);
+			}
 
 			const ImVec4 targetColor = isValidAsset ? ImVec4(0.2f, 0.8f, 0.2f, 1.0f) : ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
 
 			ImGui::PushStyleColor(ImGuiCol_DragDropTarget, targetColor);
-			const ImGuiPayload* droppedPayload = ImGui::AcceptDragDropPayload(payloadId);
+			const ImGuiPayload* droppedPayload = ImGui::AcceptDragDropPayload("AssetPayload");
 			ImGui::PopStyleColor();
 
-			if (isValidAsset && droppedPayload)
+			if (isValidAsset && droppedPayload && droppedPayload->Data)
 			{
-				engine::Uuid id = *static_cast<const engine::Uuid*>(droppedPayload->Data);
-				std::forward<Fn>(callback)(Handle{id});
+				const AssetPayload* ap = static_cast<const AssetPayload*>(droppedPayload->Data);
+				std::forward<Fn>(callback)(Handle{ ap->id });
 				return true;
 			}
 
@@ -179,6 +190,7 @@ namespace editor
 	};
 
 	template <typename Handle>
+	requires std::derived_from<Handle, engine::AssetHandle>
 	EditResult AssetField(std::string_view label, Handle& handle)
 	{
 		PropertyRow row(label);
@@ -207,7 +219,8 @@ namespace editor
 		result.started = ImGui::IsItemActivated();
 		result.finished = ImGui::IsItemDeactivatedAfterEdit();
 
-		DragDropSource(handle, assetName);
+		engine::AssetType type = GetAssetType<Handle>();
+		DragDropSource(type, handle.id, assetName);
 		result.changed |= DragDropTarget{}.AcceptAsset<Handle>([&handle](Handle newHandle) { handle = newHandle; });
 
 		if (PopupContextItem contextMenu{ "AssetOptionsPopup" })

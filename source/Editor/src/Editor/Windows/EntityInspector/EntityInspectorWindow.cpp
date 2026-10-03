@@ -211,8 +211,6 @@ namespace editor
 			}
 		}
 
-		ImGui::Separator();
-
 		for (size_t i = 0; i < component->materials.size(); ++i)
 		{
 			AssetField(std::format("Material {}", i), component->materials[i]);

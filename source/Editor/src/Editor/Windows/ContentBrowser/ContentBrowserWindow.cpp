@@ -366,19 +366,8 @@ namespace editor
 
 					if (item.itemType == ItemType::File)
 					{
-
-						switch(item.assetType)
-						{
-							case engine::AssetType::Mesh:
-							DragDropSource<engine::Mesh>(engine::Mesh{item.uuid}, item.name);
-							break;
-
-						}
-
-
+						DragDropSource(item.assetType, item.uuid, item.name);
 					}
-
-
 
 					ImGui::PopID();
 				}

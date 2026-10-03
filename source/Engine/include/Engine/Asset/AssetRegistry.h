@@ -11,8 +11,6 @@
 
 namespace engine
 {
-
-
 	template <typename T>
 	using AssetMap = std::unordered_map<T, std::filesystem::path, AssetHasher>;
 
@@ -65,33 +63,8 @@ namespace engine
 			Save();
 		}
 
-		template <typename Callable>
-		static void FindAndDispatch(Uuid id, Callable&& callback)
-		{
-			std::apply([&](const auto&... typedMaps)
-				{
-					bool found = false;
-
-					((!found && [&]()
-						{
-							for (const auto& [handle, fullPath] : typedMaps)
-							{
-								if (handle.id == id)
-								{
-									callback(handle);
-									found = true;
-									return;
-								}
-							}
-						}()), ...);
-
-				}, s_Records);
-		}
-
-
 		static AssetType GetAssetType(const std::filesystem::path& path);
 		static AssetType GetAssetType(Uuid id);
-
 
 		template<typename Handle>
 		static const AssetMap<Handle>& GetRecords()

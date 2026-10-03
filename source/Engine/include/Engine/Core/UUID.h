@@ -17,7 +17,7 @@ namespace engine
 		auto operator<=>(const Uuid&) const = default;
 
 		explicit operator uint64_t() const { return m_Value; }
-		operator bool() const { return m_Value != 0; }
+		constexpr operator bool() const { return m_Value != 0; }
 
 	private:
 		uint64_t m_Value = 0;
