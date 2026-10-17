@@ -23,31 +23,22 @@ int main()
 
 	try
 	{
-#ifdef EDITOR
-		editor::Editor app(config);
-#else
 		engine::Application app(config);
+
+#ifdef EDITOR
+		editor::Editor editor(app);
+
+		while (engine::Application::s_Running)
+    {
+      editor.Update();
+    }
+#else
+		while (engine::Application::s_Running)
+    {
+      app.Update();
+      app.Draw();
+    }
 #endif
-
-		// engine::Scene scene = engine::SceneManager::GetActiveScene();
-		// entt::registry& registry = scene.GetRegistry();
-
-		// auto path = engine::AssetRegistry::GetPath(scene);
-		// LOG_WARNING("SCENE PATH: {}", path);
-
-		// scene.RegisterSystem<SpinSystem>();
-
-		// for (auto entity : registry.view<engine::TransformComponent>())
-		// {
-		// 	registry.emplace_or_replace<SpinComponent>(entity);
-		// }
-
-		// for( auto[entity, name] : registry.view<engine::NameComponent>().each())
-		// {
-		// 	LOG_INFO("entity: {}", name.name);
-		// }
-
-		app.Run();
 	}
 	catch (const std::exception& e)
 	{
@@ -55,3 +46,23 @@ int main()
 		return EXIT_FAILURE;
 	}
 }
+
+
+
+// engine::Scene scene = engine::SceneManager::GetActiveScene();
+// entt::registry& registry = scene.GetRegistry();
+
+// auto path = engine::AssetRegistry::GetPath(scene);
+// LOG_WARNING("SCENE PATH: {}", path);
+
+// scene.RegisterSystem<SpinSystem>();
+
+// for (auto entity : registry.view<engine::TransformComponent>())
+// {
+// 	registry.emplace_or_replace<SpinComponent>(entity);
+// }
+
+// for( auto[entity, name] : registry.view<engine::NameComponent>().each())
+// {
+// 	LOG_INFO("entity: {}", name.name);
+// }

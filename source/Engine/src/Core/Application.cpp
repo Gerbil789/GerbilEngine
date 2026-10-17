@@ -60,15 +60,6 @@ namespace engine
 		GraphicsContext::Shutdown();
 	}
 
-	void Application::Run()
-	{
-		while (s_Running)
-		{
-			Update();
-			Draw();
-		}
-	}
-
 	void Application::Update()
 	{
 		if (s_Window.IsMinimized())

@@ -19,11 +19,11 @@
       ]
    },
    "textures": {
-      "AlbedoTexture": 11,
-      "AmbientTexture": 11,
-      "MetallicTexture": 11,
-      "NormalTexture": 13,
-      "RoughnessTexture": 11
+      "AlbedoTexture": 0,
+      "AmbientTexture": 0,
+      "MetallicTexture": 0,
+      "NormalTexture": 1,
+      "RoughnessTexture": 0
    },
    "filter": "point",
    "wrap": "mirror"

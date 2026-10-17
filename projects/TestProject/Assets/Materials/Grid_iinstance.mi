@@ -21,7 +21,7 @@
       ]
    },
    "textures": {
-      "AlbedoTexture": 11
+      "AlbedoTexture": 0
    },
    "filter": "point",
    "wrap": "repeat"

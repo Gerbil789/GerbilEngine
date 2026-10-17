@@ -7,7 +7,6 @@
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Core/Scene.h"
-#include "Engine/Asset/Resources.h"
 #include "Editor/Core/EditorSettings.h"
 #include "Engine/Core/Application.h"
 #include <imgui.h>
@@ -52,7 +51,7 @@ namespace editor
 
 			if (AssetField("Environment", texture).changed)
 			{
-				if(!texture) { texture = RESOURCES::TEXTURE::HDR; }
+				if(!texture) { texture = engine::Texture2D::HDR; }
 				scene.SetEnvironmentTexture(texture);
 
 				engine::Application::s_Renderer.SetEnvironment(texture);

@@ -298,7 +298,7 @@ namespace engine
 		config.height = m_Data.height;
 		config.device = GraphicsContext::GetDevice();
 		config.format = GraphicsContext::GetSurfaceFormat();
-		config.presentMode = wgpu::PresentMode::Immediate;
+		config.presentMode = wgpu::PresentMode::Fifo;
 		config.alphaMode = wgpu::CompositeAlphaMode::Opaque;
 
 		m_Surface.Configure(&config);

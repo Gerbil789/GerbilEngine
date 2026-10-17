@@ -31,5 +31,17 @@ namespace engine
 		const std::vector<Binding> GetMaterialBindings() const;
 		const Binding& GetBinding(const std::string& name) const;
 		const Binding& GetBinding(uint32_t group, uint32_t binding) const;
+
+		static const Shader Pink;
+		static const Shader Flat;
+		static const Shader UI;
+		static const Shader Skybox;
+		static const Shader Normal;
 	};
+
+	inline constexpr Shader Shader::Pink{ 0 };
+	inline constexpr Shader Shader::Flat{ 1 };
+	inline constexpr Shader Shader::UI{ 2 };
+	inline constexpr Shader Shader::Skybox{ 3 };
+	inline constexpr Shader Shader::Normal{ 4 };
 }

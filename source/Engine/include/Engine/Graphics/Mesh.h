@@ -34,7 +34,7 @@ namespace engine
 		MeshAsset() = default;
 		MeshAsset(const MeshSpecification& specification);
 
-		AABB aabb;
+		AABB aabb; // local space
 		std::vector<SubMesh> subMeshes;
 		uint32_t materialCount = 0;
 		wgpu::Buffer vertexBuffer;
@@ -55,5 +55,13 @@ namespace engine
 		const wgpu::Buffer GetIndexBuffer() const;
 		const wgpu::Buffer GetWireIndexBuffer() const;
 		const AABB& GetAABB() const;
+
+		static const Mesh Empty;
+		static const Mesh Cube;
+		static const Mesh Sphere;
 	};
+
+	inline constexpr Mesh Mesh::Empty{ 0 };
+	inline constexpr Mesh Mesh::Cube{ 1 };
+	inline constexpr Mesh Mesh::Sphere{ 2 };
 }

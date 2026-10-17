@@ -10,7 +10,6 @@
 #include "Engine/Graphics/Renderer/RenderUniforms.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Graphics/Texture/Environment.h"
-#include "Engine/Asset/Resources.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/System/CameraSystem.h"
 #include <glm/gtx/quaternion.hpp>
@@ -82,7 +81,7 @@ namespace engine
 		CreateShadowTexture();
 
 		CreateEnvironmentUniformBuffer();
-		SetEnvironment(RESOURCES::TEXTURE::HDR);
+		SetEnvironment(Texture2D::HDR);
 
 		SetSize(width, height);
 
@@ -147,7 +146,7 @@ namespace engine
 
 	void Renderer::SetEnvironment(Texture2D texture)
 	{
-		if (!texture) texture = RESOURCES::TEXTURE::HDR;
+		if (!texture) texture = Texture2D::HDR;
 
 		m_FrameContext.environment = EnvironmentBaker::BakeEnvironment(texture);
 		CreateEnvironmentBindGroup();

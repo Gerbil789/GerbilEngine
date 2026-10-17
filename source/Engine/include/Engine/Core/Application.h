@@ -20,9 +20,8 @@ namespace engine
 		Application(const Configuration& config);
 		~Application();
 
-		void Run();
+		// void Run();
 
-	protected:
 		void Update();
 		void Draw();
 

@@ -1,7 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Renderer/RenderPass.h"
 #include "Engine/Graphics/Pipeline.h"
-#include "Engine/Asset/Resources.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
@@ -11,7 +10,7 @@ namespace engine::pass
 	const RenderPass Background()
 	{
 		PipelineSpecification spec;
-		spec.shader = RESOURCES::SHADER::SKYBOX;
+		spec.shader = Shader::Skybox;
 		spec.cullMode = wgpu::CullMode::None;
 		spec.depthWrite = false;
 		spec.layoutOverrides = { RenderPipelineLayouts::GetViewLayout(), RenderPipelineLayouts::GetEnvironmentLayout() };
@@ -53,7 +52,6 @@ namespace engine::pass
 		return renderPass;
 	};
 
-
 	const RenderPass Shadow()
 	{
 		return RenderPass{};
@@ -94,31 +92,31 @@ namespace engine::pass
 				pass.SetBindGroup(1, context.environmentBindGroup, 0, nullptr);
 				pass.SetBindGroup(3, context.modelBindGroup, 0, nullptr);
 
-				Mesh currentMesh;
-				MaterialInstance currentMaterial;
+				Mesh currentMesh = Mesh::Empty;
+				MaterialInstance currentMaterialInstance = MaterialInstance::Null;
 
-				size_t i = 0;
+				uint32_t i = 0;
 				for (const auto& item : context.drawList.items)
 				{
 					if (item.mesh != currentMesh)
 					{
 						currentMesh = item.mesh;
-						pass.SetVertexBuffer(0, currentMesh.GetVertexBuffer(), 0, currentMesh.GetVertexBuffer().GetSize());
-						pass.SetIndexBuffer(currentMesh.GetIndexBuffer(), wgpu::IndexFormat::Uint32, 0, currentMesh.GetIndexBuffer().GetSize());
+						const MeshAsset& MeshAsset = currentMesh.Get();
+						pass.SetVertexBuffer(0, MeshAsset.vertexBuffer, 0, MeshAsset.vertexBuffer.GetSize());
+						pass.SetIndexBuffer(MeshAsset.indexBuffer, wgpu::IndexFormat::Uint32, 0, MeshAsset.indexBuffer.GetSize());
 					}
 
-					if (item.material != currentMaterial)
+					if (item.materialInstance != currentMaterialInstance)
 					{
-						currentMaterial = item.material;
-						MaterialInstanceData data = currentMaterial.Get();
+						currentMaterialInstance = item.materialInstance;
+						MaterialInstanceData data = currentMaterialInstance.Get();
+
 						GraphicsContext::GetQueue().WriteBuffer(data.uniformBuffer, 0, data.uniformData.data(), data.uniformData.size());
 						pass.SetBindGroup(2, data.bindGroup, 0, nullptr);
-
 						pass.SetPipeline(data.material.GetPipeline());
 					}
 
-					pass.DrawIndexed(item.indexCount, 1, item.firstIndex, 0, static_cast<uint32_t>(i));
-					i++;
+					pass.DrawIndexed(item.indexCount, 1, item.firstIndex, 0, i++);
 				}
 
 				pass.End();

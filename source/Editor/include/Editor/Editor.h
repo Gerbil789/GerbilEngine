@@ -4,12 +4,14 @@
 
 namespace editor
 {
-	class Editor : public engine::Application
+	class Editor
 	{
 	public:
-		Editor(const engine::Application::Configuration& config);
+		Editor(const engine::Application& app);
 		~Editor();
-		void Run();
 		void Update();
+
+	private:
+    engine::Application m_App;
 	};
 }

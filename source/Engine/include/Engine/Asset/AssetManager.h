@@ -5,7 +5,6 @@
 #include "Engine/Graphics/Material.h"
 #include "Engine/Audio/AudioClip.h"
 #include "Engine/Core/Scene.h"
-#include "Engine/Asset/Resources.h"
 #include "Engine/Asset/AssetRegistry.h"
 #include <filesystem>
 #include <unordered_set>
@@ -14,40 +13,13 @@ namespace engine
 {
 	template <typename Handle> struct AssetTraits;
 
-	template <> struct AssetTraits<Texture2D> {
-		using DataType = Texture2DData;
-		static Texture2D GetFallback() { return RESOURCES::TEXTURE::WHITE; }
-	};
-
-	template <> struct AssetTraits<Mesh> {
-		using DataType = MeshAsset;
-		static Mesh GetFallback() { return {}; }
-	};
-
-	template <> struct AssetTraits<Shader> {
-		using DataType = ShaderAsset;
-		static Shader GetFallback() { return RESOURCES::SHADER::FLAT; }
-	};
-
-	template <> struct AssetTraits<Material> {
-		using DataType = MaterialAsset;
-		static Material GetFallback() { return RESOURCES::MATERIAL::INVALID; }
-	};
-
-	template <> struct AssetTraits<MaterialInstance> {
-		using DataType = MaterialInstanceData;
-		static MaterialInstance GetFallback() { return RESOURCES::MATERIAL_INSTANCE::INVALID; }
-	};
-
-	template <> struct AssetTraits<AudioClip> {
-		using DataType = AudioClipAsset;
-		static AudioClip GetFallback() { return {}; }
-	};
-
-	template <> struct AssetTraits<Scene> {
-		using DataType = SceneAsset;
-		static Scene GetFallback() { return RESOURCES::SCENE::DEFAULT; }
-	};
+	template <> struct AssetTraits<Texture2D> { using DataType = Texture2DData; };
+	template <> struct AssetTraits<Mesh> { using DataType = MeshAsset; };
+	template <> struct AssetTraits<Shader> { using DataType = ShaderAsset; };
+	template <> struct AssetTraits<Material> { using DataType = MaterialAsset; };
+	template <> struct AssetTraits<MaterialInstance> { using DataType = MaterialInstanceData; };
+	template <> struct AssetTraits<AudioClip> { using DataType = AudioClipAsset; };
+	template <> struct AssetTraits<Scene> { using DataType = SceneAsset; };
 
 	template <typename Handle>
 	using AssetDataMap = std::unordered_map<Handle, typename AssetTraits<Handle>::DataType, AssetHasher>;
@@ -68,7 +40,7 @@ namespace engine
 			if (auto it = map.find(handle); it != map.end())
 				return it->second;
 
-			return map.at(AssetTraits<Handle>::GetFallback());
+			return map.at(Handle{ 0 });
 		}
 
 		template<typename Handle>
@@ -78,9 +50,9 @@ namespace engine
 		static void MarkAssetDirty(Handle handle)
 		{
 			if (AssetRegistry::Exists(handle))
-      {
-        std::get<AssetSet<Handle>>(m_DirtyAssets).insert(handle);
-      }
+			{
+				std::get<AssetSet<Handle>>(m_DirtyAssets).insert(handle);
+			}
 		}
 
 		static void SaveDirtyAssets();

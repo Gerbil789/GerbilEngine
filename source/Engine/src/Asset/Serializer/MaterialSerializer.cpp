@@ -1,7 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/Serializer.h"
 #include "Engine/Graphics/Material.h"
-#include "Engine/Asset/Resources.h"
 #include "Engine/Core/Project.h"
 #include "Engine/Core/Log.h"
 #include <glaze/glaze.hpp>
@@ -212,6 +211,7 @@ namespace engine
 
 		instanceData.textureFilter = json.filter;
 		instanceData.textureWrap = json.wrap;
+		instanceData.uniformData.resize(shader.GetMaterialUniformBufferSize());
 
 		const std::vector<Binding>& bindings = shader.GetMaterialBindings();
 
@@ -220,7 +220,6 @@ namespace engine
 				return std::holds_alternative<BufferBinding>(b.data);
 			});
 
-		// FIXED: Return 'instanceData' instead of void
 		if (it == bindings.end()) return instanceData;
 
 		const Binding& foundBinding = *it;
@@ -236,11 +235,6 @@ namespace engine
 			if (paramIt == buffer.parameters.end()) continue;
 
 			const ShaderParameter& param = *paramIt;
-
-			if (param.offset + param.size > instanceData.uniformData.size())
-			{
-				instanceData.uniformData.resize(param.offset + param.size);
-			}
 
 			if (node.is_number())
 			{
@@ -289,6 +283,8 @@ namespace engine
 				}
 			}
 		}
+
+		instanceData.CreateBindGroup();
 
 		return instanceData;
 	}

@@ -10,7 +10,7 @@ namespace engine
 	struct DrawItem
 	{
 		engine::Mesh mesh;
-		engine::MaterialInstance material;
+		engine::MaterialInstance materialInstance;
 		uint32_t subMeshIndex;
 		uint32_t indexCount;
 		uint32_t firstIndex;

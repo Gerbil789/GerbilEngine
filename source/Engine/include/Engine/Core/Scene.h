@@ -74,5 +74,9 @@ namespace engine
 		}
 
 		const std::vector<std::function<void()>>& GetSystems() const;
+
+		static const Scene Default;
 	};
+
+	inline constexpr Scene Scene::Default{ 0 };
 }

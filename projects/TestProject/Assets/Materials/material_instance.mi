@@ -20,10 +20,10 @@
    },
    "textures": {
       "AlbedoTexture": 6854353316358564022,
-      "AmbientTexture": 11,
-      "MetallicTexture": 11,
-      "NormalTexture": 13,
-      "RoughnessTexture": 11
+      "AmbientTexture": 0,
+      "MetallicTexture": 0,
+      "NormalTexture": 1,
+      "RoughnessTexture": 0
    },
    "filter": "bilinear",
    "wrap": "repeat"

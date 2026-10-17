@@ -27,13 +27,30 @@ namespace engine
 	};
 
 	struct Texture2D : public AssetHandle
-  {
+	{
 		using AssetHandle::AssetHandle;
 		Texture2DData& Get() const;
 
-    uint32_t Width() const;
-    uint32_t Height() const;
-    wgpu::TextureView View() const;
+		uint32_t Width() const;
+		uint32_t Height() const;
+		wgpu::TextureView View() const;
 		wgpu::TextureFormat Format() const;
-  };
+
+		static const Texture2D White;
+		static const Texture2D Black;
+		static const Texture2D Normal;
+		static const Texture2D HDR;
+
+		static const Texture2D EDITOR_ICONS;
+		static const Texture2D DEFAULT_FONT_ATLAS;
+		static const Texture2D EDITOR_THUMBNAIL_ATLAS;
+	};
+
+	inline constexpr Texture2D Texture2D::White{0};
+	inline constexpr Texture2D Texture2D::Normal{1};
+	inline constexpr Texture2D Texture2D::HDR{2};
+
+	inline constexpr Texture2D Texture2D::EDITOR_ICONS{3};
+	inline constexpr Texture2D Texture2D::DEFAULT_FONT_ATLAS{4};
+	inline constexpr Texture2D Texture2D::EDITOR_THUMBNAIL_ATLAS{5};
 }

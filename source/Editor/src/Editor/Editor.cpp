@@ -20,20 +20,19 @@
 #include "Editor/Core/EditorRenderer.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Engine/System/CameraSystem.h"
-// #include "Engine/Core/Runtime.h"
 
 namespace editor
 {
-	Editor::Editor(const engine::Application::Configuration& config) : Application(config)
+	Editor::Editor(const engine::Application& app) : m_App(app)
 	{
 		EditorCommandManager::Initialize();
-		EditorRenderer::Initialize(Application::s_Window);
+		EditorRenderer::Initialize(m_App.s_Window);
 		//SelectionManager::Initialize();
 
-		editor::editorContext.camera.backgroundMode = engine::CameraComponent::Background::Skybox;
-		editor::editorContext.camera.projectionType = engine::CameraComponent::Projection::Perspective;
-		editor::editorContext.cameraTransform.position = glm::vec3{ 0.0f, 0.0f, -20.0f };
-		editor::editorContext.cameraTransform.rotation = glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f };
+		editorContext.camera.backgroundMode = engine::CameraComponent::Background::Skybox;
+		editorContext.camera.projectionType = engine::CameraComponent::Projection::Perspective;
+		editorContext.cameraTransform.position = glm::vec3{ 0.0f, 0.0f, -20.0f };
+		editorContext.cameraTransform.rotation = glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f };
 		engine::CameraSystem::UpdateCameraViewMatrix(editor::editorContext.camera, editor::editorContext.cameraTransform);
 
 		LOG_INFO("--- Editor initialization complete ---");
@@ -42,20 +41,11 @@ namespace editor
 	Editor::~Editor()
 	{
 		EditorRenderer::Shutdown();
-		Application::~Application();
-	}
-
-	void Editor::Run()
-	{
-		while(Application::s_Running)
-		{
-			Update();
-		}
 	}
 
 	void Editor::Update()
 	{
-		Application::Update();
+		m_App.Update();
 
 		EditorRenderer::Update();
 		EditorCommandManager::ExecuteDeferredCommands();

@@ -1,66 +1,76 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Renderer/DrawList.h"
-#include "Engine/Graphics/Mesh.h"
-#include "Engine/Asset/Resources.h"
+#include "Engine/Core/Components.h"
+#include <numeric>
+#include <cassert>
 
 namespace engine
 {
-	struct SortableDrawData
-	{
-		DrawItem item;
-		glm::mat4 transform;
-	};
+  DrawList DrawList::Create(const entt::registry& registry)
+  {
+    DrawList list;
 
-	DrawList DrawList::Create(const entt::registry& registry)
-	{
-		DrawList list;
+    auto view = registry.view<MeshComponent, WorldTransformComponent>(entt::exclude<DisabledTag>);
 
-		auto view = registry.view<MeshComponent, WorldTransformComponent>(entt::exclude<DisabledTag>);
+    list.items.reserve(view.size_hint());
+    list.transforms.reserve(view.size_hint());
 
-		std::vector<SortableDrawData> tempDrawData;
+    for (const auto& [entity, mc, wtc] : view.each())
+    {
+      if (!mc.mesh) continue;
 
-		tempDrawData.reserve(view.size_hint());
+      const auto& subMeshes = mc.mesh.Get().subMeshes;
 
-		for (const auto& [entity, mc, wtc] : view.each())
-		{
-			if (!mc.mesh) continue;
+      for (uint32_t i = 0; i < subMeshes.size(); ++i)
+      {
+        const auto& subMesh = subMeshes[i];
 
-			const auto& subMeshes = mc.mesh.GetSubMeshes();
+        assert(subMesh.materialIndex < mc.materialInstances.size() && "Material index out of bounds!");
+        engine::MaterialInstance materialInstance = mc.materialInstances[subMesh.materialIndex];
 
-			for (uint32_t i = 0; i < subMeshes.size(); ++i)
-			{
-				const auto& subMesh = subMeshes[i];
-				engine::MaterialInstance materialInstance{ RESOURCES::MATERIAL_INSTANCE::INVALID };
+        list.items.emplace_back(mc.mesh, materialInstance, i, subMesh.indexCount, subMesh.firstIndex);
+        list.transforms.push_back(wtc.worldMatrix);
+      }
+    }
 
-				if (subMesh.materialIndex < mc.materials.size() && mc.materials[subMesh.materialIndex])
-				{
-					materialInstance = mc.materials[subMesh.materialIndex];
-				}
+    const size_t count = list.items.size();
+    if (count <= 1) return list;
 
-				tempDrawData.push_back({DrawItem{ mc.mesh, materialInstance, i, subMesh.indexCount, subMesh.firstIndex }, wtc.worldMatrix });
-			}
-		}
+    std::vector<uint32_t> indices(count);
+    std::iota(indices.begin(), indices.end(), 0u);
 
-		std::sort(tempDrawData.begin(), tempDrawData.end(), [](const SortableDrawData& a, const SortableDrawData& b)
-			{
-				if (a.item.material != b.item.material)
-				{
-					return a.item.material.id < b.item.material.id;
-				}
-				return a.item.mesh.id < b.item.mesh.id;
-			});
+    std::sort(indices.begin(), indices.end(), [&list](uint32_t a, uint32_t b)
+    {
+      const auto& itemA = list.items[a];
+      const auto& itemB = list.items[b];
 
+      if (itemA.materialInstance != itemB.materialInstance)
+      {
+        return itemA.materialInstance.id < itemB.materialInstance.id;
+      }
+      return itemA.mesh.id < itemB.mesh.id;
+    });
 
-		size_t size = tempDrawData.size();
-		list.items.reserve(size);
-		list.transforms.reserve(size);
+    std::vector<bool> visited(count, false);
+    for (size_t i = 0; i < count; ++i)
+    {
+      if (visited[i] || indices[i] == i) continue;
 
-		for (const auto& data : tempDrawData)
-		{
-			list.items.push_back(data.item);
-			list.transforms.push_back(data.transform);
-		}
+      size_t current = i;
+      while (!visited[current])
+      {
+        visited[current] = true;
+        size_t next = indices[current];
 
-		return list;
-	}
+        if (!visited[next])
+        {
+          std::swap(list.items[i], list.items[next]);
+          std::swap(list.transforms[i], list.transforms[next]);
+          current = next;
+        }
+      }
+    }
+
+    return list;
+  }
 }

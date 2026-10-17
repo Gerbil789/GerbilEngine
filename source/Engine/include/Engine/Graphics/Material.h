@@ -50,7 +50,11 @@ namespace engine
 		Shader GetShader() const;
 		wgpu::RenderPipeline GetPipeline() const;
 		size_t GetExpectedSize() const;
+
+		static const Material Pink;
 	};
+
+	inline constexpr Material Material::Pink{ 0 };
 
 	struct MaterialInstanceData
 	{
@@ -79,18 +83,18 @@ namespace engine
 		const Shader GetShader() const;
 
 		template<typename T>
-    void SetUniformData(const T& data)
-    {
-      MaterialInstanceData& instanceData = Get();
-      
-      if (sizeof(T) != instanceData.material.GetExpectedSize())
-      {
-        LOG_ERROR("Struct size mismatch!");
-        return;
-      }
+		void SetUniformData(const T& data)
+		{
+			MaterialInstanceData& instanceData = Get();
 
-      std::memcpy(instanceData.uniformData.data(), &data, sizeof(T));
-    }
+			if (sizeof(T) != instanceData.material.GetExpectedSize())
+			{
+				LOG_ERROR("Struct size mismatch!");
+				return;
+			}
+
+			std::memcpy(instanceData.uniformData.data(), &data, sizeof(T));
+		}
 
 		void SetTextureFilter(TextureFilter filter);
 		void SetTextureWrap(TextureWrap wrap);
@@ -107,5 +111,13 @@ namespace engine
 		const std::unordered_map<uint32_t, Texture2D>& GetTextures() const;
 
 		wgpu::RenderPipeline GetPipeline() const;
+
+		static const MaterialInstance Pink;
+		static const MaterialInstance White;
+		static const MaterialInstance Null;
 	};
+
+	inline constexpr MaterialInstance MaterialInstance::Pink{ 0 };
+	inline constexpr MaterialInstance MaterialInstance::White{ 1 };
+	inline constexpr MaterialInstance MaterialInstance::Null{ ~0u };
 }

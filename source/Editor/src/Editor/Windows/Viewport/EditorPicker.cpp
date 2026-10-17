@@ -6,7 +6,6 @@
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Graphics/Pipeline.h"
-#include "Engine/Asset/Resources.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/Components.h"
 #include "Engine/Graphics/Renderer/DrawList.h"

@@ -1,7 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Font.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/Resources.h"
 #include <glaze/glaze.hpp>
 
 namespace engine
@@ -18,7 +17,7 @@ namespace engine
 			throw std::runtime_error("Failed to load font file.");
 		}
 
-		s_TextureAtlas = RESOURCES::TEXTURE::DEFAULT_FONT_ATLAS; // Texture atlas loading is handled in asset manager, so we just set the UUID here.
+		s_TextureAtlas = Texture2D::DEFAULT_FONT_ATLAS; // Texture atlas loading is handled in asset manager, so we just set the UUID here.
 
 		for (Font& font : s_JsonData.variants)
 		{

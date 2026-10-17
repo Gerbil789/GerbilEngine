@@ -42,7 +42,7 @@ namespace engine
 	struct MeshComponent
 	{
 		Mesh mesh;
-		std::vector<MaterialInstance> materials{};
+		std::vector<MaterialInstance> materialInstances{};
 	};
 
 	enum class BodyType { Static = 0, Dynamic, Kinematic };

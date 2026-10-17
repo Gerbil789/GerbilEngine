@@ -1,13 +1,10 @@
 #include "enginepch.h"
 #include "Engine/Asset/Serializer/Serializer.h"
-#include "Engine/Asset/Resources.h"
 #include "Engine/Core/Components.h"
 #include "Engine/Core/Scene.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/Log.h"
 #include <glaze/glaze.hpp>
-
-
 #include <glm/glm.hpp>
 
 
@@ -227,7 +224,7 @@ namespace engine
 		}
 
 		SceneAsset scene;
-		scene.environmentTexture = RESOURCES::TEXTURE::HDR; //TODO: store in scene file
+		scene.environmentTexture = Texture2D::HDR; //TODO: store in scene file
 
 		entt::registry& registry = scene.registry;
 

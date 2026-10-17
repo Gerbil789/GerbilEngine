@@ -202,18 +202,17 @@ namespace editor
 		{
 			if (component->mesh)
 			{
-				uint32_t materialCount = component->mesh.GetMaterialCount();
-				component->materials.resize(materialCount);
+				component->materialInstances.resize(component->mesh.Get().materialCount);
 			}
 			else
 			{
-				component->materials.clear();
+				component->materialInstances.clear();
 			}
 		}
 
-		for (size_t i = 0; i < component->materials.size(); ++i)
+		for (size_t i = 0; i < component->materialInstances.size(); ++i)
 		{
-			AssetField(std::format("Material {}", i), component->materials[i]);
+			AssetField(std::format("Material {}", i), component->materialInstances[i]);
 		}
 	}
 
