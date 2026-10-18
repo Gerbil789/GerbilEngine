@@ -83,11 +83,9 @@ namespace editor
 			tc.rotation = glm::radians(glm::vec3{ 15.0f, 45.0f, 0.0f });
 		}
 
-		std::vector<engine::RenderPass> passes;
-		passes.emplace_back(engine::pass::Background());
-		passes.emplace_back(engine::pass::Opaque());
-
-		renderer.Initialize(64, 64, passes);
+		renderer.Initialize(64, 64);
+		renderer.AddPass<engine::BackgroundPass>();
+		renderer.AddPass<engine::OpaquePass>();
 
 		for (const auto& [icon, coords] : IconMap)
 		{

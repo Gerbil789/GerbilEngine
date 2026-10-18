@@ -14,6 +14,7 @@
 #include "Engine/Core/Project.h"
 #include "Engine/Core/Scene.h"
 #include "Engine/Asset/AssetRegistry.h"
+#include "Engine/Graphics/Renderer/RenderPass.h"
 
 namespace engine
 {
@@ -41,13 +42,9 @@ namespace engine
 		Audio::Initialize();
 		FontManager::Initialize();
 
-		const std::vector<RenderPass> passes
-		{
-			pass::Background(),
-			pass::Opaque()
-		};
-
-		s_Renderer.Initialize(config.windowSpec.width, config.windowSpec.height, passes);
+		s_Renderer.Initialize(config.windowSpec.width, config.windowSpec.height);
+		s_Renderer.AddPass<BackgroundPass>();
+		s_Renderer.AddPass<OpaquePass>();
 
 		SceneManager::SetActiveScene(config.startupScene);
 	}

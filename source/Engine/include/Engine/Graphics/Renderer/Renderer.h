@@ -5,12 +5,21 @@
 
 namespace engine
 {
-	struct Scene;
-
 	class Renderer
 	{
 	public:
-		void Initialize(uint32_t width, uint32_t height, std::vector<RenderPass> passes);
+		void Initialize(uint32_t width, uint32_t height);
+
+		template<typename T, typename... Args>
+    T* AddPass(Args&&... args)
+    {
+      auto pass = std::make_unique<T>(std::forward<Args>(args)...);
+      T* passPtr = pass.get();
+      passPtr->Initialize();
+      m_Passes.push_back(std::move(pass));
+      return passPtr;
+    }
+
 		void SetSize(uint32_t width, uint32_t height);
 		void SetEnvironment(Texture2D texture); //TODO: move away from renderer?
 
@@ -30,6 +39,7 @@ namespace engine
 		wgpu::Buffer m_EnvironmentUniformBuffer;
 
 		FrameContext m_FrameContext;
-		std::vector<RenderPass> m_Passes;
+
+		std::vector<std::unique_ptr<IRenderPass>> m_Passes;
 	};
 }

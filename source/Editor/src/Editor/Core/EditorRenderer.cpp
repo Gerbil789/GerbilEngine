@@ -154,7 +154,7 @@ namespace editor
 	{
 		ScopedStyle style
 		{
-			{ ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f)}
+			{ ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f) }
 		};
 
 		ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -190,7 +190,7 @@ namespace editor
 		wgpu::SurfaceTexture surfaceTexture;
 
 		surface.GetCurrentTexture(&surfaceTexture);
-		if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal)
+		if (surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal && surfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::SuccessSuboptimal)
 		{
 			LOG_ERROR("Failed to get current surface texture. status: {}", (int)surfaceTexture.status);
 			return;
@@ -204,6 +204,23 @@ namespace editor
 			LOG_ERROR("Failed to create texture view for surface texture");
 			return;
 		}
+
+		// check if the window resized mid frame
+		{
+			ImDrawData* drawData = ImGui::GetDrawData();
+
+			uint32_t imgui_width = static_cast<uint32_t>(drawData->DisplaySize.x * drawData->FramebufferScale.x);
+			uint32_t imgui_height = static_cast<uint32_t>(drawData->DisplaySize.y * drawData->FramebufferScale.y);
+
+			uint32_t surface_width = engine::Application::s_Window.GetWidth();
+			uint32_t surface_height = engine::Application::s_Window.GetHeight();
+
+			if (imgui_width > surface_width || imgui_height > surface_height)
+			{
+				return;
+			}
+		}
+
 
 		wgpu::CommandEncoderDescriptor encoderDesc;
 		encoderDesc.label = "ImGuiCommandEncoderDescriptor";

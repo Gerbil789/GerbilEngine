@@ -8,9 +8,10 @@ namespace engine
 {
 	struct AudioClipAsset
 	{
+		AudioClipAsset() = default;
 		AudioClipAsset(const std::filesystem::path& path);
 
-		std::vector<float> PCMData;
+		std::vector<float> PCMData{};
 		uint64_t totalFrames = 0;
 		uint32_t channels = 0;
 		uint32_t sampleRate = 0;

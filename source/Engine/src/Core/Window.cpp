@@ -13,8 +13,6 @@
 #include <GLFW/glfw3native.h>
 #endif
 
-//TODO: move event callbacks into input system?
-
 namespace GLFW
 {
 	void Initialize()
@@ -40,8 +38,6 @@ namespace GLFW
 
 namespace engine
 {
-	wgpu::Surface m_Surface;
-
 	static wgpu::Surface CreateSurface([[maybe_unused]]GLFWwindow* window)
 	{
 		wgpu::SurfaceDescriptor surfaceDesc;
@@ -82,6 +78,8 @@ namespace engine
 			throw std::runtime_error("Could not create GLFW window!");
 		}
 
+		glfwSetWindowSizeLimits(m_Window, 800, 600, GLFW_DONT_CARE, GLFW_DONT_CARE);
+
 		m_Data.self = this;
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 
@@ -104,6 +102,8 @@ namespace engine
 			glfwDestroyWindow(m_Window);
 			m_Window = nullptr;
 		}
+
+		m_Surface = nullptr;
 	}
 
 	wgpu::Surface Window::GetSurface() const
@@ -186,7 +186,7 @@ namespace engine
 
 	void Window::SetEventCallbacks()
 	{
-		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
+		glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 			{
 				if (width == 0 || height == 0) { return; }
 

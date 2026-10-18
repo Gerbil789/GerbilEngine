@@ -4,19 +4,23 @@
 
 namespace engine
 {
-  struct RenderPass
+  struct IRenderPass
   {
-    wgpu::RenderPipeline pipeline;
-    std::function<void(wgpu::CommandEncoder& encoder, const FrameContext& context)> Execute;
+    virtual ~IRenderPass() = default;
+    virtual void Initialize() {};
+    virtual void Execute(wgpu::CommandEncoder& encoder, const FrameContext& context) = 0;
+
+    bool enabled = true;
   };
 
-  namespace pass
+
+  struct BackgroundPass : public IRenderPass
   {
-    const RenderPass Background();
-    const RenderPass Shadow();
-    const RenderPass Opaque();
-    const RenderPass UI();
-    const RenderPass Normal();
-    const RenderPass Wireframe();
-  }
+    void Execute(wgpu::CommandEncoder& encoder, const FrameContext& context) override;
+  };
+
+  struct OpaquePass : public IRenderPass
+  {
+    void Execute(wgpu::CommandEncoder& encoder, const FrameContext& context) override;
+  };
 }

@@ -8,6 +8,7 @@
 namespace engine
 {
   static ma_engine s_AudioEngine;
+  static bool s_AudioInitialized = false;
 
   struct Voice
   {
@@ -56,6 +57,8 @@ namespace engine
       throw std::runtime_error("Failed to initialize audio engine");
     }
 
+    s_AudioInitialized = true;
+
     ma_engine_listener_set_position(&s_AudioEngine, 0, 0, 0, 0);
     ma_engine_listener_set_direction(&s_AudioEngine, 0, 0, 0, -1);
     ma_engine_listener_set_world_up(&s_AudioEngine, 0, 0, 1, 0);
@@ -63,6 +66,8 @@ namespace engine
 
   void Audio::Shutdown()
   {
+    if (!s_AudioInitialized) return;
+
     for (uint32_t i = 0; i < MaxVoices; i++)
     {
       Voice& voice = s_Voices[i];
@@ -77,6 +82,7 @@ namespace engine
       voice.instance = {};
     }
     ma_engine_uninit(&s_AudioEngine);
+    s_AudioInitialized = false; // Mark as clean
   }
 
   void Audio::Update()

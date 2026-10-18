@@ -69,8 +69,7 @@ namespace engine
 		return GraphicsContext::GetDevice().CreateBindGroup(&desc);
 	}
 
-
-	void Renderer::Initialize(uint32_t width, uint32_t height, std::vector<RenderPass> passes)
+	void Renderer::Initialize(uint32_t width, uint32_t height)
 	{
 		m_ViewUniformBuffer = CreateViewUniformBuffer();
 		m_FrameContext.viewBindGroup = CreateViewBindGroup(m_ViewUniformBuffer);
@@ -84,8 +83,6 @@ namespace engine
 		SetEnvironment(Texture2D::HDR);
 
 		SetSize(width, height);
-
-		m_Passes = std::move(passes);
 	}
 
 
@@ -251,7 +248,7 @@ namespace engine
 		textureDesc.format = format;
 		textureDesc.mipLevelCount = 1;
 		textureDesc.sampleCount = 1;
-		textureDesc.size = {1024, 1024, s_ShadowCascadeCount};
+		textureDesc.size = { 1024, 1024, s_ShadowCascadeCount };
 		textureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
 		textureDesc.viewFormatCount = 0;
 		textureDesc.viewFormats = nullptr;
@@ -302,9 +299,9 @@ namespace engine
 
 		wgpu::CommandEncoder encoder = GraphicsContext::GetDevice().CreateCommandEncoder();
 
-		for(const auto& pass : m_Passes)
+		for (auto& pass : m_Passes)
 		{
-			pass.Execute(encoder, m_FrameContext);
+			if (pass->enabled) pass->Execute(encoder, m_FrameContext);
 		}
 
 		wgpu::CommandBuffer commandBuffer = encoder.Finish();

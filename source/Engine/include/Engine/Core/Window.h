@@ -58,6 +58,7 @@ namespace engine
 
 	private:
 		GLFWwindow* m_Window = nullptr;
+		wgpu::Surface m_Surface;
 		WindowMode m_Mode = WindowMode::Windowed;
 		bool m_Minimized = false;
 		bool m_SizeChanged = true;

@@ -15,7 +15,7 @@ namespace engine
     auto& textures = std::get<AssetDataMap<Texture2D>>(m_LoadedAssets);
     textures.try_emplace(Texture2D::White, TextureSpecification{}, std::array<uint32_t, 1>{0xFFFFFFFF}.data());
     textures.try_emplace(Texture2D::Normal, TextureSpecification{}, std::array<uint32_t, 1>{0xFFFF8080}.data());
-    textures.try_emplace(Texture2D::HDR, TextureImporter::LoadTexture2D("resources/hdr/lebombo_4k.hdr"));
+    textures.try_emplace(Texture2D::HDR, TextureImporter::LoadTexture2D("resources/hdr/autumn_field_puresky_4k.hdr"));
     textures.try_emplace(Texture2D::EDITOR_ICONS, TextureImporter::LoadTexture2D("resources/icons/icons.png"));
     textures.try_emplace(Texture2D::DEFAULT_FONT_ATLAS, TextureImporter::LoadTexture2D("resources/fonts/atlas.png"));
     textures.try_emplace(Texture2D::EDITOR_THUMBNAIL_ATLAS, TextureSpecification{ .width = 2048, .height = 2048, .format = engine::GraphicsContext::GetSurfaceFormat() }, nullptr);
