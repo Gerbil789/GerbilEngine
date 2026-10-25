@@ -136,15 +136,11 @@ namespace editor
 
 		engine::Scene scene = engine::SceneManager::GetActiveScene();
 
+		engine::DrawList list = engine::DrawList::Create(scene.Get().registry);
 
-		if (editor::editorContext.editorMode == EditorMode::Edit)
-		{
-			engine::Application::s_Renderer.RenderScene(scene.GetRegistry(), &editor::editorContext.camera, m_TextureView);
-		}
-		else
-		{
-			engine::Application::s_Renderer.RenderScene(scene.GetRegistry(), scene.GetPrimaryCamera(), m_TextureView);
-		}
+		engine::CameraComponent* camera = editor::editorContext.editorMode == EditorMode::Edit ? &editor::editorContext.camera : scene.GetPrimaryCamera();
+
+		engine::Application::s_Renderer.Render(list, camera, m_TextureView);
 
 		ImGui::Image(m_TextureView.Get(), viewportSize);
 

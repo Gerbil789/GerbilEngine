@@ -85,7 +85,6 @@ namespace engine
 		SetSize(width, height);
 	}
 
-
 	void Renderer::SetSize(uint32_t width, uint32_t height)
 	{
 		// depth
@@ -143,8 +142,6 @@ namespace engine
 
 	void Renderer::SetEnvironment(Texture2D texture)
 	{
-		if (!texture) texture = Texture2D::HDR;
-
 		m_FrameContext.environment = EnvironmentBaker::BakeEnvironment(texture);
 		CreateEnvironmentBindGroup();
 	}
@@ -280,8 +277,9 @@ namespace engine
 		m_FrameContext.depthTextureArrayView = texture.CreateView(&arrayViewDesc);
 	}
 
-	void Renderer::RenderScene(const entt::registry& registry, CameraComponent* camera, wgpu::TextureView targetView)
+	void Renderer::Render(const DrawList& drawList, CameraComponent* camera, wgpu::TextureView targetView)
 	{
+		m_FrameContext.drawList = drawList;
 		m_FrameContext.camera = camera;
 		m_FrameContext.colorTarget = targetView;
 
@@ -291,8 +289,6 @@ namespace engine
 		viewUniforms.view = camera->viewMatrix;
 		viewUniforms.projection = camera->projectionMatrix;
 		queue.WriteBuffer(m_ViewUniformBuffer, 0, &viewUniforms, sizeof(viewUniforms));
-
-		m_FrameContext.drawList = DrawList::Create(registry);
 
 		const std::vector<glm::mat4>& modelMatrices = m_FrameContext.drawList.transforms;
 		queue.WriteBuffer(m_ModelStorageBuffer, 0, modelMatrices.data(), modelMatrices.size() * sizeof(glm::mat4));

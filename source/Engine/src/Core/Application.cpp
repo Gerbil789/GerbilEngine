@@ -84,23 +84,25 @@ namespace engine
 	void Application::Draw()
 	{
 		Scene scene = SceneManager::GetActiveScene();
+		entt::registry& registry = scene.Get().registry;
+		auto camera = scene.GetPrimaryCamera();
 
 		if (s_Window.SizeChanged())
 		{
 			s_Renderer.SetSize(s_Window.GetWidth(), s_Window.GetHeight());
 			s_Window.ClearResizedFlag();
 
-			if(scene.GetPrimaryCamera())
+			if(camera)
 			{
-				entt::entity cameraEntity = scene.GetRegistry().view<PrimaryCameraTag>().front();
-				scene.GetRegistry().emplace_or_replace<CameraProjectionDirty>(cameraEntity);
+				entt::entity cameraEntity = registry.view<PrimaryCameraTag>().front();
+				registry.emplace_or_replace<CameraProjectionDirty>(cameraEntity);
 			}
 		}
 
-		engine::CameraComponent* camera = scene.GetPrimaryCamera();
 		if(camera)
 		{
-			s_Renderer.RenderScene(scene.GetRegistry(), camera, s_Window.GetSurfaceView());
+			DrawList drawList = DrawList::Create(scene.GetRegistry());
+			s_Renderer.Render(drawList, camera, s_Window.GetSurfaceView());
 		}
 
 		s_Window.GetSurface().Present();

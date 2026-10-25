@@ -102,14 +102,14 @@ namespace editor
 	{
 		std::tuple<
 			MenuBar,
-			SceneHierarchyWindow,
 			ViewportWindow,
 			ContentBrowserWindow,
-			SettingsWindow,
 			EntityInspectorWindow,
+			SceneHierarchyWindow,
 			AssetInspectorWindow,
 			MaterialEditorWindow,
 			StatisticsWindow,
+			SettingsWindow,
 			AssetRegistryWindow
 		> m_Windows;
 	}

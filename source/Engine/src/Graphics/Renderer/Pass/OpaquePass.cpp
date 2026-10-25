@@ -55,7 +55,7 @@ namespace engine
 
         GraphicsContext::GetQueue().WriteBuffer(data.uniformBuffer, 0, data.uniformData.data(), data.uniformData.size());
         pass.SetBindGroup(2, data.bindGroup, 0, nullptr);
-        pass.SetPipeline(data.material.GetPipeline());
+        pass.SetPipeline(data.material.Get().pipeline);
       }
 
       pass.DrawIndexed(item.indexCount, 1, item.firstIndex, 0, i++);

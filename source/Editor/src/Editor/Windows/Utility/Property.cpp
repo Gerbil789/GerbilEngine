@@ -1,10 +1,4 @@
 #include "Property.h"
-#include "Engine/Asset/AssetHandle.h"
-#include "Engine/Graphics/Texture/Texture2D.h"
-#include "Engine/Graphics/Texture/TextureCube.h"	
-#include "Engine/Audio/AudioClip.h"
-#include "Engine/Graphics/Mesh.h"
-#include "Engine/Graphics/Material.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
 

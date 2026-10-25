@@ -191,24 +191,17 @@ namespace editor
 
 	template <typename Handle>
 	requires std::derived_from<Handle, engine::AssetHandle>
-	EditResult AssetField(std::string_view label, Handle& handle)
+	EditResult AssetField(std::string_view label, Handle& handle, Handle clearValue = Handle{})
 	{
 		PropertyRow row(label);
 		EditResult result;
 
-		const std::string& assetName = handle ? engine::AssetRegistry::GetPath(handle).stem().string() : "";
+		const std::string& assetName = engine::AssetRegistry::GetAssetPath(handle).stem().string();
 
 		if constexpr (std::is_same_v<Handle, engine::Texture2D>)
 		{
-			if (handle)
-			{
-				engine::Texture2D texture = static_cast<engine::Texture2D>(handle);
-				result.changed = ImGui::ImageButton("##TexturePreview", (ImTextureID)(intptr_t)texture.View().Get(), ImVec2(64, 64)); //TODO: too many casts?
-			}
-			else
-			{
-				result.changed = ImGui::ImageButton("##TexturePreviewBlank", nullptr, ImVec2(64, 64));
-			}
+			engine::Texture2D texture = static_cast<engine::Texture2D>(handle);
+			result.changed = ImGui::ImageButton("##TexturePreview", texture.View().Get(), ImVec2(64, 64)); //TODO: too many casts?
 		}
 		else
 		{
@@ -225,9 +218,9 @@ namespace editor
 
 		if (PopupContextItem contextMenu{ "AssetOptionsPopup" })
 		{
-			if (ImGui::MenuItem("Clear", nullptr, false, static_cast<bool>(handle)))
+			if (ImGui::MenuItem("Clear", nullptr, false))
 			{
-				handle = {};
+				handle = clearValue;
 				result.changed = true;
 			}
 		}

@@ -39,7 +39,6 @@ namespace engine
 
 		Shader shader;
 		wgpu::RenderPipeline pipeline;
-		std::vector<std::byte> defaultUniformData;
 	};
 
 	struct Material : public AssetHandle
@@ -47,14 +46,12 @@ namespace engine
 		using AssetHandle::AssetHandle;
 		MaterialAsset& Get() const;
 
-		Shader GetShader() const;
-		wgpu::RenderPipeline GetPipeline() const;
-		size_t GetExpectedSize() const;
-
 		static const Material Pink;
+		static const Material White;
 	};
 
 	inline constexpr Material Material::Pink{ 0 };
+	inline constexpr Material Material::White{ 1 };
 
 	struct MaterialInstanceData
 	{
@@ -87,7 +84,9 @@ namespace engine
 		{
 			MaterialInstanceData& instanceData = Get();
 
-			if (sizeof(T) != instanceData.material.GetExpectedSize())
+			size_t bufferSize = instanceData.material.Get().shader.Get().materialUniformBufferSize;
+
+			if (sizeof(T) != bufferSize)
 			{
 				LOG_ERROR("Struct size mismatch!");
 				return;

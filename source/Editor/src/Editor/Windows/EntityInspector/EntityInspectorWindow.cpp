@@ -125,15 +125,10 @@ namespace editor
 		{
 			EditorCommandManager::ModifyComponent<engine::TransformComponent>(entity, s_TransformBefore, *component);
 		}
-		else if (result.changed)
+		
+		if (result.changed)
 		{
 			registry.emplace_or_replace<engine::TransformDirty>(entity);
-
-			// if(entity.HasComponent<engine::CameraComponent>())
-			// {
-			// 	entity.AddTag<engine::CameraProjectionDirty>();
-			// 	entity.AddTag<engine::CameraViewDirty>();
-			// }
 		}
 	}
 
@@ -200,14 +195,7 @@ namespace editor
 
 		if (AssetField("Mesh", component->mesh).changed)
 		{
-			if (component->mesh)
-			{
-				component->materialInstances.resize(component->mesh.Get().materialCount);
-			}
-			else
-			{
-				component->materialInstances.clear();
-			}
+			component->materialInstances.resize(component->mesh.Get().materialCount);
 		}
 
 		for (size_t i = 0; i < component->materialInstances.size(); ++i)

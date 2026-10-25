@@ -11,7 +11,6 @@ namespace engine
     constexpr AssetHandle() = default;
     constexpr explicit AssetHandle(Uuid uuid) : id(uuid) {}
 
-    constexpr explicit operator bool() const { return static_cast<bool>(id); }
     constexpr bool operator==(const AssetHandle& other) const { return id == other.id; }
     constexpr bool operator!=(const AssetHandle& other) const { return id != other.id; }
   };

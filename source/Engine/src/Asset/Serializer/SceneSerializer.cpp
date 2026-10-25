@@ -189,7 +189,7 @@ namespace engine
 			return;
 		}
 
-		const auto& sceneData = scene.Get();
+		const engine::SceneAsset& sceneData = scene.Get();
 		const entt::registry& registry = sceneData.registry;
 
 		std::vector<EntityJSON> json;

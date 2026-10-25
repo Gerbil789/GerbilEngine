@@ -23,7 +23,7 @@ namespace engine
 		entt::registry registry;
 		std::unordered_map<engine::Uuid, entt::entity> entityMap;
 		std::vector<entt::entity> rootEntities;
-		Texture2D environmentTexture;
+		Texture2D environmentTexture = Texture2D::HDR;
 
 		std::vector<std::function<void()>> systems;
 	};

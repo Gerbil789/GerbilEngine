@@ -23,6 +23,12 @@
             1
          ]
       },
+      "mesh": {
+         "mesh": 5832219982230885361,
+         "materialInstances": [
+            8739813572722669504
+         ]
+      },
       "camera": {
          "projection": 0,
          "perspective": {

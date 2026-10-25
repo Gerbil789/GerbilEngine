@@ -9,24 +9,34 @@
 
 namespace engine
 {
+	enum class ShaderParamType
+	{
+		Float,
+		Int,
+		Uint,
+		Bool,
+		Vec2,
+		Vec3,
+		Vec4,
+		IVec2,
+		Mat3,
+		Mat4
+	};
+
 	struct ShaderParameter
 	{
 		std::string name;
+		ShaderParamType type;
 		size_t offset = 0;
 		size_t size = 0;
-		std::optional<uint32_t> arraySize = std::nullopt;
-
-		// editor data
-		std::variant<float, int32_t, uint32_t, bool, glm::vec2, glm::vec3, glm::vec4, glm::ivec2, glm::mat3, glm::mat4> defaultValue;
-		std::optional<float> min;
-		std::optional<float> max;
-		bool isColor = false;
+		size_t arraySize = 1;
 	};
 
 	struct BufferBinding
 	{
 		wgpu::BufferBindingType type = wgpu::BufferBindingType::Undefined;  // Uniform, Storage, ReadOnlyStorage
-		std::optional<uint32_t> arraySize = std::nullopt;
+		// std::optional<uint32_t> arraySize = std::nullopt;
+		size_t arraySize = 1;
 		size_t size = 0;
 		std::vector<ShaderParameter> parameters;
 	};

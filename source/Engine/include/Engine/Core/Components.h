@@ -178,26 +178,5 @@ namespace engine
 			float lineSpacing = 1.2f;
 			bool wrapText = false;
 		};
-
-
-
-
-		//struct Interactable
-		//{
-		//	bool isHovered{ false };
-		//	bool isPressed{ false };
-		//	bool isDisabled{ false };
-		//};
-
-		//struct Button
-		//{
-		//	glm::vec4 normalColor{ 1.0f, 1.0f, 1.0f, 1.0f };
-		//	glm::vec4 hoverColor{ 0.8f, 0.8f, 0.8f, 1.0f };
-		//	glm::vec4 pressedColor{ 0.5f, 0.5f, 0.5f, 1.0f };
-		//	glm::vec4 disabledColor{ 0.3f, 0.3f, 0.3f, 1.0f };
-
-		//	uint32_t hoverIconHash{ 0 };
-		//	uint32_t pressedIconHash{ 0 };
-		//};
 	}
 }

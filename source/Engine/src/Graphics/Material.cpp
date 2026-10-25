@@ -22,40 +22,59 @@ namespace engine
 	{
 		this->shader = shader;
 
-		const ShaderAsset& shaderData = shader.Get();		defaultUniformData.assign(shaderData.materialUniformBufferSize, std::byte{});
-		defaultUniformData.assign(shaderData.materialUniformBufferSize, std::byte{});
-
-		for (const auto& binding : shader.GetMaterialBindings())
-		{
-			if (std::holds_alternative<BufferBinding>(binding.data))
-			{
-				const BufferBinding& buffer = std::get<BufferBinding>(binding.data);
-
-				if (buffer.type == wgpu::BufferBindingType::Uniform)
-				{
-					for (const ShaderParameter& param : buffer.parameters)
-					{
-						if (param.name[0] == '_') continue;
-//		std::variant<float, glm::vec2, glm::vec3, glm::vec4, glm::ivec2> defaultValue;
-
-						if(std::holds_alternative<float>(param.defaultValue))
-						{
-							auto value = std::get<float>(param.defaultValue);
-							std::memcpy(defaultUniformData.data() + param.offset, &value, sizeof(float));
-						}
+		//const ShaderAsset& shaderData = shader.Get();
 
 
-					}
-				}
-				else if (buffer.type == wgpu::BufferBindingType::Storage)
-				{
-				}
-			}
-			// else if (std::holds_alternative<TextureBinding>(binding.data))
-			// {
-			// 	SetTexture(binding.binding, {});
-			// }
-		}
+		// defaultUniformData.assign(shaderData.materialUniformBufferSize, std::byte{});
+
+		// for (const auto& binding : shader.GetMaterialBindings())
+		// {
+		// 	if (std::holds_alternative<BufferBinding>(binding.data))
+		// 	{
+		// 		const BufferBinding& buffer = std::get<BufferBinding>(binding.data);
+
+		// 		if (buffer.type == wgpu::BufferBindingType::Uniform)
+		// 		{
+		// 			for (const ShaderParameter& param : buffer.parameters)
+		// 			{
+		// 				if (param.name[0] == '_') continue;
+
+		// 				if (std::holds_alternative<float>(param.defaultValue))
+		// 				{
+		// 					auto value = std::get<float>(param.defaultValue);
+		// 					std::memcpy(defaultUniformData.data() + param.offset, &value, sizeof(float));
+		// 				}
+		// 				else if (std::holds_alternative<glm::vec2>(param.defaultValue))
+		// 				{
+		// 					auto value = std::get<glm::vec2>(param.defaultValue);
+		// 					std::memcpy(defaultUniformData.data() + param.offset, &value, sizeof(glm::vec2));
+		// 				}
+		// 				else if (std::holds_alternative<glm::vec3>(param.defaultValue))
+		// 				{
+		// 					auto value = std::get<glm::vec3>(param.defaultValue);
+		// 					std::memcpy(defaultUniformData.data() + param.offset, &value, sizeof(glm::vec3));
+		// 				}
+		// 				else if (std::holds_alternative<glm::vec4>(param.defaultValue))
+		// 				{
+		// 					auto value = std::get<glm::vec4>(param.defaultValue);
+		// 					std::memcpy(defaultUniformData.data() + param.offset, &value, sizeof(glm::vec4));
+		// 				}
+		// 				else if (std::holds_alternative<glm::ivec2>(param.defaultValue))
+		// 				{
+		// 					auto value = std::get<glm::ivec2>(param.defaultValue);
+		// 					std::memcpy(defaultUniformData.data() + param.offset, &value, sizeof(glm::ivec2));
+		// 				}
+		// 			}
+		// 		}
+		// 		else if (buffer.type == wgpu::BufferBindingType::Storage)
+		// 		{
+		// 		}
+		// 	}
+		// 	// else if (std::holds_alternative<TextureBinding>(binding.data))
+		// 	// {
+		// 	// 	SetTexture(binding.binding, {});
+		// 	// }
+		// }
 
 		PipelineSpecification spec;
 		spec.shader = shader;
@@ -67,26 +86,12 @@ namespace engine
 		return AssetManager::GetAsset(*this);
 	}
 
-	Shader Material::GetShader() const
-	{
-		return Get().shader;
-	}
-
-	wgpu::RenderPipeline Material::GetPipeline() const
-	{
-		return Get().pipeline;
-	}
-
-	size_t Material::GetExpectedSize() const 
-	{ 
-		// LOG_TRACE("Expected size: {}", Get().defaultUniformData.size());
-		return Get().defaultUniformData.size(); 
-	}
-
 	MaterialInstanceData::MaterialInstanceData(Material material)
 	{
 		this->material = material;
-		uniformBuffer = CreateUniformBuffer("MaterialUniformBuffer", material.GetExpectedSize());
+
+		size_t bufferSize = material.Get().shader.Get().materialUniformBufferSize;
+		uniformBuffer = CreateUniformBuffer("MaterialUniformBuffer", bufferSize);
 	}
 
 	void MaterialInstanceData::CreateBindGroup()
@@ -115,7 +120,7 @@ namespace engine
 			{
 				// if (m_Textures.find(binding.binding) == m_Textures.end()) // TODO: is this redundant check?
 				// {
-				 	textures[binding.binding] = Texture2D::White;
+				//textures[binding.binding] = Texture2D::White;
 				// }
 
 				const Texture2D& texture = textures.at(binding.binding);
@@ -144,7 +149,7 @@ namespace engine
 
 	const Shader MaterialInstance::GetShader() const
 	{
-		return Get().material.GetShader();
+		return Get().material.Get().shader;
 	}
 
 	void MaterialInstance::SetTextureFilter(TextureFilter filter)
@@ -174,7 +179,7 @@ namespace engine
 	void MaterialInstance::SetTexture(uint32_t bindingIndex, Texture2D texture)
 	{
 		MaterialInstanceData& data = Get();
-		const Binding& binding = data.material.GetShader().GetBinding(2, bindingIndex);
+		const Binding& binding = data.material.Get().shader.GetBinding(2, bindingIndex);
 
 		if (!std::holds_alternative<TextureBinding>(binding.data))
 		{
@@ -182,16 +187,9 @@ namespace engine
 			return;
 		}
 
-		if (!texture)
+		if (texture == Texture2D::White && binding.name.find("Normal") != std::string::npos)
 		{
-			if (binding.name.find("Normal") != std::string::npos)
-			{
-				texture = Texture2D::Normal;
-			}
-			else
-			{
-				texture = Texture2D::White;
-			}
+			texture = Texture2D::Normal;
 		}
 
 		data.textures[bindingIndex] = texture;

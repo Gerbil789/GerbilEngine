@@ -107,19 +107,18 @@ namespace engine
       return;
     }
 
-    if (type == "f32") { param.defaultValue = float{}; return; }
-    if (type == "i32") { param.defaultValue = int32_t{}; return; }
-    if (type == "u32") { param.defaultValue = uint32_t{}; return; }
-    if (type == "bool") { param.defaultValue = bool{}; return; }
-    if (type == "vec2f") { param.defaultValue = glm::vec2{}; return; }
-    if (type == "vec3f") { param.defaultValue = glm::vec3{}; return; }
-    if (type == "vec4f") { param.defaultValue = glm::vec4{}; return; }
-    if (type == "vec2i") { param.defaultValue = glm::ivec2{}; return; }
-    if (type == "mat3x3f") { param.defaultValue = glm::mat3{}; return; }
-    if (type == "mat4x4f") { param.defaultValue = glm::mat4{}; return; }
+    if (type == "f32")      { param.type = engine::ShaderParamType::Float; return; }
+    if (type == "i32")      { param.type = engine::ShaderParamType::Int; return; }
+    if (type == "u32")      { param.type = engine::ShaderParamType::Uint; return; }
+    if (type == "bool")     { param.type = engine::ShaderParamType::Bool; return; }
+    if (type == "vec2f")    { param.type = engine::ShaderParamType::Vec2; return; }
+    if (type == "vec3f")    { param.type = engine::ShaderParamType::Vec3; return; }
+    if (type == "vec4f")    { param.type = engine::ShaderParamType::Vec4; return; }
+    if (type == "vec2i")    { param.type = engine::ShaderParamType::IVec2; return; }
+    if (type == "mat3x3f")  { param.type = engine::ShaderParamType::Mat3; return; }
+    if (type == "mat4x4f")  { param.type = engine::ShaderParamType::Mat4; return; }
 
     LOG_WARNING("ParseValueType - Unknown type: {}", type);
-    param.defaultValue = float{};
   }
 
   // constexpr size_t GetTypeSize(ShaderValueType type)
@@ -140,24 +139,24 @@ namespace engine
   //   std::unreachable();
   // }
 
-  constexpr size_t GetVariantWgslSize(const auto& variantValue)
-  {
-    return std::visit([](auto&& arg) -> size_t {
-      using T = std::decay_t<decltype(arg)>;
+  // constexpr size_t GetVariantWgslSize(const auto& variantValue)
+  // {
+  //   return std::visit([](auto&& arg) -> size_t {
+  //     using T = std::decay_t<decltype(arg)>;
       
-      if constexpr (std::is_same_v<T, bool>) return 4;
-      else if constexpr (std::is_same_v<T, int32_t>) return 4;
-      else if constexpr (std::is_same_v<T, uint32_t>) return 4;
-      else if constexpr (std::is_same_v<T, float>) return 4;
-      else if constexpr (std::is_same_v<T, glm::vec2>) return 8;
-      else if constexpr (std::is_same_v<T, glm::vec3>) return 12;
-      else if constexpr (std::is_same_v<T, glm::vec4>) return 16;
-      else if constexpr (std::is_same_v<T, glm::ivec2>) return 8;
-      else if constexpr (std::is_same_v<T, glm::mat3>) return 48; 
-      else if constexpr (std::is_same_v<T, glm::mat4>) return 64;
-      else return 4; // Fallback
-    }, variantValue);
-  }
+  //     if constexpr (std::is_same_v<T, bool>) return 4;
+  //     else if constexpr (std::is_same_v<T, int32_t>) return 4;
+  //     else if constexpr (std::is_same_v<T, uint32_t>) return 4;
+  //     else if constexpr (std::is_same_v<T, float>) return 4;
+  //     else if constexpr (std::is_same_v<T, glm::vec2>) return 8;
+  //     else if constexpr (std::is_same_v<T, glm::vec3>) return 12;
+  //     else if constexpr (std::is_same_v<T, glm::vec4>) return 16;
+  //     else if constexpr (std::is_same_v<T, glm::ivec2>) return 8;
+  //     else if constexpr (std::is_same_v<T, glm::mat3>) return 48; 
+  //     else if constexpr (std::is_same_v<T, glm::mat4>) return 64;
+  //     else return 4; // Fallback
+  //   }, variantValue);
+  // }
 
   void ParseConstants(std::string_view source)
   {
@@ -179,78 +178,78 @@ namespace engine
     }
 	}
 
-  void ParseParameterAttributes(ShaderParameter& param, std::string_view attributes)
-  {
-    // @default
-    {
-      std::cmatch match;
-      std::regex regex(R"(@default\(([^)]*)\))");
+  // void ParseParameterAttributes(ShaderParameter& param, std::string_view attributes)
+  // {
+  //   // @default
+  //   // {
+  //   //   std::cmatch match;
+  //   //   std::regex regex(R"(@default\(([^)]*)\))");
 
-			const char* begin = attributes.data();
-			const char* end = attributes.data() + attributes.size();
+	// 	// 	const char* begin = attributes.data();
+	// 	// 	const char* end = attributes.data() + attributes.size();
 
-      if (std::regex_search(begin, end, match, regex))
-      {
-        std::string values = match[1].str();
+  //   //   if (std::regex_search(begin, end, match, regex))
+  //   //   {
+  //   //     std::string values = match[1].str();
 
-        std::vector<float> nums;
-        std::stringstream ss(values);
-        std::string token;
+  //   //     std::vector<float> nums;
+  //   //     std::stringstream ss(values);
+  //   //     std::string token;
 
-        while (std::getline(ss, token, ','))
-        {
-          nums.push_back(std::stof(token));
-        }
+  //   //     while (std::getline(ss, token, ','))
+  //   //     {
+  //   //       nums.push_back(std::stof(token));
+  //   //     }
 
-        // switch (param.type)
-        // {
-        // case ShaderValueType::Float:
-				// 	param.defaultValue.emplace<float>(nums[0]);
-        //   break;
+  //   //     // switch (param.type)
+  //   //     // {
+  //   //     // case ShaderValueType::Float:
+	// 	// 		// 	param.defaultValue.emplace<float>(nums[0]);
+  //   //     //   break;
 
-        // case ShaderValueType::Vec2:
-				// 	param.defaultValue.emplace<glm::vec2>(nums[0], nums[1]);
-        //   break;
+  //   //     // case ShaderValueType::Vec2:
+	// 	// 		// 	param.defaultValue.emplace<glm::vec2>(nums[0], nums[1]);
+  //   //     //   break;
 
-        // case ShaderValueType::Vec3:
-				// 	param.defaultValue.emplace<glm::vec3>(nums[0], nums[1], nums[2]);
-        //   break;
+  //   //     // case ShaderValueType::Vec3:
+	// 	// 		// 	param.defaultValue.emplace<glm::vec3>(nums[0], nums[1], nums[2]);
+  //   //     //   break;
 
-        // case ShaderValueType::Vec4:
-				// 	param.defaultValue.emplace<glm::vec4>(nums[0], nums[1], nums[2], nums[3]);
-        //   break;
+  //   //     // case ShaderValueType::Vec4:
+	// 	// 		// 	param.defaultValue.emplace<glm::vec4>(nums[0], nums[1], nums[2], nums[3]);
+  //   //     //   break;
 
-        // default: {}
-        // }
+  //   //     // default: {}
+  //   //     // }
 
-        std::visit([&nums](auto& val) {
-          using T = std::decay_t<decltype(val)>;
+  //   //     std::visit([&nums](auto& val) {
+  //   //       using T = std::decay_t<decltype(val)>;
           
-          if constexpr (std::is_same_v<T, float>) {
-            if (nums.size() >= 1) val = nums[0];
-          } 
-          else if constexpr (std::is_same_v<T, glm::vec2>) {
-            if (nums.size() >= 2) val = glm::vec2(nums[0], nums[1]);
-          } 
-          else if constexpr (std::is_same_v<T, glm::vec3>) {
-            if (nums.size() >= 3) val = glm::vec3(nums[0], nums[1], nums[2]);
-          } 
-          else if constexpr (std::is_same_v<T, glm::vec4>) {
-            if (nums.size() >= 4) val = glm::vec4(nums[0], nums[1], nums[2], nums[3]);
-          } 
-          else if constexpr (std::is_same_v<T, glm::ivec2>) {
-            if (nums.size() >= 2) val = glm::ivec2(static_cast<int>(nums[0]), static_cast<int>(nums[1]));
-          }
-        }, param.defaultValue);
+  //   //       if constexpr (std::is_same_v<T, float>) {
+  //   //         if (nums.size() >= 1) val = nums[0];
+  //   //       } 
+  //   //       else if constexpr (std::is_same_v<T, glm::vec2>) {
+  //   //         if (nums.size() >= 2) val = glm::vec2(nums[0], nums[1]);
+  //   //       } 
+  //   //       else if constexpr (std::is_same_v<T, glm::vec3>) {
+  //   //         if (nums.size() >= 3) val = glm::vec3(nums[0], nums[1], nums[2]);
+  //   //       } 
+  //   //       else if constexpr (std::is_same_v<T, glm::vec4>) {
+  //   //         if (nums.size() >= 4) val = glm::vec4(nums[0], nums[1], nums[2], nums[3]);
+  //   //       } 
+  //   //       else if constexpr (std::is_same_v<T, glm::ivec2>) {
+  //   //         if (nums.size() >= 2) val = glm::ivec2(static_cast<int>(nums[0]), static_cast<int>(nums[1]));
+  //   //       }
+  //   //     }, param.defaultValue);
 
-      }
-    }
+  //   //   }
+  //   // }
    
-    if (attributes.find("@color") != std::string::npos)
-    {
-			param.isColor = true;
-    }
-  }
+  //   // if (attributes.find("@color") != std::string::npos)
+  //   // {
+	// 	// 	param.isColor = true;
+  //   // }
+  // }
 
   void ParseStruct(const std::cmatch& match)
   {
@@ -274,9 +273,19 @@ namespace engine
 
       ParseValueType(memberMatch[2].str(), param);
 
-      ParseParameterAttributes(param, memberMatch[3].str());
+      //ParseParameterAttributes(param, memberMatch[3].str());
       param.offset = offset;
-      param.size = GetVariantWgslSize(param.defaultValue);
+
+      if (param.type == ShaderParamType::Float) { param.size = 4;}
+      if (param.type == ShaderParamType::Int)   { param.size = 4;}
+      if (param.type == ShaderParamType::Uint)  { param.size = 4;}
+      if (param.type == ShaderParamType::Bool)  { param.size = 4;}
+      if (param.type == ShaderParamType::Vec2)  { param.size = 8;}
+      if (param.type == ShaderParamType::Vec3)  { param.size = 12; }
+      if (param.type == ShaderParamType::Vec4)  { param.size = 16; }
+      if (param.type == ShaderParamType::IVec2) { param.size = 8;}
+      if (param.type == ShaderParamType::Mat3)  { param.size = 48; }
+      if (param.type == ShaderParamType::Mat4)  { param.size = 64; }
 
       params.push_back(param);
 

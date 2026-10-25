@@ -114,10 +114,10 @@ namespace engine
 				entry.buffer.minBindingSize = 0;
 				materialUniformBufferSize = buffer.size;
 
-				if (buffer.arraySize)
-				{
-					// *buffer.arraySize or buffer.arraySize.value()
-				}
+				// if (buffer.arraySize > 1)
+				// {
+				// 	// *buffer.arraySize or buffer.arraySize.value()
+				// }
 			}
 			else if (std::holds_alternative<TextureBinding>(binding.data))
 			{

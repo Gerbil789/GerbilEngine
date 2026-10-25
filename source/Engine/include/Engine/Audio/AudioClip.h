@@ -27,5 +27,9 @@ namespace engine
 		uint64_t GetTotalFrames() const;
 		uint32_t GetChannels() const;
 		uint32_t GetSampleRate() const;
+
+		static const AudioClip null;
 	};
+
+	inline constexpr AudioClip AudioClip::null{0};
 }

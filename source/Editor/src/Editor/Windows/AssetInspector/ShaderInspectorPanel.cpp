@@ -8,7 +8,7 @@ namespace editor
 {
 	void ShaderInspectorPanel::Draw(engine::Shader shader)
 	{
-		const std::string& name = engine::AssetRegistry::GetPath(shader).stem().string();
+		const std::string& name = engine::AssetRegistry::GetAssetPath(shader).stem().string();
 		ImGui::TextUnformatted(std::format("Shader: {}", name).c_str());
 	}
 }

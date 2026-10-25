@@ -75,6 +75,61 @@ struct glz::meta<engine::Texture2D>
 	using T = engine::Texture2D;
 	static constexpr auto value = [](auto& t) -> decltype(t.id)& { return t.id; };
 };
+
+
+using ShaderValue = std::variant<float, int32_t, uint32_t, bool, glm::vec2, glm::vec3, glm::vec4, glm::mat4>;
+
+ShaderValue readValueFromBuffer(const std::vector<std::byte>& bufferData, const engine::ShaderParameter& param)
+{
+    const char* ptr = reinterpret_cast<const char*>(bufferData.data()) + param.offset;
+
+    switch (param.type) {
+    case engine::ShaderParamType::Float: {
+        float val;
+        std::memcpy(&val, ptr, sizeof(float));
+        return val;
+    }
+    case engine::ShaderParamType::Int: {
+        int32_t val;
+        std::memcpy(&val, ptr, sizeof(int32_t));
+        return val;
+    }
+    case engine::ShaderParamType::Uint: {
+        uint32_t val;
+        std::memcpy(&val, ptr, sizeof(uint32_t));
+        return val;
+    }
+    case engine::ShaderParamType::Bool: {
+        // WGSL/std140 bools occupy 4 bytes (32-bit integers on the GPU side)
+        int32_t val;
+        std::memcpy(&val, ptr, sizeof(int32_t));
+        return static_cast<bool>(val);
+    }
+    case engine::ShaderParamType::Vec2: {
+        glm::vec2 val;
+        std::memcpy(&val, ptr, sizeof(glm::vec2));
+        return val;
+    }
+    case engine::ShaderParamType::Vec3: {
+        glm::vec3 val;
+        std::memcpy(&val, ptr, sizeof(glm::vec3));
+        return val;
+    }
+    case engine::ShaderParamType::Vec4: {
+        glm::vec4 val;
+        std::memcpy(&val, ptr, sizeof(glm::vec4));
+        return val;
+    }
+    case engine::ShaderParamType::Mat4: {
+        glm::mat4 val;
+        std::memcpy(&val, ptr, sizeof(glm::mat4));
+        return val;
+    }
+    default:
+        return 0.0f; // Fallback default
+    }
+}
+
 // -----------------------------------------------------
 
 namespace engine
@@ -100,12 +155,6 @@ namespace engine
 {
 	void Serializer::SerializeMaterial(Material material, const std::filesystem::path& path)
 	{
-		if (!material)
-		{
-			LOG_ERROR("Attempted to serialize null material (ID: {})", material.id);
-			return;
-		}
-
 		const MaterialAsset& materialData = material.Get();
 
 		MaterialJSON json;
@@ -137,12 +186,6 @@ namespace engine
 
 	void Serializer::SerializeMaterialInstance(MaterialInstance materialInstance, const std::filesystem::path& path)
 	{
-		if (!materialInstance)
-		{
-			LOG_ERROR("Attempted to serialize null material instance (ID: {})", materialInstance.id);
-			return;
-		}
-
 		const MaterialInstanceData& instanceData = materialInstance.Get();
 		const std::vector<std::byte> uniformData = instanceData.uniformData;
 		const std::unordered_map<uint32_t, Texture2D>& textures = instanceData.textures;
@@ -152,7 +195,10 @@ namespace engine
 		json.filter = instanceData.textureFilter;
 		json.wrap = instanceData.textureWrap;
 
-		Shader shader = instanceData.material.GetShader();
+		Shader shader = instanceData.material.Get().shader;
+
+
+
 
 		for (const Binding& binding : shader.GetMaterialBindings())
 		{
@@ -164,19 +210,11 @@ namespace engine
 
 				for (const ShaderParameter& param : buffer.parameters)
 				{
-					// FIXED: Use trailing return type to force all lambda branches to return the variant type
-					auto extractedValue = std::visit([&](const auto& defaultVal) -> decltype(param.defaultValue) {
-						using T = std::decay_t<decltype(defaultVal)>;
-						T value{};
-
-						if (param.offset + sizeof(T) <= uniformData.size())
-						{
-							std::memcpy(&value, uniformData.data() + param.offset, sizeof(T));
-						}
-						return value; // Implicitly converts 'value' into the Variant wrapper
-						}, param.defaultValue);
-
-					json.attributes[param.name] = extractedValue;
+					ShaderValue val = readValueFromBuffer(uniformData, param);
+    
+    			std::visit([&json, &param](auto&& arg) {
+        		json.attributes[param.name] = arg;
+    			}, val);
 				}
 			}
 			else if (std::holds_alternative<TextureBinding>(binding.data))
@@ -205,7 +243,7 @@ namespace engine
 		}
 
 		Material material = json.material;
-		Shader shader = material.GetShader();
+		Shader shader = material.Get().shader;
 
 		MaterialInstanceData instanceData = MaterialInstanceData(material);
 

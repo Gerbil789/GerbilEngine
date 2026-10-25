@@ -4,7 +4,7 @@
       "albedo": [
          1,
          1,
-         1,
+         0,
          1
       ],
       "metallic": 1,
@@ -19,7 +19,7 @@
       ]
    },
    "textures": {
-      "AlbedoTexture": 6854353316358564022,
+      "AlbedoTexture": 1684776618545541378,
       "AmbientTexture": 0,
       "MetallicTexture": 0,
       "NormalTexture": 1,

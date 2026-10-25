@@ -38,7 +38,7 @@ namespace engine
 		}
 
 		template<typename Handle>
-		static const std::filesystem::path& GetPath(Handle handle)
+		static const std::filesystem::path& GetAssetPath(Handle handle)
 		{
 			return std::get<AssetMap<Handle>>(s_Records).at(handle);
 		}

@@ -12,67 +12,78 @@ namespace engine
 {
   void AssetManager::Initialize()
   {
+    auto addBuiltIn = [&]<typename Handle, typename... Args>(Handle handle, const std::string& nameOrPath, Args&&... args)
+    {
+      AssetRegistry::AddRecord(handle, nameOrPath);
+      
+      auto& assetMap = std::get<AssetDataMap<Handle>>(m_LoadedAssets);
+      assetMap.try_emplace(handle, std::forward<Args>(args)...);
+    };
+
+    addBuiltIn(Texture2D::White, "White Texture", TextureSpecification{}, std::array<uint32_t, 1>{0xFFFFFFFF}.data());
+    addBuiltIn(Texture2D::Normal, "Normal Texture", TextureSpecification{}, std::array<uint32_t, 1>{0xFFFF8080}.data());
+    addBuiltIn(Texture2D::HDR, "resources/hdr/autumn_field_puresky_4k.hdr", TextureImporter::LoadTexture2D("resources/hdr/autumn_field_puresky_4k.hdr"));
+    addBuiltIn(Texture2D::EDITOR_ICONS, "resources/icons/icons.png", TextureImporter::LoadTexture2D("resources/icons/icons.png"));
+    addBuiltIn(Texture2D::DEFAULT_FONT_ATLAS, "resources/fonts/atlas.png", TextureImporter::LoadTexture2D("resources/fonts/atlas.png"));
+    addBuiltIn(Texture2D::EDITOR_THUMBNAIL_ATLAS, "Editor Thumbnail Atlas", TextureSpecification{ .width = 2048, .height = 2048, .format = engine::GraphicsContext::GetSurfaceFormat() }, nullptr);
+
+    addBuiltIn(Mesh::Empty, "Empty Mesh", MeshImporter::LoadMesh("resources/models/cube.glb"));
+    addBuiltIn(Mesh::Cube, "resources/models/cube.glb", MeshImporter::LoadMesh("resources/models/cube.glb"));
+    addBuiltIn(Mesh::Sphere, "resources/models/sphere.glb", MeshImporter::LoadMesh("resources/models/sphere.glb"));
+
+    addBuiltIn(Shader::Pink, "resources/shaders/pink.wgsl", ShaderImporter::LoadShader("resources/shaders/pink.wgsl"));
+    addBuiltIn(Shader::Flat, "resources/shaders/flat.wgsl", ShaderImporter::LoadShader("resources/shaders/flat.wgsl"));
+    addBuiltIn(Shader::UI, "resources/shaders/ui.wgsl", ShaderImporter::LoadShader("resources/shaders/ui.wgsl"));
+    addBuiltIn(Shader::Skybox, "resources/shaders/skybox.wgsl", ShaderImporter::LoadShader("resources/shaders/skybox.wgsl"));
+    addBuiltIn(Shader::Normal, "resources/shaders/normal.wgsl", ShaderImporter::LoadShader("resources/shaders/normal.wgsl"));
+
+    addBuiltIn(Scene::Default, "resources/scenes/default.scene", SceneImporter::LoadScene("resources/scenes/default.scene"));
+    
+    addBuiltIn(Material::Pink, "Pink Material", MaterialAsset(Shader::Pink));
+    addBuiltIn(Material::Pink, "White Material", MaterialAsset(Shader::Flat));
+    
+    addBuiltIn(MaterialInstance::Pink, "Pink Material Instance", MaterialInstanceData(Material::Pink));
+    addBuiltIn(MaterialInstance::Pink, "White Material Instance", MaterialInstanceData(Material::White)); //TODO: white material is not working, it fallbacks to the pink
+
+    addBuiltIn(AudioClip::null, "Empty Audio Clip", AudioClipAsset{});
+
     auto& textures = std::get<AssetDataMap<Texture2D>>(m_LoadedAssets);
-    textures.try_emplace(Texture2D::White, TextureSpecification{}, std::array<uint32_t, 1>{0xFFFFFFFF}.data());
-    textures.try_emplace(Texture2D::Normal, TextureSpecification{}, std::array<uint32_t, 1>{0xFFFF8080}.data());
-    textures.try_emplace(Texture2D::HDR, TextureImporter::LoadTexture2D("resources/hdr/autumn_field_puresky_4k.hdr"));
-    textures.try_emplace(Texture2D::EDITOR_ICONS, TextureImporter::LoadTexture2D("resources/icons/icons.png"));
-    textures.try_emplace(Texture2D::DEFAULT_FONT_ATLAS, TextureImporter::LoadTexture2D("resources/fonts/atlas.png"));
-    textures.try_emplace(Texture2D::EDITOR_THUMBNAIL_ATLAS, TextureSpecification{ .width = 2048, .height = 2048, .format = engine::GraphicsContext::GetSurfaceFormat() }, nullptr);
-
-    auto& meshes = std::get<AssetDataMap<Mesh>>(m_LoadedAssets);
-    meshes.try_emplace(Mesh::Empty, MeshImporter::LoadMesh("resources/models/cube.glb"));
-    meshes.try_emplace(Mesh::Cube, MeshImporter::LoadMesh("resources/models/cube.glb"));
-    meshes.try_emplace(Mesh::Sphere, MeshImporter::LoadMesh("resources/models/sphere.glb"));
-
-    auto& shaders = std::get<AssetDataMap<Shader>>(m_LoadedAssets);
-    shaders.try_emplace(Shader::Pink, ShaderImporter::LoadShader("resources/shaders/pink.wgsl"));
-    shaders.try_emplace(Shader::Flat, ShaderImporter::LoadShader("resources/shaders/flat.wgsl"));
-    shaders.try_emplace(Shader::UI, ShaderImporter::LoadShader("resources/shaders/ui.wgsl"));
-    shaders.try_emplace(Shader::Skybox, ShaderImporter::LoadShader("resources/shaders/skybox.wgsl"));
-    shaders.try_emplace(Shader::Normal, ShaderImporter::LoadShader("resources/shaders/normal.wgsl"));
-
-    auto& scenes = std::get<AssetDataMap<Scene>>(m_LoadedAssets);
-    scenes.try_emplace(Scene::Default, SceneImporter::LoadScene("resources/scenes/default.scene"));
-
-    auto& materials = std::get<AssetDataMap<Material>>(m_LoadedAssets);
-    materials.try_emplace(Material::Pink, MaterialAsset(Shader::Pink));
-
-    auto& materialInstances = std::get<AssetDataMap<MaterialInstance>>(m_LoadedAssets);
-    materialInstances.try_emplace(MaterialInstance::Pink, MaterialInstanceData(Material::Pink));
-
-    auto& audioClips = std::get<AssetDataMap<AudioClip>>(m_LoadedAssets);
-
     for (const auto& [handle, path] : AssetRegistry::GetRecords<Texture2D>())
     {
       textures.try_emplace(handle, TextureImporter::LoadTexture2D(path));
     }
 
+    auto& meshes = std::get<AssetDataMap<Mesh>>(m_LoadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<Mesh>())
     {
       meshes.try_emplace(handle, MeshImporter::LoadMesh(path));
     }
 
+    auto& shaders = std::get<AssetDataMap<Shader>>(m_LoadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<Shader>())
     {
       shaders.try_emplace(handle, ShaderImporter::LoadShader(path.string()));
     }
 
+    auto& scenes = std::get<AssetDataMap<Scene>>(m_LoadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<Scene>())
     {
       scenes.try_emplace(handle, SceneImporter::LoadScene(path));
     }
 
+    auto& materials = std::get<AssetDataMap<Material>>(m_LoadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<Material>())
     {
       materials.try_emplace(handle, Serializer::DeserializeMaterial(path));
     }
 
+    auto& materialInstances = std::get<AssetDataMap<MaterialInstance>>(m_LoadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<MaterialInstance>())
     {
       materialInstances.try_emplace(handle, Serializer::DeserializeMaterialInstance(path));
     }
 
+    auto& audioClips = std::get<AssetDataMap<AudioClip>>(m_LoadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<AudioClip>())
     {
       audioClips.try_emplace(handle, AudioImporter::LoadAudioClip(path));
@@ -121,7 +132,7 @@ namespace engine
     {
       for (Handle handle : dirtySet)
       {
-        std::filesystem::path path = AssetRegistry::GetPath(handle);
+        std::filesystem::path path = AssetRegistry::GetAssetPath(handle);
 
         if constexpr (std::is_same_v<Handle, Scene>)
         {

@@ -1,6 +1,5 @@
 #include "ThumbnailRenderer.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Core/Scene.h"
 #include "Engine/Core/Components.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
@@ -33,19 +32,13 @@ namespace editor
 		std::unordered_map<Icon, engine::Sprite> m_Icons;
 		std::unordered_map<engine::Uuid, engine::Sprite> m_ThumbnailCache;
 
-		engine::SceneAsset scene;
-		entt::entity previewEntity;
 		engine::Renderer renderer;
-
 		engine::CameraComponent camera;
-		engine::TransformComponent cameraTransform;
 
 		constexpr int AtlasSizePx = 2048;
 		constexpr int CellsPerSide = AtlasSizePx / 64;
 
 		engine::Texture2D m_AtlasTexture = engine::Texture2D::EDITOR_THUMBNAIL_ATLAS;
-		// wgpu::Texture m_AtlasTexture;
-		// wgpu::TextureView m_AtlasView;
 		int m_NextFreeSlot = 0;
 
 		wgpu::Texture m_ScratchpadTexture;
@@ -56,32 +49,10 @@ namespace editor
 
 	void ThumbnailRenderer::Initialize()
 	{
-		{
-			camera.backgroundMode = engine::CameraComponent::Background::Color;
-			camera.projectionType = engine::CameraComponent::Projection::Perspective;
-			camera.clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
-
-			cameraTransform.position = { 0.0f, 0.0f, 3.0f };
-			cameraTransform.rotation = { 0.0f, 0.0f, 0.0f };
-		}
-
-		{
-			entt::registry& registry = scene.registry;
-
-			previewEntity = registry.create();
-			registry.emplace<engine::IdentityComponent>(previewEntity);
-			registry.emplace<engine::HierarchyComponent>(previewEntity);
-			registry.emplace<engine::NameComponent>(previewEntity).name = "PreviewEntity";
-			auto& tc = registry.emplace<engine::TransformComponent>(previewEntity);
-			registry.emplace<engine::WorldTransformComponent>(previewEntity);
-			auto& mc = registry.emplace<engine::MeshComponent>(previewEntity);
-			registry.emplace<engine::TransformDirty>(previewEntity);
-
-			mc.mesh = engine::Mesh::Sphere;
-			mc.materialInstances = { engine::MaterialInstance::Pink };
-
-			tc.rotation = glm::radians(glm::vec3{ 15.0f, 45.0f, 0.0f });
-		}
+		camera.backgroundMode = engine::CameraComponent::Background::Color;
+		camera.projectionType = engine::CameraComponent::Projection::Perspective;
+		camera.clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+		engine::CameraSystem::UpdateCameraProjectionMatrix(camera, 1.0f);
 
 		renderer.Initialize(64, 64);
 		renderer.AddPass<engine::BackgroundPass>();
@@ -91,17 +62,6 @@ namespace editor
 		{
 			m_Icons.emplace(icon, engine::Sprite::CreateFromGrid(engine::Texture2D::EDITOR_ICONS, m_SpritesheetSize, coords, m_CellSize));
 		}
-
-		// wgpu::TextureDescriptor atlasDesc;
-		// atlasDesc.label = "ThumbnailAtlas";
-		// atlasDesc.dimension = wgpu::TextureDimension::e2D;
-		// atlasDesc.sampleCount = 1;
-		// atlasDesc.mipLevelCount = 1;
-		// atlasDesc.size = { AtlasSizePx, AtlasSizePx, 1 };
-		// atlasDesc.format = engine::GraphicsContext::GetSurfaceFormat();
-		// atlasDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
-		// m_AtlasTexture = engine::GraphicsContext::GetDevice().CreateTexture(&atlasDesc);
-		// m_AtlasView = m_AtlasTexture.CreateView();
 
 		wgpu::TextureDescriptor scratchDesc;
 		scratchDesc.label = "ThumbnailScratchpad";
@@ -126,38 +86,45 @@ namespace editor
 		m_DepthView = m_DepthTexture.CreateView();
 	}
 
-	static engine::Sprite RenderToAtlas(engine::Mesh mesh, engine::MaterialInstance material)
+	static engine::Sprite RenderToAtlas(engine::Mesh mesh, engine::MaterialInstance materialInstance)
 	{
-		int slot = m_NextFreeSlot++;
-		int x = (slot % CellsPerSide) * 64;
-		int y = (slot / CellsPerSide) * 64;
+		const engine::MeshAsset& meshData = mesh.Get();
 
-		entt::registry& registry = scene.registry;
+		const engine::AABB& aabb = meshData.aabb;
+		float distance = glm::length(aabb.max - aabb.min) + 1.0f;
 
-		auto& mc = registry.get<engine::MeshComponent>(previewEntity);
+		engine::TransformComponent cameraTransform;
+		cameraTransform.position = { 0.0f, 0.0f, distance };
+		engine::CameraSystem::UpdateCameraViewMatrix(camera, cameraTransform);
 
-		mc.mesh = mesh;
 
-		const engine::MeshAsset& data = mesh.Get();
+		engine::TransformComponent entityTransform;
+		entityTransform.rotation = { 0.0f, glm::radians(20.0f), 0.0f };
+		const glm::mat4 worldMatrix = engine::TransformSystem::CalculateLocalPositionMatrix(entityTransform);
 
-		mc.materialInstances = std::vector<engine::MaterialInstance>(data.materialCount, material);
+		engine::DrawList list;
 
-		const engine::AABB& aabb = data.aabb;
-		float distance = glm::length(aabb.max - aabb.min);
+		const auto& subMeshes = meshData.subMeshes;
 
-		cameraTransform.position = { 0.0f, 0.0f, -distance };
+    for (uint32_t i = 0; i < subMeshes.size(); ++i)
+    {
+      const auto& subMesh = subMeshes[i];
 
-		engine::CameraSystem::Update(registry, 1.0f);
+      list.items.emplace_back(mesh, materialInstance, i, subMesh.indexCount, subMesh.firstIndex);
+      list.transforms.push_back(worldMatrix);
+    }
 
-		engine::TransformSystem::Update(registry, scene.rootEntities);
-
-		renderer.RenderScene(registry, &camera, m_ScratchpadTexture.CreateView());
+		renderer.Render(list, &camera, m_ScratchpadTexture.CreateView());
 
 		// Copy to Atlas
 		wgpu::TexelCopyTextureInfo src;
 		src.texture = m_ScratchpadTexture;
 		src.mipLevel = 0;
 		src.origin = { 0, 0, 0 };
+
+		int slot = m_NextFreeSlot++;
+		int x = (slot % CellsPerSide) * 64;
+		int y = (slot / CellsPerSide) * 64;
 
 		wgpu::TexelCopyTextureInfo dst;
 		dst.texture = m_AtlasTexture.Get().texture;
@@ -166,7 +133,6 @@ namespace editor
 
 		wgpu::Extent3D copySize = { 64, 64, 1 };
 
-		// TODO: batch commands and send to gpu once, dont create encoder per thumbnail
 		auto encoder = engine::GraphicsContext::GetDevice().CreateCommandEncoder({});
 		encoder.CopyTextureToTexture(&src, &dst, &copySize);
 		auto cmd = encoder.Finish();
@@ -197,7 +163,10 @@ namespace editor
 			sprite = GetEditorIcon(Icon::Text);
 			break;
 		case engine::AssetType::Material:
-			sprite = RenderToAtlas(engine::Mesh::Sphere, engine::MaterialInstance{ id } );
+			sprite = GetEditorIcon(Icon::Unknown); //TODO
+			break;
+		case engine::AssetType::MaterialInstance:
+			sprite = RenderToAtlas(engine::Mesh::Sphere, engine::MaterialInstance{ id });
 			break;
 		case engine::AssetType::Mesh:
 			sprite = RenderToAtlas(engine::Mesh{ id }, engine::MaterialInstance::White);
