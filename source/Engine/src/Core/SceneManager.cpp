@@ -7,7 +7,7 @@
 
 namespace engine
 {
-	void SceneManager::SetActiveScene(Scene scene)
+	void SceneManager::SetActiveScene(SceneHandle scene)
 	{
 		s_ActiveScene = scene;
 		engine::EventBus::Publish(SceneChangedEvent{ s_ActiveScene });
@@ -15,7 +15,7 @@ namespace engine
 		LOG_INFO("Active scene set to '{}' ({})", AssetRegistry::GetAssetPath(s_ActiveScene).filename(), s_ActiveScene.id);
 	}
 
-	Scene SceneManager::GetActiveScene()
+	SceneHandle SceneManager::GetActiveScene()
 	{
 		return s_ActiveScene;
 	}

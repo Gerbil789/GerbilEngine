@@ -12,7 +12,7 @@ namespace editor
   public:
     RemoveComponentCommand(entt::entity entity) : m_Entity(entity)
     {
-      entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+      entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
 
       if(registry.any_of<T>(entity))
       {
@@ -22,7 +22,7 @@ namespace editor
 
     void Execute() override
     {
-      entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+      entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
       if(registry.any_of<T>(m_Entity))
       {
         registry.remove<T>(m_Entity);
@@ -31,7 +31,7 @@ namespace editor
 
     void Undo() override
     {
-      entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+      entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
       if(!registry.any_of<T>(m_Entity))
       {
         registry.emplace<T>(m_Entity) = m_Backup;

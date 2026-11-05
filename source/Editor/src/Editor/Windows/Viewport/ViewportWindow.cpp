@@ -134,9 +134,9 @@ namespace editor
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		engine::Scene scene = engine::SceneManager::GetActiveScene();
+		engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
 
-		engine::DrawList list = engine::DrawList::Create(scene.Get().registry);
+		engine::DrawList list = engine::DrawList::Create(scene.registry);
 
 		engine::CameraComponent* camera = editor::editorContext.editorMode == EditorMode::Edit ? &editor::editorContext.camera : scene.GetPrimaryCamera();
 

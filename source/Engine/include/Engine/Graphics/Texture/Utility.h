@@ -8,7 +8,7 @@ namespace engine
 	class TextureCube;
 
 	uint32_t GetMaxMipLevelCount(uint32_t width, uint32_t height);
-	TextureCube EquirectangularToCubemap(Texture2D equirectangularTexture);
+	TextureCube EquirectangularToCubemap(TextureHandle equirectangularTexture);
 
 	void GenerateMipmaps(wgpu::Texture texture);
 }

@@ -78,11 +78,11 @@ namespace engine
 		};
 	}
 
-	Texture2DData TextureImporter::LoadTexture2D(const std::filesystem::path& path)
+	Texture2D TextureImporter::LoadTexture2D(const std::filesystem::path& path)
 	{
 		ImageLoadResult image;
 		if (!image.Load(path)) return {}; //Create white texture, delete default constructor
 		TextureSpecification spec{ .width = static_cast<uint32_t>(image.width), .height = static_cast<uint32_t>(image.height), .format = image.format };
-		return Texture2DData(spec, image.GetData());
+		return Texture2D(spec, image.GetData());
 	}
 }

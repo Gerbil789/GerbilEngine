@@ -5,12 +5,12 @@
 
 namespace engine
 {
-	MeshAsset& Mesh::Get() const
+	Mesh& MeshHandle::Get() const
 	{
 		return AssetManager::GetAsset(*this);
 	}
 
-	MeshAsset::MeshAsset(const MeshSpecification& specification)
+	Mesh::Mesh(const MeshSpecification& specification)
 	{
 		// Vertex buffer
 		{

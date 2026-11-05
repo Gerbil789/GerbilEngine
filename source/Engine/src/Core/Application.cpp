@@ -16,6 +16,8 @@
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Graphics/Renderer/RenderPass.h"
 
+#include "Engine/Utility/Timer.h"
+
 namespace engine
 {
 	Window Application::s_Window;
@@ -59,6 +61,8 @@ namespace engine
 
 	void Application::Update()
 	{
+		//engine::ScopedTimer timer("Application update time");
+
 		if (s_Window.IsMinimized())
 		{
 			GLFW::WaitEvents();
@@ -70,21 +74,22 @@ namespace engine
 		Input::Update();
 		Audio::Update();
 
-		Scene scene = SceneManager::GetActiveScene();
+		Scene& scene = SceneManager::GetActiveScene().Get();
 		for (const auto& system : scene.GetSystems())
 		{
 			system();
 		}
 
-		entt::registry& registry = scene.GetRegistry();
+		entt::registry& registry = scene.registry;
 		CameraSystem::Update(registry, s_Window.GetAspectRatio());
 		TransformSystem::Update(registry, scene.GetRootEntities());
+		scene.bvh.Build(registry);
 	}
 
 	void Application::Draw()
 	{
-		Scene scene = SceneManager::GetActiveScene();
-		entt::registry& registry = scene.Get().registry;
+		Scene& scene = SceneManager::GetActiveScene().Get();
+		entt::registry& registry = scene.registry;
 		auto camera = scene.GetPrimaryCamera();
 
 		if (s_Window.SizeChanged())
@@ -94,14 +99,14 @@ namespace engine
 
 			if(camera)
 			{
-				entt::entity cameraEntity = registry.view<PrimaryCameraTag>().front();
+				entt::entity cameraEntity = scene.GetPrimaryCameraEntity();
 				registry.emplace_or_replace<CameraProjectionDirty>(cameraEntity);
 			}
 		}
 
 		if(camera)
 		{
-			DrawList drawList = DrawList::Create(scene.GetRegistry());
+			DrawList drawList = DrawList::Create(scene.registry);
 			s_Renderer.Render(drawList, camera, s_Window.GetSurfaceView());
 		}
 

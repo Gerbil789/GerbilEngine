@@ -6,10 +6,10 @@ namespace engine
 {
 	struct SceneManager
 	{
-		static void SetActiveScene(Scene scene);
-		static Scene GetActiveScene();
+		static void SetActiveScene(SceneHandle scene);
+		static SceneHandle GetActiveScene();
 		
 	private:
-		inline static Scene s_ActiveScene;
+		inline static SceneHandle s_ActiveScene;
 	};
 }

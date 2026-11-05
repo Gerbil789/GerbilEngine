@@ -51,14 +51,12 @@ namespace editor
 			});
 	}
 
-	void TransformController::DrawGizmo(engine::Scene scene, float x, float y, float width, float height)
+	void TransformController::DrawGizmo(engine::Scene& scene, float x, float y, float width, float height)
 	{
 		if (editor::editorContext.editorMode == EditorMode::Play) return;
 		if (gizmoType == 0) return;
 
 		if(m_Entity == entt::null) return;
-
-		entt::registry& registry = scene.GetRegistry();
 
 		ImGuizmo::SetDrawlist();
 		ImGuizmo::SetRect(x, y, width, height);
@@ -68,7 +66,7 @@ namespace editor
 		glm::mat4 cameraProjection = cc.projectionMatrix;
 		glm::mat4 cameraView = cc.viewMatrix;
 
-		engine::WorldTransformComponent& wtc = registry.get<engine::WorldTransformComponent>(m_Entity);
+		engine::WorldTransformComponent& wtc = scene.registry.get<engine::WorldTransformComponent>(m_Entity);
 		glm::mat4& worldTransform = wtc.worldMatrix;
 
 		glm::vec3 snap;
@@ -146,12 +144,12 @@ namespace editor
 
 			for (auto& [entity, initialWorld] : m_InitialWorldTransforms)
 			{
-				auto& hc = registry.get<engine::HierarchyComponent>(static_cast<entt::entity>(entity));
+				auto& hc = scene.registry.get<engine::HierarchyComponent>(static_cast<entt::entity>(entity));
 				{
 					glm::mat4 parentWorld = glm::mat4{ 1.0f };
 					if (hc.parent != entt::null)
 					{
-						const auto& parentWTC = registry.get<engine::WorldTransformComponent>(hc.parent);
+						const auto& parentWTC = scene.registry.get<engine::WorldTransformComponent>(hc.parent);
 						parentWorld = parentWTC.worldMatrix;
 					}
 					glm::mat4 initialLocal = glm::inverse(parentWorld) * initialWorld;

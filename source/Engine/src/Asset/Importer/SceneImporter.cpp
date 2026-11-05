@@ -4,7 +4,7 @@
 
 namespace engine
 {
-	SceneAsset SceneImporter::LoadScene(const std::filesystem::path& path)
+	Scene SceneImporter::LoadScene(const std::filesystem::path& path)
   {
     return Serializer::DeserializeScene(path);
   }

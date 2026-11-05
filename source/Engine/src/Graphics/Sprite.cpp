@@ -3,9 +3,9 @@
 
 namespace engine
 {
-	Sprite::Sprite(Texture2D texture, const glm::vec2& min, const glm::vec2& max) : texture(texture), uvMin(min), uvMax(max) {}
+	Sprite::Sprite(TextureHandle texture, const glm::vec2& min, const glm::vec2& max) : textureHandle(texture), uvMin(min), uvMax(max) {}
 
-	Sprite Sprite::CreateFromGrid(Texture2D texture, glm::ivec2 textureSize, glm::ivec2 cellCoords, glm::ivec2 cellSize)
+	Sprite Sprite::CreateFromGrid(TextureHandle texture, glm::ivec2 textureSize, glm::ivec2 cellCoords, glm::ivec2 cellSize)
 	{
 		glm::vec2 size = textureSize;
 

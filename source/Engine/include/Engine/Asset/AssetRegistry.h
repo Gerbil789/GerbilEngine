@@ -74,13 +74,13 @@ namespace engine
 
 	private:
 		inline static std::tuple<
-			AssetMap<Texture2D>,
-			AssetMap<Mesh>,
-			AssetMap<Shader>,
-			AssetMap<Material>,
-			AssetMap<MaterialInstance>,
-			AssetMap<AudioClip>,
-			AssetMap<Scene>
+			AssetMap<TextureHandle>,
+			AssetMap<MeshHandle>,
+			AssetMap<ShaderHandle>,
+			AssetMap<MaterialHandle>,
+			AssetMap<MaterialInstanceHandle>,
+			AssetMap<AudioClipHandle>,
+			AssetMap<SceneHandle>
 		> s_Records;
 
 		inline static std::unordered_map<std::string, Uuid> s_PathToId;

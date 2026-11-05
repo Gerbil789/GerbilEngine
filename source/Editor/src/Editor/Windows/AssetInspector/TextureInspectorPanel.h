@@ -7,6 +7,6 @@ namespace editor
 	class TextureInspectorPanel
 	{
 	public:
-		void Draw(engine::Texture2D texture);
+		void Draw(engine::TextureHandle texture);
 	};
 }

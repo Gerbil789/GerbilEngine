@@ -25,7 +25,7 @@ namespace editor
     }
 
     static void DeleteEntity(entt::entity entity);
-		static void OpenScene(engine::Scene scene);
+		static void OpenScene(engine::SceneHandle scene);
 
     template<typename T>
     static void AddComponent(entt::entity entity, const T& initial)

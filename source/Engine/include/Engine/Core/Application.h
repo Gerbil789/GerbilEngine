@@ -13,7 +13,7 @@ namespace engine
 		{
 			std::filesystem::path projectPath;
 			engine::WindowSpecification windowSpec;
-			engine::Scene startupScene;
+			engine::SceneHandle startupScene;
 		};
 
 	public:

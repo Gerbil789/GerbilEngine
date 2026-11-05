@@ -7,10 +7,10 @@
 
 namespace editor
 {
-	void TextureInspectorPanel::Draw(engine::Texture2D texture)
+	void TextureInspectorPanel::Draw(engine::TextureHandle texture)
 	{
 		const std::string& name = engine::AssetRegistry::GetAssetPath(texture).stem().string();
-		const engine::Texture2DData& textureData = texture.Get();
+		const engine::Texture2D& textureData = texture.Get();
 
 		ImGui::TextUnformatted(std::format("Texture: {} ({}x{}))", name, textureData.width, textureData.height).c_str());
 

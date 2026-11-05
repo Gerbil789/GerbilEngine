@@ -7,7 +7,7 @@ class ma_engine;
 
 namespace engine
 {
-  using AudioInstance = AudioClip;
+  using AudioInstance = AudioClipHandle;
 
   class Audio
   {
@@ -19,8 +19,8 @@ namespace engine
 
     static void SetListener(float px, float py, float pz, float fx, float fy, float fz, float ux, float uy, float uz);
 
-    static AudioInstance Play2D(AudioClip clip);
-    static AudioInstance Play3D(AudioClip clip, const glm::vec3& position);
+    static AudioInstance Play2D(AudioClipHandle clip);
+    static AudioInstance Play3D(AudioClipHandle clip, const glm::vec3& position);
 
     static void SetSourcePosition(AudioInstance instance, const glm::vec3& position);
 		static void Stop(AudioInstance instance);

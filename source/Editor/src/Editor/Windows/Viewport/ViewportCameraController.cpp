@@ -117,7 +117,7 @@ namespace editor
 		if (editor::editorContext.editorMode != EditorMode::Edit) return;
 		if (entity == entt::null) return;
 
-		entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+		entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
 
 		auto transform = registry.try_get<engine::TransformComponent>(entity);
 		if(!transform) return;

@@ -25,24 +25,24 @@ namespace editor
 		return false;
 	}
 
-	void DrawEntityNode(engine::Scene scene, entt::registry& registry, entt::entity entity)
+	void DrawEntityNode(engine::Scene& scene, entt::entity entity)
 	{
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
 
 		//TODO: delete this check
-		if(!registry.any_of<engine::IdentityComponent>(entity))
+		if(!scene.registry.any_of<engine::IdentityComponent>(entity))
 		{
 			LOG_WARNING("Entity has no id!!!!");
 
 
-			auto name = registry.get<engine::NameComponent>(entity);
+			auto name = scene.registry.get<engine::NameComponent>(entity);
 			return;
 		}
 
 		// engine::Uuid id = registry.get<engine::IdentityComponent>(entity).id;
-		const std::string& name = registry.get<engine::NameComponent>(entity).name;
+		const std::string& name = scene.registry.get<engine::NameComponent>(entity).name;
 
-		auto& hc = registry.get<engine::HierarchyComponent>(entity);
+		auto& hc = scene.registry.get<engine::HierarchyComponent>(entity);
 		if (hc.children.empty()) flags |= ImGuiTreeNodeFlags_Leaf;
 
 		// bool selected = SelectionManager::Entities.IsSelected(id);
@@ -77,7 +77,7 @@ namespace editor
 			{
 				entt::entity dropped = *(const entt::entity*)payload->Data;
 
-				if (dropped != entity && !IsDescendant(registry, dropped, entity))
+				if (dropped != entity && !IsDescendant(scene.registry, dropped, entity))
 				{
 					ImVec2 mousePos = ImGui::GetMousePos();
 					ImVec2 itemMin = ImGui::GetItemRectMin();
@@ -114,12 +114,12 @@ namespace editor
 					// actual Drop Processing
 					if (ImGui::AcceptDragDropPayload("ENTITY"))
 					{
-						auto& droppedHC = registry.get<engine::HierarchyComponent>(dropped);
+						auto& droppedHC = scene.registry.get<engine::HierarchyComponent>(dropped);
 
 						// detach from current parent
 						if (droppedHC.parent != entt::null)
 						{
-							auto& oldParentHC = registry.get<engine::HierarchyComponent>(droppedHC.parent);
+							auto& oldParentHC = scene.registry.get<engine::HierarchyComponent>(droppedHC.parent);
 							std::erase(oldParentHC.children, dropped);
 						}
 						else
@@ -140,7 +140,7 @@ namespace editor
 
 							if (targetParent != entt::null)
 							{
-								auto& parentHC = registry.get<engine::HierarchyComponent>(targetParent);
+								auto& parentHC = scene.registry.get<engine::HierarchyComponent>(targetParent);
 								auto it = std::find(parentHC.children.begin(), parentHC.children.end(), entity);
 
 								if (mode == DropMode::After && it != parentHC.children.end()) ++it;
@@ -157,7 +157,7 @@ namespace editor
 								scene.InsertRootEntity(dropped, index);
 							}
 						}
-						registry.emplace_or_replace<engine::TransformDirty>(dropped);
+						scene.registry.emplace_or_replace<engine::TransformDirty>(dropped);
 					}
 				}
 			}
@@ -189,7 +189,7 @@ namespace editor
 		{
 			for (entt::entity child : hc.children)
 			{
-				DrawEntityNode(scene, registry, child);
+				DrawEntityNode(scene, child);
 			}
 			ImGui::TreePop();
 		}
@@ -207,13 +207,11 @@ namespace editor
 
 		ImGui::Begin("Scene Hierarchy");
 
-		engine::Scene scene = engine::SceneManager::GetActiveScene();
-		engine::SceneAsset& sceneData = scene.Get();
-		entt::registry& registry = sceneData.registry;
+		engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
 
-		for (entt::entity entity : sceneData.rootEntities)
+		for (entt::entity entity : scene.rootEntities)
 		{
-			DrawEntityNode(scene, registry, entity);
+			DrawEntityNode(scene, entity);
 		}
 
 		// context menu
@@ -233,17 +231,17 @@ namespace editor
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY"))
 			{
 				entt::entity dropped = *(const entt::entity*)payload->Data;
-				auto& droppedHC = registry.get<engine::HierarchyComponent>(dropped);
+				auto& droppedHC = scene.registry.get<engine::HierarchyComponent>(dropped);
 
 				if (droppedHC.parent != entt::null)
 				{
-					auto& oldParentHC = registry.get<engine::HierarchyComponent>(droppedHC.parent);
+					auto& oldParentHC = scene.registry.get<engine::HierarchyComponent>(droppedHC.parent);
 					std::erase(oldParentHC.children, dropped);
 					droppedHC.parent = entt::null;
 
 
 					scene.InsertRootEntity(dropped, scene.GetRootEntities().size());
-					registry.emplace_or_replace<engine::TransformDirty>(dropped);
+					scene.registry.emplace_or_replace<engine::TransformDirty>(dropped);
 				}
 			}
 			ImGui::EndDragDropTarget();

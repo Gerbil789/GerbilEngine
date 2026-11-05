@@ -7,6 +7,6 @@ namespace engine
 	class MeshImporter
 	{
 	public:
-		static MeshAsset LoadMesh(const std::filesystem::path& path);
+		static Mesh LoadMesh(const std::filesystem::path& path);
 	};
 }

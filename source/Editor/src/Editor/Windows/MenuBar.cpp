@@ -24,7 +24,7 @@ namespace editor
 
 	inline void SaveScene()
 	{
-		engine::Scene scene = engine::SceneManager::GetActiveScene();
+		engine::SceneHandle scene = engine::SceneManager::GetActiveScene();
 		auto& path = engine::AssetRegistry::GetAssetPath(scene);
 
 		engine::Serializer::SerializeScene(scene, engine::Project::assetsDirectory / path);

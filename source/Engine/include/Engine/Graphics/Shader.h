@@ -6,42 +6,36 @@
 
 namespace engine
 {
-	struct ShaderAsset
+	struct Shader
 	{
-		ShaderAsset() = default;
-		ShaderAsset(const std::string& source);
+		Shader() = default;
+		Shader(const std::string& source);
 
 		ShaderSpecification specification;
 		wgpu::ShaderModule shaderModule;
 		wgpu::BindGroupLayout materialBindGroupLayout;
 		size_t materialUniformBufferSize = 0;
-	};
-
-	struct Shader : public AssetHandle
-	{
-		using AssetHandle::AssetHandle;
-		ShaderAsset& Get() const;
-
-		size_t GetMaterialUniformBufferSize() const;
-		wgpu::BindGroupLayout GetMaterialBindGroupLayout() const;
-
-		wgpu::ShaderModule GetShaderModule() const;
-		const ShaderSpecification& GetSpecification() const;
 
 		const std::vector<Binding> GetMaterialBindings() const;
 		const Binding& GetBinding(const std::string& name) const;
 		const Binding& GetBinding(uint32_t group, uint32_t binding) const;
-
-		static const Shader Pink;
-		static const Shader Flat;
-		static const Shader UI;
-		static const Shader Skybox;
-		static const Shader Normal;
 	};
 
-	inline constexpr Shader Shader::Pink{ 0 };
-	inline constexpr Shader Shader::Flat{ 1 };
-	inline constexpr Shader Shader::UI{ 2 };
-	inline constexpr Shader Shader::Skybox{ 3 };
-	inline constexpr Shader Shader::Normal{ 4 };
+	struct ShaderHandle : public AssetHandle
+	{
+		using AssetHandle::AssetHandle;
+		Shader& Get() const;
+
+		static const ShaderHandle Pink;
+		static const ShaderHandle Flat;
+		static const ShaderHandle UI;
+		static const ShaderHandle Skybox;
+		static const ShaderHandle Normal;
+	};
+
+	inline constexpr ShaderHandle ShaderHandle::Pink{ 0 };
+	inline constexpr ShaderHandle ShaderHandle::Flat{ 1 };
+	inline constexpr ShaderHandle ShaderHandle::UI{ 2 };
+	inline constexpr ShaderHandle ShaderHandle::Skybox{ 3 };
+	inline constexpr ShaderHandle ShaderHandle::Normal{ 4 };
 }

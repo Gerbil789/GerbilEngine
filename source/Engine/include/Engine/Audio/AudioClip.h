@@ -6,10 +6,10 @@
 
 namespace engine
 {
-	struct AudioClipAsset
+	struct AudioClip
 	{
-		AudioClipAsset() = default;
-		AudioClipAsset(const std::filesystem::path& path);
+		AudioClip() = default;
+		AudioClip(const std::filesystem::path& path);
 
 		std::vector<float> PCMData{};
 		uint64_t totalFrames = 0;
@@ -17,19 +17,13 @@ namespace engine
 		uint32_t sampleRate = 0;
 	};
 
-	struct AudioClip : public AssetHandle
+	struct AudioClipHandle : public AssetHandle
 	{
 		using AssetHandle::AssetHandle;
-		AudioClipAsset& Get() const;
+		AudioClip& Get() const;
 
-		float GetDurationSeconds() const;
-		const float* GetPCMData() const;
-		uint64_t GetTotalFrames() const;
-		uint32_t GetChannels() const;
-		uint32_t GetSampleRate() const;
-
-		static const AudioClip null;
+		static const AudioClipHandle null;
 	};
 
-	inline constexpr AudioClip AudioClip::null{0};
+	inline constexpr AudioClipHandle AudioClipHandle::null{0};
 }

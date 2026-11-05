@@ -243,7 +243,7 @@ namespace editor
 
 		ImVec2 icon_min = pos;
 		ImVec2 icon_max = { pos.x + m_ItemSize.x, pos.y + m_ItemSize.x };
-		draw_list->AddImage(thumbnail.texture.View().Get(), icon_min, icon_max, ImVec2(thumbnail.uvMin.x, thumbnail.uvMin.y), ImVec2(thumbnail.uvMax.x, thumbnail.uvMax.y));
+		draw_list->AddImage(thumbnail.textureHandle.Get().textureView.Get(), icon_min, icon_max, ImVec2(thumbnail.uvMin.x, thumbnail.uvMin.y), ImVec2(thumbnail.uvMax.x, thumbnail.uvMax.y));
 
 		// label
 		ImRect label_rect = ImRect{ pos.x, icon_max.y, pos.x + m_ItemSize.x, pos.y + m_ItemSize.y + 20.0f };
@@ -356,7 +356,7 @@ namespace editor
 								switch (item.assetType)
 								{
 								case engine::AssetType::Scene:
-									EditorCommandManager::OpenScene(engine::Scene{ item.uuid });
+									EditorCommandManager::OpenScene(engine::SceneHandle{ item.uuid });
 									break;
 								default: {}
 								}

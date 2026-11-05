@@ -18,7 +18,7 @@ int main()
 	{
 		.projectPath = "projects/TestProject",
 		.windowSpec = { "Dev Project", 1280, 720 },
-		.startupScene = engine::Scene{ 9116182370241309221u }
+		.startupScene = engine::SceneHandle{ 9116182370241309221u }
 	};
 
 	try

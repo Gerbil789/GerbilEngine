@@ -10,74 +10,7 @@
 
 namespace engine
 {
-	ShaderAsset& Shader::Get() const
-	{
-		return AssetManager::GetAsset(*this);
-	}
-
-	size_t Shader::GetMaterialUniformBufferSize() const
-	{
-		return Get().materialUniformBufferSize;
-	}
-
-	wgpu::BindGroupLayout Shader::GetMaterialBindGroupLayout() const
-	{
-		return Get().materialBindGroupLayout;
-	}
-
-	wgpu::ShaderModule Shader::GetShaderModule() const
-	{
-		return Get().shaderModule;
-	}
-
-	const ShaderSpecification& Shader::GetSpecification() const
-	{
-		return Get().specification;
-	}
-
-	const std::vector<Binding> Shader::GetMaterialBindings() const
-	{
-		constexpr uint32_t materialGroupIndex = 2;
-		std::vector<Binding> materialBindings; //TODO: cache this?
-
-		for (const auto& binding : Get().specification.bindings)
-		{
-			if (binding.group == materialGroupIndex)
-			{
-				materialBindings.push_back(binding);
-			}
-		}
-
-		return materialBindings;
-	}
-
-	const Binding& Shader::GetBinding(const std::string& name) const
-	{
-		for (const auto& binding : Get().specification.bindings)
-		{
-			if (binding.name == name)
-				return binding;
-		}
-
-		LOG_ERROR("Binding not found ({})", name);
-		static const Binding invalidBinding{};
-		return invalidBinding;
-	}
-
-	const Binding& Shader::GetBinding(uint32_t group, uint32_t binding) const
-	{
-		for (const auto& b : Get().specification.bindings)
-		{
-			if (b.group == group && b.binding == binding)
-				return b;
-		}
-
-		LOG_ERROR("Binding not found (@group({}) @binding({}))", group, binding);
-		static const Binding invalidBinding{};
-		return invalidBinding;
-	}
-
-	ShaderAsset::ShaderAsset(const std::string& source)
+	Shader::Shader(const std::string& source)
 	{
 		wgpu::ShaderSourceWGSL shaderCodeDesc;
 		shaderCodeDesc.nextInChain = nullptr;
@@ -150,5 +83,54 @@ namespace engine
 		desc.entries = layoutEntries.data();
 
 		materialBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&desc);
+	}
+
+	const std::vector<Binding> Shader::GetMaterialBindings() const
+	{
+		constexpr uint32_t materialGroupIndex = 2;
+		std::vector<Binding> materialBindings; //TODO: cache this?
+
+		for (const auto& binding : specification.bindings)
+		{
+			if (binding.group == materialGroupIndex)
+			{
+				materialBindings.push_back(binding);
+			}
+		}
+
+		return materialBindings;
+	}
+
+	const Binding& Shader::GetBinding(const std::string& name) const
+	{
+		for (const auto& binding : specification.bindings)
+		{
+			if (binding.name == name)
+				return binding;
+		}
+
+		LOG_ERROR("Binding not found ({})", name);
+		static const Binding invalidBinding{};
+		return invalidBinding;
+	}
+
+	const Binding& Shader::GetBinding(uint32_t group, uint32_t binding) const
+	{
+		for (const auto& b : specification.bindings)
+		{
+			if (b.group == group && b.binding == binding)
+				return b;
+		}
+
+		LOG_ERROR("Binding not found (@group({}) @binding({}))", group, binding);
+		static const Binding invalidBinding{};
+		return invalidBinding;
+	}
+
+
+
+	Shader& ShaderHandle::Get() const
+	{
+		return AssetManager::GetAsset(*this);
 	}
 }

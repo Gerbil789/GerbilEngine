@@ -38,7 +38,7 @@ namespace engine
 
   static Voice* GetVoice(AudioInstance instance)
   {
-    if (instance == AudioClip::null) return nullptr;
+    if (instance == AudioClipHandle::null) return nullptr;
 
     for (uint32_t i = 0; i < MaxVoices; i++)
     {
@@ -119,9 +119,9 @@ namespace engine
     ma_sound_set_position(&voice->sound, position.x, position.y, position.z);
   }
 
-  AudioInstance Audio::Play2D(AudioClip clip)
+  AudioInstance Audio::Play2D(AudioClipHandle clip)
   {
-    if (clip != AudioClip::null)
+    if (clip != AudioClipHandle::null)
     {
       LOG_WARNING("AudioClip is invalid/null");
       return {};
@@ -137,7 +137,7 @@ namespace engine
     }
 
 
-    AudioClipAsset& audioData = clip.Get();
+    AudioClip& audioData = clip.Get();
     if (audioData.totalFrames == 0 || audioData.PCMData.empty())
     {
       LOG_WARNING("Attempted to play an empty AudioClip");
@@ -173,9 +173,9 @@ namespace engine
     return newInstance;
   }
 
-  AudioInstance Audio::Play3D(AudioClip clip, const glm::vec3& position)
+  AudioInstance Audio::Play3D(AudioClipHandle clip, const glm::vec3& position)
   {
-    if (clip != AudioClip::null)
+    if (clip != AudioClipHandle::null)
     {
       LOG_WARNING("AudioClip is invalid/null");
       return {};
@@ -190,7 +190,7 @@ namespace engine
       return {};
     }
 
-    engine::AudioClipAsset& audioData = clip.Get();
+    engine::AudioClip& audioData = clip.Get();
     if (audioData.totalFrames == 0 || audioData.PCMData.empty())
     {
       LOG_WARNING("Attempted to play an empty AudioClip");

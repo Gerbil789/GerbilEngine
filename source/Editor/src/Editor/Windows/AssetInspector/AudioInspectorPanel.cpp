@@ -9,11 +9,11 @@ namespace editor
 {
 	namespace
 	{
-		engine::AudioClip m_AudioClip;
+		engine::AudioClipHandle m_AudioClip;
 		engine::AudioInstance m_Instance;
 	}
 
-	void AudioInspectorPanel::Draw(engine::AudioClip clip)
+	void AudioInspectorPanel::Draw(engine::AudioClipHandle clip)
 	{
 		if(clip != m_AudioClip)
 		{

@@ -7,6 +7,6 @@ namespace engine
 	class TextureImporter
 	{
 	public:
-		static Texture2DData LoadTexture2D(const std::filesystem::path& path);
+		static Texture2D LoadTexture2D(const std::filesystem::path& path);
 	};
 }

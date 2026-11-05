@@ -18,9 +18,9 @@ namespace engine
 		return GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
 	}
 
-	MaterialAsset::MaterialAsset(Shader shader)
+	Material::Material(ShaderHandle shader)
 	{
-		this->shader = shader;
+		this->shaderHandle = shader;
 
 		//const ShaderAsset& shaderData = shader.Get();
 
@@ -77,29 +77,29 @@ namespace engine
 		// }
 
 		PipelineSpecification spec;
-		spec.shader = shader;
+		spec.shaderHandle = shader;
 		pipeline = PipelineCache::GetPipeline(spec);
 	}
 
-	MaterialAsset& Material::Get() const
+	Material& MaterialHandle::Get() const
 	{
 		return AssetManager::GetAsset(*this);
 	}
 
-	MaterialInstanceData::MaterialInstanceData(Material material)
+	MaterialInstance::MaterialInstance(MaterialHandle material)
 	{
-		this->material = material;
+		this->materialHandle = material;
 
-		size_t bufferSize = material.Get().shader.Get().materialUniformBufferSize;
+		size_t bufferSize = material.Get().shaderHandle.Get().materialUniformBufferSize;
 		uniformBuffer = CreateUniformBuffer("MaterialUniformBuffer", bufferSize);
 	}
 
-	void MaterialInstanceData::CreateBindGroup()
+	void MaterialInstance::CreateBindGroup()
 	{
-		const MaterialAsset& materialData = material.Get();
-		const ShaderAsset& shaderData = materialData.shader.Get();
+		const Material& material = materialHandle.Get();
+		const Shader& shader = material.shaderHandle.Get();
 
-		auto materialBindings = materialData.shader.GetMaterialBindings();
+		auto materialBindings = shader.GetMaterialBindings();
 		size_t bindingCount = std::ranges::distance(materialBindings);
 
 		std::vector<wgpu::BindGroupEntry> entries(bindingCount);
@@ -123,8 +123,8 @@ namespace engine
 				//textures[binding.binding] = Texture2D::White;
 				// }
 
-				const Texture2D& texture = textures.at(binding.binding);
-				entry.textureView = texture.View();
+				const Texture2D& texture = textures.at(binding.binding).Get();
+				entry.textureView = texture.textureView;
 			}
 			else if (std::holds_alternative<SamplerBinding>(binding.data))
 			{
@@ -134,7 +134,7 @@ namespace engine
 
 		wgpu::BindGroupDescriptor bindGroupDesc;
 		bindGroupDesc.label = "MaterialBindGroup";
-		bindGroupDesc.layout = shaderData.materialBindGroupLayout;
+		bindGroupDesc.layout = shader.materialBindGroupLayout;
 		bindGroupDesc.entryCount = entries.size();
 		bindGroupDesc.entries = entries.data();
 		bindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
@@ -142,44 +142,26 @@ namespace engine
 
 
 
-	MaterialInstanceData& MaterialInstance::Get() const
+	MaterialInstance& MaterialInstanceHandle::Get() const
 	{
 		return AssetManager::GetAsset(*this);
 	}
 
-	const Shader MaterialInstance::GetShader() const
-	{
-		return Get().material.Get().shader;
-	}
-
 	void MaterialInstance::SetTextureFilter(TextureFilter filter)
 	{
-		MaterialInstanceData& data = Get();
-		data.textureFilter = filter;
-		data.CreateBindGroup();
+		textureFilter = filter;
+		CreateBindGroup();
 	}
 
 	void MaterialInstance::SetTextureWrap(TextureWrap wrap)
 	{
-		MaterialInstanceData& data = Get();
-		data.textureWrap = wrap;
-		data.CreateBindGroup();
+		textureWrap = wrap;
+		CreateBindGroup();
 	}
 
-	TextureFilter MaterialInstance::GetTextureFilter() const
+	void MaterialInstance::SetTexture(uint32_t bindingIndex, TextureHandle texture)
 	{
-		return Get().textureFilter;
-	}
-
-	TextureWrap MaterialInstance::GetTextureWrap() const
-	{
-		return Get().textureWrap;
-	}
-
-	void MaterialInstance::SetTexture(uint32_t bindingIndex, Texture2D texture)
-	{
-		MaterialInstanceData& data = Get();
-		const Binding& binding = data.material.Get().shader.GetBinding(2, bindingIndex);
+		const Binding& binding = materialHandle.Get().shaderHandle.Get().GetBinding(2, bindingIndex);
 
 		if (!std::holds_alternative<TextureBinding>(binding.data))
 		{
@@ -187,19 +169,18 @@ namespace engine
 			return;
 		}
 
-		if (texture == Texture2D::White && binding.name.find("Normal") != std::string::npos)
+		if (texture == TextureHandle::White && binding.name.find("Normal") != std::string::npos)
 		{
-			texture = Texture2D::Normal;
+			texture = TextureHandle::Normal;
 		}
 
-		data.textures[bindingIndex] = texture;
-		data.CreateBindGroup();
+		textures[bindingIndex] = texture;
+		CreateBindGroup();
 	}
 
 
-	Texture2D MaterialInstance::GetTexture(uint32_t bindingIndex) const
+	TextureHandle MaterialInstance::GetTexture(uint32_t bindingIndex) const
 	{
-		auto& textures = Get().textures;
 		auto it = textures.find(bindingIndex);
 		if (it != textures.end())
 		{
@@ -208,25 +189,7 @@ namespace engine
 		return {};
 	}
 
-	wgpu::BindGroup MaterialInstance::GetBindGroup() const
-	{
-		return Get().bindGroup;
-	}
 
-	wgpu::Buffer MaterialInstance::GetUniformBuffer() const
-	{
-		return Get().uniformBuffer;
-	}
-
-	const std::vector<std::byte>& MaterialInstance::GetUniformData() const
-	{
-		return Get().uniformData;
-	}
-
-	const std::unordered_map<uint32_t, Texture2D>& MaterialInstance::GetTextures() const
-	{
-		return Get().textures;
-	}
 
 	// const std::unordered_map<std::string, MaterialValue>& Material::GetParameters() const
 	// {

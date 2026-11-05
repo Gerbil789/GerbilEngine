@@ -34,8 +34,8 @@ namespace engine
     pass.SetBindGroup(1, context.environmentBindGroup, 0, nullptr);
     pass.SetBindGroup(3, context.modelBindGroup, 0, nullptr);
 
-    Mesh currentMesh = Mesh::Empty;
-    MaterialInstance currentMaterialInstance = MaterialInstance::Null;
+    MeshHandle currentMesh = MeshHandle::Empty;
+    MaterialInstanceHandle currentMaterialInstance = MaterialInstanceHandle::Null;
 
     uint32_t i = 0;
     for (const auto& item : context.drawList.items)
@@ -43,7 +43,7 @@ namespace engine
       if (item.mesh != currentMesh)
       {
         currentMesh = item.mesh;
-        const MeshAsset& MeshAsset = currentMesh.Get();
+        const Mesh& MeshAsset = currentMesh.Get();
         pass.SetVertexBuffer(0, MeshAsset.vertexBuffer, 0, MeshAsset.vertexBuffer.GetSize());
         pass.SetIndexBuffer(MeshAsset.indexBuffer, wgpu::IndexFormat::Uint32, 0, MeshAsset.indexBuffer.GetSize());
       }
@@ -51,11 +51,11 @@ namespace engine
       if (item.materialInstance != currentMaterialInstance)
       {
         currentMaterialInstance = item.materialInstance;
-        MaterialInstanceData data = currentMaterialInstance.Get();
+        MaterialInstance data = currentMaterialInstance.Get();
 
         GraphicsContext::GetQueue().WriteBuffer(data.uniformBuffer, 0, data.uniformData.data(), data.uniformData.size());
         pass.SetBindGroup(2, data.bindGroup, 0, nullptr);
-        pass.SetPipeline(data.material.Get().pipeline);
+        pass.SetPipeline(data.materialHandle.Get().pipeline);
       }
 
       pass.DrawIndexed(item.indexCount, 1, item.firstIndex, 0, i++);

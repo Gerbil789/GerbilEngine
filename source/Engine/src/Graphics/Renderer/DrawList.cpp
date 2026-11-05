@@ -17,7 +17,7 @@ namespace engine
 
     for (const auto& [entity, mc, wtc] : view.each())
     {
-      if (mc.mesh == Mesh::Empty) continue;
+      if (mc.mesh == MeshHandle::Empty) continue;
 
       const auto& subMeshes = mc.mesh.Get().subMeshes;
 
@@ -26,7 +26,7 @@ namespace engine
         const auto& subMesh = subMeshes[i];
 
         assert(subMesh.materialIndex < mc.materialInstances.size() && "Material index out of bounds!");
-        engine::MaterialInstance materialInstance = mc.materialInstances[subMesh.materialIndex];
+        engine::MaterialInstanceHandle materialInstance = mc.materialInstances[subMesh.materialIndex];
 
         list.items.emplace_back(mc.mesh, materialInstance, i, subMesh.indexCount, subMesh.firstIndex);
         list.transforms.push_back(wtc.worldMatrix);

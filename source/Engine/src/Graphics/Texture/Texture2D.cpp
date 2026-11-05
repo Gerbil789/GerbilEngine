@@ -6,32 +6,7 @@
 
 namespace engine
 {
-	Texture2DData& Texture2D::Get() const
-	{
-		return AssetManager::GetAsset(*this);
-	}
-
-	uint32_t Texture2D::Width() const
-	{
-		return Get().width;
-	}
-
-	uint32_t Texture2D::Height() const
-	{
-		return Get().height;
-	}
-
-	wgpu::TextureView Texture2D::View() const
-	{
-		return Get().textureView;
-	}
-
-	wgpu::TextureFormat Texture2D::Format() const
-	{
-		return Get().textureFormat;
-	}
-
-	Texture2DData::Texture2DData(const TextureSpecification &specification, const void *data)
+	Texture2D::Texture2D(const TextureSpecification &specification, const void *data)
 	{
 		width = specification.width;
 		height = specification.height;
@@ -82,5 +57,10 @@ namespace engine
 		{
 			GenerateMipmaps(texture);
 		}
+	}
+
+	Texture2D& TextureHandle::Get() const
+	{
+		return AssetManager::GetAsset(*this);
 	}
 }

@@ -89,9 +89,9 @@ namespace engine
 		return bindGroup;
 	}
 
-	TextureCube EquirectangularToCubemap(Texture2D equirectangularTexture)
+	TextureCube EquirectangularToCubemap(TextureHandle equirectangularTexture)
 	{
-		const Texture2DData& source = equirectangularTexture.Get();
+		const Texture2D& source = equirectangularTexture.Get();
 
 		ENGINE_ASSERT(source.width == source.height * 2, "Equirectangular texture must have a 2:1 aspect ratio.");
 
@@ -217,7 +217,7 @@ namespace engine
 		wgpu::ComputePipeline computeMipmapPipeline = GraphicsContext::GetDevice().CreateComputePipeline(&computePipelineDesc);
 
 
-		auto CreateBindGroup = [&](uint32_t nextLevel)
+		auto CreateBindGroup = [&textureMipViews, &bindGroupLayout](uint32_t nextLevel)
 			{
 				std::array<wgpu::BindGroupEntry, 2> entries;
 

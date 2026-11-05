@@ -1,7 +1,8 @@
 #pragma once
 
+#include "Engine/Core/Scene.h"
 #include <glm/glm.hpp>
-#include <entt/entity/entity.hpp>
+
 
 namespace engine
 {
@@ -17,7 +18,9 @@ namespace engine
     float distance;
     glm::vec3 point;
     glm::vec3 normal;
+
+    explicit operator bool() const { return entity != entt::null; }
   };
 
-  RayHit Raycast(const entt::registry& registry, const Ray& ray);
+  RayHit Raycast(const Scene& scene, const Ray& ray);
 }

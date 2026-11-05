@@ -8,7 +8,7 @@ namespace editor
 	{
 	public:
 		void Initialize();
-		void DrawGizmo(engine::Scene scene, float x, float y, float width, float height);
+		void DrawGizmo(engine::Scene& scene, float x, float y, float width, float height);
 		bool IsGizmoOver() const;
 	};
 }

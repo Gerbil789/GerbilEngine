@@ -8,13 +8,13 @@ namespace engine
 {
 	struct Serializer
 	{
-		static void SerializeMaterial(Material material, const std::filesystem::path& path);
-		static MaterialAsset DeserializeMaterial(const std::filesystem::path& path);
+		static void SerializeMaterial(MaterialHandle material, const std::filesystem::path& path);
+		static Material DeserializeMaterial(const std::filesystem::path& path);
 
-		static void SerializeMaterialInstance(MaterialInstance materialInstance, const std::filesystem::path& path);
-		static MaterialInstanceData DeserializeMaterialInstance(const std::filesystem::path& path);
+		static void SerializeMaterialInstance(MaterialInstanceHandle materialInstance, const std::filesystem::path& path);
+		static MaterialInstance DeserializeMaterialInstance(const std::filesystem::path& path);
 
-		static void SerializeScene(Scene scene, const std::filesystem::path& path);
-		static SceneAsset DeserializeScene(const std::filesystem::path& path);
+		static void SerializeScene(SceneHandle scene, const std::filesystem::path& path);
+		static Scene DeserializeScene(const std::filesystem::path& path);
 	};
 }

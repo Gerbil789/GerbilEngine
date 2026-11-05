@@ -3,8 +3,8 @@
 
 namespace engine
 {
-	AudioClipAsset AudioImporter::LoadAudioClip(const std::filesystem::path& path)
+	AudioClip AudioImporter::LoadAudioClip(const std::filesystem::path& path)
 	{
-		return AudioClipAsset(path);
+		return AudioClip(path);
 	}
 }

@@ -50,29 +50,29 @@ struct glz::meta<engine::AssetHandle>
 
 // --- Added Glaze reflection for Engine asset types ---
 template <>
-struct glz::meta<engine::Shader>
+struct glz::meta<engine::ShaderHandle>
 {
-	using T = engine::Shader;
+	using T = engine::ShaderHandle;
 	static constexpr auto value = [](auto& s) -> decltype(s.id)& { return s.id; };
 };
 
 template <>
-struct glz::meta<engine::Material>
+struct glz::meta<engine::MaterialHandle>
 {
-	using T = engine::Material;
+	using T = engine::MaterialHandle;
 	static constexpr auto value = [](auto& m) -> decltype(m.id)& { return m.id; };
 };
 
 template <>
-struct glz::meta<engine::MaterialInstance> {
-	using T = engine::MaterialInstance;
+struct glz::meta<engine::MaterialInstanceHandle> {
+	using T = engine::MaterialInstanceHandle;
 	static constexpr auto value = [](auto& m) -> decltype(m.id)& { return m.id; };
 };
 
 template <>
-struct glz::meta<engine::Texture2D>
+struct glz::meta<engine::TextureHandle>
 {
-	using T = engine::Texture2D;
+	using T = engine::TextureHandle;
 	static constexpr auto value = [](auto& t) -> decltype(t.id)& { return t.id; };
 };
 
@@ -136,15 +136,15 @@ namespace engine
 {
 	struct MaterialJSON
 	{
-		Shader shader;
+		ShaderHandle shader;
 	};
 
 	struct MaterialInstanceJSON
 	{
-		Material material;
+		MaterialHandle material;
 
 		std::map<std::string, glz::generic> attributes;
-		std::map<std::string, Texture2D> textures;
+		std::map<std::string, TextureHandle> textures;
 
 		TextureFilter filter = TextureFilter::Point;
 		TextureWrap wrap = TextureWrap::Repeat;
@@ -153,12 +153,12 @@ namespace engine
 
 namespace engine
 {
-	void Serializer::SerializeMaterial(Material material, const std::filesystem::path& path)
+	void Serializer::SerializeMaterial(MaterialHandle material, const std::filesystem::path& path)
 	{
-		const MaterialAsset& materialData = material.Get();
+		const Material& materialData = material.Get();
 
 		MaterialJSON json;
-		json.shader = materialData.shader;
+		json.shader = materialData.shaderHandle;
 
 		auto writeError = glz::write_file_json < glz::opts{ .prettify = true } > (json, path.string(), std::string{});
 
@@ -168,7 +168,7 @@ namespace engine
 		}
 	}
 
-	MaterialAsset Serializer::DeserializeMaterial(const std::filesystem::path& path)
+	Material Serializer::DeserializeMaterial(const std::filesystem::path& path)
 	{
 		MaterialJSON json;
 		std::string buffer;
@@ -179,26 +179,23 @@ namespace engine
 			return {};
 		}
 
-		Shader shader{ json.shader };
+		ShaderHandle shader{ json.shader };
 
-		return MaterialAsset(shader);
+		return Material(shader);
 	}
 
-	void Serializer::SerializeMaterialInstance(MaterialInstance materialInstance, const std::filesystem::path& path)
+	void Serializer::SerializeMaterialInstance(MaterialInstanceHandle materialInstance, const std::filesystem::path& path)
 	{
-		const MaterialInstanceData& instanceData = materialInstance.Get();
+		const MaterialInstance& instanceData = materialInstance.Get();
 		const std::vector<std::byte> uniformData = instanceData.uniformData;
-		const std::unordered_map<uint32_t, Texture2D>& textures = instanceData.textures;
+		const std::unordered_map<uint32_t, TextureHandle>& textures = instanceData.textures;
 
 		MaterialInstanceJSON json;
-		json.material = instanceData.material;
+		json.material = instanceData.materialHandle;
 		json.filter = instanceData.textureFilter;
 		json.wrap = instanceData.textureWrap;
 
-		Shader shader = instanceData.material.Get().shader;
-
-
-
+		Shader& shader = instanceData.materialHandle.Get().shaderHandle.Get();
 
 		for (const Binding& binding : shader.GetMaterialBindings())
 		{
@@ -231,7 +228,7 @@ namespace engine
 		}
 	}
 
-	MaterialInstanceData Serializer::DeserializeMaterialInstance(const std::filesystem::path& path)
+	MaterialInstance Serializer::DeserializeMaterialInstance(const std::filesystem::path& path)
 	{
 		MaterialInstanceJSON json;
 		std::string stringBuffer;
@@ -242,18 +239,18 @@ namespace engine
 			return {};
 		}
 
-		Material material = json.material;
-		Shader shader = material.Get().shader;
+		MaterialHandle material = json.material;
+		Shader& shader = material.Get().shaderHandle.Get();
 
-		MaterialInstanceData instanceData = MaterialInstanceData(material);
+		MaterialInstance instanceData = MaterialInstance(material);
 
 		instanceData.textureFilter = json.filter;
 		instanceData.textureWrap = json.wrap;
-		instanceData.uniformData.resize(shader.GetMaterialUniformBufferSize());
+		instanceData.uniformData.resize(shader.materialUniformBufferSize);
 
 		const std::vector<Binding>& bindings = shader.GetMaterialBindings();
 
-		auto it = std::find_if(bindings.begin(), bindings.end(), [&](const Binding& b)
+		auto it = std::find_if(bindings.begin(), bindings.end(), [](const Binding& b)
 			{
 				return std::holds_alternative<BufferBinding>(b.data);
 			});
@@ -265,7 +262,7 @@ namespace engine
 
 		for (auto& [name, node] : json.attributes)
 		{
-			auto paramIt = std::find_if(buffer.parameters.begin(), buffer.parameters.end(), [&](const ShaderParameter& p)
+			auto paramIt = std::find_if(buffer.parameters.begin(), buffer.parameters.end(), [&name](const ShaderParameter& p)
 				{
 					return p.name == name;
 				});

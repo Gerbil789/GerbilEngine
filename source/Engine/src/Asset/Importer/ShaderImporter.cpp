@@ -4,7 +4,7 @@
 
 namespace engine
 {
-	ShaderAsset ShaderImporter::LoadShader(const std::filesystem::path& path)
+	Shader ShaderImporter::LoadShader(const std::filesystem::path& path)
 	{
 		std::string source;
 		if (!engine::ReadFile(path, source))
@@ -13,7 +13,7 @@ namespace engine
 			return {};
 		}
 
-		auto shader = ShaderAsset(source);
+		auto shader = Shader(source);
 		return shader;
 	}
 }

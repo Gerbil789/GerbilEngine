@@ -7,6 +7,6 @@ namespace editor
 	class ShaderInspectorPanel
 	{
 	public:
-		void Draw(engine::Shader shader);
+		void Draw(engine::ShaderHandle shader);
 	};
 }

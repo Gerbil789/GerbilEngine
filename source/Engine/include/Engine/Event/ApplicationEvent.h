@@ -7,7 +7,7 @@ namespace engine
 {
 	struct SceneChangedEvent : public Event
 	{
-		Scene scene;
-		SceneChangedEvent(Scene scene) : scene(scene) {}
+		SceneHandle scene;
+		SceneChangedEvent(SceneHandle scene) : scene(scene) {}
 	};
 }

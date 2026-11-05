@@ -23,14 +23,14 @@ template <>
 struct glz::meta<engine::Uuid> { static constexpr auto value = [](auto& uuid) -> uint64_t& { return reinterpret_cast<uint64_t&>(uuid); }; };
 
 template <>
-struct glz::meta<engine::Mesh> { static constexpr auto value = [](auto& mesh) -> uint64_t& { return reinterpret_cast<uint64_t&>(mesh); }; };
+struct glz::meta<engine::MeshHandle> { static constexpr auto value = [](auto& mesh) -> uint64_t& { return reinterpret_cast<uint64_t&>(mesh); }; };
 
 template <>
-struct glz::meta<engine::Material> { static constexpr auto value = [](auto& material) -> uint64_t& { return reinterpret_cast<uint64_t&>(material); }; };
+struct glz::meta<engine::MaterialHandle> { static constexpr auto value = [](auto& material) -> uint64_t& { return reinterpret_cast<uint64_t&>(material); }; };
 
 template <>
-struct glz::meta<engine::MaterialInstance> {
-	using T = engine::MaterialInstance;
+struct glz::meta<engine::MaterialInstanceHandle> {
+	using T = engine::MaterialInstanceHandle;
 	static constexpr auto value = [](auto& m) -> decltype(m.id)& { return m.id; };
 };
 
@@ -65,7 +65,6 @@ namespace engine
 		CameraOrthographicJSON orthographic;
 		uint32_t background = 0;
 		glm::vec4 clearColor{ 0.0f, 0.0f, 0.0f, 1.0f };
-		bool primary = false;
 	};
 
 	struct LightComponentJSON
@@ -97,6 +96,12 @@ namespace engine
 		std::optional<LightComponentJSON> light;
 		std::optional<ScriptComponentJSON> script;
 	};
+
+	struct SceneJson
+	{
+		Uuid primaryCameraEntity;
+		std::vector<EntityJSON> entities;
+	};
 }
 
 namespace engine
@@ -106,7 +111,7 @@ namespace engine
 		std::string buffer;
 	}
 
-	void SerializeEntityRecursive(const entt::registry& registry, entt::entity entity, std::vector<EntityJSON>& json)
+	void SerializeEntityRecursive(const entt::registry& registry, entt::entity entity, SceneJson& json)
 	{
 		EntityJSON eJson;
 
@@ -159,7 +164,6 @@ namespace engine
 			cJson.background = static_cast<uint32_t>(cam.backgroundMode);
 			cJson.clearColor = cam.clearColor;
 
-			cJson.primary = registry.any_of<PrimaryCameraTag>(entity);
 			eJson.camera = cJson;
 		}
 
@@ -172,7 +176,7 @@ namespace engine
 		//	};
 		//}
 
-		json.push_back(std::move(eJson));
+		json.entities.push_back(std::move(eJson));
 
 		auto& hc = registry.get<HierarchyComponent>(entity);
 		for (entt::entity child : hc.children)
@@ -181,7 +185,7 @@ namespace engine
 		}
 	}
 
-	void Serializer::SerializeScene(Scene scene, const std::filesystem::path& path)
+	void Serializer::SerializeScene(SceneHandle scene, const std::filesystem::path& path)
 	{
 		if (path.extension() != ".scene")
 		{
@@ -189,10 +193,12 @@ namespace engine
 			return;
 		}
 
-		const engine::SceneAsset& sceneData = scene.Get();
+		const engine::Scene& sceneData = scene.Get();
 		const entt::registry& registry = sceneData.registry;
 
-		std::vector<EntityJSON> json;
+		// std::vector<EntityJSON> json;
+
+		SceneJson json;
 
 		for (const entt::entity root : sceneData.rootEntities)
 		{
@@ -205,30 +211,31 @@ namespace engine
 		}
 	}
 
-	SceneAsset Serializer::DeserializeScene(const std::filesystem::path& path)
+	Scene Serializer::DeserializeScene(const std::filesystem::path& path)
 	{
 		if (path.extension() != ".scene")
 		{
 			LOG_ERROR("Expected '.scene' extension, got '{}'", path.extension().string());
-			return SceneAsset{};
+			return Scene{};
 		}
 
-		std::vector<EntityJSON> json;
+		SceneJson json;
 
 		std::map<Uuid, Uuid> parentMap; // child ID -> parent ID
 
 		if (auto ec = glz::read_file_json(json, path.string(), buffer))
 		{
 			LOG_ERROR("Failed to load scene file '{}': {}", path, glz::format_error(ec, buffer));
-			return SceneAsset{};
+			return Scene{};
 		}
 
-		SceneAsset scene;
-		scene.environmentTexture = Texture2D::HDR; //TODO: store in scene file
+		Scene scene;
+		scene.environmentTexture = TextureHandle::HDR; //TODO: store in scene file
 
 		entt::registry& registry = scene.registry;
 
-		for (const EntityJSON& eJson : json)
+
+		for (const EntityJSON& eJson : json.entities)
 		{
 			Uuid id = eJson.id;
 
@@ -244,6 +251,11 @@ namespace engine
 			{
 				registry.emplace<IdentityComponent>(handle, id);
 				scene.entityMap[id] = handle;
+
+				if(id == json.primaryCameraEntity)
+				{
+					scene.SetPrimaryCamera(handle);
+				}
 			}
 
 			// disabled tag
@@ -289,7 +301,7 @@ namespace engine
 			{
 				auto& cComp = registry.emplace<ColliderComponent>(handle);
 				const auto& cJson = eJson.collider.value();
-				cComp.collisionMesh = Mesh{ cJson.mesh };
+				cComp.collisionMesh = MeshHandle{ cJson.mesh };
 				cComp.type = static_cast<BodyType>(cJson.type);
 				cComp.isTrigger = cJson.isTrigger;
 			}
@@ -310,11 +322,6 @@ namespace engine
 				cComp.orthographic.farClip = cJson.orthographic.far;
 				cComp.backgroundMode = static_cast<CameraComponent::Background>(cJson.background);
 				cComp.clearColor = cJson.clearColor;
-
-				if(cJson.primary)
-				{
-					registry.emplace_or_replace<PrimaryCameraTag>(handle);
-				}
 
 				registry.emplace_or_replace<CameraProjectionDirty>(handle);
 				registry.emplace_or_replace<CameraViewDirty>(handle);
@@ -345,6 +352,11 @@ namespace engine
 			auto& parentHC = registry.get<HierarchyComponent>(parent);
 			parentHC.children.push_back(child);
 		}
+
+		
+		
+
+
 
 		return scene;
 	}

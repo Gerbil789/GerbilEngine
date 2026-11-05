@@ -16,7 +16,7 @@ namespace engine
   class EnvironmentBaker
   {
   public:
-    static Environment BakeEnvironment(Texture2D equirectangularHDR);
+    static Environment BakeEnvironment(TextureHandle equirectangularHDR);
 
   private:
     static TextureCube CreateIrradianceMap(const TextureCube& sourceCubemap);

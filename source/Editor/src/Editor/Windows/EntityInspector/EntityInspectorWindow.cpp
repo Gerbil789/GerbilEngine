@@ -132,9 +132,9 @@ namespace editor
 		}
 	}
 
-	void DrawCamera(entt::entity entity, entt::registry& registry)
+	void DrawCamera(entt::entity entity, engine::Scene& scene)
 	{
-		engine::CameraComponent* component = registry.try_get<engine::CameraComponent>(entity);
+		engine::CameraComponent* component = scene.registry.try_get<engine::CameraComponent>(entity);
 		if (!component) return;
 
 		ComponentHeader header("Camera");
@@ -142,27 +142,18 @@ namespace editor
 
 		PropertyTable table;
 
-		bool primary = registry.any_of<engine::PrimaryCameraTag>(entity);
+		bool primary = entity == scene.GetPrimaryCameraEntity();
 
 		if (PropertyField("Primary", primary).changed)
 		{
-			if (primary)
-			{
-				auto view = registry.view<engine::PrimaryCameraTag>(entt::exclude<engine::EditorTag>);
-				registry.remove<engine::PrimaryCameraTag>(view.begin(), view.end());
-				registry.emplace<engine::PrimaryCameraTag>(entity);
-			}
-			else
-			{
-				registry.remove<engine::PrimaryCameraTag>(entity);
-			}
+			scene.SetPrimaryCamera(primary ? entity : entt::null);
 		}
 
 		int currentProjection = static_cast<int>(component->projectionType);
 		if (EnumField("Projection", currentProjection, { "Perspective", "Orthographic" }).changed)
 		{
 			component->projectionType = static_cast<engine::CameraComponent::Projection>(currentProjection);
-			registry.emplace_or_replace<engine::CameraProjectionDirty>(entity);
+			scene.registry.emplace_or_replace<engine::CameraProjectionDirty>(entity);
 		}
 
 		EnumField("Background", (int&)component->backgroundMode, { "Color", "Skybox" });
@@ -508,21 +499,21 @@ namespace editor
 
 		if (m_Entity == entt::null) return;
 
-		entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+		engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
 
-		EntityHeader header(m_Entity, registry);
+		EntityHeader header(m_Entity, scene.registry);
 
-		DrawTransform(m_Entity, registry);
-		DrawCamera(m_Entity, registry);
-		DrawMesh(m_Entity, registry);
-		DrawCollider(m_Entity, registry);
-		DrawLight(m_Entity, registry);
-		DrawUIRect(m_Entity, registry);
-		DrawUICanvas(m_Entity, registry);
-		DrawUIImage(m_Entity, registry);
-		DrawUIText(m_Entity, registry);
+		DrawTransform(m_Entity, scene.registry);
+		DrawCamera(m_Entity, scene);
+		DrawMesh(m_Entity, scene.registry);
+		DrawCollider(m_Entity, scene.registry);
+		DrawLight(m_Entity, scene.registry);
+		DrawUIRect(m_Entity, scene.registry);
+		DrawUICanvas(m_Entity, scene.registry);
+		DrawUIImage(m_Entity, scene.registry);
+		DrawUIText(m_Entity, scene.registry);
 
-		DrawAddComponentButton(m_Entity, registry);
+		DrawAddComponentButton(m_Entity, scene.registry);
 
 		ImGui::PopID();
 

@@ -29,12 +29,12 @@ namespace engine
 		std::vector<uint32_t> wireIndices;	//TODO: add compile time macro to disable in export game builds
 	};
 
-	struct MeshAsset
+	struct Mesh
 	{
-		MeshAsset() = default;
-		MeshAsset(const MeshSpecification& specification);
+		Mesh() = default;
+		Mesh(const MeshSpecification& specification);
 
-		AABB aabb; // local space
+		AABB aabb;
 		std::vector<SubMesh> subMeshes;
 		uint32_t materialCount = 0;
 		wgpu::Buffer vertexBuffer;
@@ -42,26 +42,17 @@ namespace engine
 		wgpu::Buffer wireIndexBuffer;
 	};
 
-
-	struct Mesh : public AssetHandle
+	struct MeshHandle : public AssetHandle
 	{
 		using AssetHandle::AssetHandle;
+		Mesh& Get() const;
 
-		MeshAsset& Get() const;
-
-		const std::vector<SubMesh>& GetSubMeshes() const;
-		uint32_t GetMaterialCount() const;
-		const wgpu::Buffer GetVertexBuffer() const;
-		const wgpu::Buffer GetIndexBuffer() const;
-		const wgpu::Buffer GetWireIndexBuffer() const;
-		const AABB& GetAABB() const;
-
-		static const Mesh Empty;
-		static const Mesh Cube;
-		static const Mesh Sphere;
+		static const MeshHandle Empty;
+		static const MeshHandle Cube;
+		static const MeshHandle Sphere;
 	};
 
-	inline constexpr Mesh Mesh::Empty{ 0 };
-	inline constexpr Mesh Mesh::Cube{ 1 };
-	inline constexpr Mesh Mesh::Sphere{ 2 };
+	inline constexpr MeshHandle MeshHandle::Empty{ 0 };
+	inline constexpr MeshHandle MeshHandle::Cube{ 1 };
+	inline constexpr MeshHandle MeshHandle::Sphere{ 2 };
 }

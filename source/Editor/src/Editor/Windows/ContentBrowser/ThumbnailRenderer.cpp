@@ -38,7 +38,7 @@ namespace editor
 		constexpr int AtlasSizePx = 2048;
 		constexpr int CellsPerSide = AtlasSizePx / 64;
 
-		engine::Texture2D m_AtlasTexture = engine::Texture2D::EDITOR_THUMBNAIL_ATLAS;
+		engine::TextureHandle m_AtlasTexture = engine::TextureHandle::EDITOR_THUMBNAIL_ATLAS;
 		int m_NextFreeSlot = 0;
 
 		wgpu::Texture m_ScratchpadTexture;
@@ -60,7 +60,7 @@ namespace editor
 
 		for (const auto& [icon, coords] : IconMap)
 		{
-			m_Icons.emplace(icon, engine::Sprite::CreateFromGrid(engine::Texture2D::EDITOR_ICONS, m_SpritesheetSize, coords, m_CellSize));
+			m_Icons.emplace(icon, engine::Sprite::CreateFromGrid(engine::TextureHandle::EDITOR_ICONS, m_SpritesheetSize, coords, m_CellSize));
 		}
 
 		wgpu::TextureDescriptor scratchDesc;
@@ -86,9 +86,9 @@ namespace editor
 		m_DepthView = m_DepthTexture.CreateView();
 	}
 
-	static engine::Sprite RenderToAtlas(engine::Mesh mesh, engine::MaterialInstance materialInstance)
+	static engine::Sprite RenderToAtlas(engine::MeshHandle mesh, engine::MaterialInstanceHandle materialInstance)
 	{
-		const engine::MeshAsset& meshData = mesh.Get();
+		const engine::Mesh& meshData = mesh.Get();
 
 		const engine::AABB& aabb = meshData.aabb;
 		float distance = glm::length(aabb.max - aabb.min) + 1.0f;
@@ -139,7 +139,7 @@ namespace editor
 		engine::GraphicsContext::GetQueue().Submit(1, &cmd);
 
 		engine::Sprite sprite;
-		sprite.texture = m_AtlasTexture;
+		sprite.textureHandle = m_AtlasTexture;
 		sprite.uvMin = { static_cast<float>(x) / AtlasSizePx, static_cast<float>(y) / AtlasSizePx };
 		sprite.uvMax = { static_cast<float>(x + 64) / AtlasSizePx, static_cast<float>(y + 64) / AtlasSizePx };
 		return sprite;
@@ -157,7 +157,7 @@ namespace editor
 		switch (type)
 		{
 		case engine::AssetType::Texture:
-			sprite.texture = engine::Texture2D{ id };
+			sprite.textureHandle = engine::TextureHandle{ id };
 			break;
 		case engine::AssetType::Shader:
 			sprite = GetEditorIcon(Icon::Text);
@@ -166,10 +166,10 @@ namespace editor
 			sprite = GetEditorIcon(Icon::Unknown); //TODO
 			break;
 		case engine::AssetType::MaterialInstance:
-			sprite = RenderToAtlas(engine::Mesh::Sphere, engine::MaterialInstance{ id });
+			sprite = RenderToAtlas(engine::MeshHandle::Sphere, engine::MaterialInstanceHandle{ id });
 			break;
 		case engine::AssetType::Mesh:
-			sprite = RenderToAtlas(engine::Mesh{ id }, engine::MaterialInstance::White);
+			sprite = RenderToAtlas(engine::MeshHandle{ id }, engine::MaterialInstanceHandle::White);
 			break;
 		case engine::AssetType::Scene:
 			sprite = GetEditorIcon(Icon::Scene);

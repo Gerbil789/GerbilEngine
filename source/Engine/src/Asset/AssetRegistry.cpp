@@ -49,7 +49,7 @@ namespace engine
 			return;
 		}
 
-		auto processMap = [&]<typename Handle>(const std::unordered_map<uint64_t, std::string>&source)
+		auto processMap = []<typename Handle>(const std::unordered_map<uint64_t, std::string>&source)
 		{
 			for (const auto& [rawId, relativePath] : source)
 			{
@@ -67,13 +67,13 @@ namespace engine
 			}
 		};
 
-		processMap.template operator() < Texture2D > (archive.textures);
-		processMap.template operator() < Mesh > (archive.meshes);
-		processMap.template operator() < Shader > (archive.shaders);
-		processMap.template operator() < Material > (archive.materials);
-		processMap.template operator() < MaterialInstance > (archive.materialInstances);
-		processMap.template operator() < AudioClip > (archive.audioClips);
-		processMap.template operator() < Scene > (archive.scenes);
+		processMap.template operator() < TextureHandle > (archive.textures);
+		processMap.template operator() < MeshHandle > (archive.meshes);
+		processMap.template operator() < ShaderHandle > (archive.shaders);
+		processMap.template operator() < MaterialHandle > (archive.materials);
+		processMap.template operator() < MaterialInstanceHandle > (archive.materialInstances);
+		processMap.template operator() < AudioClipHandle > (archive.audioClips);
+		processMap.template operator() < SceneHandle > (archive.scenes);
 
 		// look for new files
 		for (const auto& entry : std::filesystem::recursive_directory_iterator(Project::assetsDirectory))
@@ -91,31 +91,31 @@ namespace engine
 			switch (type)
 			{
 			case AssetType::Texture:
-				AddRecord(Texture2D{ id }, path);
+				AddRecord(TextureHandle{ id }, path);
 				break;
 
 			case AssetType::Mesh:
-				AddRecord(Mesh{ id }, path);
+				AddRecord(MeshHandle{ id }, path);
 				break;
 
 			case AssetType::Material:
-				AddRecord(Material{ id }, path);
+				AddRecord(MaterialHandle{ id }, path);
 				break;
 
 			case AssetType::MaterialInstance:
-				AddRecord(MaterialInstance{ id }, path);
+				AddRecord(MaterialInstanceHandle{ id }, path);
 				break;
 
 			case AssetType::AudioClip:
-				AddRecord(AudioClip{ id }, path);
+				AddRecord(AudioClipHandle{ id }, path);
 				break;
 
 			case AssetType::Scene:
-				AddRecord(Scene{ id }, path);
+				AddRecord(SceneHandle{ id }, path);
 				break;
 
 			case AssetType::Shader:
-				AddRecord(Shader{ id }, path);
+				AddRecord(ShaderHandle{ id }, path);
 				break;
 
 			default:
@@ -133,7 +133,7 @@ namespace engine
 
 		// LOG_INFO("--- Asset Registry Records ---");
     
-    // auto printMap = [&]<typename Handle>()
+    // auto printMap = []<typename Handle>()
     // {
     //   const auto& engineMap = std::get<AssetMap<Handle>>(s_Records);
     //   for (const auto& [handle, fullPath] : engineMap)
@@ -155,7 +155,7 @@ namespace engine
 	{
 		AssetRegistryArchive archive;
 
-		auto fillArchive = [&]<typename Handle>(std::unordered_map<uint64_t, std::string>&dest)
+		auto fillArchive = []<typename Handle>(std::unordered_map<uint64_t, std::string>&dest)
 		{
 			const auto& engineMap = std::get<AssetMap<Handle>>(s_Records);
 			for (const auto& [handle, fullPath] : engineMap)
@@ -164,13 +164,13 @@ namespace engine
 			}
 		};
 
-		fillArchive.template operator() < Texture2D > (archive.textures);
-		fillArchive.template operator() < Mesh > (archive.meshes);
-		fillArchive.template operator() < Shader > (archive.shaders);
-		fillArchive.template operator() < Material > (archive.materials);
-		fillArchive.template operator() < MaterialInstance > (archive.materialInstances);
-		fillArchive.template operator() < AudioClip > (archive.audioClips);
-		fillArchive.template operator() < Scene > (archive.scenes);
+		fillArchive.template operator() < TextureHandle > (archive.textures);
+		fillArchive.template operator() < MeshHandle > (archive.meshes);
+		fillArchive.template operator() < ShaderHandle > (archive.shaders);
+		fillArchive.template operator() < MaterialHandle > (archive.materials);
+		fillArchive.template operator() < MaterialInstanceHandle > (archive.materialInstances);
+		fillArchive.template operator() < AudioClipHandle > (archive.audioClips);
+		fillArchive.template operator() < SceneHandle > (archive.scenes);
 
 		const std::filesystem::path path = Project::directory / "assetRegistry.json";
 		std::string buffer;
@@ -230,25 +230,25 @@ namespace engine
 
 	AssetType AssetRegistry::GetAssetType(Uuid id)
 	{
-		if (std::get<AssetMap<Texture2D>>(s_Records).contains(Texture2D{ id }))
+		if (std::get<AssetMap<TextureHandle>>(s_Records).contains(TextureHandle{ id }))
 			return AssetType::Texture;
 
-		if (std::get<AssetMap<Mesh>>(s_Records).contains(Mesh{ id }))
+		if (std::get<AssetMap<MeshHandle>>(s_Records).contains(MeshHandle{ id }))
 			return AssetType::Mesh;
 
-		if (std::get<AssetMap<Shader>>(s_Records).contains(Shader{ id }))
+		if (std::get<AssetMap<ShaderHandle>>(s_Records).contains(ShaderHandle{ id }))
 			return AssetType::Shader;
 
-		if (std::get<AssetMap<Material>>(s_Records).contains(Material{ id }))
+		if (std::get<AssetMap<MaterialHandle>>(s_Records).contains(MaterialHandle{ id }))
 			return AssetType::Material;
 
-		if (std::get<AssetMap<MaterialInstance>>(s_Records).contains(MaterialInstance{ id }))
+		if (std::get<AssetMap<MaterialInstanceHandle>>(s_Records).contains(MaterialInstanceHandle{ id }))
 			return AssetType::MaterialInstance;
 
-		if (std::get<AssetMap<AudioClip>>(s_Records).contains(AudioClip{ id }))
+		if (std::get<AssetMap<AudioClipHandle>>(s_Records).contains(AudioClipHandle{ id }))
 			return AssetType::AudioClip;
 
-		if (std::get<AssetMap<Scene>>(s_Records).contains(Scene{ id }))
+		if (std::get<AssetMap<SceneHandle>>(s_Records).contains(SceneHandle{ id }))
 			return AssetType::Scene;
 
 		return AssetType::Unknown;

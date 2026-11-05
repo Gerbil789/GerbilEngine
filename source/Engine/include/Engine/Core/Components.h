@@ -41,8 +41,8 @@ namespace engine
 
 	struct MeshComponent
 	{
-		Mesh mesh;
-		std::vector<MaterialInstance> materialInstances{};
+		MeshHandle mesh;
+		std::vector<MaterialInstanceHandle> materialInstances{};
 	};
 
 	enum class BodyType { Static = 0, Dynamic, Kinematic };
@@ -52,12 +52,11 @@ namespace engine
 	{
 		ColliderShape shape = ColliderShape::Box;
 		BodyType type = BodyType::Dynamic;
-		Mesh collisionMesh;
+		MeshHandle collisionMesh;
 		AABB worldAABB;
 		bool isTrigger = false;
 	};
 	
-	struct PrimaryCameraTag {};
 	struct CameraViewDirty {};
 	struct CameraProjectionDirty {};
 

@@ -18,7 +18,8 @@ namespace engine
 		wgpu::RenderPipelineDescriptor pipelineDesc;
 		pipelineDesc.label = "Shader Pipeline";
 
-		const std::vector<wgpu::VertexAttribute>& vertexAttributes = specification.shader.GetSpecification().vertexAttributes;
+		Shader& shader = specification.shaderHandle.Get();
+		const std::vector<wgpu::VertexAttribute>& vertexAttributes = shader.specification.vertexAttributes;
 
 		wgpu::VertexBufferLayout vertexBufferLayout;
 		if(!vertexAttributes.empty())
@@ -39,7 +40,7 @@ namespace engine
 			pipelineDesc.vertex.buffers = nullptr;
 		}
 
-		pipelineDesc.vertex.module = specification.shader.GetShaderModule();
+		pipelineDesc.vertex.module = shader.shaderModule;
 		pipelineDesc.vertex.entryPoint = "vs_main";
 
 		pipelineDesc.primitive.topology = specification.topology;
@@ -60,7 +61,7 @@ namespace engine
 		colorTarget.writeMask = wgpu::ColorWriteMask::All;
 
 		wgpu::FragmentState fragmentState;
-		fragmentState.module = specification.shader.GetShaderModule();
+		fragmentState.module = shader.shaderModule;
 		fragmentState.entryPoint = "fs_main";
 		fragmentState.constantCount = 0;
 		fragmentState.constants = nullptr;
@@ -103,7 +104,7 @@ namespace engine
 			{
 					RenderPipelineLayouts::GetViewLayout(),
 					RenderPipelineLayouts::GetEnvironmentLayout(),
-					specification.shader.GetMaterialBindGroupLayout(),
+					shader.materialBindGroupLayout,
 					RenderPipelineLayouts::GetModelLayout()
 			};
 		}

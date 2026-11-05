@@ -1,4 +1,6 @@
-[
+{
+   "primaryCameraEntity": 6717787272,
+   "entities": [
    {
       "id": 6717787272,
       "name": "Camera",
@@ -47,8 +49,8 @@
             0.05,
             1,
             1
-         ],
-         "primary": true
+         ]
       }
    }
 ]
+}

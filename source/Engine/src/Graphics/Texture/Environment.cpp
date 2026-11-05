@@ -11,7 +11,7 @@
 
 namespace engine
 {
-	Environment EnvironmentBaker::BakeEnvironment(Texture2D equirectangularTexture)
+	Environment EnvironmentBaker::BakeEnvironment(TextureHandle equirectangularTexture)
 	{
     Environment env;
     env.EnvironmentMap = EquirectangularToCubemap(equirectangularTexture);
@@ -222,7 +222,7 @@ namespace engine
 		samplerDesc.lodMaxClamp = static_cast<float>(mipCount - 1);
 		wgpu::Sampler linearSampler = GraphicsContext::GetDevice().CreateSampler(&samplerDesc);
 
-		auto CreateBindGroup = [&](uint32_t nextLevel)
+		auto CreateBindGroup = [&linearSampler, &sourceCubemap, &textureMipViews, &bindGroupLayout](uint32_t nextLevel)
 			{
 				std::array<wgpu::BindGroupEntry, 3> entries{};
 

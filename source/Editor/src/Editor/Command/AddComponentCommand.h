@@ -14,7 +14,7 @@ namespace editor
 
     void Execute() override
     {
-      entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+      entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
 
       if(registry.any_of<T>(m_Entity))
       {
@@ -27,7 +27,7 @@ namespace editor
 
     void Undo() override
     {
-      entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+      entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
 
       if(registry.any_of<T>(m_Entity))
       {

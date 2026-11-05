@@ -37,15 +37,15 @@ namespace editor
 		switch (m_Type)
 		{
 		case engine::AssetType::Texture:
-			m_TexturePanel.Draw(engine::Texture2D{ m_Id });
+			m_TexturePanel.Draw(engine::TextureHandle{ m_Id });
 			break;
 
 		case engine::AssetType::Shader:
-			m_ShaderPanel.Draw(engine::Shader{ m_Id });
+			m_ShaderPanel.Draw(engine::ShaderHandle{ m_Id });
 			break;
 
 		case engine::AssetType::AudioClip:
-			m_AudioPanel.Draw(engine::AudioClip{ m_Id });
+			m_AudioPanel.Draw(engine::AudioClipHandle{ m_Id });
 			break;
 
 		default:

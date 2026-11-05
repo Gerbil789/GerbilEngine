@@ -6,7 +6,7 @@
 
 namespace editor
 {
-	void ShaderInspectorPanel::Draw(engine::Shader shader)
+	void ShaderInspectorPanel::Draw(engine::ShaderHandle shader)
 	{
 		const std::string& name = engine::AssetRegistry::GetAssetPath(shader).stem().string();
 		ImGui::TextUnformatted(std::format("Shader: {}", name).c_str());

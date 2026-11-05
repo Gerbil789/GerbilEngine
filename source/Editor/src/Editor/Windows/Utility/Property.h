@@ -15,13 +15,13 @@ namespace editor
 	template <typename Handle>
 	constexpr engine::AssetType GetAssetType();
 
-	template <> constexpr engine::AssetType GetAssetType<engine::Mesh>() { return engine::AssetType::Mesh; }
-	template <> constexpr engine::AssetType GetAssetType<engine::Shader>() { return engine::AssetType::Shader; }
-	template <> constexpr engine::AssetType GetAssetType<engine::Material>() { return engine::AssetType::Material; }
-	template <> constexpr engine::AssetType GetAssetType<engine::MaterialInstance>() { return engine::AssetType::MaterialInstance; }
-	template <> constexpr engine::AssetType GetAssetType<engine::Scene>() { return engine::AssetType::Scene; }
-	template <> constexpr engine::AssetType GetAssetType<engine::Texture2D>() { return engine::AssetType::Texture; }
-	template <> constexpr engine::AssetType GetAssetType<engine::AudioClip>() { return engine::AssetType::AudioClip; }
+	template <> constexpr engine::AssetType GetAssetType<engine::MeshHandle>() { return engine::AssetType::Mesh; }
+	template <> constexpr engine::AssetType GetAssetType<engine::ShaderHandle>() { return engine::AssetType::Shader; }
+	template <> constexpr engine::AssetType GetAssetType<engine::MaterialHandle>() { return engine::AssetType::Material; }
+	template <> constexpr engine::AssetType GetAssetType<engine::MaterialInstanceHandle>() { return engine::AssetType::MaterialInstance; }
+	template <> constexpr engine::AssetType GetAssetType<engine::SceneHandle>() { return engine::AssetType::Scene; }
+	template <> constexpr engine::AssetType GetAssetType<engine::TextureHandle>() { return engine::AssetType::Texture; }
+	template <> constexpr engine::AssetType GetAssetType<engine::AudioClipHandle>() { return engine::AssetType::AudioClip; }
 
 	enum class DisplayMode
 	{
@@ -198,10 +198,10 @@ namespace editor
 
 		const std::string& assetName = engine::AssetRegistry::GetAssetPath(handle).stem().string();
 
-		if constexpr (std::is_same_v<Handle, engine::Texture2D>)
+		if constexpr (std::is_same_v<Handle, engine::TextureHandle>)
 		{
-			engine::Texture2D texture = static_cast<engine::Texture2D>(handle);
-			result.changed = ImGui::ImageButton("##TexturePreview", texture.View().Get(), ImVec2(64, 64)); //TODO: too many casts?
+			const engine::Texture2D& texture = static_cast<engine::TextureHandle>(handle).Get();
+			result.changed = ImGui::ImageButton("##TexturePreview", texture.textureView.Get(), ImVec2(64, 64)); //TODO: too many casts?
 		}
 		else
 		{

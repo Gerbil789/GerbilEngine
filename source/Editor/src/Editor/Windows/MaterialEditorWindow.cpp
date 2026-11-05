@@ -11,14 +11,14 @@ namespace editor
 {
 	namespace
 	{
-		engine::MaterialInstance m_MaterialInstance = engine::MaterialInstance::Null;
+		engine::MaterialInstanceHandle m_MaterialInstance = engine::MaterialInstanceHandle::Null;
 	}
 
 	void MaterialEditorWindow::Draw()
 	{
 		ImGui::Begin("Material Instance");
 
-		if (m_MaterialInstance == engine::MaterialInstance::Null)
+		if (m_MaterialInstance == engine::MaterialInstanceHandle::Null)
 		{
 			ImGui::Text("No material selected");
 			ImGui::End();
@@ -28,12 +28,11 @@ namespace editor
 		const std::string& materialInstanceName = engine::AssetRegistry::GetAssetPath(m_MaterialInstance).stem().string();
 		ImGui::Text("Material instance: %s", materialInstanceName.c_str());
 
-		engine::MaterialInstanceData& instanceData = m_MaterialInstance.Get();
-		engine::Material material = instanceData.material;
-		engine::Shader shader = material.Get().shader;
+		engine::MaterialInstance& materialInstance = m_MaterialInstance.Get();
+		engine::Shader& shader = materialInstance.materialHandle.Get().shaderHandle.Get();
 
-		const std::string& materialName = engine::AssetRegistry::GetAssetPath(material).stem().string();
-		const std::string& shaderName = engine::AssetRegistry::GetAssetPath(shader).stem().string();
+		const std::string& materialName = engine::AssetRegistry::GetAssetPath(materialInstance.materialHandle).stem().string();
+		const std::string& shaderName = engine::AssetRegistry::GetAssetPath(materialInstance.materialHandle.Get().shaderHandle).stem().string();
 
 		ImGui::Text("Material: %s", materialName.c_str());
 		ImGui::Text("Shader: %s", shaderName.c_str());
@@ -65,7 +64,7 @@ namespace editor
 					{
 						if (param.name.empty() || param.name[0] == '_') continue;
 
-						char* bufferPtr = reinterpret_cast<char*>(instanceData.uniformData.data());
+						char* bufferPtr = reinterpret_cast<char*>(materialInstance.uniformData.data());
 
 						switch (param.type)
 						{
@@ -182,11 +181,11 @@ namespace editor
 				}
 				else if (std::holds_alternative<engine::TextureBinding>(binding.data))
 				{
-					engine::Texture2D texture = instanceData.textures.at(binding.binding);
+					engine::TextureHandle texture = materialInstance.textures.at(binding.binding);
 					if (AssetField(binding.name, texture).changed)
 					{
-						instanceData.textures[binding.binding] = texture;
-						instanceData.CreateBindGroup();
+						materialInstance.textures[binding.binding] = texture;
+						materialInstance.CreateBindGroup();
 					}
 				}
 			}
@@ -198,10 +197,10 @@ namespace editor
 				ImGui::TextUnformatted("Texture Filter");
 				ImGui::TableSetColumnIndex(1);
 				const char* filterOptions[] = { "Nearest", "Bilinear", "Trilinear" };
-				int currentFilter = static_cast<int>(instanceData.textureFilter);
+				int currentFilter = static_cast<int>(materialInstance.textureFilter);
 				if (ImGui::Combo("##TextureFilter", &currentFilter, filterOptions, IM_ARRAYSIZE(filterOptions)))
 				{
-					instanceData.textureFilter = static_cast<engine::TextureFilter>(currentFilter);
+					materialInstance.textureFilter = static_cast<engine::TextureFilter>(currentFilter);
 				}
 
 				ImGui::TableNextRow();
@@ -209,10 +208,10 @@ namespace editor
 				ImGui::TextUnformatted("Texture Wrap");
 				ImGui::TableSetColumnIndex(1);
 				const char* wrapOptions[] = { "Repeat", "Clamp", "Mirror" };
-				int currentWrap = static_cast<int>(instanceData.textureWrap);
+				int currentWrap = static_cast<int>(materialInstance.textureWrap);
 				if (ImGui::Combo("##TextureWrap", &currentWrap, wrapOptions, IM_ARRAYSIZE(wrapOptions)))
 				{
-					instanceData.textureWrap = static_cast<engine::TextureWrap>(currentWrap);
+					materialInstance.textureWrap = static_cast<engine::TextureWrap>(currentWrap);
 				}
 			}
 
@@ -228,7 +227,7 @@ namespace editor
 			{
 				engine::AssetType type = engine::AssetRegistry::GetAssetType(e.id);
 				if (type != engine::AssetType::MaterialInstance) return false;
-				m_MaterialInstance = engine::MaterialInstance{ e.id };
+				m_MaterialInstance = engine::MaterialInstanceHandle{ e.id };
 				return false;
 			});
 	}

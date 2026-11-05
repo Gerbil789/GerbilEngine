@@ -7,6 +7,6 @@ namespace engine
 	class AudioImporter
 	{
 	public:
-		static AudioClipAsset LoadAudioClip(const std::filesystem::path& path);
+		static AudioClip LoadAudioClip(const std::filesystem::path& path);
 	};
 }

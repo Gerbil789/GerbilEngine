@@ -6,7 +6,7 @@
 
 namespace engine
 {
-	AudioClipAsset::AudioClipAsset(const std::filesystem::path& path)
+	AudioClip::AudioClip(const std::filesystem::path& path)
 	{
 		ma_decoder decoder;
 		// 0, 0 means "use the file's native channel count and sample rate"
@@ -31,37 +31,8 @@ namespace engine
 		ma_decoder_uninit(&decoder);
 	}
 
-
-	AudioClipAsset& AudioClip::Get() const
+	AudioClip& AudioClipHandle::Get() const
 	{
 		return AssetManager::GetAsset(*this);
-	}
-
-	//TODO: use template to specify units?
-	float AudioClip::GetDurationSeconds() const
-	{
-		AudioClipAsset& data = Get();
-		if (data.sampleRate == 0) return 0.0f;
-		return static_cast<float>(data.totalFrames) / static_cast<float>(data.sampleRate);
-	}
-
-	const float* AudioClip::GetPCMData() const
-	{
-		return Get().PCMData.data();
-	}
-
-	uint64_t AudioClip::GetTotalFrames() const
-	{
-		return Get().totalFrames;
-	}
-
-	uint32_t AudioClip::GetChannels() const
-	{
-		return Get().channels;
-	}
-
-	uint32_t AudioClip::GetSampleRate() const
-	{
-		return Get().sampleRate;
 	}
 }

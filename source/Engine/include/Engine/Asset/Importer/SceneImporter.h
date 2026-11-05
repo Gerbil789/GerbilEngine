@@ -7,6 +7,6 @@ namespace engine
 	class SceneImporter
 	{
 	public:
-		static SceneAsset LoadScene(const std::filesystem::path& path);
+		static Scene LoadScene(const std::filesystem::path& path);
 	};
 }

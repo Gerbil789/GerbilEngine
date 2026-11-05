@@ -15,14 +15,14 @@ namespace editor
 
     void Execute() override
     {
-      entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+      entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
       registry.get<T>(m_Entity) = m_After; 
       registry.emplace_or_replace<engine::TransformDirty>(m_Entity);
     }
 
     void Undo() override
     {
-      entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+      entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
       registry.get<T>(m_Entity) = m_Before;
       registry.emplace_or_replace<engine::TransformDirty>(m_Entity);
     }

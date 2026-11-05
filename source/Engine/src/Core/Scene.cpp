@@ -5,29 +5,23 @@
 
 namespace engine
 {
-	SceneAsset::~SceneAsset()
+	Scene::~Scene()
 	{
 		registry.clear();
-	}
-
-	SceneAsset& Scene::Get() const
-	{
-		return AssetManager::GetAsset(*this);
 	}
 
 	void Scene::DestroyEntity(entt::entity entity)
 	{
 		if (entity == entt::null) return;
-		SceneAsset& data = Get();
 
-		Uuid id = data.registry.get<IdentityComponent>(entity).id;
-		data.registry.destroy(entity);
-		data.entityMap.erase(id);
+		Uuid id = registry.get<IdentityComponent>(entity).id;
+		registry.destroy(entity);
+		entityMap.erase(id);
 	}
 
 	entt::entity Scene::GetEntity(Uuid entityId) const
 	{
-		const auto& map = Get().entityMap;
+		const auto& map = entityMap;
 		if (auto it = map.find(entityId); it != map.end())
 		{
 			return it->second;
@@ -35,40 +29,13 @@ namespace engine
 		return entt::null;
 	}
 
-
-
-	entt::registry& Scene::GetRegistry()
-	{
-		return Get().registry;
-	}
-
-	const entt::registry& Scene::GetRegistry() const
-	{
-		return Get().registry;
-	}
-
-CameraComponent* Scene::GetPrimaryCamera() const
-{
-    entt::registry& registry = Get().registry;
-    auto view = registry.view<engine::CameraComponent, engine::PrimaryCameraTag>();
-    
-    if (view.front() == entt::null)
-    {
-			LOG_WARNING("No active camera in the scene");
-      return nullptr;
-    }
-    
-    return &registry.get<CameraComponent>(view.front());
-}
-
 	const std::vector<entt::entity>& Scene::GetRootEntities() const
 	{
-		return Get().rootEntities;
+		return rootEntities;
 	}
 
 	void Scene::InsertRootEntity(entt::entity entity, size_t index)
 	{
-		auto& rootEntities = Get().rootEntities;
 		if (index > rootEntities.size())
 		{
 			index = rootEntities.size();
@@ -78,7 +45,6 @@ CameraComponent* Scene::GetPrimaryCamera() const
 
 	void Scene::RemoveRootEntity(entt::entity entity)
 	{
-		auto& rootEntities = Get().rootEntities;
 		auto it = std::find(rootEntities.begin(), rootEntities.end(), entity);
 		if (it != rootEntities.end())
 		{
@@ -86,18 +52,23 @@ CameraComponent* Scene::GetPrimaryCamera() const
 		}
 	}
 
-
-	Texture2D Scene::GetEnvironmentTexture() const
+	TextureHandle Scene::GetEnvironmentTexture() const
 	{
-		return Get().environmentTexture;
+		return environmentTexture;
 	}
-	void Scene::SetEnvironmentTexture(Texture2D texture)
+
+	void Scene::SetEnvironmentTexture(TextureHandle texture)
 	{
-		Get().environmentTexture = texture;
+		environmentTexture = texture;
 	}
 
 	const std::vector<std::function<void()>>& Scene::GetSystems() const
 	{
-		return Get().systems;
+		return systems;
+	}
+
+	Scene& SceneHandle::Get() const
+	{
+		return AssetManager::GetAsset(*this);
 	}
 }

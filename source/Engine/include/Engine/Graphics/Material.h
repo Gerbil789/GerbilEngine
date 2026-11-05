@@ -32,59 +32,50 @@ namespace engine
 		alignas(8) glm::vec2 hoveredTile;
 	};
 
-	struct MaterialAsset
+	struct Material
 	{
-		MaterialAsset() = default;
-		MaterialAsset(Shader shader);
+		Material() = default;
+		Material(ShaderHandle shader);
 
-		Shader shader;
+		ShaderHandle shaderHandle;
 		wgpu::RenderPipeline pipeline;
 	};
 
-	struct Material : public AssetHandle
+	struct MaterialHandle : public AssetHandle
 	{
 		using AssetHandle::AssetHandle;
-		MaterialAsset& Get() const;
+		Material& Get() const;
 
-		static const Material Pink;
-		static const Material White;
+		static const MaterialHandle Pink;
+		static const MaterialHandle White;
 	};
 
-	inline constexpr Material Material::Pink{ 0 };
-	inline constexpr Material Material::White{ 1 };
+	inline constexpr MaterialHandle MaterialHandle::Pink{ 0 };
+	inline constexpr MaterialHandle MaterialHandle::White{ 1 };
 
-	struct MaterialInstanceData
+	struct MaterialInstance
 	{
-		MaterialInstanceData() = default;
-		MaterialInstanceData(Material material);
+		MaterialInstance() = default;
+		MaterialInstance(MaterialHandle material);
 
-		Material material;
+		MaterialHandle materialHandle;
 
 		wgpu::BindGroup bindGroup;
 		wgpu::Buffer uniformBuffer;
 
-		std::unordered_map<uint32_t, Texture2D> textures;
+		std::unordered_map<uint32_t, TextureHandle> textures;
 		std::vector<std::byte> uniformData;
 
 		TextureFilter textureFilter = TextureFilter::Bilinear;
 		TextureWrap textureWrap = TextureWrap::Repeat;
 
 		void CreateBindGroup();
-	};
 
-	struct MaterialInstance : public AssetHandle
-	{
-		using AssetHandle::AssetHandle;
-		MaterialInstanceData& Get() const;
-
-		const Shader GetShader() const;
 
 		template<typename T>
 		void SetUniformData(const T& data)
 		{
-			MaterialInstanceData& instanceData = Get();
-
-			size_t bufferSize = instanceData.material.Get().shader.Get().materialUniformBufferSize;
+			size_t bufferSize = materialHandle.Get().shaderHandle.Get().materialUniformBufferSize;
 
 			if (sizeof(T) != bufferSize)
 			{
@@ -92,31 +83,29 @@ namespace engine
 				return;
 			}
 
-			std::memcpy(instanceData.uniformData.data(), &data, sizeof(T));
+			std::memcpy(uniformData.data(), &data, sizeof(T));
 		}
 
 		void SetTextureFilter(TextureFilter filter);
 		void SetTextureWrap(TextureWrap wrap);
 
-		TextureFilter GetTextureFilter() const;
-		TextureWrap GetTextureWrap() const;
-
-		void SetTexture(uint32_t bindingIndex, Texture2D texture);
-		Texture2D GetTexture(uint32_t bindingIndex) const;
-
-		wgpu::BindGroup GetBindGroup() const;
-		wgpu::Buffer GetUniformBuffer() const;
-		const std::vector<std::byte>& GetUniformData() const;
-		const std::unordered_map<uint32_t, Texture2D>& GetTextures() const;
+		void SetTexture(uint32_t bindingIndex, TextureHandle texture);
+		TextureHandle GetTexture(uint32_t bindingIndex) const;
 
 		wgpu::RenderPipeline GetPipeline() const;
-
-		static const MaterialInstance Pink;
-		static const MaterialInstance White;
-		static const MaterialInstance Null;
 	};
 
-	inline constexpr MaterialInstance MaterialInstance::Pink{ 0 };
-	inline constexpr MaterialInstance MaterialInstance::White{ 1 };
-	inline constexpr MaterialInstance MaterialInstance::Null{ ~0u };
+	struct MaterialInstanceHandle : public AssetHandle
+	{
+		using AssetHandle::AssetHandle;
+		MaterialInstance& Get() const;
+
+		static const MaterialInstanceHandle Pink;
+		static const MaterialInstanceHandle White;
+		static const MaterialInstanceHandle Null;
+	};
+
+	inline constexpr MaterialInstanceHandle MaterialInstanceHandle::Pink{ 0 };
+	inline constexpr MaterialInstanceHandle MaterialInstanceHandle::White{ 1 };
+	inline constexpr MaterialInstanceHandle MaterialInstanceHandle::Null{ ~0u };
 }

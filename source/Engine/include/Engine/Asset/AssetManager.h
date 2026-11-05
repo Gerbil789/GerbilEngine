@@ -13,13 +13,13 @@ namespace engine
 {
 	template <typename Handle> struct AssetTraits;
 
-	template <> struct AssetTraits<Texture2D> { using DataType = Texture2DData; };
-	template <> struct AssetTraits<Mesh> { using DataType = MeshAsset; };
-	template <> struct AssetTraits<Shader> { using DataType = ShaderAsset; };
-	template <> struct AssetTraits<Material> { using DataType = MaterialAsset; };
-	template <> struct AssetTraits<MaterialInstance> { using DataType = MaterialInstanceData; };
-	template <> struct AssetTraits<AudioClip> { using DataType = AudioClipAsset; };
-	template <> struct AssetTraits<Scene> { using DataType = SceneAsset; };
+	template <> struct AssetTraits<TextureHandle> { using DataType = Texture2D; };
+	template <> struct AssetTraits<MeshHandle> { using DataType = Mesh; };
+	template <> struct AssetTraits<ShaderHandle> { using DataType = Shader; };
+	template <> struct AssetTraits<MaterialHandle> { using DataType = Material; };
+	template <> struct AssetTraits<MaterialInstanceHandle> { using DataType = MaterialInstance; };
+	template <> struct AssetTraits<AudioClipHandle> { using DataType = AudioClip; };
+	template <> struct AssetTraits<SceneHandle> { using DataType = Scene; };
 
 	template <typename Handle>
 	using AssetDataMap = std::unordered_map<Handle, typename AssetTraits<Handle>::DataType, AssetHasher>;
@@ -59,23 +59,23 @@ namespace engine
 
 	private:
 		inline static std::tuple<
-			AssetDataMap<Texture2D>,
-			AssetDataMap<Mesh>,
-			AssetDataMap<Shader>,
-			AssetDataMap<Material>,
-			AssetDataMap<MaterialInstance>,
-			AssetDataMap<AudioClip>,
-			AssetDataMap<Scene>
+			AssetDataMap<TextureHandle>,
+			AssetDataMap<MeshHandle>,
+			AssetDataMap<ShaderHandle>,
+			AssetDataMap<MaterialHandle>,
+			AssetDataMap<MaterialInstanceHandle>,
+			AssetDataMap<AudioClipHandle>,
+			AssetDataMap<SceneHandle>
 		> m_LoadedAssets;
 
 		inline static std::tuple<
-			AssetSet<Texture2D>,
-			AssetSet<Mesh>,
-			AssetSet<Shader>,
-			AssetSet<Material>,
-			AssetSet<MaterialInstance>,
-			AssetSet<AudioClip>,
-			AssetSet<Scene>
+			AssetSet<TextureHandle>,
+			AssetSet<MeshHandle>,
+			AssetSet<ShaderHandle>,
+			AssetSet<MaterialHandle>,
+			AssetSet<MaterialInstanceHandle>,
+			AssetSet<AudioClipHandle>,
+			AssetSet<SceneHandle>
 		> m_DirtyAssets;
 	};
 }

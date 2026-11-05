@@ -18,16 +18,15 @@ namespace editor
 
     void Execute() override
     {
-      engine::Scene scene = engine::SceneManager::GetActiveScene();
-      entt::registry& registry = scene.GetRegistry();
+      engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
 
       m_Entity = scene.CreateEntity<Components...>(m_Name);
 
       if (m_Parent != entt::null)
       {
-        auto& hc = registry.get<engine::HierarchyComponent>(m_Entity);
+        auto& hc = scene.registry.get<engine::HierarchyComponent>(m_Entity);
         hc.parent = m_Parent;
-        registry.get<engine::HierarchyComponent>(m_Parent).children.push_back(m_Entity);
+        scene.registry.get<engine::HierarchyComponent>(m_Parent).children.push_back(m_Entity);
       }
       else
       {
@@ -45,7 +44,7 @@ namespace editor
     {
       if (m_Entity == entt::null) return;
 
-      entt::registry& registry = engine::SceneManager::GetActiveScene().GetRegistry();
+      entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
       registry.destroy(m_Entity);
     }
 

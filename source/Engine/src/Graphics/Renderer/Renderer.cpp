@@ -80,7 +80,7 @@ namespace engine
 		CreateShadowTexture();
 
 		CreateEnvironmentUniformBuffer();
-		SetEnvironment(Texture2D::HDR);
+		SetEnvironment(TextureHandle::HDR);
 
 		SetSize(width, height);
 	}
@@ -140,7 +140,7 @@ namespace engine
 		//}
 	}
 
-	void Renderer::SetEnvironment(Texture2D texture)
+	void Renderer::SetEnvironment(TextureHandle texture)
 	{
 		m_FrameContext.environment = EnvironmentBaker::BakeEnvironment(texture);
 		CreateEnvironmentBindGroup();
@@ -195,7 +195,7 @@ namespace engine
 
 		// 4 - BRDFIntMap
 		{
-			const Texture2DData brdfTexture = TextureImporter::LoadTexture2D("resources/hdr/brdf_integration_map_ct_ggx.hdr");
+			const Texture2D brdfTexture = TextureImporter::LoadTexture2D("resources/hdr/brdf_integration_map_ct_ggx.hdr");
 			entries[4].binding = 4;
 			entries[4].textureView = brdfTexture.textureView;
 		}
@@ -277,7 +277,7 @@ namespace engine
 		m_FrameContext.depthTextureArrayView = texture.CreateView(&arrayViewDesc);
 	}
 
-	void Renderer::Render(const DrawList& drawList, CameraComponent* camera, wgpu::TextureView targetView)
+	void Renderer::Render(const DrawList& drawList, const CameraComponent* camera, wgpu::TextureView targetView)
 	{
 		m_FrameContext.drawList = drawList;
 		m_FrameContext.camera = camera;
