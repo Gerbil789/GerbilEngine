@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Asset/AssetHandle.h"
+#include "Engine/Asset/Handle.h"
 #include "Engine/Graphics/Texture/TextureCube.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 

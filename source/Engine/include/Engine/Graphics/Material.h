@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Asset/AssetHandle.h"
 #include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/Pipeline.h"
 #include "Engine/Graphics/SamplerPool.h"
@@ -10,6 +9,7 @@
 
 namespace engine
 {
+	//TODO: move away...
 	struct alignas(16) PBRParams
 	{
 		alignas(16) glm::vec4 albedo;
@@ -40,18 +40,6 @@ namespace engine
 		ShaderHandle shaderHandle;
 		wgpu::RenderPipeline pipeline;
 	};
-
-	struct MaterialHandle : public AssetHandle
-	{
-		using AssetHandle::AssetHandle;
-		Material& Get() const;
-
-		static const MaterialHandle Pink;
-		static const MaterialHandle White;
-	};
-
-	inline constexpr MaterialHandle MaterialHandle::Pink{ 0 };
-	inline constexpr MaterialHandle MaterialHandle::White{ 1 };
 
 	struct MaterialInstance
 	{
@@ -94,18 +82,4 @@ namespace engine
 
 		wgpu::RenderPipeline GetPipeline() const;
 	};
-
-	struct MaterialInstanceHandle : public AssetHandle
-	{
-		using AssetHandle::AssetHandle;
-		MaterialInstance& Get() const;
-
-		static const MaterialInstanceHandle Pink;
-		static const MaterialInstanceHandle White;
-		static const MaterialInstanceHandle Null;
-	};
-
-	inline constexpr MaterialInstanceHandle MaterialInstanceHandle::Pink{ 0 };
-	inline constexpr MaterialInstanceHandle MaterialInstanceHandle::White{ 1 };
-	inline constexpr MaterialInstanceHandle MaterialInstanceHandle::Null{ ~0u };
 }

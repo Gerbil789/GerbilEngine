@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Engine/Audio/AudioClip.h"
+#include "Engine/Asset/Handle.h"
 
 namespace editor
 {
 	class AudioInspectorPanel
 	{
 	public:
-		void Draw(engine::AudioClipHandle clip);
+		void Draw(engine::AudioClipHandle handle);
 	};
 }

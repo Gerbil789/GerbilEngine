@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Editor/Command/ICommand.h"
-#include "Engine/Core/Scene.h"
-#include "Engine/Event/EventBus.h"
+#include "Engine/Core/SceneManager.h"
 #include "Editor/Core/EditorEvent.h"
 
 namespace editor

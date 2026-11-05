@@ -126,11 +126,4 @@ namespace engine
 		static const Binding invalidBinding{};
 		return invalidBinding;
 	}
-
-
-
-	Shader& ShaderHandle::Get() const
-	{
-		return AssetManager::GetAsset(*this);
-	}
 }

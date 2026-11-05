@@ -1,8 +1,6 @@
 #include "AudioInspectorPanel.h"
-#include "Engine/Audio/AudioClip.h"
 #include "Engine/Audio/Audio.h"
 #include "Editor/Windows/Utility/Property.h"
-#include "Engine/Asset/AssetManager.h"
 #include <imgui.h>
 
 namespace editor
@@ -13,13 +11,13 @@ namespace editor
 		engine::AudioInstance m_Instance;
 	}
 
-	void AudioInspectorPanel::Draw(engine::AudioClipHandle clip)
+	void AudioInspectorPanel::Draw(engine::AudioClipHandle handle)
 	{
-		if(clip != m_AudioClip)
+		if(handle != m_AudioClip)
 		{
 			engine::Audio::Stop(m_Instance);
 
-			m_AudioClip = clip;
+			m_AudioClip = handle;
 			m_Instance = {};
 		}
 

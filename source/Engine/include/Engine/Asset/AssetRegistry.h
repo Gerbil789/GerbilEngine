@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Asset/AssetType.h"
+#include "Engine/Asset/Handle.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Shader.h"
@@ -66,10 +67,10 @@ namespace engine
 		static AssetType GetAssetType(const std::filesystem::path& path);
 		static AssetType GetAssetType(Uuid id);
 
-		template<typename Handle>
-		static const AssetMap<Handle>& GetRecords()
+		template<typename T>
+		static const AssetMap<Handle<T>>& GetRecords()
 		{
-			return std::get<AssetMap<Handle>>(s_Records);
+			return std::get<AssetMap<Handle<T>>>(s_Records);
 		}
 
 	private:

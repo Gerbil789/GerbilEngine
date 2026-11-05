@@ -3,6 +3,7 @@
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Event/EventBus.h"
 #include "Engine/Event/ApplicationEvent.h"
+#include "Engine/Core/Scene.h"
 #include "Engine/Core/Log.h"
 
 namespace engine

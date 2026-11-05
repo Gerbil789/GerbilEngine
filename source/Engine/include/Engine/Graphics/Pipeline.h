@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Engine/Asset/AssetHandle.h"
-#include "Engine/Graphics/Shader.h"
+#include "Engine/Asset/Handle.h"
 #include <webgpu/webgpu_cpp.h>
 #include <unordered_map>
 

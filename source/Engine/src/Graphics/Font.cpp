@@ -17,8 +17,8 @@ namespace engine
 			throw std::runtime_error("Failed to load font file.");
 		}
 
-		s_TextureAtlas = TextureHandle::DEFAULT_FONT_ATLAS; // Texture atlas loading is handled in asset manager, so we just set the UUID here.
-
+		s_TextureAtlas = texture::DefaultFontAtlas;
+		
 		for (Font& font : s_JsonData.variants)
 		{
 			s_FontVariantMap[font.name] = &font;

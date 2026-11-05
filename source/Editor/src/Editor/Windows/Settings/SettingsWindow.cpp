@@ -46,7 +46,7 @@ namespace editor
 
 			engine::TextureHandle texture = scene.GetEnvironmentTexture();
 
-			if (AssetField("Environment", texture, engine::TextureHandle::HDR).changed)
+			if (AssetField("Environment", texture, engine::texture::HDR).changed)
 			{
 				scene.SetEnvironmentTexture(texture);
 

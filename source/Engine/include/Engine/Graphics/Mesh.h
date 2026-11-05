@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Asset/AssetHandle.h"
 #include "Engine/Math/AABB.h"
 #include <vector>
 #include <webgpu/webgpu_cpp.h>
@@ -41,18 +40,4 @@ namespace engine
 		wgpu::Buffer indexBuffer;
 		wgpu::Buffer wireIndexBuffer;
 	};
-
-	struct MeshHandle : public AssetHandle
-	{
-		using AssetHandle::AssetHandle;
-		Mesh& Get() const;
-
-		static const MeshHandle Empty;
-		static const MeshHandle Cube;
-		static const MeshHandle Sphere;
-	};
-
-	inline constexpr MeshHandle MeshHandle::Empty{ 0 };
-	inline constexpr MeshHandle MeshHandle::Cube{ 1 };
-	inline constexpr MeshHandle MeshHandle::Sphere{ 2 };
 }

@@ -1,5 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Asset/AssetRegistry.h"
+#include "Engine/Asset/Handle.h"
 #include "Engine/Core/Project.h"
 #include "Engine/Core/Log.h"
 #include <glaze/glaze.hpp>

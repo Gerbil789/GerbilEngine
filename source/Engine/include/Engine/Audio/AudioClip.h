@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Asset/AssetHandle.h"
 #include <filesystem>
 #include <vector>
 
@@ -16,14 +15,4 @@ namespace engine
 		uint32_t channels = 0;
 		uint32_t sampleRate = 0;
 	};
-
-	struct AudioClipHandle : public AssetHandle
-	{
-		using AssetHandle::AssetHandle;
-		AudioClip& Get() const;
-
-		static const AudioClipHandle null;
-	};
-
-	inline constexpr AudioClipHandle AudioClipHandle::null{0};
 }

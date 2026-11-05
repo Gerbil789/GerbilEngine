@@ -66,9 +66,4 @@ namespace engine
 	{
 		return systems;
 	}
-
-	Scene& SceneHandle::Get() const
-	{
-		return AssetManager::GetAsset(*this);
-	}
 }

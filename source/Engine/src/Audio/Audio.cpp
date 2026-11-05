@@ -38,7 +38,7 @@ namespace engine
 
   static Voice* GetVoice(AudioInstance instance)
   {
-    if (instance == AudioClipHandle::null) return nullptr;
+    if (instance == audio::Empty) return nullptr;
 
     for (uint32_t i = 0; i < MaxVoices; i++)
     {
@@ -121,7 +121,7 @@ namespace engine
 
   AudioInstance Audio::Play2D(AudioClipHandle clip)
   {
-    if (clip != AudioClipHandle::null)
+    if (clip != audio::Empty)
     {
       LOG_WARNING("AudioClip is invalid/null");
       return {};
@@ -175,7 +175,7 @@ namespace engine
 
   AudioInstance Audio::Play3D(AudioClipHandle clip, const glm::vec3& position)
   {
-    if (clip != AudioClipHandle::null)
+    if (clip != audio::Empty)
     {
       LOG_WARNING("AudioClip is invalid/null");
       return {};
@@ -218,7 +218,7 @@ namespace engine
     {
       LOG_ERROR("Failed to initialize audio voice");
       ma_audio_buffer_uninit(&voice->buffer); // Cleanup
-      voice->active = false; // <-- Add this
+      voice->active = false;
       return {};
     }
 

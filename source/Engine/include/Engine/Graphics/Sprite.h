@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Graphics/Texture/Texture2D.h"
+#include "Engine/Asset/Handle.h"
 #include <glm/glm.hpp>
 
 namespace engine

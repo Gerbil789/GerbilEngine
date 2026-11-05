@@ -30,9 +30,4 @@ namespace engine
 
 		ma_decoder_uninit(&decoder);
 	}
-
-	AudioClip& AudioClipHandle::Get() const
-	{
-		return AssetManager::GetAsset(*this);
-	}
 }

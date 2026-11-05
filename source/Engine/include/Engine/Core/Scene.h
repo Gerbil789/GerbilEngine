@@ -27,7 +27,7 @@ namespace engine
 
 		entt::entity m_PrimaryCameraEntity = entt::null;
 
-		TextureHandle environmentTexture = TextureHandle::HDR;
+		TextureHandle environmentTexture = texture::HDR;
 		BoundingVolumeHiearchy bvh;
 
 		std::vector<std::function<void()>> systems;
@@ -55,21 +55,21 @@ namespace engine
 		entt::entity GetEntity(Uuid entityId) const;
 
 		CameraComponent* GetPrimaryCamera()
-    {
-        if (registry.valid(m_PrimaryCameraEntity))
-        {
-            return registry.try_get<CameraComponent>(m_PrimaryCameraEntity);
-        }
+		{
+			if (registry.valid(m_PrimaryCameraEntity))
+			{
+				return registry.try_get<CameraComponent>(m_PrimaryCameraEntity);
+			}
 
-        return nullptr;
-    }
+			return nullptr;
+		}
 
-    void SetPrimaryCamera(entt::entity entity)
-    {
-        m_PrimaryCameraEntity = entity;
-    }
+		void SetPrimaryCamera(entt::entity entity)
+		{
+			m_PrimaryCameraEntity = entity;
+		}
 
-    entt::entity GetPrimaryCameraEntity() const { return m_PrimaryCameraEntity; }
+		entt::entity GetPrimaryCameraEntity() const { return m_PrimaryCameraEntity; }
 
 		const std::vector<entt::entity>& GetRootEntities() const;
 		void InsertRootEntity(entt::entity entity, size_t index);
@@ -86,16 +86,4 @@ namespace engine
 
 		const std::vector<std::function<void()>>& GetSystems() const;
 	};
-
-
-
-	struct SceneHandle : public AssetHandle
-	{
-		using AssetHandle::AssetHandle;
-		Scene& Get() const;
-
-		static const SceneHandle Default;
-	};
-
-	inline constexpr SceneHandle SceneHandle::Default{ 0 };
 }

@@ -38,7 +38,7 @@ namespace editor
 		constexpr int AtlasSizePx = 2048;
 		constexpr int CellsPerSide = AtlasSizePx / 64;
 
-		engine::TextureHandle m_AtlasTexture = engine::TextureHandle::EDITOR_THUMBNAIL_ATLAS;
+		engine::TextureHandle m_AtlasTexture = engine::texture::EditorThumbnailAtlas;
 		int m_NextFreeSlot = 0;
 
 		wgpu::Texture m_ScratchpadTexture;
@@ -60,7 +60,7 @@ namespace editor
 
 		for (const auto& [icon, coords] : IconMap)
 		{
-			m_Icons.emplace(icon, engine::Sprite::CreateFromGrid(engine::TextureHandle::EDITOR_ICONS, m_SpritesheetSize, coords, m_CellSize));
+			m_Icons.emplace(icon, engine::Sprite::CreateFromGrid(engine::texture::EditorIcons, m_SpritesheetSize, coords, m_CellSize));
 		}
 
 		wgpu::TextureDescriptor scratchDesc;
@@ -166,10 +166,10 @@ namespace editor
 			sprite = GetEditorIcon(Icon::Unknown); //TODO
 			break;
 		case engine::AssetType::MaterialInstance:
-			sprite = RenderToAtlas(engine::MeshHandle::Sphere, engine::MaterialInstanceHandle{ id });
+			sprite = RenderToAtlas(engine::mesh::Sphere, engine::MaterialInstanceHandle{ id });
 			break;
 		case engine::AssetType::Mesh:
-			sprite = RenderToAtlas(engine::MeshHandle{ id }, engine::MaterialInstanceHandle::White);
+			sprite = RenderToAtlas(engine::MeshHandle{ id }, engine::material_instance::White);
 			break;
 		case engine::AssetType::Scene:
 			sprite = GetEditorIcon(Icon::Scene);

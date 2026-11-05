@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/Asset/AssetHandle.h"
 #include <webgpu/webgpu_cpp.h>
 
 namespace engine
@@ -25,27 +24,4 @@ namespace engine
 		wgpu::TextureView textureView;
 		wgpu::TextureFormat textureFormat;
 	};
-
-	struct TextureHandle : public AssetHandle
-	{
-		using AssetHandle::AssetHandle;
-		Texture2D& Get() const;
-
-		static const TextureHandle White;
-		static const TextureHandle Black;
-		static const TextureHandle Normal;
-		static const TextureHandle HDR;
-
-		static const TextureHandle EDITOR_ICONS;
-		static const TextureHandle DEFAULT_FONT_ATLAS;
-		static const TextureHandle EDITOR_THUMBNAIL_ATLAS;
-	};
-
-	inline constexpr TextureHandle TextureHandle::White{0};
-	inline constexpr TextureHandle TextureHandle::Normal{1};
-	inline constexpr TextureHandle TextureHandle::HDR{2};
-
-	inline constexpr TextureHandle TextureHandle::EDITOR_ICONS{3};
-	inline constexpr TextureHandle TextureHandle::DEFAULT_FONT_ATLAS{4};
-	inline constexpr TextureHandle TextureHandle::EDITOR_THUMBNAIL_ATLAS{5};
 }

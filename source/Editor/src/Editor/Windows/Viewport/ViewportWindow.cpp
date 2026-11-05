@@ -6,12 +6,10 @@
 #include "Editor/Command/ChangeEditorStateCommand.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Engine/Core/SceneManager.h"
-#include "Engine/Core/Scene.h"
 #include "Engine/Graphics/GraphicsContext.h"
-// #include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/Log.h"
 #include "Engine/System/CameraSystem.h" //TODO: remove from this file
-// #include "Engine/System/TransformSystem.h"
 #include "Engine/Core/Application.h"
 #include <glm/glm.hpp>
 

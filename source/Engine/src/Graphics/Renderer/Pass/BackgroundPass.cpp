@@ -7,7 +7,7 @@ namespace engine
   void BackgroundPass::Execute(wgpu::CommandEncoder& encoder, const FrameContext& context)
   {
     PipelineSpecification spec;
-    spec.shaderHandle = ShaderHandle::Skybox;
+    spec.shaderHandle = shader::Skybox;
     spec.cullMode = wgpu::CullMode::None;
     spec.depthWrite = false;
     spec.layoutOverrides = { RenderPipelineLayouts::GetViewLayout(), RenderPipelineLayouts::GetEnvironmentLayout() };

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Engine/Graphics/Texture/Texture2D.h"
+#include "Engine/Asset/Handle.h"
 
 namespace editor
 {
 	class TextureInspectorPanel
 	{
 	public:
-		void Draw(engine::TextureHandle texture);
+		void Draw(engine::TextureHandle handle);
 	};
 }

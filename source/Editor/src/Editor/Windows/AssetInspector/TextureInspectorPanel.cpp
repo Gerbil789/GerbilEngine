@@ -7,17 +7,17 @@
 
 namespace editor
 {
-	void TextureInspectorPanel::Draw(engine::TextureHandle texture)
+	void TextureInspectorPanel::Draw(engine::TextureHandle handle)
 	{
-		const std::string& name = engine::AssetRegistry::GetAssetPath(texture).stem().string();
-		const engine::Texture2D& textureData = texture.Get();
+		const std::string& name = engine::AssetRegistry::GetAssetPath(handle).stem().string();
+		const engine::Texture2D& texture = handle.Get();
 
-		ImGui::TextUnformatted(std::format("Texture: {} ({}x{}))", name, textureData.width, textureData.height).c_str());
+		ImGui::TextUnformatted(std::format("Texture: {} ({}x{}))", name, texture.width, texture.height).c_str());
 
 		ImVec2 available = ImGui::GetContentRegionAvail();
 
-		float textureWidth = static_cast<float>(textureData.width);
-		float textureHeight = static_cast<float>(textureData.height);
+		float textureWidth = static_cast<float>(texture.width);
+		float textureHeight = static_cast<float>(texture.height);
 
 		float aspect = textureWidth / textureHeight;
 
@@ -32,6 +32,6 @@ namespace editor
 			imageSize.x = imageSize.y * aspect;
 		}
 
-		ImGui::Image(textureData.textureView.Get(), imageSize);
+		ImGui::Image(texture.textureView.Get(), imageSize);
 	}
 }

@@ -190,7 +190,7 @@ namespace editor
 	};
 
 	template <typename Handle>
-	requires std::derived_from<Handle, engine::AssetHandle>
+	// requires std::derived_from<Handle, engine::AssetHandle>
 	EditResult AssetField(std::string_view label, Handle& handle, Handle clearValue = Handle{})
 	{
 		PropertyRow row(label);

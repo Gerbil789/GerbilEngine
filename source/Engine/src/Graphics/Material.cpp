@@ -81,11 +81,6 @@ namespace engine
 		pipeline = PipelineCache::GetPipeline(spec);
 	}
 
-	Material& MaterialHandle::Get() const
-	{
-		return AssetManager::GetAsset(*this);
-	}
-
 	MaterialInstance::MaterialInstance(MaterialHandle material)
 	{
 		this->materialHandle = material;
@@ -141,12 +136,6 @@ namespace engine
 	}
 
 
-
-	MaterialInstance& MaterialInstanceHandle::Get() const
-	{
-		return AssetManager::GetAsset(*this);
-	}
-
 	void MaterialInstance::SetTextureFilter(TextureFilter filter)
 	{
 		textureFilter = filter;
@@ -169,9 +158,9 @@ namespace engine
 			return;
 		}
 
-		if (texture == TextureHandle::White && binding.name.find("Normal") != std::string::npos)
+		if (texture == texture::White && binding.name.find("Normal") != std::string::npos)
 		{
-			texture = TextureHandle::Normal;
+			texture = texture::Normal;
 		}
 
 		textures[bindingIndex] = texture;

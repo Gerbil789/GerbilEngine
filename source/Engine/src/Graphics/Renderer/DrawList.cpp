@@ -17,7 +17,7 @@ namespace engine
 
     for (const auto& [entity, mc, wtc] : view.each())
     {
-      if (mc.mesh == MeshHandle::Empty) continue;
+      if (mc.mesh == mesh::Empty) continue;
 
       const auto& subMeshes = mc.mesh.Get().subMeshes;
 

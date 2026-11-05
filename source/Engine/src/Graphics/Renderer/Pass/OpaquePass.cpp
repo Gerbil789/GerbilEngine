@@ -34,8 +34,8 @@ namespace engine
     pass.SetBindGroup(1, context.environmentBindGroup, 0, nullptr);
     pass.SetBindGroup(3, context.modelBindGroup, 0, nullptr);
 
-    MeshHandle currentMesh = MeshHandle::Empty;
-    MaterialInstanceHandle currentMaterialInstance = MaterialInstanceHandle::Null;
+    MeshHandle currentMesh = mesh::Empty;
+    MaterialInstanceHandle currentMaterialInstance = material_instance::Pink;
 
     uint32_t i = 0;
     for (const auto& item : context.drawList.items)

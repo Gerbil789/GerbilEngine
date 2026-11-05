@@ -1,5 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Pipeline.h"
+#include "Engine/Graphics/Shader.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Graphics/Utility.h"

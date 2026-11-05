@@ -1,4 +1,5 @@
 #include "enginepch.h"
+#include "Engine/Asset/Handle.h"
 #include "Engine/Asset/Serializer/Serializer.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Core/Project.h"
@@ -41,12 +42,12 @@ struct glz::meta<engine::Uuid> {
 	static constexpr auto value = [](auto& u) -> uint64_t& { return reinterpret_cast<uint64_t&>(u); };
 };
 
-template <>
-struct glz::meta<engine::AssetHandle>
-{
-	using T = engine::AssetHandle;
-	static constexpr auto value = [](auto& h) -> uint64_t& { return h.id; };
-};
+// template <>
+// struct glz::meta<Handle>
+// {
+// 	using T = Handle;
+// 	static constexpr auto value = [](auto& h) -> uint64_t& { return h.id; };
+// };
 
 // --- Added Glaze reflection for Engine asset types ---
 template <>

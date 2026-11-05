@@ -230,7 +230,7 @@ namespace engine
 		}
 
 		Scene scene;
-		scene.environmentTexture = TextureHandle::HDR; //TODO: store in scene file
+		scene.environmentTexture = texture::HDR; //TODO: store in scene file
 
 		entt::registry& registry = scene.registry;
 

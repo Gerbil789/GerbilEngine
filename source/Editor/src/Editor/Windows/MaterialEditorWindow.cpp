@@ -11,14 +11,14 @@ namespace editor
 {
 	namespace
 	{
-		engine::MaterialInstanceHandle m_MaterialInstance = engine::MaterialInstanceHandle::Null;
+		engine::MaterialInstanceHandle m_MaterialInstance = engine::material_instance::Pink;
 	}
 
 	void MaterialEditorWindow::Draw()
 	{
 		ImGui::Begin("Material Instance");
 
-		if (m_MaterialInstance == engine::MaterialInstanceHandle::Null)
+		if (m_MaterialInstance == engine::material_instance::Pink)
 		{
 			ImGui::Text("No material selected");
 			ImGui::End();

@@ -58,9 +58,4 @@ namespace engine
 			GenerateMipmaps(texture);
 		}
 	}
-
-	Texture2D& TextureHandle::Get() const
-	{
-		return AssetManager::GetAsset(*this);
-	}
 }

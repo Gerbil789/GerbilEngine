@@ -80,7 +80,7 @@ namespace engine
 		CreateShadowTexture();
 
 		CreateEnvironmentUniformBuffer();
-		SetEnvironment(TextureHandle::HDR);
+		SetEnvironment(texture::HDR);
 
 		SetSize(width, height);
 	}

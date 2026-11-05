@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Engine/Graphics/Shader.h"
+#include "Engine/Asset/Handle.h"
 
 namespace editor
 {
 	class ShaderInspectorPanel
 	{
 	public:
-		void Draw(engine::ShaderHandle shader);
+		void Draw(engine::ShaderHandle handle);
 	};
 }

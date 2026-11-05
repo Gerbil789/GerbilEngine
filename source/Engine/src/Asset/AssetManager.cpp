@@ -12,133 +12,98 @@ namespace engine
 {
   void AssetManager::Initialize()
   {
-    auto addBuiltIn = [&]<typename Handle, typename... Args>(Handle handle, const std::string& nameOrPath, Args&&... args)
+    auto addBuiltIn = [&]<typename T, typename... Args>(Handle<T> handle, const std::string& nameOrPath, Args&&... args)
     {
       AssetRegistry::AddRecord(handle, nameOrPath);
       
-      auto& assetMap = std::get<AssetDataMap<Handle>>(m_LoadedAssets);
+      auto& assetMap = std::get<AssetDataMap<T>>(m_LoadedAssets);
       assetMap.try_emplace(handle, std::forward<Args>(args)...);
     };
 
-    addBuiltIn(TextureHandle::White, "White Texture", TextureSpecification{}, std::array<uint32_t, 1>{0xFFFFFFFF}.data());
-    addBuiltIn(TextureHandle::Normal, "Normal Texture", TextureSpecification{}, std::array<uint32_t, 1>{0xFFFF8080}.data());
-    addBuiltIn(TextureHandle::HDR, "resources/hdr/autumn_field_puresky_4k.hdr", TextureImporter::LoadTexture2D("resources/hdr/autumn_field_puresky_4k.hdr"));
-    addBuiltIn(TextureHandle::EDITOR_ICONS, "resources/icons/icons.png", TextureImporter::LoadTexture2D("resources/icons/icons.png"));
-    addBuiltIn(TextureHandle::DEFAULT_FONT_ATLAS, "resources/fonts/atlas.png", TextureImporter::LoadTexture2D("resources/fonts/atlas.png"));
-    addBuiltIn(TextureHandle::EDITOR_THUMBNAIL_ATLAS, "Editor Thumbnail Atlas", TextureSpecification{ .width = 2048, .height = 2048, .format = engine::GraphicsContext::GetSurfaceFormat() }, nullptr);
+    addBuiltIn(texture::White, "White Texture", TextureSpecification{}, std::array<uint32_t, 1>{0xFFFFFFFF}.data());
+    addBuiltIn(texture::Normal, "Normal Texture", TextureSpecification{}, std::array<uint32_t, 1>{0xFFFF8080}.data());
+    addBuiltIn(texture::HDR, "resources/hdr/autumn_field_puresky_4k.hdr", TextureImporter::LoadTexture2D("resources/hdr/autumn_field_puresky_4k.hdr"));
+    addBuiltIn(texture::EditorIcons, "resources/icons/icons.png", TextureImporter::LoadTexture2D("resources/icons/icons.png"));
+    addBuiltIn(texture::DefaultFontAtlas, "resources/fonts/atlas.png", TextureImporter::LoadTexture2D("resources/fonts/atlas.png"));
+    addBuiltIn(texture::EditorThumbnailAtlas, "Editor Thumbnail Atlas", TextureSpecification{ .width = 2048, .height = 2048, .format = engine::GraphicsContext::GetSurfaceFormat() }, nullptr);
 
-    addBuiltIn(MeshHandle::Empty, "Empty Mesh", MeshImporter::LoadMesh("resources/models/cube.glb"));
-    addBuiltIn(MeshHandle::Cube, "resources/models/cube.glb", MeshImporter::LoadMesh("resources/models/cube.glb"));
-    addBuiltIn(MeshHandle::Sphere, "resources/models/sphere.glb", MeshImporter::LoadMesh("resources/models/sphere.glb"));
+    addBuiltIn(mesh::Empty, "Empty Mesh", MeshImporter::LoadMesh("resources/models/cube.glb"));
+    addBuiltIn(mesh::Cube, "resources/models/cube.glb", MeshImporter::LoadMesh("resources/models/cube.glb"));
+    addBuiltIn(mesh::Sphere, "resources/models/sphere.glb", MeshImporter::LoadMesh("resources/models/sphere.glb"));
 
-    addBuiltIn(ShaderHandle::Pink, "resources/shaders/pink.wgsl", ShaderImporter::LoadShader("resources/shaders/pink.wgsl"));
-    addBuiltIn(ShaderHandle::Flat, "resources/shaders/flat.wgsl", ShaderImporter::LoadShader("resources/shaders/flat.wgsl"));
-    addBuiltIn(ShaderHandle::UI, "resources/shaders/ui.wgsl", ShaderImporter::LoadShader("resources/shaders/ui.wgsl"));
-    addBuiltIn(ShaderHandle::Skybox, "resources/shaders/skybox.wgsl", ShaderImporter::LoadShader("resources/shaders/skybox.wgsl"));
-    addBuiltIn(ShaderHandle::Normal, "resources/shaders/normal.wgsl", ShaderImporter::LoadShader("resources/shaders/normal.wgsl"));
+    addBuiltIn(shader::Pink, "resources/shaders/pink.wgsl", ShaderImporter::LoadShader("resources/shaders/pink.wgsl"));
+    addBuiltIn(shader::Flat, "resources/shaders/flat.wgsl", ShaderImporter::LoadShader("resources/shaders/flat.wgsl"));
+    addBuiltIn(shader::UI, "resources/shaders/ui.wgsl", ShaderImporter::LoadShader("resources/shaders/ui.wgsl"));
+    addBuiltIn(shader::Skybox, "resources/shaders/skybox.wgsl", ShaderImporter::LoadShader("resources/shaders/skybox.wgsl"));
+    addBuiltIn(shader::Normal, "resources/shaders/normal.wgsl", ShaderImporter::LoadShader("resources/shaders/normal.wgsl"));
 
-    addBuiltIn(SceneHandle::Default, "resources/scenes/default.scene", SceneImporter::LoadScene("resources/scenes/default.scene"));
+    addBuiltIn(scene::Empty, "Empty Scene", Scene());
+    addBuiltIn(scene::Default, "resources/scenes/default.scene", SceneImporter::LoadScene("resources/scenes/default.scene"));
     
-    addBuiltIn(MaterialHandle::Pink, "Pink Material", Material(ShaderHandle::Pink));
-    addBuiltIn(MaterialHandle::Pink, "White Material", Material(ShaderHandle::Flat));
+    addBuiltIn(material::Pink, "Pink Material", Material(shader::Pink));
+    addBuiltIn(material::Pink, "White Material", Material(shader::Flat));
     
-    addBuiltIn(MaterialInstanceHandle::Pink, "Pink Material Instance", MaterialInstance(MaterialHandle::Pink));
-    addBuiltIn(MaterialInstanceHandle::Pink, "White Material Instance", MaterialInstance(MaterialHandle::White)); //TODO: white material is not working, it fallbacks to the pink
+    addBuiltIn(material_instance::Pink, "Pink Material Instance", MaterialInstance(material::Pink));
+    addBuiltIn(material_instance::Pink, "White Material Instance", MaterialInstance(material::White)); //TODO: white material is not working, it fallbacks to the pink
 
-    addBuiltIn(AudioClipHandle::null, "Empty Audio Clip", AudioClip{});
+    addBuiltIn(audio::Empty, "Empty Audio Clip", AudioClip{});
 
-    auto& textures = std::get<AssetDataMap<TextureHandle>>(m_LoadedAssets);
-    for (const auto& [handle, path] : AssetRegistry::GetRecords<TextureHandle>())
+    auto& textures = std::get<AssetDataMap<Texture2D>>(m_LoadedAssets);
+    for (const auto& [handle, path] : AssetRegistry::GetRecords<Texture2D>())
     {
       textures.try_emplace(handle, TextureImporter::LoadTexture2D(path));
     }
 
-    auto& meshes = std::get<AssetDataMap<MeshHandle>>(m_LoadedAssets);
-    for (const auto& [handle, path] : AssetRegistry::GetRecords<MeshHandle>())
+    auto& meshes = std::get<AssetDataMap<Mesh>>(m_LoadedAssets);
+    for (const auto& [handle, path] : AssetRegistry::GetRecords<Mesh>())
     {
       meshes.try_emplace(handle, MeshImporter::LoadMesh(path));
     }
 
-    auto& shaders = std::get<AssetDataMap<ShaderHandle>>(m_LoadedAssets);
-    for (const auto& [handle, path] : AssetRegistry::GetRecords<ShaderHandle>())
+    auto& shaders = std::get<AssetDataMap<Shader>>(m_LoadedAssets);
+    for (const auto& [handle, path] : AssetRegistry::GetRecords<Shader>())
     {
       shaders.try_emplace(handle, ShaderImporter::LoadShader(path.string()));
     }
 
-    auto& scenes = std::get<AssetDataMap<SceneHandle>>(m_LoadedAssets);
-    for (const auto& [handle, path] : AssetRegistry::GetRecords<SceneHandle>())
+    auto& scenes = std::get<AssetDataMap<Scene>>(m_LoadedAssets);
+    for (const auto& [handle, path] : AssetRegistry::GetRecords<Scene>())
     {
       scenes.try_emplace(handle, SceneImporter::LoadScene(path));
     }
 
-    auto& materials = std::get<AssetDataMap<MaterialHandle>>(m_LoadedAssets);
-    for (const auto& [handle, path] : AssetRegistry::GetRecords<MaterialHandle>())
+    auto& materials = std::get<AssetDataMap<Material>>(m_LoadedAssets);
+    for (const auto& [handle, path] : AssetRegistry::GetRecords<Material>())
     {
       materials.try_emplace(handle, Serializer::DeserializeMaterial(path));
     }
 
-    auto& materialInstances = std::get<AssetDataMap<MaterialInstanceHandle>>(m_LoadedAssets);
-    for (const auto& [handle, path] : AssetRegistry::GetRecords<MaterialInstanceHandle>())
+    auto& materialInstances = std::get<AssetDataMap<MaterialInstance>>(m_LoadedAssets);
+    for (const auto& [handle, path] : AssetRegistry::GetRecords<MaterialInstance>())
     {
       materialInstances.try_emplace(handle, Serializer::DeserializeMaterialInstance(path));
     }
 
-    auto& audioClips = std::get<AssetDataMap<AudioClipHandle>>(m_LoadedAssets);
-    for (const auto& [handle, path] : AssetRegistry::GetRecords<AudioClipHandle>())
+    auto& audioClips = std::get<AssetDataMap<AudioClip>>(m_LoadedAssets);
+    for (const auto& [handle, path] : AssetRegistry::GetRecords<AudioClip>())
     {
       audioClips.try_emplace(handle, AudioImporter::LoadAudioClip(path));
     }
   }
 
-  // template <typename Handle>
-  // Handle AssetManager::CreateAsset(const std::filesystem::path& path)
-  // {
-  //   // if constexpr (std::is_same_v<Handle, Material>)
-  //   // {
-  //   //   Material material{ Uuid::Generate() };
-  //   //   MaterialAsset data(MaterialSpecification{});
-
-  //   //   m_Materials.insert_or_assign(material, std::move(data));
-
-  //   //   m_AssetRegistry.AddRecord(material.id, path);
-  //   //   MaterialSerializer::Serialize(material, Project::AssetsDirectory() / path);
-
-  //   //   LOG_TRACE("Created new material: {}, {}", path.stem(), material.id);
-
-  //   //   return material;
-  //   // }
-  //   // else 
-  //   // if constexpr (std::is_same_v<Handle, Scene>)
-  //   // {
-  //   //   Scene scene{ Uuid::Generate() };
-  //   //   SceneAsset data;
-
-  //   //   m_Scenes.insert_or_assign(scene, std::move(data));
-
-  //   //   AssetRegistry::AddRecord(scene, path);
-  //   //   Serializer::SerializeScene(scene, path);
-
-  //   //   LOG_TRACE("Created new scene: {}, {}", path.stem(), scene.id);
-  //   //   return scene;
-  //   // }
-  // }
-
-  //template Material AssetManager::CreateAsset(const std::filesystem::path& path);
-  //template Scene AssetManager::CreateAsset(const std::filesystem::path& path);
-
   void AssetManager::SaveDirtyAssets()
   {
-    auto saveSet = []<typename Handle>(AssetSet<Handle>&dirtySet)
+    auto saveSet = []<typename T>(AssetSet<T>&dirtySet)
     {
       for (Handle handle : dirtySet)
       {
         std::filesystem::path path = AssetRegistry::GetAssetPath(handle);
 
-        if constexpr (std::is_same_v<Handle, SceneHandle>)
+        if constexpr (std::is_same_v<T, Handle<Scene>>)
         {
           Serializer::SerializeScene(handle, path);
         }
-        else if constexpr (std::is_same_v<Handle, MaterialHandle>)
+        else if constexpr (std::is_same_v<T, Handle<Material>>)
         {
           Serializer::SerializeMaterial(handle, path);
         }

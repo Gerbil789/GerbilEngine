@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Audio/AudioClip.h"
+#include "Engine/Asset/Handle.h"
 #include <glm/glm.hpp>
 
 class ma_engine;

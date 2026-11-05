@@ -5,11 +5,6 @@
 
 namespace engine
 {
-	Mesh& MeshHandle::Get() const
-	{
-		return AssetManager::GetAsset(*this);
-	}
-
 	Mesh::Mesh(const MeshSpecification& specification)
 	{
 		// Vertex buffer
