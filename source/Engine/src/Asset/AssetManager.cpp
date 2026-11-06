@@ -12,11 +12,11 @@ namespace engine
 {
   void AssetManager::Initialize()
   {
-    auto addBuiltIn = [&]<typename T, typename... Args>(Handle<T> handle, const std::string& nameOrPath, Args&&... args)
+    auto addBuiltIn = [&]<typename T, typename... Args>(Handle<T> handle, const std::string& path, Args&&... args)
     {
-      AssetRegistry::AddRecord(handle, nameOrPath);
+      AssetRegistry::AddRecord(handle, path);
       
-      auto& assetMap = std::get<AssetDataMap<T>>(m_LoadedAssets);
+      auto& assetMap = std::get<AssetDataMap<T>>(m_loadedAssets);
       assetMap.try_emplace(handle, std::forward<Args>(args)...);
     };
 
@@ -27,7 +27,7 @@ namespace engine
     addBuiltIn(texture::DefaultFontAtlas, "resources/fonts/atlas.png", TextureImporter::LoadTexture2D("resources/fonts/atlas.png"));
     addBuiltIn(texture::EditorThumbnailAtlas, "Editor Thumbnail Atlas", TextureSpecification{ .width = 2048, .height = 2048, .format = engine::GraphicsContext::GetSurfaceFormat() }, nullptr);
 
-    addBuiltIn(mesh::Empty, "Empty Mesh", MeshImporter::LoadMesh("resources/models/cube.glb"));
+    addBuiltIn(mesh::Empty, "Empty Mesh", Mesh{});
     addBuiltIn(mesh::Cube, "resources/models/cube.glb", MeshImporter::LoadMesh("resources/models/cube.glb"));
     addBuiltIn(mesh::Sphere, "resources/models/sphere.glb", MeshImporter::LoadMesh("resources/models/sphere.glb"));
 
@@ -37,56 +37,63 @@ namespace engine
     addBuiltIn(shader::Skybox, "resources/shaders/skybox.wgsl", ShaderImporter::LoadShader("resources/shaders/skybox.wgsl"));
     addBuiltIn(shader::Normal, "resources/shaders/normal.wgsl", ShaderImporter::LoadShader("resources/shaders/normal.wgsl"));
 
-    addBuiltIn(scene::Empty, "Empty Scene", Scene());
+    addBuiltIn(scene::Empty, "Empty Scene", Scene{});
     addBuiltIn(scene::Default, "resources/scenes/default.scene", SceneImporter::LoadScene("resources/scenes/default.scene"));
     
-    addBuiltIn(material::Pink, "Pink Material", Material(shader::Pink));
-    addBuiltIn(material::Pink, "White Material", Material(shader::Flat));
+    addBuiltIn(material::Pink, "Pink Material", Material{shader::Pink});
+    addBuiltIn(material::Pink, "White Material", Material{shader::Flat});
     
-    addBuiltIn(material_instance::Pink, "Pink Material Instance", MaterialInstance(material::Pink));
-    addBuiltIn(material_instance::Pink, "White Material Instance", MaterialInstance(material::White)); //TODO: white material is not working, it fallbacks to the pink
+    addBuiltIn(material_instance::Pink, "Pink Material Instance", MaterialInstance{material::Pink});
+    addBuiltIn(material_instance::Pink, "White Material Instance", MaterialInstance{material::White}); //TODO: white material is not working, it fallbacks to the pink
 
     addBuiltIn(audio::Empty, "Empty Audio Clip", AudioClip{});
 
-    auto& textures = std::get<AssetDataMap<Texture2D>>(m_LoadedAssets);
+    auto& textures = std::get<AssetDataMap<Texture2D>>(m_loadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<Texture2D>())
     {
+      if(static_cast<uint64_t>(handle.id) < 1000) continue;
       textures.try_emplace(handle, TextureImporter::LoadTexture2D(path));
     }
 
-    auto& meshes = std::get<AssetDataMap<Mesh>>(m_LoadedAssets);
+    auto& meshes = std::get<AssetDataMap<Mesh>>(m_loadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<Mesh>())
     {
+      if(static_cast<uint64_t>(handle.id) < 1000) continue;
       meshes.try_emplace(handle, MeshImporter::LoadMesh(path));
     }
 
-    auto& shaders = std::get<AssetDataMap<Shader>>(m_LoadedAssets);
+    auto& shaders = std::get<AssetDataMap<Shader>>(m_loadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<Shader>())
     {
+      if(static_cast<uint64_t>(handle.id) < 1000) continue;
       shaders.try_emplace(handle, ShaderImporter::LoadShader(path.string()));
     }
 
-    auto& scenes = std::get<AssetDataMap<Scene>>(m_LoadedAssets);
+    auto& scenes = std::get<AssetDataMap<Scene>>(m_loadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<Scene>())
     {
+      if(static_cast<uint64_t>(handle.id) < 1000) continue;
       scenes.try_emplace(handle, SceneImporter::LoadScene(path));
     }
 
-    auto& materials = std::get<AssetDataMap<Material>>(m_LoadedAssets);
+    auto& materials = std::get<AssetDataMap<Material>>(m_loadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<Material>())
     {
+      if(static_cast<uint64_t>(handle.id) < 1000) continue;
       materials.try_emplace(handle, Serializer::DeserializeMaterial(path));
     }
 
-    auto& materialInstances = std::get<AssetDataMap<MaterialInstance>>(m_LoadedAssets);
+    auto& materialInstances = std::get<AssetDataMap<MaterialInstance>>(m_loadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<MaterialInstance>())
     {
+      if(static_cast<uint64_t>(handle.id) < 1000) continue;
       materialInstances.try_emplace(handle, Serializer::DeserializeMaterialInstance(path));
     }
 
-    auto& audioClips = std::get<AssetDataMap<AudioClip>>(m_LoadedAssets);
+    auto& audioClips = std::get<AssetDataMap<AudioClip>>(m_loadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<AudioClip>())
     {
+      if(static_cast<uint64_t>(handle.id) < 1000) continue;
       audioClips.try_emplace(handle, AudioImporter::LoadAudioClip(path));
     }
   }
@@ -114,6 +121,6 @@ namespace engine
       dirtySet.clear();
     };
 
-    std::apply([&](auto&... sets) { (saveSet(sets), ...); }, m_DirtyAssets);
+    std::apply([&](auto&... sets) { (saveSet(sets), ...); }, m_dirtyAssets);
   }
 }

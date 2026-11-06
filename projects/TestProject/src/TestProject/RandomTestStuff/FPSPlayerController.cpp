@@ -8,14 +8,14 @@
 //void FPSPlayerController::OnStart()
 //{
 //	Input::SetCursorMode(Input::CursorMode::Disabled);
-//	m_LastMouseX = Input::GetMousePosition().x;
-//	m_LastMouseY = Input::GetMousePosition().y;
+//	m_lastMouseX = Input::GetMousePosition().x;
+//	m_lastMouseY = Input::GetMousePosition().y;
 //}
 //
 //void FPSPlayerController::OnUpdate()
 //{
 //	float delta = Time::DeltaTime();
-//	auto& transform = m_Entity.GetComponent<TransformComponent>();
+//	auto& transform = m_entity.GetComponent<TransformComponent>();
 //
 //	float yawRadians = glm::radians(transform.rotation.y);
 //
@@ -28,32 +28,32 @@
 //	// movement
 //	if (Input::IsKeyDown(Key::W))
 //	{
-//		transform.position.x += forwardX * m_MoveSpeed * delta;
-//		transform.position.z += forwardZ * m_MoveSpeed * delta;
+//		transform.position.x += forwardX * m_moveSpeed * delta;
+//		transform.position.z += forwardZ * m_moveSpeed * delta;
 //	}
 //	if (Input::IsKeyDown(Key::S))
 //	{
-//		transform.position.x -= forwardX * m_MoveSpeed * delta;
-//		transform.position.z -= forwardZ * m_MoveSpeed * delta;
+//		transform.position.x -= forwardX * m_moveSpeed * delta;
+//		transform.position.z -= forwardZ * m_moveSpeed * delta;
 //	}
 //	if (Input::IsKeyDown(Key::D))
 //	{
-//		transform.position.x += rightX * m_MoveSpeed * delta;
-//		transform.position.z += rightZ * m_MoveSpeed * delta;
+//		transform.position.x += rightX * m_moveSpeed * delta;
+//		transform.position.z += rightZ * m_moveSpeed * delta;
 //	}
 //	if (Input::IsKeyDown(Key::A))
 //	{
-//		transform.position.x -= rightX * m_MoveSpeed * delta;
-//		transform.position.z -= rightZ * m_MoveSpeed * delta;
+//		transform.position.x -= rightX * m_moveSpeed * delta;
+//		transform.position.z -= rightZ * m_moveSpeed * delta;
 //	}
 //
 //	// gravity
-//	m_VelocityY -= m_GravityStrength * delta;
-//	transform.position.y += m_VelocityY * delta;
-//	if (transform.position.y <= m_Ground)
+//	m_velocityY -= m_gravityStrength * delta;
+//	transform.position.y += m_velocityY * delta;
+//	if (transform.position.y <= m_ground)
 //	{
-//		transform.position.y = m_Ground; 
-//		m_VelocityY = 0.0f;
+//		transform.position.y = m_ground; 
+//		m_velocityY = 0.0f;
 //	}
 //}
 //

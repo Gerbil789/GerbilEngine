@@ -1,34 +1,38 @@
 #include "MaterialEditorWindow.h"
+#include "Editor/Core/EditorContext.h"
 #include "Editor/Windows/Utility/Property.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Graphics/Material.h"
-#include "Engine/Event/EventBus.h"
-#include "Editor/Core/EditorEvent.h"
 #include <imgui.h>
 
 namespace editor
 {
 	namespace
 	{
-		engine::MaterialInstanceHandle m_MaterialInstance = engine::material_instance::Pink;
+		engine::MaterialInstanceHandle m_materialInstance = engine::material_instance::Pink;
 	}
 
 	void MaterialEditorWindow::Draw()
 	{
 		ImGui::Begin("Material Instance");
 
-		if (m_MaterialInstance == engine::material_instance::Pink)
+		if(editor::context::selectedAsset.type == engine::AssetType::MaterialInstance)
+		{
+			m_materialInstance = engine::MaterialInstanceHandle{editor::context::selectedAsset.id};
+		}
+
+		if (m_materialInstance == engine::material_instance::Pink)
 		{
 			ImGui::Text("No material selected");
 			ImGui::End();
 			return;
 		}
 
-		const std::string& materialInstanceName = engine::AssetRegistry::GetAssetPath(m_MaterialInstance).stem().string();
+		const std::string& materialInstanceName = engine::AssetRegistry::GetAssetPath(m_materialInstance).stem().string();
 		ImGui::Text("Material instance: %s", materialInstanceName.c_str());
 
-		engine::MaterialInstance& materialInstance = m_MaterialInstance.Get();
+		engine::MaterialInstance& materialInstance = m_materialInstance.Get();
 		engine::Shader& shader = materialInstance.materialHandle.Get().shaderHandle.Get();
 
 		const std::string& materialName = engine::AssetRegistry::GetAssetPath(materialInstance.materialHandle).stem().string();
@@ -219,16 +223,5 @@ namespace editor
 		}
 
 		ImGui::End();
-	}
-
-	void MaterialEditorWindow::Initialize()
-	{
-		engine::EventBus::Subscribe<SelectAssetEvent>([](const SelectAssetEvent& e)
-			{
-				engine::AssetType type = engine::AssetRegistry::GetAssetType(e.id);
-				if (type != engine::AssetType::MaterialInstance) return false;
-				m_MaterialInstance = engine::MaterialInstanceHandle{ e.id };
-				return false;
-			});
 	}
 }

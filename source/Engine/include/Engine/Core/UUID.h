@@ -10,17 +10,17 @@ namespace engine
 	{
 	public:
 		constexpr Uuid() = default;
-		constexpr Uuid(uint64_t value) : m_Value(value) {}
+		constexpr Uuid(uint64_t value) : m_value(value) {}
 
 		static Uuid Generate();
 
 		auto operator<=>(const Uuid&) const = default;
 
-		explicit operator uint64_t() const { return m_Value; }
-		constexpr operator bool() const { return m_Value != 0; }
+		explicit operator uint64_t() const { return m_value; }
+		constexpr operator bool() const { return m_value != 0; }
 
 	private:
-		uint64_t m_Value = 0;
+		uint64_t m_value = 0;
 	};
 }
 

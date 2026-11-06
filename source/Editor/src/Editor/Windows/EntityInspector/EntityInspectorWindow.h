@@ -7,7 +7,6 @@ namespace editor
 	class EntityInspectorWindow : public IEditorWindow
 	{
 	public:
-		void Initialize() override;
 		void Draw() override; 
 	};
 }

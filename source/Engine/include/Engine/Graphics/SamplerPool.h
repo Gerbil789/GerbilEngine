@@ -39,11 +39,11 @@ namespace engine
 
 		static wgpu::Sampler GetSampler(SamplerKey key)
 		{
-			return s_Samplers.at(key);
+			return s_samplers.at(key);
 		}
 
 	private:
-		inline static std::unordered_map<SamplerKey, wgpu::Sampler> s_Samplers;
+		inline static std::unordered_map<SamplerKey, wgpu::Sampler> s_samplers;
 
 		static wgpu::Sampler CreateSampler(wgpu::Device device, wgpu::FilterMode minMag, wgpu::MipmapFilterMode mip, wgpu::AddressMode mode);
 

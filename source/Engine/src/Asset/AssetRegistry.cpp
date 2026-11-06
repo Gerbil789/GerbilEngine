@@ -64,7 +64,7 @@ namespace engine
 
 				Handle handle{ rawId };
 				AddRecord(handle, fullPath);
-				s_PathToId[fullPath.string()] = rawId;
+				s_pathToId[fullPath.string()] = rawId;
 			}
 		};
 
@@ -84,7 +84,7 @@ namespace engine
 			if (!entry.is_regular_file() || !path.has_extension()) continue;
 
 			std::string pathString = path.string();
-			if (s_PathToId.contains(pathString)) continue;
+			if (s_pathToId.contains(pathString)) continue;
 
 			Uuid id = Uuid::Generate();
 			AssetType type = GetAssetType(path);
@@ -124,7 +124,7 @@ namespace engine
 			}
 
 			LOG_INFO("Discovered new asset '{}'", pathString);
-			s_PathToId[pathString] = id;
+			s_pathToId[pathString] = id;
 		}
 
 
@@ -136,7 +136,7 @@ namespace engine
     
     // auto printMap = []<typename Handle>()
     // {
-    //   const auto& engineMap = std::get<AssetMap<Handle>>(s_Records);
+    //   const auto& engineMap = std::get<AssetMap<Handle>>(s_records);
     //   for (const auto& [handle, fullPath] : engineMap)
     //   {
     //     LOG_INFO("ID: {}, Path: {}", handle.id, fullPath.string());
@@ -158,7 +158,7 @@ namespace engine
 
 		auto fillArchive = []<typename Handle>(std::unordered_map<uint64_t, std::string>&dest)
 		{
-			const auto& engineMap = std::get<AssetMap<Handle>>(s_Records);
+			const auto& engineMap = std::get<AssetMap<Handle>>(s_records);
 			for (const auto& [handle, fullPath] : engineMap)
 			{
 				dest[static_cast<uint64_t>(handle.id)] = std::filesystem::relative(fullPath, Project::assetsDirectory).generic_string();
@@ -185,7 +185,7 @@ namespace engine
 	// std::filesystem::path AssetRegistry::GetRelativePath(const Uuid& id) const
 	// {
 	// 	static std::filesystem::path emptyPath;
-	// 	if (auto it = m_Records.find(id); it != m_Records.end())
+	// 	if (auto it = m_records.find(id); it != m_records.end())
 	// 	{
 	// 		return std::filesystem::relative(it->second.path, Project::AssetsDirectory());
 	// 	}
@@ -231,25 +231,25 @@ namespace engine
 
 	AssetType AssetRegistry::GetAssetType(Uuid id)
 	{
-		if (std::get<AssetMap<TextureHandle>>(s_Records).contains(TextureHandle{ id }))
+		if (std::get<AssetMap<TextureHandle>>(s_records).contains(TextureHandle{ id }))
 			return AssetType::Texture;
 
-		if (std::get<AssetMap<MeshHandle>>(s_Records).contains(MeshHandle{ id }))
+		if (std::get<AssetMap<MeshHandle>>(s_records).contains(MeshHandle{ id }))
 			return AssetType::Mesh;
 
-		if (std::get<AssetMap<ShaderHandle>>(s_Records).contains(ShaderHandle{ id }))
+		if (std::get<AssetMap<ShaderHandle>>(s_records).contains(ShaderHandle{ id }))
 			return AssetType::Shader;
 
-		if (std::get<AssetMap<MaterialHandle>>(s_Records).contains(MaterialHandle{ id }))
+		if (std::get<AssetMap<MaterialHandle>>(s_records).contains(MaterialHandle{ id }))
 			return AssetType::Material;
 
-		if (std::get<AssetMap<MaterialInstanceHandle>>(s_Records).contains(MaterialInstanceHandle{ id }))
+		if (std::get<AssetMap<MaterialInstanceHandle>>(s_records).contains(MaterialInstanceHandle{ id }))
 			return AssetType::MaterialInstance;
 
-		if (std::get<AssetMap<AudioClipHandle>>(s_Records).contains(AudioClipHandle{ id }))
+		if (std::get<AssetMap<AudioClipHandle>>(s_records).contains(AudioClipHandle{ id }))
 			return AssetType::AudioClip;
 
-		if (std::get<AssetMap<SceneHandle>>(s_Records).contains(SceneHandle{ id }))
+		if (std::get<AssetMap<SceneHandle>>(s_records).contains(SceneHandle{ id }))
 			return AssetType::Scene;
 
 		return AssetType::Unknown;

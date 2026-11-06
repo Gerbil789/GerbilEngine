@@ -82,11 +82,11 @@ namespace engine
     static void Shutdown();
 
     static const Font* GetFont(const std::string& name);
-		static TextureHandle GetFontAtlas() { return s_TextureAtlas; }
+		static TextureHandle GetFontAtlas() { return s_textureAtlas; }
 
 	private:
-    inline static TextureHandle s_TextureAtlas;
-    inline static FontAtlasJSON s_JsonData;
-    inline static std::unordered_map<std::string, Font*> s_FontVariantMap;
+    inline static TextureHandle s_textureAtlas;
+    inline static FontAtlasJSON s_jsonData;
+    inline static std::unordered_map<std::string, Font*> s_fontVariantMap;
 	};
 }

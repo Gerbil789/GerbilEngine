@@ -113,7 +113,7 @@ namespace engine
 			}
 			else if (std::holds_alternative<TextureBinding>(binding.data))
 			{
-				// if (m_Textures.find(binding.binding) == m_Textures.end()) // TODO: is this redundant check?
+				// if (m_textures.find(binding.binding) == m_textures.end()) // TODO: is this redundant check?
 				// {
 				//textures[binding.binding] = Texture2D::White;
 				// }

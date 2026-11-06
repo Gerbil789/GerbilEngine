@@ -7,7 +7,6 @@ namespace editor
 	class MaterialEditorWindow : public IEditorWindow
 	{
 	public:
-		void Initialize() override;
 		void Draw() override;
 	};
 }

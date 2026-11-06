@@ -22,7 +22,7 @@ namespace engine
 
     Environment environment;
 
-    std::array<wgpu::TextureView, s_ShadowCascadeCount> depthTextureViews;
+    std::array<wgpu::TextureView, s_shadowCascadeCount> depthTextureViews;
     wgpu::TextureView depthTextureArrayView;
   };
 }

@@ -85,12 +85,12 @@ namespace engine
 //
 //		std::array<glm::vec3, 8> corners;
 //
-//		corners[0] = { glm::tan(m_Perspective.fov * 0.5f) * near * m_AspectRatio, glm::tan(m_Perspective.fov * 0.5f) * near, near };
+//		corners[0] = { glm::tan(m_perspective.fov * 0.5f) * near * m_aspectRatio, glm::tan(m_perspective.fov * 0.5f) * near, near };
 //		corners[1] = { -corners[0].x, corners[0].y, corners[0].z };
 //		corners[2] = { -corners[0].x, -corners[0].y, corners[0].z };
 //		corners[3] = { corners[0].x, -corners[0].y, corners[0].z };
 //
-//		corners[4] = { glm::tan(m_Perspective.fov * 0.5f) * far * m_AspectRatio, glm::tan(m_Perspective.fov * 0.5f) * far, far };
+//		corners[4] = { glm::tan(m_perspective.fov * 0.5f) * far * m_aspectRatio, glm::tan(m_perspective.fov * 0.5f) * far, far };
 //		corners[5] = { -corners[4].x, corners[4].y, corners[4].z };
 //		corners[6] = { -corners[4].x, -corners[4].y, corners[4].z };
 //		corners[7] = { corners[4].x, -corners[4].y, corners[4].z };
@@ -111,7 +111,7 @@ namespace engine
 //		glm::vec4 clipNear = glm::vec4(ndcX, ndcY, 0.0f, 1.0f);
 //		glm::vec4 clipFar = glm::vec4(ndcX, ndcY, 1.0f, 1.0f);
 //
-//		glm::mat4 invViewProj = glm::inverse(m_ProjectionMatrix * m_ViewMatrix);
+//		glm::mat4 invViewProj = glm::inverse(m_projectionMatrix * m_viewMatrix);
 //
 //		glm::vec4 worldNear = invViewProj * clipNear;
 //		glm::vec4 worldFar = invViewProj * clipFar;

@@ -8,16 +8,16 @@ namespace editor
   class OpenSceneCommand : public ICommand
   {
   public:
-    OpenSceneCommand(engine::SceneHandle scene) : m_Scene(scene) {}
+    OpenSceneCommand(engine::SceneHandle scene) : m_scene(scene) {}
 
     void Execute() override
     {
-      engine::SceneManager::SetActiveScene(m_Scene);
+      engine::SceneManager::SetActiveScene(m_scene);
     }
 
     void Undo() override {}
 
   private:
-		engine::SceneHandle m_Scene;
+		engine::SceneHandle m_scene;
   };
 }

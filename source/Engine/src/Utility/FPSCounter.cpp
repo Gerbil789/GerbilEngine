@@ -3,36 +3,36 @@
 
 namespace engine 
 {
-  size_t m_FrameHistorySize;
-  std::vector<float> m_FPSHistory;
-  size_t m_FPSHistoryIndex;
-  float m_FPSHistorySum;
-  float m_AverageFPS;
+  size_t m_frameHistorySize;
+  std::vector<float> m_fPSHistory;
+  size_t m_fPSHistoryIndex;
+  float m_fPSHistorySum;
+  float m_averageFPS;
 
   FPSCounter::FPSCounter(size_t historySize)
   {
-		m_FrameHistorySize = historySize;
-		m_FPSHistory.resize(historySize, 0.0f);
-		m_FPSHistoryIndex = 0;
-		m_FPSHistorySum = 0.0f;
-		m_AverageFPS = 0.0f;
+		m_frameHistorySize = historySize;
+		m_fPSHistory.resize(historySize, 0.0f);
+		m_fPSHistoryIndex = 0;
+		m_fPSHistorySum = 0.0f;
+		m_averageFPS = 0.0f;
   }
 
   void FPSCounter::Update(float deltaTime)
   {
     float currentFPS = (deltaTime > 0.0f) ? 1.0f / deltaTime : 0.0f;
 
-    m_FPSHistorySum -= m_FPSHistory[m_FPSHistoryIndex];
-    m_FPSHistory[m_FPSHistoryIndex] = currentFPS;
-    m_FPSHistorySum += currentFPS;
+    m_fPSHistorySum -= m_fPSHistory[m_fPSHistoryIndex];
+    m_fPSHistory[m_fPSHistoryIndex] = currentFPS;
+    m_fPSHistorySum += currentFPS;
 
-    m_FPSHistoryIndex = (m_FPSHistoryIndex + 1) % m_FrameHistorySize;
+    m_fPSHistoryIndex = (m_fPSHistoryIndex + 1) % m_frameHistorySize;
 
-    m_AverageFPS = m_FPSHistorySum / static_cast<float>(m_FrameHistorySize);
+    m_averageFPS = m_fPSHistorySum / static_cast<float>(m_frameHistorySize);
   }
 
   float FPSCounter::GetAverageFPS() const
   {
-    return m_AverageFPS;
+    return m_averageFPS;
   }
 }

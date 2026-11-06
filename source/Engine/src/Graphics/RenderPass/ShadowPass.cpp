@@ -15,14 +15,14 @@
 //
 //namespace engine
 //{
-//	float ShadowPass::s_Lambda = 0.9f;
+//	float ShadowPass::s_lambda = 0.9f;
 //
 //	namespace 
 //	{
-//		wgpu::RenderPipeline m_ShadowPipeline;
-//		wgpu::BindGroup m_ShadowBindGroup;
-//		wgpu::Buffer m_ShadowUniformBuffer;
-//		std::array<glm::mat4, s_ShadowCascadeCount> m_LightViewProjMatrices;
+//		wgpu::RenderPipeline m_shadowPipeline;
+//		wgpu::BindGroup m_shadowBindGroup;
+//		wgpu::Buffer m_shadowUniformBuffer;
+//		std::array<glm::mat4, s_shadowCascadeCount> m_lightViewProjMatrices;
 //	}
 //
 //	engine::ShadowPass::ShadowPass()
@@ -104,13 +104,13 @@
 //		{
 //			wgpu::BufferDescriptor shadowBufferDesc;
 //			shadowBufferDesc.label = "ShadowPassUniformBuffer";
-//			shadowBufferDesc.size = GraphicsContext::GetUniformBufferOffsetAlignment() * s_ShadowCascadeCount;
+//			shadowBufferDesc.size = GraphicsContext::GetUniformBufferOffsetAlignment() * s_shadowCascadeCount;
 //			shadowBufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-//			m_ShadowUniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&shadowBufferDesc);
+//			m_shadowUniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&shadowBufferDesc);
 //
 //			wgpu::BindGroupEntry bindGroupEntry;
 //			bindGroupEntry.binding = 0;
-//			bindGroupEntry.buffer = m_ShadowUniformBuffer;
+//			bindGroupEntry.buffer = m_shadowUniformBuffer;
 //			bindGroupEntry.offset = 0;
 //			bindGroupEntry.size = sizeof(glm::mat4);
 //
@@ -119,7 +119,7 @@
 //			bindGroupDesc.layout = layout;
 //			bindGroupDesc.entryCount = 1;
 //			bindGroupDesc.entries = &bindGroupEntry;
-//			m_ShadowBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
+//			m_shadowBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
 //		}
 //	
 //		wgpu::PipelineLayoutDescriptor layoutDesc;
@@ -128,7 +128,7 @@
 //		layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
 //		pipelineDesc.layout = GraphicsContext::GetDevice().CreatePipelineLayout(&layoutDesc);
 //
-//		m_ShadowPipeline = GraphicsContext::GetDevice().CreateRenderPipeline(&pipelineDesc);
+//		m_shadowPipeline = GraphicsContext::GetDevice().CreateRenderPipeline(&pipelineDesc);
 //	}
 //
 //	void ShadowPass::Execute(wgpu::CommandEncoder& encoder, const FrameContext& context)
@@ -146,7 +146,7 @@
 //			case LightType::Directional:
 //			{
 //				std::vector<float> splits;
-//				splits.resize(s_ShadowCascadeCount);
+//				splits.resize(s_shadowCascadeCount);
 //
 //				float near = 0.1f;
 //				float far = 512.0f;
@@ -155,17 +155,17 @@
 //				glm::vec3 forward = q * glm::vec3(0, 0, 1);
 //				glm::vec3 up = q * glm::vec3(0, 1, 0);
 //
-//				for (int i = 0; i < s_ShadowCascadeCount; i++)
+//				for (int i = 0; i < s_shadowCascadeCount; i++)
 //				{
-//					float p = (i + 1) / (float)s_ShadowCascadeCount;
+//					float p = (i + 1) / (float)s_shadowCascadeCount;
 //
 //					float log = near * std::pow(far / near, p);
 //					float lin = near + (far - near) * p;
 //
-//					splits[i] = glm::mix(lin, log, s_Lambda);
+//					splits[i] = glm::mix(lin, log, s_lambda);
 //				}
 //
-//				for (int i = 0; i < s_ShadowCascadeCount; i++)
+//				for (int i = 0; i < s_shadowCascadeCount; i++)
 //				{
 //					float prevSplit = (i == 0) ? near : splits[i - 1];
 //					float currSplit = splits[i];
@@ -205,7 +205,7 @@
 //					max.z += extend;
 //
 //					glm::mat4 proj = glm::orthoLH_ZO(min.x, max.x, min.y, max.y, min.z, max.z);
-//					m_LightViewProjMatrices[i] = proj * view;
+//					m_lightViewProjMatrices[i] = proj * view;
 //
 //
 //					envUniforms.lightViewProj[i] = proj * view;
@@ -225,9 +225,9 @@
 //			}
 //		}
 //
-//		for (int index = 0; index < s_ShadowCascadeCount; index++)
+//		for (int index = 0; index < s_shadowCascadeCount; index++)
 //		{
-//			GraphicsContext::GetQueue().WriteBuffer(m_ShadowUniformBuffer, index * GraphicsContext::GetUniformBufferOffsetAlignment(), &m_LightViewProjMatrices[index], sizeof(glm::mat4));
+//			GraphicsContext::GetQueue().WriteBuffer(m_shadowUniformBuffer, index * GraphicsContext::GetUniformBufferOffsetAlignment(), &m_lightViewProjMatrices[index], sizeof(glm::mat4));
 //		}
 //
 //		GraphicsContext::GetQueue().WriteBuffer(context.environmentUniformBuffer, 0, &envUniforms, sizeof(EnvironmentUniforms));
@@ -248,16 +248,16 @@
 //		desc.colorAttachments = nullptr;
 //		desc.depthStencilAttachment = &depth;
 //
-//		for (int index = 0; index < s_ShadowCascadeCount; index++)
+//		for (int index = 0; index < s_shadowCascadeCount; index++)
 //		{
 //			depth.view = context.depthTextureViews[index];
 //
 //			wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&desc);
 //
-//			pass.SetPipeline(m_ShadowPipeline);
+//			pass.SetPipeline(m_shadowPipeline);
 //
 //			uint32_t offset = index * GraphicsContext::GetUniformBufferOffsetAlignment();
-//			pass.SetBindGroup(0, m_ShadowBindGroup, 1, &offset);
+//			pass.SetBindGroup(0, m_shadowBindGroup, 1, &offset);
 //			pass.SetBindGroup(1, context.modelBindGroup, 0, nullptr);
 //
 //			Mesh lastMesh;

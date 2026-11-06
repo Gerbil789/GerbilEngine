@@ -111,7 +111,7 @@ namespace editor
 			StatisticsWindow,
 			SettingsWindow,
 			AssetRegistryWindow
-		> m_Windows;
+		> m_windows;
 	}
 
 	void EditorRenderer::Initialize(const engine::Window& window)
@@ -140,7 +140,7 @@ namespace editor
 		initInfo.RenderTargetFormat = static_cast<WGPUTextureFormat>(engine::GraphicsContext::GetSurfaceFormat());
 		ImGui_ImplWGPU_Init(&initInfo);
 
-		std::apply([](auto&&... win) { (win.Initialize(), ...); }, m_Windows);
+		std::apply([](auto&&... win) { (win.Initialize(), ...); }, m_windows);
 	}
 
 	void EditorRenderer::Shutdown()
@@ -185,7 +185,7 @@ namespace editor
 
 		ImGui::Render();
 
-		wgpu::Surface surface = engine::Application::s_Window.GetSurface();
+		wgpu::Surface surface = engine::Application::s_window.GetSurface();
 
 		wgpu::SurfaceTexture surfaceTexture;
 
@@ -212,8 +212,8 @@ namespace editor
 			uint32_t imgui_width = static_cast<uint32_t>(drawData->DisplaySize.x * drawData->FramebufferScale.x);
 			uint32_t imgui_height = static_cast<uint32_t>(drawData->DisplaySize.y * drawData->FramebufferScale.y);
 
-			uint32_t surface_width = engine::Application::s_Window.GetWidth();
-			uint32_t surface_height = engine::Application::s_Window.GetHeight();
+			uint32_t surface_width = engine::Application::s_window.width;
+			uint32_t surface_height = engine::Application::s_window.height;
 
 			if (imgui_width > surface_width || imgui_height > surface_height)
 			{
@@ -254,7 +254,7 @@ namespace editor
 	{
 		BeginFrame();
 
-		std::apply([](auto&&... win) {(win.Draw(), ...); }, m_Windows);
+		std::apply([](auto&&... win) {(win.Draw(), ...); }, m_windows);
 
 		//bool showDemoWindow = true;
 		//ImGui::ShowDemoWindow(&showDemoWindow);

@@ -29,7 +29,7 @@ namespace engine
 
   namespace
   {
-    std::ofstream s_LogFile;
+    std::ofstream s_logFile;
 
     void OpenLogFile()
     {
@@ -48,13 +48,13 @@ namespace engine
 
       char name[64];
       std::snprintf(name, sizeof(name), "logs/%02d-%02d-%04d_%02d-%02d-%02d.log", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec);
-      s_LogFile.open(name, std::ios::out | std::ios::app);
+      s_logFile.open(name, std::ios::out | std::ios::app);
     }
   }
 
   namespace
   {
-    std::mutex s_LogMutex;
+    std::mutex s_logMutex;
 
     enum class Level
     {
@@ -104,7 +104,7 @@ namespace engine
 
     void Print(Level level, std::string_view message, const std::source_location& location)
     {
-      std::scoped_lock lock(s_LogMutex);
+      std::scoped_lock lock(s_logMutex);
       std::string timestamp = MakeTimestamp();
 
       std::string full = std::format("[{}] [{}] {}", timestamp, CleanFunctionName(location.function_name()), message);
@@ -113,10 +113,10 @@ namespace engine
       std::println("{}{}{}", Color(level), full, ResetColor());
 
       // File
-      if (s_LogFile.is_open())
+      if (s_logFile.is_open())
       {
-        s_LogFile << full << '\n';
-        s_LogFile.flush();
+        s_logFile << full << '\n';
+        s_logFile.flush();
       }
     }
   }

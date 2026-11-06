@@ -1,23 +1,18 @@
 #include "enginepch.h"
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Asset/AssetRegistry.h"
-#include "Engine/Event/EventBus.h"
-#include "Engine/Event/ApplicationEvent.h"
-#include "Engine/Core/Scene.h"
 #include "Engine/Core/Log.h"
 
 namespace engine
 {
 	void SceneManager::SetActiveScene(SceneHandle scene)
 	{
-		s_ActiveScene = scene;
-		engine::EventBus::Publish(SceneChangedEvent{ s_ActiveScene });
-
-		LOG_INFO("Active scene set to '{}' ({})", AssetRegistry::GetAssetPath(s_ActiveScene).filename(), s_ActiveScene.id);
+		s_activeScene = scene;
+		LOG_INFO("Active scene set to '{}' ({})", AssetRegistry::GetAssetPath(s_activeScene).filename(), s_activeScene.id);
 	}
 
 	SceneHandle SceneManager::GetActiveScene()
 	{
-		return s_ActiveScene;
+		return s_activeScene;
 	}
 }

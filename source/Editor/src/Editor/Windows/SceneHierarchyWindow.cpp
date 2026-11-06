@@ -1,4 +1,5 @@
 #include "Editor/Windows/SceneHierarchyWindow.h"
+#include "Editor/Core/EditorContext.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Engine/Asset/AssetManager.h"
@@ -6,7 +7,6 @@
 #include "Engine/Core/Scene.h"
 #include "Engine/Core/Components.h"
 #include "Engine/Core/Input.h"
-#include "Engine/Event/EventBus.h"
 #include "Engine/Core/Log.h"
 #include <imgui.h>
 
@@ -45,22 +45,24 @@ namespace editor
 		auto& hc = scene.registry.get<engine::HierarchyComponent>(entity);
 		if (hc.children.empty()) flags |= ImGuiTreeNodeFlags_Leaf;
 
-		// bool selected = SelectionManager::Entities.IsSelected(id);
+		bool selected = editor::context::selectedEntity == entity;
 
-		// if (selected)
-		// {
-		// 	flags |= ImGuiTreeNodeFlags_Selected;
-		// }
+		if (selected)
+		{
+			flags |= ImGuiTreeNodeFlags_Selected;
+		}
 
 		ImGui::PushID(static_cast<int>(entity));
 
 		bool opened = ImGui::TreeNodeEx(name.c_str(), flags);
 
-		// if (ImGui::IsItemClicked())
-		// {
-		// 	bool additive = engine::Input::IsKeyDown(engine::Key::LeftControl) || engine::Input::IsKeyDown(engine::Key::LeftShift);
-		// 	SelectionManager::Entities.Select(id, additive);
-		// }
+		if (ImGui::IsItemClicked())
+		{
+			//bool additive = engine::Input::IsKeyDown(engine::Key::LeftControl) || engine::Input::IsKeyDown(engine::Key::LeftShift);
+			//SelectionManager::Entities.Select(id, additive);
+
+			editor::context::selectedEntity = entity;
+		}
 
 		// drag source
 		if (ImGui::BeginDragDropSource())

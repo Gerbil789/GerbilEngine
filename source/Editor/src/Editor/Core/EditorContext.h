@@ -1,24 +1,33 @@
 #pragma once
 
-#include "Engine/Graphics/Renderer/Renderer.h"
 #include "Editor/Core/EditorSettings.h"
+#include "Engine/Asset/AssetType.h"
 #include "Engine/Core/Components.h"
+#include <entt/entity/entity.hpp>
 
 namespace editor
 {
 	enum class EditorMode { Edit, Play };
 	enum class PlayMode { PIE, Windowed, Fullscreen }; // PIE - Play In Editor
+}
 
-	struct EditorContext
-	{
-		EditorMode editorMode = EditorMode::Edit;
-		PlayMode playMode = PlayMode::PIE;
+namespace editor::context
+{
+	inline EditorMode editorMode = EditorMode::Edit;
+	inline PlayMode playMode = PlayMode::PIE;
 
-		engine::CameraComponent camera;
-		engine::TransformComponent cameraTransform;
+	//TODO: move camera into viewport window?
+	inline engine::CameraComponent camera;
+	inline engine::TransformComponent cameraTransform;
 
-		EditorSettings settings;
+	inline EditorSettings settings;
+
+	struct Asset {
+		engine::Uuid id = 0;
+		engine::AssetType type = engine::AssetType::Unknown;
 	};
 
-	inline EditorContext editorContext;
+	inline Asset selectedAsset;
+
+	inline entt::entity selectedEntity = entt::null;
 }

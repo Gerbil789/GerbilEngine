@@ -4,9 +4,6 @@
 #include "Engine/Core/Input.h"
 #include "Engine/Core/Scene.h"
 #include "Engine/Core/Components.h"
-#include "Engine/Event/EventBus.h"
-#include "Engine/Event/KeyEvent.h"
-#include "Editor/Core/EditorEvent.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <glm/glm.hpp>
@@ -16,14 +13,12 @@ namespace editor
 {
 	namespace
 	{
-		bool m_GizmoPreviouslyUsed = false;
+		bool m_gizmoPreviouslyUsed = false;
 
-		std::unordered_map<entt::entity, glm::mat4> m_InitialWorldTransforms;
-		glm::mat4 m_InitialPrimaryWorld = glm::mat4(1.0f);
+		std::unordered_map<entt::entity, glm::mat4> m_initialWorldTransforms;
+		glm::mat4 m_initialPrimaryWorld = glm::mat4(1.0f);
 
 		ImGuizmo::OPERATION gizmoType = ImGuizmo::OPERATION::TRANSLATE;
-
-		entt::entity m_Entity;
 	}
 
 	void TransformController::Initialize()
@@ -31,48 +26,34 @@ namespace editor
 		ImGuizmo::AllowAxisFlip(true);
 		ImGuizmo::SetGizmoSizeClipSpace(0.15f);
 		ImGuizmo::SetOrthographic(false);
-
-		engine::EventBus::Subscribe<engine::KeyPressedEvent>([](const engine::KeyPressedEvent& e)
-			{
-				if (editor::editorContext.editorMode == EditorMode::Play) return false;;
-
-				if (e.key == engine::Key::Q) gizmoType = static_cast<ImGuizmo::OPERATION>(0);
-				if (e.key == engine::Key::W) gizmoType = ImGuizmo::OPERATION::TRANSLATE;
-				if (e.key == engine::Key::E) gizmoType = ImGuizmo::OPERATION::ROTATE;
-				if (e.key == engine::Key::R) gizmoType = ImGuizmo::OPERATION::SCALE;
-
-				return false;
-			});
-
-		engine::EventBus::Subscribe<SelectEntityEvent>([](const SelectEntityEvent& e)
-			{
-				m_Entity = e.entity;
-				return false;
-			});
 	}
 
 	void TransformController::DrawGizmo(engine::Scene& scene, float x, float y, float width, float height)
 	{
-		if (editor::editorContext.editorMode == EditorMode::Play) return;
-		if (gizmoType == 0) return;
+		if (editor::context::editorMode == EditorMode::Play) return;
 
-		if(m_Entity == entt::null) return;
+		if(engine::input::IsKeyReleased(engine::Key::Q)) gizmoType = static_cast<ImGuizmo::OPERATION>(0);
+		if(engine::input::IsKeyReleased(engine::Key::W)) gizmoType = ImGuizmo::OPERATION::TRANSLATE;
+		if(engine::input::IsKeyReleased(engine::Key::E)) gizmoType = ImGuizmo::OPERATION::ROTATE;
+		if(engine::input::IsKeyReleased(engine::Key::R)) gizmoType = ImGuizmo::OPERATION::SCALE;
+
+		if (gizmoType == 0) return;
+		if(editor::context::selectedEntity == entt::null) return;
 
 		ImGuizmo::SetDrawlist();
 		ImGuizmo::SetRect(x, y, width, height);
 
-		auto& cc = editor::editorContext.camera;
 
-		glm::mat4 cameraProjection = cc.projectionMatrix;
-		glm::mat4 cameraView = cc.viewMatrix;
+		glm::mat4 cameraProjection = editor::context::camera.projectionMatrix;
+		glm::mat4 cameraView = editor::context::camera.viewMatrix;
 
-		engine::WorldTransformComponent& wtc = scene.registry.get<engine::WorldTransformComponent>(m_Entity);
+		engine::WorldTransformComponent& wtc = scene.registry.get<engine::WorldTransformComponent>(editor::context::selectedEntity);
 		glm::mat4& worldTransform = wtc.worldMatrix;
 
 		glm::vec3 snap;
 		float* snapPtr = nullptr;
 
-		if (engine::Input::IsKeyDown(engine::Key::LeftControl))
+		if (engine::input::IsKeyDown(engine::Key::LeftControl))
 		{
 			snap = (gizmoType == ImGuizmo::OPERATION::ROTATE) ? glm::vec3{ 45.0f, 45.0f, 45.0f } : glm::vec3{ 0.5f, 0.5f, 0.5f };
 			snapPtr = glm::value_ptr(snap);
@@ -82,9 +63,9 @@ namespace editor
 
 		bool isUsing = ImGuizmo::IsUsing();
 
-		if (isUsing && !m_GizmoPreviouslyUsed)
+		if (isUsing && !m_gizmoPreviouslyUsed)
 		{
-			m_InitialWorldTransforms.clear();
+			m_initialWorldTransforms.clear();
 
 			// const std::vector<engine::Uuid>& selection = SelectionManager::Entities.GetAll();
 
@@ -92,22 +73,22 @@ namespace editor
 			// {
 			// 	engine::Entity entity = scene.GetEntity(id);
 			// 	auto& wc = entity.GetComponent<engine::WorldTransformComponent>();
-			// 	m_InitialWorldTransforms[static_cast<entt::entity>(entity.GetHandle())] = wc.worldMatrix;
+			// 	m_initialWorldTransforms[static_cast<entt::entity>(entity.GetHandle())] = wc.worldMatrix;
 			// }
 
-			m_InitialPrimaryWorld = m_InitialWorldTransforms[m_Entity];
+			m_initialPrimaryWorld = m_initialWorldTransforms[editor::context::selectedEntity];
 		}
 
 		if (isUsing)
 		{
 			glm::mat4 newPrimaryWorld = worldTransform;
-			//glm::mat4 delta = newPrimaryWorld * glm::inverse(m_InitialPrimaryWorld);
+			//glm::mat4 delta = newPrimaryWorld * glm::inverse(m_initialPrimaryWorld);
 
 			// for (engine::Uuid id : SelectionManager::Entities.GetAll())
 			// {
 			// 	engine::Entity entity = scene.GetEntity(id);
 
-			// 	glm::mat4 originalWorld = m_InitialWorldTransforms[static_cast<entt::entity>(entity.GetHandle())];
+			// 	glm::mat4 originalWorld = m_initialWorldTransforms[static_cast<entt::entity>(entity.GetHandle())];
 			// 	glm::mat4 newWorld = delta * originalWorld;
 
 			// 	glm::mat4 parentWorld = glm::mat4{ 1.0f };
@@ -136,13 +117,13 @@ namespace editor
 			// }
 		}
 
-		if (!isUsing && m_GizmoPreviouslyUsed)
+		if (!isUsing && m_gizmoPreviouslyUsed)
 		{
 			// auto selection = SelectionManager::Entities.GetAll();
 
 			std::vector<engine::TransformComponent> before, after;
 
-			for (auto& [entity, initialWorld] : m_InitialWorldTransforms)
+			for (auto& [entity, initialWorld] : m_initialWorldTransforms)
 			{
 				auto& hc = scene.registry.get<engine::HierarchyComponent>(static_cast<entt::entity>(entity));
 				{
@@ -173,7 +154,7 @@ namespace editor
 			EditorCommandManager::ModifyComponents<engine::TransformComponent>(entities, before, after);
 		}
 
-		m_GizmoPreviouslyUsed = isUsing;
+		m_gizmoPreviouslyUsed = isUsing;
 	}
 
 	bool TransformController::IsGizmoOver() const

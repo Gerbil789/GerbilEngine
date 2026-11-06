@@ -6,28 +6,28 @@ namespace engine
 {
   namespace
   {
-    static float s_DeltaTime = 0.0f;
-    static float s_FPS = 0.0f;
-    static std::chrono::steady_clock::time_point s_LastTime = std::chrono::steady_clock::now();
+    static float s_deltaTime = 0.0f;
+    static float s_fPS = 0.0f;
+    static std::chrono::steady_clock::time_point s_lastTime = std::chrono::steady_clock::now();
   }
 
   void Time::BeginFrame()
   {
     auto now = std::chrono::steady_clock::now();
-    s_DeltaTime = std::chrono::duration<float>(now - s_LastTime).count();
-    s_DeltaTime = std::min(s_DeltaTime, 0.1f);
-    s_LastTime = now;
+    s_deltaTime = std::chrono::duration<float>(now - s_lastTime).count();
+    s_deltaTime = std::min(s_deltaTime, 0.1f);
+    s_lastTime = now;
 
-    s_FPS = (s_DeltaTime > 0.0f) ? (1.0f / s_DeltaTime) : 0.0f;
+    s_fPS = (s_deltaTime > 0.0f) ? (1.0f / s_deltaTime) : 0.0f;
   }
 
   float Time::DeltaTime()
   {
-		return s_DeltaTime;
+		return s_deltaTime;
   }
 
   float Time::FPS()
   {
-		return s_FPS;
+		return s_fPS;
   }
 }

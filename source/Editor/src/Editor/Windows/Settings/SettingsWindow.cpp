@@ -1,10 +1,7 @@
 #include "SettingsWindow.h"
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Windows/Utility/Property.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Core/SceneManager.h"
-#include "Engine/Core/Scene.h"
 #include "Engine/Core/Application.h"
 #include <imgui.h>
 
@@ -50,7 +47,7 @@ namespace editor
 			{
 				scene.SetEnvironmentTexture(texture);
 
-				engine::Application::s_Renderer.SetEnvironment(texture);
+				engine::Application::s_renderer.SetEnvironment(texture);
 			}
 		}
 
@@ -58,16 +55,11 @@ namespace editor
 		{
 			PropertyTable table;
 
-			//PropertyField("Lambda", engine::ShadowPass::s_Lambda, { .min = 0.0f, .max = 1.0f, .step = 0.01f });
+			//PropertyField("Lambda", engine::ShadowPass::s_lambda, { .min = 0.0f, .max = 1.0f, .step = 0.01f });
+			auto& camera = editor::context::camera;
 
-			auto view = scene.registry.view<engine::CameraComponent, engine::EditorTag>();
-
-
-			entt::entity editorCameraEntity = view.front();
-			auto& cc = scene.registry.get<engine::CameraComponent>(editorCameraEntity);
-
-			PropertyField("Near", cc.perspective.nearClip, { .min = 0.01f, .max = cc.perspective.farClip, .step = 0.01f });
-			PropertyField("Far", cc.perspective.farClip, { .min = cc.perspective.nearClip, .max = 1000.0f, .step = 0.01f });
+			PropertyField("Near", camera.perspective.nearClip, { .min = 0.01f, .max = camera.perspective.farClip, .step = 0.01f });
+			PropertyField("Far", camera.perspective.farClip, { .min = camera.perspective.nearClip, .max = 1000.0f, .step = 0.01f });
 		}
 		ImGui::End();
 	}

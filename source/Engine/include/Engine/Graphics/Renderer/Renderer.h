@@ -16,7 +16,7 @@ namespace engine
       auto pass = std::make_unique<T>(std::forward<Args>(args)...);
       T* passPtr = pass.get();
       passPtr->Initialize();
-      m_Passes.push_back(std::move(pass));
+      m_passes.push_back(std::move(pass));
       return passPtr;
     }
 
@@ -31,15 +31,15 @@ namespace engine
 		void CreateShadowTexture(); //TODO: move to shadow pass?
 
 	private:
-	  wgpu::Texture m_DepthTexture;
-		wgpu::Texture m_ColorTexture;
+	  wgpu::Texture m_depthTexture;
+		wgpu::Texture m_colorTexture;
 
-		wgpu::Buffer m_ViewUniformBuffer;
-		wgpu::Buffer m_ModelStorageBuffer;
-		wgpu::Buffer m_EnvironmentUniformBuffer;
+		wgpu::Buffer m_viewUniformBuffer;
+		wgpu::Buffer m_modelStorageBuffer;
+		wgpu::Buffer m_environmentUniformBuffer;
 
-		FrameContext m_FrameContext;
+		FrameContext m_frameContext;
 
-		std::vector<std::unique_ptr<IRenderPass>> m_Passes;
+		std::vector<std::unique_ptr<IRenderPass>> m_passes;
 	};
 }

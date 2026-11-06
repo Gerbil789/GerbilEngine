@@ -10,14 +10,14 @@ namespace editor
   public:
     using ApplyFn = std::function<void()>;
 
-    PropertyChangeCommand(ApplyFn apply, ApplyFn undo) : m_Apply(apply), m_Undo(undo) {}
+    PropertyChangeCommand(ApplyFn apply, ApplyFn undo) : m_apply(apply), m_undo(undo) {}
 
-    void Execute() override { m_Apply(); }
-    void Undo() override { m_Undo(); }
+    void Execute() override { m_apply(); }
+    void Undo() override { m_undo(); }
 
   private:
-    ApplyFn m_Apply;
-    ApplyFn m_Undo;
+    ApplyFn m_apply;
+    ApplyFn m_undo;
   };
 }
 

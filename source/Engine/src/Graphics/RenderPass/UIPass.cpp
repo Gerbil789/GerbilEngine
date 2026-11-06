@@ -49,9 +49,9 @@
 //		std::map<std::string, AtlasRegion> icons;
 //	};
 //
-//	static UIConfig s_UIConfig;
+//	static UIConfig s_uIConfig;
 //
-//	static wgpu::BindGroupLayout s_UIBindGroupLayout = nullptr;
+//	static wgpu::BindGroupLayout s_uIBindGroupLayout = nullptr;
 //	static wgpu::BindGroup uiBindGroup = nullptr;
 //	static wgpu::Buffer uiUniformBuffer = nullptr;
 //	static wgpu::Buffer uiStorageBuffer = nullptr;
@@ -62,7 +62,7 @@
 //		const std::filesystem::path configPath = engine::Project::Directory() /  "ui.json";
 //		std::string buffer;
 //
-//		if (auto ec = glz::read_file_json(s_UIConfig, configPath.string(), buffer))
+//		if (auto ec = glz::read_file_json(s_uIConfig, configPath.string(), buffer))
 //		{
 //			LOG_ERROR("Failed to load ui config file '{}': {}", configPath, glz::format_error(ec, buffer));
 //			return;
@@ -122,9 +122,9 @@
 //				item.color = image.tint;
 //				item.mode = UIDrawMode::Image;
 //
-//				if (!image.iconName.empty() && s_UIConfig.icons.find(image.iconName) != s_UIConfig.icons.end())
+//				if (!image.iconName.empty() && s_uIConfig.icons.find(image.iconName) != s_uIConfig.icons.end())
 //				{
-//					const AtlasRegion& region = s_UIConfig.icons[image.iconName];
+//					const AtlasRegion& region = s_uIConfig.icons[image.iconName];
 //					item.uvRect = glm::vec4(
 //						static_cast<float>(region.x) / texWidth,
 //						static_cast<float>(region.y) / texHeight,
@@ -298,7 +298,7 @@
 //		}
 //
 //
-//		const Texture2DAsset& texture = AssetManager::GetAsset(Texture2D{ s_UIConfig.texture });
+//		const Texture2DAsset& texture = AssetManager::GetAsset(Texture2D{ s_uIConfig.texture });
 //		float texWidth = static_cast<float>(texture.GetWidth());
 //		float texHeight = static_cast<float>(texture.GetHeight());
 //
@@ -376,7 +376,7 @@
 //		bindGroupLayoutDesc.entryCount = entries.size();
 //		bindGroupLayoutDesc.entries = entries.data();
 //
-//		s_UIBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
+//		s_uIBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
 //	}
 //
 //	static void CreateUIBindGroup()
@@ -394,7 +394,7 @@
 //		entries[1].size = uiStorageBuffer.GetSize();
 //
 //		entries[2].binding = 2;
-//		entries[2].textureView = AssetManager::GetAsset(Texture2D{ s_UIConfig.texture }).GetTextureView();
+//		entries[2].textureView = AssetManager::GetAsset(Texture2D{ s_uIConfig.texture }).GetTextureView();
 //
 //		entries[3].binding = 3;
 //		entries[3].sampler = SamplerPool::GetSampler({ TextureFilter::Point, TextureWrap::Repeat });
@@ -407,7 +407,7 @@
 //
 //		wgpu::BindGroupDescriptor bindGroupDesc;
 //		bindGroupDesc.label = "UIBindGroup";
-//		bindGroupDesc.layout = s_UIBindGroupLayout;
+//		bindGroupDesc.layout = s_uIBindGroupLayout;
 //		bindGroupDesc.entryCount = entries.size();
 //		bindGroupDesc.entries = entries.data();
 //		uiBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
@@ -456,7 +456,7 @@
 //		pipelineDesc.multisample.mask = ~0u;
 //
 //		std::array<wgpu::BindGroupLayout, 1> bindGroupLayouts;
-//		bindGroupLayouts[0] = s_UIBindGroupLayout;
+//		bindGroupLayouts[0] = s_uIBindGroupLayout;
 //
 //		wgpu::PipelineLayoutDescriptor layoutDesc;
 //		layoutDesc.label = "UI Shader Pipeline Layout";

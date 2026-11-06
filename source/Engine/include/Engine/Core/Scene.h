@@ -25,7 +25,7 @@ namespace engine
 		std::vector<entt::entity> rootEntities;
 
 
-		entt::entity m_PrimaryCameraEntity = entt::null;
+		entt::entity m_primaryCameraEntity = entt::null;
 
 		TextureHandle environmentTexture = texture::HDR;
 		BoundingVolumeHiearchy bvh;
@@ -56,9 +56,9 @@ namespace engine
 
 		CameraComponent* GetPrimaryCamera()
 		{
-			if (registry.valid(m_PrimaryCameraEntity))
+			if (registry.valid(m_primaryCameraEntity))
 			{
-				return registry.try_get<CameraComponent>(m_PrimaryCameraEntity);
+				return registry.try_get<CameraComponent>(m_primaryCameraEntity);
 			}
 
 			return nullptr;
@@ -66,10 +66,10 @@ namespace engine
 
 		void SetPrimaryCamera(entt::entity entity)
 		{
-			m_PrimaryCameraEntity = entity;
+			m_primaryCameraEntity = entity;
 		}
 
-		entt::entity GetPrimaryCameraEntity() const { return m_PrimaryCameraEntity; }
+		entt::entity GetPrimaryCameraEntity() const { return m_primaryCameraEntity; }
 
 		const std::vector<entt::entity>& GetRootEntities() const;
 		void InsertRootEntity(entt::entity entity, size_t index);

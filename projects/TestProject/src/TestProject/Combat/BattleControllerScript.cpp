@@ -9,30 +9,30 @@
 //
 //void BattleControllerScript::OnStart()
 //{
-//	GameContext::grid = Grid(m_GridWidth, m_GridHeight);
+//	GameContext::grid = Grid(m_gridWidth, m_gridHeight);
 //
-//  //entt::registry& registry = m_Scene->GetRegistry();
-//  //registry.emplace_or_replace<Engine::MeshComponent>(m_Entity, Engine::MeshComponent{ m_TileMesh.id, { m_TileMaterial.id } });
+//  //entt::registry& registry = m_scene->GetRegistry();
+//  //registry.emplace_or_replace<Engine::MeshComponent>(m_entity, Engine::MeshComponent{ m_tileMesh.id, { m_tileMaterial.id } });
 //
-//  if(m_Entity.HasComponent<Engine::MeshComponent>())
+//  if(m_entity.HasComponent<Engine::MeshComponent>())
 //  {
-//    Engine::MeshComponent& meshComp = m_Entity.GetComponent<Engine::MeshComponent>();
-//    meshComp.mesh = m_TileMesh;
-//    meshComp.materials = { m_TileMaterial };
+//    Engine::MeshComponent& meshComp = m_entity.GetComponent<Engine::MeshComponent>();
+//    meshComp.mesh = m_tileMesh;
+//    meshComp.materials = { m_tileMaterial };
 //  }
 //  else
 //  {
-//    Engine::MeshComponent& meshComp = m_Entity.AddComponent<Engine::MeshComponent>();
-//		meshComp.mesh = m_TileMesh;
-//		meshComp.materials = { m_TileMaterial };
+//    Engine::MeshComponent& meshComp = m_entity.AddComponent<Engine::MeshComponent>();
+//		meshComp.mesh = m_tileMesh;
+//		meshComp.materials = { m_tileMaterial };
 //	}
 //
-//	Engine::AssetManager::GetAsset(m_TileMaterial).SetParameter("tiling", glm::vec2(m_GridWidth, m_GridHeight));
+//	Engine::AssetManager::GetAsset(m_tileMaterial).SetParameter("tiling", glm::vec2(m_gridWidth, m_gridHeight));
 //
 //
-//	Engine::TransformComponent& transform = m_Entity.GetComponent<Engine::TransformComponent>();
-//	transform.scale = { static_cast<float>(m_GridWidth) * 2, 1.0f, static_cast<float>(m_GridHeight) * 2 };
-//  m_Entity.AddTag<Engine::TransformDirty>();
+//	Engine::TransformComponent& transform = m_entity.GetComponent<Engine::TransformComponent>();
+//	transform.scale = { static_cast<float>(m_gridWidth) * 2, 1.0f, static_cast<float>(m_gridHeight) * 2 };
+//  m_entity.AddTag<Engine::TransformDirty>();
 //
 //  gridInteractionSystem.Initialize();
 //
@@ -43,7 +43,7 @@
 //void BattleControllerScript::OnUpdate()
 //{
 //	gridInteractionSystem.Update();
-//  auto& mat = Engine::AssetManager::GetAsset(m_TileMaterial);
+//  auto& mat = Engine::AssetManager::GetAsset(m_tileMaterial);
 //  mat.SetParameter("hoveredTile", GameContext::mousePosition);
 //
 //

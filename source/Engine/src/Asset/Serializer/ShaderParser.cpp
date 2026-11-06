@@ -7,8 +7,8 @@ namespace engine
 {
   namespace
   {
-    std::unordered_map<std::string, std::vector<ShaderParameter>> m_Structs;
-    std::unordered_map<std::string, uint32_t> m_Constants;
+    std::unordered_map<std::string, std::vector<ShaderParameter>> m_structs;
+    std::unordered_map<std::string, uint32_t> m_constants;
   }
 
   static wgpu::VertexFormat StringToVertexFormat(const std::string& str)
@@ -87,8 +87,8 @@ namespace engine
           }
           else
           {
-            auto it = m_Constants.find(arraySizeStr);
-            if (it != m_Constants.end())
+            auto it = m_constants.find(arraySizeStr);
+            if (it != m_constants.end())
             {
               arraySize = it->second;
             }
@@ -160,7 +160,7 @@ namespace engine
 
   void ParseConstants(std::string_view source)
   {
-		m_Constants.clear();
+		m_constants.clear();
 
     std::regex constRegex(R"(const\s+(\w+)\s*:\s*u32\s*=\s*(\d+))");
     std::cmatch match;
@@ -173,7 +173,7 @@ namespace engine
       std::string_view name(match[1].first, match[1].length());
       std::string_view valueStr(match[2].first, match[2].length());
       uint32_t value = std::stoul(std::string(valueStr));
-			m_Constants.insert({ std::string(name), value });
+			m_constants.insert({ std::string(name), value });
       begin = match.suffix().first;
     }
 	}
@@ -293,12 +293,12 @@ namespace engine
       begin = memberMatch.suffix().first;
     }
 
-		m_Structs.insert({ std::string(structName), params });
+		m_structs.insert({ std::string(structName), params });
   }
 
   void ParseStructs(std::string_view source)
   {
-		m_Structs.clear();
+		m_structs.clear();
 
     std::regex regex(R"(struct\s+(\w+)\s*\{([^}]*)\})");
     std::cmatch match;
@@ -443,8 +443,8 @@ namespace engine
             }
             else
             {
-              auto it = m_Constants.find(arraySizeStr);
-              if (it != m_Constants.end())
+              auto it = m_constants.find(arraySizeStr);
+              if (it != m_constants.end())
               {
                 arraySize = it->second;
               }
@@ -459,8 +459,8 @@ namespace engine
         type = innerType;
       }
 
-			auto it = m_Structs.find(type);
-      if (it != m_Structs.end())
+			auto it = m_structs.find(type);
+      if (it != m_structs.end())
       {
         bufferBinding.parameters = it->second;
         bufferBinding.size = 0;

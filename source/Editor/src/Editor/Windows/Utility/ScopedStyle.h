@@ -58,24 +58,24 @@ namespace editor
 					{
 						ImGui::PushStyleVar(entry.var, entry.varVec2);
 					}
-					m_VarCount++;
+					m_varCount++;
 				}
 				else if (entry.type == StyleType::Color)
 				{
 					ImGui::PushStyleColor(entry.col, entry.colValue);
-					m_ColCount++;
+					m_colCount++;
 				}
 			}
 		}
 
 		~ScopedStyle()
 		{
-			ImGui::PopStyleVar(m_VarCount);
-			ImGui::PopStyleColor(m_ColCount);
+			ImGui::PopStyleVar(m_varCount);
+			ImGui::PopStyleColor(m_colCount);
 		}
 
 	private:
-		int m_VarCount = 0;
-		int m_ColCount = 0;
+		int m_varCount = 0;
+		int m_colCount = 0;
 	};
 }

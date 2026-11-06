@@ -13,14 +13,14 @@ namespace engine
 	void Runtime::Stop()
 	{
 		engine::Audio::StopAll();
-		engine::Input::SetCursorMode(engine::Input::CursorMode::Normal); //TODO: handle cursor in editor
+		engine::input::SetCursorMode(engine::input::CursorMode::Normal); //TODO: handle cursor in editor
 	}
 
 	void Runtime::Update()
 	{
-		if (engine::Input::IsKeyPressedOnce(engine::Key::Escape))
+		if (engine::input::IsKeyPressed(engine::Key::Escape))
 		{
-			engine::Input::SetCursorMode(engine::Input::CursorMode::Normal);
+			engine::input::SetCursorMode(engine::input::CursorMode::Normal);
 		}
 	}
 }

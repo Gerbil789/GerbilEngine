@@ -11,24 +11,24 @@ namespace editor
   class ComponentSnapshotCommand : public ICommand
   {
   public:
-    ComponentSnapshotCommand(entt::entity e, T before, T after) : m_Entity(e), m_Before(before), m_After(after) {}
+    ComponentSnapshotCommand(entt::entity e, T before, T after) : m_entity(e), m_before(before), m_after(after) {}
 
     void Execute() override
     {
       entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
-      registry.get<T>(m_Entity) = m_After; 
-      registry.emplace_or_replace<engine::TransformDirty>(m_Entity);
+      registry.get<T>(m_entity) = m_after; 
+      registry.emplace_or_replace<engine::TransformDirty>(m_entity);
     }
 
     void Undo() override
     {
       entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
-      registry.get<T>(m_Entity) = m_Before;
-      registry.emplace_or_replace<engine::TransformDirty>(m_Entity);
+      registry.get<T>(m_entity) = m_before;
+      registry.emplace_or_replace<engine::TransformDirty>(m_entity);
     }
 
   private:
-    entt::entity m_Entity;
-    T m_Before, m_After;
+    entt::entity m_entity;
+    T m_before, m_after;
   };
 }

@@ -17,11 +17,11 @@
 //		};
 //		static_assert(sizeof(WireframeUniform) % 16 == 0);
 //
-//		wgpu::RenderPipeline m_WireframePipeline;
-//		wgpu::BindGroup m_ShadowBindGroup;
-//		wgpu::Buffer m_UniformBuffer;
+//		wgpu::RenderPipeline m_wireframePipeline;
+//		wgpu::BindGroup m_shadowBindGroup;
+//		wgpu::Buffer m_uniformBuffer;
 //
-//		WireframeUniform m_UniformData;
+//		WireframeUniform m_uniformData;
 //	}
 //
 //	WireframePass::WireframePass()
@@ -45,11 +45,11 @@
 //		bufferDesc.size = 1024 * 256 * sizeof(WireframeUniform); //1024 max entities, 256 bytes alignment
 //		bufferDesc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
 //
-//		m_UniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
+//		m_uniformBuffer = GraphicsContext::GetDevice().CreateBuffer(&bufferDesc);
 //
 //		wgpu::BindGroupEntry bindGroupEntry;
 //		bindGroupEntry.binding = 0;
-//		bindGroupEntry.buffer = m_UniformBuffer;
+//		bindGroupEntry.buffer = m_uniformBuffer;
 //		bindGroupEntry.offset = 0;
 //		bindGroupEntry.size = sizeof(WireframeUniform);
 //
@@ -58,7 +58,7 @@
 //		bindGroupDesc.layout = bindGroupLayout;
 //		bindGroupDesc.entryCount = 1;
 //		bindGroupDesc.entries = &bindGroupEntry;
-//		m_ShadowBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
+//		m_shadowBindGroup = GraphicsContext::GetDevice().CreateBindGroup(&bindGroupDesc);
 //
 //		wgpu::ShaderModule shaderModule = LoadWGSLShader("resources/shaders/wireframe.wgsl");
 //		std::array<wgpu::VertexAttribute, 3> vertexAttribs;
@@ -150,12 +150,12 @@
 //		layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
 //		pipelineDesc.layout = GraphicsContext::GetDevice().CreatePipelineLayout(&layoutDesc);
 //
-//		m_WireframePipeline = GraphicsContext::GetDevice().CreateRenderPipeline(&pipelineDesc);
+//		m_wireframePipeline = GraphicsContext::GetDevice().CreateRenderPipeline(&pipelineDesc);
 //	}
 //
 //	void WireframePass::SetColor(const glm::vec4& color)
 //	{
-//		m_UniformData.color = color;
+//		m_uniformData.color = color;
 //	}
 //
 //	void WireframePass::Execute(wgpu::CommandEncoder& encoder, const RenderContext& context)
@@ -185,12 +185,12 @@
 //
 //		wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&passDescriptor);
 //
-//		pass.SetPipeline(m_WireframePipeline);
+//		pass.SetPipeline(m_wireframePipeline);
 //		pass.SetBindGroup(0, context.viewBindGroup, 0, nullptr);
 //		pass.SetBindGroup(1, context.modelBindGroup, 0, nullptr);
 //
-//		GraphicsContext::GetQueue().WriteBuffer(m_UniformBuffer, 0, &m_UniformData, sizeof(WireframeUniform));
-//		pass.SetBindGroup(2, m_ShadowBindGroup, 0, nullptr);
+//		GraphicsContext::GetQueue().WriteBuffer(m_uniformBuffer, 0, &m_uniformData, sizeof(WireframeUniform));
+//		pass.SetBindGroup(2, m_shadowBindGroup, 0, nullptr);
 //
 //		engine::Mesh lastMesh;
 //

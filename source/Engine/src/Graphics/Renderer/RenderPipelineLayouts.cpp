@@ -7,9 +7,9 @@ namespace engine
 {
 	namespace 
 	{
-		static wgpu::BindGroupLayout s_ViewBindGroupLayout = nullptr;
-		static wgpu::BindGroupLayout s_ModelBindGroupLayout = nullptr;
-		static wgpu::BindGroupLayout s_EnvironmentBindGroupLayout = nullptr;
+		static wgpu::BindGroupLayout s_viewBindGroupLayout = nullptr;
+		static wgpu::BindGroupLayout s_modelBindGroupLayout = nullptr;
+		static wgpu::BindGroupLayout s_environmentBindGroupLayout = nullptr;
 	}
 
 	void CreateViewBindGroupLayout()
@@ -26,7 +26,7 @@ namespace engine
 		bindGroupLayoutDesc.entryCount = entries.size();
 		bindGroupLayoutDesc.entries = entries.data();
 
-		s_ViewBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
+		s_viewBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
 	}
 
 	void CreateModelBindGroupLayout()
@@ -43,7 +43,7 @@ namespace engine
 		bindGroupLayoutDesc.label = "ModelBindGroupLayout";
 		bindGroupLayoutDesc.entryCount = entries.size();
 		bindGroupLayoutDesc.entries = entries.data();
-		s_ModelBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
+		s_modelBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
 	}
 
 	void CreateEnvironmentBindGroupLayout()
@@ -122,7 +122,7 @@ namespace engine
 		bindGroupLayoutDesc.entryCount = entries.size();
 		bindGroupLayoutDesc.entries = entries.data();
 
-		s_EnvironmentBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
+		s_environmentBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
 	}
 
 	void RenderPipelineLayouts::Initialize()
@@ -134,16 +134,16 @@ namespace engine
 
 	wgpu::BindGroupLayout RenderPipelineLayouts::GetViewLayout()
 	{
-		return s_ViewBindGroupLayout;
+		return s_viewBindGroupLayout;
 	}
 
 	wgpu::BindGroupLayout RenderPipelineLayouts::GetModelLayout()
 	{
-		return s_ModelBindGroupLayout;
+		return s_modelBindGroupLayout;
 	}
 
 	wgpu::BindGroupLayout RenderPipelineLayouts::GetEnvironmentLayout()
 	{
-		return s_EnvironmentBindGroupLayout;
+		return s_environmentBindGroupLayout;
 	}
 }

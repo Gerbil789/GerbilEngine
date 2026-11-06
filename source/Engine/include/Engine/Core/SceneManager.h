@@ -10,6 +10,6 @@ namespace engine
 		static SceneHandle GetActiveScene();
 		
 	private:
-		inline static SceneHandle s_ActiveScene;
+		inline static SceneHandle s_activeScene;
 	};
 }

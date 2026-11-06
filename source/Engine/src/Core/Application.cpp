@@ -1,7 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Event/EventBus.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Core/Input.h"
@@ -15,14 +14,13 @@
 #include "Engine/Core/Scene.h"
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Graphics/Renderer/RenderPass.h"
-
 #include "Engine/Utility/Timer.h"
 
 namespace engine
 {
-	Window Application::s_Window;
-	Renderer Application::s_Renderer;
-	bool Application::s_Running = true;
+	Window Application::s_window;
+	Renderer Application::s_renderer;
+	bool Application::s_running = true;
 
 	Application::Application(const Configuration& config)
 	{
@@ -34,19 +32,19 @@ namespace engine
 		GraphicsContext::Initialize();
 		GLFW::Initialize();
 
-		s_Window.Initialize(config.windowSpec);
-		s_Window.SetEventCallback([](auto& e) { EventBus::Publish(e); });
+		s_window.Initialize(config.windowSpec);
+		s_window.OnClose([](){Application::s_running = false; LOG_INFO("Application closed");});
 
 		AssetRegistry::Load();
 		AssetManager::Initialize();
 
-		Input::Initialize(s_Window.Get());
+		input::Initialize(s_window);
 		Audio::Initialize();
 		FontManager::Initialize();
 
-		s_Renderer.Initialize(config.windowSpec.width, config.windowSpec.height);
-		s_Renderer.AddPass<BackgroundPass>();
-		s_Renderer.AddPass<OpaquePass>();
+		s_renderer.Initialize(config.windowSpec.width, config.windowSpec.height);
+		s_renderer.AddPass<BackgroundPass>();
+		s_renderer.AddPass<OpaquePass>();
 
 		SceneManager::SetActiveScene(config.startupScene);
 	}
@@ -54,7 +52,7 @@ namespace engine
 	Application::~Application()
 	{
 		Audio::Shutdown();
-		s_Window.Shutdown();
+		s_window.Shutdown();
 		GLFW::Shutdown();
 		GraphicsContext::Shutdown();
 	}
@@ -63,7 +61,7 @@ namespace engine
 	{
 		//engine::ScopedTimer timer("Application update time");
 
-		if (s_Window.IsMinimized())
+		if (s_window.minimized)
 		{
 			GLFW::WaitEvents();
 			Time::BeginFrame();
@@ -71,7 +69,7 @@ namespace engine
 		}
 
 		Time::BeginFrame();
-		Input::Update();
+		input::Update();
 		Audio::Update();
 
 		Scene& scene = SceneManager::GetActiveScene().Get();
@@ -81,7 +79,7 @@ namespace engine
 		}
 
 		entt::registry& registry = scene.registry;
-		CameraSystem::Update(registry, s_Window.GetAspectRatio());
+		CameraSystem::Update(registry, s_window.GetAspectRatio());
 		TransformSystem::Update(registry, scene.GetRootEntities());
 		scene.bvh.Build(registry);
 	}
@@ -92,10 +90,10 @@ namespace engine
 		entt::registry& registry = scene.registry;
 		auto camera = scene.GetPrimaryCamera();
 
-		if (s_Window.SizeChanged())
+		if (s_window.sizeChanged)
 		{
-			s_Renderer.SetSize(s_Window.GetWidth(), s_Window.GetHeight());
-			s_Window.ClearResizedFlag();
+			s_renderer.SetSize(s_window.width, s_window.height);
+			s_window.sizeChanged = false;
 
 			if(camera)
 			{
@@ -107,9 +105,9 @@ namespace engine
 		if(camera)
 		{
 			DrawList drawList = DrawList::Create(scene.registry);
-			s_Renderer.Render(drawList, camera, s_Window.GetSurfaceView());
+			s_renderer.Render(drawList, camera, s_window.GetSurfaceView());
 		}
 
-		s_Window.GetSurface().Present();
+		s_window.GetSurface().Present();
 	}
 }

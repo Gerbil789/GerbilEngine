@@ -10,13 +10,12 @@ namespace GLFW
 {
 	void Initialize();
 	void Shutdown();
+	void PollEvents();
 	void WaitEvents();
 }
 
 namespace engine
 {
-	struct Event;
-
 	enum class WindowMode { Windowed, BorderlessFullscreen };
 
 	struct WindowSpecification
@@ -34,45 +33,39 @@ namespace engine
 		void Initialize(const WindowSpecification& specification);
 		void Shutdown();
 
-		uint32_t GetWidth() const { return m_Data.width; }
-		uint32_t GetHeight() const { return m_Data.height; }
-		float GetAspectRatio() const { return static_cast<float>(m_Data.width) / static_cast<float>(m_Data.height); }
-		GLFWwindow* Get() const { return m_Window; }
+		float GetAspectRatio() const { return static_cast<float>(width) / static_cast<float>(height); }
+		GLFWwindow* Get() const { return m_window; }
 		wgpu::Surface GetSurface() const;
 		wgpu::TextureView GetSurfaceView() const;
 
-		void SetEventCallback(const std::function<void(Event&)>& callback) { m_Data.callback = callback; }
+		void OnClose(const std::function<void()>& callback) { onCloseCallback = callback; }
 
 		void SetTitle(const std::string& title);
 		void SetMode(WindowMode mode);
 		WindowMode GetMode() const;
 		void ToggleFullscreen();
-		bool IsMinimized() const { return m_Minimized; }
-		bool SizeChanged() const { return m_SizeChanged; }
-		void ClearResizedFlag() { m_SizeChanged = false; }
+
 		void ConfigureSurface();
+
+		uint32_t width = 1600;
+		uint32_t height = 900;
+		bool sizeChanged = true;
+		bool minimized = false;
 
 	private:
 		void SetEventCallbacks();
 		void SetWindowIcon(const std::filesystem::path& path);
 
 	private:
-		GLFWwindow* m_Window = nullptr;
-		wgpu::Surface m_Surface;
-		WindowMode m_Mode = WindowMode::Windowed;
-		bool m_Minimized = false;
-		bool m_SizeChanged = true;
+		GLFWwindow* m_window = nullptr;
+		wgpu::Surface m_surface;
+		WindowMode m_mode = WindowMode::Windowed;
 
-		int m_WindowedX = 100;
-		int m_WindowedY = 100;
-		int m_WindowedWidth = 1280;
-		int m_WindowedHeight = 720;
+		int m_windowedX = 100;
+		int m_windowedY = 100;
+		int m_windowedWidth = 1280;
+		int m_windowedHeight = 720;
 
-		struct WindowData
-		{
-			uint32_t width = 1600, height = 900;
-			std::function<void(Event&)> callback;
-			Window* self = nullptr;
-		} m_Data;
+		std::function<void()> onCloseCallback;
 	};
 } 

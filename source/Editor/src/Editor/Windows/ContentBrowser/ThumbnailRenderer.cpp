@@ -26,11 +26,11 @@ namespace editor
 			{ Icon::Audio,{ 4, 0 } },
 		};
 
-		constexpr glm::ivec2 m_SpritesheetSize{ 1024, 1024 };
-		constexpr glm::ivec2 m_CellSize{ 64, 64 };
+		constexpr glm::ivec2 m_spritesheetSize{ 1024, 1024 };
+		constexpr glm::ivec2 m_cellSize{ 64, 64 };
 
-		std::unordered_map<Icon, engine::Sprite> m_Icons;
-		std::unordered_map<engine::Uuid, engine::Sprite> m_ThumbnailCache;
+		std::unordered_map<Icon, engine::Sprite> m_icons;
+		std::unordered_map<engine::Uuid, engine::Sprite> m_thumbnailCache;
 
 		engine::Renderer renderer;
 		engine::CameraComponent camera;
@@ -38,13 +38,13 @@ namespace editor
 		constexpr int AtlasSizePx = 2048;
 		constexpr int CellsPerSide = AtlasSizePx / 64;
 
-		engine::TextureHandle m_AtlasTexture = engine::texture::EditorThumbnailAtlas;
-		int m_NextFreeSlot = 0;
+		engine::TextureHandle m_atlasTexture = engine::texture::EditorThumbnailAtlas;
+		int m_nextFreeSlot = 0;
 
-		wgpu::Texture m_ScratchpadTexture;
-		wgpu::TextureView m_ScratchpadView;
-		wgpu::Texture m_DepthTexture;
-		wgpu::TextureView m_DepthView;
+		wgpu::Texture m_scratchpadTexture;
+		wgpu::TextureView m_scratchpadView;
+		wgpu::Texture m_depthTexture;
+		wgpu::TextureView m_depthView;
 	}
 
 	void ThumbnailRenderer::Initialize()
@@ -60,7 +60,7 @@ namespace editor
 
 		for (const auto& [icon, coords] : IconMap)
 		{
-			m_Icons.emplace(icon, engine::Sprite::CreateFromGrid(engine::texture::EditorIcons, m_SpritesheetSize, coords, m_CellSize));
+			m_icons.emplace(icon, engine::Sprite::CreateFromGrid(engine::texture::EditorIcons, m_spritesheetSize, coords, m_cellSize));
 		}
 
 		wgpu::TextureDescriptor scratchDesc;
@@ -71,8 +71,8 @@ namespace editor
 		scratchDesc.size = { 64, 64, 1 };
 		scratchDesc.format = engine::GraphicsContext::GetSurfaceFormat();
 		scratchDesc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
-		m_ScratchpadTexture = engine::GraphicsContext::GetDevice().CreateTexture(&scratchDesc);
-		m_ScratchpadView = m_ScratchpadTexture.CreateView();
+		m_scratchpadTexture = engine::GraphicsContext::GetDevice().CreateTexture(&scratchDesc);
+		m_scratchpadView = m_scratchpadTexture.CreateView();
 
 		wgpu::TextureDescriptor depthDesc;
 		depthDesc.label = "ThumbnailDepth";
@@ -82,8 +82,8 @@ namespace editor
 		depthDesc.mipLevelCount = 1;
 		depthDesc.sampleCount = 1;
 		depthDesc.usage = wgpu::TextureUsage::RenderAttachment;
-		m_DepthTexture = engine::GraphicsContext::GetDevice().CreateTexture(&depthDesc);
-		m_DepthView = m_DepthTexture.CreateView();
+		m_depthTexture = engine::GraphicsContext::GetDevice().CreateTexture(&depthDesc);
+		m_depthView = m_depthTexture.CreateView();
 	}
 
 	static engine::Sprite RenderToAtlas(engine::MeshHandle mesh, engine::MaterialInstanceHandle materialInstance)
@@ -114,20 +114,20 @@ namespace editor
       list.transforms.push_back(worldMatrix);
     }
 
-		renderer.Render(list, &camera, m_ScratchpadTexture.CreateView());
+		renderer.Render(list, &camera, m_scratchpadTexture.CreateView());
 
 		// Copy to Atlas
 		wgpu::TexelCopyTextureInfo src;
-		src.texture = m_ScratchpadTexture;
+		src.texture = m_scratchpadTexture;
 		src.mipLevel = 0;
 		src.origin = { 0, 0, 0 };
 
-		int slot = m_NextFreeSlot++;
+		int slot = m_nextFreeSlot++;
 		int x = (slot % CellsPerSide) * 64;
 		int y = (slot / CellsPerSide) * 64;
 
 		wgpu::TexelCopyTextureInfo dst;
-		dst.texture = m_AtlasTexture.Get().texture;
+		dst.texture = m_atlasTexture.Get().texture;
 		dst.mipLevel = 0;
 		dst.origin = { (uint32_t)x, (uint32_t)y, 0 };
 
@@ -139,7 +139,7 @@ namespace editor
 		engine::GraphicsContext::GetQueue().Submit(1, &cmd);
 
 		engine::Sprite sprite;
-		sprite.textureHandle = m_AtlasTexture;
+		sprite.textureHandle = m_atlasTexture;
 		sprite.uvMin = { static_cast<float>(x) / AtlasSizePx, static_cast<float>(y) / AtlasSizePx };
 		sprite.uvMax = { static_cast<float>(x + 64) / AtlasSizePx, static_cast<float>(y + 64) / AtlasSizePx };
 		return sprite;
@@ -147,9 +147,9 @@ namespace editor
 
 	const engine::Sprite& ThumbnailRenderer::GetAssetThumbnail(engine::Uuid id, engine::AssetType type)
 	{
-		if (m_ThumbnailCache.contains(id))
+		if (m_thumbnailCache.contains(id))
 		{
-			return m_ThumbnailCache[id];
+			return m_thumbnailCache[id];
 		}
 
 		engine::Sprite sprite;
@@ -182,17 +182,17 @@ namespace editor
 			break;
 		}
 
-		m_ThumbnailCache[id] = sprite;
-		return m_ThumbnailCache[id];
+		m_thumbnailCache[id] = sprite;
+		return m_thumbnailCache[id];
 	}
 
 
 	const engine::Sprite& ThumbnailRenderer::GetEditorIcon(Icon icon)
 	{
-		if (m_Icons.contains(icon))
+		if (m_icons.contains(icon))
 		{
-			return m_Icons.at(icon);
+			return m_icons.at(icon);
 		}
-		return m_Icons.at(Icon::Unknown);
+		return m_icons.at(Icon::Unknown);
 	}
 }

@@ -2,7 +2,6 @@
 
 #include "Engine/Core/Window.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Core/Scene.h"
 
 namespace engine
 {
@@ -20,15 +19,13 @@ namespace engine
 		Application(const Configuration& config);
 		~Application();
 
-		// void Run();
-
 		void Update();
 		void Draw();
 
 	public:
-		static engine::Window s_Window;
-		static engine::Renderer s_Renderer;
-		static bool s_Running;
+		static engine::Window s_window;
+		static engine::Renderer s_renderer;
+		static bool s_running;
 	};
 
 }

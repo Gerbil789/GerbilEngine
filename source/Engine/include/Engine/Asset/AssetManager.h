@@ -27,7 +27,7 @@ namespace engine
 		template <typename T>
 		static T& GetAsset(Handle<T> handle)
 		{
-			auto& map = std::get<AssetDataMap<T>>(m_LoadedAssets);
+			auto& map = std::get<AssetDataMap<T>>(m_loadedAssets);
 
 			if (auto it = map.find(handle); it != map.end())
 				return it->second;
@@ -43,7 +43,7 @@ namespace engine
 		{
 			if (AssetRegistry::Exists(handle))
 			{
-				std::get<AssetSet<T>>(m_DirtyAssets).insert(handle);
+				std::get<AssetSet<T>>(m_dirtyAssets).insert(handle);
 			}
 		}
 
@@ -58,7 +58,7 @@ namespace engine
 			AssetDataMap<MaterialInstance>,
 			AssetDataMap<AudioClip>,
 			AssetDataMap<Scene>
-		> m_LoadedAssets;
+		> m_loadedAssets;
 
 		inline static std::tuple<
 			AssetSet<Texture2D>,
@@ -68,6 +68,6 @@ namespace engine
 			AssetSet<MaterialInstance>,
 			AssetSet<AudioClip>,
 			AssetSet<Scene>
-		> m_DirtyAssets;
+		> m_dirtyAssets;
 	};
 }

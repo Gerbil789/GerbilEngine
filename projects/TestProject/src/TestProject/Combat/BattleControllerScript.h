@@ -10,17 +10,17 @@
 //  SCRIPT_CLASS(BattleControllerScript)
 //
 //public:
-//  PROPERTY(m_GridWidth, "grid width")
-//    int m_GridWidth = 10;
+//  PROPERTY(m_gridWidth, "grid width")
+//    int m_gridWidth = 10;
 //
-//	PROPERTY(m_GridHeight, "grid height")
-//		int m_GridHeight = 10;
+//	PROPERTY(m_gridHeight, "grid height")
+//		int m_gridHeight = 10;
 //
-//  PROPERTY(m_TileMesh, "tile mesh")
-//    Engine::Mesh m_TileMesh;
+//  PROPERTY(m_tileMesh, "tile mesh")
+//    Engine::Mesh m_tileMesh;
 //
-//  PROPERTY(m_TileMaterial, "tile material")
-//    Engine::Material m_TileMaterial;
+//  PROPERTY(m_tileMaterial, "tile material")
+//    Engine::Material m_tileMaterial;
 //
 //public:
 //  void OnStart() override;

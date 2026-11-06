@@ -7,37 +7,37 @@ namespace editor
 {
 	namespace
 	{
-		engine::AudioClipHandle m_AudioClip;
-		engine::AudioInstance m_Instance;
+		engine::AudioClipHandle m_audioClip;
+		engine::AudioInstance m_instance;
 	}
 
 	void AudioInspectorPanel::Draw(engine::AudioClipHandle handle)
 	{
-		if(handle != m_AudioClip)
+		if(handle != m_audioClip)
 		{
-			engine::Audio::Stop(m_Instance);
+			engine::Audio::Stop(m_instance);
 
-			m_AudioClip = handle;
-			m_Instance = {};
+			m_audioClip = handle;
+			m_instance = {};
 		}
 
 
-		if(engine::Audio::IsPlaying(m_Instance))
+		if(engine::Audio::IsPlaying(m_instance))
 		{
 			if (ImGui::Button("Stop"))
 			{
-				engine::Audio::Stop(m_Instance);
+				engine::Audio::Stop(m_instance);
 			}
 		}
 		else
 		{
 			if (ImGui::Button("Play"))
 			{
-				m_Instance = engine::Audio::Play2D(m_AudioClip);
+				m_instance = engine::Audio::Play2D(m_audioClip);
 			}
 		}
 
-		//const Engine::AudioClip& clip = Engine::AssetManager::GetAsset<Engine::AudioClip>(m_AudioClip);
+		//const Engine::AudioClip& clip = Engine::AssetManager::GetAsset<Engine::AudioClip>(m_audioClip);
 
 		//static struct AudioInspectorState
 		//{

@@ -3,25 +3,27 @@
 #include "Engine/Core/KeyCodes.h"
 #include <glm/glm.hpp>
 
-struct GLFWwindow;
+namespace engine { class Window; }
 
-namespace engine::Input
+namespace engine::input
 {
 	enum class CursorMode { Normal, Hidden, Disabled };
 
-	void Initialize(GLFWwindow* window);
+	void Initialize(Window& window);
 	void Update();
 
 	bool IsKeyDown(Key key);
-	bool IsKeyPressedOnce(Key key);
+	bool IsKeyPressed(Key key);
 	bool IsKeyReleased(Key key);
 
+	bool IsMouseButtonDown(Mouse button);
 	bool IsMouseButtonPressed(Mouse button);
+	bool IsMouseButtonReleased(Mouse button);
+	
 	glm::vec2 GetMousePosition();
+	glm::vec2 GetMouseScroll();
 
 	void SetCursorMode(CursorMode mode);
 	CursorMode GetCursorMode();
 	void SetCursorPosition(const glm::vec2& position);
-
-	//TODO: mouse scroll, ...
 }

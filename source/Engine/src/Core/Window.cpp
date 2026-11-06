@@ -1,8 +1,5 @@
 #include "enginepch.h"
 #include "Engine/Core/Window.h"
-#include "Engine/Event/WindowEvent.h"
-#include "Engine/Event/MouseEvent.h"
-#include "Engine/Event/KeyEvent.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Core/Log.h"
 #include "Engine/Core/Application.h"
@@ -28,6 +25,11 @@ namespace GLFW
 	void Shutdown()
 	{
 		glfwTerminate();
+	}
+
+	void PollEvents()
+	{
+		glfwPollEvents();
 	}
 
 	void WaitEvents()
@@ -65,31 +67,30 @@ namespace engine
 
 	void Window::Initialize(const WindowSpecification& specification)
 	{
-		m_Data.width = specification.width;
-		m_Data.height = specification.height;
+		width = specification.width;
+		height = specification.height;
 
-		LOG_TRACE("Creating '{}' window ({}, {})", specification.title, m_Data.width, m_Data.height);
+		LOG_TRACE("Creating '{}' window ({}, {})", specification.title, width, height);
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		m_Window = glfwCreateWindow(static_cast<int>(m_Data.width), static_cast<int>(m_Data.height), specification.title.c_str(), nullptr, nullptr);
+		m_window = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height), specification.title.c_str(), nullptr, nullptr);
 
-		if (!m_Window)
+		if (!m_window)
 		{
 			throw std::runtime_error("Could not create GLFW window!");
 		}
 
-		glfwSetWindowSizeLimits(m_Window, 800, 600, GLFW_DONT_CARE, GLFW_DONT_CARE);
+		glfwSetWindowSizeLimits(m_window, 800, 600, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
-		m_Data.self = this;
-		glfwSetWindowUserPointer(m_Window, &m_Data);
+		glfwSetWindowUserPointer(m_window, this);
 
 		SetEventCallbacks();
 		SetWindowIcon(specification.iconPath);
 
-		m_Surface = CreateSurface(static_cast<GLFWwindow*>(m_Window));
+		m_surface = CreateSurface(static_cast<GLFWwindow*>(m_window));
 
 		wgpu::SurfaceCapabilities capabilities;
-		m_Surface.GetCapabilities(GraphicsContext::GetAdapter(), &capabilities);
+		m_surface.GetCapabilities(GraphicsContext::GetAdapter(), &capabilities);
 		GraphicsContext::SetSurfaceFormat(capabilities.formats[0]);
 
 		ConfigureSurface();
@@ -97,24 +98,24 @@ namespace engine
 
 	void Window::Shutdown()
 	{
-		if (m_Window)
+		if (m_window)
 		{
-			glfwDestroyWindow(m_Window);
-			m_Window = nullptr;
+			glfwDestroyWindow(m_window);
+			m_window = nullptr;
 		}
 
-		m_Surface = nullptr;
+		m_surface = nullptr;
 	}
 
 	wgpu::Surface Window::GetSurface() const
 	{
-		return m_Surface;
+		return m_surface;
 	}
 
 	wgpu::TextureView Window::GetSurfaceView() const
 	{
 		wgpu::SurfaceTexture surfaceTexture;
-		m_Surface.GetCurrentTexture(&surfaceTexture);
+		m_surface.GetCurrentTexture(&surfaceTexture);
 		if (!(surfaceTexture.status == wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal || surfaceTexture.status == wgpu::SurfaceGetCurrentTextureStatus::SuccessSuboptimal))
 		{
 			LOG_WARNING("Surface texture status is not optimal. status: {}", (uint32_t)surfaceTexture.status);
@@ -132,49 +133,49 @@ namespace engine
 
 	void Window::SetTitle(const std::string& title)
 	{
-		if (m_Window)
+		if (m_window)
 		{
-			glfwSetWindowTitle(m_Window, title.c_str());
+			glfwSetWindowTitle(m_window, title.c_str());
 		}
 	}
 
 	void Window::SetMode(WindowMode mode)
 	{
-		if (m_Mode == mode) return;
+		if (m_mode == mode) return;
 
-		m_Mode = mode;
+		m_mode = mode;
 
 		if (mode == WindowMode::BorderlessFullscreen)
 		{
-			glfwGetWindowPos(m_Window, &m_WindowedX, &m_WindowedY);
-			glfwGetWindowSize(m_Window, &m_WindowedWidth, &m_WindowedHeight);
+			glfwGetWindowPos(m_window, &m_windowedX, &m_windowedY);
+			glfwGetWindowSize(m_window, &m_windowedWidth, &m_windowedHeight);
 
 			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 			const GLFWvidmode* vidmode = glfwGetVideoMode(monitor);
 
-			glfwSetWindowAttrib(m_Window, GLFW_DECORATED, GLFW_FALSE);
+			glfwSetWindowAttrib(m_window, GLFW_DECORATED, GLFW_FALSE);
 
-			glfwSetWindowPos(m_Window, 0, 0);
-			glfwSetWindowSize(m_Window, vidmode->width, vidmode->height);
+			glfwSetWindowPos(m_window, 0, 0);
+			glfwSetWindowSize(m_window, vidmode->width, vidmode->height);
 		}
 		else
 		{
-			glfwSetWindowAttrib(m_Window, GLFW_DECORATED, GLFW_TRUE);
+			glfwSetWindowAttrib(m_window, GLFW_DECORATED, GLFW_TRUE);
 
-			glfwSetWindowSize(m_Window, m_WindowedWidth, m_WindowedHeight);
-			glfwSetWindowPos(m_Window, m_WindowedX, m_WindowedY);
+			glfwSetWindowSize(m_window, m_windowedWidth, m_windowedHeight);
+			glfwSetWindowPos(m_window, m_windowedX, m_windowedY);
 		}
 
 	}
 
 	WindowMode Window::GetMode() const
 	{
-		return m_Mode;
+		return m_mode;
 	}
 
 	void Window::ToggleFullscreen()
 	{
-		if (m_Mode == WindowMode::BorderlessFullscreen)
+		if (m_mode == WindowMode::BorderlessFullscreen)
 		{
 			SetMode(WindowMode::Windowed);
 		}
@@ -186,122 +187,50 @@ namespace engine
 
 	void Window::SetEventCallbacks()
 	{
-		glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
+		glfwSetFramebufferSizeCallback(m_window, [](GLFWwindow* window, int width, int height)
 			{
 				if (width == 0 || height == 0) { return; }
 
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				data.width = static_cast<uint32_t>(width);
-				data.height = static_cast<uint32_t>(height);
-				data.self->ConfigureSurface();
-				data.self->m_SizeChanged = true;
-				WindowResizeEvent event{ data.width, data.height };
-				data.callback(event);
+				Window& self = *(Window*)glfwGetWindowUserPointer(window);
+				self.width = static_cast<uint32_t>(width);
+				self.height = static_cast<uint32_t>(height);
+				self.ConfigureSurface();
+				self.sizeChanged = true;
 			});
 
-		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
+		glfwSetWindowCloseCallback(m_window, [](GLFWwindow* window)
 			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				Application::s_Running = false;
-				LOG_INFO("Application closed");
-				WindowCloseEvent event{};
-				data.callback(event);
+				Window& self = *(Window*)glfwGetWindowUserPointer(window);
+				self.onCloseCallback();
 			});
 
-		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int, int action, int)
+		glfwSetKeyCallback(m_window, [](GLFWwindow* window, int key, int, int action, int)
 			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-				switch (action)
+				if(action == GLFW_PRESS && key == GLFW_KEY_F11)
 				{
-				case GLFW_PRESS:
-				{
-					if (key == GLFW_KEY_F11)
-					{
-						data.self->ToggleFullscreen();
-					}
-
-					KeyPressedEvent event{ key, 0 };
-					data.callback(event);
-					break;
-				}
-				case GLFW_RELEASE:
-				{
-					KeyReleasedEvent event{ key };
-					data.callback(event);
-					break;
-				}
-				case GLFW_REPEAT:
-				{
-					KeyPressedEvent event{ key, 1 };
-					data.callback(event);
-					break;
-				}
+					Window& self = *(Window*)glfwGetWindowUserPointer(window);
+					self.ToggleFullscreen();
 				}
 			});
 
-		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int key)
+		glfwSetWindowIconifyCallback(m_window, [](GLFWwindow* window, int iconified)
 			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				KeyTypedEvent event{ key };
-				data.callback(event);
-			});
-
-		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-				switch (action)
-				{
-				case GLFW_PRESS:
-				{
-					MouseButtonPressedEvent event{ button };
-					data.callback(event);
-					break;
-				}
-				case GLFW_RELEASE:
-				{
-					MouseButtonReleasedEvent event{ button };
-					data.callback(event);
-					break;
-				}
-				}
-			});
-
-		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-				MouseScrolledEvent event{ xOffset, yOffset };
-				data.callback(event);
-			});
-
-		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-				MouseMovedEvent event{ xPos, yPos };
-				data.callback(event);
-			});
-
-		glfwSetWindowIconifyCallback(m_Window, [](GLFWwindow* window, int iconified)
-			{
-				Window::WindowData& data = *(Window::WindowData*)glfwGetWindowUserPointer(window);
-				data.self->m_Minimized = iconified != 0;
+				Window& self = *(Window*)glfwGetWindowUserPointer(window);
+				self.minimized = iconified != 0;
 			});
 	}
 
 	void Window::ConfigureSurface()
 	{
 		wgpu::SurfaceConfiguration config;
-		config.width = m_Data.width;
-		config.height = m_Data.height;
+		config.width = width;
+		config.height = height;
 		config.device = GraphicsContext::GetDevice();
 		config.format = GraphicsContext::GetSurfaceFormat();
 		config.presentMode = wgpu::PresentMode::Fifo;
 		config.alphaMode = wgpu::CompositeAlphaMode::Opaque;
 
-		m_Surface.Configure(&config);
+		m_surface.Configure(&config);
 	}
 
 	void Window::SetWindowIcon(const std::filesystem::path& path)
@@ -316,7 +245,7 @@ namespace engine
 		}
 
 		GLFWimage icon{ width, height, data };
-		glfwSetWindowIcon(m_Window, 1, &icon);
+		glfwSetWindowIcon(m_window, 1, &icon);
 		stbi_image_free(data);
 	}
 }

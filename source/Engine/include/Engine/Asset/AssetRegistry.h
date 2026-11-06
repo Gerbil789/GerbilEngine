@@ -23,8 +23,8 @@ namespace engine
 
 		static Uuid GetId(const std::filesystem::path& path)
 		{
-			auto it = s_PathToId.find(path.string());
-			if (it != s_PathToId.end())
+			auto it = s_pathToId.find(path.string());
+			if (it != s_pathToId.end())
 			{
 				return it->second;
 			}
@@ -34,33 +34,33 @@ namespace engine
 		template<typename Handle>
 		static Handle GetAsset(const std::filesystem::path& path)
 		{
-			Uuid id = s_PathToId.at(path.string());
+			Uuid id = s_pathToId.at(path.string());
 			return Handle{ id };
 		}
 
 		template<typename Handle>
 		static const std::filesystem::path& GetAssetPath(Handle handle)
 		{
-			return std::get<AssetMap<Handle>>(s_Records).at(handle);
+			return std::get<AssetMap<Handle>>(s_records).at(handle);
 		}
 
 		template<typename Handle>
 		static void AddRecord(Handle handle, const std::filesystem::path& path)
 		{
-			std::get<AssetMap<Handle>>(s_Records)[handle] = path;
+			std::get<AssetMap<Handle>>(s_records)[handle] = path;
 		}
 
 		template<typename Handle>
 		static bool Exists(Handle handle)
 		{
-			const auto& map = std::get<AssetMap<Handle>>(s_Records);
+			const auto& map = std::get<AssetMap<Handle>>(s_records);
 			return map.find(handle) != map.end();
 		}
 
 		template<typename Handle>
 		static void RemoveRecord(Handle handle)
 		{
-			std::get<AssetMap<Handle>>(s_Records).erase(handle);
+			std::get<AssetMap<Handle>>(s_records).erase(handle);
 			Save();
 		}
 
@@ -70,7 +70,7 @@ namespace engine
 		template<typename T>
 		static const AssetMap<Handle<T>>& GetRecords()
 		{
-			return std::get<AssetMap<Handle<T>>>(s_Records);
+			return std::get<AssetMap<Handle<T>>>(s_records);
 		}
 
 	private:
@@ -82,8 +82,8 @@ namespace engine
 			AssetMap<MaterialInstanceHandle>,
 			AssetMap<AudioClipHandle>,
 			AssetMap<SceneHandle>
-		> s_Records;
+		> s_records;
 
-		inline static std::unordered_map<std::string, Uuid> s_PathToId;
+		inline static std::unordered_map<std::string, Uuid> s_pathToId;
 	};
 }

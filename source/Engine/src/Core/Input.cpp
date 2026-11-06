@@ -1,12 +1,9 @@
 #include "enginepch.h"
 #include "Engine/Core/Input.h"
-#include "Engine/Event/KeyEvent.h"
-#include "Engine/Event/MouseEvent.h"
-#include "Engine/Event/WindowEvent.h"
-#include "Engine/Event/EventBus.h"
+#include "Engine/Core/Window.h"
 #include <GLFW/glfw3.h>
 
-namespace engine::Input
+namespace engine::input
 {
 	namespace
 	{
@@ -15,89 +12,121 @@ namespace engine::Input
 			std::array<bool, GLFW_KEY_LAST + 1> KeyDown{};
 			std::array<bool, GLFW_KEY_LAST + 1> KeyPressed{};
 			std::array<bool, GLFW_KEY_LAST + 1> KeyReleased{};
+
 			std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> MouseDown{};
+			std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> MousePressed{};
+			std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> MouseReleased{};
+
+			float ScrollX = 0.0f;
+			float ScrollY = 0.0f;
 		};
 
-		GLFWwindow* s_Window;
-		InputState s_State;
+		GLFWwindow* s_window;
+		InputState s_state;
 	}
 
-	void Initialize(GLFWwindow* window)
+	void Initialize(Window& window)
 	{
-		s_Window = window;
+		s_window = window.Get();
 
-		EventBus::Subscribe<KeyPressedEvent>([](auto& e) 
+		glfwSetKeyCallback(s_window, [](GLFWwindow*, int key, int, int action, int)
 			{
-				int key = static_cast<int>(e.key);
-				if (!s_State.KeyDown[key]) s_State.KeyPressed[key] = true;
-				s_State.KeyDown[key] = true;
-				return false;
+				switch (action)
+				{
+				case GLFW_PRESS:
+				{
+					if (!s_state.KeyDown[key]) s_state.KeyPressed[key] = true;
+					s_state.KeyDown[key] = true;
+					break;
+				}
+				case GLFW_RELEASE:
+				{
+					s_state.KeyDown[key] = false;
+					s_state.KeyReleased[key] = true;
+					break;
+				}
+				}
 			});
 
-		EventBus::Subscribe<KeyReleasedEvent>([](auto& e)
+
+		glfwSetMouseButtonCallback(s_window, [](GLFWwindow*, int button, int action, int)
 			{
-				int key = static_cast<int>(e.key);
-				s_State.KeyDown[key] = false;
-				s_State.KeyReleased[key] = true;
-				return false;
+				switch (action)
+				{
+				case GLFW_PRESS:
+				{
+					if (!s_state.MouseDown[button]) s_state.MousePressed[button] = true;
+					s_state.MouseDown[button] = true;
+					break;
+				}
+				case GLFW_RELEASE:
+				{
+					s_state.MouseDown[button] = false;
+					s_state.MouseReleased[button] = true;
+					break;
+				}
+				}
 			});
 
-		EventBus::Subscribe<MouseButtonPressedEvent>([](auto& e)
+		glfwSetScrollCallback(s_window, [](GLFWwindow*, double xOffset, double yOffset)
 			{
-				int button = static_cast<int>(e.button);
-				s_State.MouseDown[button] = true;
-				return false;
+				s_state.ScrollX += static_cast<float>(xOffset);
+				s_state.ScrollY += static_cast<float>(yOffset);
 			});
-
-		EventBus::Subscribe<MouseButtonReleasedEvent>([](auto& e)
-			{
-				int button = static_cast<int>(e.button);
-				s_State.MouseDown[button] = false;
-				return false;
-			});
-
-		//TODO: handle change focus
-		//else if (e.GetEventType() == EventType::WindowFocus)
-		//{
-		//	auto& ev = static_cast<WindowFocusEvent&>(e);
-		//	if (ev.IsFocused())
-		//		s_ActiveWindow = ev.GetWindow();
-		//}
 	}
 
 	void Update()
 	{
-		s_State.KeyPressed.fill(false);
-		s_State.KeyReleased.fill(false);
-		glfwPollEvents();
+		s_state.KeyPressed.fill(false);
+		s_state.KeyReleased.fill(false);
+		s_state.MousePressed.fill(false);
+		s_state.MouseReleased.fill(false);
+		s_state.ScrollX = 0.0f;
+    s_state.ScrollY = 0.0f;
+		GLFW::PollEvents();
 	}
 
 	bool IsKeyDown(Key key)
 	{
-		return s_State.KeyDown[(int)key];
+		return s_state.KeyDown[static_cast<int>(key)];
 	}
 
-	bool IsKeyPressedOnce(Key key)
+	bool IsKeyPressed(Key key)
 	{
-		return s_State.KeyPressed[(int)key];
+		return s_state.KeyPressed[static_cast<int>(key)];
 	}
 
 	bool IsKeyReleased(Key key)
 	{
-		return s_State.KeyReleased[(int)key];
+		return s_state.KeyReleased[static_cast<int>(key)];
+	}
+
+	bool IsMouseButtonDown(Mouse button)
+	{
+		return s_state.MouseDown[static_cast<int>(button)];
 	}
 
 	bool IsMouseButtonPressed(Mouse button)
 	{
-		return s_State.MouseDown[(int)button];
+		return s_state.MouseDown[static_cast<int>(button)];
+	}
+
+	bool IsMouseButtonReleased(Mouse button)
+	{
+		return s_state.MouseReleased[static_cast<int>(button)];
 	}
 
 	glm::vec2 GetMousePosition()
 	{
 		double x, y;
-		glfwGetCursorPos(s_Window, &x, &y);
+		glfwGetCursorPos(s_window, &x, &y);
 		return { static_cast<float>(x), static_cast<float>(y) };
 	}
+
+	glm::vec2 GetMouseScroll()
+  {
+    return { s_state.ScrollX, s_state.ScrollY };
+  }
 
 	void SetCursorMode(CursorMode mode)
 	{
@@ -108,13 +137,13 @@ namespace engine::Input
 		case CursorMode::Hidden: glfwMode = GLFW_CURSOR_HIDDEN; break;
 		case CursorMode::Disabled: glfwMode = GLFW_CURSOR_DISABLED; break;
 		}
-		glfwSetInputMode(s_Window, GLFW_CURSOR, glfwMode);
-		
+		glfwSetInputMode(s_window, GLFW_CURSOR, glfwMode);
+
 	}
 
 	CursorMode GetCursorMode()
 	{
-		int glfwMode = glfwGetInputMode(s_Window, GLFW_CURSOR);
+		int glfwMode = glfwGetInputMode(s_window, GLFW_CURSOR);
 		switch (glfwMode)
 		{
 		case GLFW_CURSOR_NORMAL: return CursorMode::Normal;
@@ -126,6 +155,6 @@ namespace engine::Input
 
 	void SetCursorPosition(const glm::vec2& position)
 	{
-		glfwSetCursorPos(s_Window, position.x, position.y);
+		glfwSetCursorPos(s_window, position.x, position.y);
 	}
 }

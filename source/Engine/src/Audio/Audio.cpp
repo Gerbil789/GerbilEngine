@@ -7,8 +7,8 @@
 
 namespace engine
 {
-  static ma_engine s_AudioEngine;
-  static bool s_AudioInitialized = false;
+  static ma_engine s_audioEngine;
+  static bool s_audioInitialized = false;
 
   struct Voice
   {
@@ -20,17 +20,17 @@ namespace engine
   };
 
   static constexpr uint32_t MaxVoices = 32;
-  static Voice s_Voices[MaxVoices];
+  static Voice s_voices[MaxVoices];
 
   static Voice* AcquireVoice(AudioInstance newInstanceId)
   {
     for (uint32_t i = 0; i < MaxVoices; i++)
     {
-      if (!s_Voices[i].active)
+      if (!s_voices[i].active)
       {
-        s_Voices[i].instance = newInstanceId;
-        s_Voices[i].active = true;
-        return &s_Voices[i];
+        s_voices[i].instance = newInstanceId;
+        s_voices[i].active = true;
+        return &s_voices[i];
       }
     }
     return nullptr;
@@ -42,9 +42,9 @@ namespace engine
 
     for (uint32_t i = 0; i < MaxVoices; i++)
     {
-      if (s_Voices[i].active && s_Voices[i].instance == instance)
+      if (s_voices[i].active && s_voices[i].instance == instance)
       {
-        return &s_Voices[i];
+        return &s_voices[i];
       }
     }
     return nullptr;
@@ -52,25 +52,25 @@ namespace engine
 
   void Audio::Initialize()
   {
-    if (ma_engine_init(nullptr, &s_AudioEngine) != MA_SUCCESS)
+    if (ma_engine_init(nullptr, &s_audioEngine) != MA_SUCCESS)
     {
       throw std::runtime_error("Failed to initialize audio engine");
     }
 
-    s_AudioInitialized = true;
+    s_audioInitialized = true;
 
-    ma_engine_listener_set_position(&s_AudioEngine, 0, 0, 0, 0);
-    ma_engine_listener_set_direction(&s_AudioEngine, 0, 0, 0, -1);
-    ma_engine_listener_set_world_up(&s_AudioEngine, 0, 0, 1, 0);
+    ma_engine_listener_set_position(&s_audioEngine, 0, 0, 0, 0);
+    ma_engine_listener_set_direction(&s_audioEngine, 0, 0, 0, -1);
+    ma_engine_listener_set_world_up(&s_audioEngine, 0, 0, 1, 0);
   }
 
   void Audio::Shutdown()
   {
-    if (!s_AudioInitialized) return;
+    if (!s_audioInitialized) return;
 
     for (uint32_t i = 0; i < MaxVoices; i++)
     {
-      Voice& voice = s_Voices[i];
+      Voice& voice = s_voices[i];
 
       if (!voice.active)
         continue;
@@ -81,15 +81,15 @@ namespace engine
       voice.active = false;
       voice.instance = {};
     }
-    ma_engine_uninit(&s_AudioEngine);
-    s_AudioInitialized = false; // Mark as clean
+    ma_engine_uninit(&s_audioEngine);
+    s_audioInitialized = false; // Mark as clean
   }
 
   void Audio::Update()
   {
     for (uint32_t i = 0; i < MaxVoices; i++)
     {
-      Voice& voice = s_Voices[i];
+      Voice& voice = s_voices[i];
 
       if (!voice.active)
         continue;
@@ -106,9 +106,9 @@ namespace engine
 
   void Audio::SetListener(float px, float py, float pz, float fx, float fy, float fz, float ux, float uy, float uz)
   {
-    ma_engine_listener_set_position(&s_AudioEngine, 0, px, py, pz);
-    ma_engine_listener_set_direction(&s_AudioEngine, 0, -fx, -fy, -fz);
-    ma_engine_listener_set_world_up(&s_AudioEngine, 0, ux, uy, uz);
+    ma_engine_listener_set_position(&s_audioEngine, 0, px, py, pz);
+    ma_engine_listener_set_direction(&s_audioEngine, 0, -fx, -fy, -fz);
+    ma_engine_listener_set_world_up(&s_audioEngine, 0, ux, uy, uz);
   }
 
   void Audio::SetSourcePosition(AudioInstance instance, const glm::vec3& position)
@@ -161,7 +161,7 @@ namespace engine
     }
 
 
-    if (ma_sound_init_from_data_source(&s_AudioEngine, &voice->buffer, 0, nullptr, &voice->sound) != MA_SUCCESS)
+    if (ma_sound_init_from_data_source(&s_audioEngine, &voice->buffer, 0, nullptr, &voice->sound) != MA_SUCCESS)
     {
       LOG_ERROR("Failed to initialize audio voice");
       ma_audio_buffer_uninit(&voice->buffer); // Cleanup
@@ -214,7 +214,7 @@ namespace engine
     }
 
     // 2. Initialize the sound using the buffer as its source!
-    if (ma_sound_init_from_data_source(&s_AudioEngine, &voice->buffer, 0, nullptr, &voice->sound) != MA_SUCCESS)
+    if (ma_sound_init_from_data_source(&s_audioEngine, &voice->buffer, 0, nullptr, &voice->sound) != MA_SUCCESS)
     {
       LOG_ERROR("Failed to initialize audio voice");
       ma_audio_buffer_uninit(&voice->buffer); // Cleanup
@@ -275,7 +275,7 @@ namespace engine
   {
     for (uint32_t i = 0; i < MaxVoices; i++)
     {
-      Voice& voice = s_Voices[i];
+      Voice& voice = s_voices[i];
 
       if (!voice.active) continue;
 

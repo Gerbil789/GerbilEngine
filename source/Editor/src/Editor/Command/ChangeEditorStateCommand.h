@@ -9,13 +9,13 @@ namespace editor
   class ChangeEditorStateCommand : public ICommand
   {
   public:
-    ChangeEditorStateCommand(EditorMode newState) : m_State(newState) {}
+    ChangeEditorStateCommand(EditorMode newState) : m_state(newState) {}
 
     void Execute() override
     {
-			editor::editorContext.editorMode = m_State;
+			editor::context::editorMode = m_state;
 
-			switch(editor::editorContext.editorMode)
+			switch(editor::context::editorMode)
 			{
 				case EditorMode::Play:
 				{
@@ -35,6 +35,6 @@ namespace editor
     void Undo() override {}
 
   private:
-		EditorMode m_State;
+		EditorMode m_state;
   };
 }

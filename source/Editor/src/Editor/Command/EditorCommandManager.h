@@ -16,7 +16,7 @@ namespace editor
   class EditorCommandManager 
   {
   public:
-		static void Initialize();
+    static void Update();
 
     template<typename... Components>
     static void CreateEntity(const std::string& name = "Empty", entt::entity parent = entt::null)
@@ -66,10 +66,10 @@ namespace editor
 		static void Clear();
    
   private:
-		//const static int s_MaxUndoSteps = 128; //TODO: limit undo steps
+		//const static int s_maxUndoSteps = 128; //TODO: limit undo steps
 
-    inline static std::stack<std::unique_ptr<ICommand>> s_UndoStack;
-    inline static std::stack<std::unique_ptr<ICommand>> s_RedoStack;
-    inline static std::vector<std::unique_ptr<ICommand>> s_Deferred;
+    inline static std::stack<std::unique_ptr<ICommand>> s_undoStack;
+    inline static std::stack<std::unique_ptr<ICommand>> s_redoStack;
+    inline static std::vector<std::unique_ptr<ICommand>> s_deferred;
   };
 }

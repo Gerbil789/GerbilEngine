@@ -23,15 +23,15 @@ namespace engine
 		TextureCube(const TextureCube&) = delete;
 		TextureCube& operator=(const TextureCube&) = delete;
 
-		uint32_t GetSize() const { return m_Size; }
-		wgpu::Texture GetTexture() const { return m_Texture; }
-		wgpu::TextureView GetTextureView() const { return m_TextureView; }
-		wgpu::TextureFormat GetFormat() const { return m_TextureFormat; }
+		uint32_t GetSize() const { return m_size; }
+		wgpu::Texture GetTexture() const { return m_texture; }
+		wgpu::TextureView GetTextureView() const { return m_textureView; }
+		wgpu::TextureFormat GetFormat() const { return m_textureFormat; }
 
 	private:
-		uint32_t m_Size = 0;
-		wgpu::Texture m_Texture;
-		wgpu::TextureView m_TextureView;
-		wgpu::TextureFormat m_TextureFormat;
+		uint32_t m_size = 0;
+		wgpu::Texture m_texture;
+		wgpu::TextureView m_textureView;
+		wgpu::TextureFormat m_textureFormat;
 	};
 }

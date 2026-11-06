@@ -12,6 +12,6 @@ namespace editor
 		void Update();
 
 	private:
-    engine::Application m_App;
+    engine::Application m_app;
 	};
 }

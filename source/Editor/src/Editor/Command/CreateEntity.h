@@ -3,8 +3,6 @@
 #include "Editor/Command/ICommand.h"
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Core/Components.h"
-#include "Engine/Event/EventBus.h"
-#include "Editor/Core/EditorEvent.h"
 #include <string_view>
 
 namespace editor
@@ -13,43 +11,37 @@ namespace editor
   class CreateEntityCommand : public ICommand
   {
   public:
-    CreateEntityCommand(std::string_view name = "Empty Entity", entt::entity parent = entt::null) : m_Name(name), m_Parent(parent) {}
+    CreateEntityCommand(std::string_view name = "Empty Entity", entt::entity parent = entt::null) : m_name(name), m_parent(parent) {}
 
     void Execute() override
     {
       engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
 
-      m_Entity = scene.CreateEntity<Components...>(m_Name);
+      m_entity = scene.CreateEntity<Components...>(m_name);
 
-      if (m_Parent != entt::null)
+      if (m_parent != entt::null)
       {
-        auto& hc = scene.registry.get<engine::HierarchyComponent>(m_Entity);
-        hc.parent = m_Parent;
-        scene.registry.get<engine::HierarchyComponent>(m_Parent).children.push_back(m_Entity);
+        auto& hc = scene.registry.get<engine::HierarchyComponent>(m_entity);
+        hc.parent = m_parent;
+        scene.registry.get<engine::HierarchyComponent>(m_parent).children.push_back(m_entity);
       }
       else
       {
-        scene.InsertRootEntity(m_Entity, scene.GetRootEntities().size()); //TODO: this is bad
+        scene.InsertRootEntity(m_entity, scene.GetRootEntities().size()); //TODO: this is bad
       }
-
-      //engine::Uuid id = registry.get<engine::IdentityComponent>(m_Entity).id;
-      // SelectionManager::Assets.Select(id);
-
-      FocusEntityEvent e{ m_Entity };
-      engine::EventBus::Publish(e);
     }
 
     void Undo() override
     {
-      if (m_Entity == entt::null) return;
+      if (m_entity == entt::null) return;
 
       entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
-      registry.destroy(m_Entity);
+      registry.destroy(m_entity);
     }
 
   private:
-    std::string m_Name;
-    entt::entity m_Parent;
-    entt::entity m_Entity;
+    std::string m_name;
+    entt::entity m_parent;
+    entt::entity m_entity;
   };
 }

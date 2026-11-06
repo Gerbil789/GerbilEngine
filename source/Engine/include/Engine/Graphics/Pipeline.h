@@ -89,6 +89,6 @@ namespace engine
     static wgpu::RenderPipeline GetPipeline(const PipelineSpecification& specification);
 
   private:
-		inline static std::unordered_map<PipelineSpecification, wgpu::RenderPipeline, PipelineSpecHasher> s_PipelineCache;
+		inline static std::unordered_map<PipelineSpecification, wgpu::RenderPipeline, PipelineSpecHasher> s_pipelineCache;
   };
 }

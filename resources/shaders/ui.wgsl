@@ -24,7 +24,7 @@ struct DrawItem
 };
 
 @group(0) @binding(0) var<uniform> u_View: ViewUniforms;
-@group(0) @binding(1) var<storage, read> s_DrawList: array<DrawItem>;
+@group(0) @binding(1) var<storage, read> s_drawList: array<DrawItem>;
 
 @group(0) @binding(2) var TextureAtlas: texture_2d<f32>;
 @group(0) @binding(3) var TextureSampler: sampler;
@@ -40,7 +40,7 @@ fn vs_main(@builtin(vertex_index) vertexIdx: u32, @builtin(instance_index) insta
     vec2f(0.0, 1.0), vec2f(1.0, 0.0), vec2f(1.0, 1.0)
   );
 
-	let item = s_DrawList[instanceIdx];
+	let item = s_drawList[instanceIdx];
 
   let finalPos = pos[vertexIdx] * item.rect.zw + item.rect.xy;
     

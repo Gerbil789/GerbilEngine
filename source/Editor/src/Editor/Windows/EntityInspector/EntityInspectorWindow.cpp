@@ -1,5 +1,5 @@
 #include "Editor/Windows/EntityInspector/EntityInspectorWindow.h"
-
+#include "Editor/Core/EditorContext.h"
 #include "Editor/Windows/Utility/Property.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Command/PropertyChangeCommand.h"
@@ -22,8 +22,6 @@
 
 namespace editor
 {
-	entt::entity m_Entity;
-
 	struct EntityHeader
 	{
 		EntityHeader(entt::entity entity, entt::registry& registry)
@@ -109,7 +107,7 @@ namespace editor
 		if (!header.open) return;
 
 		EditResult result;
-		static engine::TransformComponent s_TransformBefore;
+		static engine::TransformComponent s_transformBefore;
 
 		PropertyTable table;
 
@@ -119,11 +117,11 @@ namespace editor
 
 		if (result.started)
 		{
-			s_TransformBefore = { component->position, component->rotation, component->scale };
+			s_transformBefore = { component->position, component->rotation, component->scale };
 		}
 		else if (result.finished)
 		{
-			EditorCommandManager::ModifyComponent<engine::TransformComponent>(entity, s_TransformBefore, *component);
+			EditorCommandManager::ModifyComponent<engine::TransformComponent>(entity, s_transformBefore, *component);
 		}
 		
 		if (result.changed)
@@ -274,7 +272,7 @@ namespace editor
 		if (!header.open) return;
 
 		EditResult result;
-		static engine::UI::Canvas s_CanvasBefore;
+		static engine::UI::Canvas s_canvasBefore;
 
 		PropertyTable table;
 		result |= PropertyField("Screen Space", component->isScreenSpace);
@@ -283,7 +281,7 @@ namespace editor
 
 		if (result.finished)
 		{
-			EditorCommandManager::ModifyComponent<engine::UI::Canvas>(entity, s_CanvasBefore, *component);
+			EditorCommandManager::ModifyComponent<engine::UI::Canvas>(entity, s_canvasBefore, *component);
 		}
 		else if (result.changed)
 		{
@@ -321,15 +319,15 @@ namespace editor
 		result |= PropertyField("Anchor Min", component->anchorMin);
 		result |= PropertyField("Anchor Max", component->anchorMax);
 
-		static engine::UI::RectTransform s_RectBefore;
+		static engine::UI::RectTransform s_rectBefore;
 
 		if (result.started)
 		{
-			s_RectBefore = *component;
+			s_rectBefore = *component;
 		}
 		else if (result.finished)
 		{
-			EditorCommandManager::ModifyComponent<engine::UI::RectTransform>(entity, s_RectBefore, *component);
+			EditorCommandManager::ModifyComponent<engine::UI::RectTransform>(entity, s_rectBefore, *component);
 		}
 		else if (result.changed)
 		{
@@ -360,15 +358,15 @@ namespace editor
 		result |= PropertyField("Tint", component->tint, { .mode = DisplayMode::Color });
 		result |= PropertyField("Texture", component->iconName);
 
-		static engine::UI::Image s_ImageBefore;
+		static engine::UI::Image s_imageBefore;
 
 		if (result.started)
 		{
-			s_ImageBefore = *component;
+			s_imageBefore = *component;
 		}
 		else if (result.finished)
 		{
-			EditorCommandManager::ModifyComponent<engine::UI::Image>(entity, s_ImageBefore, *component);
+			EditorCommandManager::ModifyComponent<engine::UI::Image>(entity, s_imageBefore, *component);
 		}
 		else if (result.changed)
 		{
@@ -403,15 +401,15 @@ namespace editor
 		result |= PropertyField("Line Spacing", component->lineSpacing);
 		result |= PropertyField("Wrap Text", component->wrapText);
 
-		static engine::UI::Text s_TextBefore;
+		static engine::UI::Text s_textBefore;
 
 		if (result.started)
 		{
-			s_TextBefore = *component;
+			s_textBefore = *component;
 		}
 		else if (result.finished)
 		{
-			EditorCommandManager::ModifyComponent<engine::UI::Text>(entity, s_TextBefore, *component);
+			EditorCommandManager::ModifyComponent<engine::UI::Text>(entity, s_textBefore, *component);
 		}
 		else if (result.changed)
 		{
@@ -484,36 +482,32 @@ namespace editor
 		}
 	}
 
-	void EntityInspectorWindow::Initialize()
-	{
-		engine::EventBus::Subscribe<SelectEntityEvent>([](const SelectEntityEvent& e)
-			{
-				m_Entity = e.entity;
-				return false;
-			});
-	}
-
 	void EntityInspectorWindow::Draw()
 	{
 		ImGui::Begin("Entity Inspector");
 
-		if (m_Entity == entt::null) return;
+		if (editor::context::selectedEntity == entt::null) 
+		{
+			ImGui::End();
+			return;
+		}
 
 		engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
+		entt::entity entity = editor::context::selectedEntity;
 
-		EntityHeader header(m_Entity, scene.registry);
+		EntityHeader header(entity, scene.registry);
 
-		DrawTransform(m_Entity, scene.registry);
-		DrawCamera(m_Entity, scene);
-		DrawMesh(m_Entity, scene.registry);
-		DrawCollider(m_Entity, scene.registry);
-		DrawLight(m_Entity, scene.registry);
-		DrawUIRect(m_Entity, scene.registry);
-		DrawUICanvas(m_Entity, scene.registry);
-		DrawUIImage(m_Entity, scene.registry);
-		DrawUIText(m_Entity, scene.registry);
+		DrawTransform(entity, scene.registry);
+		DrawCamera(entity, scene);
+		DrawMesh(entity, scene.registry);
+		DrawCollider(entity, scene.registry);
+		DrawLight(entity, scene.registry);
+		DrawUIRect(entity, scene.registry);
+		DrawUICanvas(entity, scene.registry);
+		DrawUIImage(entity, scene.registry);
+		DrawUIText(entity, scene.registry);
 
-		DrawAddComponentButton(m_Entity, scene.registry);
+		DrawAddComponentButton(entity, scene.registry);
 
 		ImGui::PopID();
 

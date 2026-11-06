@@ -7,9 +7,7 @@
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Asset/AssetManager.h"
-#include "Engine/Core/Log.h"
-#include "Engine/System/CameraSystem.h" //TODO: remove from this file
+#include "Engine/System/CameraSystem.h"
 #include "Engine/Core/Application.h"
 #include <glm/glm.hpp>
 
@@ -17,56 +15,54 @@ namespace editor
 {
 	namespace
 	{
-		EditorPicker m_EntityPicker;
-		ViewportCameraController m_CameraController;
-		TransformController m_TransformController; //gizmo
+		EditorPicker m_entityPicker;
+		ViewportCameraController m_cameraController;
+		TransformController m_transformController; //gizmo
 
-		glm::vec2 m_ViewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
-		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
+		glm::vec2 m_viewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
+		glm::vec2 m_viewportSize = { 0.0f, 0.0f };
 
-		wgpu::Texture m_Texture;
-		wgpu::TextureView m_TextureView;
+		wgpu::Texture m_texture;
+		wgpu::TextureView m_textureView;
 	}
 
 	void ViewportWindow::Initialize()
 	{
-		m_CameraController.Initialize();
-		m_TransformController.Initialize();
+		m_transformController.Initialize();
 	}
 
 	static void UpdateViewportSize()
 	{
 		ImVec2 newSize = ImGui::GetContentRegionAvail();
-		if (newSize.x == m_ViewportSize.x && newSize.y == m_ViewportSize.y) return;
+		if (newSize.x == m_viewportSize.x && newSize.y == m_viewportSize.y) return;
 
-		m_ViewportSize = { newSize.x, newSize.y };
+		m_viewportSize = { newSize.x, newSize.y };
 
-		engine::Application::s_Renderer.SetSize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
-
+		engine::Application::s_renderer.SetSize(static_cast<uint32_t>(m_viewportSize.x), static_cast<uint32_t>(m_viewportSize.y));
 
 		wgpu::TextureDescriptor texDesc;
 		texDesc.label = "viewportTexture";
 		texDesc.usage = wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding;
 		texDesc.dimension = wgpu::TextureDimension::e2D;
-		texDesc.size = { static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y), 1 };
+		texDesc.size = { static_cast<uint32_t>(m_viewportSize.x), static_cast<uint32_t>(m_viewportSize.y), 1 };
 		texDesc.format = engine::GraphicsContext::GetSurfaceFormat();
 		texDesc.mipLevelCount = 1;
 		texDesc.sampleCount = 1;
 
-		m_Texture = engine::GraphicsContext::GetDevice().CreateTexture(&texDesc);
-		m_TextureView = m_Texture.CreateView();
+		m_texture = engine::GraphicsContext::GetDevice().CreateTexture(&texDesc);
+		m_textureView = m_texture.CreateView();
 
 		ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		ImVec2 viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 		ImVec2 viewportOffset = ImGui::GetWindowPos();
 
-		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+		m_viewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+		m_viewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
-		if (m_ViewportSize.x <= 0.0f || m_ViewportSize.y <= 0.0f) return;
+		if (m_viewportSize.x <= 0.0f || m_viewportSize.y <= 0.0f) return;
 
-		float aspectRatio = m_ViewportSize.x / m_ViewportSize.y;
-		engine::CameraSystem::UpdateCameraProjectionMatrix(editor::editorContext.camera, aspectRatio);
+		float aspectRatio = m_viewportSize.x / m_viewportSize.y;
+		engine::CameraSystem::UpdateCameraProjectionMatrix(editor::context::camera, aspectRatio);
 	}
 
 	static void DrawOverlay(const ImVec2& imagePos, const ImVec2& size)
@@ -91,7 +87,7 @@ namespace editor
 			constexpr float buttonWidth = 60.0f;
 			ImGui::SetCursorPos(ImVec2(size.x * 0.5f - buttonWidth * 0.5f, 4.0f));
 
-			if (editor::editorContext.editorMode == EditorMode::Edit)
+			if (editor::context::editorMode == EditorMode::Edit)
 			{
 				if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
 				{
@@ -122,44 +118,39 @@ namespace editor
 		ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
 		UpdateViewportSize();
-		m_CameraController.SetHovered(ImGui::IsWindowHovered());
-
-		// if(ImGui::IsKeyPressed(ImGuiKey_F, false))
-		// {
-		// 	engine::EventBus::Publish(FocusEntityEvent{ SelectionManager::Entities.GetPrimary() });
-		// }
+		if(ImGui::IsWindowHovered())
+		{
+			m_cameraController.Update();
+		}
 
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
 		engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
+		engine::DrawList drawList = engine::DrawList::Create(scene.registry);
+		engine::CameraComponent* camera = editor::context::editorMode == EditorMode::Edit ? &editor::context::camera : scene.GetPrimaryCamera();
+		engine::Application::s_renderer.Render(drawList, camera, m_textureView);
 
-		engine::DrawList list = engine::DrawList::Create(scene.registry);
+		ImGui::Image(m_textureView.Get(), viewportSize);
 
-		engine::CameraComponent* camera = editor::editorContext.editorMode == EditorMode::Edit ? &editor::editorContext.camera : scene.GetPrimaryCamera();
+		// if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		// {
+		// 	if (editor::editorContext.editorMode == EditorMode::Edit && !m_transformController.IsGizmoOver())
+		// 	{
+		// 		ImVec2 mousePos = ImGui::GetMousePos();
 
-		engine::Application::s_Renderer.Render(list, camera, m_TextureView);
+		// 		const uint32_t mx = static_cast<uint32_t>(mousePos.x - m_viewportBounds[0].x);
+		// 		const uint32_t my = static_cast<uint32_t>(mousePos.y - m_viewportBounds[0].y);
 
-		ImGui::Image(m_TextureView.Get(), viewportSize);
-
-		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-		{
-			if (editor::editorContext.editorMode == EditorMode::Edit && !m_TransformController.IsGizmoOver())
-			{
-				//ImVec2 mousePos = ImGui::GetMousePos();
-
-				//const uint32_t mx = static_cast<uint32_t>(mousePos.x - m_ViewportBounds[0].x);
-				//const uint32_t my = static_cast<uint32_t>(mousePos.y - m_ViewportBounds[0].y);
-
-				//engine::Uuid id = m_EntityPicker.Pick(mx, my);
-				//bool additive = ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_LeftShift);
-				// SelectionManager::Entities.Select(id, additive);
-			}
-		}
+		// 		engine::Uuid id = m_entityPicker.Pick(mx, my);
+		// 		bool additive = ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_LeftShift);
+		// 		SelectionManager::Entities.Select(id, additive);
+		// 	}
+		// }
 
 		DrawOverlay(imagePos, viewportSize);
 
-		m_TransformController.DrawGizmo(scene, m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
+		m_transformController.DrawGizmo(scene, m_viewportBounds[0].x, m_viewportBounds[0].y, m_viewportBounds[1].x - m_viewportBounds[0].x, m_viewportBounds[1].y - m_viewportBounds[0].y);
 		ImGui::End();
 	}
 }

@@ -10,36 +10,36 @@ namespace editor
   class RemoveComponentCommand : public ICommand
   {
   public:
-    RemoveComponentCommand(entt::entity entity) : m_Entity(entity)
+    RemoveComponentCommand(entt::entity entity) : m_entity(entity)
     {
       entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
 
       if(registry.any_of<T>(entity))
       {
-        m_Backup = registry.get<T>(entity);
+        m_backup = registry.get<T>(entity);
       }
     }
 
     void Execute() override
     {
       entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
-      if(registry.any_of<T>(m_Entity))
+      if(registry.any_of<T>(m_entity))
       {
-        registry.remove<T>(m_Entity);
+        registry.remove<T>(m_entity);
       }
     }
 
     void Undo() override
     {
       entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
-      if(!registry.any_of<T>(m_Entity))
+      if(!registry.any_of<T>(m_entity))
       {
-        registry.emplace<T>(m_Entity) = m_Backup;
+        registry.emplace<T>(m_entity) = m_backup;
       }
     }
 
   private:
-    entt::entity m_Entity;
-    T m_Backup;
+    entt::entity m_entity;
+    T m_backup;
   };
 }

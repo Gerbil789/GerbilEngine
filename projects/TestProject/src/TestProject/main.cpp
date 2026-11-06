@@ -28,12 +28,12 @@ int main()
 #ifdef EDITOR
 		editor::Editor editor(app);
 
-		while (engine::Application::s_Running)
+		while (engine::Application::s_running)
     {
       editor.Update();
     }
 #else
-		while (engine::Application::s_Running)
+		while (engine::Application::s_running)
     {
       app.Update();
       app.Draw();

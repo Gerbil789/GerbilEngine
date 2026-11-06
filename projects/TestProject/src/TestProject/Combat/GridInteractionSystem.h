@@ -39,7 +39,7 @@ public:
 
   void Update()
   {
-    glm::vec2 mousePos = engine::Input::GetMousePosition();
+    glm::vec2 mousePos = engine::input::GetMousePosition();
 
 		mousePos.x = mousePos.x - engine::viewportState.positionX;
 		mousePos.y = mousePos.y - engine::viewportState.positionY;

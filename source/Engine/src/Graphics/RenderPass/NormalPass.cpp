@@ -12,7 +12,7 @@
 //
 //namespace engine
 //{
-//	wgpu::RenderPipeline m_Pipeline;
+//	wgpu::RenderPipeline m_pipeline;
 //
 //	NormalPass::NormalPass()
 //	{
@@ -27,7 +27,7 @@
 //
 //		spec.layoutOverrides = { RenderPipelineLayouts::GetViewLayout(), RenderPipelineLayouts::GetModelLayout() };
 //
-//		m_Pipeline = PipelineCache::GetPipeline(spec);
+//		m_pipeline = PipelineCache::GetPipeline(spec);
 //	}
 //
 //	void NormalPass::Execute(wgpu::CommandEncoder& encoder, const FrameContext& context)
@@ -56,7 +56,7 @@
 //		renderPassDescriptor.depthStencilAttachment = &depth;
 //
 //		wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDescriptor);
-//		pass.SetPipeline(m_Pipeline);
+//		pass.SetPipeline(m_pipeline);
 //
 //		pass.SetBindGroup(0, context.viewBindGroup, 0, nullptr);
 //		pass.SetBindGroup(1, context.modelBindGroup, 0, nullptr);

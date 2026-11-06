@@ -10,8 +10,8 @@ namespace engine
 {
 	wgpu::RenderPipeline PipelineCache::GetPipeline(const PipelineSpecification& specification)
 	{
-		auto it = s_PipelineCache.find(specification);
-		if (it != s_PipelineCache.end())
+		auto it = s_pipelineCache.find(specification);
+		if (it != s_pipelineCache.end())
 		{
 			return it->second;
 		}
@@ -119,7 +119,7 @@ namespace engine
 
 		wgpu::RenderPipeline pipeline = GraphicsContext::GetDevice().CreateRenderPipeline(&pipelineDesc);
 
-		s_PipelineCache[specification] = pipeline;
+		s_pipelineCache[specification] = pipeline;
 		return pipeline;
 	}
 

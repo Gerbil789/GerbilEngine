@@ -1,20 +1,12 @@
 #include "Editor/Editor.h"
-#include "Engine/Core/Project.h"
 #include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Core/Window.h"
 #include "Engine/Core/SceneManager.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Audio/Audio.h"
-#include "Engine/Graphics/Font.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/Scene.h"
-#include "Engine/Event/EventBus.h"
-#include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Event/WindowEvent.h"
-#include "Engine/Core/Time.h"
 #include "Engine/System/TransformSystem.h"
 #include "Engine/Core/Log.h"
-#include "Engine/Utility/Path.h"
 
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Core/EditorRenderer.h"
@@ -23,17 +15,16 @@
 
 namespace editor
 {
-	Editor::Editor(const engine::Application& app) : m_App(app)
+	Editor::Editor(const engine::Application& app) : m_app(app)
 	{
-		EditorCommandManager::Initialize();
-		EditorRenderer::Initialize(m_App.s_Window);
+		EditorRenderer::Initialize(m_app.s_window);
 		//SelectionManager::Initialize();
 
-		editorContext.camera.backgroundMode = engine::CameraComponent::Background::Skybox;
-		editorContext.camera.projectionType = engine::CameraComponent::Projection::Perspective;
-		editorContext.cameraTransform.position = glm::vec3{ 0.0f, 0.0f, -20.0f };
-		editorContext.cameraTransform.rotation = glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f };
-		engine::CameraSystem::UpdateCameraViewMatrix(editor::editorContext.camera, editor::editorContext.cameraTransform);
+		editor::context::camera.backgroundMode = engine::CameraComponent::Background::Skybox;
+		editor::context::camera.projectionType = engine::CameraComponent::Projection::Perspective;
+		editor::context::cameraTransform.position = glm::vec3{ 0.0f, 0.0f, -20.0f };
+		editor::context::cameraTransform.rotation = glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f };
+		engine::CameraSystem::UpdateCameraViewMatrix(editor::context::camera, editor::context::cameraTransform);
 
 		LOG_INFO("--- Editor initialization complete ---");
 	}
@@ -45,7 +36,8 @@ namespace editor
 
 	void Editor::Update()
 	{
-		m_App.Update();
+		EditorCommandManager::Update();
+		m_app.Update();
 
 		EditorRenderer::Update();
 		EditorCommandManager::ExecuteDeferredCommands();
