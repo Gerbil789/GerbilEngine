@@ -20,8 +20,8 @@ namespace editor
 		EditorRenderer::Initialize(m_app.s_window);
 		//SelectionManager::Initialize();
 
-		editor::context::camera.backgroundMode = engine::CameraComponent::Background::Skybox;
-		editor::context::camera.projectionType = engine::CameraComponent::Projection::Perspective;
+		editor::context::camera.backgroundMode = engine::component::CameraComponent::Background::Skybox;
+		editor::context::camera.projection = engine::component::CameraComponent::Projection::Perspective;
 		editor::context::cameraTransform.position = glm::vec3{ 0.0f, 0.0f, -20.0f };
 		editor::context::cameraTransform.rotation = glm::vec3{ 0.0f, glm::radians(180.0f), 0.0f };
 		engine::CameraSystem::UpdateCameraViewMatrix(editor::context::camera, editor::context::cameraTransform);

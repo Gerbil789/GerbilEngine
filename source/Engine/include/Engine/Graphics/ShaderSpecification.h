@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <variant>
-#include <optional>
 #include <string>
 #include <glm/glm.hpp>
 #include <webgpu/webgpu_cpp.h>
@@ -35,7 +34,6 @@ namespace engine
 	struct BufferBinding
 	{
 		wgpu::BufferBindingType type = wgpu::BufferBindingType::Undefined;  // Uniform, Storage, ReadOnlyStorage
-		// std::optional<uint32_t> arraySize = std::nullopt;
 		size_t arraySize = 1;
 		size_t size = 0;
 		std::vector<ShaderParameter> parameters;
@@ -68,7 +66,6 @@ namespace engine
 	{
 		std::string vsEntryPoint = "vs_main";
 		std::string fsEntryPoint = "fs_main";
-
 		std::vector<wgpu::VertexAttribute> vertexAttributes;
 		std::vector<Binding> bindings;
 	};

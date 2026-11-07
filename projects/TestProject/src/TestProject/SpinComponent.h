@@ -13,12 +13,12 @@ struct SpinSystem
 {
   static void Update(entt::registry& registry)
   {
-    auto view = registry.view<engine::TransformComponent, SpinComponent>();
+    auto view = registry.view<engine::component::Transform, SpinComponent>();
 
     for(auto[entity, transform, spin] : view.each())
     {
       transform.rotation.y += spin.speed * engine::Time::DeltaTime();
-      registry.emplace_or_replace<engine::TransformDirty>(entity);
+      registry.emplace_or_replace<engine::tag::TransformDirty>(entity);
     }
   }
 };

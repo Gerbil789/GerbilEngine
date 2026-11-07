@@ -62,12 +62,12 @@ namespace editor
 		{
 			entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
 
-			auto transform = registry.try_get<engine::TransformComponent>(editor::context::selectedEntity);
+			auto transform = registry.try_get<engine::component::Transform>(editor::context::selectedEntity);
 			if(!transform) return;
 
 			glm::vec3 focusPoint = transform->position;
 			glm::vec3 forward = engine::CameraSystem::GetForward(tc);
-			tc.position = focusPoint - forward * s_focusDistance;
+			tc.position = focusPoint + forward * s_focusDistance;
 		}
 
 		engine::CameraSystem::UpdateCameraViewMatrix(editor::context::camera, tc);

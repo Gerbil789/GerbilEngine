@@ -8,6 +8,6 @@ namespace engine
 	{
 	public:
 		static void Update(entt::registry& registry, const std::vector<entt::entity>& rootEntities);
-		static const glm::mat4 CalculateLocalPositionMatrix(const TransformComponent& transform);
+		static const glm::mat4 CalculateLocalPositionMatrix(const component::Transform& transform);
 	};
 }

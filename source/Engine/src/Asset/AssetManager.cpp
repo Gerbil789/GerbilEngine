@@ -1,12 +1,7 @@
 #include "enginepch.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/AssetRegistry.h"
-#include "Engine/Asset/Importer/TextureImporter.h"
-#include "Engine/Asset/Importer/MeshImporter.h"
-#include "Engine/Asset/Importer/ShaderImporter.h"
-#include "Engine/Asset/Importer/SceneImporter.h"
-#include "Engine/Asset/Importer/AudioImporter.h"
-#include "Engine/Asset/Serializer/Serializer.h"
+#include "Engine/Serializer/Serializer.h"
 
 namespace engine
 {
@@ -20,25 +15,25 @@ namespace engine
       assetMap.try_emplace(handle, std::forward<Args>(args)...);
     };
 
-    addBuiltIn(texture::White, "White Texture", TextureSpecification{}, std::array<uint32_t, 1>{0xFFFFFFFF}.data());
-    addBuiltIn(texture::Normal, "Normal Texture", TextureSpecification{}, std::array<uint32_t, 1>{0xFFFF8080}.data());
-    addBuiltIn(texture::HDR, "resources/hdr/autumn_field_puresky_4k.hdr", TextureImporter::LoadTexture2D("resources/hdr/autumn_field_puresky_4k.hdr"));
-    addBuiltIn(texture::EditorIcons, "resources/icons/icons.png", TextureImporter::LoadTexture2D("resources/icons/icons.png"));
-    addBuiltIn(texture::DefaultFontAtlas, "resources/fonts/atlas.png", TextureImporter::LoadTexture2D("resources/fonts/atlas.png"));
-    addBuiltIn(texture::EditorThumbnailAtlas, "Editor Thumbnail Atlas", TextureSpecification{ .width = 2048, .height = 2048, .format = engine::GraphicsContext::GetSurfaceFormat() }, nullptr);
+    addBuiltIn(texture::White, "White Texture", Texture2D::Create({}, std::array<uint32_t, 1>{0xFFFFFFFF}.data()));
+    addBuiltIn(texture::Normal, "Normal Texture", Texture2D::Create({}, std::array<uint32_t, 1>{0xFFFF8080}.data()));
+    addBuiltIn(texture::HDR, "resources/hdr/autumn_field_puresky_4k.hdr", Texture2D::Create("resources/hdr/autumn_field_puresky_4k.hdr"));
+    addBuiltIn(texture::EditorIcons, "resources/icons/icons.png", Texture2D::Create("resources/icons/icons.png"));
+    addBuiltIn(texture::DefaultFontAtlas, "resources/fonts/atlas.png", Texture2D::Create("resources/fonts/atlas.png"));
+    addBuiltIn(texture::EditorThumbnailAtlas, "Editor Thumbnail Atlas", Texture2D::Create({ .width = 2048, .height = 2048, .format = engine::GraphicsContext::GetSurfaceFormat() }, nullptr));
 
     addBuiltIn(mesh::Empty, "Empty Mesh", Mesh{});
-    addBuiltIn(mesh::Cube, "resources/models/cube.glb", MeshImporter::LoadMesh("resources/models/cube.glb"));
-    addBuiltIn(mesh::Sphere, "resources/models/sphere.glb", MeshImporter::LoadMesh("resources/models/sphere.glb"));
+    addBuiltIn(mesh::Cube, "resources/models/cube.glb", Mesh::Create("resources/models/cube.glb"));
+    addBuiltIn(mesh::Sphere, "resources/models/sphere.glb", Mesh::Create("resources/models/sphere.glb"));
 
-    addBuiltIn(shader::Pink, "resources/shaders/pink.wgsl", ShaderImporter::LoadShader("resources/shaders/pink.wgsl"));
-    addBuiltIn(shader::Flat, "resources/shaders/flat.wgsl", ShaderImporter::LoadShader("resources/shaders/flat.wgsl"));
-    addBuiltIn(shader::UI, "resources/shaders/ui.wgsl", ShaderImporter::LoadShader("resources/shaders/ui.wgsl"));
-    addBuiltIn(shader::Skybox, "resources/shaders/skybox.wgsl", ShaderImporter::LoadShader("resources/shaders/skybox.wgsl"));
-    addBuiltIn(shader::Normal, "resources/shaders/normal.wgsl", ShaderImporter::LoadShader("resources/shaders/normal.wgsl"));
+    addBuiltIn(shader::Pink, "resources/shaders/pink.wgsl", Shader::Create("resources/shaders/pink.wgsl"));
+    addBuiltIn(shader::Flat, "resources/shaders/flat.wgsl", Shader::Create("resources/shaders/flat.wgsl"));
+    addBuiltIn(shader::UI, "resources/shaders/ui.wgsl", Shader::Create("resources/shaders/ui.wgsl"));
+    addBuiltIn(shader::Skybox, "resources/shaders/skybox.wgsl", Shader::Create("resources/shaders/skybox.wgsl"));
+    addBuiltIn(shader::Normal, "resources/shaders/normal.wgsl", Shader::Create("resources/shaders/normal.wgsl"));
 
     addBuiltIn(scene::Empty, "Empty Scene", Scene{});
-    addBuiltIn(scene::Default, "resources/scenes/default.scene", SceneImporter::LoadScene("resources/scenes/default.scene"));
+    addBuiltIn(scene::Default, "resources/scenes/default.scene", Serializer::DeserializeScene("resources/scenes/default.scene"));
     
     addBuiltIn(material::Pink, "Pink Material", Material{shader::Pink});
     addBuiltIn(material::Pink, "White Material", Material{shader::Flat});
@@ -52,28 +47,28 @@ namespace engine
     for (const auto& [handle, path] : AssetRegistry::GetRecords<Texture2D>())
     {
       if(static_cast<uint64_t>(handle.id) < 1000) continue;
-      textures.try_emplace(handle, TextureImporter::LoadTexture2D(path));
+      textures.try_emplace(handle, Texture2D::Create(path));
     }
 
     auto& meshes = std::get<AssetDataMap<Mesh>>(m_loadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<Mesh>())
     {
       if(static_cast<uint64_t>(handle.id) < 1000) continue;
-      meshes.try_emplace(handle, MeshImporter::LoadMesh(path));
+      meshes.try_emplace(handle, Mesh::Create(path));
     }
 
     auto& shaders = std::get<AssetDataMap<Shader>>(m_loadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<Shader>())
     {
       if(static_cast<uint64_t>(handle.id) < 1000) continue;
-      shaders.try_emplace(handle, ShaderImporter::LoadShader(path.string()));
+      shaders.try_emplace(handle, Shader::Create(path));
     }
 
     auto& scenes = std::get<AssetDataMap<Scene>>(m_loadedAssets);
     for (const auto& [handle, path] : AssetRegistry::GetRecords<Scene>())
     {
       if(static_cast<uint64_t>(handle.id) < 1000) continue;
-      scenes.try_emplace(handle, SceneImporter::LoadScene(path));
+      scenes.try_emplace(handle, Serializer::DeserializeScene(path));
     }
 
     auto& materials = std::get<AssetDataMap<Material>>(m_loadedAssets);
@@ -94,7 +89,7 @@ namespace engine
     for (const auto& [handle, path] : AssetRegistry::GetRecords<AudioClip>())
     {
       if(static_cast<uint64_t>(handle.id) < 1000) continue;
-      audioClips.try_emplace(handle, AudioImporter::LoadAudioClip(path));
+      audioClips.try_emplace(handle, AudioClip{path});
     }
   }
 

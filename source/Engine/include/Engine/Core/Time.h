@@ -2,9 +2,8 @@
 
 namespace engine
 {
-  class Time
+  struct Time
   {
-  public:
     static void BeginFrame();
     static float DeltaTime();
     static float FPS();

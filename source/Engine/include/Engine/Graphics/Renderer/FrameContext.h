@@ -14,7 +14,7 @@ namespace engine
 
 		DrawList drawList;
 
-    const CameraComponent* camera;
+    const component::CameraComponent* camera;
 
     wgpu::BindGroup viewBindGroup;
     wgpu::BindGroup modelBindGroup;

@@ -1,7 +1,6 @@
 #include "enginepch.h"
 #include "Engine/Core/Window.h"
 #include "Engine/Graphics/GraphicsContext.h"
-#include "Engine/Core/Log.h"
 #include "Engine/Core/Application.h"
 #include <stb_image.h>
 #include <GLFW/glfw3.h>

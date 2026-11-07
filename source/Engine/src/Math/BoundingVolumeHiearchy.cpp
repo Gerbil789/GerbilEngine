@@ -3,30 +3,31 @@
 #include "Engine/Core/Components.h"
 #include <algorithm>
 #include <limits>
+#include <entt/entity/registry.hpp>
 
 namespace engine
 {
   void BoundingVolumeHiearchy::Build(const entt::registry& registry)
   {
-    auto view = registry.view<const MeshComponent, const WorldTransformComponent>();
+    auto view = registry.view<const component::Mesh, const component::WorldTransform>();
 
-    instances.clear();
-    instances.reserve(view.size_hint());
+    primitives.clear();
+    primitives.reserve(view.size_hint());
 
     for (auto [entity, mc, wtc] : view.each())
     {
       const AABB& localAABB = mc.mesh.Get().aabb;
 
-      glm::vec3 corners[8] 
+      glm::vec3 corners[8]
       {
-          {localAABB.min.x, localAABB.min.y, localAABB.min.z},
-          {localAABB.max.x, localAABB.min.y, localAABB.min.z},
-          {localAABB.min.x, localAABB.max.y, localAABB.min.z},
-          {localAABB.max.x, localAABB.max.y, localAABB.min.z},
-          {localAABB.min.x, localAABB.min.y, localAABB.max.z},
-          {localAABB.max.x, localAABB.min.y, localAABB.max.z},
-          {localAABB.min.x, localAABB.max.y, localAABB.max.z},
-          {localAABB.max.x, localAABB.max.y, localAABB.max.z}
+          { localAABB.min.x, localAABB.min.y, localAABB.min.z },
+          { localAABB.max.x, localAABB.min.y, localAABB.min.z },
+          { localAABB.min.x, localAABB.max.y, localAABB.min.z },
+          { localAABB.max.x, localAABB.max.y, localAABB.min.z },
+          { localAABB.min.x, localAABB.min.y, localAABB.max.z },
+          { localAABB.max.x, localAABB.min.y, localAABB.max.z },
+          { localAABB.min.x, localAABB.max.y, localAABB.max.z },
+          { localAABB.max.x, localAABB.max.y, localAABB.max.z }
       };
 
       AABB worldAABB;
@@ -38,91 +39,117 @@ namespace engine
       }
 
       glm::vec3 centroid = (worldAABB.min + worldAABB.max) * 0.5f;
-      instances.push_back({ entity, worldAABB, centroid });
+      uint32_t entityID = static_cast<uint32_t>(entity);
+      primitives.push_back({ entityID, worldAABB, centroid });
     }
 
     nodes.clear();
-    if (instances.empty()) return;
+    if (primitives.empty()) return;
 
-    // A binary tree with N leaves has exactly 2N - 1 total nodes.
-    nodes.resize(instances.size() * 2 - 1);
-    nodesUsed = 1; // Root node starts at index 0
+    nodes.resize(primitives.size() * 2 - 1);
+    nodesUsed = 1;
 
-    UpdateNodeBounds(0, 0, static_cast<uint32_t>(instances.size()));
-    Subdivide(0, 0, static_cast<uint32_t>(instances.size()));
+    UpdateNodeBounds(0, 0, static_cast<uint32_t>(primitives.size()));
+    Subdivide(0, 0, static_cast<uint32_t>(primitives.size()));
   }
 
-  void BoundingVolumeHiearchy::UpdateNodeBounds(uint32_t nodeIdx, uint32_t firstInst, uint32_t instCount)
+  void BoundingVolumeHiearchy::Build(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
+  {
+    size_t triangleCount = indices.size() / 3;
+    primitives.clear();
+    if (triangleCount == 0) return;
+
+    primitives.reserve(triangleCount);
+
+    for (size_t i = 0; i < triangleCount; ++i)
+    {
+      uint32_t idx0 = indices[i * 3 + 0];
+      uint32_t idx1 = indices[i * 3 + 1];
+      uint32_t idx2 = indices[i * 3 + 2];
+
+      const glm::vec3& v0 = vertices[idx0].position;
+      const glm::vec3& v1 = vertices[idx1].position;
+      const glm::vec3& v2 = vertices[idx2].position;
+
+      AABB triAABB;
+      triAABB.min = glm::min(v0, glm::min(v1, v2));
+      triAABB.max = glm::max(v0, glm::max(v1, v2));
+
+      glm::vec3 centroid = (triAABB.min + triAABB.max) * 0.5f;
+      primitives.push_back({ static_cast<uint32_t>(i), triAABB, centroid });
+    }
+
+    nodes.clear();
+    nodes.resize(primitives.size() * 2 - 1);
+    nodesUsed = 1;
+
+    UpdateNodeBounds(0, 0, static_cast<uint32_t>(primitives.size()));
+    Subdivide(0, 0, static_cast<uint32_t>(primitives.size()));
+  }
+
+  void BoundingVolumeHiearchy::UpdateNodeBounds(uint32_t nodeIdx, uint32_t firstPrim, uint32_t primCount)
   {
     AABB& aabb = nodes[nodeIdx].aabb;
     aabb.min = glm::vec3((std::numeric_limits<float>::max)());
     aabb.max = glm::vec3((std::numeric_limits<float>::lowest)());
 
-    for (uint32_t i = 0; i < instCount; ++i)
+    for (uint32_t i = 0; i < primCount; ++i)
     {
-      const AABB& instAABB = instances[firstInst + i].aabb;
-      aabb.min = glm::min(aabb.min, instAABB.min);
-      aabb.max = glm::max(aabb.max, instAABB.max);
+      const AABB& primAABB = primitives[firstPrim + i].aabb;
+      aabb.min = glm::min(aabb.min, primAABB.min);
+      aabb.max = glm::max(aabb.max, primAABB.max);
     }
   }
 
-  void BoundingVolumeHiearchy::Subdivide(uint32_t nodeIdx, uint32_t firstInst, uint32_t instCount)
+  void BoundingVolumeHiearchy::Subdivide(uint32_t nodeIdx, uint32_t firstPrim, uint32_t primCount)
   {
-    // Base case: if there's only 1 instance, make this node a leaf
-    if (instCount == 1)
+    if (primCount == 1)
     {
       nodes[nodeIdx].isLeaf = 1;
-      nodes[nodeIdx].leftChildOrEntity = static_cast<uint32_t>(instances[firstInst].entity);
+      nodes[nodeIdx].leftChildOrEntity = primitives[firstPrim].payloadID;
       return;
     }
 
     nodes[nodeIdx].isLeaf = 0;
 
-    // 1. Find the longest axis of the current node's bounding box to split along
     glm::vec3 extent = nodes[nodeIdx].aabb.max - nodes[nodeIdx].aabb.min;
     int splitAxis = 0;
     if (extent.y > extent.x) splitAxis = 1;
     if (extent.z > extent[splitAxis]) splitAxis = 2;
 
-    // 2. Compute spatial midpoint split position
     float splitPos = nodes[nodeIdx].aabb.min[splitAxis] + extent[splitAxis] * 0.5f;
 
-    // 3. Partition instances in-place based on their centroid position
-    uint32_t i = firstInst;
-    uint32_t j = firstInst + instCount - 1;
+    uint32_t i = firstPrim;
+    uint32_t j = firstPrim + primCount - 1;
     while (i <= j)
     {
-      if (instances[i].centroid[splitAxis] < splitPos)
+      if (primitives[i].centroid[splitAxis] < splitPos)
       {
         i++;
       }
       else
       {
-        std::swap(instances[i], instances[j]);
-        if (j == 0) break; // Prevent underflow if j hits 0
+        std::swap(primitives[i], primitives[j]);
+        if (j == 0) break;
         j--;
       }
     }
 
-    // Fallback if all instances ended up on one side
-    uint32_t leftCount = i - firstInst;
-    if (leftCount == 0 || leftCount == instCount)
+    uint32_t leftCount = i - firstPrim;
+    if (leftCount == 0 || leftCount == primCount)
     {
-      leftCount = instCount / 2;
+      leftCount = primCount / 2;
     }
 
-    // 4. Allocate child nodes sequentially in the flat array
-    // Note: Because left child is allocated first and right child second, 
-    // the right child is ALWAYS at `leftChildIdx + 1`.
     uint32_t leftChildIdx = nodesUsed++;
     uint32_t rightChildIdx = nodesUsed++;
 
     nodes[nodeIdx].leftChildOrEntity = leftChildIdx;
 
-    UpdateNodeBounds(leftChildIdx, firstInst, leftCount);
-    Subdivide(leftChildIdx, firstInst, leftCount);
+    UpdateNodeBounds(leftChildIdx, firstPrim, leftCount);
+    Subdivide(leftChildIdx, firstPrim, leftCount);
 
-    UpdateNodeBounds(rightChildIdx, firstInst + leftCount, instCount - leftCount);
-    Subdivide(rightChildIdx, firstInst + leftCount, instCount - leftCount);
+    UpdateNodeBounds(rightChildIdx, firstPrim + leftCount, primCount - leftCount);
+    Subdivide(rightChildIdx, firstPrim + leftCount, primCount - leftCount);
   }
 }

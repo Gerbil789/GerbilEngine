@@ -2,7 +2,7 @@
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Engine/Core/Input.h"
-#include "Engine/Core/Scene.h"
+#include "Engine/Core/SceneManager.h"
 #include "Engine/Core/Components.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -28,7 +28,7 @@ namespace editor
 		ImGuizmo::SetOrthographic(false);
 	}
 
-	void TransformController::DrawGizmo(engine::Scene& scene, float x, float y, float width, float height)
+	void TransformController::DrawGizmo(float x, float y, float width, float height)
 	{
 		if (editor::context::editorMode == EditorMode::Play) return;
 
@@ -47,7 +47,9 @@ namespace editor
 		glm::mat4 cameraProjection = editor::context::camera.projectionMatrix;
 		glm::mat4 cameraView = editor::context::camera.viewMatrix;
 
-		engine::WorldTransformComponent& wtc = scene.registry.get<engine::WorldTransformComponent>(editor::context::selectedEntity);
+		engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
+
+		engine::component::WorldTransform& wtc = scene.registry.get<engine::component::WorldTransform>(editor::context::selectedEntity);
 		glm::mat4& worldTransform = wtc.worldMatrix;
 
 		glm::vec3 snap;
@@ -121,16 +123,16 @@ namespace editor
 		{
 			// auto selection = SelectionManager::Entities.GetAll();
 
-			std::vector<engine::TransformComponent> before, after;
+			std::vector<engine::component::Transform> before, after;
 
 			for (auto& [entity, initialWorld] : m_initialWorldTransforms)
 			{
-				auto& hc = scene.registry.get<engine::HierarchyComponent>(static_cast<entt::entity>(entity));
+				auto& hc = scene.registry.get<engine::component::Hierarchy>(static_cast<entt::entity>(entity));
 				{
 					glm::mat4 parentWorld = glm::mat4{ 1.0f };
 					if (hc.parent != entt::null)
 					{
-						const auto& parentWTC = scene.registry.get<engine::WorldTransformComponent>(hc.parent);
+						const auto& parentWTC = scene.registry.get<engine::component::WorldTransform>(hc.parent);
 						parentWorld = parentWTC.worldMatrix;
 					}
 					glm::mat4 initialLocal = glm::inverse(parentWorld) * initialWorld;
@@ -151,7 +153,7 @@ namespace editor
 			// 	after.push_back(afterData);
 			// }
 
-			EditorCommandManager::ModifyComponents<engine::TransformComponent>(entities, before, after);
+			EditorCommandManager::ModifyComponents<engine::component::Transform>(entities, before, after);
 		}
 
 		m_gizmoPreviouslyUsed = isUsing;

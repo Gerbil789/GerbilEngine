@@ -6,7 +6,6 @@
 #include "Engine/Graphics/Texture/TextureCube.h"
 #include "Engine/Graphics/Renderer/DrawList.h"
 #include "Engine/Core/Components.h"
-#include "Engine/Asset/Importer/TextureImporter.h"
 #include "Engine/Graphics/Renderer/RenderUniforms.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
 #include "Engine/Graphics/Texture/Environment.h"
@@ -195,7 +194,7 @@ namespace engine
 
 		// 4 - BRDFIntMap
 		{
-			const Texture2D brdfTexture = TextureImporter::LoadTexture2D("resources/hdr/brdf_integration_map_ct_ggx.hdr");
+			const Texture2D brdfTexture = Texture2D::Create("resources/hdr/brdf_integration_map_ct_ggx.hdr");
 			entries[4].binding = 4;
 			entries[4].textureView = brdfTexture.textureView;
 		}
@@ -277,7 +276,7 @@ namespace engine
 		m_frameContext.depthTextureArrayView = texture.CreateView(&arrayViewDesc);
 	}
 
-	void Renderer::Render(const DrawList& drawList, const CameraComponent* camera, wgpu::TextureView targetView)
+	void Renderer::Render(const DrawList& drawList, const component::CameraComponent* camera, wgpu::TextureView targetView)
 	{
 		m_frameContext.drawList = drawList;
 		m_frameContext.camera = camera;

@@ -10,7 +10,7 @@ namespace engine
   {
     DrawList list;
 
-    auto view = registry.view<MeshComponent, WorldTransformComponent>(entt::exclude<DisabledTag>);
+    auto view = registry.view<component::Mesh, component::WorldTransform>(entt::exclude<tag::DisabledTag>);
 
     list.items.reserve(view.size_hint());
     list.transforms.reserve(view.size_hint());

@@ -5,7 +5,6 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Graphics/Texture/TextureCube.h"
-#include "Engine/Core/Assert.h"
 #include <bit>
 
 namespace engine
@@ -93,7 +92,7 @@ namespace engine
 	{
 		const Texture2D& source = equirectangularTexture.Get();
 
-		ENGINE_ASSERT(source.width == source.height * 2, "Equirectangular texture must have a 2:1 aspect ratio.");
+		assert(source.width == source.height * 2 && "Equirectangular texture must have a 2:1 aspect ratio.");
 
 		TextureCubeSpecification spec;
 		spec.size = source.height / 2;

@@ -4,8 +4,6 @@
 #include "Engine/Graphics/Renderer/Renderer.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Asset/Importer/ShaderImporter.h"
-#include "Engine/Core/Log.h"
 
 namespace engine
 {

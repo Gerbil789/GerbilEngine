@@ -2,7 +2,6 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/SamplerPool.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
-#include "Engine/Core/Log.h"
 #include <webgpu/webgpu_cpp_print.h>
 
 namespace engine::GraphicsContext

@@ -14,7 +14,7 @@ namespace engine
 	{
 		if (entity == entt::null) return;
 
-		Uuid id = registry.get<IdentityComponent>(entity).id;
+		Uuid id = registry.get<component::Identity>(entity).id;
 		registry.destroy(entity);
 		entityMap.erase(id);
 	}

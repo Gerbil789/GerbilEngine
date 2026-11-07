@@ -17,14 +17,14 @@ namespace editor
     {
       entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
       registry.get<T>(m_entity) = m_after; 
-      registry.emplace_or_replace<engine::TransformDirty>(m_entity);
+      registry.emplace_or_replace<engine::tag::TransformDirty>(m_entity);
     }
 
     void Undo() override
     {
       entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
       registry.get<T>(m_entity) = m_before;
-      registry.emplace_or_replace<engine::TransformDirty>(m_entity);
+      registry.emplace_or_replace<engine::tag::TransformDirty>(m_entity);
     }
 
   private:

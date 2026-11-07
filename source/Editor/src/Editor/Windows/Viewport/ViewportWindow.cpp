@@ -1,7 +1,6 @@
 #include "ViewportWindow.h"
 #include "Editor/Windows/Viewport/ViewportCameraController.h"
 #include "Editor/Windows/Viewport/TransformController.h"
-#include "Editor/Windows/Viewport/EditorPicker.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Command/ChangeEditorStateCommand.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
@@ -9,17 +8,17 @@
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/System/CameraSystem.h"
 #include "Engine/Core/Application.h"
+#include "Engine/Math/Raycast.h"
 #include <glm/glm.hpp>
 
 namespace editor
 {
 	namespace
 	{
-		EditorPicker m_entityPicker;
 		ViewportCameraController m_cameraController;
 		TransformController m_transformController; //gizmo
 
-		glm::vec2 m_viewportBounds[2] = { {0.0f, 0.0f}, {0.0f, 0.0f} };
+		glm::vec2 m_viewportBounds[2] = { { 0.0f, 0.0f },{ 0.0f, 0.0f } };
 		glm::vec2 m_viewportSize = { 0.0f, 0.0f };
 
 		wgpu::Texture m_texture;
@@ -118,7 +117,7 @@ namespace editor
 		ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
 		UpdateViewportSize();
-		if(ImGui::IsWindowHovered())
+		if (ImGui::IsWindowHovered())
 		{
 			m_cameraController.Update();
 		}
@@ -126,31 +125,51 @@ namespace editor
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
+		const engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
 		engine::DrawList drawList = engine::DrawList::Create(scene.registry);
-		engine::CameraComponent* camera = editor::context::editorMode == EditorMode::Edit ? &editor::context::camera : scene.GetPrimaryCamera();
+		const engine::component::CameraComponent* camera = editor::context::editorMode == EditorMode::Edit ? &editor::context::camera : scene.GetPrimaryCamera();
 		engine::Application::s_renderer.Render(drawList, camera, m_textureView);
 
 		ImGui::Image(m_textureView.Get(), viewportSize);
 
-		// if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-		// {
-		// 	if (editor::editorContext.editorMode == EditorMode::Edit && !m_transformController.IsGizmoOver())
-		// 	{
-		// 		ImVec2 mousePos = ImGui::GetMousePos();
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		{
+			if (editor::context::editorMode == EditorMode::Edit && !m_transformController.IsGizmoOver())
+			{
+				ImVec2 mousePos = ImGui::GetMousePos();
 
-		// 		const uint32_t mx = static_cast<uint32_t>(mousePos.x - m_viewportBounds[0].x);
-		// 		const uint32_t my = static_cast<uint32_t>(mousePos.y - m_viewportBounds[0].y);
+				const float mx = mousePos.x - m_viewportBounds[0].x;
+				const float my = mousePos.y - m_viewportBounds[0].y;
 
-		// 		engine::Uuid id = m_entityPicker.Pick(mx, my);
-		// 		bool additive = ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_LeftShift);
-		// 		SelectionManager::Entities.Select(id, additive);
-		// 	}
-		// }
+				// NDC coordinates
+				float x = (mx / m_viewportSize.x) * 2.0f - 1.0f;
+				float y = 1.0f - (my / m_viewportSize.y) * 2.0f;
+
+				if (x >= -1.0f && x <= 1.0f && y >= -1.0f && y <= 1.0f)
+				{
+					glm::mat4 invViewProj = glm::inverse(camera->viewProjectionMatrix);
+
+					glm::vec4 nearNdc(x, y, 0.0f, 1.0f);
+					glm::vec4 farNdc(x, y, 1.0f, 1.0f);
+
+					glm::vec4 nearWorld = invViewProj * nearNdc;
+					nearWorld /= nearWorld.w;
+
+					glm::vec4 farWorld = invViewProj * farNdc;
+					farWorld /= farWorld.w;
+
+					glm::vec3 origin = glm::vec3(nearWorld);
+					glm::vec3 direction = glm::normalize(glm::vec3(farWorld) - origin);
+
+					engine::RayHit hit = engine::Raycast(scene, { origin, direction });
+					if (hit) editor::context::selectedEntity = hit.entity;
+				}
+			}
+		}
 
 		DrawOverlay(imagePos, viewportSize);
 
-		m_transformController.DrawGizmo(scene, m_viewportBounds[0].x, m_viewportBounds[0].y, m_viewportBounds[1].x - m_viewportBounds[0].x, m_viewportBounds[1].y - m_viewportBounds[0].y);
+		m_transformController.DrawGizmo(m_viewportBounds[0].x, m_viewportBounds[0].y, m_viewportBounds[1].x - m_viewportBounds[0].x, m_viewportBounds[1].y - m_viewportBounds[0].y);
 		ImGui::End();
 	}
 }

@@ -1,9 +1,8 @@
 #include "enginepch.h"
-#include "Engine/Asset/Serializer/Serializer.h"
+#include "Engine/Serializer/Serializer.h"
 #include "Engine/Core/Components.h"
 #include "Engine/Core/Scene.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Core/Log.h"
 #include <glaze/glaze.hpp>
 #include <glm/glm.hpp>
 
@@ -89,8 +88,8 @@ namespace engine
 		bool enabled = true;
 		HierarchyJSON hierarchy;
 
-		std::optional<TransformComponent> transform;
-		std::optional<MeshComponent> mesh;
+		std::optional<component::Transform> transform;
+		std::optional<component::Mesh> mesh;
 		std::optional<ColliderComponentJSON> collider;
 		std::optional<CameraComponentJSON> camera;
 		std::optional<LightComponentJSON> light;
@@ -115,47 +114,47 @@ namespace engine
 	{
 		EntityJSON eJson;
 
-		eJson.enabled = !registry.any_of<DisabledTag>(entity);
-		eJson.id = registry.get<IdentityComponent>(entity).id;
-		eJson.name = registry.get<NameComponent>(entity).name;
+		eJson.enabled = !registry.any_of<tag::DisabledTag>(entity);
+		eJson.id = registry.get<component::Identity>(entity).id;
+		eJson.name = registry.get<component::Name>(entity).name;
 
 		// Transform
-		if (registry.any_of<TransformComponent>(entity))
+		if (registry.any_of<component::Transform>(entity))
 		{
-			eJson.transform = registry.get<TransformComponent>(entity);
+			eJson.transform = registry.get<component::Transform>(entity);
 			eJson.transform->rotation = glm::degrees(eJson.transform->rotation);
 		}
 
 		// Hierarchy
 		{
-			const auto& hc = registry.get<HierarchyComponent>(entity);
+			const auto& hc = registry.get<component::Hierarchy>(entity);
 			if (hc.parent != entt::null)
 			{
-				const auto& parentIdentity = registry.get<IdentityComponent>(hc.parent);
+				const auto& parentIdentity = registry.get<component::Identity>(hc.parent);
 				eJson.hierarchy = HierarchyJSON{ parentIdentity.id };
 			}
 		}
 
 		// Mesh
-		if (registry.any_of<MeshComponent>(entity))
+		if (registry.any_of<component::Mesh>(entity))
 		{
-			const auto& mc = registry.get<MeshComponent>(entity);
+			const auto& mc = registry.get<component::Mesh>(entity);
 			eJson.mesh = mc;
 		}
 
 		// Collider
-		if (registry.any_of<ColliderComponent>(entity))
+		if (registry.any_of<component::Collider>(entity))
 		{
-			const auto& cc = registry.get<ColliderComponent>(entity);
+			const auto& cc = registry.get<component::Collider>(entity);
 			eJson.collider = ColliderComponentJSON{ cc.collisionMesh.id, static_cast<uint32_t>(cc.type), cc.isTrigger };
 		}
 
 		// Camera
-		if (registry.any_of<CameraComponent>(entity))
+		if (registry.any_of<component::CameraComponent>(entity))
 		{
-			const CameraComponent& cam = registry.get<CameraComponent>(entity);
+			const component::CameraComponent& cam = registry.get<component::CameraComponent>(entity);
 			CameraComponentJSON cJson;
-			cJson.projection = static_cast<uint32_t>(cam.projectionType);
+			cJson.projection = static_cast<uint32_t>(cam.projection);
 			//cJson.aspectRatio = cam.GetAspectRatio();
 
 			cJson.perspective = { cam.perspective.fov, cam.perspective.nearClip, cam.perspective.farClip };
@@ -178,7 +177,7 @@ namespace engine
 
 		json.entities.push_back(std::move(eJson));
 
-		auto& hc = registry.get<HierarchyComponent>(entity);
+		auto& hc = registry.get<component::Hierarchy>(entity);
 		for (entt::entity child : hc.children)
 		{
 			SerializeEntityRecursive(registry, child, json);
@@ -249,7 +248,7 @@ namespace engine
 
 			// identity
 			{
-				registry.emplace<IdentityComponent>(handle, id);
+				registry.emplace<component::Identity>(handle, id);
 				scene.entityMap[id] = handle;
 
 				if(id == json.primaryCameraEntity)
@@ -261,25 +260,25 @@ namespace engine
 			// disabled tag
 			if (!eJson.enabled)
 			{
-				registry.emplace<DisabledTag>(handle);
+				registry.emplace<tag::DisabledTag>(handle);
 			}
 
 			// name
-			registry.emplace<NameComponent>(handle).name = eJson.name;
+			registry.emplace<component::Name>(handle).name = eJson.name;
 
 			// transform
 			if(eJson.transform.has_value())
 			{
-				auto& tc = registry.emplace<TransformComponent>(handle);
+				auto& tc = registry.emplace<component::Transform>(handle);
 				tc = eJson.transform.value();
 				tc.rotation = glm::radians(tc.rotation);
 
-				registry.emplace<WorldTransformComponent>(handle);
-				registry.emplace<TransformDirty>(handle);
+				registry.emplace<component::WorldTransform>(handle);
+				registry.emplace<tag::TransformDirty>(handle);
 			}
 
 			// hierarchy
-			registry.emplace<HierarchyComponent>(handle);
+			registry.emplace<component::Hierarchy>(handle);
 			if (eJson.hierarchy.parent)
 			{
 				parentMap[id] = eJson.hierarchy.parent;
@@ -292,17 +291,17 @@ namespace engine
 			// mesh
 			if (eJson.mesh.has_value())
 			{
-				auto& mc = registry.emplace<MeshComponent>(handle);
+				auto& mc = registry.emplace<component::Mesh>(handle);
 				mc = eJson.mesh.value();
 			}
 
 			// collider
 			if (eJson.collider.has_value())
 			{
-				auto& cComp = registry.emplace<ColliderComponent>(handle);
+				auto& cComp = registry.emplace<component::Collider>(handle);
 				const auto& cJson = eJson.collider.value();
 				cComp.collisionMesh = MeshHandle{ cJson.mesh };
-				cComp.type = static_cast<BodyType>(cJson.type);
+				cComp.type = static_cast<component::Collider::BodyType>(cJson.type);
 				cComp.isTrigger = cJson.isTrigger;
 			}
 
@@ -310,29 +309,29 @@ namespace engine
 			//TODO: use camera component directly, instead of this json struct
 			if (eJson.camera.has_value())
 			{
-				auto& cComp = registry.emplace<CameraComponent>(handle);
+				auto& cComp = registry.emplace<component::CameraComponent>(handle);
 				const auto& cJson = eJson.camera.value();
 
-				cComp.projectionType = static_cast<CameraComponent::Projection>(cJson.projection);
+				cComp.projection = static_cast<component::CameraComponent::Projection>(cJson.projection);
 				cComp.perspective.fov = cJson.perspective.fov;
 				cComp.perspective.nearClip = cJson.perspective.near;
 				cComp.perspective.farClip = cJson.perspective.far;
 				cComp.orthographic.size = cJson.orthographic.size;
 				cComp.orthographic.nearClip = cJson.orthographic.near;
 				cComp.orthographic.farClip = cJson.orthographic.far;
-				cComp.backgroundMode = static_cast<CameraComponent::Background>(cJson.background);
+				cComp.backgroundMode = static_cast<component::CameraComponent::Background>(cJson.background);
 				cComp.clearColor = cJson.clearColor;
 
-				registry.emplace_or_replace<CameraProjectionDirty>(handle);
-				registry.emplace_or_replace<CameraViewDirty>(handle);
+				registry.emplace_or_replace<tag::CameraProjectionDirty>(handle);
+				registry.emplace_or_replace<tag::CameraViewDirty>(handle);
 			}
 
 			// light
 			if (eJson.light.has_value())
 			{
-				auto& lComp = registry.emplace<LightComponent>(handle);
+				auto& lComp = registry.emplace<component::Light>(handle);
 				const auto& lJson = eJson.light.value();
-				lComp.type = static_cast<LightType>(lJson.type);
+				lComp.type = static_cast<component::Light::LightType>(lJson.type);
 				lComp.color = lJson.color;
 				lComp.intensity = lJson.intensity;
 				lComp.range = lJson.range;
@@ -346,17 +345,12 @@ namespace engine
 			entt::entity child = scene.entityMap.at(childId);
 			entt::entity parent = scene.entityMap.at(parentId);
 
-			auto& childHC = registry.get<HierarchyComponent>(child);
+			auto& childHC = registry.get<component::Hierarchy>(child);
 			childHC.parent = parent;
 
-			auto& parentHC = registry.get<HierarchyComponent>(parent);
+			auto& parentHC = registry.get<component::Hierarchy>(parent);
 			parentHC.children.push_back(child);
 		}
-
-		
-		
-
-
 
 		return scene;
 	}

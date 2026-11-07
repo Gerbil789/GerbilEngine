@@ -13,8 +13,8 @@ namespace editor
       if (entity == entt::null) return;
 
       entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
-      m_name = registry.get<engine::NameComponent>(m_entity).name;
-      m_id = registry.get<engine::IdentityComponent>(m_entity).id;
+      m_name = registry.get<engine::component::Name>(m_entity).name;
+      m_id = registry.get<engine::component::Identity>(m_entity).id;
       //TODO: store entity snapshot
     } 
 
@@ -27,8 +27,8 @@ namespace editor
     void Undo() override
     {
       engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
-      entt::entity entity = scene.CreateEntity<engine::TransformComponent, engine::WorldTransformComponent>(m_name);
-      scene.registry.get<engine::IdentityComponent>(entity).id = m_id;
+      entt::entity entity = scene.CreateEntity<engine::component::Transform, engine::component::WorldTransform>(m_name);
+      scene.registry.get<engine::component::Identity>(entity).id = m_id;
     }
 
   private:

@@ -17,8 +17,8 @@ namespace editor::context
 	inline PlayMode playMode = PlayMode::PIE;
 
 	//TODO: move camera into viewport window?
-	inline engine::CameraComponent camera;
-	inline engine::TransformComponent cameraTransform;
+	inline engine::component::CameraComponent camera;
+	inline engine::component::Transform cameraTransform;
 
 	inline EditorSettings settings;
 

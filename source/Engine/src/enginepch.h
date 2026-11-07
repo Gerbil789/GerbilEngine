@@ -14,6 +14,7 @@
 #include <cstring>
 #include <ranges>
 #include <stdexcept>
+#include <cassert>
 
 #include <glm/glm.hpp>
 #include <entt/entt.hpp>

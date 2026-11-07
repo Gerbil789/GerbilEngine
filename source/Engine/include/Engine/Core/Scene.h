@@ -3,6 +3,7 @@
 #include "Engine/Core/Components.h"
 #include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Math/BoundingVolumeHiearchy.h"
+#include <entt/entity/registry.hpp>
 
 namespace engine
 {
@@ -41,9 +42,9 @@ namespace engine
 			entt::entity entity = registry.create();
 			Uuid uuid = Uuid::Generate();
 
-			registry.emplace<IdentityComponent>(entity, uuid);
-			registry.emplace<NameComponent>(entity).name = name;
-			registry.emplace<HierarchyComponent>(entity);
+			registry.emplace<component::Identity>(entity, uuid);
+			registry.emplace<component::Name>(entity).name = name;
+			registry.emplace<component::Hierarchy>(entity);
 
 			(registry.emplace<Components>(entity), ...);
 
@@ -54,11 +55,11 @@ namespace engine
 		void DestroyEntity(entt::entity entity);
 		entt::entity GetEntity(Uuid entityId) const;
 
-		CameraComponent* GetPrimaryCamera()
+		const component::CameraComponent* GetPrimaryCamera() const
 		{
 			if (registry.valid(m_primaryCameraEntity))
 			{
-				return registry.try_get<CameraComponent>(m_primaryCameraEntity);
+				return registry.try_get<component::CameraComponent>(m_primaryCameraEntity);
 			}
 
 			return nullptr;

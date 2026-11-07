@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Engine/Math/AABB.h"
+#include "Engine/Math/BoundingVolumeHiearchy.h"
 #include <vector>
+#include <filesystem>
 #include <webgpu/webgpu_cpp.h>
 
 namespace engine
@@ -20,24 +21,25 @@ namespace engine
 		uint32_t materialIndex;
 	};
 
-	struct MeshSpecification
-	{
-		std::vector<Vertex> vertices;
-		std::vector<uint32_t> indices;
-		std::vector<SubMesh> subMeshes;
-		std::vector<uint32_t> wireIndices;	//TODO: add compile time macro to disable in export game builds
-	};
-
+	//TODO: check for optimal memory layout
 	struct Mesh
 	{
-		Mesh() = default;
-		Mesh(const MeshSpecification& specification);
-
 		AABB aabb;
+		BoundingVolumeHiearchy bvh;
 		std::vector<SubMesh> subMeshes;
 		uint32_t materialCount = 0;
 		wgpu::Buffer vertexBuffer;
 		wgpu::Buffer indexBuffer;
 		wgpu::Buffer wireIndexBuffer;
+
+		[[nodiscard]] static Mesh Create(const std::filesystem::path& path);
+
+		Mesh() = default;
+
+		Mesh(const Mesh&) = delete;
+		Mesh& operator=(const Mesh&) = delete;
+
+		Mesh(Mesh&&) noexcept = default;
+		Mesh& operator=(Mesh&&) noexcept = default;
 	};
 }

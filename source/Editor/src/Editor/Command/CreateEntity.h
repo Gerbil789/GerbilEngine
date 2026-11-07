@@ -21,9 +21,9 @@ namespace editor
 
       if (m_parent != entt::null)
       {
-        auto& hc = scene.registry.get<engine::HierarchyComponent>(m_entity);
+        auto& hc = scene.registry.get<engine::component::Hierarchy>(m_entity);
         hc.parent = m_parent;
-        scene.registry.get<engine::HierarchyComponent>(m_parent).children.push_back(m_entity);
+        scene.registry.get<engine::component::Hierarchy>(m_parent).children.push_back(m_entity);
       }
       else
       {

@@ -1,9 +1,8 @@
 #include "enginepch.h"
 #include "Engine/Asset/Handle.h"
-#include "Engine/Asset/Serializer/Serializer.h"
+#include "Engine/Serializer/Serializer.h"
 #include "Engine/Graphics/Material.h"
 #include "Engine/Core/Project.h"
-#include "Engine/Core/Log.h"
 #include <glaze/glaze.hpp>
 #include <fstream>
 #include <variant>

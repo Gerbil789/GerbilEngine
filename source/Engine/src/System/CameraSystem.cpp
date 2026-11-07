@@ -1,42 +1,36 @@
 #include "enginepch.h"
 #include "Engine/System/CameraSystem.h"
 #include <glm/gtx/quaternion.hpp>
+#include <entt/entity/registry.hpp>
 
 namespace engine
 {
-	glm::vec3 CameraSystem::GetForward(const TransformComponent& transform)
+	glm::vec3 CameraSystem::GetForward(const component::Transform& transform)
 	{
 		glm::quat orientation = glm::quat(transform.rotation);
 		return glm::normalize(orientation * glm::vec3(0.0f, 0.0f, 1.0f));
 	}
 
-	glm::vec3 CameraSystem::GetUp(const TransformComponent& transform)
+	glm::vec3 CameraSystem::GetUp(const component::Transform& transform)
 	{
 		glm::quat orientation = glm::quat(transform.rotation);
 		return glm::normalize(orientation * glm::vec3(0.0f, 1.0f, 0.0f));
 	}
 
-	glm::vec3 CameraSystem::GetRight(const TransformComponent& transform)
+	glm::vec3 CameraSystem::GetRight(const component::Transform& transform)
 	{
 		glm::quat orientation = glm::quat(transform.rotation);
 		return glm::normalize(orientation * glm::vec3(1.0f, 0.0f, 0.0f));
 	}
-
-	//void CameraSystem::ScreenToWorldRay(const CameraComponent& camera, const WorldTransformComponent& transform, float mouseX, float mouseY, glm::vec3& outOrigin, glm::vec3& outDir)
-	//{
-
-	//}
 
 	std::array<glm::vec3, 8> CameraSystem::GetFrustumCornersWorld(float, float)
 	{
 		return std::array<glm::vec3, 8>();
 	}
 
-
-
-	void CameraSystem::UpdateCameraProjectionMatrix(CameraComponent& camera, float aspectRatio)
+	void CameraSystem::UpdateCameraProjectionMatrix(component::CameraComponent& camera, float aspectRatio)
 	{
-		if(camera.projectionType == CameraComponent::Projection::Perspective)
+		if(camera.projection == component::CameraComponent::Projection::Perspective)
 		{
 			camera.projectionMatrix = glm::perspectiveLH_ZO(camera.perspective.fov, aspectRatio, camera.perspective.nearClip, camera.perspective.farClip);
 		}
@@ -49,7 +43,7 @@ namespace engine
 		camera.viewProjectionMatrix = camera.projectionMatrix * camera.viewMatrix;
 	}
 
-	void CameraSystem::UpdateCameraViewMatrix(CameraComponent& camera, const TransformComponent& transform)
+	void CameraSystem::UpdateCameraViewMatrix(component::CameraComponent& camera, const component::Transform& transform)
 	{
 		glm::quat orientation = glm::quat(transform.rotation);
 
@@ -62,22 +56,20 @@ namespace engine
 
 	void CameraSystem::Update(entt::registry& registry, float aspectRatio)
 	{
-    auto projView = registry.view<CameraComponent, CameraProjectionDirty>(entt::exclude<DisabledTag>);
+    auto projView = registry.view<component::CameraComponent, tag::CameraProjectionDirty>(entt::exclude<tag::DisabledTag>);
     for (auto [entity, camera] : projView.each())
     {
 			UpdateCameraProjectionMatrix(camera, aspectRatio);
-      registry.remove<CameraProjectionDirty>(entity);
+      registry.remove<tag::CameraProjectionDirty>(entity);
     }
 
-		auto viewView = registry.view<CameraComponent, TransformComponent, TransformDirty>(entt::exclude<DisabledTag>);
+		auto viewView = registry.view<component::CameraComponent, component::Transform, tag::TransformDirty>(entt::exclude<tag::DisabledTag>);
     for (auto [entity, camera, transform] : viewView.each())
     {
 			UpdateCameraViewMatrix(camera, transform);
-      //registry.remove<CameraViewDirty>(entity);
     }
 	}
 }
-
 
 //	std::array<glm::vec3, 8> Camera::GetFrustumCornersWorld(float near, float far) const
 //	{
@@ -101,24 +93,4 @@ namespace engine
 //		}
 //
 //		return corners;
-//	}
-//
-//	void Camera::ScreenToWorldRay(float mouseX, float mouseY, glm::vec3& outOrigin, glm::vec3& outDir) const
-//	{
-//		float ndcX = (2.0f * mouseX) / viewportState.width - 1.0f;
-//		float ndcY = 1.0f - (2.0f * mouseY) / viewportState.height;
-//
-//		glm::vec4 clipNear = glm::vec4(ndcX, ndcY, 0.0f, 1.0f);
-//		glm::vec4 clipFar = glm::vec4(ndcX, ndcY, 1.0f, 1.0f);
-//
-//		glm::mat4 invViewProj = glm::inverse(m_projectionMatrix * m_viewMatrix);
-//
-//		glm::vec4 worldNear = invViewProj * clipNear;
-//		glm::vec4 worldFar = invViewProj * clipFar;
-//
-//		worldNear /= worldNear.w;
-//		worldFar /= worldFar.w;
-//
-//		outOrigin = glm::vec3(worldNear);
-//		outDir = glm::normalize(glm::vec3(worldFar - worldNear));
 //	}

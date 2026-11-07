@@ -30,9 +30,9 @@ namespace engine
 
     pass.SetBindGroup(0, context.viewBindGroup, 0, nullptr);
 
-    if (context.camera->projectionType == CameraComponent::Projection::Perspective)
+    if (context.camera->projection == component::CameraComponent::Projection::Perspective)
     {
-      if (context.camera->backgroundMode == CameraComponent::Background::Skybox)
+      if (context.camera->backgroundMode == component::CameraComponent::Background::Skybox)
       {
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(1, context.environmentBindGroup, 0, nullptr);

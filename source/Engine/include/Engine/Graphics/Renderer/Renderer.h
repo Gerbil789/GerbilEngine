@@ -23,7 +23,7 @@ namespace engine
 		void SetSize(uint32_t width, uint32_t height);
 		void SetEnvironment(TextureHandle texture); //TODO: move away from renderer?
 
-		void Render(const DrawList& drawList, const CameraComponent* camera, wgpu::TextureView targetView);
+		void Render(const DrawList& drawList, const component::CameraComponent* camera, wgpu::TextureView targetView);
 
 	private:
 		void CreateEnvironmentUniformBuffer();

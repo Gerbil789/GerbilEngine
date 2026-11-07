@@ -33,7 +33,7 @@ namespace editor
 		std::unordered_map<engine::Uuid, engine::Sprite> m_thumbnailCache;
 
 		engine::Renderer renderer;
-		engine::CameraComponent camera;
+		engine::component::CameraComponent camera;
 
 		constexpr int AtlasSizePx = 2048;
 		constexpr int CellsPerSide = AtlasSizePx / 64;
@@ -49,8 +49,8 @@ namespace editor
 
 	void ThumbnailRenderer::Initialize()
 	{
-		camera.backgroundMode = engine::CameraComponent::Background::Color;
-		camera.projectionType = engine::CameraComponent::Projection::Perspective;
+		camera.backgroundMode = engine::component::CameraComponent::Background::Color;
+		camera.projection = engine::component::CameraComponent::Projection::Perspective;
 		camera.clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 		engine::CameraSystem::UpdateCameraProjectionMatrix(camera, 1.0f);
 
@@ -93,12 +93,11 @@ namespace editor
 		const engine::AABB& aabb = meshData.aabb;
 		float distance = glm::length(aabb.max - aabb.min) + 1.0f;
 
-		engine::TransformComponent cameraTransform;
+		engine::component::Transform cameraTransform;
 		cameraTransform.position = { 0.0f, 0.0f, distance };
 		engine::CameraSystem::UpdateCameraViewMatrix(camera, cameraTransform);
 
-
-		engine::TransformComponent entityTransform;
+		engine::component::Transform entityTransform;
 		entityTransform.rotation = { 0.0f, glm::radians(20.0f), 0.0f };
 		const glm::mat4 worldMatrix = engine::TransformSystem::CalculateLocalPositionMatrix(entityTransform);
 

@@ -5,65 +5,64 @@
 #include <string>
 #include <entt/entity/entity.hpp>
 
-namespace engine
+namespace engine::tag
 {
-	struct EditorTag {};
-	struct DisabledTag {};
-	struct TransformDirty {};
+	struct DisabledTag {};						// This entity is disabled
+	struct TransformDirty {};					// World transform must be recalculated
+	struct CameraViewDirty {};				// View camera matrix must be recalculated 
+	struct CameraProjectionDirty {};	// Projection camera matrix must be recalculated
+	struct LayoutDirtyTag {};					// UI layout must be recalculated
+}
 
-	struct IdentityComponent
+namespace engine::component
+{
+	struct Identity
 	{
 		Uuid id;
 	};
 
-	struct NameComponent
+	struct Name
 	{
 		std::string name;
 	};
 
-	struct TransformComponent
+	struct Transform
 	{
 		glm::vec3 position = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 rotation = { 0.0f, 0.0f, 0.0f }; // radians
 		glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
 	};
 
-	struct WorldTransformComponent
+	struct WorldTransform
 	{
 		glm::mat4 worldMatrix{ 1.0f };
 	};
 
-	struct HierarchyComponent
+	struct Hierarchy
 	{
 		entt::entity parent{ entt::null };
 		std::vector<entt::entity> children; //TODO: vector uses heap allocation, not good in hot path...
 	};
 
-	struct MeshComponent
+	struct Mesh
 	{
 		MeshHandle mesh;
 		std::vector<MaterialInstanceHandle> materialInstances{};
 	};
 
-	enum class BodyType { Static = 0, Dynamic, Kinematic };
-	enum class ColliderShape { Box, Sphere, Mesh };
-
-	struct ColliderComponent
+	struct Collider
 	{
-		ColliderShape shape = ColliderShape::Box;
-		BodyType type = BodyType::Dynamic;
+		enum class BodyType { Static = 0, Dynamic, Kinematic } type = BodyType::Static;
+		enum class ColliderShape { Box = 0, Sphere, Mesh } shape = ColliderShape::Box;
+
 		MeshHandle collisionMesh;
 		AABB worldAABB;
 		bool isTrigger = false;
 	};
-	
-	struct CameraViewDirty {};
-	struct CameraProjectionDirty {};
 
 	struct CameraComponent
 	{
-		enum class Projection { Perspective, Orthographic };
-		Projection projectionType = Projection::Perspective;
+		enum class Projection { Perspective, Orthographic } projection = Projection::Perspective;
 
 		struct Perspective
 		{
@@ -90,22 +89,9 @@ namespace engine
 		glm::vec4 clearColor = { 1.0f, 0.05f, 1.0f, 1.0f };
 	};
 
-	//struct EnvironmentComponent
-	//{
-	//	enum class Background { Color, Skybox };
-
-	//	Background backgroundMode = Background::Color;
-	//	glm::vec4 ambientLight = { 0.1f, 0.1f, 0.1f, 1.0f };
-	//	glm::vec4 clearColor = { 1.0f, 0.05f, 1.0f, 1.0f };
-
-	//	//TODO: environtmentTexture here
-	//};
-
-	enum class LightType { Directional = 0, Spot, Point };
-
-	struct LightComponent
+	struct Light
 	{
-		LightType type = LightType::Directional;
+		enum class LightType { Directional = 0, Spot, Point } type = LightType::Directional;
 
 		glm::vec3 color = { 1.0f, 1.0f, 1.0f };
 		float intensity = 1.0f;
@@ -138,44 +124,40 @@ namespace engine
 		};
 	};
 
-	namespace UI
+	struct RectTransform
 	{
-		struct LayoutDirtyTag {};
+		glm::vec2 anchorMin{ 0.5f, 0.5f };
+		glm::vec2 anchorMax{ 0.5f, 0.5f };
+		glm::vec2 pivot{ 0.5f, 0.5f };
 
-		struct RectTransform
-		{
-			glm::vec2 anchorMin{ 0.5f, 0.5f };
-			glm::vec2 anchorMax{ 0.5f, 0.5f };
-			glm::vec2 pivot{ 0.5f, 0.5f };
+		glm::vec2 anchoredPosition{ 0.0f, 0.0f };
+		glm::vec2 size{ 100.0f, 100.0f };
 
-			glm::vec2 anchoredPosition{ 0.0f, 0.0f };
-			glm::vec2 size{ 100.0f, 100.0f };
+		glm::vec2 absolutePosition{ 0.0f, 0.0f };
+		glm::vec2 absoluteSize{ 0.0f, 0.0f };
+	};
 
-			glm::vec2 absolutePosition{ 0.0f, 0.0f };
-			glm::vec2 absoluteSize{ 0.0f, 0.0f };
-		};
+	struct Canvas
+	{
+		bool isScreenSpace = true;
+		glm::vec2 referenceResolution{ 1920.0f, 1080.0f };
+		float matchWidthOrHeight = 0.5f; // 0 = match width, 1 = match height, 0.5 = balance
+	};
 
-		struct Canvas
-		{
-			bool isScreenSpace = true;
-			glm::vec2 referenceResolution{ 1920.0f, 1080.0f };
-			float matchWidthOrHeight = 0.5f; // 0 = match width, 1 = match height, 0.5 = balance
-		};
+	struct Image
+	{
+		std::string iconName; //TODO: dont use strings as key!!!
+		glm::vec4 tint{ 1.0f, 1.0f, 1.0f, 1.0f };
+	};
 
-		struct Image
-		{
-			std::string iconName; //TODO: dont use strings as key!!!
-			glm::vec4 tint{ 1.0f, 1.0f, 1.0f, 1.0f };
-		};
+	struct Text
+	{
+		std::string text = "Gerbil";
+		std::string fontName = "Arvo-Regular";
+		glm::vec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
+		float fontSize = 32.0f;
+		float lineSpacing = 1.2f;
+		bool wrapText = false;
+	};
 
-		struct Text
-		{
-			std::string text = "Gerbil";
-			std::string fontName = "Arvo-Regular";
-			glm::vec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
-			float fontSize = 32.0f;
-			float lineSpacing = 1.2f;
-			bool wrapText = false;
-		};
-	}
 }

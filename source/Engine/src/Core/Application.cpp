@@ -98,7 +98,7 @@ namespace engine
 			if(camera)
 			{
 				entt::entity cameraEntity = scene.GetPrimaryCameraEntity();
-				registry.emplace_or_replace<CameraProjectionDirty>(cameraEntity);
+				registry.emplace_or_replace<tag::CameraProjectionDirty>(cameraEntity);
 			}
 		}
 

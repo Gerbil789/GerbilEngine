@@ -1,17 +1,25 @@
 #include "enginepch.h"
 #include "Engine/Graphics/Shader.h"
-#include "Engine/Asset/Serializer/ShaderParser.h"
+#include "Engine/Graphics/ShaderParser.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Graphics/Renderer/RenderPipelineLayouts.h"
-#include "Engine/Core/Log.h"
+#include "Engine/Utility/File.h"
 #include <ranges>
-#include <stdexcept>
 
 namespace engine
 {
-	Shader::Shader(const std::string& source)
+	Shader Shader::Create(const std::filesystem::path& path)
 	{
+		std::string source;
+		if (!engine::ReadFile(path, source))
+		{
+			LOG_ERROR("Failed to read shader file at '{}'", path);
+			return {};
+		}
+
+		Shader shader;
+
 		wgpu::ShaderSourceWGSL shaderCodeDesc;
 		shaderCodeDesc.nextInChain = nullptr;
 		shaderCodeDesc.sType = wgpu::SType::ShaderSourceWGSL;
@@ -20,13 +28,13 @@ namespace engine
 		wgpu::ShaderModuleDescriptor shaderDesc;
 		shaderDesc.label = "Shader Module";
 		shaderDesc.nextInChain = &shaderCodeDesc;
-		shaderModule = GraphicsContext::GetDevice().CreateShaderModule(&shaderDesc);
+		shader.shaderModule = GraphicsContext::GetDevice().CreateShaderModule(&shaderDesc);
 
-		specification = ShaderParser::Parse(source);
+		shader.specification = ShaderParser::Parse(source);
 
 		constexpr uint32_t materialGroupIndex = 2;
 
-		auto materialBindings = specification.bindings | std::views::filter([](const Binding& binding)
+		auto materialBindings = shader.specification.bindings | std::views::filter([](const Binding& binding)
 			{ return binding.group == materialGroupIndex; });
 
 		std::vector<wgpu::BindGroupLayoutEntry> layoutEntries;
@@ -45,7 +53,7 @@ namespace engine
 				entry.buffer.type = buffer.type;
 				entry.buffer.hasDynamicOffset = false;
 				entry.buffer.minBindingSize = 0;
-				materialUniformBufferSize = buffer.size;
+				shader.materialUniformBufferSize = buffer.size;
 
 				// if (buffer.arraySize > 1)
 				// {
@@ -82,7 +90,9 @@ namespace engine
 		desc.entryCount = layoutEntries.size();
 		desc.entries = layoutEntries.data();
 
-		materialBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&desc);
+		shader.materialBindGroupLayout = GraphicsContext::GetDevice().CreateBindGroupLayout(&desc);
+
+		return shader;
 	}
 
 	const std::vector<Binding> Shader::GetMaterialBindings() const

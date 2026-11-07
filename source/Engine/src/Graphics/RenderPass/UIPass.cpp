@@ -10,7 +10,6 @@
 //#include "Engine/Core/Components.h"
 //#include "Engine/Asset/Resources.h"
 //#include "Engine/Core/Project.h"
-//#include "Engine/Core/Log.h"
 //#include "Engine/Asset/AssetManager.h"
 //#include "Engine/Core/SceneManager.h"
 //#include <glm/gtc/matrix_transform.hpp>

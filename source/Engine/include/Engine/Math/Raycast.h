@@ -3,7 +3,6 @@
 #include "Engine/Core/Scene.h"
 #include <glm/glm.hpp>
 
-
 namespace engine
 {
   struct Ray
