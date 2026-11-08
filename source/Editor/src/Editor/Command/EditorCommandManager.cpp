@@ -1,6 +1,4 @@
 #include "EditorCommandManager.h"
-#include "Editor/Command/DeleteEntity.h"
-#include "Editor/Command/OpenSceneCommand.h"
 #include "Engine/Core/Components.h"
 #include "Engine/Core/Input.h"
 
@@ -12,16 +10,6 @@ namespace editor
     {
       (!engine::input::IsKeyDown(engine::Key::LeftShift) ? Undo() : Redo());
     }
-  }
-
-  void EditorCommandManager::DeleteEntity(entt::entity entity)
-  {
-    Enqueue(std::make_unique<DeleteEntityCommand>(entity));
-  }
-
-  void EditorCommandManager::OpenScene(engine::SceneHandle scene)
-  {
-    Enqueue(std::make_unique<OpenSceneCommand>(scene));
   }
 
   void EditorCommandManager::Enqueue(std::unique_ptr<ICommand> cmd)

@@ -8,7 +8,7 @@
 #include "Editor/Command/RemoveComponentCommand.h"
 
 #include "Engine/Core/Components.h"
-#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Context.h"
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Graphics/Mesh.h"
 
@@ -28,16 +28,16 @@ namespace editor
 		{
 			ImGui::PushID(static_cast<int>(entity));
 
-			bool isActive = !registry.any_of<engine::tag::DisabledTag>(entity);
+			bool isActive = !registry.any_of<engine::tag::Disabled>(entity);
 			if (PropertyField("Enabled", isActive, { .showLabel = false }).changed)
 			{
 				if (isActive)
 				{
-					registry.remove<engine::tag::DisabledTag>(entity);
+					registry.remove<engine::tag::Disabled>(entity);
 				}
 				else
 				{
-					registry.emplace_or_replace<engine::tag::DisabledTag>(entity);
+					registry.emplace_or_replace<engine::tag::Disabled>(entity);
 				}
 			}
 			ImGui::SameLine();
@@ -140,11 +140,11 @@ namespace editor
 
 		PropertyTable table;
 
-		bool primary = entity == scene.GetPrimaryCameraEntity();
+		bool primary = entity == scene.primaryCameraEntity;
 
 		if (PropertyField("Primary", primary).changed)
 		{
-			scene.SetPrimaryCamera(primary ? entity : entt::null);
+			scene.primaryCameraEntity = primary ? entity : entt::null;
 		}
 
 		int currentProjection = static_cast<int>(component->projection);
@@ -340,7 +340,7 @@ namespace editor
 		}
 		else if (result.changed)
 		{
-			registry.emplace_or_replace<engine::tag::LayoutDirtyTag>(entity);
+			registry.emplace_or_replace<engine::tag::LayoutDirty>(entity);
 		}
 	}
 
@@ -443,9 +443,9 @@ namespace editor
       AddComponentEntry{ "Collider",      [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::Collider>(e); } },
       AddComponentEntry{ "Light",         [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::Light>(e); } },
       AddComponentEntry{ "UI Rect",       [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::RectTransform>(e); } },
-      AddComponentEntry{ "UI Canvas",     [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::Canvas>(e); (void)r.emplace_or_replace<engine::component::RectTransform>(e); (void)r.emplace_or_replace<engine::tag::LayoutDirtyTag>(e); } },
-      AddComponentEntry{ "UI Image",      [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::Image>(e); (void)r.emplace_or_replace<engine::component::RectTransform>(e); (void)r.emplace_or_replace<engine::tag::LayoutDirtyTag>(e); } },
-      AddComponentEntry{ "UI Text",       [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::Text>(e); (void)r.emplace_or_replace<engine::component::RectTransform>(e); (void)r.emplace_or_replace<engine::tag::LayoutDirtyTag>(e); } }
+      AddComponentEntry{ "UI Canvas",     [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::Canvas>(e); (void)r.emplace_or_replace<engine::component::RectTransform>(e); (void)r.emplace_or_replace<engine::tag::LayoutDirty>(e); } },
+      AddComponentEntry{ "UI Image",      [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::Image>(e); (void)r.emplace_or_replace<engine::component::RectTransform>(e); (void)r.emplace_or_replace<engine::tag::LayoutDirty>(e); } },
+      AddComponentEntry{ "UI Text",       [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::Text>(e); (void)r.emplace_or_replace<engine::component::RectTransform>(e); (void)r.emplace_or_replace<engine::tag::LayoutDirty>(e); } }
     };
 
 		ImGui::Separator();
@@ -495,14 +495,14 @@ namespace editor
 	{
 		ImGui::Begin("Entity Inspector");
 
-		if (editor::context::selectedEntity == entt::null) 
+		if (editor::context::currentSelection.primary == entt::null) 
 		{
 			ImGui::End();
 			return;
 		}
 
-		engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
-		entt::entity entity = editor::context::selectedEntity;
+		engine::Scene& scene = engine::Context::activeSceneHandle.Get();
+		entt::entity entity = editor::context::currentSelection.primary;
 
 		EntityHeader header(entity, scene.registry);
 

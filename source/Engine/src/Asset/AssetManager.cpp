@@ -89,7 +89,7 @@ namespace engine
     for (const auto& [handle, path] : AssetRegistry::GetRecords<AudioClip>())
     {
       if(static_cast<uint64_t>(handle.id) < 1000) continue;
-      audioClips.try_emplace(handle, AudioClip{path});
+      audioClips.try_emplace(handle, AudioClip::Create(path));
     }
   }
 

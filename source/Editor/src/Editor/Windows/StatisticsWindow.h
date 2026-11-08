@@ -1,12 +1,9 @@
 #pragma once
 
-#include "IEditorWindow.h"
-
 namespace editor
 {
-	class StatisticsWindow : public IEditorWindow
+	struct StatisticsWindow
 	{
-	public:
-		void Draw() override;
+		void Draw();
 	};
 }

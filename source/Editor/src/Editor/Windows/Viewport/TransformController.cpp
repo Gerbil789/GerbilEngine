@@ -2,7 +2,7 @@
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Command/EditorCommandManager.h"
 #include "Engine/Core/Input.h"
-#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Context.h"
 #include "Engine/Core/Components.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -38,7 +38,7 @@ namespace editor
 		if(engine::input::IsKeyReleased(engine::Key::R)) gizmoType = ImGuizmo::OPERATION::SCALE;
 
 		if (gizmoType == 0) return;
-		if(editor::context::selectedEntity == entt::null) return;
+		if(editor::context::currentSelection.primary== entt::null) return;
 
 		ImGuizmo::SetDrawlist();
 		ImGuizmo::SetRect(x, y, width, height);
@@ -47,9 +47,9 @@ namespace editor
 		glm::mat4 cameraProjection = editor::context::camera.projectionMatrix;
 		glm::mat4 cameraView = editor::context::camera.viewMatrix;
 
-		engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
+		engine::Scene& scene = engine::Context::activeSceneHandle.Get();
 
-		engine::component::WorldTransform& wtc = scene.registry.get<engine::component::WorldTransform>(editor::context::selectedEntity);
+		engine::component::WorldTransform& wtc = scene.registry.get<engine::component::WorldTransform>(editor::context::currentSelection.primary);
 		glm::mat4& worldTransform = wtc.worldMatrix;
 
 		glm::vec3 snap;
@@ -78,7 +78,7 @@ namespace editor
 			// 	m_initialWorldTransforms[static_cast<entt::entity>(entity.GetHandle())] = wc.worldMatrix;
 			// }
 
-			m_initialPrimaryWorld = m_initialWorldTransforms[editor::context::selectedEntity];
+			m_initialPrimaryWorld = m_initialWorldTransforms[editor::context::currentSelection.primary];
 		}
 
 		if (isUsing)

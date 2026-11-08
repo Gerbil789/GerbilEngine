@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ICommand.h"
-#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Context.h"
 #include <entt/entity/registry.hpp>
 
 namespace editor
@@ -12,7 +12,7 @@ namespace editor
   public:
     RemoveComponentCommand(entt::entity entity) : m_entity(entity)
     {
-      entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
+      entt::registry& registry = engine::Context::activeSceneHandle.Get().registry;
 
       if(registry.any_of<T>(entity))
       {
@@ -22,7 +22,7 @@ namespace editor
 
     void Execute() override
     {
-      entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
+      entt::registry& registry = engine::Context::activeSceneHandle.Get().registry;
       if(registry.any_of<T>(m_entity))
       {
         registry.remove<T>(m_entity);
@@ -31,7 +31,7 @@ namespace editor
 
     void Undo() override
     {
-      entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
+      entt::registry& registry = engine::Context::activeSceneHandle.Get().registry;
       if(!registry.any_of<T>(m_entity))
       {
         registry.emplace<T>(m_entity) = m_backup;

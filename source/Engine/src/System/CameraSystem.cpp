@@ -56,14 +56,14 @@ namespace engine
 
 	void CameraSystem::Update(entt::registry& registry, float aspectRatio)
 	{
-    auto projView = registry.view<component::CameraComponent, tag::CameraProjectionDirty>(entt::exclude<tag::DisabledTag>);
+    auto projView = registry.view<component::CameraComponent, tag::CameraProjectionDirty>(entt::exclude<tag::Disabled>);
     for (auto [entity, camera] : projView.each())
     {
 			UpdateCameraProjectionMatrix(camera, aspectRatio);
       registry.remove<tag::CameraProjectionDirty>(entity);
     }
 
-		auto viewView = registry.view<component::CameraComponent, component::Transform, tag::TransformDirty>(entt::exclude<tag::DisabledTag>);
+		auto viewView = registry.view<component::CameraComponent, component::Transform, tag::TransformDirty>(entt::exclude<tag::Disabled>);
     for (auto [entity, camera, transform] : viewView.each())
     {
 			UpdateCameraViewMatrix(camera, transform);

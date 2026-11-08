@@ -2,9 +2,8 @@
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Editor/Command/EditorCommandManager.h"
-#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Context.h"
 #include "Engine/Core/Components.h"
-#include "Engine/Core/Input.h"
 #include "Engine/Core/Log.h"
 #include <imgui.h>
 
@@ -27,25 +26,12 @@ namespace editor
 	{
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-		//TODO: delete this check
-		if(!scene.registry.any_of<engine::component::Identity>(entity))
-		{
-			LOG_WARNING("Entity has no id!!!!");
-
-
-			auto name = scene.registry.get<engine::component::Name>(entity);
-			return;
-		}
-
-		// engine::Uuid id = registry.get<engine::IdentityComponent>(entity).id;
 		const std::string& name = scene.registry.get<engine::component::Name>(entity).name;
 
 		auto& hc = scene.registry.get<engine::component::Hierarchy>(entity);
 		if (hc.children.empty()) flags |= ImGuiTreeNodeFlags_Leaf;
 
-		bool selected = editor::context::selectedEntity == entity;
-
-		if (selected)
+		if (editor::context::currentSelection.IsSelected(entity))
 		{
 			flags |= ImGuiTreeNodeFlags_Selected;
 		}
@@ -56,13 +42,11 @@ namespace editor
 
 		if (ImGui::IsItemClicked())
 		{
-			//bool additive = engine::Input::IsKeyDown(engine::Key::LeftControl) || engine::Input::IsKeyDown(engine::Key::LeftShift);
-			//SelectionManager::Entities.Select(id, additive);
-
-			editor::context::selectedEntity = entity;
+			ImGuiIO& io = ImGui::GetIO();
+  		bool additive = io.KeyCtrl || io.KeyShift;
+			editor::context::SelectEntity(entity, additive);
 		}
 
-		// drag source
 		if (ImGui::BeginDragDropSource())
 		{
 			ImGui::SetDragDropPayload("ENTITY", &entity, sizeof(entt::entity));
@@ -70,7 +54,6 @@ namespace editor
 			ImGui::EndDragDropSource();
 		}
 
-		// drop target directly on the node
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY", ImGuiDragDropFlags_AcceptBeforeDelivery | ImGuiDragDropFlags_AcceptNoDrawDefaultRect))
@@ -149,7 +132,7 @@ namespace editor
 							else
 							{
 								// target is a root entity
-								const auto& roots = scene.GetRootEntities();
+								const auto& roots = scene.rootEntities;
 								auto it = std::find(roots.begin(), roots.end(), entity);
 								size_t index = (it != roots.end()) ? std::distance(roots.begin(), it) : roots.size();
 
@@ -169,17 +152,17 @@ namespace editor
 		{
 			if (ImGui::MenuItem("Create Empty"))
 			{
-				EditorCommandManager::CreateEntity<engine::component::Transform, engine::component::WorldTransform>("Empty", entity);
+				scene.CreateEntity<engine::component::Transform, engine::component::WorldTransform>("Empty", entity);
 			}
 
 			if (ImGui::MenuItem("Create Image"))
 			{
-				EditorCommandManager::CreateEntity<engine::component::RectTransform, engine::component::Image, engine::tag::LayoutDirtyTag>("Image", entity);
+				scene.CreateEntity<engine::component::RectTransform, engine::component::Image, engine::tag::LayoutDirty>("Image", entity);
 			}
 
 			if (ImGui::MenuItem("Delete"))
 			{
-				EditorCommandManager::DeleteEntity(entity);
+				scene.DestroyEntity(entity);
 			}
 
 			ImGui::EndPopup();
@@ -207,7 +190,7 @@ namespace editor
 
 		ImGui::Begin("Scene Hierarchy");
 
-		engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
+		engine::Scene& scene = engine::Context::activeSceneHandle.Get();
 
 		for (entt::entity entity : scene.rootEntities)
 		{
@@ -219,7 +202,7 @@ namespace editor
 		{
 			if (ImGui::MenuItem("Create Entity"))
 			{
-				EditorCommandManager::CreateEntity("Empty");
+				scene.CreateEntity<engine::component::Transform, engine::component::WorldTransform>("Empty");
 			}
 			ImGui::EndPopup();
 		}
@@ -239,8 +222,7 @@ namespace editor
 					std::erase(oldParentHC.children, dropped);
 					droppedHC.parent = entt::null;
 
-
-					scene.InsertRootEntity(dropped, scene.GetRootEntities().size());
+					scene.InsertRootEntity(dropped, scene.rootEntities.size());
 					scene.registry.emplace_or_replace<engine::tag::TransformDirty>(dropped);
 				}
 			}

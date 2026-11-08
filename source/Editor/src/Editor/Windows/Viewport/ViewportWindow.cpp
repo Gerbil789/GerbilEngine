@@ -4,7 +4,7 @@
 #include "Editor/Command/EditorCommandManager.h"
 #include "Editor/Command/ChangeEditorStateCommand.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
-#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Context.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/System/CameraSystem.h"
 #include "Engine/Core/Application.h"
@@ -125,7 +125,7 @@ namespace editor
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		const engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
+		const engine::Scene& scene = engine::Context::activeSceneHandle.Get();
 		engine::DrawList drawList = engine::DrawList::Create(scene.registry);
 		const engine::component::CameraComponent* camera = editor::context::editorMode == EditorMode::Edit ? &editor::context::camera : scene.GetPrimaryCamera();
 		engine::Application::s_renderer.Render(drawList, camera, m_textureView);
@@ -162,7 +162,7 @@ namespace editor
 					glm::vec3 direction = glm::normalize(glm::vec3(farWorld) - origin);
 
 					engine::RayHit hit = engine::Raycast(scene, { origin, direction });
-					if (hit) editor::context::selectedEntity = hit.entity;
+					if (hit) editor::context::SelectEntity(hit.entity);
 				}
 			}
 		}

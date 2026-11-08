@@ -8,7 +8,6 @@
 #include "Editor/Windows/MaterialEditorWindow.h"
 #include "Editor/Windows/Settings/SettingsWindow.h"
 #include "Editor/Windows/Viewport/ViewportWindow.h"
-#include "Editor/Windows/AssetRegistryWindow.h"
 #include "Editor/Windows/Utility/ScopedStyle.h"
 #include "Engine/Utility/File.h"
 #include "Engine/Core/Log.h"
@@ -109,8 +108,7 @@ namespace editor
 			AssetInspectorWindow,
 			MaterialEditorWindow,
 			StatisticsWindow,
-			SettingsWindow,
-			AssetRegistryWindow
+			SettingsWindow
 		> m_windows;
 	}
 
@@ -140,7 +138,8 @@ namespace editor
 		initInfo.RenderTargetFormat = static_cast<WGPUTextureFormat>(engine::GraphicsContext::GetSurfaceFormat());
 		ImGui_ImplWGPU_Init(&initInfo);
 
-		std::apply([](auto&&... win) { (win.Initialize(), ...); }, m_windows);
+		std::get<ContentBrowserWindow>(m_windows).Initialize();
+		std::get<ViewportWindow>(m_windows).Initialize();
 	}
 
 	void EditorRenderer::Shutdown()

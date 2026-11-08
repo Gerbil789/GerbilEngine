@@ -1,12 +1,9 @@
 #pragma once
 
-#include "Editor/Windows/IEditorWindow.h"
-
 namespace editor
 {
-	class SettingsWindow : public IEditorWindow
+	struct SettingsWindow
 	{
-	public:
-		void Draw() override;
+		void Draw();
 	};
 }

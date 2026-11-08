@@ -1,7 +1,7 @@
 #include "SettingsWindow.h"
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Windows/Utility/Property.h"
-#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Context.h"
 #include "Engine/Core/Application.h"
 #include <imgui.h>
 
@@ -9,7 +9,7 @@ namespace editor
 {
 	void SettingsWindow::Draw()
 	{
-		engine::Scene& scene = engine::SceneManager::GetActiveScene().Get();
+		engine::Scene& scene = engine::Context::activeSceneHandle.Get();
 
 		ImGui::Begin("Settings");
 
@@ -41,13 +41,12 @@ namespace editor
 		{
 			PropertyTable table;
 
-			engine::TextureHandle texture = scene.GetEnvironmentTexture();
+			engine::TextureHandle texture = scene.environmentTexture; //TODO: unnecessary variable?
 
 			if (AssetField("Environment", texture, engine::texture::HDR).changed)
 			{
-				scene.SetEnvironmentTexture(texture);
-
-				engine::Application::s_renderer.SetEnvironment(texture);
+				scene.environmentTexture = texture;
+				engine::Application::s_renderer.SetEnvironment(texture); // TODO: i dont like it
 			}
 		}
 

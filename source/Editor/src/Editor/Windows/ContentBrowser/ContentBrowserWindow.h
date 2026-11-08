@@ -1,13 +1,10 @@
 #pragma once
 
-#include "Editor/Windows/IEditorWindow.h"
-
 namespace editor
 {
-	class ContentBrowserWindow : public IEditorWindow
+	struct ContentBrowserWindow
 	{
-	public:
-		void Initialize() override;
-		void Draw() override;
+		void Initialize();
+		void Draw();
 	};
 }

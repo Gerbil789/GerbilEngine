@@ -3,7 +3,7 @@
 #include "Editor/Utility/File.h"
 #include "Engine/Core/Project.h"
 #include "Engine/Serializer/Serializer.h"
-#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Context.h"
 #include "Engine/Asset/AssetManager.h"
 #include <imgui.h>
 
@@ -24,10 +24,10 @@ namespace editor
 
 	inline void SaveScene()
 	{
-		engine::SceneHandle scene = engine::SceneManager::GetActiveScene();
-		auto& path = engine::AssetRegistry::GetAssetPath(scene);
+		engine::SceneHandle handle = engine::Context::activeSceneHandle;
+		auto& path = engine::AssetRegistry::GetAssetPath(handle);
 
-		engine::Serializer::SerializeScene(scene, engine::Project::assetsDirectory / path);
+		engine::Serializer::SerializeScene(handle, engine::Project::assetsDirectory / path);
 	}
 
 	static const std::vector<MenuCategory> MainMenuBar

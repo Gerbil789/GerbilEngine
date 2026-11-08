@@ -1,12 +1,9 @@
 #pragma once
 
-#include "IEditorWindow.h"
-
 namespace editor
 {
-	class MenuBar : public IEditorWindow
+	struct MenuBar
 	{
-	public:
-		void Draw() override;
+		void Draw();
 	};
 }

@@ -7,7 +7,7 @@ namespace engine
 	class TransformSystem
 	{
 	public:
-		static void Update(entt::registry& registry, const std::vector<entt::entity>& rootEntities);
-		static const glm::mat4 CalculateLocalPositionMatrix(const component::Transform& transform);
+		static void Update(Scene& scene);
+		static const glm::mat4 CalculateLocalMatrix(const component::Transform& transform);
 	};
 }

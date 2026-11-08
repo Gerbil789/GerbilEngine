@@ -1,13 +1,5 @@
 #include "Editor/Editor.h"
-#include "Engine/Graphics/Renderer/Renderer.h"
-#include "Engine/Core/SceneManager.h"
-#include "Engine/Core/Input.h"
-#include "Engine/Audio/Audio.h"
-#include "Engine/Asset/AssetManager.h"
-#include "Engine/Core/Scene.h"
-#include "Engine/System/TransformSystem.h"
 #include "Engine/Core/Log.h"
-
 #include "Editor/Core/EditorContext.h"
 #include "Editor/Core/EditorRenderer.h"
 #include "Editor/Command/EditorCommandManager.h"
@@ -18,7 +10,6 @@ namespace editor
 	Editor::Editor(const engine::Application& app) : m_app(app)
 	{
 		EditorRenderer::Initialize(m_app.s_window);
-		//SelectionManager::Initialize();
 
 		editor::context::camera.backgroundMode = engine::component::CameraComponent::Background::Skybox;
 		editor::context::camera.projection = engine::component::CameraComponent::Projection::Perspective;
@@ -41,12 +32,6 @@ namespace editor
 
 		EditorRenderer::Update();
 		EditorCommandManager::ExecuteDeferredCommands();
-
-		//if (editorContext.editorMode == EditorMode::Play)
-		//{
-		//	Engine::Runtime::Update();
-		//}
+		editor::context::UpdateSelection();
 	}
-
-
 }

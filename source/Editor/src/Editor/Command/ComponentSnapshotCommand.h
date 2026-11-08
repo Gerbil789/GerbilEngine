@@ -2,7 +2,7 @@
 
 #include "ICommand.h"
 #include "Engine/Core/Components.h"
-#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Context.h"
 #include <entt/entity/registry.hpp>
 
 namespace editor
@@ -15,14 +15,14 @@ namespace editor
 
     void Execute() override
     {
-      entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
+      entt::registry& registry = engine::Context::activeSceneHandle.Get().registry;
       registry.get<T>(m_entity) = m_after; 
       registry.emplace_or_replace<engine::tag::TransformDirty>(m_entity);
     }
 
     void Undo() override
     {
-      entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
+      entt::registry& registry = engine::Context::activeSceneHandle.Get().registry;
       registry.get<T>(m_entity) = m_before;
       registry.emplace_or_replace<engine::tag::TransformDirty>(m_entity);
     }

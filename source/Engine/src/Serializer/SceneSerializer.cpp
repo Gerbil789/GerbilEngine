@@ -114,7 +114,7 @@ namespace engine
 	{
 		EntityJSON eJson;
 
-		eJson.enabled = !registry.any_of<tag::DisabledTag>(entity);
+		eJson.enabled = !registry.any_of<tag::Disabled>(entity);
 		eJson.id = registry.get<component::Identity>(entity).id;
 		eJson.name = registry.get<component::Name>(entity).name;
 
@@ -253,14 +253,14 @@ namespace engine
 
 				if(id == json.primaryCameraEntity)
 				{
-					scene.SetPrimaryCamera(handle);
+					scene.primaryCameraEntity = handle;
 				}
 			}
 
 			// disabled tag
 			if (!eJson.enabled)
 			{
-				registry.emplace<tag::DisabledTag>(handle);
+				registry.emplace<tag::Disabled>(handle);
 			}
 
 			// name

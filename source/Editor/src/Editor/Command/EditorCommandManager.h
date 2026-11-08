@@ -6,7 +6,6 @@
 #include "Editor/Command/ComponentSnapshotCommand.h"
 #include "Editor/Command/BatchCommand.h"
 #include "Engine/Core/UUID.h"
-#include "Editor/Command/CreateEntity.h"
 #include "Engine/Core/Components.h"
 #include <stack>
 #include <vector>
@@ -17,15 +16,6 @@ namespace editor
   {
   public:
     static void Update();
-
-    template<typename... Components>
-    static void CreateEntity(const std::string& name = "Empty", entt::entity parent = entt::null)
-    {
-      Enqueue(std::make_unique<CreateEntityCommand<Components...>>(name, parent));
-    }
-
-    static void DeleteEntity(entt::entity entity);
-		static void OpenScene(engine::SceneHandle scene);
 
     template<typename T>
     static void AddComponent(entt::entity entity, const T& initial)

@@ -2,7 +2,7 @@
 #include "Engine/Core/Application.h"
 #include "Engine/Graphics/GraphicsContext.h"
 #include "Engine/Asset/AssetManager.h"
-#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Context.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Audio/Audio.h"
 #include "Engine/Graphics/Font.h"
@@ -46,7 +46,7 @@ namespace engine
 		s_renderer.AddPass<BackgroundPass>();
 		s_renderer.AddPass<OpaquePass>();
 
-		SceneManager::SetActiveScene(config.startupScene);
+		engine::Context::SetActiveScene(config.startupScene);
 	}
 
 	Application::~Application()
@@ -69,10 +69,13 @@ namespace engine
 		}
 
 		Time::BeginFrame();
+		engine::Context::Update(); //delete marked entities
+
+
 		input::Update();
 		Audio::Update();
 
-		Scene& scene = SceneManager::GetActiveScene().Get();
+		Scene& scene = engine::Context::activeSceneHandle.Get();
 		for (const auto& system : scene.GetSystems())
 		{
 			system();
@@ -80,13 +83,13 @@ namespace engine
 
 		entt::registry& registry = scene.registry;
 		CameraSystem::Update(registry, s_window.GetAspectRatio());
-		TransformSystem::Update(registry, scene.GetRootEntities());
+		TransformSystem::Update(scene);
 		scene.bvh.Build(registry);
 	}
 
 	void Application::Draw()
 	{
-		Scene& scene = SceneManager::GetActiveScene().Get();
+		Scene& scene = engine::Context::activeSceneHandle.Get();
 		entt::registry& registry = scene.registry;
 		auto camera = scene.GetPrimaryCamera();
 
@@ -97,8 +100,7 @@ namespace engine
 
 			if(camera)
 			{
-				entt::entity cameraEntity = scene.GetPrimaryCameraEntity();
-				registry.emplace_or_replace<tag::CameraProjectionDirty>(cameraEntity);
+				registry.emplace_or_replace<tag::CameraProjectionDirty>(scene.primaryCameraEntity);
 			}
 		}
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Engine/Core/Components.h"
-#include "Engine/Graphics/Texture/Texture2D.h"
 #include "Engine/Math/BoundingVolumeHiearchy.h"
 #include <entt/entity/registry.hpp>
 
@@ -12,8 +11,15 @@ namespace engine
 
 	struct Scene
 	{
+		entt::registry registry;
+		std::unordered_map<engine::Uuid, entt::entity> entityMap;
+		std::vector<entt::entity> rootEntities;
+		entt::entity primaryCameraEntity = entt::null;
+		TextureHandle environmentTexture = texture::HDR;
+		BoundingVolumeHiearchy bvh;
+		std::vector<std::function<void()>> systems;
+
 		Scene() = default;
-		~Scene();
 
 		Scene(Scene&&) noexcept = default;
 		Scene& operator=(Scene&&) noexcept = default;
@@ -21,30 +27,25 @@ namespace engine
 		Scene(const Scene&) = delete;
 		Scene& operator=(const Scene&) = delete;
 
-		entt::registry registry;
-		std::unordered_map<engine::Uuid, entt::entity> entityMap;
-		std::vector<entt::entity> rootEntities;
-
-
-		entt::entity m_primaryCameraEntity = entt::null;
-
-		TextureHandle environmentTexture = texture::HDR;
-		BoundingVolumeHiearchy bvh;
-
-		std::vector<std::function<void()>> systems;
-
-
-
-		//TODO: auto insert into root if not parent specified
 		template<typename... Components>
-		entt::entity CreateEntity(std::string_view name = "Entity")
+		entt::entity CreateEntity(std::string_view name = "Entity", entt::entity parent = entt::null)
 		{
 			entt::entity entity = registry.create();
 			Uuid uuid = Uuid::Generate();
 
 			registry.emplace<component::Identity>(entity, uuid);
 			registry.emplace<component::Name>(entity).name = name;
-			registry.emplace<component::Hierarchy>(entity);
+			auto& hc = registry.emplace<component::Hierarchy>(entity);
+
+			if(parent == entt::null)
+			{
+ 				InsertRootEntity(entity, rootEntities.size());
+			}
+			else
+			{
+				hc.parent = parent;
+				registry.get<component::Hierarchy>(parent).children.push_back(entity);
+			}
 
 			(registry.emplace<Components>(entity), ...);
 
@@ -53,31 +54,14 @@ namespace engine
 		}
 
 		void DestroyEntity(entt::entity entity);
+		void DeleteMarkedEntities();
+
 		entt::entity GetEntity(Uuid entityId) const;
 
-		const component::CameraComponent* GetPrimaryCamera() const
-		{
-			if (registry.valid(m_primaryCameraEntity))
-			{
-				return registry.try_get<component::CameraComponent>(m_primaryCameraEntity);
-			}
+		const component::CameraComponent* GetPrimaryCamera() const;
 
-			return nullptr;
-		}
-
-		void SetPrimaryCamera(entt::entity entity)
-		{
-			m_primaryCameraEntity = entity;
-		}
-
-		entt::entity GetPrimaryCameraEntity() const { return m_primaryCameraEntity; }
-
-		const std::vector<entt::entity>& GetRootEntities() const;
 		void InsertRootEntity(entt::entity entity, size_t index);
 		void RemoveRootEntity(entt::entity entity);
-
-		TextureHandle GetEnvironmentTexture() const;
-		void SetEnvironmentTexture(TextureHandle texture);
 
 		template<typename System> requires UpdateSystem<System>
 		void RegisterSystem()

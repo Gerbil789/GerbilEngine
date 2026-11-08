@@ -99,7 +99,7 @@ namespace editor
 
 		engine::component::Transform entityTransform;
 		entityTransform.rotation = { 0.0f, glm::radians(20.0f), 0.0f };
-		const glm::mat4 worldMatrix = engine::TransformSystem::CalculateLocalPositionMatrix(entityTransform);
+		const glm::mat4 worldMatrix = engine::TransformSystem::CalculateLocalMatrix(entityTransform);
 
 		engine::DrawList list;
 

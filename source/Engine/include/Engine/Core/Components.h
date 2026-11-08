@@ -7,11 +7,12 @@
 
 namespace engine::tag
 {
-	struct DisabledTag {};						// This entity is disabled
+	struct Disabled {};								// This entity is disabled
+	struct Deleted {};								// This entity is marked for deletion
 	struct TransformDirty {};					// World transform must be recalculated
 	struct CameraViewDirty {};				// View camera matrix must be recalculated 
 	struct CameraProjectionDirty {};	// Projection camera matrix must be recalculated
-	struct LayoutDirtyTag {};					// UI layout must be recalculated
+	struct LayoutDirty {};						// UI layout must be recalculated
 }
 
 namespace engine::component
@@ -159,5 +160,4 @@ namespace engine::component
 		float lineSpacing = 1.2f;
 		bool wrapText = false;
 	};
-
 }

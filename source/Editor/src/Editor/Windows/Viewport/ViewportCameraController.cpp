@@ -1,7 +1,7 @@
 #include "ViewportCameraController.h"
 #include "Editor/Core/EditorContext.h"
 #include "Engine/Core/Input.h"
-#include "Engine/Core/SceneManager.h"
+#include "Engine/Core/Context.h"
 #include "Engine/System/CameraSystem.h"
 
 namespace editor
@@ -58,11 +58,11 @@ namespace editor
 			tc.position -= forward * delta;
 		}
 
-		if(engine::input::IsKeyPressed(engine::Key::F) && editor::context::selectedEntity != entt::null)
+		if(engine::input::IsKeyPressed(engine::Key::F) && editor::context::currentSelection.primary != entt::null)
 		{
-			entt::registry& registry = engine::SceneManager::GetActiveScene().Get().registry;
+			entt::registry& registry = engine::Context::activeSceneHandle.Get().registry;
 
-			auto transform = registry.try_get<engine::component::Transform>(editor::context::selectedEntity);
+			auto transform = registry.try_get<engine::component::Transform>(editor::context::currentSelection.primary);
 			if(!transform) return;
 
 			glm::vec3 focusPoint = transform->position;

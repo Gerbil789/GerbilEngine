@@ -8,7 +8,6 @@
 #include "Engine/Asset/AssetManager.h"
 #include "Engine/Asset/AssetRegistry.h"
 #include "Engine/Core/Project.h"
-#include "Engine/Core/SceneManager.h"
 #include <imgui_internal.h>
 
 namespace editor
@@ -355,7 +354,7 @@ namespace editor
 								switch (item.assetType)
 								{
 								case engine::AssetType::Scene:
-									EditorCommandManager::OpenScene(engine::SceneHandle{ item.uuid });
+									// EditorCommandManager::OpenScene(engine::SceneHandle{ item.uuid });
 									break;
 								default: {}
 								}
