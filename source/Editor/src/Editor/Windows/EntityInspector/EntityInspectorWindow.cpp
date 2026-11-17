@@ -132,7 +132,7 @@ namespace editor
 
 	void DrawCamera(entt::entity entity, engine::Scene& scene)
 	{
-		engine::component::CameraComponent* component = scene.registry.try_get<engine::component::CameraComponent>(entity);
+		engine::component::Camera* component = scene.registry.try_get<engine::component::Camera>(entity);
 		if (!component) return;
 
 		ComponentHeader header("Camera");
@@ -150,12 +150,12 @@ namespace editor
 		int currentProjection = static_cast<int>(component->projection);
 		if (EnumField("Projection", currentProjection, { "Perspective", "Orthographic" }).changed)
 		{
-			component->projection = static_cast<engine::component::CameraComponent::Projection>(currentProjection);
+			component->projection = static_cast<engine::component::Camera::Projection>(currentProjection);
 			scene.registry.emplace_or_replace<engine::tag::CameraProjectionDirty>(entity);
 		}
 
 		EnumField("Background", (int&)component->backgroundMode, { "Color", "Skybox" });
-		if (component->backgroundMode == engine::component::CameraComponent::Background::Color)
+		if (component->backgroundMode == engine::component::Camera::Background::Color)
 		{
 			PropertyField("Clear Color", component->clearColor, { .mode = DisplayMode::Color });
 		}
@@ -438,7 +438,7 @@ namespace editor
 		static constexpr std::array<AddComponentEntry, 9> entries
     {
       AddComponentEntry{ "Transform",     [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::Transform>(e); (void)r.emplace_or_replace<engine::component::WorldTransform>(e); } },
-      AddComponentEntry{ "Camera",        [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::CameraComponent>(e); } },
+      AddComponentEntry{ "Camera",        [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::Camera>(e); } },
       AddComponentEntry{ "Mesh",          [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::Mesh>(e); } },
       AddComponentEntry{ "Collider",      [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::Collider>(e); } },
       AddComponentEntry{ "Light",         [](entt::registry& r, entt::entity e) { (void)r.get_or_emplace<engine::component::Light>(e); } },

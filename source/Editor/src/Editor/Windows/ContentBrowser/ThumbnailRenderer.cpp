@@ -33,7 +33,7 @@ namespace editor
 		std::unordered_map<engine::Uuid, engine::Sprite> m_thumbnailCache;
 
 		engine::Renderer renderer;
-		engine::component::CameraComponent camera;
+		engine::component::Camera camera;
 
 		constexpr int AtlasSizePx = 2048;
 		constexpr int CellsPerSide = AtlasSizePx / 64;
@@ -49,8 +49,8 @@ namespace editor
 
 	void ThumbnailRenderer::Initialize()
 	{
-		camera.backgroundMode = engine::component::CameraComponent::Background::Color;
-		camera.projection = engine::component::CameraComponent::Projection::Perspective;
+		camera.backgroundMode = engine::component::Camera::Background::Color;
+		camera.projection = engine::component::Camera::Projection::Perspective;
 		camera.clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 		engine::CameraSystem::UpdateCameraProjectionMatrix(camera, 1.0f);
 

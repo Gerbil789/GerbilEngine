@@ -1,13 +1,13 @@
 #pragma once
 
 #include "Engine/Core/Scene.h"
+#include "Engine/Core/Components.h"
 
 namespace engine
 {
-	class TransformSystem
+	struct TransformSystem
 	{
-	public:
-		static void Update(Scene& scene);
 		static const glm::mat4 CalculateLocalMatrix(const component::Transform& transform);
+		static void Update(Scene& scene);
 	};
 }

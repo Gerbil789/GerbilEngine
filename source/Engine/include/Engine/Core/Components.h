@@ -2,6 +2,7 @@
 
 #include "Engine/Graphics/Mesh.h"
 #include "Engine/Graphics/Material.h"
+// #include "Engine/Asset/Handle.h"
 #include <string>
 #include <entt/entity/entity.hpp>
 
@@ -39,16 +40,18 @@ namespace engine::component
 		glm::mat4 worldMatrix{ 1.0f };
 	};
 
-	struct Hierarchy
-	{
-		entt::entity parent{ entt::null };
-		std::vector<entt::entity> children; //TODO: vector uses heap allocation, not good in hot path...
-	};
+	struct Relationship
+  {
+    entt::entity parent = entt::null;
+    entt::entity firstChild = entt::null;
+    entt::entity prevSibling = entt::null;
+    entt::entity nextSibling = entt::null;
+  };
 
 	struct Mesh
 	{
 		MeshHandle mesh;
-		std::vector<MaterialInstanceHandle> materialInstances{};
+		std::vector<MaterialInstanceHandle> materialInstances;
 	};
 
 	struct Collider
@@ -61,7 +64,7 @@ namespace engine::component
 		bool isTrigger = false;
 	};
 
-	struct CameraComponent
+	struct Camera
 	{
 		enum class Projection { Perspective, Orthographic } projection = Projection::Perspective;
 
@@ -83,10 +86,7 @@ namespace engine::component
 		glm::mat4 viewMatrix{ 1.0f };
 		glm::mat4 viewProjectionMatrix{ 1.0f };
 
-		enum class Background { Color, Skybox };
-
-		Background backgroundMode = Background::Color;
-		glm::vec4 ambientLight = { 0.1f, 0.1f, 0.1f, 1.0f };
+		enum class Background { Color, Skybox } backgroundMode = Background::Color;
 		glm::vec4 clearColor = { 1.0f, 0.05f, 1.0f, 1.0f };
 	};
 

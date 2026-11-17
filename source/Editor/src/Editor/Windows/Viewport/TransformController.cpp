@@ -83,7 +83,7 @@ namespace editor
 
 		if (isUsing)
 		{
-			glm::mat4 newPrimaryWorld = worldTransform;
+			//glm::mat4 newPrimaryWorld = worldTransform;
 			//glm::mat4 delta = newPrimaryWorld * glm::inverse(m_initialPrimaryWorld);
 
 			// for (engine::Uuid id : SelectionManager::Entities.GetAll())
@@ -127,12 +127,12 @@ namespace editor
 
 			for (auto& [entity, initialWorld] : m_initialWorldTransforms)
 			{
-				auto& hc = scene.registry.get<engine::component::Hierarchy>(static_cast<entt::entity>(entity));
+				const auto& rc = scene.registry.get<engine::component::Relationship>(static_cast<entt::entity>(entity));
 				{
 					glm::mat4 parentWorld = glm::mat4{ 1.0f };
-					if (hc.parent != entt::null)
+					if (rc.parent != entt::null)
 					{
-						const auto& parentWTC = scene.registry.get<engine::component::WorldTransform>(hc.parent);
+						const auto& parentWTC = scene.registry.get<engine::component::WorldTransform>(rc.parent);
 						parentWorld = parentWTC.worldMatrix;
 					}
 					glm::mat4 initialLocal = glm::inverse(parentWorld) * initialWorld;

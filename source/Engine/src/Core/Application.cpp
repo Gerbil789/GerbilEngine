@@ -76,10 +76,7 @@ namespace engine
 		Audio::Update();
 
 		Scene& scene = engine::Context::activeSceneHandle.Get();
-		for (const auto& system : scene.GetSystems())
-		{
-			system();
-		}
+		scene.Update(); // update the game systems
 
 		entt::registry& registry = scene.registry;
 		CameraSystem::Update(registry, s_window.GetAspectRatio());
@@ -91,7 +88,7 @@ namespace engine
 	{
 		Scene& scene = engine::Context::activeSceneHandle.Get();
 		entt::registry& registry = scene.registry;
-		auto camera = scene.GetPrimaryCamera();
+		component::Camera* camera = registry.try_get<component::Camera>(scene.primaryCameraEntity);
 
 		if (s_window.sizeChanged)
 		{

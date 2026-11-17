@@ -127,7 +127,9 @@ namespace editor
 
 		const engine::Scene& scene = engine::Context::activeSceneHandle.Get();
 		engine::DrawList drawList = engine::DrawList::Create(scene.registry);
-		const engine::component::CameraComponent* camera = editor::context::editorMode == EditorMode::Edit ? &editor::context::camera : scene.GetPrimaryCamera();
+		const engine::component::Camera* camera = editor::context::editorMode == EditorMode::Edit ? 
+		&editor::context::camera : scene.registry.try_get<engine::component::Camera>(scene.primaryCameraEntity);
+
 		engine::Application::s_renderer.Render(drawList, camera, m_textureView);
 
 		ImGui::Image(m_textureView.Get(), viewportSize);

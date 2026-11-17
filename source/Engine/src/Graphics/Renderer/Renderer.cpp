@@ -276,7 +276,7 @@ namespace engine
 		m_frameContext.depthTextureArrayView = texture.CreateView(&arrayViewDesc);
 	}
 
-	void Renderer::Render(const DrawList& drawList, const component::CameraComponent* camera, wgpu::TextureView targetView)
+	void Renderer::Render(const DrawList& drawList, const component::Camera* camera, wgpu::TextureView targetView)
 	{
 		m_frameContext.drawList = drawList;
 		m_frameContext.camera = camera;

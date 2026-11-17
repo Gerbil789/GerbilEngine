@@ -14,7 +14,7 @@ namespace engine
 		static void SerializeMaterialInstance(MaterialInstanceHandle materialInstance, const std::filesystem::path& path);
 		static MaterialInstance DeserializeMaterialInstance(const std::filesystem::path& path);
 
-		static void SerializeScene(SceneHandle scene, const std::filesystem::path& path);
+		static void SerializeScene(SceneHandle handle, const std::filesystem::path& path);
 		static Scene DeserializeScene(const std::filesystem::path& path);
 	};
 }

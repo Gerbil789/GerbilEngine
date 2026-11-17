@@ -28,9 +28,9 @@ namespace engine
 		return std::array<glm::vec3, 8>();
 	}
 
-	void CameraSystem::UpdateCameraProjectionMatrix(component::CameraComponent& camera, float aspectRatio)
+	void CameraSystem::UpdateCameraProjectionMatrix(component::Camera& camera, float aspectRatio)
 	{
-		if(camera.projection == component::CameraComponent::Projection::Perspective)
+		if(camera.projection == component::Camera::Projection::Perspective)
 		{
 			camera.projectionMatrix = glm::perspectiveLH_ZO(camera.perspective.fov, aspectRatio, camera.perspective.nearClip, camera.perspective.farClip);
 		}
@@ -43,7 +43,7 @@ namespace engine
 		camera.viewProjectionMatrix = camera.projectionMatrix * camera.viewMatrix;
 	}
 
-	void CameraSystem::UpdateCameraViewMatrix(component::CameraComponent& camera, const component::Transform& transform)
+	void CameraSystem::UpdateCameraViewMatrix(component::Camera& camera, const component::Transform& transform)
 	{
 		glm::quat orientation = glm::quat(transform.rotation);
 
@@ -56,14 +56,14 @@ namespace engine
 
 	void CameraSystem::Update(entt::registry& registry, float aspectRatio)
 	{
-    auto projView = registry.view<component::CameraComponent, tag::CameraProjectionDirty>(entt::exclude<tag::Disabled>);
+    auto projView = registry.view<component::Camera, tag::CameraProjectionDirty>(entt::exclude<tag::Disabled>);
     for (auto [entity, camera] : projView.each())
     {
 			UpdateCameraProjectionMatrix(camera, aspectRatio);
       registry.remove<tag::CameraProjectionDirty>(entity);
     }
 
-		auto viewView = registry.view<component::CameraComponent, component::Transform, tag::TransformDirty>(entt::exclude<tag::Disabled>);
+		auto viewView = registry.view<component::Camera, component::Transform, tag::TransformDirty>(entt::exclude<tag::Disabled>);
     for (auto [entity, camera, transform] : viewView.each())
     {
 			UpdateCameraViewMatrix(camera, transform);

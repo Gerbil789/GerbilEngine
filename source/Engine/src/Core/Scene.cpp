@@ -1,94 +1,157 @@
 #include "enginepch.h"
 #include "Engine/Core/Scene.h"
 #include "Engine/Core/Components.h"
-#include "Engine/Asset/AssetManager.h"
 
 namespace engine
 {
+	void Scene::Update()
+	{
+		for (const auto& system : systems)
+		{
+			system(*this);
+		}
+	}
+
+	void Scene::RegisterSystem(std::function<void(Scene&)> system)
+	{
+		systems.push_back(std::move(system));
+	}
+
+	entt::entity Scene::CreateEntity(std::string_view name, entt::entity parent)
+	{
+		entt::entity entity = registry.create();
+
+		registry.emplace<component::Identity>(entity).id = Uuid::Generate();
+		registry.emplace<component::Name>(entity).name = name;
+		registry.emplace<component::Transform>(entity);
+		registry.emplace<component::WorldTransform>(entity);
+		registry.emplace<component::Relationship>(entity);
+
+		if (parent != entt::null)
+		{
+			AttachChild(parent, entity);
+		}
+		else
+		{
+			AttachRoot(entity);
+		}
+
+		return entity;
+	}
+
+	void Scene::AttachChild(entt::entity parent, entt::entity child)
+	{
+		UnlinkFromHierarchy(child);
+
+		auto& childRel = registry.get<component::Relationship>(child);
+		auto& parentRel = registry.get<component::Relationship>(parent);
+
+		childRel.parent = parent;
+		childRel.prevSibling = entt::null;
+		childRel.nextSibling = entt::null;
+
+		if (parentRel.firstChild == entt::null)
+		{
+			parentRel.firstChild = child;
+		}
+		else
+		{
+			// Traverse to the last child to append
+			entt::entity current = parentRel.firstChild;
+			while (registry.get<component::Relationship>(current).nextSibling != entt::null)
+			{
+				current = registry.get<component::Relationship>(current).nextSibling;
+			}
+
+			registry.get<component::Relationship>(current).nextSibling = child;
+			childRel.prevSibling = current;
+		}
+	}
+
+	void Scene::AttachRoot(entt::entity entity)
+	{
+		UnlinkFromHierarchy(entity);
+
+		auto& rel = registry.get<component::Relationship>(entity);
+		rel.parent = entt::null;
+		rel.prevSibling = lastRoot;
+		rel.nextSibling = entt::null;
+
+		if (lastRoot != entt::null)
+		{
+			registry.get<component::Relationship>(lastRoot).nextSibling = entity;
+		}
+		else
+		{
+			firstRoot = entity;
+		}
+		lastRoot = entity;
+	}
+
+	void Scene::UnlinkFromHierarchy(entt::entity entity)
+	{
+		auto* rel = registry.try_get<component::Relationship>(entity);
+		if (!rel) return;
+
+		// 1. Fix horizontal sibling links
+		if (rel->prevSibling != entt::null)
+		{
+			registry.get<component::Relationship>(rel->prevSibling).nextSibling = rel->nextSibling;
+		}
+		if (rel->nextSibling != entt::null)
+		{
+			registry.get<component::Relationship>(rel->nextSibling).prevSibling = rel->prevSibling;
+		}
+
+		// 2. Fix parent or root chain pointers
+		if (rel->parent != entt::null)
+		{
+			if (auto* parentRel = registry.try_get<component::Relationship>(rel->parent))
+			{
+				if (parentRel->firstChild == entity)
+				{
+					parentRel->firstChild = rel->nextSibling;
+				}
+			}
+		}
+		else
+		{
+			if (firstRoot == entity) firstRoot = rel->nextSibling;
+			if (lastRoot == entity) lastRoot = rel->prevSibling;
+		}
+
+		rel->parent = entt::null;
+		rel->firstChild = entt::null;
+		rel->prevSibling = entt::null;
+		rel->nextSibling = entt::null;
+	}
+
 	void Scene::DestroyEntity(entt::entity entity)
 	{
-		if (entity == entt::null || registry.all_of<tag::Deleted>(entity))
-			return;
+		if (entity == entt::null || registry.all_of<tag::Deleted>(entity)) return;
 
+		// Unlink immediately so traversal stops seeing it
+		UnlinkFromHierarchy(entity);
+
+		// Mark for deferred cleanup
 		registry.emplace_or_replace<tag::Deleted>(entity);
 
-		auto& hc = registry.get<component::Hierarchy>(entity);
-		for (auto child : hc.children)
+		// Recursively destroy children safely by caching nextSibling
+		if (auto* rel = registry.try_get<component::Relationship>(entity))
 		{
-			DestroyEntity(child);
+			entt::entity child = rel->firstChild;
+			while (child != entt::null)
+			{
+				entt::entity nextChild = registry.get<component::Relationship>(child).nextSibling;
+				DestroyEntity(child);
+				child = nextChild;
+			}
 		}
 	}
 
 	void Scene::DeleteMarkedEntities()
 	{
 		auto view = registry.view<tag::Deleted>();
-		std::vector<entt::entity> entitiesToDelete(view.begin(), view.end());
-
-		for (auto entity : entitiesToDelete)
-		{
-			auto& hc = registry.get<component::Hierarchy>(entity);
-
-			if (hc.parent != entt::null)
-			{
-				// If it has a parent, remove this entity from the parent's children list
-				if (registry.valid(hc.parent))
-				{
-					if (auto* parentHc = registry.try_get<component::Hierarchy>(hc.parent))
-					{
-						std::erase(parentHc->children, entity);
-					}
-				}
-			}
-			else
-			{
-				std::erase(rootEntities, entity);
-			}
-
-			auto& identity = registry.get<component::Identity>(entity);
-			entityMap.erase(identity.id);
-			registry.destroy(entity);
-		}
-	}
-
-	entt::entity Scene::GetEntity(Uuid entityId) const
-	{
-		const auto& map = entityMap;
-		if (auto it = map.find(entityId); it != map.end())
-		{
-			return it->second;
-		}
-		return entt::null;
-	}
-
-	const component::CameraComponent* Scene::GetPrimaryCamera() const
-	{
-		if (registry.valid(primaryCameraEntity))
-		{
-			return registry.try_get<component::CameraComponent>(primaryCameraEntity);
-		}
-		return nullptr;
-	}
-
-	void Scene::InsertRootEntity(entt::entity entity, size_t index)
-	{
-		if (index > rootEntities.size())
-		{
-			index = rootEntities.size();
-		}
-		rootEntities.insert(rootEntities.begin() + index, entity);
-	}
-
-	void Scene::RemoveRootEntity(entt::entity entity)
-	{
-		auto it = std::find(rootEntities.begin(), rootEntities.end(), entity);
-		if (it != rootEntities.end())
-		{
-			rootEntities.erase(it);
-		}
-	}
-
-	const std::vector<std::function<void()>>& Scene::GetSystems() const
-	{
-		return systems;
+		registry.destroy(view.begin(), view.end());
 	}
 }

@@ -18,7 +18,7 @@ namespace editor::context
   inline EditorMode editorMode = EditorMode::Edit;
   inline PlayMode playMode = PlayMode::PIE;
 
-  inline engine::component::CameraComponent camera;
+  inline engine::component::Camera camera;
   inline engine::component::Transform cameraTransform;
 
   inline EditorSettings settings;
