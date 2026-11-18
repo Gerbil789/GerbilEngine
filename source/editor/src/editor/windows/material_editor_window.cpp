@@ -1,0 +1,232 @@
+#include "material_editor_window.h"
+#include "editor/core/editor_context.h"
+#include "editor/windows/utility/property.h"
+#include "engine/asset/asset_manager.h"
+#include "engine/asset/asset_registry.h"
+#include "engine/graphics/material.h"
+#include <imgui.h>
+
+namespace editor
+{
+	namespace
+	{
+		engine::MaterialInstanceHandle s_materialInstanceHandle = engine::material_instance::Pink;
+	}
+
+	void MaterialeditorWindow::Draw()
+	{
+		ImGui::Begin("Material Instance");
+
+		if(editor::context::selectedasset.type == engine::assetType::MaterialInstance)
+		{
+			s_materialInstanceHandle = engine::MaterialInstanceHandle{editor::context::selectedasset.id};
+		}
+
+		if(!engine::assetRegistry::Exists(s_materialInstanceHandle))
+		{
+			s_materialInstanceHandle = engine::material_instance::Pink;
+		}
+
+		if (s_materialInstanceHandle == engine::material_instance::Pink)
+		{
+			ImGui::Text("No material selected");
+			ImGui::End();
+			return;
+		}
+
+		const std::string& materialInstanceName = engine::assetRegistry::GetassetPath(s_materialInstanceHandle).stem().string();
+		ImGui::Text("Material instance: %s", materialInstanceName.c_str());
+
+		engine::MaterialInstance& materialInstance = s_materialInstanceHandle.Get();
+		engine::Shader& shader = materialInstance.materialHandle.Get().shaderHandle.Get();
+
+		const std::string& materialName = engine::assetRegistry::GetassetPath(materialInstance.materialHandle).stem().string();
+		const std::string& shaderName = engine::assetRegistry::GetassetPath(materialInstance.materialHandle.Get().shaderHandle).stem().string();
+
+		ImGui::Text("Material: %s", materialName.c_str());
+		ImGui::Text("Shader: %s", shaderName.c_str());
+
+		if (ImGui::BeginTable("MaterialProperties", 2, ImGuiTableFlags_SizingStretchProp))
+		{
+			ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+
+			auto bindings = shader.GetMaterialBindings();
+
+			auto isColorParameter = [](const std::string& name) {
+				std::string lowerName = name;
+				std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
+				return lowerName.find("color") != std::string::npos ||
+					lowerName.find("albedo") != std::string::npos ||
+					lowerName.find("tint") != std::string::npos ||
+					lowerName.find("emission") != std::string::npos ||
+					lowerName.find("specular") != std::string::npos;
+				};
+
+			for (auto& binding : bindings)
+			{
+				if (std::holds_alternative<engine::BufferBinding>(binding.data))
+				{
+					const auto& bufferBinding = std::get<engine::BufferBinding>(binding.data);
+
+					for (auto& param : bufferBinding.parameters)
+					{
+						if (param.name.empty() || param.name[0] == '_') continue;
+
+						char* bufferPtr = reinterpret_cast<char*>(materialInstance.uniformData.data());
+
+						switch (param.type)
+						{
+						case engine::ShaderParamType::Float: {
+							float value;
+							std::memcpy(&value, bufferPtr + param.offset, sizeof(float));
+
+							if (PropertyField<float>(param.name.c_str(), value).changed)
+							{
+								std::memcpy(bufferPtr + param.offset, &value, sizeof(float));
+							}
+							break;
+						}
+						case engine::ShaderParamType::Int: {
+							int32_t value;
+							std::memcpy(&value, bufferPtr + param.offset, sizeof(int32_t));
+
+							if (PropertyField<int32_t>(param.name.c_str(), value).changed)
+							{
+								std::memcpy(bufferPtr + param.offset, &value, sizeof(int32_t));
+							}
+							break;
+						}
+						case engine::ShaderParamType::Uint: {
+							uint32_t value;
+							std::memcpy(&value, bufferPtr + param.offset, sizeof(uint32_t));
+
+							if (PropertyField<uint32_t>(param.name.c_str(), value).changed)
+							{
+								std::memcpy(bufferPtr + param.offset, &value, sizeof(uint32_t));
+							}
+							break;
+						}
+						case engine::ShaderParamType::Bool: {
+							int32_t rawVal;
+							std::memcpy(&rawVal, bufferPtr + param.offset, sizeof(int32_t));
+							bool value = static_cast<bool>(rawVal);
+
+							if (PropertyField<bool>(param.name.c_str(), value).changed)
+							{
+								int32_t newRawVal = value ? 1 : 0;
+								std::memcpy(bufferPtr + param.offset, &newRawVal, sizeof(int32_t));
+							}
+							break;
+						}
+						case engine::ShaderParamType::Vec2: {
+							glm::vec2 value;
+							std::memcpy(&value, bufferPtr + param.offset, sizeof(glm::vec2));
+
+							if (PropertyField<glm::vec2>(param.name.c_str(), value).changed)
+							{
+								std::memcpy(bufferPtr + param.offset, &value, sizeof(glm::vec2));
+							}
+							break;
+						}
+						case engine::ShaderParamType::IVec2: {
+							glm::ivec2 value;
+							std::memcpy(&value, bufferPtr + param.offset, sizeof(glm::ivec2));
+
+							if (PropertyField<glm::ivec2>(param.name.c_str(), value).changed)
+							{
+								std::memcpy(bufferPtr + param.offset, &value, sizeof(glm::ivec2));
+							}
+							break;
+						}
+						case engine::ShaderParamType::Vec3: {
+							glm::vec3 value;
+							std::memcpy(&value, bufferPtr + param.offset, sizeof(glm::vec3));
+
+							DisplayMode mode = isColorParameter(param.name) ? DisplayMode::Color : DisplayMode::Default;
+
+							if (PropertyField<glm::vec3>(param.name.c_str(), value, { .mode = mode }).changed)
+							{
+								std::memcpy(bufferPtr + param.offset, &value, sizeof(glm::vec3));
+							}
+							break;
+						}
+						case engine::ShaderParamType::Vec4: {
+							glm::vec4 value;
+							std::memcpy(&value, bufferPtr + param.offset, sizeof(glm::vec4));
+
+							DisplayMode mode = isColorParameter(param.name) ? DisplayMode::Color : DisplayMode::Default;
+
+							if (PropertyField<glm::vec4>(param.name.c_str(), value, { .mode = mode }).changed)
+							{
+								std::memcpy(bufferPtr + param.offset, &value, sizeof(glm::vec4));
+							}
+							break;
+						}
+						case engine::ShaderParamType::Mat3: {
+							glm::mat3 value;
+							std::memcpy(&value, bufferPtr + param.offset, sizeof(glm::mat3));
+
+							if (PropertyField<glm::mat3>(param.name.c_str(), value).changed)
+							{
+								std::memcpy(bufferPtr + param.offset, &value, sizeof(glm::mat3));
+							}
+							break;
+						}
+						case engine::ShaderParamType::Mat4: {
+							glm::mat4 value;
+							std::memcpy(&value, bufferPtr + param.offset, sizeof(glm::mat4));
+
+							if (PropertyField<glm::mat4>(param.name.c_str(), value).changed)
+							{
+								std::memcpy(bufferPtr + param.offset, &value, sizeof(glm::mat4));
+							}
+							break;
+						}
+						default:
+							break;
+						}
+					}
+				}
+				else if (std::holds_alternative<engine::textureBinding>(binding.data))
+				{
+					engine::TextureHandle texture = materialInstance.textures.at(binding.binding);
+					if (assetField(binding.name, texture).changed)
+					{
+						materialInstance.textures[binding.binding] = texture;
+						materialInstance.CreateBindGroup();
+					}
+				}
+			}
+
+			{
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+
+				ImGui::TextUnformatted("texture Filter");
+				ImGui::TableSetColumnIndex(1);
+				const char* filterOptions[] = { "Nearest", "Bilinear", "Trilinear" };
+				int currentFilter = static_cast<int>(materialInstance.textureFilter);
+				if (ImGui::Combo("##textureFilter", &currentFilter, filterOptions, IM_ARRAYSIZE(filterOptions)))
+				{
+					materialInstance.textureFilter = static_cast<engine::TextureFilter>(currentFilter);
+				}
+
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				ImGui::TextUnformatted("texture Wrap");
+				ImGui::TableSetColumnIndex(1);
+				const char* wrapOptions[] = { "Repeat", "Clamp", "Mirror" };
+				int currentWrap = static_cast<int>(materialInstance.textureWrap);
+				if (ImGui::Combo("##textureWrap", &currentWrap, wrapOptions, IM_ARRAYSIZE(wrapOptions)))
+				{
+					materialInstance.textureWrap = static_cast<engine::TextureWrap>(currentWrap);
+				}
+			}
+
+			ImGui::EndTable();
+		}
+
+		ImGui::End();
+	}
+}

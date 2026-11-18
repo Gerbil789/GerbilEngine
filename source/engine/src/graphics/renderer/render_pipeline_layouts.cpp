@@ -1,0 +1,149 @@
+#include "enginepch.h"
+#include "engine/graphics/renderer/render_pipeline_layouts.h"
+#include "engine/graphics/graphics_context.h"
+#include "engine/graphics/renderer/render_uniforms.h"
+
+namespace engine
+{
+	namespace 
+	{
+		static wgpu::BindGroupLayout s_viewBindGroupLayout = nullptr;
+		static wgpu::BindGroupLayout s_modelBindGroupLayout = nullptr;
+		static wgpu::BindGroupLayout s_environmentBindGroupLayout = nullptr;
+	}
+
+	void CreateViewBindGroupLayout()
+	{
+		std::array<wgpu::BindGroupLayoutEntry, 1> entries;
+
+		entries[0].binding = 0;
+		entries[0].visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
+		entries[0].buffer.type = wgpu::BufferBindingType::Uniform;
+		entries[0].buffer.minBindingSize = sizeof(ViewUniforms);
+
+		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
+		bindGroupLayoutDesc.label = "ViewBindGroupLayout";
+		bindGroupLayoutDesc.entryCount = entries.size();
+		bindGroupLayoutDesc.entries = entries.data();
+
+		s_viewBindGroupLayout = graphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
+	}
+
+	void CreateModelBindGroupLayout()
+	{
+		std::array<wgpu::BindGroupLayoutEntry, 1> entries;
+
+		entries[0].binding = 0;
+		entries[0].visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
+		entries[0].buffer.hasDynamicOffset = false;
+		entries[0].buffer.type = wgpu::BufferBindingType::ReadOnlyStorage;
+		entries[0].buffer.minBindingSize = sizeof(glm::mat4);
+
+		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
+		bindGroupLayoutDesc.label = "ModelBindGroupLayout";
+		bindGroupLayoutDesc.entryCount = entries.size();
+		bindGroupLayoutDesc.entries = entries.data();
+		s_modelBindGroupLayout = graphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
+	}
+
+	void CreateEnvironmentBindGroupLayout()
+	{
+		std::array<wgpu::BindGroupLayoutEntry, 8> entries;
+
+		// 0 - EnvironmentSampler
+		{
+			entries[0].binding = 0;
+			entries[0].visibility = wgpu::ShaderStage::Fragment;
+			entries[0].sampler.type = wgpu::SamplerBindingType::Filtering;
+		}
+
+		// 1 - EnvironmentMap
+		{
+			entries[1].binding = 1;
+			entries[1].visibility = wgpu::ShaderStage::Fragment;
+			entries[1].texture.sampleType = wgpu::TextureSampleType::Float;
+			entries[1].texture.viewDimension = wgpu::TextureViewDimension::Cube;
+			entries[1].texture.multisampled = false;
+		}
+
+		// 2 - IrradianceMap
+		{
+			entries[2].binding = 2;
+			entries[2].visibility = wgpu::ShaderStage::Fragment;
+			entries[2].texture.sampleType = wgpu::TextureSampleType::Float;
+			entries[2].texture.viewDimension = wgpu::TextureViewDimension::Cube;
+			entries[2].texture.multisampled = false;
+		}
+
+		// 3 - PrefilteredSpecularMap
+		{
+			entries[3].binding = 3;
+			entries[3].visibility = wgpu::ShaderStage::Fragment;
+			entries[3].texture.sampleType = wgpu::TextureSampleType::Float;
+			entries[3].texture.viewDimension = wgpu::TextureViewDimension::Cube;
+			entries[3].texture.multisampled = false;
+		}
+
+		// 4 - BRDFIntMap
+		{
+			entries[4].binding = 4;
+			entries[4].visibility = wgpu::ShaderStage::Fragment;
+			entries[4].texture.sampleType = wgpu::TextureSampleType::Float;
+			entries[4].texture.viewDimension = wgpu::TextureViewDimension::e2D;
+			entries[4].texture.multisampled = false;
+		}
+
+		// 5 - ShadowUniforms
+		{
+			entries[5].binding = 5;
+			entries[5].visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
+			entries[5].buffer.type = wgpu::BufferBindingType::Uniform;
+			entries[5].buffer.minBindingSize = sizeof(EnvironmentUniforms);
+		}
+
+		// 6 -ShadowSampler
+		{
+			entries[6].binding = 6;
+			entries[6].visibility = wgpu::ShaderStage::Fragment;
+			entries[6].sampler.type = wgpu::SamplerBindingType::Comparison;
+		}
+
+		// 7 - ShadowMap
+		{
+			entries[7].binding = 7;
+			entries[7].visibility = wgpu::ShaderStage::Fragment;
+			entries[7].texture.sampleType = wgpu::TextureSampleType::Depth;
+			entries[7].texture.viewDimension = wgpu::TextureViewDimension::e2DArray;
+			entries[7].texture.multisampled = false;
+		}
+
+		wgpu::BindGroupLayoutDescriptor bindGroupLayoutDesc;
+		bindGroupLayoutDesc.label = "EnvironmentBindGroupLayout";
+		bindGroupLayoutDesc.entryCount = entries.size();
+		bindGroupLayoutDesc.entries = entries.data();
+
+		s_environmentBindGroupLayout = graphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
+	}
+
+	void RenderPipelineLayouts::Initialize()
+	{
+		CreateViewBindGroupLayout();
+		CreateModelBindGroupLayout();
+		CreateEnvironmentBindGroupLayout();
+	}
+
+	wgpu::BindGroupLayout RenderPipelineLayouts::GetViewLayout()
+	{
+		return s_viewBindGroupLayout;
+	}
+
+	wgpu::BindGroupLayout RenderPipelineLayouts::GetModelLayout()
+	{
+		return s_modelBindGroupLayout;
+	}
+
+	wgpu::BindGroupLayout RenderPipelineLayouts::GetEnvironmentLayout()
+	{
+		return s_environmentBindGroupLayout;
+	}
+}

@@ -1,0 +1,94 @@
+#pragma once
+
+#include "engine/asset/handle.h"
+#include <webgpu/webgpu_cpp.h>
+#include <unordered_map>
+
+namespace engine
+{
+  template <class T>
+  inline void HashCombine(std::size_t& seed, const T& v)
+  {
+    std::hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2); // the magic number 0x9e3779b9 is derived from the golden ratio
+  }
+
+  struct PipelineSpecification
+  {
+		ShaderHandle shaderHandle;
+    wgpu::PrimitiveTopology topology = wgpu::PrimitiveTopology::TriangleList;
+		wgpu::FrontFace frontFace = wgpu::FrontFace::CW;
+    wgpu::CullMode cullMode = wgpu::CullMode::Back;
+
+    bool depthWrite = true;
+    wgpu::CompareFunction depthCompare = wgpu::CompareFunction::Less;
+    wgpu::TextureFormat depthFormat = wgpu::TextureFormat::Depth24Plus;
+
+		std::vector<wgpu::BindGroupLayout> layoutOverrides; // if empty, use the shader's default layout
+
+
+		bool operator==(const PipelineSpecification& other) const
+		{
+			if (shaderHandle != other.shaderHandle ||
+				topology != other.topology ||
+				frontFace != other.frontFace ||
+				cullMode != other.cullMode ||
+				depthWrite != other.depthWrite ||
+				depthCompare != other.depthCompare ||
+				depthFormat != other.depthFormat)
+			{
+				return false;
+			}
+
+			if (layoutOverrides.size() != other.layoutOverrides.size()) return false;
+
+			for (size_t i = 0; i < layoutOverrides.size(); ++i)
+			{
+				if (layoutOverrides[i].Get() != other.layoutOverrides[i].Get())
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		size_t Hash() const
+		{
+			size_t seed = 0;
+
+			HashCombine(seed, static_cast<uint64_t>(shaderHandle.id));
+			HashCombine(seed, static_cast<uint32_t>(topology));
+			HashCombine(seed, static_cast<uint32_t>(frontFace));
+			HashCombine(seed, static_cast<uint32_t>(cullMode));
+			HashCombine(seed, static_cast<uint32_t>(depthWrite));
+			HashCombine(seed, static_cast<uint32_t>(depthCompare));
+			HashCombine(seed, static_cast<uint32_t>(depthFormat));
+
+			for (const auto& layout : layoutOverrides)
+			{
+				HashCombine(seed, reinterpret_cast<uint64_t>(layout.Get()));
+			}
+
+			return seed;
+		}
+  };
+
+
+  struct PipelineSpecHasher
+  {
+    size_t operator()(const PipelineSpecification& spec) const
+    {
+      return spec.Hash();
+    }
+  };
+
+  class PipelineCache
+  {
+  public:
+    static wgpu::RenderPipeline GetPipeline(const PipelineSpecification& specification);
+
+  private:
+		inline static std::unordered_map<PipelineSpecification, wgpu::RenderPipeline, PipelineSpecHasher> s_pipelineCache;
+  };
+}

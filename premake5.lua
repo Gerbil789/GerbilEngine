@@ -1,6 +1,6 @@
 workspace "GerbilEngine"
 architecture "x64"
-startproject "TestProject"
+startproject "test_project"
 configurations { "Debug", "Release", "EditorDebug", "EditorRelease" }
 platforms { "windows", "linux", "web" }
 language "C++"
@@ -56,11 +56,11 @@ filter "configurations:EditorRelease"
 	runtime "Release"
 
 group ""
-	include "source/Engine"
-  include "source/Editor"
+	include "source/engine"
+  include "source/editor"
 
 group "Projects"
-	include "projects/TestProject"
+	include "projects/test_project"
 
 group "Dependencies"
 	include "vendor/glfw"

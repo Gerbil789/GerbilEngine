@@ -1,0 +1,53 @@
+#pragma once
+
+#include "engine/graphics/graphics_context.h"
+#include <functional>
+
+namespace engine
+{
+	enum class TextureFilter { Point, Bilinear, Trilinear };
+	enum class TextureWrap { Repeat, Clamp, Mirror };
+
+	struct SamplerKey
+	{
+		TextureFilter filter;
+		TextureWrap wrap;
+
+		bool operator==(const SamplerKey&) const = default;
+	};
+}
+
+namespace std 
+{
+	template<>
+	struct hash<engine::SamplerKey> 
+	{
+		inline std::size_t operator()(const engine::SamplerKey& key) const noexcept 
+		{
+			return (static_cast<size_t>(key.filter) << 4) ^ static_cast<size_t>(key.wrap);
+		}
+	};
+}
+
+namespace engine
+{
+	class SamplerPool
+	{
+	public:
+		static void Initialize();
+		static void Shutdown();
+
+		static wgpu::Sampler GetSampler(SamplerKey key)
+		{
+			return s_samplers.at(key);
+		}
+
+	private:
+		inline static std::unordered_map<SamplerKey, wgpu::Sampler> s_samplers;
+
+		static wgpu::Sampler CreateSampler(wgpu::Device device, wgpu::FilterMode minMag, wgpu::MipmapFilterMode mip, wgpu::AddressMode mode);
+
+	};
+}
+
+

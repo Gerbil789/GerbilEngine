@@ -1,0 +1,26 @@
+#pragma once
+
+#include "engine/graphics/mesh.h"
+#include "engine/graphics/material.h"
+#include <glm/glm.hpp>
+#include <entt/entity/registry.hpp>
+
+namespace engine
+{
+	struct DrawItem
+	{
+		engine::MeshHandle mesh;
+		engine::MaterialInstanceHandle materialInstance;
+		uint32_t subMeshIndex;
+		uint32_t indexCount;
+		uint32_t firstIndex;
+	};
+
+	struct DrawList
+	{
+		static DrawList Create(const entt::registry& registry);
+
+		std::vector<DrawItem> items;
+		std::vector<glm::mat4> transforms;
+	};
+}

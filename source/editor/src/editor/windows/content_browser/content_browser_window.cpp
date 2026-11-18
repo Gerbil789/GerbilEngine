@@ -1,0 +1,407 @@
+#include "editor/windows/content_browser/content_browser_window.h"
+#include "editor/windows/content_browser/thumbnail_renderer.h"
+#include "editor/windows/utility/scoped_style.h"
+#include "editor/windows/utility/property.h"
+#include "editor/utility/file.h"
+#include "editor/core/editor_context.h"
+#include "engine/core/context.h"
+#include "engine/asset/asset_manager.h"
+#include "engine/asset/asset_registry.h"
+#include <imgui_internal.h>
+
+namespace editor
+{
+	namespace
+	{
+		enum class ItemInteraction { None = 0, Clicked, DoubleClicked };
+		enum class ItemType { Directory, File };
+
+		struct Item
+		{
+			std::string name;
+			std::filesystem::path path;
+			ImGuiID id;
+			ItemType itemType;
+
+			// asset data
+			engine::Uuid uuid{};
+			engine::assetType assetType = engine::assetType::Unknown;
+
+			engine::Sprite thumbnail{};
+		};
+
+		Thumbnailrenderer m_thumbnailrenderer;
+
+		ImVec2 m_itemSize{ 64.0f, 64.0f };
+		int m_columnCount = 0;
+		int m_lineCount = 0;
+		constexpr float m_itemSpacing = 10.0f;
+
+		std::filesystem::path m_currentDirectory;
+
+		ImGuiSelectionBasicStorage m_selection;
+
+		std::vector<Item> m_items;
+	}
+
+	static void RefreshDirectory()
+	{
+		m_items.clear();
+		m_selection.Clear();
+
+		std::error_code ec;
+		for (const auto& entry : std::filesystem::directory_iterator(m_currentDirectory, ec))
+		{
+			const std::filesystem::path& path = entry.path();
+
+			if (entry.is_directory()) 
+			{
+				bool isEmpty = std::filesystem::is_empty(entry);
+				Icon icon = isEmpty ? Icon::EmptyFolder : Icon::Folder;
+
+				m_items.emplace_back(
+					Item
+					{
+						.name = path.stem().string(),
+						.path = path,
+						.id = static_cast<ImGuiID>(std::hash<std::string>{}(path.string())),
+						.itemType = ItemType::Directory,
+						.thumbnail = m_thumbnailrenderer.GeteditorIcon(icon)
+
+					});
+      } 
+			else if (entry.is_regular_file()) 
+			{
+				engine::Uuid id = engine::assetRegistry::GetId(entry.path());
+				engine::assetType type = engine::assetRegistry::GetassetType(entry.path());
+
+				m_items.emplace_back(
+					Item
+					{
+						.name = path.stem().string(),
+						.path = path,
+						.id = static_cast<ImGuiID>(std::hash<std::string>{}(path.string())),
+						.itemType = ItemType::File,
+
+						.uuid = id,
+						.assetType = type,
+						.thumbnail = m_thumbnailrenderer.GetassetThumbnail(id, type)
+					}
+				);
+      }
+			else 
+			{
+				LOG_WARNING("Unknown file: {}", path);
+      }
+		}
+	}
+
+	static void DrawNavigationBar()
+	{
+		ScopedStyle style
+		{
+			{ ImGuiStyleVar_FramePadding, ImVec2(4, 4) }
+		};
+
+		ImGui::BeginChild("NavBar", ImVec2(0, 24), ImGuiChildFlags_None, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+		const std::filesystem::path& relativePath = std::filesystem::relative(m_currentDirectory, engine::Context::assetsDirectory);
+		std::filesystem::path pathSoFar = engine::Context::assetsDirectory;
+
+		if (ImGui::Button("assets"))
+		{
+			m_currentDirectory = engine::Context::assetsDirectory;
+			RefreshDirectory();
+		}
+
+		if (m_currentDirectory != engine::Context::assetsDirectory)
+		{
+			for (const auto& component : relativePath)
+			{
+				ImGui::SameLine();
+				ImGui::Text("/");
+				ImGui::SameLine();
+
+				pathSoFar /= component;
+
+				if (ImGui::Button(component.string().c_str()))
+				{
+					m_currentDirectory = pathSoFar;
+					RefreshDirectory();
+				}
+			}
+		}
+
+		ImGui::EndChild();
+	}
+
+	static void HandleZooming(ImVec2 start_pos)
+	{
+		static float zoomWheelAccum = 0.0f;
+		if (ImGui::IsWindowAppearing())
+		{
+			zoomWheelAccum = 0.0f;
+		}
+		ImGuiIO& io = ImGui::GetIO();
+		if (ImGui::IsWindowHovered() && io.MouseWheel != 0.0f && ImGui::IsKeyDown(ImGuiMod_Ctrl) && ImGui::IsAnyItemActive() == false)
+		{
+			zoomWheelAccum += io.MouseWheel;
+			if (fabsf(zoomWheelAccum) >= 1.0f)
+			{
+				int hovered_item_nx = static_cast<int>((io.MousePos.x - start_pos.x + m_itemSpacing * 0.5f) / (m_itemSize.x + m_itemSpacing));
+				int hovered_item_ny = static_cast<int>((io.MousePos.y - start_pos.y + m_itemSpacing * 0.5f) / (m_itemSize.y + m_itemSpacing + 20.0f));
+				int hovered_item_idx = (hovered_item_ny * m_columnCount) + hovered_item_nx;
+
+				// Zoom
+				float factor = powf(1.1f, zoomWheelAccum);
+				m_itemSize.x *= factor;
+				m_itemSize.y *= factor;
+				m_itemSize.x = std::clamp(m_itemSize.x, 32.0f, 128.0f);
+				m_itemSize.y = std::clamp(m_itemSize.y, 32.0f, 128.0f);
+				zoomWheelAccum -= (int)zoomWheelAccum;
+
+				float hovered_item_rel_pos_y = (static_cast<float>(hovered_item_idx / m_columnCount) + fmodf(static_cast<float>(hovered_item_ny), 1.0f)) * (m_itemSize.y + m_itemSpacing + 20.0f);
+				hovered_item_rel_pos_y += ImGui::GetStyle().WindowPadding.y;
+				float mouse_local_y = io.MousePos.y - ImGui::GetWindowPos().y;
+				ImGui::SetScrollY(hovered_item_rel_pos_y - mouse_local_y);
+			}
+		}
+	}
+
+	static void content_browserContextMenu()
+	{
+		if (ImGui::BeginPopupContextWindow("content_browserContextMenu", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
+		{
+			if (ImGui::BeginMenu("Create"))
+			{
+				if (ImGui::MenuItem("Directory"))
+				{
+					std::filesystem::create_directory(m_currentDirectory / "newDirectory");
+					RefreshDirectory();
+				}
+
+				ImGui::Separator();
+
+				// if (ImGui::MenuItem("Scene"))
+				// {
+				// 	engine::assetManager::Createasset<engine::Scene>(m_currentDirectory / "newScene.scene");
+				// 	RefreshDirectory();
+				// }
+
+				// if (ImGui::MenuItem("Material"))
+				// {
+				// 	engine::assetManager::Createasset<engine::Material>(m_currentDirectory / "material.mat");
+				// 	RefreshDirectory();
+				// }
+
+				ImGui::EndMenu();// End Create Menu
+			}
+
+			ImGui::Separator();
+
+			if (ImGui::MenuItem("Open in file explorer"))
+			{
+				editor::FileDialog::OpenFileExplorer(m_currentDirectory);
+			}
+
+			ImGui::EndPopup();
+		}
+	}
+
+	static void ItemContextMenu(const Item& item)
+	{
+		if (ImGui::BeginPopupContextItem("ItemContextMenu"))
+		{
+			if (ImGui::MenuItem("Delete", "", false, m_selection.Size > 0))
+			{
+				/*editorcommandManager::DeleteEntity(item.assetId);*/
+			}
+
+			ImGui::Separator();
+
+			if (ImGui::MenuItem("Rename", "", false, m_selection.Size > 0))
+			{
+
+			}
+
+			if (ImGui::MenuItem("Open in file explorer"))
+			{
+				editor::FileDialog::OpenFileExplorer(item.path);
+			}
+
+			ImGui::EndPopup();
+		}
+	}
+
+
+	static ItemInteraction DrawItem(const Item& item, ImDrawList* draw_list, ImVec2 pos, ImU32 label_col)
+	{
+		const engine::Sprite& thumbnail = item.thumbnail;
+
+		ImVec2 icon_min = pos;
+		ImVec2 icon_max = { pos.x + m_itemSize.x, pos.y + m_itemSize.x };
+		draw_list->AddImage(thumbnail.textureHandle.Get().textureView.Get(), icon_min, icon_max, ImVec2(thumbnail.uvMin.x, thumbnail.uvMin.y), ImVec2(thumbnail.uvMax.x, thumbnail.uvMax.y));
+
+		// label
+		ImRect label_rect = ImRect{ pos.x, icon_max.y, pos.x + m_itemSize.x, pos.y + m_itemSize.y + 20.0f };
+		std::string displayName = item.name;
+		ImVec2 text_size = ImGui::CalcTextSize(displayName.c_str());
+
+		if (text_size.x > m_itemSize.x)
+		{
+			const float ellipsis_width = ImGui::CalcTextSize("...").x;
+
+			while (!displayName.empty() && ImGui::CalcTextSize(displayName.c_str()).x + ellipsis_width > m_itemSize.x)
+			{
+				displayName.pop_back();
+			}
+			displayName += "...";
+			text_size = ImGui::CalcTextSize(displayName.c_str());
+		}
+
+		ImVec2 text_pos = { label_rect.Min.x + (label_rect.GetWidth() - text_size.x) * 0.5f, label_rect.Min.y + 2.0f };
+		draw_list->AddText(text_pos, label_col, displayName.c_str());
+
+		ItemInteraction interaction = ItemInteraction::None;
+
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("%s", item.name.c_str());
+
+			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+			{
+				interaction = ItemInteraction::DoubleClicked;
+			}
+			else if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+			{
+				interaction = ItemInteraction::Clicked;
+			}
+		}
+
+		ItemContextMenu(item);
+		return interaction;
+	}
+
+	static void DrawMainContent()
+	{
+		int totalItems = static_cast<int>(m_items.size());
+		m_columnCount = std::max(static_cast<int>(ImGui::GetContentRegionAvail().x / (m_itemSize.x + m_itemSpacing)), 1);
+		m_lineCount = (totalItems + m_columnCount) / m_columnCount;
+
+		constexpr float layoutOuterPadding = 5.0f;
+
+		std::filesystem::path directoryToOpen;
+
+		ImGui::BeginChild("MainContent");
+
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		ImVec2 startPos = ImGui::GetCursorScreenPos();
+		startPos = { startPos.x + layoutOuterPadding, startPos.y + layoutOuterPadding };
+
+		ImGui::SetCursorScreenPos(startPos);
+
+		ImGuiMultiSelectFlags flags = ImGuiMultiSelectFlags_ClearOnEscape | ImGuiMultiSelectFlags_ClearOnClickVoid | ImGuiMultiSelectFlags_BoxSelect2d | ImGuiMultiSelectFlags_SelectOnClickRelease;
+		ImGuiMultiSelectIO* io = ImGui::BeginMultiSelect(flags, m_selection.Size, totalItems);
+
+		m_selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage*, int id) { return static_cast<ImGuiID>(static_cast<uint64_t>(m_items[id].id)); };
+		m_selection.ApplyRequests(io);
+
+		ImGuiListClipper clipper;
+		clipper.Begin(m_lineCount, m_itemSize.y + m_itemSpacing + 20.0f);
+
+		while (clipper.Step())
+		{
+			for (int line_id = clipper.DisplayStart; line_id < clipper.DisplayEnd; ++line_id)
+			{
+				const int min_id = line_id * m_columnCount;
+				const int max_id = std::min(min_id + m_columnCount, totalItems);
+
+				for (int item_id = min_id; item_id < max_id; ++item_id)
+				{
+					const Item& item = m_items[item_id];
+
+					ImGui::PushID(item.id);
+
+					ImVec2 pos = ImVec2(startPos.x + (item_id % m_columnCount) * (m_itemSize.x + m_itemSpacing), startPos.y + line_id * (m_itemSize.y + m_itemSpacing + 20.0f));
+					ImGui::SetCursorScreenPos(pos);
+
+					ImGui::SetNextItemSelectionUserData(item_id);
+					bool item_is_selected = m_selection.Contains(item.id);
+					ImGui::Selectable("", item_is_selected, ImGuiSelectableFlags_AllowOverlap, m_itemSize);
+
+					if (ImGui::IsRectVisible(m_itemSize))
+					{
+						ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
+
+						ItemInteraction interaction = DrawItem(item, drawList, pos, label_col);
+
+						if (interaction == ItemInteraction::Clicked)
+						{
+							if (item.itemType == ItemType::File)
+							{
+								editor::context::selectedasset = { item.uuid, item.assetType };
+							}
+						}
+						else if (interaction == ItemInteraction::DoubleClicked)
+						{
+							if (item.itemType == ItemType::Directory)
+							{
+								directoryToOpen = item.path;
+							}
+							else if (item.itemType == ItemType::File)
+							{
+								switch (item.assetType)
+								{
+								case engine::assetType::Scene:
+									// editorcommandManager::OpenScene(engine::SceneHandle{ item.uuid });
+									break;
+								default: {}
+								}
+							}
+						}
+					}
+
+					if (item.itemType == ItemType::File)
+					{
+						DragDropSource(item.assetType, item.uuid, item.name);
+					}
+
+					ImGui::PopID();
+				}
+
+			}
+		}
+		clipper.End();
+
+		content_browserContextMenu();
+
+		io = ImGui::EndMultiSelect();
+		m_selection.ApplyRequests(io);
+
+		HandleZooming(startPos);
+
+		ImGui::EndChild(); // end Main Content
+
+		if (!directoryToOpen.empty())
+		{
+			m_currentDirectory = directoryToOpen;
+			RefreshDirectory();
+		}
+	}
+
+	void content_browserWindow::Initialize()
+	{
+		m_thumbnailrenderer.Initialize();
+		m_currentDirectory = engine::Context::assetsDirectory;
+
+		RefreshDirectory();
+	}
+
+	void content_browserWindow::Draw()
+	{
+		ImGui::Begin("Content Browser", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		DrawNavigationBar();
+		DrawMainContent();
+		ImGui::End();
+	}
+}
