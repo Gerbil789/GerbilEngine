@@ -101,14 +101,14 @@ namespace editor
 	{
 		std::tuple<
 			MenuBar,
-			viewportWindow,
-			content_browserWindow,
-			entity_inspectorWindow,
+			ViewportWindow,
+			ContentBrowserWindow,
+			EntityInspectorWindow,
 			SceneHierarchyWindow,
-			asset_inspectorWindow,
-			MaterialeditorWindow,
+			AssetInspectorWindow,
+			MaterialEditorWindow,
 			StatisticsWindow,
-			settingsWindow
+			SettingsWindow
 		> s_windows;
 	}
 
@@ -138,8 +138,8 @@ namespace editor
 		initInfo.RenderTargetFormat = static_cast<WGPUTextureFormat>(engine::graphicsContext::GetSurfaceFormat());
 		ImGui_ImplWGPU_Init(&initInfo);
 
-		std::get<content_browserWindow>(s_windows).Initialize();
-		std::get<viewportWindow>(s_windows).Initialize();
+		std::get<ContentBrowserWindow>(s_windows).Initialize();
+		std::get<ViewportWindow>(s_windows).Initialize();
 	}
 
 	void EditorRenderer::Shutdown()

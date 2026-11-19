@@ -4,9 +4,8 @@
 
 namespace editor
 {
-	class Editor
+	struct Editor
 	{
-	public:
 		Editor(const engine::Application& app);
 		~Editor();
 		void Update();

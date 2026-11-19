@@ -45,10 +45,10 @@ namespace engine
 		surfaceDesc.label = "WindowSurface";
 
 #if defined(ENGINE_PLATFORM_WINDOWS)
-		wgpu::SurfaceSourcewindowsHWND hwndDesc;
+		wgpu::SurfaceSourceWindowsHWND hwndDesc;
 		hwndDesc.hwnd = glfwGetWin32Window(window);
 		hwndDesc.hinstance = GetModuleHandle(nullptr);
-		hwndDesc.sType = wgpu::SType::SurfaceSourcewindowsHWND;
+		hwndDesc.sType = wgpu::SType::SurfaceSourceWindowsHWND;
 		surfaceDesc.nextInChain = &hwndDesc;
 #elif defined(ENGINE_PLATFORM_LINUX)
 		wgpu::SurfaceSourceXlibWindow x11Desc;
@@ -115,7 +115,7 @@ namespace engine
 				self.minimized = iconified != 0;
 			});
 
-			
+
 		SetWindowIcon(specification.iconPath);
 
 		m_surface = CreateSurface(static_cast<GLFWwindow*>(m_window));

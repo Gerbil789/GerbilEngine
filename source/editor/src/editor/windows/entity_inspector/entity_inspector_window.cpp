@@ -1,7 +1,7 @@
 #include "editor/windows/entity_inspector/entity_inspector_window.h"
 #include "editor/core/editor_context.h"
 #include "editor/windows/utility/property.h"
-#include "editor/core/editor_command_manager.h"
+#include "engine/core/command_manager.h"
 #include "engine/core/components.h"
 #include "engine/core/context.h"
 #include "engine/asset/asset_manager.h"
@@ -40,7 +40,7 @@ namespace editor
 			if (PropertyField("Name", name, { .showLabel = false }).finished)
 			{
 				//TODO: somehow store the original name
-				//editorcommandManager::ModifyComponent<engine::NameComponent>(entity, { name }, { name });
+				//engine::CommandManager::ModifyComponent<engine::NameComponent>(entity, { name }, { name });
 			}
 		}
 	};
@@ -58,9 +58,9 @@ namespace editor
 			{
 				if (ImGui::MenuItem("Reset", nullptr, false))
 				{
-					EditorCommandManager::Enqueue([entity]
+					engine::CommandManager::Enqueue([entity]
 						{
-							entt::registry& registry = engine::Context::activeSceneHandle.Get().registry;
+							entt::registry& registry = engine::context::activeSceneHandle.Get().registry;
 							T* component = registry.try_get<T>(entity);
 							if (component)
 							{
@@ -71,9 +71,9 @@ namespace editor
 
 				if (ImGui::MenuItem("Remove", nullptr, false))
 				{
-					EditorCommandManager::Enqueue([entity]
+					engine::CommandManager::Enqueue([entity]
 						{
-							entt::registry& registry = engine::Context::activeSceneHandle.Get().registry;
+							entt::registry& registry = engine::context::activeSceneHandle.Get().registry;
 							registry.remove<T>(entity);
 						});
 				}
@@ -151,7 +151,7 @@ namespace editor
 
 		if (ImGui::IsItemClicked(0))
 		{
-			editor::context::selectedasset = { component->mesh.id, engine::assetType::Mesh };
+			editor::context::selectedasset = { component->mesh.id, engine::AssetType::Mesh };
 		}
 
 		for (size_t i = 0; i < component->materialInstances.size(); ++i)
@@ -159,7 +159,7 @@ namespace editor
 			assetField(std::format("Material {}", i), component->materialInstances[i]);
 			if (ImGui::IsItemClicked(0))
 			{
-				editor::context::selectedasset = { component->materialInstances[i].id, engine::assetType::MaterialInstance };
+				editor::context::selectedasset = { component->materialInstances[i].id, engine::AssetType::MaterialInstance };
 			}
 		}
 	}
@@ -174,10 +174,10 @@ namespace editor
 	// 		{ "Reset", [&] {
 	// 			auto before = *component;
 	// 			auto after = engine::component::Collider{};
-	// 			EditorCommandManager::ModifyComponent<engine::component::Collider>(entity, before, after); }
+	// 			engine::CommandManager::ModifyComponent<engine::component::Collider>(entity, before, after); }
 	// 		},
 
-	// 		{ "Remove", [&] {EditorCommandManager::RemoveComponent<engine::component::Collider>(entity); } }
+	// 		{ "Remove", [&] {engine::CommandManager::RemoveComponent<engine::component::Collider>(entity); } }
 	// 	};
 
 	// 	ComponentHeader header("Collider", menuActions);
@@ -199,10 +199,10 @@ namespace editor
 	// 		{ "Reset", [&] {
 	// 			auto before = *component;
 	// 			auto after = engine::component::Light{};
-	// 			EditorCommandManager::ModifyComponent<engine::component::Light>(entity, before, after); }
+	// 			engine::CommandManager::ModifyComponent<engine::component::Light>(entity, before, after); }
 	// 		},
 
-	// 		{ "Remove", [&] {EditorCommandManager::RemoveComponent<engine::component::Light>(entity); } }
+	// 		{ "Remove", [&] {engine::CommandManager::RemoveComponent<engine::component::Light>(entity); } }
 	// 	};
 
 	// 	ComponentHeader header("Light", menuActions);
@@ -375,7 +375,7 @@ namespace editor
 		}
 	}
 
-	void entity_inspectorWindow::Draw()
+	void EntityInspectorWindow::Draw()
 	{
 		ImGui::Begin("Entity Inspector");
 
@@ -385,7 +385,7 @@ namespace editor
 			return;
 		}
 
-		engine::Scene& scene = engine::Context::activeSceneHandle.Get();
+		engine::Scene& scene = engine::context::activeSceneHandle.Get();
 		entt::entity entity = editor::context::currentSelection.primary;
 
 		EntityHeader header(entity, scene.registry);

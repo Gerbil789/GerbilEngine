@@ -4,9 +4,8 @@
 
 namespace editor
 {
-	class ShaderInspectorPanel
+	struct ShaderInspectorPanel
 	{
-	public:
 		void Draw(engine::ShaderHandle handle);
 	};
 }

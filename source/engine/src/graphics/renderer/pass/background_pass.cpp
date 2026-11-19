@@ -4,7 +4,7 @@
 
 namespace engine
 {
-  void Backgroundpass::Execute(wgpu::CommandEncoder& encoder, const FrameContext& context)
+  void BackgroundPass::Execute(wgpu::CommandEncoder& encoder, const FrameContext& context)
   {
     PipelineSpecification spec;
     spec.shaderHandle = shader::Skybox;

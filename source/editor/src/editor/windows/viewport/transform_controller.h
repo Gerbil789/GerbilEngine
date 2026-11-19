@@ -2,9 +2,8 @@
 
 namespace editor
 {
-	class TransformController
+	struct TransformController
 	{
-	public:
 		void Initialize();
 		void DrawGizmo(float x, float y, float width, float height);
 		bool IsGizmoOver() const;

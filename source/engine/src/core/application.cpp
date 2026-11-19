@@ -4,6 +4,7 @@
 #include "engine/core/input.h"
 #include "engine/core/scene.h"
 #include "engine/core/time.h"
+#include "engine/core/command_manager.h"
 #include "engine/graphics/graphics_context.h"
 #include "engine/graphics/renderer/render_pass.h"
 #include "engine/graphics/font.h"
@@ -17,18 +18,14 @@
 
 namespace engine
 {
-	Window Application::s_window;
-	Renderer Application::s_renderer;
-	bool Application::s_running = true;
-
 	Application::Application(const Configuration& config)
 	{
 		Log::Initialize();
 
 		SetupWorkingDirectory();
 
-		engine::Context::projectDirectory = std::filesystem::current_path() / config.projectPath;
-		engine::Context::assetsDirectory = engine::Context::projectDirectory / "assets";
+		engine::context::projectDirectory = std::filesystem::current_path() / config.projectPath;
+		engine::context::assetsDirectory = engine::context::projectDirectory / "assets";
 
 		graphicsContext::Initialize();
 		GLFW::Initialize();
@@ -44,10 +41,8 @@ namespace engine
 		FontManager::Initialize();
 
 		s_renderer.Initialize(config.windowSpec.width, config.windowSpec.height);
-		s_renderer.Addpass<Backgroundpass>();
-		s_renderer.Addpass<Opaquepass>();
 
-		engine::Context::SetActiveScene(config.startupScene);
+		engine::context::activeSceneHandle = config.startupScene;
 	}
 
 	Application::~Application()
@@ -70,23 +65,24 @@ namespace engine
 		}
 
 		Time::BeginFrame();
-		engine::Context::Update(); //delete marked entities
 
 		input::Update();
 		audio::Update();
 
-		Scene& scene = engine::Context::activeSceneHandle.Get();
-		scene.Update(); // update the game systems
+		Scene& scene = engine::context::activeSceneHandle.Get();
+		scene.Update(); // update the game systems & delete marked entities
 
 		entt::registry& registry = scene.registry;
 		Camerasystem::Update(registry, s_window.GetAspectRatio());
 		Transformsystem::Update(scene);
 		scene.bvh.Build(registry);
+
+		CommandManager::ExecuteDeferred();
 	}
 
 	void Application::Draw()
 	{
-		Scene& scene = engine::Context::activeSceneHandle.Get();
+		Scene& scene = engine::context::activeSceneHandle.Get();
 		entt::registry& registry = scene.registry;
 		component::Camera* camera = registry.try_get<component::Camera>(scene.primaryCameraEntity);
 

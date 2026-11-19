@@ -1,5 +1,6 @@
 #include "viewport_camera_controller.h"
 #include "editor/core/editor_context.h"
+#include "engine/core/scene.h"
 #include "engine/core/input.h"
 #include "engine/core/context.h"
 #include "engine/system/camera_system.h"
@@ -19,7 +20,7 @@ namespace editor
 		float s_focusDistance = 10.0f;
 	}
 
-	void viewportCameraController::Update()
+	void ViewportCameraController::Update()
 	{
 		if (editor::context::editorMode != EditorMode::Edit) return;
 
@@ -60,7 +61,7 @@ namespace editor
 
 		if(engine::input::IsKeyPressed(engine::Key::F) && editor::context::currentSelection.primary != entt::null)
 		{
-			entt::registry& registry = engine::Context::activeSceneHandle.Get().registry;
+			entt::registry& registry = engine::context::activeSceneHandle.Get().registry;
 
 			auto transform = registry.try_get<engine::component::Transform>(editor::context::currentSelection.primary);
 			if(!transform) return;

@@ -2,7 +2,7 @@
 
 namespace editor
 {
-	struct viewportWindow
+	struct ViewportWindow
 	{
 		void Initialize();
 		void Draw();

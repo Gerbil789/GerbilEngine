@@ -7,18 +7,10 @@ namespace engine
 {
   struct Environment
   {
-    textureCube EnvironmentMap;
-    textureCube IrradianceMap;
-    textureCube PrefilteredSpecularMap;
+    TextureCube EnvironmentMap;
+    TextureCube IrradianceMap;
+    TextureCube PrefilteredSpecularMap;
   };
 
-  class EnvironmentBaker
-  {
-  public:
-    static Environment BakeEnvironment(TextureHandle equirectangularhdr);
-
-  private:
-    static textureCube CreateIrradianceMap(const textureCube& sourceCubemap);
-    static textureCube CreatePrefilteredSpecularMap(const textureCube& sourceCubemap);
-  };
+  Environment BakeEnvironment(TextureHandle equirectangularTextureHandle);
 }

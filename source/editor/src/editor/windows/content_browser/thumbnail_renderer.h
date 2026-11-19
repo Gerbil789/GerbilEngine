@@ -7,12 +7,10 @@ namespace editor
 {
 	enum class Icon { Unknown = 0, Folder, EmptyFolder, texture, Text, Material, Mesh, Scene, audio};
 
-	class Thumbnailrenderer
+	struct ThumbnailRenderer
 	{
-	public:
 		void Initialize();
-
-		const engine::Sprite& GetassetThumbnail(engine::Uuid id, engine::assetType type);
+		const engine::Sprite& GetassetThumbnail(engine::Uuid id, engine::AssetType type);
 		const engine::Sprite& GeteditorIcon(Icon icon);
 	};
 }

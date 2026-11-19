@@ -6,9 +6,8 @@
 
 namespace engine
 {
-  class ScopedTimer
+  struct ScopedTimer
   {
-  public:
     explicit ScopedTimer(std::string name = "elapsed") : m_name(std::move(name)), m_startTime(std::chrono::high_resolution_clock::now()) {}
 
     ~ScopedTimer()

@@ -2,9 +2,8 @@
 
 namespace editor
 {
-	class viewportCameraController
+	struct ViewportCameraController
 	{
-	public:
 		void Update();
 	};
 }

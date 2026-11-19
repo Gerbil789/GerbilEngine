@@ -31,7 +31,7 @@ namespace editor::context
   struct asset 
   {
     engine::Uuid id = 0;
-    engine::assetType type = engine::assetType::Unknown;
+    engine::AssetType type = engine::AssetType::Unknown;
   };
   inline asset selectedasset;
 

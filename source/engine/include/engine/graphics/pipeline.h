@@ -74,7 +74,6 @@ namespace engine
 		}
   };
 
-
   struct PipelineSpecHasher
   {
     size_t operator()(const PipelineSpecification& spec) const
@@ -83,9 +82,8 @@ namespace engine
     }
   };
 
-  class PipelineCache
+  struct PipelineCache
   {
-  public:
     static wgpu::RenderPipeline GetPipeline(const PipelineSpecification& specification);
 
   private:

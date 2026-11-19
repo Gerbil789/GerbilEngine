@@ -6,7 +6,7 @@
 
 namespace engine
 {
-	inline static wgpu::ShaderModule LoadWGSLShader(const std::filesystem::path& path)
+	inline wgpu::ShaderModule LoadWGSLShader(const std::filesystem::path& path)
 	{
 		std::string source;
 		if (!engine::ReadFile(path, source))
@@ -28,7 +28,7 @@ namespace engine
 		return graphicsContext::GetDevice().CreateShaderModule(&shaderDesc);
 	}
 
-	inline static uint32_t GetVertexFormatSize(wgpu::VertexFormat format)
+	inline uint32_t GetVertexFormatSize(wgpu::VertexFormat format)
 	{
 		switch (format)
 		{

@@ -4,32 +4,32 @@
 
 namespace engine
 {
-	textureCube::textureCube(const textureCubeSpecification& specification)
+	TextureCube::TextureCube(const TextureCubeSpecification& specification)
 	{
-		m_size = specification.size;
-		m_textureFormat = specification.format;
+		size = specification.size;
+		textureFormat = specification.format;
 
 		wgpu::TextureDescriptor textureDesc;
-		textureDesc.label = "Cubemaptexture";
+		textureDesc.label = "CubemapTexture";
 		textureDesc.dimension = wgpu::TextureDimension::e2D;
-		textureDesc.format = m_textureFormat;
+		textureDesc.format = textureFormat;
 		textureDesc.sampleCount = 1;
 		textureDesc.viewFormatCount = 0;
 		textureDesc.viewFormats = nullptr;
-		textureDesc.size = { m_size, m_size, 6 };
+		textureDesc.size = { size, size, 6 };
 		textureDesc.mipLevelCount = specification.mipCount;
 		textureDesc.usage = wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::TextureBinding;
-		m_texture = graphicsContext::GetDevice().CreateTexture(&textureDesc);
+		texture = graphicsContext::GetDevice().CreateTexture(&textureDesc);
 
 		wgpu::TextureViewDescriptor viewDesc;
-		viewDesc.label = "CubemaptextureView";
-		viewDesc.format = m_textureFormat;
+		viewDesc.label = "CubemapTextureView";
+		viewDesc.format = textureFormat;
 		viewDesc.aspect = wgpu::TextureAspect::All;
 		viewDesc.dimension = wgpu::TextureViewDimension::Cube;
 		viewDesc.baseMipLevel = 0;
 		viewDesc.mipLevelCount = specification.mipCount;
 		viewDesc.baseArrayLayer = 0;
 		viewDesc.arrayLayerCount = 6;
-		m_textureView = m_texture.CreateView(&viewDesc);
+		textureView = texture.CreateView(&viewDesc);
 	}
 }

@@ -32,7 +32,7 @@ namespace engine
 
 	void assetRegistry::Load()
 	{
-		const std::filesystem::path path = engine::Context::projectDirectory / "assetRegistry.json";
+		const std::filesystem::path path = engine::context::projectDirectory / "assetRegistry.json";
 
 		if (!std::filesystem::exists(path))
 		{
@@ -53,7 +53,7 @@ namespace engine
 		{
 			for (const auto& [rawId, relativePath] : source)
 			{
-				std::filesystem::path fullPath = engine::Context::assetsDirectory / relativePath;
+				std::filesystem::path fullPath = engine::context::assetsDirectory / relativePath;
 
 				if (!std::filesystem::exists(fullPath))
 				{
@@ -76,7 +76,7 @@ namespace engine
 		processMap.template operator() < SceneHandle > (archive.scenes);
 
 		// look for new files
-		for (const auto& entry : std::filesystem::recursive_directory_iterator(engine::Context::assetsDirectory))
+		for (const auto& entry : std::filesystem::recursive_directory_iterator(engine::context::assetsDirectory))
 		{
 			const std::filesystem::path& path = entry.path();
 
@@ -86,35 +86,35 @@ namespace engine
 			if (s_pathToId.contains(pathString)) continue;
 
 			Uuid id = Uuid::Generate();
-			assetType type = GetassetType(path);
+			AssetType type = GetassetType(path);
 
 			switch (type)
 			{
-			case assetType::texture:
+			case AssetType::texture:
 				AddRecord(TextureHandle{ id }, path);
 				break;
 
-			case assetType::Mesh:
+			case AssetType::Mesh:
 				AddRecord(MeshHandle{ id }, path);
 				break;
 
-			case assetType::Material:
+			case AssetType::Material:
 				AddRecord(MaterialHandle{ id }, path);
 				break;
 
-			case assetType::MaterialInstance:
+			case AssetType::MaterialInstance:
 				AddRecord(MaterialInstanceHandle{ id }, path);
 				break;
 
-			case assetType::AudioClip:
+			case AssetType::AudioClip:
 				AddRecord(AudioClipHandle{ id }, path);
 				break;
 
-			case assetType::Scene:
+			case AssetType::Scene:
 				AddRecord(SceneHandle{ id }, path);
 				break;
 
-			case assetType::Shader:
+			case AssetType::Shader:
 				AddRecord(ShaderHandle{ id }, path);
 				break;
 
@@ -138,7 +138,7 @@ namespace engine
 			const auto& engineMap = std::get<assetMap<Handle>>(s_records);
 			for (const auto& [handle, fullPath] : engineMap)
 			{
-				dest[static_cast<uint64_t>(handle.id)] = std::filesystem::relative(fullPath, engine::Context::assetsDirectory).generic_string();
+				dest[static_cast<uint64_t>(handle.id)] = std::filesystem::relative(fullPath, engine::context::assetsDirectory).generic_string();
 			}
 		};
 
@@ -150,7 +150,7 @@ namespace engine
 		fillArchive.template operator() < AudioClipHandle > (archive.audioClips);
 		fillArchive.template operator() < SceneHandle > (archive.scenes);
 
-		const std::filesystem::path path = engine::Context::projectDirectory  / "assetRegistry.json";
+		const std::filesystem::path path = engine::context::projectDirectory  / "assetRegistry.json";
 		std::string buffer;
 
 		if (auto ec = glz::write_file_json < glz::opts{ .prettify = true } > (archive, path.string(), buffer))
@@ -159,7 +159,7 @@ namespace engine
 		}
 	}
 
-	assetType assetRegistry::GetassetType(const std::filesystem::path& path)
+	AssetType assetRegistry::GetassetType(const std::filesystem::path& path)
 	{
 		switch (HashExtension(path.extension().string()))
 		{
@@ -167,56 +167,56 @@ namespace engine
 		case HashExtension(".jpg"):
 		case HashExtension(".jpeg"):
 		case HashExtension(".hdr"):
-			return assetType::texture;
+			return AssetType::texture;
 
 		case HashExtension(".gltf"):
 		case HashExtension(".glb"):
-			return assetType::Mesh;
+			return AssetType::Mesh;
 
 		case HashExtension(".mat"):
-			return assetType::Material;
+			return AssetType::Material;
 
 		case HashExtension(".mi"):
-			return assetType::MaterialInstance;
+			return AssetType::MaterialInstance;
 
 		case HashExtension(".wav"):
 		case HashExtension(".mp3"):
-			return assetType::AudioClip;
+			return AssetType::AudioClip;
 
 		case HashExtension(".scene"):
-			return assetType::Scene;
+			return AssetType::Scene;
 
 		case HashExtension(".wgsl"):
-			return assetType::Shader;
+			return AssetType::Shader;
 
 		default:
-			return assetType::Unknown;
+			return AssetType::Unknown;
 		}
 	}
 
-	assetType assetRegistry::GetassetType(Uuid id)
+	AssetType assetRegistry::GetassetType(Uuid id)
 	{
 		if (std::get<assetMap<TextureHandle>>(s_records).contains(TextureHandle{ id }))
-			return assetType::texture;
+			return AssetType::texture;
 
 		if (std::get<assetMap<MeshHandle>>(s_records).contains(MeshHandle{ id }))
-			return assetType::Mesh;
+			return AssetType::Mesh;
 
 		if (std::get<assetMap<ShaderHandle>>(s_records).contains(ShaderHandle{ id }))
-			return assetType::Shader;
+			return AssetType::Shader;
 
 		if (std::get<assetMap<MaterialHandle>>(s_records).contains(MaterialHandle{ id }))
-			return assetType::Material;
+			return AssetType::Material;
 
 		if (std::get<assetMap<MaterialInstanceHandle>>(s_records).contains(MaterialInstanceHandle{ id }))
-			return assetType::MaterialInstance;
+			return AssetType::MaterialInstance;
 
 		if (std::get<assetMap<AudioClipHandle>>(s_records).contains(AudioClipHandle{ id }))
-			return assetType::AudioClip;
+			return AssetType::AudioClip;
 
 		if (std::get<assetMap<SceneHandle>>(s_records).contains(SceneHandle{ id }))
-			return assetType::Scene;
+			return AssetType::Scene;
 
-		return assetType::Unknown;
+		return AssetType::Unknown;
 	}
 }

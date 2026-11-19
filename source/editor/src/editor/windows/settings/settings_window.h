@@ -2,7 +2,7 @@
 
 namespace editor
 {
-	struct settingsWindow
+	struct SettingsWindow
 	{
 		void Draw();
 	};

@@ -2,7 +2,7 @@
 
 namespace editor
 {
-	struct entity_inspectorWindow
+	struct EntityInspectorWindow
 	{
 		void Draw(); 
 	};

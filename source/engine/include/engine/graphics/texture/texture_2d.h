@@ -20,7 +20,7 @@ namespace engine
 		uint32_t height = 0;
 		wgpu::Texture texture;
 		wgpu::TextureView textureView;
-		wgpu::TextureFormat textureFormat;
+		wgpu::TextureFormat textureFormat = wgpu::TextureFormat::Undefined;
 
 		[[nodiscard]] static Texture2D Create(const std::filesystem::path& path);
 		[[nodiscard]] static Texture2D Create(const TextureSpecification& specification, const void* data);

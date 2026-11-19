@@ -1,9 +1,6 @@
 #include "enginepch.h"
-#include "engine/graphics/renderer/renderer.h"
-#include "engine/core/scene.h"
+#include "engine/graphics/renderer/renderer_core.h"
 #include "engine/graphics/graphics_context.h"
-#include "engine/graphics/texture/texture_2d.h"
-#include "engine/graphics/texture/texture_cube.h"
 #include "engine/graphics/renderer/draw_list.h"
 #include "engine/core/components.h"
 #include "engine/graphics/renderer/render_uniforms.h"
@@ -15,7 +12,7 @@
 
 namespace engine
 {
-	wgpu::Buffer CreateViewUniformBuffer()
+	static wgpu::Buffer CreateViewUniformBuffer()
 	{
 		wgpu::BufferDescriptor bufferDesc;
 		bufferDesc.label = "ViewUniformBuffer";
@@ -24,7 +21,7 @@ namespace engine
 		return graphicsContext::GetDevice().CreateBuffer(&bufferDesc);
 	}
 
-	wgpu::BindGroup CreateViewBindGroup(wgpu::Buffer buffer)
+	static wgpu::BindGroup CreateViewBindGroup(wgpu::Buffer buffer)
 	{
 		wgpu::BindGroupEntry entry;
 		entry.binding = 0;
@@ -40,11 +37,9 @@ namespace engine
 		return graphicsContext::GetDevice().CreateBindGroup(&desc);
 	}
 
-	wgpu::Buffer CreateModelStorageBuffer()
+	static wgpu::Buffer CreateModelStorageBuffer()
 	{
-		// max 1024 * 256 unique transforms per frame //TODO: make this configurable or dynamic
 		const uint64_t bufferSize = 1024 * 256 * sizeof(glm::mat4);
-
 		wgpu::BufferDescriptor desc;
 		desc.label = "ModelStorageBuffer";
 		desc.size = bufferSize;
@@ -52,7 +47,7 @@ namespace engine
 		return graphicsContext::GetDevice().CreateBuffer(&desc);
 	}
 
-	wgpu::BindGroup CreateModelBindGroup(wgpu::Buffer buffer)
+  wgpu::BindGroup CreateModelBindGroup(wgpu::Buffer buffer)
 	{
 		wgpu::BindGroupEntry entry;
 		entry.binding = 0;
@@ -68,84 +63,51 @@ namespace engine
 		return graphicsContext::GetDevice().CreateBindGroup(&desc);
 	}
 
-	void Renderer::Initialize(uint32_t width, uint32_t height)
+	void RendererCore::Initialize(uint32_t width, uint32_t height)
 	{
 		m_viewUniformBuffer = CreateViewUniformBuffer();
 		m_frameContext.viewBindGroup = CreateViewBindGroup(m_viewUniformBuffer);
 
 		m_modelStorageBuffer = CreateModelStorageBuffer();
-		m_frameContext.modelBindGroup = CreateModelBindGroup(m_modelStorageBuffer);
+    m_frameContext.modelBindGroup = CreateModelBindGroup(m_modelStorageBuffer);
 
 		CreateShadowtexture();
-
 		CreateEnvironmentUniformBuffer();
 		SetEnvironment(texture::hdr);
-
 		SetSize(width, height);
 	}
 
-	void Renderer::SetSize(uint32_t width, uint32_t height)
+	void RendererCore::SetSize(uint32_t width, uint32_t height)
 	{
-		// depth
-		{
-			wgpu::TextureDescriptor desc;
-			desc.label = "rendererDepthtexture";
-			desc.dimension = wgpu::TextureDimension::e2D;
-			desc.format = wgpu::TextureFormat::Depth24Plus;
-			desc.mipLevelCount = 1;
-			desc.sampleCount = 1;
-			desc.size = { width, height, 1 };
-			desc.usage = wgpu::TextureUsage::RenderAttachment;
-			m_depthtexture = engine::graphicsContext::GetDevice().CreateTexture(&desc);
-		}
+		wgpu::TextureDescriptor desc;
+		desc.label = "rendererDepthtexture";
+		desc.dimension = wgpu::TextureDimension::e2D;
+		desc.format = wgpu::TextureFormat::Depth24Plus;
+		desc.mipLevelCount = 1;
+		desc.sampleCount = 1;
+		desc.size = { width, height, 1 };
+		desc.usage = wgpu::TextureUsage::RenderAttachment;
+		m_depthtexture = engine::graphicsContext::GetDevice().CreateTexture(&desc);
 
-		{
-			wgpu::TextureViewDescriptor desc;
-			desc.label = "rendererDepthtextureView";
-			desc.aspect = wgpu::TextureAspect::DepthOnly;
-			desc.dimension = wgpu::TextureViewDimension::e2D;
-			desc.format = m_depthtexture.GetFormat();
-			desc.baseMipLevel = 0;
-			desc.mipLevelCount = 1;
-			desc.baseArrayLayer = 0;
-			desc.arrayLayerCount = 1;
-			m_frameContext.depthTarget = m_depthtexture.CreateView(&desc);
-		}
-
-		//color
-		//{
-		//	wgpu::textureDescriptor desc;
-		//	desc.label = "rendererColortexture";
-		//	desc.dimension = wgpu::textureDimension::e2D;
-		//	desc.format = graphicsContext::GetSurfaceFormat();
-		//	desc.mipLevelCount = 1;
-		//	desc.sampleCount = 1;
-		//	desc.size = { width, height, 1 };
-		//	desc.usage = wgpu::textureUsage::RenderAttachment | wgpu::textureUsage::textureBinding;
-		//	m_colortexture = engine::graphicsContext::GetDevice().Createtexture(&desc);
-		//}
-
-		//{
-		//	wgpu::textureViewDescriptor desc;
-		//	desc.label = "rendererColortextureView";
-		//	desc.aspect = wgpu::textureAspect::Undefined;
-		//	desc.dimension = wgpu::textureViewDimension::e2D;
-		//	desc.format = m_colortexture.GetFormat();
-		//	desc.baseMipLevel = 0;
-		//	desc.mipLevelCount = 1;
-		//	desc.baseArrayLayer = 0;
-		//	desc.arrayLayerCount = 1;
-		//	m_frameContext.colorTarget = m_colortexture.CreateView(&desc);
-		//}
+		wgpu::TextureViewDescriptor viewDesc;
+		viewDesc.label = "rendererDepthtextureView";
+		viewDesc.aspect = wgpu::TextureAspect::DepthOnly;
+		viewDesc.dimension = wgpu::TextureViewDimension::e2D;
+		viewDesc.format = m_depthtexture.GetFormat();
+		viewDesc.baseMipLevel = 0;
+		viewDesc.mipLevelCount = 1;
+		viewDesc.baseArrayLayer = 0;
+		viewDesc.arrayLayerCount = 1;
+		m_frameContext.depthTarget = m_depthtexture.CreateView(&viewDesc);
 	}
 
-	void Renderer::SetEnvironment(TextureHandle texture)
+	void RendererCore::SetEnvironment(TextureHandle texture)
 	{
-		m_frameContext.environment = EnvironmentBaker::BakeEnvironment(texture);
+		m_frameContext.environment = BakeEnvironment(texture);
 		CreateEnvironmentBindGroup();
 	}
 
-	void Renderer::CreateEnvironmentUniformBuffer()
+	void RendererCore::CreateEnvironmentUniformBuffer()
 	{
 		wgpu::BufferDescriptor desc;
 		desc.label = "EnvironmentUniformBuffer";
@@ -154,7 +116,7 @@ namespace engine
 		m_environmentUniformBuffer = graphicsContext::GetDevice().CreateBuffer(&desc);
 	}
 
-	void Renderer::CreateEnvironmentBindGroup()
+	void RendererCore::CreateEnvironmentBindGroup()
 	{
 		std::array<wgpu::BindGroupEntry, 8> entries;
 
@@ -177,19 +139,19 @@ namespace engine
 		// 1 - EnvironmentMap
 		{
 			entries[1].binding = 1;
-			entries[1].textureView = m_frameContext.environment.EnvironmentMap.GettextureView();
+			entries[1].textureView = m_frameContext.environment.EnvironmentMap.textureView;
 		}
 
 		// 2 - IrradianceMap
 		{
 			entries[2].binding = 2;
-			entries[2].textureView = m_frameContext.environment.IrradianceMap.GettextureView();
+			entries[2].textureView = m_frameContext.environment.IrradianceMap.textureView;
 		}
 
 		// 3 - PrefilteredSpecularMap
 		{
 			entries[3].binding = 3;
-			entries[3].textureView = m_frameContext.environment.PrefilteredSpecularMap.GettextureView();
+			entries[3].textureView = m_frameContext.environment.PrefilteredSpecularMap.textureView;
 		}
 
 		// 4 - BRDFIntMap
@@ -235,7 +197,7 @@ namespace engine
 		m_frameContext.environmentBindGroup = graphicsContext::GetDevice().CreateBindGroup(&desc);
 	}
 
-	void Renderer::CreateShadowtexture()
+	void RendererCore::CreateShadowtexture()
 	{
 		wgpu::TextureFormat format = wgpu::TextureFormat::Depth24Plus;
 
@@ -276,11 +238,10 @@ namespace engine
 		m_frameContext.depthtextureArrayView = texture.CreateView(&arrayViewDesc);
 	}
 
-	void Renderer::Render(const DrawList& drawList, const component::Camera* camera, wgpu::TextureView targetView)
+	wgpu::CommandEncoder RendererCore::BeginFrame(const component::Camera* camera, const DrawList& drawList)
 	{
 		m_frameContext.drawList = drawList;
 		m_frameContext.camera = camera;
-		m_frameContext.colorTarget = targetView;
 
 		wgpu::Queue queue = graphicsContext::GetQueue();
 
@@ -292,14 +253,13 @@ namespace engine
 		const std::vector<glm::mat4>& modelMatrices = m_frameContext.drawList.transforms;
 		queue.WriteBuffer(m_modelStorageBuffer, 0, modelMatrices.data(), modelMatrices.size() * sizeof(glm::mat4));
 
-		wgpu::CommandEncoder encoder = graphicsContext::GetDevice().CreateCommandEncoder();
+		return graphicsContext::GetDevice().CreateCommandEncoder();
+	}
 
-		for (auto& pass : m_passes)
-		{
-			if (pass->enabled) pass->Execute(encoder, m_frameContext);
-		}
-
+	void RendererCore::EndFrame(wgpu::CommandEncoder encoder, wgpu::TextureView targetView)
+	{
+		m_frameContext.colorTarget = targetView;
 		wgpu::CommandBuffer commandBuffer = encoder.Finish();
-		queue.Submit(1, &commandBuffer);
+		graphicsContext::GetQueue().Submit(1, &commandBuffer);
 	}
 }

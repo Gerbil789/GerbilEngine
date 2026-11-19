@@ -4,9 +4,8 @@
 
 namespace editor
 {
-	class textureInspectorPanel
+	struct TextureInspectorPanel
 	{
-	public:
 		void Draw(engine::TextureHandle handle);
 	};
 }

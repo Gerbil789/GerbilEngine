@@ -45,8 +45,6 @@ namespace engine
 		std::vector<Kerning> kerning;
     Metrics metrics;
 
-
-
 		std::unordered_map<uint32_t, Glyph*> glyphMap;
 
     Glyph* GetGlyph(uint32_t unicode) const
@@ -75,9 +73,8 @@ namespace engine
 		std::vector<Font> variants;
   };
 
-	class FontManager
+	struct FontManager
 	{
-	public:
     static void Initialize();
     static void Shutdown();
 

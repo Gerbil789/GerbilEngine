@@ -23,10 +23,10 @@ namespace editor
 
 	inline void SaveScene()
 	{
-		engine::SceneHandle handle = engine::Context::activeSceneHandle;
+		engine::SceneHandle handle = engine::context::activeSceneHandle;
 		auto& path = engine::assetRegistry::GetassetPath(handle);
 
-		engine::serializer::SerializeScene(handle, engine::Context::assetsDirectory / path);
+		engine::serializer::SerializeScene(handle, engine::context::assetsDirectory / path);
 	}
 
 	static const std::vector<MenuCategory> MainMenuBar

@@ -2,7 +2,7 @@
 #include "editor/core/editor_context.h"
 #include "editor/windows/viewport/viewport_camera_controller.h"
 #include "editor/windows/viewport/transform_controller.h"
-#include "editor/core/editor_command_manager.h"
+#include "engine/core/command_manager.h"
 #include "editor/windows/utility/scoped_style.h"
 #include "engine/core/context.h"
 #include "engine/graphics/graphics_context.h"
@@ -15,7 +15,7 @@ namespace editor
 {
 	namespace
 	{
-		viewportCameraController m_cameraController;
+		ViewportCameraController m_cameraController;
 		TransformController m_transformController; //gizmo
 
 		glm::vec2 m_viewportBounds[2] = { { 0.0f, 0.0f },{ 0.0f, 0.0f } };
@@ -25,7 +25,7 @@ namespace editor
 		wgpu::TextureView m_textureView;
 	}
 
-	void viewportWindow::Initialize()
+	void ViewportWindow::Initialize()
 	{
 		m_transformController.Initialize();
 	}
@@ -90,7 +90,7 @@ namespace editor
 			{
 				if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
 				{
-					EditorCommandManager::Enqueue([](){
+					engine::CommandManager::Enqueue([](){
 						editor::context::editorMode = EditorMode::Play;
 					});
 				}
@@ -99,7 +99,7 @@ namespace editor
 			{
 				if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
 				{
-					EditorCommandManager::Enqueue([](){
+					engine::CommandManager::Enqueue([](){
 						editor::context::editorMode = EditorMode::Edit;
 						//engine::audio::StopAll();
 						//engine::input::SetCursorMode(engine::input::CursorMode::Normal);
@@ -112,7 +112,7 @@ namespace editor
 		ImGui::EndChild();
 	}
 
-	void viewportWindow::Draw()
+	void ViewportWindow::Draw()
 	{
 		ScopedStyle style
 		{
@@ -132,7 +132,7 @@ namespace editor
 		ImVec2 imagePos = ImGui::GetCursorPos();
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		const engine::Scene& scene = engine::Context::activeSceneHandle.Get();
+		const engine::Scene& scene = engine::context::activeSceneHandle.Get();
 		engine::DrawList drawList = engine::DrawList::Create(scene.registry);
 		const engine::component::Camera* camera = editor::context::editorMode == EditorMode::Edit ? 
 		&editor::context::camera : scene.registry.try_get<engine::component::Camera>(scene.primaryCameraEntity);

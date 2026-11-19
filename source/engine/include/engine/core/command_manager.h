@@ -3,9 +3,9 @@
 #include <vector>
 #include <functional>
 
-namespace editor
+namespace engine
 {
-  struct EditorCommandManager
+  struct CommandManager
   {
     static void Enqueue(std::function<void()> action);
     static void ExecuteDeferred();

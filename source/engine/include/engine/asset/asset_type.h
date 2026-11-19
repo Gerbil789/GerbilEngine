@@ -2,5 +2,5 @@
 
 namespace engine
 {
-  enum class assetType { Unknown = 0, texture, Mesh, Shader, Material, MaterialInstance, AudioClip, Scene };
+  enum class AssetType { Unknown = 0, texture, Mesh, Shader, Material, MaterialInstance, AudioClip, Scene };
 }

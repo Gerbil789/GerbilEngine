@@ -2,7 +2,7 @@
 
 namespace editor
 {
-	struct content_browserWindow
+	struct ContentBrowserWindow
 	{
 		void Initialize();
 		void Draw();

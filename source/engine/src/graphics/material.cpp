@@ -3,7 +3,6 @@
 #include "engine/graphics/graphics_context.h"
 #include "engine/graphics/renderer/renderer.h"
 #include "engine/graphics/texture/texture_2d.h"
-#include "engine/asset/asset_manager.h"
 
 namespace engine
 {

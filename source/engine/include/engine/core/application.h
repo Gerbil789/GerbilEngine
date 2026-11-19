@@ -7,15 +7,15 @@ namespace engine
 {
 	struct Application
 	{
-		static engine::Window s_window;
-		static engine::Renderer s_renderer;
-		static bool s_running;
+		inline static Window s_window;
+		inline static Renderer<BackgroundPass, OpaquePass> s_renderer;
+		inline static bool s_running = true;
 
 		struct Configuration
 		{
 			std::filesystem::path projectPath;
-			engine::WindowSpecification windowSpec;
-			engine::SceneHandle startupScene;
+			WindowSpecification windowSpec;
+			SceneHandle startupScene;
 		};
 
 		Application(const Configuration& config);

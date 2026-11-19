@@ -10,12 +10,12 @@ namespace editor
 {
 	namespace
 	{
-		textureInspectorPanel m_texturePanel;
+		TextureInspectorPanel m_texturePanel;
 		ShaderInspectorPanel m_shaderPanel;
 		AudioInspectorPanel m_audioPanel;
 	}
 	
-	void asset_inspectorWindow::Draw()
+	void AssetInspectorWindow::Draw()
 	{
 		ImGui::Begin("Inspector");
 
@@ -23,15 +23,15 @@ namespace editor
 
 		switch (asset.type)
 		{
-		case engine::assetType::texture:
+		case engine::AssetType::texture:
 			m_texturePanel.Draw(engine::TextureHandle{ asset.id });
 			break;
 
-		case engine::assetType::Shader:
+		case engine::AssetType::Shader:
 			m_shaderPanel.Draw(engine::ShaderHandle{ asset.id });
 			break;
 
-		case engine::assetType::AudioClip:
+		case engine::AssetType::AudioClip:
 			m_audioPanel.Draw(engine::AudioClipHandle{ asset.id });
 			break;
 

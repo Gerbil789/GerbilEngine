@@ -63,8 +63,8 @@ namespace engine
 			Save();
 		}
 
-		static assetType GetassetType(const std::filesystem::path& path);
-		static assetType GetassetType(Uuid id);
+		static AssetType GetassetType(const std::filesystem::path& path);
+		static AssetType GetassetType(Uuid id);
 
 		template<typename T>
 		static const assetMap<Handle<T>>& GetRecords()

@@ -31,9 +31,8 @@ namespace std
 
 namespace engine
 {
-	class SamplerPool
+	struct SamplerPool
 	{
-	public:
 		static void Initialize();
 		static void Shutdown();
 
@@ -44,9 +43,7 @@ namespace engine
 
 	private:
 		inline static std::unordered_map<SamplerKey, wgpu::Sampler> s_samplers;
-
 		static wgpu::Sampler CreateSampler(wgpu::Device device, wgpu::FilterMode minMag, wgpu::MipmapFilterMode mip, wgpu::AddressMode mode);
-
 	};
 }
 

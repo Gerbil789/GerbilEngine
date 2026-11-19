@@ -88,17 +88,17 @@ namespace engine
 		return bindGroup;
 	}
 
-	textureCube EquirectangularToCubemap(TextureHandle equirectangulartexture)
+	TextureCube EquirectangularToCubemap(TextureHandle equirectangularTextureHandle)
 	{
-		const Texture2D& source = equirectangulartexture.Get();
+		const Texture2D& source = equirectangularTextureHandle.Get();
 
 		assert(source.width == source.height * 2 && "Equirectangular texture must have a 2:1 aspect ratio.");
 
-		textureCubeSpecification spec;
+		TextureCubeSpecification spec;
 		spec.size = source.height / 2;
 		spec.format = source.textureFormat;
 		spec.mipCount = 1;
-		textureCube textureCube(spec);
+		TextureCube textureCube(spec);
 
 		// view for WRITING to the 6 faces of the target cubemap (Mip Level 0)
 		wgpu::TextureViewDescriptor targetViewDesc;
@@ -110,7 +110,7 @@ namespace engine
 		targetViewDesc.baseArrayLayer = 0;
 		targetViewDesc.arrayLayerCount = 6;   // write to all 6 faces
 		targetViewDesc.aspect = wgpu::TextureAspect::All;
-		wgpu::TextureView targetWriteView = textureCube.Gettexture().CreateView(&targetViewDesc);
+		wgpu::TextureView targetWriteView = textureCube.texture.CreateView(&targetViewDesc);
 
 		wgpu::BindGroupLayout bindGroupLayout = CreateBindGroupLayout(spec.format);
 		wgpu::ComputePipeline pipeline = CreateComputePipeline(bindGroupLayout);
@@ -174,8 +174,6 @@ namespace engine
 			if (level > 0)
 			{
 				wgpu::Extent3D previousSize = textureMipSizes[level - 1];
-				//textureMipSizes[level] = { previousSize.width / 2, previousSize.height / 2, 6 };
-
 				textureMipSizes[level] = {std::max(1u, previousSize.width / 2), std::max(1u, previousSize.height / 2), 6};
 			}
 		}

@@ -1,13 +1,13 @@
-#include "editor/core/editor_command_manager.h"
+#include "engine/core/command_manager.h"
 
-namespace editor
+namespace engine
 {
-  void EditorCommandManager::Enqueue(std::function<void()> action)
+  void CommandManager::Enqueue(std::function<void()> action)
   {
     s_deferredActions.push_back(std::move(action));
   }
 
-  void EditorCommandManager::ExecuteDeferred()
+  void CommandManager::ExecuteDeferred()
   {
     if (s_deferredActions.empty()) return;
 

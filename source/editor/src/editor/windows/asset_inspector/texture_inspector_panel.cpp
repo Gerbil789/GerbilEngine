@@ -1,13 +1,13 @@
 #include "texture_inspector_panel.h"
 #include "engine/asset/asset_registry.h"
 #include "engine/graphics/texture/texture_2d.h"
-#include <imgui.h>
 #include <string>
 #include <format>
+#include <imgui.h>
 
 namespace editor
 {
-	void textureInspectorPanel::Draw(engine::TextureHandle handle)
+	void TextureInspectorPanel::Draw(engine::TextureHandle handle)
 	{
 		const std::string& name = engine::assetRegistry::GetassetPath(handle).stem().string();
 		const engine::Texture2D& texture = handle.Get();

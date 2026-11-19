@@ -8,20 +8,20 @@
 #include <type_traits>
 #include <glm/gtc/type_ptr.hpp>
 
-namespace engine { enum class assetType; }
+namespace engine { enum class AssetType; }
 
 namespace editor
 {
 	template <typename Handle>
-	constexpr engine::assetType GetassetType();
+	constexpr engine::AssetType GetassetType();
 
-	template <> constexpr engine::assetType GetassetType<engine::MeshHandle>() { return engine::assetType::Mesh; }
-	template <> constexpr engine::assetType GetassetType<engine::ShaderHandle>() { return engine::assetType::Shader; }
-	template <> constexpr engine::assetType GetassetType<engine::MaterialHandle>() { return engine::assetType::Material; }
-	template <> constexpr engine::assetType GetassetType<engine::MaterialInstanceHandle>() { return engine::assetType::MaterialInstance; }
-	template <> constexpr engine::assetType GetassetType<engine::SceneHandle>() { return engine::assetType::Scene; }
-	template <> constexpr engine::assetType GetassetType<engine::TextureHandle>() { return engine::assetType::texture; }
-	template <> constexpr engine::assetType GetassetType<engine::AudioClipHandle>() { return engine::assetType::AudioClip; }
+	template <> constexpr engine::AssetType GetassetType<engine::MeshHandle>() { return engine::AssetType::Mesh; }
+	template <> constexpr engine::AssetType GetassetType<engine::ShaderHandle>() { return engine::AssetType::Shader; }
+	template <> constexpr engine::AssetType GetassetType<engine::MaterialHandle>() { return engine::AssetType::Material; }
+	template <> constexpr engine::AssetType GetassetType<engine::MaterialInstanceHandle>() { return engine::AssetType::MaterialInstance; }
+	template <> constexpr engine::AssetType GetassetType<engine::SceneHandle>() { return engine::AssetType::Scene; }
+	template <> constexpr engine::AssetType GetassetType<engine::TextureHandle>() { return engine::AssetType::texture; }
+	template <> constexpr engine::AssetType GetassetType<engine::AudioClipHandle>() { return engine::AssetType::AudioClip; }
 
 	enum class DisplayMode
 	{
@@ -99,13 +99,13 @@ namespace editor
 
 	struct AssetPayload
 	{
-		engine::assetType type;
+		engine::AssetType type;
 		engine::Uuid id;
 	};
 
 	struct DragDropSource
 	{
-		DragDropSource(engine::assetType type, engine::Uuid id, std::string_view label = "")
+		DragDropSource(engine::AssetType type, engine::Uuid id, std::string_view label = "")
 		{
 			if (ImGui::BeginDragDropSource())
 			{
@@ -137,7 +137,7 @@ namespace editor
 
 			if (!active) return false;
 
-			engine::assetType expectedType = GetassetType<Handle>();
+			engine::AssetType expectedType = GetassetType<Handle>();
 			const ImGuiPayload* payload = ImGui::GetDragDropPayload();
 
 			bool isValidasset = false;
@@ -211,7 +211,7 @@ namespace editor
 		result.started = ImGui::IsItemActivated();
 		result.finished = ImGui::IsItemDeactivatedAfterEdit();
 
-		engine::assetType type = GetassetType<Handle>();
+		engine::AssetType type = GetassetType<Handle>();
 		DragDropSource(type, handle.id, assetName);
 		result.changed |= DragDropTarget{}.Acceptasset<Handle>([&handle](Handle newHandle) { handle = newHandle; });
 

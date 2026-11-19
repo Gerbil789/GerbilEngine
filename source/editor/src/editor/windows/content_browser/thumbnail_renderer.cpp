@@ -32,7 +32,7 @@ namespace editor
 		std::unordered_map<Icon, engine::Sprite> m_icons;
 		std::unordered_map<engine::Uuid, engine::Sprite> m_thumbnailCache;
 
-		engine::Renderer renderer;
+		engine::Renderer<engine::BackgroundPass, engine::OpaquePass> renderer;
 		engine::component::Camera camera;
 
 		constexpr int AtlasSizePx = 2048;
@@ -47,7 +47,7 @@ namespace editor
 		wgpu::TextureView m_depthView;
 	}
 
-	void Thumbnailrenderer::Initialize()
+	void ThumbnailRenderer::Initialize()
 	{
 		camera.backgroundMode = engine::component::Camera::Background::Color;
 		camera.projection = engine::component::Camera::Projection::Perspective;
@@ -55,8 +55,6 @@ namespace editor
 		engine::Camerasystem::UpdateCameraProjectionMatrix(camera, 1.0f);
 
 		renderer.Initialize(64, 64);
-		renderer.Addpass<engine::Backgroundpass>();
-		renderer.Addpass<engine::Opaquepass>();
 
 		for (const auto& [icon, coords] : IconMap)
 		{
@@ -144,7 +142,7 @@ namespace editor
 		return sprite;
 	}
 
-	const engine::Sprite& Thumbnailrenderer::GetassetThumbnail(engine::Uuid id, engine::assetType type)
+	const engine::Sprite& ThumbnailRenderer::GetassetThumbnail(engine::Uuid id, engine::AssetType type)
 	{
 		if (m_thumbnailCache.contains(id))
 		{
@@ -155,25 +153,25 @@ namespace editor
 
 		switch (type)
 		{
-		case engine::assetType::texture:
+		case engine::AssetType::texture:
 			sprite.textureHandle = engine::TextureHandle{ id };
 			break;
-		case engine::assetType::Shader:
+		case engine::AssetType::Shader:
 			sprite = GeteditorIcon(Icon::Text);
 			break;
-		case engine::assetType::Material:
+		case engine::AssetType::Material:
 			sprite = GeteditorIcon(Icon::Unknown); //TODO
 			break;
-		case engine::assetType::MaterialInstance:
+		case engine::AssetType::MaterialInstance:
 			sprite = RenderToAtlas(engine::mesh::Sphere, engine::MaterialInstanceHandle{ id });
 			break;
-		case engine::assetType::Mesh:
+		case engine::AssetType::Mesh:
 			sprite = RenderToAtlas(engine::MeshHandle{ id }, engine::material_instance::White);
 			break;
-		case engine::assetType::Scene:
+		case engine::AssetType::Scene:
 			sprite = GeteditorIcon(Icon::Scene);
 			break;
-		case engine::assetType::AudioClip:
+		case engine::AssetType::AudioClip:
 			sprite = GeteditorIcon(Icon::audio);
 			break;
 		default:
@@ -186,7 +184,7 @@ namespace editor
 	}
 
 
-	const engine::Sprite& Thumbnailrenderer::GeteditorIcon(Icon icon)
+	const engine::Sprite& ThumbnailRenderer::GeteditorIcon(Icon icon)
 	{
 		if (m_icons.contains(icon))
 		{

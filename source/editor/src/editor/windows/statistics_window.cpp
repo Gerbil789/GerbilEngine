@@ -1,5 +1,4 @@
 #include "statistics_window.h"
-#include "engine/graphics/renderer/renderer.h"
 #include "engine/core/time.h"
 #include <imgui.h>
 

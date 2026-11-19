@@ -1,5 +1,6 @@
 #include "editor/windows/viewport/transform_controller.h"
 #include "editor/core/editor_context.h"
+#include "engine/core/scene.h"
 #include "engine/core/input.h"
 #include "engine/core/context.h"
 #include "engine/core/components.h"
@@ -46,7 +47,7 @@ namespace editor
 		glm::mat4 cameraProjection = editor::context::camera.projectionMatrix;
 		glm::mat4 cameraView = editor::context::camera.viewMatrix;
 
-		engine::Scene& scene = engine::Context::activeSceneHandle.Get();
+		engine::Scene& scene = engine::context::activeSceneHandle.Get();
 
 		engine::component::WorldTransform& wtc = scene.registry.get<engine::component::WorldTransform>(editor::context::currentSelection.primary);
 		glm::mat4& worldTransform = wtc.worldMatrix;

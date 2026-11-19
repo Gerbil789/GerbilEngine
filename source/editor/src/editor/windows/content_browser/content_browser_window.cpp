@@ -4,9 +4,11 @@
 #include "editor/windows/utility/property.h"
 #include "editor/utility/file.h"
 #include "editor/core/editor_context.h"
+#include "engine/core/command_manager.h"
 #include "engine/core/context.h"
 #include "engine/asset/asset_manager.h"
 #include "engine/asset/asset_registry.h"
+#include "engine/core/log.h"
 #include <imgui_internal.h>
 
 namespace editor
@@ -25,12 +27,12 @@ namespace editor
 
 			// asset data
 			engine::Uuid uuid{};
-			engine::assetType assetType = engine::assetType::Unknown;
+			engine::AssetType assetType = engine::AssetType::Unknown;
 
 			engine::Sprite thumbnail{};
 		};
 
-		Thumbnailrenderer m_thumbnailrenderer;
+		ThumbnailRenderer m_thumbnailRenderer;
 
 		ImVec2 m_itemSize{ 64.0f, 64.0f };
 		int m_columnCount = 0;
@@ -66,14 +68,14 @@ namespace editor
 						.path = path,
 						.id = static_cast<ImGuiID>(std::hash<std::string>{}(path.string())),
 						.itemType = ItemType::Directory,
-						.thumbnail = m_thumbnailrenderer.GeteditorIcon(icon)
+						.thumbnail = m_thumbnailRenderer.GeteditorIcon(icon)
 
 					});
       } 
 			else if (entry.is_regular_file()) 
 			{
 				engine::Uuid id = engine::assetRegistry::GetId(entry.path());
-				engine::assetType type = engine::assetRegistry::GetassetType(entry.path());
+				engine::AssetType type = engine::assetRegistry::GetassetType(entry.path());
 
 				m_items.emplace_back(
 					Item
@@ -85,7 +87,7 @@ namespace editor
 
 						.uuid = id,
 						.assetType = type,
-						.thumbnail = m_thumbnailrenderer.GetassetThumbnail(id, type)
+						.thumbnail = m_thumbnailRenderer.GetassetThumbnail(id, type)
 					}
 				);
       }
@@ -105,16 +107,16 @@ namespace editor
 
 		ImGui::BeginChild("NavBar", ImVec2(0, 24), ImGuiChildFlags_None, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-		const std::filesystem::path& relativePath = std::filesystem::relative(m_currentDirectory, engine::Context::assetsDirectory);
-		std::filesystem::path pathSoFar = engine::Context::assetsDirectory;
+		const std::filesystem::path& relativePath = std::filesystem::relative(m_currentDirectory, engine::context::assetsDirectory);
+		std::filesystem::path pathSoFar = engine::context::assetsDirectory;
 
 		if (ImGui::Button("assets"))
 		{
-			m_currentDirectory = engine::Context::assetsDirectory;
+			m_currentDirectory = engine::context::assetsDirectory;
 			RefreshDirectory();
 		}
 
-		if (m_currentDirectory != engine::Context::assetsDirectory)
+		if (m_currentDirectory != engine::context::assetsDirectory)
 		{
 			for (const auto& component : relativePath)
 			{
@@ -352,8 +354,12 @@ namespace editor
 							{
 								switch (item.assetType)
 								{
-								case engine::assetType::Scene:
-									// editorcommandManager::OpenScene(engine::SceneHandle{ item.uuid });
+								case engine::AssetType::Scene:
+									engine::CommandManager::Enqueue([id = item.uuid]{
+										if (id == engine::context::activeSceneHandle.id) return;
+										engine::context::activeSceneHandle = engine::SceneHandle{id};
+      							LOG_INFO("Active scene set to '{}' ({})", engine::assetRegistry::GetassetPath(engine::context::activeSceneHandle).filename(), id);
+									});
 									break;
 								default: {}
 								}
@@ -389,15 +395,15 @@ namespace editor
 		}
 	}
 
-	void content_browserWindow::Initialize()
+	void ContentBrowserWindow::Initialize()
 	{
-		m_thumbnailrenderer.Initialize();
-		m_currentDirectory = engine::Context::assetsDirectory;
+		m_thumbnailRenderer.Initialize();
+		m_currentDirectory = engine::context::assetsDirectory;
 
 		RefreshDirectory();
 	}
 
-	void content_browserWindow::Draw()
+	void ContentBrowserWindow::Draw()
 	{
 		ImGui::Begin("Content Browser", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 		DrawNavigationBar();

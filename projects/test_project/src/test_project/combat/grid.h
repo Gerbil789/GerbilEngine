@@ -13,9 +13,8 @@ struct Tile
   bool IsOccupied() const { return entityId; }
 };
 
-class Grid 
+struct Grid 
 {
-public:
 	Grid() = default;
   Grid(int width, int height);
 

@@ -3,7 +3,7 @@
 
 namespace engine
 {
-  void Opaquepass::Execute(wgpu::CommandEncoder& encoder, const FrameContext& context)
+  void OpaquePass::Execute(wgpu::CommandEncoder& encoder, const FrameContext& context)
   {
     wgpu::RenderPassColorAttachment color;
     color.view = context.colorTarget;

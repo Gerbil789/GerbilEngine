@@ -4,34 +4,27 @@
 
 namespace engine
 {
-	struct textureCubeSpecification
+	struct TextureCubeSpecification
 	{
 		uint32_t size = 1;
 		uint32_t mipCount;
 		wgpu::TextureFormat format = wgpu::TextureFormat::RGBA16Float;
 	};
 
-	class textureCube
+	struct TextureCube
 	{
-	public:
-		textureCube() = default;
-		textureCube(const textureCubeSpecification& specification);
+		uint32_t size = 0;
+		wgpu::Texture texture;
+		wgpu::TextureView textureView;
+		wgpu::TextureFormat textureFormat;
 
-		textureCube(textureCube&&) noexcept = default;
-		textureCube& operator=(textureCube&&) noexcept = default;
+		TextureCube() = default;
+		TextureCube(const TextureCubeSpecification& specification);
 
-		textureCube(const textureCube&) = delete;
-		textureCube& operator=(const textureCube&) = delete;
+		TextureCube(TextureCube&&) noexcept = default;
+		TextureCube& operator=(TextureCube&&) noexcept = default;
 
-		uint32_t GetSize() const { return m_size; }
-		wgpu::Texture Gettexture() const { return m_texture; }
-		wgpu::TextureView GettextureView() const { return m_textureView; }
-		wgpu::TextureFormat GetFormat() const { return m_textureFormat; }
-
-	private:
-		uint32_t m_size = 0;
-		wgpu::Texture m_texture;
-		wgpu::TextureView m_textureView;
-		wgpu::TextureFormat m_textureFormat;
+		TextureCube(const TextureCube&) = delete;
+		TextureCube& operator=(const TextureCube&) = delete;
 	};
 }

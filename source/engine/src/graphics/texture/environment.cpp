@@ -8,35 +8,24 @@
 
 namespace engine
 {
-	Environment EnvironmentBaker::BakeEnvironment(TextureHandle equirectangulartexture)
+	static TextureCube CreateIrradianceMap(const TextureCube& sourceCubemap)
 	{
-    Environment env;
-    env.EnvironmentMap = EquirectangularToCubemap(equirectangulartexture);
-    env.IrradianceMap = CreateIrradianceMap(env.EnvironmentMap);
-    env.PrefilteredSpecularMap = CreatePrefilteredSpecularMap(env.EnvironmentMap);
-		return env;
-	}
-
-	textureCube EnvironmentBaker::CreateIrradianceMap(const textureCube& sourceCubemap)
-	{
-		wgpu::TextureFormat format = sourceCubemap.GetFormat();
-
-    textureCubeSpecification spec;
+    TextureCubeSpecification spec;
     spec.size = 64;
-    spec.format = format;
+    spec.format = sourceCubemap.textureFormat;
 		spec.mipCount = 1;
-    textureCube irradianceMap(spec);
+    TextureCube irradianceMap(spec);
 
 		wgpu::TextureViewDescriptor targetViewDesc;
 		targetViewDesc.label = "IrradiancetextureView";
 		targetViewDesc.dimension = wgpu::TextureViewDimension::e2DArray;
-		targetViewDesc.format = format;
+		targetViewDesc.format = sourceCubemap.textureFormat;
 		targetViewDesc.baseMipLevel = 0;
 		targetViewDesc.mipLevelCount = 1;
 		targetViewDesc.baseArrayLayer = 0;
 		targetViewDesc.arrayLayerCount = 6;
 		targetViewDesc.aspect = wgpu::TextureAspect::All;
-		wgpu::TextureView targetView = irradianceMap.Gettexture().CreateView(&targetViewDesc);
+		wgpu::TextureView targetView = irradianceMap.texture.CreateView(&targetViewDesc);
 
 
 		std::array<wgpu::BindGroupLayoutEntry, 3> bindings;
@@ -52,7 +41,7 @@ namespace engine
 
 		bindings[2].binding = 2;
 		bindings[2].storageTexture.access = wgpu::StorageTextureAccess::WriteOnly;
-		bindings[2].storageTexture.format = format;
+		bindings[2].storageTexture.format = sourceCubemap.textureFormat;
 		bindings[2].storageTexture.viewDimension = wgpu::TextureViewDimension::e2DArray;
 		bindings[2].visibility = wgpu::ShaderStage::Compute;
 
@@ -87,7 +76,7 @@ namespace engine
 		entries[0].sampler = linearSampler;
 
 		entries[1].binding = 1;
-		entries[1].textureView = sourceCubemap.GettextureView();
+		entries[1].textureView = sourceCubemap.textureView;
 
 		entries[2].binding = 2;
 		entries[2].textureView = targetView;
@@ -107,7 +96,7 @@ namespace engine
 		computepass.SetPipeline(computePipeline);
 		computepass.SetBindGroup(0, bindGroup, 0, nullptr);
 
-		uint32_t irradianceSize = irradianceMap.GetSize();
+		uint32_t irradianceSize = irradianceMap.size;
 		uint32_t workgroupSizePerDim = 8;
 		uint32_t workgroupCountX = (irradianceSize + workgroupSizePerDim - 1) / workgroupSizePerDim;
 		uint32_t workgroupCountY = (irradianceSize + workgroupSizePerDim - 1) / workgroupSizePerDim;
@@ -121,19 +110,19 @@ namespace engine
     return irradianceMap;
 	}
 
-	textureCube EnvironmentBaker::CreatePrefilteredSpecularMap(const textureCube& sourceCubemap)
+	static TextureCube CreatePrefilteredSpecularMap(const TextureCube& sourceCubemap)
 	{
 		constexpr double PREFILTER_SIZE = 256.0; // size of the prefiltered specular map
 
-		wgpu::TextureFormat format = sourceCubemap.GetFormat();
+		wgpu::TextureFormat format = sourceCubemap.textureFormat;
 		wgpu::Extent3D baseSize = { static_cast<uint32_t>(PREFILTER_SIZE), static_cast<uint32_t>(PREFILTER_SIZE), 6 };
 		uint32_t mipCount = GetMaxMipLevelCount(baseSize.width, baseSize.height);
 
-    textureCubeSpecification spec;
+    TextureCubeSpecification spec;
     spec.size = static_cast<uint32_t>(PREFILTER_SIZE);
     spec.format = format;
     spec.mipCount = mipCount;
-    textureCube prefilteredSpecularMap(spec);
+    TextureCube prefilteredSpecularMap(spec);
 
 		std::vector<wgpu::TextureView> textureMipViews;
 		std::vector<wgpu::Extent3D> textureMipSizes;
@@ -158,7 +147,7 @@ namespace engine
 				std::string label = std::format("PrefilteredSpecularMipLevel#{}", level);
 				textureViewDesc.label = label.c_str();
 				textureViewDesc.baseMipLevel = level;
-				textureMipViews.push_back(prefilteredSpecularMap.Gettexture().CreateView(&textureViewDesc));
+				textureMipViews.push_back(prefilteredSpecularMap.texture.CreateView(&textureViewDesc));
 
 				if (level > 0)
 				{
@@ -227,7 +216,7 @@ namespace engine
 				entries[0].sampler = linearSampler;
 
 				entries[1].binding = 1;
-				entries[1].textureView = sourceCubemap.GettextureView();
+				entries[1].textureView = sourceCubemap.textureView;
 
 				entries[2].binding = 2;
 				entries[2].textureView = textureMipViews[nextLevel];
@@ -266,5 +255,14 @@ namespace engine
 		engine::graphicsContext::GetQueue().Submit(1, &commandBuffer);
 
     return prefilteredSpecularMap;
+	}
+
+	Environment BakeEnvironment(TextureHandle equirectangularTextureHandle)
+	{
+    Environment env;
+    env.EnvironmentMap = EquirectangularToCubemap(equirectangularTextureHandle);
+    env.IrradianceMap = CreateIrradianceMap(env.EnvironmentMap);
+    env.PrefilteredSpecularMap = CreatePrefilteredSpecularMap(env.EnvironmentMap);
+		return env;
 	}
 }

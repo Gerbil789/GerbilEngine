@@ -2,7 +2,6 @@
 #include "engine/core/log.h"
 #include "editor/core/editor_context.h"
 #include "editor/core/editor_renderer.h"
-#include "editor/core/editor_command_manager.h"
 #include "engine/system/camera_system.h"
 
 namespace editor
@@ -30,7 +29,6 @@ namespace editor
 		m_app.Update();
 
 		EditorRenderer::Update();
-		EditorCommandManager::ExecuteDeferred();
 		editor::context::UpdateSelection();
 	}
 }

@@ -10,6 +10,8 @@ namespace engine
 		{
 			system(*this);
 		}
+
+		DeleteMarkedEntities();
 	}
 
 	void Scene::Registersystem(std::function<void(Scene&)> system)

@@ -13,11 +13,11 @@ namespace editor
 		engine::MaterialInstanceHandle s_materialInstanceHandle = engine::material_instance::Pink;
 	}
 
-	void MaterialeditorWindow::Draw()
+	void MaterialEditorWindow::Draw()
 	{
 		ImGui::Begin("Material Instance");
 
-		if(editor::context::selectedasset.type == engine::assetType::MaterialInstance)
+		if(editor::context::selectedasset.type == engine::AssetType::MaterialInstance)
 		{
 			s_materialInstanceHandle = engine::MaterialInstanceHandle{editor::context::selectedasset.id};
 		}

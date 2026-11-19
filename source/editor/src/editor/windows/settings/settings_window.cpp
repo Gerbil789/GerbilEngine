@@ -7,9 +7,9 @@
 
 namespace editor
 {
-	void settingsWindow::Draw()
+	void SettingsWindow::Draw()
 	{
-		engine::Scene& scene = engine::Context::activeSceneHandle.Get();
+		engine::Scene& scene = engine::context::activeSceneHandle.Get();
 
 		ImGui::Begin("settings");
 

@@ -16,9 +16,8 @@ namespace engine
     uint32_t isLeaf;            // 0 = internal node, 1 = leaf node
   };
 
-  class BoundingVolumeHiearchy
+  struct BoundingVolumeHiearchy
   {
-  public:
     std::vector<BVHNode> nodes;
 
     void Build(const entt::registry& registry); //TLAS

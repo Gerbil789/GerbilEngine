@@ -2,7 +2,7 @@
 
 namespace editor
 {
-	struct MaterialeditorWindow
+	struct MaterialEditorWindow
 	{
 		void Draw();
 	};

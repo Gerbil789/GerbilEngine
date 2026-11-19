@@ -3,6 +3,7 @@
 #include "editor/windows/utility/scoped_style.h"
 #include "engine/core/context.h"
 #include "engine/core/components.h"
+#include "engine/core/scene.h"
 #include "engine/core/log.h"
 #include <imgui.h>
 
@@ -138,7 +139,7 @@ namespace editor
 
 		ImGui::Begin("Scene Hierarchy");
 
-		engine::Scene& scene = engine::Context::activeSceneHandle.Get();
+		engine::Scene& scene = engine::context::activeSceneHandle.Get();
 
 		DrawEntityNode(scene, scene.firstRoot);
 

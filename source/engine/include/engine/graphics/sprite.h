@@ -12,7 +12,7 @@ namespace engine
 
 		static Sprite CreateFromGrid(TextureHandle texture, glm::ivec2 textureSize, glm::ivec2 cellCoords, glm::ivec2 cellSize);
 
-		TextureHandle textureHandle{};
+		TextureHandle textureHandle;
 		glm::vec2 uvMin = {0.0f, 0.0f};
 		glm::vec2 uvMax = {1.0f, 1.0f};
 	};

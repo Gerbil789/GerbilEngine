@@ -4,22 +4,15 @@
 
 namespace engine
 {
-  struct IRenderpass
+  struct BackgroundPass
   {
-    virtual ~IRenderpass() = default;
-    virtual void Initialize() {};
-    virtual void Execute(wgpu::CommandEncoder& encoder, const FrameContext& context) = 0;
-
     bool enabled = true;
+    void Execute(wgpu::CommandEncoder& encoder, const FrameContext& context);
   };
 
-  struct Backgroundpass : public IRenderpass
+  struct OpaquePass
   {
-    void Execute(wgpu::CommandEncoder& encoder, const FrameContext& context) override;
-  };
-
-  struct Opaquepass : public IRenderpass
-  {
-    void Execute(wgpu::CommandEncoder& encoder, const FrameContext& context) override;
+    bool enabled = true;
+    void Execute(wgpu::CommandEncoder& encoder, const FrameContext& context);
   };
 }
