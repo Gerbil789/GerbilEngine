@@ -24,7 +24,7 @@ namespace engine
     wgpu::CompareFunction depthCompare = wgpu::CompareFunction::Less;
     wgpu::TextureFormat depthFormat = wgpu::TextureFormat::Depth24Plus;
 
-		std::vector<wgpu::BindGroupLayout> layoutOverrides; // if empty, use the shader's default layout
+		std::vector<wgpu::BindGroupLayout> layouts;
 
 
 		bool operator==(const PipelineSpecification& other) const
@@ -40,11 +40,11 @@ namespace engine
 				return false;
 			}
 
-			if (layoutOverrides.size() != other.layoutOverrides.size()) return false;
+			if (layouts.size() != other.layouts.size()) return false;
 
-			for (size_t i = 0; i < layoutOverrides.size(); ++i)
+			for (size_t i = 0; i < layouts.size(); ++i)
 			{
-				if (layoutOverrides[i].Get() != other.layoutOverrides[i].Get())
+				if (layouts[i].Get() != other.layouts[i].Get())
 				{
 					return false;
 				}
@@ -65,7 +65,7 @@ namespace engine
 			HashCombine(seed, static_cast<uint32_t>(depthCompare));
 			HashCombine(seed, static_cast<uint32_t>(depthFormat));
 
-			for (const auto& layout : layoutOverrides)
+			for (const auto& layout : layouts)
 			{
 				HashCombine(seed, reinterpret_cast<uint64_t>(layout.Get()));
 			}

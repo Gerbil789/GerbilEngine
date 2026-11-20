@@ -12,7 +12,7 @@ namespace engine
 		entt::entity firstRoot = entt::null;
 		entt::entity lastRoot = entt::null;
 		entt::entity primaryCameraEntity = entt::null;
-		TextureHandle environmenttexture = texture::hdr;
+		TextureHandle environmentTexture = texture::hdr;
 		BoundingVolumeHiearchy bvh;
 		std::vector<std::function<void(Scene&)>> systems;
 

@@ -1,6 +1,6 @@
 #include "enginepch.h"
 #include "engine/graphics/renderer/render_pass.h"
-#include "engine/graphics/renderer/render_pipeline_layouts.h"
+#include "engine/graphics/renderer/layouts.h"
 
 namespace engine
 {
@@ -10,7 +10,7 @@ namespace engine
     spec.shaderHandle = shader::Skybox;
     spec.cullMode = wgpu::CullMode::None;
     spec.depthWrite = false;
-    spec.layoutOverrides = { RenderPipelineLayouts::GetViewLayout(), RenderPipelineLayouts::GetEnvironmentLayout() };
+    spec.layouts = { Layouts::viewBindGroupLayout, Layouts::environmentBindGroupLayout };
     wgpu::RenderPipeline pipeline = PipelineCache::GetPipeline(spec);
 
     const glm::vec4& col = context.camera->clearColor;
@@ -22,7 +22,7 @@ namespace engine
     color.clearValue = wgpu::Color{ col.r, col.g, col.b, col.a };
 
     wgpu::RenderPassDescriptor desc;
-    desc.label = "BackgroundRenderpass";
+    desc.label = "BackgroundRenderPass";
     desc.colorAttachmentCount = 1;
     desc.colorAttachments = &color;
 

@@ -2,7 +2,7 @@
 #include "engine/graphics/pipeline.h"
 #include "engine/graphics/shader.h"
 #include "engine/graphics/graphics_context.h"
-#include "engine/graphics/renderer/render_pipeline_layouts.h"
+#include "engine/graphics/renderer/layouts.h"
 #include "engine/graphics/utility.h"
 #include <numeric>
 
@@ -19,7 +19,7 @@ namespace engine
 		wgpu::RenderPipelineDescriptor pipelineDesc;
 		pipelineDesc.label = "Shader Pipeline";
 
-		Shader& shader = specification.shaderHandle.Get();
+		const Shader& shader = specification.shaderHandle.Get();
 		const std::vector<wgpu::VertexAttribute>& vertexAttributes = shader.specification.vertexAttributes;
 
 		wgpu::VertexBufferLayout vertexBufferLayout;
@@ -74,7 +74,7 @@ namespace engine
 		if(specification.depthWrite)
 		{
 			depthStencilState.depthCompare = specification.depthCompare;
-			depthStencilState.depthWriteEnabled = specification.depthWrite ? wgpu::OptionalBool::True : wgpu::OptionalBool::False;
+			depthStencilState.depthWriteEnabled = true;
 			depthStencilState.format = specification.depthFormat;
 			depthStencilState.stencilReadMask = 0xFFFFFFFF;
 			depthStencilState.stencilWriteMask = 0xFFFFFFFF;
@@ -92,29 +92,10 @@ namespace engine
 		pipelineDesc.multisample.count = 1;
 		pipelineDesc.multisample.mask = ~0u;
 
-
-		std::vector<wgpu::BindGroupLayout> bindGroupLayouts;
-
-		if (!specification.layoutOverrides.empty())
-		{
-			bindGroupLayouts = specification.layoutOverrides;
-		}
-		else
-		{
-			bindGroupLayouts =
-			{
-					RenderPipelineLayouts::GetViewLayout(),
-					RenderPipelineLayouts::GetEnvironmentLayout(),
-					shader.materialBindGroupLayout,
-					RenderPipelineLayouts::GetModelLayout()
-			};
-		}
-
-
 		wgpu::PipelineLayoutDescriptor layoutDesc;
 		layoutDesc.label = "Shader Pipeline Layout";
-		layoutDesc.bindGroupLayoutCount = bindGroupLayouts.size();
-		layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
+		layoutDesc.bindGroupLayoutCount = specification.layouts.size();
+		layoutDesc.bindGroupLayouts = specification.layouts.data();
 		pipelineDesc.layout = graphicsContext::GetDevice().CreatePipelineLayout(&layoutDesc);
 
 		wgpu::RenderPipeline pipeline = graphicsContext::GetDevice().CreateRenderPipeline(&pipelineDesc);

@@ -11,20 +11,22 @@ namespace editor
 	{
 		engine::Scene& scene = engine::context::activeSceneHandle.Get();
 
-		ImGui::Begin("settings");
+		ImGui::Begin("Settings");
 
-		if (ImGui::CollapsingHeader("editor"))
+		if (ImGui::CollapsingHeader("Editor"))
 		{
 			PropertyTable table;
 
-			/*if (PropertyField("Wireframe color", editor::editorContext.settings.wireframeColor, { .mode = editor::DisplayMode::Color }).changed)
-			{
-				auto wireframepass = engine::RenderpassRegistry::Getpass(engine::RenderpassType::Wireframe);
-				if (wireframepass)
-				{
-					static_cast<engine::Wireframepass*>(wireframepass)->SetColor(editor::editorContext.settings.wireframeColor);
-				}
-			}*/
+			auto& renderer = engine::Application::s_renderer;
+
+			auto& normal = renderer.GetPass<engine::NormalPass>();
+			PropertyField("Normal", normal.enabled);
+
+			auto& wireframe = renderer.GetPass<engine::WireframePass>();
+			PropertyField("Wireframe", wireframe.enabled);
+			PropertyField("Color", wireframe.color, { .mode = editor::DisplayMode::Color });
+
+			ImGui::Separator();
 
 			if (ImGui::Button("Reset default editor layout"))
 			{
@@ -41,11 +43,11 @@ namespace editor
 		{
 			PropertyTable table;
 
-			engine::TextureHandle texture = scene.environmenttexture; //TODO: unnecessary variable?
+			engine::TextureHandle texture = scene.environmentTexture; //TODO: unnecessary variable?
 
 			if (assetField("Environment", texture, engine::texture::hdr).changed)
 			{
-				scene.environmenttexture = texture;
+				scene.environmentTexture = texture;
 				engine::Application::s_renderer.SetEnvironment(texture); // TODO: i dont like it
 			}
 		}

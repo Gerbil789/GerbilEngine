@@ -1,7 +1,7 @@
 #pragma once
 
 #include "engine/graphics/renderer/draw_list.h"
-#include "engine/graphics/renderer/render_uniforms.h"
+#include "engine/graphics/renderer/layouts.h"
 #include "engine/graphics/texture/environment.h"
 #include "engine/core/components.h"
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "engine/graphics/renderer/frame_context.h"
-// #include <cstdint>
 
 namespace engine
 {
@@ -14,12 +13,10 @@ namespace engine
     void SetEnvironment(TextureHandle texture);
     
     wgpu::CommandEncoder BeginFrame(const component::Camera* camera, const DrawList& drawList);
-    void EndFrame(wgpu::CommandEncoder encoder, wgpu::TextureView targetView);
+    void EndFrame(wgpu::CommandEncoder encoder);
 
   private:
-    void CreateEnvironmentUniformBuffer();
-    void CreateEnvironmentBindGroup();
-    void CreateShadowtexture();
+    void CreateShadowTexture();
 
   protected:
     wgpu::Texture m_depthtexture;

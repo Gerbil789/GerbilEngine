@@ -1,18 +1,10 @@
 #include "enginepch.h"
-#include "engine/graphics/renderer/render_pipeline_layouts.h"
+#include "engine/graphics/renderer/layouts.h"
 #include "engine/graphics/graphics_context.h"
-#include "engine/graphics/renderer/render_uniforms.h"
 
 namespace engine
 {
-	namespace 
-	{
-		static wgpu::BindGroupLayout s_viewBindGroupLayout = nullptr;
-		static wgpu::BindGroupLayout s_modelBindGroupLayout = nullptr;
-		static wgpu::BindGroupLayout s_environmentBindGroupLayout = nullptr;
-	}
-
-	void CreateViewBindGroupLayout()
+	wgpu::BindGroupLayout CreateViewBindGroupLayout()
 	{
 		std::array<wgpu::BindGroupLayoutEntry, 1> entries;
 
@@ -26,10 +18,10 @@ namespace engine
 		bindGroupLayoutDesc.entryCount = entries.size();
 		bindGroupLayoutDesc.entries = entries.data();
 
-		s_viewBindGroupLayout = graphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
+		return graphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
 	}
 
-	void CreateModelBindGroupLayout()
+	wgpu::BindGroupLayout CreateModelBindGroupLayout()
 	{
 		std::array<wgpu::BindGroupLayoutEntry, 1> entries;
 
@@ -43,10 +35,10 @@ namespace engine
 		bindGroupLayoutDesc.label = "ModelBindGroupLayout";
 		bindGroupLayoutDesc.entryCount = entries.size();
 		bindGroupLayoutDesc.entries = entries.data();
-		s_modelBindGroupLayout = graphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
+		return graphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
 	}
 
-	void CreateEnvironmentBindGroupLayout()
+	wgpu::BindGroupLayout CreateEnvironmentBindGroupLayout()
 	{
 		std::array<wgpu::BindGroupLayoutEntry, 8> entries;
 
@@ -98,7 +90,7 @@ namespace engine
 			entries[5].binding = 5;
 			entries[5].visibility = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment;
 			entries[5].buffer.type = wgpu::BufferBindingType::Uniform;
-			entries[5].buffer.minBindingSize = sizeof(EnvironmentUniforms);
+			entries[5].buffer.minBindingSize = sizeof(ShadowUniforms);
 		}
 
 		// 6 -ShadowSampler
@@ -122,28 +114,13 @@ namespace engine
 		bindGroupLayoutDesc.entryCount = entries.size();
 		bindGroupLayoutDesc.entries = entries.data();
 
-		s_environmentBindGroupLayout = graphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
+		return graphicsContext::GetDevice().CreateBindGroupLayout(&bindGroupLayoutDesc);
 	}
 
-	void RenderPipelineLayouts::Initialize()
+	void Layouts::Initialize()
 	{
-		CreateViewBindGroupLayout();
-		CreateModelBindGroupLayout();
-		CreateEnvironmentBindGroupLayout();
-	}
-
-	wgpu::BindGroupLayout RenderPipelineLayouts::GetViewLayout()
-	{
-		return s_viewBindGroupLayout;
-	}
-
-	wgpu::BindGroupLayout RenderPipelineLayouts::GetModelLayout()
-	{
-		return s_modelBindGroupLayout;
-	}
-
-	wgpu::BindGroupLayout RenderPipelineLayouts::GetEnvironmentLayout()
-	{
-		return s_environmentBindGroupLayout;
+		viewBindGroupLayout = CreateViewBindGroupLayout();
+		modelBindGroupLayout = CreateModelBindGroupLayout();
+		environmentBindGroupLayout = CreateEnvironmentBindGroupLayout();
 	}
 }

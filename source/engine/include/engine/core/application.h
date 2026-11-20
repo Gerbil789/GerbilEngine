@@ -8,7 +8,7 @@ namespace engine
 	struct Application
 	{
 		inline static Window s_window;
-		inline static Renderer<BackgroundPass, OpaquePass> s_renderer;
+		inline static Renderer<BackgroundPass, OpaquePass, NormalPass, WireframePass> s_renderer;
 		inline static bool s_running = true;
 
 		struct Configuration

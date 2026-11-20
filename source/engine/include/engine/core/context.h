@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/asset/handle.h"
+#include <filesystem>
 
 namespace engine::context
 {

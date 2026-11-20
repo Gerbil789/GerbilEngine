@@ -2,6 +2,7 @@
 #include "engine/graphics/material.h"
 #include "engine/graphics/graphics_context.h"
 #include "engine/graphics/renderer/renderer.h"
+#include "engine/graphics/renderer/layouts.h"
 #include "engine/graphics/texture/texture_2d.h"
 
 namespace engine
@@ -21,6 +22,14 @@ namespace engine
 
 		PipelineSpecification spec;
 		spec.shaderHandle = shader;
+		spec.layouts =
+			{
+					Layouts::viewBindGroupLayout,
+					Layouts::environmentBindGroupLayout,
+					shader.Get().materialBindGroupLayout,
+					Layouts::modelBindGroupLayout
+			};
+
 		pipeline = PipelineCache::GetPipeline(spec);
 	}
 

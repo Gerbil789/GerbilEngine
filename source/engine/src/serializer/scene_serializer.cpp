@@ -6,41 +6,22 @@
 #include <glm/glm.hpp>
 
 template <> struct glz::meta<glm::ivec2> { static constexpr auto value = glz::array(&glm::ivec2::x, &glm::ivec2::y); };
+template <> struct glz::meta<glm::vec2> { static constexpr auto value = glz::array(&glm::vec2::x, &glm::vec2::y); };
+template <> struct glz::meta<glm::vec3> { static constexpr auto value = glz::array(&glm::vec3::x, &glm::vec3::y, &glm::vec3::z); };
+template <> struct glz::meta<glm::vec4> { static constexpr auto value = glz::array(&glm::vec4::x, &glm::vec4::y, &glm::vec4::z, &glm::vec4::w); };
 
-template <>
-struct glz::meta<glm::vec2> { static constexpr auto value = array(&glm::vec2::x, &glm::vec2::y); };
+template <> struct glz::meta<engine::Uuid> { static constexpr auto value = [](auto& uuid) -> uint64_t& { return reinterpret_cast<uint64_t&>(uuid); }; };
+template <typename T> struct glz::meta<engine::Handle<T>> { static constexpr auto value = [](auto& h) -> decltype(h.id)& { return h.id; }; };
 
-template <>
-struct glz::meta<glm::vec3> { static constexpr auto value = array(&glm::vec3::x, &glm::vec3::y, &glm::vec3::z); };
-
-template <>
-struct glz::meta<glm::vec4> { static constexpr auto value = array(&glm::vec4::x, &glm::vec4::y, &glm::vec4::z, &glm::vec4::w); };
-
-template <>
-struct glz::meta<engine::Uuid> { static constexpr auto value = [](auto& uuid) -> uint64_t& { return reinterpret_cast<uint64_t&>(uuid); }; };
-
-template <>
-struct glz::meta<engine::MeshHandle> { static constexpr auto value = [](auto& mesh) -> uint64_t& { return reinterpret_cast<uint64_t&>(mesh); }; };
-
-template <>
-struct glz::meta<engine::MaterialHandle> { static constexpr auto value = [](auto& material) -> uint64_t& { return reinterpret_cast<uint64_t&>(material); }; };
-
-template <>
-struct glz::meta<engine::MaterialInstanceHandle> {
-	using T = engine::MaterialInstanceHandle;
-	static constexpr auto value = [](auto& m) -> decltype(m.id)& { return m.id; };
-};
-
-template <>
-struct glz::meta<engine::component::Camera>
+template <> struct glz::meta<engine::component::Camera>
 {
 	using T = engine::component::Camera;
 	static constexpr auto value = glz::object(
-		"projection", &T::projection,
-		"perspective", &T::perspective,
-		"orthographic", &T::orthographic,
-		"backgroundMode", &T::backgroundMode,
-		"clearColor", &T::clearColor
+		&T::projection,
+		&T::perspective,
+		&T::orthographic,
+		&T::backgroundMode,
+		&T::clearColor
 	);
 };
 
@@ -60,6 +41,7 @@ namespace engine
 	struct SceneJson
 	{
 		Uuid primaryCameraEntity;
+		TextureHandle environmentTexture;
 		std::vector<EntityJSON> entities;
 	};
 
@@ -85,7 +67,7 @@ namespace engine
 		}
 
 		// Transform
-		if(auto* transform = registry.try_get<component::Transform>(entity))
+		if (auto* transform = registry.try_get<component::Transform>(entity))
 		{
 			eJson.transform = *transform;
 			eJson.transform->rotation = glm::degrees(eJson.transform->rotation);
@@ -121,10 +103,12 @@ namespace engine
 
 		const engine::Scene& scene = handle.Get();
 
-		if(scene.primaryCameraEntity != entt::null)
+		if (scene.primaryCameraEntity != entt::null)
 		{
 			json.primaryCameraEntity = scene.registry.get<component::Identity>(scene.primaryCameraEntity).id;
 		}
+
+		json.environmentTexture = scene.environmentTexture;
 
 		SerializeEntityRecursive(scene.registry, scene.firstRoot, json);
 
@@ -211,7 +195,7 @@ namespace engine
 			if (eJson.camera.has_value())
 			{
 				auto& cc = registry.emplace<component::Camera>(handle);
-				cc =  eJson.camera.value();
+				cc = eJson.camera.value();
 
 				registry.emplace_or_replace<tag::CameraProjectionDirty>(handle);
 				registry.emplace_or_replace<tag::CameraViewDirty>(handle);
@@ -227,13 +211,15 @@ namespace engine
 			scene.AttachChild(parent, child);
 		}
 
-		if(!json.entities.empty())
+		if (!json.entities.empty())
 		{
 			scene.firstRoot = entityMap.at(json.entities.at(0).id);
 			scene.lastRoot = entityMap.at(json.entities.at(json.entities.size() - 1).id);
 		}
 
-		if(json.primaryCameraEntity)
+		scene.environmentTexture = json.environmentTexture;
+
+		if (json.primaryCameraEntity)
 		{
 			scene.primaryCameraEntity = entityMap.at(json.primaryCameraEntity);
 		}

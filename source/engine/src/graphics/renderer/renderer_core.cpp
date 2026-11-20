@@ -1,14 +1,7 @@
 #include "enginepch.h"
 #include "engine/graphics/renderer/renderer_core.h"
 #include "engine/graphics/graphics_context.h"
-#include "engine/graphics/renderer/draw_list.h"
-#include "engine/core/components.h"
-#include "engine/graphics/renderer/render_uniforms.h"
-#include "engine/graphics/renderer/render_pipeline_layouts.h"
-#include "engine/graphics/texture/environment.h"
-#include "engine/asset/asset_manager.h"
-#include "engine/system/camera_system.h"
-#include <glm/gtx/quaternion.hpp>
+#include "engine/graphics/renderer/layouts.h"
 
 namespace engine
 {
@@ -31,7 +24,7 @@ namespace engine
 
 		wgpu::BindGroupDescriptor desc;
 		desc.label = "ViewBindGroup";
-		desc.layout = RenderPipelineLayouts::GetViewLayout();
+		desc.layout = Layouts::viewBindGroupLayout;
 		desc.entryCount = 1;
 		desc.entries = &entry;
 		return graphicsContext::GetDevice().CreateBindGroup(&desc);
@@ -57,66 +50,23 @@ namespace engine
 
 		wgpu::BindGroupDescriptor desc;
 		desc.label = "ModelBindGroup";
-		desc.layout = RenderPipelineLayouts::GetModelLayout();
+		desc.layout = Layouts::modelBindGroupLayout;
 		desc.entryCount = 1;
 		desc.entries = &entry;
 		return graphicsContext::GetDevice().CreateBindGroup(&desc);
 	}
 
-	void RendererCore::Initialize(uint32_t width, uint32_t height)
-	{
-		m_viewUniformBuffer = CreateViewUniformBuffer();
-		m_frameContext.viewBindGroup = CreateViewBindGroup(m_viewUniformBuffer);
 
-		m_modelStorageBuffer = CreateModelStorageBuffer();
-    m_frameContext.modelBindGroup = CreateModelBindGroup(m_modelStorageBuffer);
-
-		CreateShadowtexture();
-		CreateEnvironmentUniformBuffer();
-		SetEnvironment(texture::hdr);
-		SetSize(width, height);
-	}
-
-	void RendererCore::SetSize(uint32_t width, uint32_t height)
-	{
-		wgpu::TextureDescriptor desc;
-		desc.label = "rendererDepthtexture";
-		desc.dimension = wgpu::TextureDimension::e2D;
-		desc.format = wgpu::TextureFormat::Depth24Plus;
-		desc.mipLevelCount = 1;
-		desc.sampleCount = 1;
-		desc.size = { width, height, 1 };
-		desc.usage = wgpu::TextureUsage::RenderAttachment;
-		m_depthtexture = engine::graphicsContext::GetDevice().CreateTexture(&desc);
-
-		wgpu::TextureViewDescriptor viewDesc;
-		viewDesc.label = "rendererDepthtextureView";
-		viewDesc.aspect = wgpu::TextureAspect::DepthOnly;
-		viewDesc.dimension = wgpu::TextureViewDimension::e2D;
-		viewDesc.format = m_depthtexture.GetFormat();
-		viewDesc.baseMipLevel = 0;
-		viewDesc.mipLevelCount = 1;
-		viewDesc.baseArrayLayer = 0;
-		viewDesc.arrayLayerCount = 1;
-		m_frameContext.depthTarget = m_depthtexture.CreateView(&viewDesc);
-	}
-
-	void RendererCore::SetEnvironment(TextureHandle texture)
-	{
-		m_frameContext.environment = BakeEnvironment(texture);
-		CreateEnvironmentBindGroup();
-	}
-
-	void RendererCore::CreateEnvironmentUniformBuffer()
+	static wgpu::Buffer CreateEnvironmentUniformBuffer()
 	{
 		wgpu::BufferDescriptor desc;
 		desc.label = "EnvironmentUniformBuffer";
-		desc.size = sizeof(EnvironmentUniforms);
+		desc.size = sizeof(ShadowUniforms);
 		desc.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-		m_environmentUniformBuffer = graphicsContext::GetDevice().CreateBuffer(&desc);
+		return graphicsContext::GetDevice().CreateBuffer(&desc);
 	}
 
-	void RendererCore::CreateEnvironmentBindGroup()
+	static wgpu::BindGroup CreateEnvironmentBindGroup(FrameContext& frameContext, wgpu::Buffer& buffer)
 	{
 		std::array<wgpu::BindGroupEntry, 8> entries;
 
@@ -139,19 +89,19 @@ namespace engine
 		// 1 - EnvironmentMap
 		{
 			entries[1].binding = 1;
-			entries[1].textureView = m_frameContext.environment.EnvironmentMap.textureView;
+			entries[1].textureView = frameContext.environment.EnvironmentMap.textureView;
 		}
 
 		// 2 - IrradianceMap
 		{
 			entries[2].binding = 2;
-			entries[2].textureView = m_frameContext.environment.IrradianceMap.textureView;
+			entries[2].textureView = frameContext.environment.IrradianceMap.textureView;
 		}
 
 		// 3 - PrefilteredSpecularMap
 		{
 			entries[3].binding = 3;
-			entries[3].textureView = m_frameContext.environment.PrefilteredSpecularMap.textureView;
+			entries[3].textureView = frameContext.environment.PrefilteredSpecularMap.textureView;
 		}
 
 		// 4 - BRDFIntMap
@@ -164,9 +114,9 @@ namespace engine
 		// 5 - ShadowUniforms
 		{
 			entries[5].binding = 5;
-			entries[5].buffer = m_environmentUniformBuffer;
+			entries[5].buffer = buffer;
 			entries[5].offset = 0;
-			entries[5].size = sizeof(EnvironmentUniforms);
+			entries[5].size = sizeof(ShadowUniforms);
 		}
 
 		// 6 -ShadowSampler
@@ -186,18 +136,62 @@ namespace engine
 		// 7 - ShadowMap
 		{
 			entries[7].binding = 7;
-			entries[7].textureView = m_frameContext.depthtextureArrayView;
+			entries[7].textureView = frameContext.depthtextureArrayView;
 		}
 
 		wgpu::BindGroupDescriptor desc;
 		desc.label = "EnvironmentBindGroup";
-		desc.layout = RenderPipelineLayouts::GetEnvironmentLayout();
+		desc.layout = Layouts::environmentBindGroupLayout;
 		desc.entryCount = entries.size();
 		desc.entries = entries.data();
-		m_frameContext.environmentBindGroup = graphicsContext::GetDevice().CreateBindGroup(&desc);
+		return graphicsContext::GetDevice().CreateBindGroup(&desc);
 	}
 
-	void RendererCore::CreateShadowtexture()
+	void RendererCore::Initialize(uint32_t width, uint32_t height)
+	{
+		m_viewUniformBuffer = CreateViewUniformBuffer();
+		m_frameContext.viewBindGroup = CreateViewBindGroup(m_viewUniformBuffer);
+
+		m_modelStorageBuffer = CreateModelStorageBuffer();
+    m_frameContext.modelBindGroup = CreateModelBindGroup(m_modelStorageBuffer);
+
+		CreateShadowTexture();
+		m_environmentUniformBuffer = CreateEnvironmentUniformBuffer();
+		SetEnvironment(texture::hdr);
+		SetSize(width, height);
+	}
+
+	void RendererCore::SetSize(uint32_t width, uint32_t height)
+	{
+		wgpu::TextureDescriptor desc;
+		desc.label = "rendererDepthTexture";
+		desc.dimension = wgpu::TextureDimension::e2D;
+		desc.format = wgpu::TextureFormat::Depth24Plus;
+		desc.mipLevelCount = 1;
+		desc.sampleCount = 1;
+		desc.size = { width, height, 1 };
+		desc.usage = wgpu::TextureUsage::RenderAttachment;
+		m_depthtexture = engine::graphicsContext::GetDevice().CreateTexture(&desc);
+
+		wgpu::TextureViewDescriptor viewDesc;
+		viewDesc.label = "rendererDepthTextureView";
+		viewDesc.aspect = wgpu::TextureAspect::DepthOnly;
+		viewDesc.dimension = wgpu::TextureViewDimension::e2D;
+		viewDesc.format = m_depthtexture.GetFormat();
+		viewDesc.baseMipLevel = 0;
+		viewDesc.mipLevelCount = 1;
+		viewDesc.baseArrayLayer = 0;
+		viewDesc.arrayLayerCount = 1;
+		m_frameContext.depthTarget = m_depthtexture.CreateView(&viewDesc);
+	}
+
+	void RendererCore::SetEnvironment(TextureHandle texture)
+	{
+		m_frameContext.environment = BakeEnvironment(texture);
+		m_frameContext.environmentBindGroup = CreateEnvironmentBindGroup(m_frameContext, m_environmentUniformBuffer);
+	}
+
+	void RendererCore::CreateShadowTexture()
 	{
 		wgpu::TextureFormat format = wgpu::TextureFormat::Depth24Plus;
 
@@ -256,9 +250,8 @@ namespace engine
 		return graphicsContext::GetDevice().CreateCommandEncoder();
 	}
 
-	void RendererCore::EndFrame(wgpu::CommandEncoder encoder, wgpu::TextureView targetView)
+	void RendererCore::EndFrame(wgpu::CommandEncoder encoder)
 	{
-		m_frameContext.colorTarget = targetView;
 		wgpu::CommandBuffer commandBuffer = encoder.Finish();
 		graphicsContext::GetQueue().Submit(1, &commandBuffer);
 	}

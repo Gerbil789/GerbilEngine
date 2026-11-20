@@ -1,7 +1,7 @@
 #include "enginepch.h"
 #include "engine/graphics/graphics_context.h"
 #include "engine/graphics/sampler_pool.h"
-#include "engine/graphics/renderer/render_pipeline_layouts.h"
+#include "engine/graphics/renderer/layouts.h"
 #include <webgpu/webgpu_cpp_print.h>
 
 namespace engine::graphicsContext
@@ -128,7 +128,7 @@ namespace engine::graphicsContext
 		}
 
 		engine::SamplerPool::Initialize();
-		engine::RenderPipelineLayouts::Initialize();
+		engine::Layouts::Initialize();
 	}
 
 	void Shutdown()

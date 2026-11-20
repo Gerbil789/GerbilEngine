@@ -28,6 +28,8 @@ namespace engine
 
 		void Render(const DrawList& drawList, const component::Camera* camera, wgpu::TextureView targetView)
 		{
+      m_frameContext.colorTarget = targetView;
+
       wgpu::CommandEncoder encoder = RendererCore::BeginFrame(camera, drawList);
 
       std::apply([&](auto&... pass) {
@@ -36,7 +38,7 @@ namespace engine
         }());
       }, passes);
 
-      RendererCore::EndFrame(encoder, targetView);
+      RendererCore::EndFrame(encoder);
     }
 
 	private:
