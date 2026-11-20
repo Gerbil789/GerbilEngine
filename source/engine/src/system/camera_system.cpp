@@ -23,14 +23,9 @@ namespace engine
 		return glm::normalize(orientation * glm::vec3(1.0f, 0.0f, 0.0f));
 	}
 
-	std::array<glm::vec3, 8> Camerasystem::GetFrustumCornersWorld(float, float)
-	{
-		return std::array<glm::vec3, 8>();
-	}
-
 	void Camerasystem::UpdateCameraProjectionMatrix(component::Camera& camera, float aspectRatio)
 	{
-		if(camera.projection == component::Camera::Projection::Perspective)
+		if (camera.projection == component::Camera::Projection::Perspective)
 		{
 			camera.projectionMatrix = glm::perspectiveLH_ZO(camera.perspective.fov, aspectRatio, camera.perspective.nearClip, camera.perspective.farClip);
 		}
@@ -56,41 +51,17 @@ namespace engine
 
 	void Camerasystem::Update(entt::registry& registry, float aspectRatio)
 	{
-    auto projView = registry.view<component::Camera, tag::CameraProjectionDirty>(entt::exclude<tag::Disabled>);
-    for (auto [entity, camera] : projView.each())
-    {
+		auto projView = registry.view<component::Camera, tag::CameraProjectionDirty>(entt::exclude<tag::Disabled>);
+		for (auto [entity, camera] : projView.each())
+		{
 			UpdateCameraProjectionMatrix(camera, aspectRatio);
-      registry.remove<tag::CameraProjectionDirty>(entity);
-    }
+			registry.remove<tag::CameraProjectionDirty>(entity);
+		}
 
 		auto viewView = registry.view<component::Camera, component::Transform, tag::TransformDirty>(entt::exclude<tag::Disabled>);
-    for (auto [entity, camera, transform] : viewView.each())
-    {
+		for (auto [entity, camera, transform] : viewView.each())
+		{
 			UpdateCameraViewMatrix(camera, transform);
-    }
+		}
 	}
 }
-
-//	std::array<glm::vec3, 8> Camera::GetFrustumCornersWorld(float near, float far) const
-//	{
-//		glm::mat4 invView = glm::inverse(GetViewMatrix());
-//
-//		std::array<glm::vec3, 8> corners;
-//
-//		corners[0] = { glm::tan(m_perspective.fov * 0.5f) * near * m_aspectRatio, glm::tan(m_perspective.fov * 0.5f) * near, near };
-//		corners[1] = { -corners[0].x, corners[0].y, corners[0].z };
-//		corners[2] = { -corners[0].x, -corners[0].y, corners[0].z };
-//		corners[3] = { corners[0].x, -corners[0].y, corners[0].z };
-//
-//		corners[4] = { glm::tan(m_perspective.fov * 0.5f) * far * m_aspectRatio, glm::tan(m_perspective.fov * 0.5f) * far, far };
-//		corners[5] = { -corners[4].x, corners[4].y, corners[4].z };
-//		corners[6] = { -corners[4].x, -corners[4].y, corners[4].z };
-//		corners[7] = { corners[4].x, -corners[4].y, corners[4].z };
-//
-//		for (auto& corner : corners)
-//		{
-//			corner = glm::vec3(invView * glm::vec4(corner, 1.0f));
-//		}
-//
-//		return corners;
-//	}

@@ -1,16 +1,17 @@
 #include "enginepch.h"
 #include "engine/graphics/renderer/draw_list.h"
 #include "engine/core/components.h"
-#include <numeric>
-#include <cassert>
+#include "engine/math/frustum.h"
 
 namespace engine
 {
-  DrawList DrawList::Create(const entt::registry& registry)
+  DrawList DrawList::Create(const Scene& scene, const component::Camera* camera)
   {
     DrawList list;
 
-    auto view = registry.view<component::Mesh, component::WorldTransform>(entt::exclude<tag::Disabled>);
+    auto frustum = ExtractFrustumPlanesZO(camera->viewProjectionMatrix);
+
+    auto view = scene.registry.view<component::Mesh, component::WorldTransform>(entt::exclude<tag::Disabled>);
 
     list.items.reserve(view.size_hint());
     list.transforms.reserve(view.size_hint());
@@ -19,15 +20,25 @@ namespace engine
     {
       if (mc.mesh == mesh::Empty) continue;
 
-      const auto& submeshes = mc.mesh.Get().submeshes;
+      list.totalDrawItems++;
+      const Mesh& mesh = mc.mesh.Get();
+
+      AABB worldAABB = TransformAABB(mesh.aabb, wtc.worldMatrix);
+
+      if (!IsAABBInFrustum(worldAABB, frustum))
+      {
+        list.culledCount++;
+        continue;
+      }
+
+      const auto& submeshes = mesh.submeshes;
 
       for (uint32_t i = 0; i < submeshes.size(); ++i)
       {
         const auto& subMesh = submeshes[i];
-
         assert(subMesh.materialIndex < mc.materialInstances.size() && "Material index out of bounds!");
-        engine::MaterialInstanceHandle materialInstance = mc.materialInstances[subMesh.materialIndex];
 
+        engine::MaterialInstanceHandle materialInstance = mc.materialInstances[subMesh.materialIndex];
         list.items.emplace_back(mc.mesh, materialInstance, i, subMesh.indexCount, subMesh.firstIndex);
         list.transforms.push_back(wtc.worldMatrix);
       }
@@ -36,40 +47,43 @@ namespace engine
     const size_t count = list.items.size();
     if (count <= 1) return list;
 
-    std::vector<uint32_t> indices(count);
-    std::iota(indices.begin(), indices.end(), 0u);
-
-    std::sort(indices.begin(), indices.end(), [&list](uint32_t a, uint32_t b)
+    struct SortEntry
     {
-      const auto& itemA = list.items[a];
-      const auto& itemB = list.items[b];
+      uint64_t key;
+      uint32_t index;
+    };
 
-      if (itemA.materialInstance != itemB.materialInstance)
+    static thread_local std::vector<SortEntry> sortEntries;
+    static thread_local std::vector<DrawItem> sortedItems;
+    static thread_local std::vector<glm::mat4> sortedTransforms;
+
+    sortEntries.clear();
+    sortEntries.reserve(count);
+
+    for (uint32_t i = 0; i < static_cast<uint32_t>(count); ++i)
+    {
+      const auto& item = list.items[i];
+      const uint64_t key = (static_cast<uint64_t>(item.materialInstance.id) << 32) | static_cast<uint64_t>(item.mesh.id);
+      sortEntries.push_back({ key, i });
+    }
+
+    std::sort(sortEntries.begin(), sortEntries.end(), [](const SortEntry& a, const SortEntry& b)
       {
-        return itemA.materialInstance.id < itemB.materialInstance.id;
-      }
-      return itemA.mesh.id < itemB.mesh.id;
-    });
+        return a.key < b.key;
+      });
 
-    std::vector<bool> visited(count, false);
+    sortedItems.resize(count);
+    sortedTransforms.resize(count);
+
     for (size_t i = 0; i < count; ++i)
     {
-      if (visited[i] || indices[i] == i) continue;
-
-      size_t current = i;
-      while (!visited[current])
-      {
-        visited[current] = true;
-        size_t next = indices[current];
-
-        if (!visited[next])
-        {
-          std::swap(list.items[i], list.items[next]);
-          std::swap(list.transforms[i], list.transforms[next]);
-          current = next;
-        }
-      }
+      const uint32_t src = sortEntries[i].index;
+      sortedItems[i] = list.items[src];
+      sortedTransforms[i] = list.transforms[src];
     }
+
+    list.items.swap(sortedItems);
+    list.transforms.swap(sortedTransforms);
 
     return list;
   }

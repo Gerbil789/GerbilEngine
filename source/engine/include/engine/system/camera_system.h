@@ -10,8 +10,6 @@ namespace engine
 		static glm::vec3 GetUp(const component::Transform& transform);
 		static glm::vec3 GetRight(const component::Transform& transform);
 
-		static std::array<glm::vec3, 8> GetFrustumCornersWorld(float near, float far);
-
 		static void Update(entt::registry& registry, float aspectRatio);
 
 		static void UpdateCameraProjectionMatrix(component::Camera& camera, float aspectRatio);

@@ -99,7 +99,7 @@ namespace engine
 
 		if(camera)
 		{
-			DrawList drawList = DrawList::Create(scene.registry);
+			DrawList drawList = DrawList::Create(scene, camera);
 			s_renderer.Render(drawList, camera, s_window.GetSurfaceView());
 		}
 

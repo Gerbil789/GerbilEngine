@@ -1,4 +1,5 @@
 #include "statistics_window.h"
+#include "editor/core/editor_context.h"
 #include "engine/core/time.h"
 #include <imgui.h>
 
@@ -20,13 +21,16 @@ namespace editor
 
 		ImGui::Begin("Statistics");
 
-		ImVec2 fullWidth = ImVec2(-1, 80);  // Full width, fixed height
+		ImVec2 fullWidth = ImVec2(-1, 80);
 
 		ImGui::Text("FPS: %.0f", fps);
 		ImGui::PlotLines("##FPS", fpsHistory, HISTORY_LENGTH, offset, nullptr, 0.0f, 200.0f, fullWidth);
 
 		ImGui::Text("Frame Time: %.2f ms", ms);
 		ImGui::PlotLines("##MS", msHistory, HISTORY_LENGTH, offset, nullptr, 0.0f, 40.0f, fullWidth);
+
+		ImGui::Text("Frustum culling");
+		ImGui::Text("Draw %d/%d items", editor::context::totalDrawItems - editor::context::culledItems, editor::context::totalDrawItems);
 
 		ImGui::End();
 	}

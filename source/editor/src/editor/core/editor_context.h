@@ -28,6 +28,10 @@ namespace editor::context
 
   inline editorsettings settings;
 
+  //staticsitcs
+  inline uint32_t totalDrawItems = 0;
+  inline uint32_t culledItems = 0;
+
   struct asset 
   {
     engine::Uuid id = 0;

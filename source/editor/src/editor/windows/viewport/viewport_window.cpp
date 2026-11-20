@@ -133,9 +133,14 @@ namespace editor
 		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
 		const engine::Scene& scene = engine::context::activeSceneHandle.Get();
-		engine::DrawList drawList = engine::DrawList::Create(scene.registry);
+
 		const engine::component::Camera* camera = editor::context::editorMode == EditorMode::Edit ? 
 		&editor::context::camera : scene.registry.try_get<engine::component::Camera>(scene.primaryCameraEntity);
+
+		engine::DrawList drawList = engine::DrawList::Create(scene, camera);
+
+		editor::context::totalDrawItems = drawList.totalDrawItems;
+		editor::context::culledItems = drawList.culledCount;
 
 		engine::Application::s_renderer.Render(drawList, camera, m_textureView);
 

@@ -2,36 +2,48 @@
 [![Linux](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_linux.yaml/badge.svg)](https://github.com/Gerbil789/GerbilEngine/actions/workflows/build_linux.yaml)
 
 # GerbilEngine
-Cross platform **game engine** and **editor**. Engine uses WebGPU graphics API.
-
-```bash 
-git clone https://github.com/Gerbil789/GerbilEngine.git
-```
+Cross platform **game engine** and **editor**.
 
 ***
 
 ### Windows
- - Download and install Visual Studio, with C++23
+1. Download and install Visual Studio, with C++23
+2. Generate project files
 
 ```bash 
 scripts\premake\premake5.exe vs2022
 ```
 
+3. Build & Run it
+
 ### Linux
+
+1. Install dependencies
+
 ```bash
 sudo apt-get update
 sudo apt-get install -y build-essential clang libc++-dev libc++abi-dev libx11-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev libwayland-dev libxkbcommon-dev
 ```
 
+2. Generate project files
+
 ```bash 
 ./scripts/premake/premake5 gmake
 ```
+
+3. Build
 
 ```bash 
 make config=editorrelease_linux
 ```
 
 *config options*: `debug`, `release`, `editordebug`, `editorrelease`
+
+4. Run
+
+```bash
+./bin/path_to_the_file
+```
 
 #### Dependencies
 
